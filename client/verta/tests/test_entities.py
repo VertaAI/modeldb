@@ -10,6 +10,7 @@ import pytest
 from . import utils
 
 import verta
+import verta._internal_utils._utils
 import json
 
 
@@ -88,19 +89,25 @@ class TestClient:
             else:
                 raise RuntimeError("faulty test; expected error")
 
-    @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
+    @pytest.mark.skipif(not all(env_var in os.environ for env_var in ('VERTA_HOST', 'VERTA_EMAIL', 'VERTA_DEV_KEY')), reason="insufficient Verta credentials")
     def test_config_file(self):
-        PROJECT_NAME = "test_project"
-        DATASET_NAME = "test_dataset"
-        EXPERIMENT_NAME = "test_experiment"
+        self.config_file_with_type_util(connect = False)
+
+    @pytest.mark.skipif(not all(env_var in os.environ for env_var in ('VERTA_HOST', 'VERTA_EMAIL', 'VERTA_DEV_KEY')), reason="insufficient Verta credentials")
+    def test_config_file_connect(self):
+        self.config_file_with_type_util(connect = True)
+
+    def config_file_with_type_util(self, connect):
+        PROJECT_NAME = verta._internal_utils._utils.generate_default_name()
+        DATASET_NAME = verta._internal_utils._utils.generate_default_name()
+        EXPERIMENT_NAME = verta._internal_utils._utils.generate_default_name()
         CONFIG_FILENAME = "verta_config.json"
 
-        HOST = "app.verta.ai"
-        EMAIL_KEY, DEV_KEY_KEY = "VERTA_EMAIL", "VERTA_DEV_KEY"
+        HOST_KEY, EMAIL_KEY, DEV_KEY_KEY = "VERTA_HOST", "VERTA_EMAIL", "VERTA_DEV_KEY"
 
-        EMAIL, DEV_KEY = os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
+        HOST, EMAIL, DEV_KEY = os.environ[HOST_KEY], os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
         try:
-            del os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
+            del os.environ[HOST_KEY], os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
 
             try:
                 with open(CONFIG_FILENAME, 'w') as f:
@@ -115,33 +122,36 @@ class TestClient:
                         f,
                     )
 
-                client = verta.Client()
+                client = verta.Client(_connect=connect)
                 conn = client._conn
 
                 assert conn.socket == HOST
                 assert conn.auth['Grpc-Metadata-email'] == EMAIL
                 assert conn.auth['Grpc-Metadata-developer_key'] == DEV_KEY
 
-                try:
-                    assert client.set_experiment_run()
-                    assert client.proj.name == PROJECT_NAME
-                    assert client.expt.name == EXPERIMENT_NAME
-                finally:
-                    if client.proj is not None:
-                        utils.delete_project(client.proj.id, conn)
-
-                dataset = client.set_dataset()
-                try:
-                    assert dataset.name == DATASET_NAME
-                finally:
-                    utils.delete_datasets([dataset.id], conn)
+                if connect:
+                    try:
+                        assert client.set_experiment_run()
+                        assert client.proj.name == PROJECT_NAME
+                        assert client.expt.name == EXPERIMENT_NAME
+                    finally:
+                        if client.proj is not None:
+                            utils.delete_project(client.proj.id, conn)
+                    dataset = client.set_dataset()
+                    try:
+                        assert dataset.name == DATASET_NAME
+                    finally:
+                        utils.delete_datasets([dataset.id], conn)
+                else:
+                    assert client._set_from_config_if_none(None, "project") == PROJECT_NAME
+                    assert client._set_from_config_if_none(None, "experiment") == EXPERIMENT_NAME
+                    assert client._set_from_config_if_none(None, "dataset") == DATASET_NAME
 
             finally:
                 if os.path.exists(CONFIG_FILENAME):
                     os.remove(CONFIG_FILENAME)
         finally:
-            os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = EMAIL, DEV_KEY
-
+            os.environ[HOST_KEY], os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = HOST, EMAIL, DEV_KEY
 
 class TestEntities:
     def test_cache(self, client, strs):

@@ -40,6 +40,7 @@ class Path(_dataset._Dataset):
     def __init__(self, paths):
         if isinstance(paths, six.string_types):
             paths = [paths]
+        paths = map(os.path.expanduser, paths)
 
         super(Path, self).__init__()
 
@@ -53,6 +54,17 @@ class Path(_dataset._Dataset):
 
         metadata = six.viewvalues(paths_to_metadata)
         self._msg.path.components.extend(metadata)
+
+    def __repr__(self):
+        lines = ["Path Version"]
+        components = sorted(
+            self._msg.path.components,
+            key=lambda component_msg: component_msg.path,
+        )
+        for component in components:
+            lines.extend(self._path_component_to_repr_lines(component))
+
+        return "\n    ".join(lines)
 
     @classmethod
     def _get_path_metadata(cls, path):

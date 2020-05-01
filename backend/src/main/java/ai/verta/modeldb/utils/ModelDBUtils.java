@@ -1,5 +1,6 @@
 package ai.verta.modeldb.utils;
 
+import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CollaboratorUserInfo;
@@ -21,7 +22,6 @@ import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
-import ai.verta.uac.EntitiesEnum.EntitiesTypes;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ShareViaEnum;
 import ai.verta.uac.UserInfo;
@@ -42,6 +42,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ import org.yaml.snakeyaml.Yaml;
 public class ModelDBUtils {
 
   private static final Logger LOGGER = LogManager.getLogger(ModelDBUtils.class);
+  private static final int STACKTRACE_LENGTH = 4;
 
   private ModelDBUtils() {}
 
@@ -354,25 +356,29 @@ public class ModelDBUtils {
   }
 
   public static List<Action> getActionsList(List<String> ids, Map<String, Actions> actions) {
-    return actions.values().stream()
-        .findFirst()
-        .orElseThrow(
-            () -> {
-              Status status =
-                  Status.newBuilder()
-                      .setCode(Code.INTERNAL_VALUE)
-                      .setMessage("Can't find allowed actions of current user for: " + ids)
-                      .build();
-              return StatusProto.toStatusRuntimeException(status);
-            })
-        .getActionsList();
+    return new ArrayList<>(
+        actions.values().stream()
+            .findFirst()
+            .orElseThrow(
+                () -> {
+                  Status status =
+                      Status.newBuilder()
+                          .setCode(Code.INTERNAL_VALUE)
+                          .setMessage("Can't find allowed actions of current user for: " + ids)
+                          .build();
+                  return StatusProto.toStatusRuntimeException(status);
+                })
+            .getActionsList());
   }
 
   public static List<KeyValueQuery> getKeyValueQueriesByWorkspace(
       RoleService roleService, UserInfo userInfo, String workspaceName) {
-    List<KeyValueQuery> workspaceQueries = new ArrayList<>();
     WorkspaceDTO workspaceDTO = roleService.getWorkspaceDTOByWorkspaceName(userInfo, workspaceName);
+    return getKeyValueQueriesByWorkspaceDTO(workspaceDTO);
+  }
 
+  public static List<KeyValueQuery> getKeyValueQueriesByWorkspaceDTO(WorkspaceDTO workspaceDTO) {
+    List<KeyValueQuery> workspaceQueries = new ArrayList<>();
     if (workspaceDTO != null && workspaceDTO.getWorkspaceId() != null) {
       KeyValueQuery workspacePredicates =
           KeyValueQuery.newBuilder()
@@ -403,6 +409,17 @@ public class ModelDBUtils {
     executor.scheduleAtFixedRate(task, frequency, frequency, timeUnit);
   }
 
+  public static Throwable findRootCause(Throwable throwable) {
+    if (throwable == null) {
+      return null;
+    }
+    Throwable rootCause = throwable;
+    while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
+      rootCause = rootCause.getCause();
+    }
+    return rootCause;
+  }
+
   public static <T extends GeneratedMessageV3> void observeError(
       StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
     Status status;
@@ -410,8 +427,20 @@ public class ModelDBUtils {
     if (e instanceof StatusRuntimeException) {
       statusRuntimeException = e;
     } else {
-      if (e instanceof ModelDBException) {
-        LOGGER.warn("Exception occured: {}", e.getMessage());
+      Throwable throwable = findRootCause(e);
+      // Condition 'throwable != null' covered by below condition 'throwable instanceof
+      // SocketException'
+      if (throwable instanceof SocketException) {
+        String errorMessage = "Database Connection not found: ";
+        LOGGER.warn(errorMessage + "{}", e.getMessage());
+        status =
+            Status.newBuilder()
+                .setCode(Code.UNAVAILABLE_VALUE)
+                .setMessage(errorMessage + throwable.getMessage())
+                .addDetails(Any.pack(defaultInstance))
+                .build();
+      } else if (e instanceof ModelDBException) {
+        LOGGER.warn("Exception occurred: {}", e.getMessage());
         ModelDBException ModelDBException = (ModelDBException) e;
         status =
             Status.newBuilder()
@@ -420,13 +449,26 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else {
-        LOGGER.error("Exception occured:", e);
         status =
             Status.newBuilder()
-                .setCode(io.grpc.Status.Code.INTERNAL.value())
+                .setCode(Code.INTERNAL_VALUE)
                 .setMessage(ModelDBConstants.INTERNAL_ERROR)
                 .addDetails(Any.pack(defaultInstance))
                 .build();
+      }
+      StackTraceElement[] stack = e.getStackTrace();
+      LOGGER.error("Stacktrace with {} elements for {}", stack.length, e.getMessage());
+      int n = 0;
+      boolean isLongStack = stack.length > STACKTRACE_LENGTH;
+      if (isLongStack) {
+        for (; n < STACKTRACE_LENGTH + 1; ++n) {
+          LOGGER.warn("{}: {}", n, stack[n].toString());
+        }
+      }
+      for (; n < stack.length; ++n) {
+        if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
+          LOGGER.warn("{}: {}", n, stack[n].toString());
+        }
       }
       statusRuntimeException = StatusProto.toStatusRuntimeException(status);
     }
@@ -457,5 +499,9 @@ public class ModelDBUtils {
               .build();
       throw StatusProto.toStatusRuntimeException(status);
     }
+  }
+
+  public static String getLocationWithSlashOperator(List<String> locations) {
+    return String.join("/", locations);
   }
 }

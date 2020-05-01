@@ -19,6 +19,7 @@ import ai.verta.uac.CollaboratorServiceGrpc;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -56,6 +57,7 @@ public class DatasetVersionTest {
 
   private ManagedChannel channel = null;
   private ManagedChannel client2Channel = null;
+  private ManagedChannel authServiceChannel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
@@ -116,6 +118,11 @@ public class DatasetVersionTest {
     if (!client2Channel.isShutdown()) {
       client2Channel.shutdownNow();
     }
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (!authServiceChannel.isShutdown()) {
+        authServiceChannel.shutdownNow();
+      }
+    }
   }
 
   @Before
@@ -124,6 +131,13 @@ public class DatasetVersionTest {
     channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
     client2Channel =
         grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      authServiceChannel =
+          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+              .usePlaintext()
+              .intercept(authClientInterceptor.getClient1AuthInterceptor())
+              .build();
+    }
   }
 
   public CreateDatasetVersion getDatasetVersionRequest(String datasetId) {
@@ -2155,8 +2169,6 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
     DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStubClient2 =
         DatasetVersionServiceGrpc.newBlockingStub(client2Channel);
 
@@ -2174,6 +2186,9 @@ public class DatasetVersionTest {
               authClientInterceptor.getClient2Email(),
               CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
               "Please refer shared dataset for your invention");
+
+      CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
           collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
@@ -2208,6 +2223,8 @@ public class DatasetVersionTest {
         DeleteDatasetVersions.newBuilder().addAllIds(datasetVersionIds).build();
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       try {
         datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
       } catch (StatusRuntimeException e) {

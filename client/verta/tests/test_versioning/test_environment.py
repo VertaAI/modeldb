@@ -7,6 +7,8 @@ import tempfile
 
 import six
 
+from google.protobuf import json_format
+
 import verta.environment
 from verta._internal_utils import _pip_requirements_utils
 
@@ -109,3 +111,22 @@ class TestPython:
         reqs = verta.environment.Python.read_pip_file(requirements_file_without_versions.name)
         with pytest.raises(ValueError):
             verta.environment.Python(constraints=reqs)
+
+    def test_no_autocapture(self):
+        env_ver = verta.environment.Python(_autocapture=False)
+
+        # protobuf message is empty
+        assert not json_format.MessageToDict(
+            env_ver._msg,
+            including_default_value_fields=False,
+        )
+
+    def test_repr(self):
+        """Tests that __repr__() executes without error"""
+        env_ver = verta.environment.Python(
+            requirements=['verta==0.14.1'],
+            constraints=['six==1.14.0'],
+            env_vars=['HOME'],
+        )
+
+        assert env_ver.__repr__()

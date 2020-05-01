@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/uac/Organization.proto",
+    "title": "uac/Organization.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -498,6 +498,9 @@
         },
         "global_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "default_repo_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         }
       }
     },

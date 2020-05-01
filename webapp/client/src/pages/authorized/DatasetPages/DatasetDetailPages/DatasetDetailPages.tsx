@@ -19,7 +19,7 @@ import {
   selectLoadingDataset,
 } from 'store/datasets';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceNameOrDefault } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
 import CompareDatasetVersionsPage from './CompareDatasetVersionsPage/CompareDatasetVersionsPage';
 import DatasetSummaryPage from './DatasetSummaryPage/DatasetSummaryPage';
@@ -41,7 +41,7 @@ const mapStateToProps = (state: IApplicationState, routeProps: RouteProps) => {
       routeProps.match.params.datasetId
     ),
     dataset: selectDataset(state, routeProps.match.params.datasetId),
-    workspaceName: selectCurrentWorkspaceNameOrDefault(state),
+    workspaceName: selectCurrentWorkspaceName(state),
   };
 };
 

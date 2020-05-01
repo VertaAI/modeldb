@@ -1,0 +1,7 @@
+.root {
+}
+
+.dockerContainerValue {
+  display: flex;
+  align-items: center;
+}

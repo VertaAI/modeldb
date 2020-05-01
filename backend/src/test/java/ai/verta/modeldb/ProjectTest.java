@@ -73,7 +73,8 @@ public class ProjectTest {
 
   private ManagedChannel channel = null;
   private ManagedChannel client2Channel = null;
-  private ManagedChannel authServiceChannel = null;
+  private ManagedChannel authServiceChannelClient1 = null;
+  private ManagedChannel authServiceChannelClient2 = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
@@ -137,8 +138,11 @@ public class ProjectTest {
     }
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      if (!authServiceChannel.isShutdown()) {
-        authServiceChannel.shutdownNow();
+      if (!authServiceChannelClient1.isShutdown()) {
+        authServiceChannelClient1.shutdownNow();
+      }
+      if (!authServiceChannelClient2.isShutdown()) {
+        authServiceChannelClient2.shutdownNow();
       }
     }
   }
@@ -150,10 +154,15 @@ public class ProjectTest {
     client2Channel =
         grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      authServiceChannel =
+      authServiceChannelClient1 =
           ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
+              .build();
+      authServiceChannelClient2 =
+          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+              .usePlaintext()
+              .intercept(authClientInterceptor.getClient2AuthInterceptor())
               .build();
     }
   }
@@ -1667,7 +1676,7 @@ public class ProjectTest {
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(client2Channel);
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
       AddCollaboratorRequest addCollaboratorRequest =
           CollaboratorTest.addCollaboratorRequestProject(
               project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -1749,7 +1758,7 @@ public class ProjectTest {
         ProjectServiceGrpc.newBlockingStub(client2Channel);
 
     UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
-        UACServiceGrpc.newBlockingStub(authServiceChannel);
+        UACServiceGrpc.newBlockingStub(authServiceChannelClient1);
     GetUser getUserRequest =
         GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
     // Get the user info by vertaId form the AuthService
@@ -1774,7 +1783,7 @@ public class ProjectTest {
         project.getName());
 
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(client2Channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
     AddCollaboratorRequest addCollaboratorRequest =
         CollaboratorTest.addCollaboratorRequestProject(
             project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -2792,8 +2801,6 @@ public class ProjectTest {
           ExperimentRunServiceGrpc.newBlockingStub(channel);
       CommentServiceBlockingStub commentServiceBlockingStub =
           CommentServiceGrpc.newBlockingStub(channel);
-      CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(channel);
 
       // Create project
       CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt");
@@ -2865,6 +2872,8 @@ public class ProjectTest {
       // Create two collaborator for above project
       // For Collaborator1
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        CollaboratorServiceBlockingStub collaboratorServiceStub =
+            CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorTest.addCollaboratorRequestProjectInterceptor(
                 project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -2934,6 +2943,8 @@ public class ProjectTest {
 
       // Start cross-checking for project collaborator
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        CollaboratorServiceBlockingStub collaboratorServiceStub =
+            CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
         GetCollaborator getCollaboratorRequest =
             GetCollaborator.newBuilder().setEntityId(project.getId()).build();
         try {
@@ -3019,6 +3030,8 @@ public class ProjectTest {
         // Create two collaborator for above project
         // For Collaborator1
         if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          CollaboratorServiceBlockingStub collaboratorServiceStub =
+              CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
           AddCollaboratorRequest addCollaboratorRequest =
               CollaboratorTest.addCollaboratorRequestProjectInterceptor(
                   project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -3094,6 +3107,8 @@ public class ProjectTest {
           GetCollaborator getCollaboratorRequest =
               GetCollaborator.newBuilder().setEntityId(project.getId()).build();
           try {
+            CollaboratorServiceBlockingStub collaboratorServiceStub =
+                CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
             GetCollaborator.Response getCollaboratorResponse =
                 collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
             LOGGER.info(

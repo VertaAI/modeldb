@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/uac/Authorization.proto",
+    "title": "uac/Authorization.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -35,6 +35,38 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/uacGetAllowedEntities"
+            }
+          }
+        ],
+        "tags": [
+          "AuthzService"
+        ]
+      }
+    },
+    "/authz/getAllowedEntitiesWithActions": {
+      "post": {
+        "operationId": "getAllowedEntitiesWithActions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedEntitiesWithActionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedEntitiesWithActions"
             }
           }
         ],
@@ -269,24 +301,6 @@
     }
   },
   "definitions": {
-    "AuthzActionEnumAuthzServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "IS_ALLOWED",
-        "GET"
-      ],
-      "default": "UNKNOWN"
-    },
-    "AuthzResourceEnumAuthzServiceResourceTypes": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL"
-      ],
-      "default": "UNKNOWN"
-    },
     "ModelDBActionEnumModelDBServiceActions": {
       "type": "string",
       "enum": [
@@ -311,31 +325,8 @@
         "EXPERIMENT_RUN",
         "DATASET",
         "DATASET_VERSION",
-        "DASHBOARD"
-      ],
-      "default": "UNKNOWN"
-    },
-    "RoleActionEnumRoleServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "GET_BY_ID",
-        "GET_BY_NAME",
-        "CREATE",
-        "UPDATE",
-        "LIST",
-        "DELETE"
-      ],
-      "default": "UNKNOWN"
-    },
-    "RoleResourceEnumRoleServiceResourceTypes": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "ROLE",
-        "ROLE_BINDING"
+        "DASHBOARD",
+        "REPOSITORY"
       ],
       "default": "UNKNOWN"
     },
@@ -344,8 +335,6 @@
       "enum": [
         "UNKNOWN",
         "ALL",
-        "ROLE_SERVICE",
-        "AUTHZ_SERVICE",
         "MODELDB_SERVICE"
       ],
       "default": "UNKNOWN"
@@ -388,12 +377,6 @@
       "properties": {
         "service": {
           "$ref": "#/definitions/ServiceEnumService"
-        },
-        "role_service_action": {
-          "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
-        },
-        "authz_service_action": {
-          "$ref": "#/definitions/AuthzActionEnumAuthzServiceActions"
         },
         "modeldb_service_action": {
           "$ref": "#/definitions/ModelDBActionEnumModelDBServiceActions"
@@ -465,6 +448,37 @@
         }
       }
     },
+    "uacGetAllowedEntitiesWithActions": {
+      "type": "object",
+      "properties": {
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacAction"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResources"
+          }
+        }
+      }
+    },
+    "uacGetAllowedEntitiesWithActionsResponse": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacEntities"
+          }
+        },
+        "actions": {
+          "$ref": "#/definitions/uacAction"
+        }
+      }
+    },
     "uacGetAllowedResources": {
       "type": "object",
       "properties": {
@@ -479,6 +493,12 @@
           "items": {
             "$ref": "#/definitions/uacAction"
           }
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
+        },
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
         }
       },
       "title": "Same as above, but lists the resources on which actions can be performed by entities"
@@ -521,6 +541,12 @@
           "items": {
             "$ref": "#/definitions/uacAction"
           }
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
+        },
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
         }
       },
       "title": "Same as GetAllowedResources, but infers entities from the current logged user"
@@ -596,6 +622,14 @@
         }
       }
     },
+    "uacResourceType": {
+      "type": "object",
+      "properties": {
+        "modeldb_service_resource_type": {
+          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+        }
+      }
+    },
     "uacResources": {
       "type": "object",
       "properties": {
@@ -609,15 +643,8 @@
           },
           "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
         },
-        "role_service_resource_type": {
-          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
-          "title": "Separate based on the service itself"
-        },
-        "authz_service_resource_type": {
-          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
-        },
-        "modeldb_service_resource_type": {
-          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
         }
       },
       "title": "A resource describes a specific object in a service that can receive an action"

@@ -48,9 +48,9 @@ import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
+import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
@@ -60,7 +60,6 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
@@ -78,6 +77,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private RoleService roleService;
   private DatasetDAO datasetDAO;
   private DatasetVersionDAO datasetVersionDAO;
+  private ProjectDAO projectDAO;
   private ExperimentDAO experimentDAO;
   private ExperimentRunDAO experimentRunDAO;
 
@@ -86,12 +86,14 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       RoleService roleService,
       DatasetDAO datasetDAO,
       DatasetVersionDAO datasetVersionDAO,
+      ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
       ExperimentRunDAO experimentRunDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.datasetDAO = datasetDAO;
     this.datasetVersionDAO = datasetVersionDAO;
+    this.projectDAO = projectDAO;
     this.experimentDAO = experimentDAO;
     this.experimentRunDAO = experimentRunDAO;
   }
@@ -133,21 +135,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           CreateDataset.Response.newBuilder().setDataset(createdDataset).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(CreateDataset.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, CreateDataset.Response.getDefaultInstance());
     }
   }
 
@@ -227,21 +216,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetAllDatasets.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetAllDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -268,21 +244,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onNext(DeleteDataset.Response.newBuilder().setStatus(deleteStatus).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteDataset.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, DeleteDataset.Response.getDefaultInstance());
     }
   }
 
@@ -316,21 +279,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onNext(GetDatasetById.Response.newBuilder().setDataset(dataset).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetDatasetById.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetDatasetById.Response.getDefaultInstance());
     }
   }
 
@@ -351,21 +301,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(FindDatasets.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, FindDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -437,21 +374,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetDatasetByName.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetDatasetByName.Response.getDefaultInstance());
     }
   }
 
@@ -493,21 +418,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onNext(UpdateDatasetName.Response.newBuilder().setDataset(dataset).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(UpdateDatasetName.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateDatasetName.Response.getDefaultInstance());
     }
   }
 
@@ -551,21 +464,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           UpdateDatasetDescription.Response.newBuilder().setDataset(dataset).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(UpdateDatasetDescription.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateDatasetDescription.Response.getDefaultInstance());
     }
   }
 
@@ -608,21 +509,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           AddDatasetTags.Response.newBuilder().setDataset(updatedDataset).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddDatasetTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, AddDatasetTags.Response.getDefaultInstance());
     }
   }
 
@@ -651,21 +539,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onNext(GetTags.Response.newBuilder().addAllTags(tags).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
     }
   }
 
@@ -708,21 +583,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           DeleteDatasetTags.Response.newBuilder().setDataset(updatedDataset).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteDatasetTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteDatasetTags.Response.getDefaultInstance());
     }
   }
 
@@ -764,21 +627,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           AddDatasetAttributes.Response.newBuilder().setDataset(updatedDataset).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddDatasetAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, AddDatasetAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -821,21 +672,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           UpdateDatasetAttributes.Response.newBuilder().setDataset(updatedDataset).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(UpdateDatasetAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateDatasetAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -879,21 +718,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           GetAttributes.Response.newBuilder().addAllAttributes(attributes).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -939,21 +765,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           DeleteDatasetAttributes.Response.newBuilder().setDataset(updatedDataset).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteDatasetAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteDatasetAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -985,21 +799,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onNext(
           SetDatasetVisibilty.Response.newBuilder().setDataset(dataset).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage());
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage());
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(SetDatasetVisibilty.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, SetDatasetVisibilty.Response.getDefaultInstance());
     }
   }
 
@@ -1025,21 +827,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onNext(DeleteDatasets.Response.newBuilder().setStatus(deleteStatus).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteDatasets.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, DeleteDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -1094,7 +883,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         FindExperimentRuns findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         ExperimentRunPaginationDTO experimentRunPaginationDTO =
-            experimentRunDAO.findExperimentRuns(findExperimentRuns);
+            experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
         if (experimentRunPaginationDTO != null
             && experimentRunPaginationDTO.getExperimentRuns() != null
             && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
@@ -1112,7 +901,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                   .setAscending(false)
                   .build();
           ExperimentPaginationDTO experimentPaginationDTO =
-              experimentDAO.findExperiments(findExperiments);
+              experimentDAO.findExperiments(projectDAO, userInfo, findExperiments);
           if (experimentPaginationDTO.getExperiments() != null
               && !experimentPaginationDTO.getExperiments().isEmpty()) {
             lastUpdatedExperiment = experimentPaginationDTO.getExperiments().get(0);
@@ -1130,20 +919,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LastExperimentByDatasetId.Response.getDefaultInstance()))
-              .build();
-      responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+      ModelDBUtils.observeError(
+          responseObserver, e, LastExperimentByDatasetId.Response.getDefaultInstance());
     }
   }
 
@@ -1198,7 +976,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         FindExperimentRuns findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         ExperimentRunPaginationDTO experimentRunPaginationDTO =
-            experimentRunDAO.findExperimentRuns(findExperimentRuns);
+            experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
         if (experimentRunPaginationDTO != null
             && experimentRunPaginationDTO.getExperimentRuns() != null
             && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
@@ -1212,21 +990,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetExperimentRunByDataset.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetExperimentRunByDataset.Response.getDefaultInstance());
     }
   }
 
@@ -1266,21 +1032,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onNext(
           SetDatasetWorkspace.Response.newBuilder().setDataset(dataset).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(SetDatasetWorkspace.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, SetDatasetWorkspace.Response.getDefaultInstance());
     }
   }
 }

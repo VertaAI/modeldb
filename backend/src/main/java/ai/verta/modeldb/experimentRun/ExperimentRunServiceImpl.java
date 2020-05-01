@@ -56,6 +56,7 @@ import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SetParentExperimentRunId;
@@ -69,7 +70,6 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.experiment.ExperimentDAO;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -82,16 +82,13 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -236,7 +233,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceActions.UPDATE);
       validateExperimentEntity(request.getExperimentId());
 
-      experimentRun = experimentRunDAO.insertExperimentRun(experimentRun);
+      experimentRun = experimentRunDAO.insertExperimentRun(experimentRun, userInfo);
       responseObserver.onNext(
           CreateExperimentRun.Response.newBuilder().setExperimentRun(experimentRun).build());
       responseObserver.onCompleted();
@@ -265,27 +262,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean deleteStatus = deleteExperimentRuns(Collections.singletonList(request.getId()));
+      boolean deleteStatus =
+          experimentRunDAO.deleteExperimentRuns(Collections.singletonList(request.getId()));
 
       responseObserver.onNext(
           DeleteExperimentRun.Response.newBuilder().setStatus(deleteStatus).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteExperimentRun.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteExperimentRun.Response.getDefaultInstance());
     }
   }
 
@@ -315,6 +301,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
           experimentRunDAO.getExperimentRunsFromEntity(
+              projectDAO,
               ModelDBConstants.PROJECT_ID,
               request.getProjectId(),
               request.getPageNumber(),
@@ -328,21 +315,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetExperimentRunsInProject.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetExperimentRunsInProject.Response.getDefaultInstance());
     }
   }
 
@@ -383,6 +358,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
           experimentRunDAO.getExperimentRunsFromEntity(
+              projectDAO,
               ModelDBConstants.EXPERIMENT_ID,
               request.getExperimentId(),
               request.getPageNumber(),
@@ -396,21 +372,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetExperimentRunsInExperiment.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetExperimentRunsInExperiment.Response.getDefaultInstance());
     }
   }
 
@@ -434,32 +398,30 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      ExperimentRun experimentRun = experimentRunDAO.getExperimentRun(request.getId());
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.PROJECT,
-          experimentRun.getProjectId(),
-          ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
-      responseObserver.onNext(
-          GetExperimentRunById.Response.newBuilder().setExperimentRun(experimentRun).build());
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build();
+      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+          experimentRunDAO.findExperimentRuns(
+              projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns);
+      LOGGER.debug(
+          ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
+      GetExperimentRunById.Response.Builder response = GetExperimentRunById.Response.newBuilder();
+      if (experimentRunPaginationDTO.getExperimentRuns() != null
+          && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
+        response.setExperimentRun(experimentRunPaginationDTO.getExperimentRuns().get(0));
+      }
+      responseObserver.onNext(response.build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetExperimentRunById.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetExperimentRunById.Response.getDefaultInstance());
     }
   }
 
@@ -540,21 +502,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetExperimentRunByName.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetExperimentRunByName.Response.getDefaultInstance());
     }
   }
 
@@ -594,21 +544,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(UpdateExperimentRunDescription.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateExperimentRunDescription.Response.getDefaultInstance());
     }
   }
 
@@ -647,21 +585,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(UpdateExperimentRunName.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateExperimentRunName.Response.getDefaultInstance());
     }
   }
 
@@ -707,21 +633,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddExperimentRunTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, AddExperimentRunTags.Response.getDefaultInstance());
     }
   }
 
@@ -765,21 +679,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           AddExperimentRunTag.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddExperimentRunTag.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, AddExperimentRunTag.Response.getDefaultInstance());
     }
   }
 
@@ -810,21 +712,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(GetTags.Response.newBuilder().addAllTags(experimentRunTags).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
     }
   }
 
@@ -870,21 +759,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteExperimentRunTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteExperimentRunTags.Response.getDefaultInstance());
     }
   }
 
@@ -930,21 +807,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteExperimentRunTag.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteExperimentRunTag.Response.getDefaultInstance());
     }
   }
 
@@ -990,21 +855,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddExperimentRunAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, AddExperimentRunAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -1053,21 +906,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteExperimentRunAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteExperimentRunAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -1112,21 +953,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           LogObservation.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogObservation.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, LogObservation.Response.getDefaultInstance());
     }
   }
 
@@ -1167,21 +995,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           LogObservations.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogObservations.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, LogObservations.Response.getDefaultInstance());
     }
   }
 
@@ -1222,21 +1037,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           GetObservations.Response.newBuilder().addAllObservations(observations).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetObservations.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetObservations.Response.getDefaultInstance());
     }
   }
 
@@ -1279,21 +1081,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           LogMetric.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogMetric.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, LogMetric.Response.getDefaultInstance());
     }
   }
 
@@ -1333,21 +1122,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           LogMetrics.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogMetrics.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, LogMetrics.Response.getDefaultInstance());
     }
   }
 
@@ -1378,21 +1154,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(GetMetrics.Response.newBuilder().addAllMetrics(metricList).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetMetrics.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetMetrics.Response.getDefaultInstance());
     }
   }
 
@@ -1425,21 +1188,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           GetDatasets.Response.newBuilder().addAllDatasets(datasetList).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetDatasets.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -1508,21 +1258,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetUrlForArtifact.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetUrlForArtifact.Response.getDefaultInstance());
     }
   }
 
@@ -1631,21 +1369,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogArtifact.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, LogArtifact.Response.getDefaultInstance());
     }
   }
 
@@ -1690,21 +1415,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogArtifacts.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, LogArtifacts.Response.getDefaultInstance());
     }
   }
 
@@ -1737,21 +1449,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetArtifacts.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetArtifacts.Response.getDefaultInstance());
     }
   }
 
@@ -1821,21 +1520,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogExperimentRunCodeVersion.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, LogExperimentRunCodeVersion.Response.getDefaultInstance());
     }
   }
 
@@ -1874,21 +1561,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           GetExperimentRunCodeVersion.Response.newBuilder().setCodeVersion(codeVersion).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetExperimentRunCodeVersion.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetExperimentRunCodeVersion.Response.getDefaultInstance());
     }
   }
 
@@ -1931,21 +1606,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           LogHyperparameter.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogHyperparameter.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, LogHyperparameter.Response.getDefaultInstance());
     }
   }
 
@@ -1987,21 +1650,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           LogHyperparameters.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogHyperparameters.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, LogHyperparameters.Response.getDefaultInstance());
     }
   }
 
@@ -2037,21 +1688,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetHyperparameters.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetHyperparameters.Response.getDefaultInstance());
     }
   }
 
@@ -2093,21 +1732,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           LogAttribute.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogAttribute.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, LogAttribute.Response.getDefaultInstance());
     }
   }
 
@@ -2148,21 +1774,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           LogAttributes.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, LogAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -2206,74 +1819,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           GetAttributes.Response.newBuilder().addAllAttributes(attributeList).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetAttributes.Response.getDefaultInstance());
     }
-  }
-
-  /**
-   * For getting experimentRuns that user has access to (either as the owner or a collaborator):
-   * <br>
-   *
-   * <ol>
-   *   <li>Iterate through all experimentRuns of the requested experimentRunIds
-   *   <li>Get the project Id they belong to.
-   *   <li>Check if project is accessible or not.
-   * </ol>
-   *
-   * The list of accessible experimentRunIDs is built and returned by this method.
-   *
-   * @param requestedExperimentRunIds : experimentRun Ids
-   * @return List<String> : list of accessible ExperimentRun Id
-   */
-  public List<String> getAccessibleExperimentRunIDs(
-      List<String> requestedExperimentRunIds, ModelDBServiceActions modelDBServiceActions) {
-    List<String> accessibleExperimentRunIds = new ArrayList<>();
-
-    Map<String, String> projectIdExperimentRunIdMap =
-        experimentRunDAO.getProjectIdsFromExperimentRunIds(requestedExperimentRunIds);
-    if (projectIdExperimentRunIdMap.size() == 0) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  "Access is denied. Experiment not found for given ids : "
-                      + requestedExperimentRunIds)
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
-    Set<String> projectIdSet = new HashSet<>(projectIdExperimentRunIdMap.values());
-
-    List<String> allowedProjectIds;
-    // Validate if current user has access to the entity or not
-    if (projectIdSet.size() == 1) {
-      roleService.isSelfAllowed(
-          ModelDBServiceResourceTypes.PROJECT,
-          modelDBServiceActions,
-          new ArrayList<>(projectIdSet).get(0));
-      accessibleExperimentRunIds.addAll(requestedExperimentRunIds);
-    } else {
-      allowedProjectIds =
-          roleService.getSelfAllowedResources(
-              ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
-      // Validate if current user has access to the entity or not
-      allowedProjectIds.retainAll(requestedExperimentRunIds);
-      accessibleExperimentRunIds.addAll(allowedProjectIds);
-    }
-    return accessibleExperimentRunIds;
   }
 
   @Override
@@ -2282,21 +1830,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
-      if (request.getProjectId().isEmpty()
-          && request.getExperimentId().isEmpty()
-          && request.getExperimentRunIdsList().isEmpty()) {
-        String errorMessage =
-            "Project ID and Experiment ID and ExperimentRun Id's not found in FindExperimentRuns request";
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(FindExperimentRuns.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
 
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
@@ -2314,27 +1847,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
       }
 
-      if (!request.getExperimentRunIdsList().isEmpty()) {
-        List<String> accessibleExperimentRunIds =
-            getAccessibleExperimentRunIDs(
-                request.getExperimentRunIdsList(), ModelDBServiceActions.READ);
-        if (accessibleExperimentRunIds.isEmpty()) {
-          ModelDBUtils.logAndThrowError(
-              ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN,
-              Code.PERMISSION_DENIED_VALUE,
-              Any.pack(FindExperimentRuns.getDefaultInstance()));
-        }
-
-        request =
-            request
-                .toBuilder()
-                .clearExperimentRunIds()
-                .addAllExperimentRunIds(accessibleExperimentRunIds)
-                .build();
-      }
-
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(request);
+          experimentRunDAO.findExperimentRuns(
+              projectDAO, authService.getCurrentLoginUserInfo(), request);
       responseObserver.onNext(
           FindExperimentRuns.Response.newBuilder()
               .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
@@ -2342,21 +1857,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(FindExperimentRuns.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, FindExperimentRuns.Response.getDefaultInstance());
     }
   }
 
@@ -2387,25 +1890,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      List<String> accessibleExperimentRunIds =
-          getAccessibleExperimentRunIDs(
-              request.getExperimentRunIdsList(), ModelDBServiceActions.READ);
-      if (accessibleExperimentRunIds.isEmpty()) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN,
-            Code.PERMISSION_DENIED_VALUE,
-            Any.pack(FindExperimentRuns.getDefaultInstance()));
-      }
-
-      request =
-          request
-              .toBuilder()
-              .clearExperimentRunIds()
-              .addAllExperimentRunIds(accessibleExperimentRunIds)
-              .build();
-
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.sortExperimentRuns(request);
+          experimentRunDAO.sortExperimentRuns(projectDAO, request);
       responseObserver.onNext(
           SortExperimentRuns.Response.newBuilder()
               .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
@@ -2413,21 +1899,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(SortExperimentRuns.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, SortExperimentRuns.Response.getDefaultInstance());
     }
   }
 
@@ -2439,21 +1913,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      if ((request.getProjectId().isEmpty()
-              && request.getExperimentId().isEmpty()
-              && request.getExperimentRunIdsList().isEmpty())
-          || request.getSortKey().isEmpty()) {
-        String errorMessage =
-            "Project ID and Experiment ID and Experiment IDs and Sort key not found in TopExperimentRunsSelector request";
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(TopExperimentRunsSelector.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
 
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
@@ -2471,47 +1930,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
       }
 
-      if (!request.getExperimentRunIdsList().isEmpty()) {
-        List<String> accessibleExperimentRunIds =
-            getAccessibleExperimentRunIDs(
-                request.getExperimentRunIdsList(), ModelDBServiceActions.READ);
-        if (accessibleExperimentRunIds.isEmpty()) {
-          ModelDBUtils.logAndThrowError(
-              ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN,
-              Code.PERMISSION_DENIED_VALUE,
-              Any.pack(FindExperimentRuns.getDefaultInstance()));
-        }
-
-        request =
-            request
-                .toBuilder()
-                .clearExperimentRunIds()
-                .addAllExperimentRunIds(accessibleExperimentRunIds)
-                .build();
-      }
-
-      List<ExperimentRun> experimentRuns = experimentRunDAO.getTopExperimentRuns(request);
+      List<ExperimentRun> experimentRuns =
+          experimentRunDAO.getTopExperimentRuns(projectDAO, request);
       responseObserver.onNext(
           TopExperimentRunsSelector.Response.newBuilder()
               .addAllExperimentRuns(experimentRuns)
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(TopExperimentRunsSelector.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, TopExperimentRunsSelector.Response.getDefaultInstance());
     }
   }
 
@@ -2551,21 +1980,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           LogJobId.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogJobId.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, LogJobId.Response.getDefaultInstance());
     }
   }
 
@@ -2595,21 +2011,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(GetJobId.Response.newBuilder().setJobId(jobId).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetJobId.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetJobId.Response.getDefaultInstance());
     }
   }
 
@@ -2640,6 +2043,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
           experimentRunDAO.getExperimentRunsFromEntity(
+              projectDAO,
               ModelDBConstants.PARENT_ID,
               request.getExperimentRunId(),
               request.getPageNumber(),
@@ -2653,21 +2057,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetChildrenExperimentRuns.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetChildrenExperimentRuns.Response.getDefaultInstance());
     }
   }
 
@@ -2724,21 +2116,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetChildrenExperimentRuns.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, SetParentExperimentRunId.Response.getDefaultInstance());
     }
   }
 
@@ -2784,21 +2164,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogDataset.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, LogDataset.Response.getDefaultInstance());
     }
   }
 
@@ -2838,21 +2205,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogDatasets.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, LogDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -2904,21 +2258,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           DeleteArtifact.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteArtifact.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, DeleteArtifact.Response.getDefaultInstance());
     }
   }
 
@@ -2937,44 +2278,15 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Any.pack(DeleteExperiments.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus = deleteExperimentRuns(request.getIdsList());
+      boolean deleteStatus = experimentRunDAO.deleteExperimentRuns(request.getIdsList());
       responseObserver.onNext(
           DeleteExperimentRuns.Response.newBuilder().setStatus(deleteStatus).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteExperimentRuns.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteExperimentRuns.Response.getDefaultInstance());
     }
-  }
-
-  private boolean deleteExperimentRuns(List<String> experimentIds) {
-    List<String> accessibleExperimentRunIds =
-        getAccessibleExperimentRunIDs(experimentIds, ModelDBServiceActions.UPDATE);
-    if (accessibleExperimentRunIds.isEmpty()) {
-      Status statusMessage =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  "Access is denied. User is unauthorized for given ExperimentRun entities : "
-                      + accessibleExperimentRunIds)
-              .build();
-      throw StatusProto.toStatusRuntimeException(statusMessage);
-    }
-
-    return experimentRunDAO.deleteExperimentRuns(accessibleExperimentRunIds);
   }
 
   @Override

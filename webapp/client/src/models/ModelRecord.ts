@@ -12,7 +12,12 @@ import {
 } from 'core/shared/models/HyperParameters';
 import { IMetric, Metric } from 'core/shared/models/Metrics';
 import { IObservation, Observation } from 'core/shared/models/Observation';
+import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitComponentLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { ICommit } from 'core/shared/models/Versioning/RepositoryData';
+
 import { ShortExperiment } from './Experiment';
+import { Project } from './Project';
 
 @JsonObject('modelRecord')
 export default class ModelRecord implements Common.IEntityWithLogging {
@@ -50,6 +55,24 @@ export default class ModelRecord implements Common.IEntityWithLogging {
   public observations: IObservation[] = [];
   @JsonProperty('attributes', [Attribute], true)
   public attributes: IAttribute[] = [];
+
+  public versionedInputs?: IVersionedInputs;
+}
+
+export interface IVersionedInputs {
+  repositoryId: IRepository['id'];
+  repositoryName: IRepository['name'];
+  commitSha: ICommit['sha'];
+  keyLocationMap: {
+    [K: string]: {
+      location: CommitComponentLocation;
+    };
+  };
 }
 
 export type LoadExperimentRunErrorType = Common.EntityErrorType;
+
+export interface IExperimentRunInfo {
+  experimentRun: ModelRecord;
+  project: Project;
+}

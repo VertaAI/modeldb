@@ -1,35 +1,60 @@
 import qs from 'query-string';
 import { matchPath, generatePath } from 'react-router';
 
+import * as PathBuilder from './pathBuilder';
+
+type AllowedUserType = 'unauthorized' | 'authorized' | 'any';
+
 export interface IRouteSettings<
-  T,
+  Params,
   QueryParams extends Record<any, any> | undefined = undefined
 > {
   getPath: () => string;
+  allowedUserType: AllowedUserType;
 }
 export interface IRoute<
-  T,
-  QueryParams extends Record<any, any> | undefined = undefined
+  Params,
+  QueryParams extends Record<any, any> | undefined = undefined,
+  GetRedirectPathOptions = Params
 > {
+  allowedUserType: AllowedUserType;
   getPath: () => string;
-  getRedirectPath: (params: T) => string;
+  getRedirectPath: (options: GetRedirectPathOptions) => string;
   getRedirectPathWithQueryParams: (opts: {
-    params: T;
-    queryParams: QueryParams;
+    params: Params;
+    queryParams: Partial<QueryParams>;
   }) => string;
   parseQueryParams: (location: string) => Partial<QueryParams> | undefined;
-  getMatch(location: string, exact?: boolean): T | null;
+  getMatch(location: string, exact?: boolean): Params | null;
 }
 
+export const makeRouteFromPath = <Path extends PathBuilder.IPath<any, any>>({
+  getPath,
+  ...restSettings
+}: { getPath: () => Path } & Omit<IRouteSettings<any, any>, 'getPath'>): IRoute<
+  PathBuilder.GetParams<Path>,
+  PathBuilder.GetQueryParams<Path>
+> => {
+  return makeRoute({
+    getPath: () => getPath().value,
+    ...restSettings,
+  });
+};
+
 export default function makeRoute<
-  T extends Record<any, any>,
-  QueryParams extends Record<any, any> | undefined = undefined
->({ getPath }: IRouteSettings<T, QueryParams>): IRoute<T, QueryParams> {
+  Params extends Record<any, any>,
+  QueryParams extends Record<any, any> | undefined = undefined,
+  GetRedirectPathOptions extends Record<any, any> = Params
+>({
+  getPath,
+  allowedUserType,
+}: IRouteSettings<Params, QueryParams>): IRoute<Params, QueryParams> {
   return {
+    allowedUserType,
     getPath,
-    getRedirectPath: (params: T) => {
+    getRedirectPath: (options: GetRedirectPathOptions) => {
       const path = getPath();
-      return generatePath(path, params);
+      return generatePath(path, { ...options });
     },
     getRedirectPathWithQueryParams({ params, queryParams }) {
       const queryParamsInPath = Object.entries((queryParams || {}) as Record<
@@ -45,7 +70,7 @@ export default function makeRoute<
     },
     getMatch: (location: string, exact: boolean = true) => {
       const path = getPath();
-      const match = matchPath<T>(location, { path, exact });
+      const match = matchPath<Params>(location, { path, exact });
       if (match) {
         return match.params;
       }

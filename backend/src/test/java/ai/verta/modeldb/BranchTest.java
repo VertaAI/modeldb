@@ -1,6 +1,6 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.CommitTest.getBlobFromPath;
+import static ai.verta.modeldb.CommitTest.getDatasetBlobFromPath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -22,8 +22,8 @@ import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.DeleteTagRequest;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GetTagRequest;
-import ai.verta.modeldb.versioning.ListBranchCommitsRequest;
 import ai.verta.modeldb.versioning.ListBranchesRequest;
+import ai.verta.modeldb.versioning.ListCommitsLogRequest;
 import ai.verta.modeldb.versioning.ListTagsRequest;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
@@ -46,6 +46,7 @@ import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
@@ -196,7 +197,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(getBranchResponse.getCommit().getCommitSha())
@@ -334,7 +334,10 @@ public class BranchTest {
     location1.add("march");
     location1.add("train.json"); // file
     BlobExpanded blobExpanded1 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path1)).addAllLocation(location1).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path1))
+            .addAllLocation(location1)
+            .build();
 
     String path2 = "/protos/proto/public/test.txt";
     List<String> location2 = new ArrayList<>();
@@ -342,7 +345,10 @@ public class BranchTest {
     location2.add("environment");
     location2.add("environment.json");
     BlobExpanded blobExpanded2 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path2)).addAllLocation(location2).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path2))
+            .addAllLocation(location2)
+            .build();
 
     String path3 = "/protos/proto/public/test2.txt";
     List<String> location3 = new ArrayList<>();
@@ -351,21 +357,25 @@ public class BranchTest {
     location3.add("march");
     location3.add("dataset.json");
     BlobExpanded blobExpanded3 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path3)).addAllLocation(location3).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path3))
+            .addAllLocation(location3)
+            .build();
 
     String path4 = "xyz.txt";
     List<String> location4 = new ArrayList<>();
     location4.add("modeldb.json");
     BlobExpanded blobExpanded4 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path4)).addAllLocation(location4).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path4))
+            .addAllLocation(location4)
+            .build();
 
-    List<String> commitShaList = new ArrayList<>();
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(getBranchResponse.getCommit().getCommitSha())
@@ -375,14 +385,13 @@ public class BranchTest {
 
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit1 = commitResponse.getCommit();
 
     createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commitResponse.getCommit().getCommitSha())
@@ -391,14 +400,13 @@ public class BranchTest {
             .build();
 
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit2 = commitResponse.getCommit();
 
     createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commitResponse.getCommit().getCommitSha())
@@ -407,14 +415,13 @@ public class BranchTest {
             .build();
 
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit3 = commitResponse.getCommit();
 
     createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commitResponse.getCommit().getCommitSha())
@@ -423,14 +430,20 @@ public class BranchTest {
             .build();
 
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit4 = commitResponse.getCommit();
+
+    List<Commit> commitShaList = new LinkedList<>();
+    commitShaList.add(commit4);
+    commitShaList.add(commit3);
+    commitShaList.add(commit2);
+    commitShaList.add(commit1);
 
     String branchName1 = "branch-commits-label-1";
     SetBranchRequest setBranchRequest =
         SetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setBranch(branchName1)
-            .setCommitSha(commitShaList.get(0))
+            .setCommitSha(commit4.getCommitSha())
             .build();
     versioningServiceBlockingStub.setBranch(setBranchRequest);
 
@@ -439,7 +452,7 @@ public class BranchTest {
         SetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setBranch(branchName2)
-            .setCommitSha(commitShaList.get(1))
+            .setCommitSha(commit3.getCommitSha())
             .build();
     versioningServiceBlockingStub.setBranch(setBranchRequest);
 
@@ -452,7 +465,7 @@ public class BranchTest {
     Commit branchRootCommit = getBranchResponse.getCommit();
     Assert.assertEquals(
         "Expected commit not found in the response",
-        commitShaList.get(0),
+        commit4.getCommitSha(),
         branchRootCommit.getCommitSha());
 
     ListBranchesRequest listBranchesRequest =
@@ -493,13 +506,30 @@ public class BranchTest {
     }
 
     commitShaList.forEach(
-        commitSha -> {
+        commit -> {
           DeleteCommitRequest deleteCommitRequest =
               DeleteCommitRequest.newBuilder()
                   .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-                  .setCommitSha(commitSha)
+                  .setCommitSha(commit.getCommitSha())
                   .build();
-          versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+          if (commit.equals(commit3)) {
+            try {
+              versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+            } catch (StatusRuntimeException e) {
+              Assert.assertEquals(Code.FAILED_PRECONDITION, e.getStatus().getCode());
+              e.printStackTrace();
+
+              DeleteBranchRequest deleteBranchRequest1 =
+                  DeleteBranchRequest.newBuilder()
+                      .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                      .setBranch(branchName2)
+                      .build();
+              versioningServiceBlockingStub.deleteBranch(deleteBranchRequest1);
+              versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+            }
+          } else {
+            versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+          }
         });
 
     DeleteRepositoryRequest deleteRepository =
@@ -513,6 +543,10 @@ public class BranchTest {
     LOGGER.info("Branch test end................................");
   }
 
+  /**
+   * Prevent deletion of commit if referred to by branch or tag. if commit associated with branch or
+   * tag ModelDb throws the error with status code FAILED_PRECONDITION
+   */
   @Test
   public void branchTest() {
     LOGGER.info("branch test start................................");
@@ -528,6 +562,7 @@ public class BranchTest {
             .build();
     GetBranchRequest.Response getBranchResponse =
         versioningServiceBlockingStub.getBranch(getBranchRequest);
+    Commit parentCommit = getBranchResponse.getCommit();
 
     String path1 = "/protos/proto/public/versioning/versioning.proto";
     List<String> location1 = new ArrayList<>();
@@ -536,7 +571,10 @@ public class BranchTest {
     location1.add("march");
     location1.add("train.json"); // file
     BlobExpanded blobExpanded1 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path1)).addAllLocation(location1).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path1))
+            .addAllLocation(location1)
+            .build();
 
     String path2 = "/protos/proto/public/test.txt";
     List<String> location2 = new ArrayList<>();
@@ -544,7 +582,10 @@ public class BranchTest {
     location2.add("environment");
     location2.add("environment.json");
     BlobExpanded blobExpanded2 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path2)).addAllLocation(location2).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path2))
+            .addAllLocation(location2)
+            .build();
 
     String path3 = "/protos/proto/public/test2.txt";
     List<String> location3 = new ArrayList<>();
@@ -553,13 +594,19 @@ public class BranchTest {
     location3.add("march");
     location3.add("dataset.json");
     BlobExpanded blobExpanded3 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path3)).addAllLocation(location3).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path3))
+            .addAllLocation(location3)
+            .build();
 
     String path4 = "xyz.txt";
     List<String> location4 = new ArrayList<>();
     location4.add("modeldb.json");
     BlobExpanded blobExpanded4 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path4)).addAllLocation(location4).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path4))
+            .addAllLocation(location4)
+            .build();
 
     List<String> commitShaList = new ArrayList<>();
     CreateCommitRequest createCommitRequest =
@@ -567,65 +614,66 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
-                    .addParentShas(getBranchResponse.getCommit().getCommitSha())
+                    .addParentShas(parentCommit.getCommitSha())
                     .build())
             .addBlobs(blobExpanded1)
             .build();
 
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit1 = commitResponse.getCommit();
 
     createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
-                    .addParentShas(commitResponse.getCommit().getCommitSha())
+                    .addParentShas(commit1.getCommitSha())
                     .build())
             .addBlobs(blobExpanded2)
             .build();
 
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit2 = commitResponse.getCommit();
 
     createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
-                    .addParentShas(commitResponse.getCommit().getCommitSha())
+                    .addParentShas(commit2.getCommitSha())
                     .build())
             .addBlobs(blobExpanded3)
             .build();
 
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit3 = commitResponse.getCommit();
 
     createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
-                    .addParentShas(commitResponse.getCommit().getCommitSha())
+                    .addParentShas(commit3.getCommitSha())
                     .build())
             .addBlobs(blobExpanded4)
             .build();
 
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit4 = commitResponse.getCommit();
+
+    commitShaList.add(commit4.getCommitSha());
+    commitShaList.add(commit3.getCommitSha());
+    commitShaList.add(commit2.getCommitSha());
+    commitShaList.add(commit1.getCommitSha());
 
     String branchName = "get-list-branch-commits";
     SetBranchRequest setBranchRequest =
@@ -648,16 +696,16 @@ public class BranchTest {
         commitShaList.get(3),
         branchRootCommit.getCommitSha());
 
-    ListBranchCommitsRequest listBranchCommitsRequest =
-        ListBranchCommitsRequest.newBuilder()
+    ListCommitsLogRequest listCommitsLogRequest =
+        ListCommitsLogRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setBranch(branchName)
             .build();
-    ListBranchCommitsRequest.Response listBranchCommitsResponse =
-        versioningServiceBlockingStub.listBranchCommits(listBranchCommitsRequest);
+    ListCommitsLogRequest.Response listBranchCommitsResponse =
+        versioningServiceBlockingStub.listCommitsLog(listCommitsLogRequest);
     Assert.assertEquals(
         "Commit count not match with expected commit count",
-        5,
+        2,
         listBranchCommitsResponse.getCommitsCount());
 
     commitShaList.forEach(
@@ -667,7 +715,16 @@ public class BranchTest {
                   .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
                   .setCommitSha(commitSha)
                   .build();
-          versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+          if (commitShaList.get(3).equals(commitSha)) {
+            try {
+              versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+            } catch (StatusRuntimeException e) {
+              Assert.assertEquals(Code.FAILED_PRECONDITION, e.getStatus().getCode());
+              e.printStackTrace();
+            }
+          } else {
+            versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+          }
         });
 
     DeleteRepositoryRequest deleteRepository =

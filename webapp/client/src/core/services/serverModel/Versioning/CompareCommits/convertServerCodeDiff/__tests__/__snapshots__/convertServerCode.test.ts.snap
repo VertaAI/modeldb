@@ -1,0 +1,95 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`convertServerCodeDiff git should convert added diff 1`] = `
+Object {
+  "category": "code",
+  "data": Object {
+    "B": Object {
+      "data": Object {
+        "branch": "master",
+        "commitHash": "#hhh",
+        "isDirty": true,
+        "remoteRepoUrl": Object {
+          "type": "unknown",
+          "value": "repo",
+        },
+        "tag": "tag",
+      },
+      "type": "git",
+    },
+    "diffType": "added",
+  },
+  "diffType": "added",
+  "location": Array [
+    "repo_git",
+  ],
+  "type": "git",
+}
+`;
+
+exports[`convertServerCodeDiff git should convert deleted diff 1`] = `
+Object {
+  "category": "code",
+  "data": Object {
+    "A": Object {
+      "data": Object {
+        "branch": "master",
+        "commitHash": "#hhh",
+        "isDirty": true,
+        "remoteRepoUrl": Object {
+          "type": "unknown",
+          "value": "repo",
+        },
+        "tag": "tag",
+      },
+      "type": "git",
+    },
+    "diffType": "deleted",
+  },
+  "diffType": "deleted",
+  "location": Array [
+    "repo_git",
+  ],
+  "type": "git",
+}
+`;
+
+exports[`convertServerCodeDiff git should convert modified diff 1`] = `
+Object {
+  "category": "code",
+  "data": Object {
+    "A": Object {
+      "data": Object {
+        "branch": "master",
+        "commitHash": "#hhh",
+        "isDirty": true,
+        "remoteRepoUrl": Object {
+          "type": "unknown",
+          "value": "repo",
+        },
+        "tag": "tag",
+      },
+      "type": "git",
+    },
+    "B": Object {
+      "data": Object {
+        "branch": "masteadfr",
+        "commitHash": "#hhh",
+        "isDirty": true,
+        "remoteRepoUrl": Object {
+          "type": "unknown",
+          "value": "repadfadfadfo",
+        },
+        "tag": "tag",
+      },
+      "type": "git",
+    },
+    "diffType": "modified",
+  },
+  "diffType": "modified",
+  "location": Array [
+    "repo_gitadf",
+  ],
+  "type": "git",
+}
+`;

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package ai.verta.modeldb.versioning;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning";
+
+option java_multiple_files = true;
+
+message DiffStatusEnum {
+    enum DiffStatus {
+        UNKNOWN = 0;
+        ADDED = 1;
+        DELETED = 2;
+        MODIFIED = 3;
+        CONFLICTED = 4;
+    }
+}

@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import copy
+import os
 import sys
 
 from ..external import six
@@ -28,6 +29,8 @@ class Python(_environment._Environment):
         captured.
     env_vars : list of str, optional
         Names of environment variables to capture. If not provided, nothing will be captured.
+    _autocapture : bool, default True
+        Whether to enable the automatic capturing behavior of parameters above.
 
     Examples
     --------
@@ -41,11 +44,63 @@ class Python(_environment._Environment):
         )
 
     """
-    def __init__(self, requirements=None, constraints=None, env_vars=None):
-        super(Python, self).__init__(env_vars=env_vars)
-        self._capture_python_version()
-        self._capture_requirements(requirements)
-        self._capture_constraints(constraints)
+    def __init__(self, requirements=None, constraints=None, env_vars=None, _autocapture=True):
+        super(Python, self).__init__(env_vars, _autocapture)
+
+        if _autocapture:
+            self._capture_python_version()
+        if requirements is not None or _autocapture:
+            self._capture_requirements(requirements)
+        if constraints is not None:
+            self._capture_constraints(constraints)
+
+    def __repr__(self):
+        lines = ["Python Version"]
+        if self._msg.python.version.major:
+            lines.append("Python {}.{}.{}".format(
+                self._msg.python.version.major,
+                self._msg.python.version.minor,
+                self._msg.python.version.patch,
+            ))
+        if self._msg.python.requirements:
+            lines.append("requirements:")
+            lines.extend(
+                "    {}".format(self._req_spec_msg_to_str(req_spec_msg))
+                for req_spec_msg
+                in sorted(
+                    self._msg.python.requirements,
+                    key=lambda req_spec_msg: req_spec_msg.library,
+                )
+            )
+        if self._msg.python.constraints:
+            lines.append("constraints:")
+            lines.extend(
+                "    {}".format(self._req_spec_msg_to_str(req_spec_msg))
+                for req_spec_msg
+                in sorted(
+                    self._msg.python.constraints,
+                    key=lambda req_spec_msg: req_spec_msg.library,
+                )
+            )
+        if self._msg.environment_variables:
+            lines.append("environment variables:")
+            lines.extend(
+                "    {}={}".format(env_var_msg.name, env_var_msg.value)
+                for env_var_msg
+                in sorted(
+                    self._msg.environment_variables,
+                    key=lambda env_var_msg: env_var_msg.name,
+                )
+            )
+        if self._msg.command_line:
+            lines.append("command line arguments:")
+            lines.extend(
+                "    {}".format(arg)
+                for arg
+                in self._msg.command_line
+            )
+
+        return "\n    ".join(lines)
 
     @staticmethod
     def _req_spec_to_msg(req_spec):
@@ -74,6 +129,31 @@ class Python(_environment._Environment):
         req_blob_msg.version.suffix = suffix
 
         return req_blob_msg
+
+    @staticmethod
+    def _req_spec_msg_to_str(msg):
+        """
+        Inverse of :meth:`Python._req_spec_to_msg`.
+
+        Parameters
+        ----------
+        msg : PythonRequirementEnvironmentBlob
+
+        Returns
+        -------
+        req_spec : str
+
+        """
+        return "{}{}{}".format(
+            msg.library,
+            msg.constraint,
+            "{}.{}.{}{}".format(
+                msg.version.major,
+                msg.version.minor,
+                msg.version.patch,
+                msg.version.suffix,
+            )
+        )
 
     def _capture_python_version(self):
         self._msg.python.version.major = sys.version_info.major
@@ -131,6 +211,7 @@ class Python(_environment._Environment):
             Requirement specifiers.
 
         """
+        filepath = os.path.expanduser(filepath)
         with open(filepath, 'r') as f:
             return _pip_requirements_utils.clean_reqs_file_lines(f.readlines())
 

@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import Enums_pb2 as _VersioningEnumsProtos
 
 
 class Diff(object):
@@ -14,7 +14,7 @@ class Diff(object):
         return '\n'.join(
             '\n'.join((
                 "{} {}".format(
-                    _VersioningService.DiffStatusEnum.DiffStatus.Name(diff.status),
+                    _VersioningEnumsProtos.DiffStatusEnum.DiffStatus.Name(diff.status),
                     '/'.join(diff.location),
                 ),
                 getattr(diff, diff.WhichOneof('content')).__repr__(),

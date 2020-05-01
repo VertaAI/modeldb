@@ -37,7 +37,7 @@
 
 .collapsedQuickFilterInput {
   font-size: 18px;
-  color: #777777;
+  color: var(--main-text-color2);
   cursor: pointer;
 }
 

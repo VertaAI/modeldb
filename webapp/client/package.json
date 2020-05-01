@@ -6,7 +6,7 @@
     "@devexpress/dx-react-core": "^2.0.4",
     "@devexpress/dx-react-grid": "^2.0.4",
     "@devexpress/dx-react-grid-material-ui": "^2.0.4",
-    "@material-ui/core": "^4.0.0-rc.0",
+    "@material-ui/core": "^4.9.5",
     "@material-ui/icons": "^4.0.1",
     "@testing-library/dom": "^6.10.1",
     "@testing-library/jest-dom": "^4.2.4",
@@ -43,12 +43,13 @@
     "react-dnd-html5-backend": "^7.0.2",
     "react-dom": "^16.12.0",
     "react-dropdown": "^1.6.4",
+    "react-json-view": "^1.19.1",
     "react-markdown": "^4.0.8",
     "react-modal": "^3.11.1",
     "react-onclickoutside": "^6.7.1",
     "react-paginate": "^6.3.0",
     "react-popper": "^1.3.3",
-    "react-redux": "^6.0.0",
+    "react-redux": "^7.2.0",
     "react-resize-detector": "^4.2.1",
     "react-router": "^5.1.2",
     "react-router-dom": "^5.1.2",
@@ -101,7 +102,7 @@
     "@types/react-modal": "^3.8.1",
     "@types/react-onclickoutside": "^6.7.0",
     "@types/react-paginate": "^6.2.1",
-    "@types/react-redux": "^7.0.1",
+    "@types/react-redux": "^7.1.7",
     "@types/react-router-dom": "^5.1.3",
     "@types/redux-logger": "^3.0.7",
     "@types/uuid": "^3.4.4",
@@ -120,11 +121,9 @@
     "tslint-config-prettier": "^1.17.0",
     "tslint-react": "^3.6.0"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn check-types && lint-staged",
-      "pre-push": "yarn check-types && yarn test:CI"
-    }
+  "hooks": {
+    "pre-commit": "yarn check-types && lint-staged",
+    "pre-push": "yarn check-types && yarn test:CI"
   },
   "proxy": "http://localhost:3000",
   "lint-staged": {

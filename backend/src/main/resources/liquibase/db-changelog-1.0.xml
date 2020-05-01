@@ -7,7 +7,7 @@
 
     <include file="src/main/resources/liquibase/create-tables-changelog-1.0.xml"/>
 
-    <changeSet id="1" author="anandJ">
+    <changeSet id="1" author="anandJ" failOnError="false">
         <sqlFile path="src/main/resources/liquibase/create_indexes.sql"/>
     </changeSet>
 
@@ -133,7 +133,82 @@
         </createIndex>
     </changeSet>
 
-	<include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
-	<include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
+    <include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
+    <include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
+
+    <changeSet id="13-add_s3_dataset_component_blob_s3_version_id" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="s3_dataset_component_blob" columnName="s3_version_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="s3_dataset_component_blob">
+            <column name="s3_version_id" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="vmem-add-column-versioning-blob-type" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="versioning_modeldb_entity_mapping" columnName="versioning_blob_type"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="versioning_modeldb_entity_mapping">
+            <column name="versioning_blob_type" type="int"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="vmem-add-column-versioning-blob-type" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="versioning_modeldb_entity_mapping" columnName="versioning_blob_type"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="versioning_modeldb_entity_mapping">
+            <column name="versioning_blob_type" type="int"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="vmem-add-column-config_blob_hash" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="versioning_modeldb_entity_mapping" columnName="blob_hash"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="versioning_modeldb_entity_mapping">
+            <column name="blob_hash" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+    
+	<changeSet id="SetNullS3VersionEmpty" author="ravi">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="s3_dataset_component_blob" columnName="s3_version_id"/>
+            </not>
+        </preConditions>
+		<update tableName="s3_dataset_component_blob">
+			<column name="s3_version_id" value="" />
+			<where>s3_version_id is null</where>
+		</update>
+	</changeSet>
+
+    <changeSet id="vmem-config-blob-mapping-table" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="versioning_modeldb_entity_mapping_config_blob"/>
+            </not>
+        </preConditions>
+        <createTable tableName="versioning_modeldb_entity_mapping_config_blob">
+            <column name="versioning_modeldb_entity_mapping_repository_id" type="int8"/>
+            <column name="versioning_modeldb_entity_mapping_commit" type="varchar(64)"/>
+            <column name="versioning_modeldb_entity_mapping_versioning_key" type="varchar(50)"/>
+            <column name="versioning_modeldb_entity_mapping_experiment_run_id" type="varchar(255)"/>
+            <column name="versioning_modeldb_entity_mapping_entity_type" type="varchar(50)"/>
+            <column name="config_blob_entity_blob_hash" type="varchar(64)"/>
+            <column name="config_blob_entity_config_seq_number" type="integer"/>
+        </createTable>
+    </changeSet>
+
+    <!-- take a below line to the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 </databaseChangeLog>

@@ -1,0 +1,146 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`convertServerConfigDiff added diff type should convert server model to client model 1`] = `
+Object {
+  "category": "config",
+  "data": Object {
+    "hyperparameterSet": undefined,
+    "hyperparameters": Array [
+      Object {
+        "B": Object {
+          "name": "string",
+          "value": Object {
+            "type": "int",
+            "value": 6,
+          },
+        },
+        "diffType": "added",
+      },
+      Object {
+        "B": Object {
+          "name": "adfadg",
+          "value": Object {
+            "type": "int",
+            "value": 6134,
+          },
+        },
+        "diffType": "added",
+      },
+    ],
+  },
+  "diffType": "added",
+  "location": Array [
+    "added-hyperparameters",
+  ],
+  "type": "config",
+}
+`;
+
+exports[`convertServerConfigDiff added diff type should convert server model to client model 2`] = `
+Object {
+  "category": "config",
+  "data": Object {
+    "hyperparameterSet": Array [
+      Object {
+        "B": Object {
+          "intervalBegin": Object {
+            "type": "int",
+            "value": 2,
+          },
+          "intervalEnd": Object {
+            "type": "int",
+            "value": 3,
+          },
+          "intervalStep": Object {
+            "type": "int",
+            "value": 4,
+          },
+          "name": "string",
+          "type": "continuous",
+        },
+        "diffType": "added",
+      },
+    ],
+    "hyperparameters": Array [
+      Object {
+        "A": Object {
+          "name": "string",
+          "value": Object {
+            "type": "int",
+            "value": 6134134,
+          },
+        },
+        "diffType": "deleted",
+      },
+      Object {
+        "A": Object {
+          "name": "adfadg",
+          "value": Object {
+            "type": "int",
+            "value": 6134,
+          },
+        },
+        "diffType": "deleted",
+      },
+      Object {
+        "A": Object {
+          "name": "adgfadgadgadg",
+          "value": Object {
+            "type": "int",
+            "value": 6134,
+          },
+        },
+        "diffType": "deleted",
+      },
+    ],
+  },
+  "diffType": "modified",
+  "location": Array [
+    "added-hyperparameters",
+  ],
+  "type": "config",
+}
+`;
+
+exports[`convertServerConfigDiff modified diff type should convert server model to client model 1`] = `
+Object {
+  "category": "config",
+  "data": Object {
+    "hyperparameterSet": undefined,
+    "hyperparameters": Array [
+      Object {
+        "A": Object {
+          "name": "string",
+          "value": Object {
+            "type": "int",
+            "value": 6,
+          },
+        },
+        "B": Object {
+          "name": "string",
+          "value": Object {
+            "type": "int",
+            "value": 6134134,
+          },
+        },
+        "diffType": "modified",
+      },
+      Object {
+        "B": Object {
+          "name": "adgfadgadgadg",
+          "value": Object {
+            "type": "int",
+            "value": 6134,
+          },
+        },
+        "diffType": "added",
+      },
+    ],
+  },
+  "diffType": "modified",
+  "location": Array [
+    "added-hyperparameters",
+  ],
+  "type": "config",
+}
+`;

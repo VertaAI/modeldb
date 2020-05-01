@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/uac/RoleService.proto",
+    "title": "uac/RoleService.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -67,6 +67,38 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/uacDeleteRoleBinding"
+            }
+          }
+        ],
+        "tags": [
+          "RoleService"
+        ]
+      }
+    },
+    "/role/deleteRoleBindings": {
+      "post": {
+        "operationId": "deleteRoleBindings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacDeleteRoleBindingsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacDeleteRoleBindings"
             }
           }
         ],
@@ -363,24 +395,6 @@
     }
   },
   "definitions": {
-    "AuthzActionEnumAuthzServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "IS_ALLOWED",
-        "GET"
-      ],
-      "default": "UNKNOWN"
-    },
-    "AuthzResourceEnumAuthzServiceResourceTypes": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL"
-      ],
-      "default": "UNKNOWN"
-    },
     "ModelDBActionEnumModelDBServiceActions": {
       "type": "string",
       "enum": [
@@ -405,31 +419,8 @@
         "EXPERIMENT_RUN",
         "DATASET",
         "DATASET_VERSION",
-        "DASHBOARD"
-      ],
-      "default": "UNKNOWN"
-    },
-    "RoleActionEnumRoleServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "GET_BY_ID",
-        "GET_BY_NAME",
-        "CREATE",
-        "UPDATE",
-        "LIST",
-        "DELETE"
-      ],
-      "default": "UNKNOWN"
-    },
-    "RoleResourceEnumRoleServiceResourceTypes": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "ROLE",
-        "ROLE_BINDING"
+        "DASHBOARD",
+        "REPOSITORY"
       ],
       "default": "UNKNOWN"
     },
@@ -438,8 +429,6 @@
       "enum": [
         "UNKNOWN",
         "ALL",
-        "ROLE_SERVICE",
-        "AUTHZ_SERVICE",
         "MODELDB_SERVICE"
       ],
       "default": "UNKNOWN"
@@ -483,12 +472,6 @@
         "service": {
           "$ref": "#/definitions/ServiceEnumService"
         },
-        "role_service_action": {
-          "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
-        },
-        "authz_service_action": {
-          "$ref": "#/definitions/AuthzActionEnumAuthzServiceActions"
-        },
         "modeldb_service_action": {
           "$ref": "#/definitions/ModelDBActionEnumModelDBServiceActions"
         }
@@ -512,6 +495,26 @@
       }
     },
     "uacDeleteRoleBindingResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacDeleteRoleBindings": {
+      "type": "object",
+      "properties": {
+        "roleBindingNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uacDeleteRoleBindingsResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -625,6 +628,14 @@
       },
       "title": "Allows grouping multiple resources and actions for more descriptive permissions"
     },
+    "uacResourceType": {
+      "type": "object",
+      "properties": {
+        "modeldb_service_resource_type": {
+          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+        }
+      }
+    },
     "uacResources": {
       "type": "object",
       "properties": {
@@ -638,15 +649,8 @@
           },
           "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
         },
-        "role_service_resource_type": {
-          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
-          "title": "Separate based on the service itself"
-        },
-        "authz_service_resource_type": {
-          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
-        },
-        "modeldb_service_resource_type": {
-          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
         }
       },
       "title": "A resource describes a specific object in a service that can receive an action"

@@ -232,8 +232,21 @@ const saveProjectsOption = (history: History, option: IOption) => {
 };
 
 const URLPaginationCurrentPageParam = 'page';
+
+const isPageNeedChange = (newPage: number) => {
+  if (newPage === 0) {
+    return Boolean(window.location.search);
+  }
+
+  return (
+    new URLSearchParams(window.location.search).get('page') !==
+    String(newPage + 1)
+  );
+};
+
 const saveProjectsOptionInUrl = (history: History, option: IOption) => {
   const urlSearchParams = new URLSearchParams(window.location.search);
+
   if (option.data.currentPage === 0) {
     urlSearchParams.delete(URLPaginationCurrentPageParam);
   } else {
@@ -242,9 +255,12 @@ const saveProjectsOptionInUrl = (history: History, option: IOption) => {
       String(option.data.currentPage + 1)
     );
   }
-  history.push({
-    search: String(urlSearchParams),
-  });
+
+  if (isPageNeedChange(option.data.currentPage)) {
+    history.push({
+      search: String(urlSearchParams),
+    });
+  }
 };
 const getProjectsOptionsFromUrl = (): IProjectsOptions => {
   const urlSearchParams = new URLSearchParams(window.location.search);

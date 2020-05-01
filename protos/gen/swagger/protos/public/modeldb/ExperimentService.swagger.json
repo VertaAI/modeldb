@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/modeldb/ExperimentService.proto",
+    "title": "modeldb/ExperimentService.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -1302,6 +1302,9 @@
           "format": "boolean"
         },
         "sort_key": {
+          "type": "string"
+        },
+        "workspace_name": {
           "type": "string"
         }
       }

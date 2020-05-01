@@ -13,6 +13,7 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
@@ -21,10 +22,12 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -153,6 +156,15 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         DatasetVersionEntity datasetVersionEntity =
             RdbmsUtils.generateDatasetVersionEntity(datasetVersion);
         session.save(datasetVersionEntity);
+
+        Role ownerRole =
+            roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
+        roleService.createRoleBinding(
+            ownerRole,
+            new CollaboratorUser(authService, userInfo),
+            datasetVersion.getId(),
+            ModelDBServiceResourceTypes.DATASET_VERSION);
+
         setDatasetUpdateTime(session, Collections.singletonList(datasetVersion.getDatasetId()));
         transaction.commit();
         LOGGER.debug("DatasetVersion created successfully");
@@ -185,6 +197,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public Boolean deleteDatasetVersions(List<String> datasetVersionIds, Boolean parentExists) {
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       List<String> datasetIds = new ArrayList<>();
@@ -193,9 +206,23 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
             session.load(DatasetVersionEntity.class, datasetVersionId);
         datasetIds.add(datasetVersionObj.getDataset_id());
         session.delete(datasetVersionObj);
+
+        String ownerRoleBindingName =
+            roleService.buildRoleBindingName(
+                ModelDBConstants.ROLE_DATASET_VERSION_OWNER,
+                datasetVersionObj.getId(),
+                datasetVersionObj.getOwner(),
+                ModelDBServiceResourceTypes.DATASET_VERSION.name());
+        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+          roleBindingNames.add(ownerRoleBindingName);
+        }
       }
       setDatasetUpdateTime(session, datasetIds);
       transaction.commit();
+
+      // Remove all role bindings
+      roleService.deleteRoleBindings(roleBindingNames);
+
       LOGGER.debug("DatasetVersion deleted successfully");
       return true;
     }
@@ -305,11 +332,23 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       List<KeyValueQuery> predicates = queryParameters.getPredicatesList();
       String entityName = "datasetVersionEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, datasetVersionRoot);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, datasetVersionRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (StatusRuntimeException ex) {
+        if (ex.getStatus().getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(
+                ex.getStatus().getDescription())) {
+          LOGGER.warn(ex.getMessage());
+          DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
+          datasetVersionDTO.setDatasetVersions(Collections.emptyList());
+          datasetVersionDTO.setTotalRecords(0L);
+          return datasetVersionDTO;
+        }
       }
 
       String sortBy = queryParameters.getSortKey();

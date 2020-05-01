@@ -1,0 +1,29 @@
+type NetworkBranchColor {
+  branch: String!
+  color: Int!
+  commitIndex: Int!
+}
+
+type NetworkCommitColor {
+  commit: Commit!
+  color: Int!
+}
+
+enum NetworkEdgeType {
+  DEFAULT
+  BRANCH
+  MERGE
+}
+
+type NetworkEdgeColor {
+  fromCommitIndex: Int!
+  toCommitIndex: Int!
+  color: Int!
+  edgeType: NetworkEdgeType!
+}
+
+type BranchesNetwork {
+  branches: [NetworkBranchColor!]!
+  commits: [NetworkCommitColor!]!
+  edges: [NetworkEdgeColor!]!
+}

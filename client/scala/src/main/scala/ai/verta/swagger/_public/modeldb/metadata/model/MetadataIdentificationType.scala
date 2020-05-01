@@ -10,7 +10,7 @@ import ai.verta.swagger.client.objects._
 
 case class MetadataIdentificationType (
   id_type: Option[IDTypeEnumIDType] = None,
-  int_id: Option[String] = None,
+  int_id: Option[BigInt] = None,
   string_id: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = MetadataIdentificationType.toJson(this)
@@ -21,7 +21,7 @@ object MetadataIdentificationType {
     new JObject(
       List[Option[JField]](
         obj.id_type.map(x => JField("id_type", ((x: IDTypeEnumIDType) => IDTypeEnumIDType.toJson(x))(x))),
-        obj.int_id.map(x => JField("int_id", JString(x))),
+        obj.int_id.map(x => JField("int_id", JInt(x))),
         obj.string_id.map(x => JField("string_id", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -37,7 +37,7 @@ object MetadataIdentificationType {
         MetadataIdentificationType(
           // TODO: handle required
           id_type = fieldsMap.get("id_type").map(IDTypeEnumIDType.fromJson),
-          int_id = fieldsMap.get("int_id").map(JsonConverter.fromJsonString),
+          int_id = fieldsMap.get("int_id").map(JsonConverter.fromJsonInteger),
           string_id = fieldsMap.get("string_id").map(JsonConverter.fromJsonString)
         )
       }

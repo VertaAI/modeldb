@@ -3,6 +3,7 @@ package ai.verta.modeldb.experiment;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.KeyValueQuery;
@@ -10,6 +11,8 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.authservice.AuthService;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -17,9 +20,13 @@ import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ModelResourceEnum;
+import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -54,6 +61,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentDAORdbImpl.class.getName());
   private final AuthService authService;
+  private final RoleService roleService;
 
   private static final String UPDATE_PARENT_TIMESTAMP_QUERY =
       new StringBuilder("UPDATE ProjectEntity p SET p.")
@@ -136,8 +144,49 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           .append(" IN (:experimentIds) ")
           .toString();
 
-  public ExperimentDAORdbImpl(AuthService authService) {
+  /**
+   * For getting experiments that user has access to (either as owner or a collaborator), fetch all
+   * experiments of the requested experimentIds then iterate that list and check if experiment is
+   * accessible or not. The list of accessible experimentIDs is built and returned by this method.
+   *
+   * @param requestedExperimentIds : experiment Ids
+   * @return List<String> : list of accessible Experiment Id
+   */
+  public List<String> getAccessibleExperimentIDs(
+      List<String> requestedExperimentIds,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
+    Map<String, String> projectIdExperimentIdMap =
+        getProjectIdsByExperimentIds(requestedExperimentIds);
+
+    Set<String> projectIdSet = new HashSet<>(projectIdExperimentIdMap.values());
+
+    List<String> accessibleExperimentIds = new ArrayList<>();
+    List<String> allowedProjectIds;
+    // Validate if current user has access to the entity or not
+    if (projectIdSet.size() == 1) {
+      roleService.isSelfAllowed(
+          ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+          modelDBServiceActions,
+          new ArrayList<>(projectIdSet).get(0));
+      accessibleExperimentIds.addAll(requestedExperimentIds);
+    } else {
+      allowedProjectIds =
+          roleService.getSelfAllowedResources(
+              ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
+      // Validate if current user has access to the entity or not
+      allowedProjectIds.retainAll(projectIdSet);
+      for (Map.Entry<String, String> entry : projectIdExperimentIdMap.entrySet()) {
+        if (allowedProjectIds.contains(entry.getValue())) {
+          accessibleExperimentIds.add(entry.getKey());
+        }
+      }
+    }
+    return accessibleExperimentIds;
+  }
+
+  public ExperimentDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
+    this.roleService = roleService;
   }
 
   private void updateParentEntitiesTimestamp(
@@ -194,11 +243,20 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   }
 
   @Override
-  public Experiment insertExperiment(Experiment experiment) throws InvalidProtocolBufferException {
+  public Experiment insertExperiment(Experiment experiment, UserInfo userInfo)
+      throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experiment, true);
       Transaction transaction = session.beginTransaction();
       session.save(RdbmsUtils.generateExperimentEntity(experiment));
+
+      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
+      roleService.createRoleBinding(
+          ownerRole,
+          new CollaboratorUser(authService, userInfo),
+          experiment.getId(),
+          ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
+
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(
           session,
@@ -281,9 +339,15 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
   @Override
   public ExperimentPaginationDTO getExperimentsInProject(
-      String projectId, Integer pageNumber, Integer pageLimit, Boolean order, String sortKey)
+      ProjectDAO projectDAO,
+      String projectId,
+      Integer pageNumber,
+      Integer pageLimit,
+      Boolean order,
+      String sortKey)
       throws InvalidProtocolBufferException {
 
+    UserInfo userInfo = authService.getCurrentLoginUserInfo();
     FindExperiments findExperiments =
         FindExperiments.newBuilder()
             .setProjectId(projectId)
@@ -292,7 +356,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
             .setAscending(order)
             .setSortKey(sortKey)
             .build();
-    return findExperiments(findExperiments);
+    return findExperiments(projectDAO, userInfo, findExperiments);
   }
 
   @Override
@@ -491,6 +555,20 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   @Override
   public Boolean deleteExperiments(List<String> experimentIds)
       throws InvalidProtocolBufferException {
+    List<String> accessibleExperimentIds =
+        getAccessibleExperimentIDs(experimentIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+
+    if (accessibleExperimentIds.isEmpty()) {
+      String errorMessage =
+          "Access is denied. User is unauthorized for given Experiment IDs : "
+              + accessibleExperimentIds;
+      ModelDBUtils.logAndThrowError(
+          errorMessage,
+          Code.PERMISSION_DENIED_VALUE,
+          Any.pack(DeleteExperiments.getDefaultInstance()));
+    }
+
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       // Delete the ExperimentRunEntity object
@@ -501,6 +579,16 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
         experimentRunIds.add(experimentRunEntity.getId());
         session.delete(experimentRunEntity);
+
+        String ownerRoleBindingName =
+            roleService.buildRoleBindingName(
+                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
+                experimentRunEntity.getId(),
+                experimentRunEntity.getOwner(),
+                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
+        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+          roleBindingNames.add(ownerRoleBindingName);
+        }
       }
       // Delete the ExperimentRUn comments
       if (!experimentRunIds.isEmpty()) {
@@ -512,11 +600,25 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         ExperimentEntity experimentObj = session.load(ExperimentEntity.class, experimentId);
         projectIds.add(experimentObj.getProject_id());
         session.delete(experimentObj);
+
+        String ownerRoleBindingName =
+            roleService.buildRoleBindingName(
+                ModelDBConstants.ROLE_EXPERIMENT_OWNER,
+                experimentObj.getId(),
+                experimentObj.getOwner(),
+                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT.name());
+        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+          roleBindingNames.add(ownerRoleBindingName);
+        }
       }
 
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(session, projectIds, Calendar.getInstance().getTimeInMillis());
       transaction.commit();
+
+      // Remove all role bindings
+      roleService.deleteRoleBindings(roleBindingNames);
+
       LOGGER.debug("Experiment deleted successfully");
       return true;
     }
@@ -703,9 +805,41 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   }
 
   @Override
-  public ExperimentPaginationDTO findExperiments(FindExperiments queryParameters)
+  public ExperimentPaginationDTO findExperiments(
+      ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperiments queryParameters)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+
+      List<String> accessibleExperimentIds = new ArrayList<>();
+      if (!queryParameters.getExperimentIdsList().isEmpty()) {
+        accessibleExperimentIds.addAll(
+            getAccessibleExperimentIDs(
+                queryParameters.getExperimentIdsList(),
+                ModelDBActionEnum.ModelDBServiceActions.READ));
+        if (accessibleExperimentIds.isEmpty()) {
+          String errorMessage =
+              "Access is denied. User is unauthorized for given Experiment IDs : "
+                  + accessibleExperimentIds;
+          ModelDBUtils.logAndThrowError(
+              errorMessage,
+              Code.PERMISSION_DENIED_VALUE,
+              Any.pack(FindExperiments.getDefaultInstance()));
+        }
+      }
+
+      List<KeyValueQuery> predicates = new ArrayList<>(queryParameters.getPredicatesList());
+      for (KeyValueQuery predicate : predicates) {
+        if (predicate.getKey().equals(ModelDBConstants.ID)) {
+          List<String> accessibleExperimentId =
+              getAccessibleExperimentIDs(
+                  Collections.singletonList(predicate.getValue().getStringValue()),
+                  ModelDBActionEnum.ModelDBServiceActions.READ);
+          accessibleExperimentIds.addAll(accessibleExperimentId);
+          // Validate if current user has access to the entity or not where predicate key has an id
+          RdbmsUtils.validateEntityIdInPredicates(
+              ModelDBConstants.EXPERIMENTS, accessibleExperimentIds, predicate, roleService);
+        }
+      }
 
       CriteriaBuilder builder = session.getCriteriaBuilder();
       // Using FROM and JOIN
@@ -714,25 +848,65 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       experimentRoot.alias("exp");
       List<Predicate> finalPredicatesList = new ArrayList<>();
 
+      List<String> projectIds = new ArrayList<>();
       if (!queryParameters.getProjectId().isEmpty()) {
-        Expression<String> exp = experimentRoot.get(ModelDBConstants.PROJECT_ID);
-        Predicate predicate2 = builder.equal(exp, queryParameters.getProjectId());
-        finalPredicatesList.add(predicate2);
+        projectIds.add(queryParameters.getProjectId());
+      } else if (accessibleExperimentIds.isEmpty()) {
+        List<String> workspaceProjectIDs =
+            projectDAO.getWorkspaceProjectIDs(
+                queryParameters.getWorkspaceName(), currentLoginUserInfo);
+        if (workspaceProjectIDs == null || workspaceProjectIDs.isEmpty()) {
+          LOGGER.warn(
+              "accessible project for the experiments not found for given workspace : {}",
+              queryParameters.getWorkspaceName());
+          ExperimentPaginationDTO experimentPaginationDTO = new ExperimentPaginationDTO();
+          experimentPaginationDTO.setExperiments(Collections.emptyList());
+          experimentPaginationDTO.setTotalRecords(0L);
+          return experimentPaginationDTO;
+        }
+        projectIds.addAll(workspaceProjectIDs);
       }
 
-      if (!queryParameters.getExperimentIdsList().isEmpty()) {
+      if (accessibleExperimentIds.isEmpty() && projectIds.isEmpty()) {
+        String errorMessage =
+            "Access is denied. Accessible projects not found for given Experiment IDs : "
+                + accessibleExperimentIds;
+        ModelDBUtils.logAndThrowError(
+            errorMessage,
+            Code.PERMISSION_DENIED_VALUE,
+            Any.pack(FindExperiments.getDefaultInstance()));
+      }
+
+      if (!projectIds.isEmpty()) {
+        Expression<String> projectExpression = experimentRoot.get(ModelDBConstants.PROJECT_ID);
+        Predicate projectsPredicate = projectExpression.in(projectIds);
+        finalPredicatesList.add(projectsPredicate);
+      }
+
+      if (!accessibleExperimentIds.isEmpty()) {
         Expression<String> exp = experimentRoot.get(ModelDBConstants.ID);
-        Predicate predicate2 = exp.in(queryParameters.getExperimentIdsList());
+        Predicate predicate2 = exp.in(accessibleExperimentIds);
         finalPredicatesList.add(predicate2);
       }
 
-      List<KeyValueQuery> predicates = queryParameters.getPredicatesList();
       String entityName = "experimentEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, experimentRoot);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, experimentRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (StatusRuntimeException ex) {
+        if (ex.getStatus().getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(
+                ex.getStatus().getDescription())) {
+          LOGGER.warn(ex.getMessage());
+          ExperimentPaginationDTO experimentPaginationDTO = new ExperimentPaginationDTO();
+          experimentPaginationDTO.setExperiments(Collections.emptyList());
+          experimentPaginationDTO.setTotalRecords(0L);
+          return experimentPaginationDTO;
+        }
       }
 
       Order orderBy =

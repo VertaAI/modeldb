@@ -6,6 +6,7 @@ image:
   modeldbBackendImage: vertaaiofficial/modeldb-backend:latest
   modeldbDatabaseImage: postgres
   modeldbFrontendImage: vertaaiofficial/modeldb-frontend:latest
+  modeldbGraphqlImage: vertaaiofficial/modeldb-graphql:latest
 service:
   modeldbFrontendService: LoadBalancer
   modeldbBackendService: ClusterIP

@@ -2,10 +2,8 @@ import { matchPath } from 'react-router-dom';
 
 import { IWorkspace } from 'models/Workspace';
 
-import makeRoute, {
-  IRoute,
-  IRouteSettings,
-} from 'core/shared/routes/makeRoute';
+import makeRoute, { IRoute } from 'core/shared/routes/makeRoute';
+import * as P from 'core/shared/routes/pathBuilder';
 
 const workspacePath = '/:workspaceName';
 
@@ -20,40 +18,50 @@ export type IRouteWithWorkspace<T, B = undefined> = IRoute<
   getRedirectPathWithCurrentWorkspace: (
     params: Omit<T, 'workspaceName'>
   ) => string;
+  withWorkspace: true;
 };
 
-type IMakeRouteWithWorkspaceSettings<T, B = undefined> = Omit<
-  IRouteSettings<T & IRecordWithWorkspaceName, B>,
-  'allowedUserType'
->;
-
-export const makeRouteWithWorkspace = <T, B = undefined>(
-  settings: IMakeRouteWithWorkspaceSettings<T, B>
-): IRouteWithWorkspace<T, B> => {
-  const route = makeRoute<IRecordWithWorkspaceName & T, B>({
-    getPath: () => `${workspacePath}${settings.getPath()}`,
+export const parseCurrentWorkspaceName = () => {
+  const match = matchPath<IRecordWithWorkspaceName>(window.location.pathname, {
+    path: workspacePath,
+    exact: false,
   });
 
-  const resRoute: IRouteWithWorkspace<T, B> = {
+  return match ? match.params.workspaceName : null;
+};
+
+export const makeRouteWithWorkspace = <T extends P.IPath<any, any>>({
+  getPath,
+}: {
+  getPath: () => T;
+}): IRouteWithWorkspace<P.GetParams<T>, P.GetQueryParams<T>> => {
+  type Params = P.GetParams<T>;
+  type QueryParams = P.GetQueryParams<T>;
+  const route = makeRoute<IRecordWithWorkspaceName & Params, QueryParams>({
+    getPath: () => `${workspacePath}${getPath().value}`,
+    allowedUserType: 'authorized',
+  });
+
+  const resRoute: IRouteWithWorkspace<Params, QueryParams> = {
     ...route,
+    withWorkspace: true,
     getRedirectPathWithCurrentWorkspace: (
-      paramsWithoutCurrentWorkspaceName: Omit<T, 'workspaceName'>
+      paramsWithoutCurrentWorkspaceName: Omit<Params, 'workspaceName'>
     ) => {
-      const match = matchPath<IRecordWithWorkspaceName>(
-        window.location.pathname,
-        {
-          path: workspacePath,
-          exact: false,
-        }
-      );
+      const currentWorkspaceName = parseCurrentWorkspaceName();
       return route.getRedirectPath({
         ...paramsWithoutCurrentWorkspaceName,
-        ...(match && match.params
-          ? ({ workspaceName: match.params.workspaceName || 'personal' } as any)
-          : { workspaceName: 'personal' }),
+        ...(currentWorkspaceName
+          ? ({ workspaceName: currentWorkspaceName } as any)
+          : {}),
       });
     },
   };
 
   return resRoute;
+};
+
+export const isRouteWithWorkspace = (route: IRoute<any, any>) => {
+  const withWorkspaceKey: keyof IRouteWithWorkspace<any> = 'withWorkspace';
+  return withWorkspaceKey in route;
 };

@@ -1,7 +1,9 @@
 package ai.verta.modeldb.authservice;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.uac.UserInfo;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,5 +48,18 @@ public class PublicAuthServiceUtils implements AuthService {
   @Override
   public String getUsernameFromUserInfo(UserInfo userInfo) {
     return "";
+  }
+
+  @Override
+  public boolean isCurrentUser(String vertaID) {
+    return true;
+  }
+
+  @Override
+  public UserInfoPaginationDTO getFuzzyUserInfoList(String username_char) {
+    UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
+    paginationDTO.setUserInfoList(Collections.emptyList());
+    paginationDTO.setTotalRecords(0L);
+    return paginationDTO;
   }
 }

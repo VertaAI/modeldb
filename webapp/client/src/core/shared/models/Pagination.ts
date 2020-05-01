@@ -4,6 +4,8 @@ export interface IPagination {
   totalCount: number;
 }
 
+export type IPaginationSettings = Omit<IPagination, 'totalCount'>;
+
 export interface DataWithPagination<T> {
   data: T[];
   totalCount: number;

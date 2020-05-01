@@ -245,7 +245,7 @@ public interface DatasetVersionDAO {
     }
 
     if (parentDatasetVersion != null) {
-      version = parentDatasetVersion.getVersion();
+      version = existingDatasetVersion.getVersion();
       switch (request.getDatasetType()) {
         case PATH:
           PathDatasetVersionInfo requestedPathDatasetVersionInfo =

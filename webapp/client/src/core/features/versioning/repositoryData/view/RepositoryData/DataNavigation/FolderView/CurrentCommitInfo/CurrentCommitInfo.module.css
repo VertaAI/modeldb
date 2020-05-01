@@ -1,0 +1,49 @@
+.root {
+  display: grid;
+  padding: 6px var(--horizontal-padding);
+  border-bottom: 1px solid var(--border-color1);
+  font-size: 14px;
+  align-items: center;
+  background-color: #f7f7ff;
+  color: rgb(88, 96, 105);
+}
+
+.row:nth-child(2) {
+  display: grid;
+  grid-template-columns: 38% auto max-content;
+  align-items: center;
+  margin-top: 3px;
+}
+
+.author {
+  display: flex;
+  align-items: center;
+}
+
+.author__username {
+  margin-left: 5px;
+  font-size: 14px;
+  color: var(--main-text-color1);
+}
+
+.author__text {
+  color: var(--main-text-color3);
+}
+
+.message {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--main-text-color2);
+  font-weight: 500;
+}
+
+.dateCreated {
+  color: var(--main-text-color2);
+}
+
+.commitSha {
+  font-weight: 500;
+  color: var(--link-color);
+  text-decoration: none;
+}

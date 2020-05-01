@@ -18,10 +18,13 @@ import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.Action;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetUser;
+import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Struct;
@@ -44,6 +47,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -165,8 +169,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -256,6 +258,8 @@ public class HydratedServiceTest {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       // For Collaborator1
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
@@ -316,8 +320,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -398,6 +400,8 @@ public class HydratedServiceTest {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
           UACServiceGrpc.newBlockingStub(authServiceChannel);
       GetUser getUserRequest =
@@ -485,8 +489,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -663,6 +665,8 @@ public class HydratedServiceTest {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       // Create two collaborator for above project
       // For Collaborator1
       AddCollaboratorRequest addCollaboratorRequest =
@@ -777,8 +781,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -857,6 +859,8 @@ public class HydratedServiceTest {
     // Create two collaborator for above project
     // For Collaborator1
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
               project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -1831,7 +1835,7 @@ public class HydratedServiceTest {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
     }
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
@@ -5826,5 +5830,185 @@ public class HydratedServiceTest {
       assertTrue(deleteProjectResponse.getStatus());
     }
     LOGGER.info("FindHydratedProjectsByUser test stop................................");
+  }
+
+  @Test
+  public void checkCollaboratorDeleteActionTest() {
+    LOGGER.info("Check collaborator has delete action test start.........");
+
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      Assert.assertTrue(true);
+      return;
+    }
+
+    ExperimentTest experimentTest = new ExperimentTest();
+    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
+    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub =
+        ExperimentServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub experimentRunServiceStub =
+        ExperimentRunServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub experimentRunServiceClient2Stub =
+        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
+    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingClient2Stub =
+        HydratedServiceGrpc.newBlockingStub(client2Channel);
+    CollaboratorServiceBlockingStub collaboratorServiceStub =
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
+
+    // Create project
+    ProjectTest projectTest = new ProjectTest();
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("experiment_project_n_sprt_abc");
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project = createProjectResponse.getProject();
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project.getName());
+
+    AddCollaboratorRequest addCollaboratorRequest =
+        addCollaboratorRequestProjectInterceptor(
+            project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
+    AddCollaboratorRequest.Response projectCollaboratorResponse =
+        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+    LOGGER.info("Collaborator updated in server : " + projectCollaboratorResponse.getStatus());
+    assertTrue(projectCollaboratorResponse.getStatus());
+
+    CreateExperiment createExperimentRequest =
+        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
+    CreateExperiment.Response createExperimentResponse =
+        experimentServiceStub.createExperiment(createExperimentRequest);
+    Experiment experiment1 = createExperimentResponse.getExperiment();
+    LOGGER.info("Experiment created successfully");
+    assertEquals(
+        "Experiment name not match with expected Experiment name",
+        createExperimentRequest.getName(),
+        createExperimentResponse.getExperiment().getName());
+
+    createExperimentRequest =
+        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
+    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
+    Experiment experiment2 = createExperimentResponse.getExperiment();
+    LOGGER.info("Experiment created successfully");
+    assertEquals(
+        "Experiment name not match with expected Experiment name",
+        createExperimentRequest.getName(),
+        createExperimentResponse.getExperiment().getName());
+
+    CreateExperimentRun createExperimentRunRequest =
+        experimentRunTest.getCreateExperimentRunRequest(
+            project.getId(), experiment1.getId(), "ExperimentRun_sprt_1");
+    CreateExperimentRun.Response createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    ExperimentRun experimentRun11 = createExperimentRunResponse.getExperimentRun();
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun11.getName());
+
+    createExperimentRunRequest =
+        experimentRunTest.getCreateExperimentRunRequest(
+            project.getId(), experiment1.getId(), "ExperimentRun_sprt_2");
+    createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    ExperimentRun experimentRun12 = createExperimentRunResponse.getExperimentRun();
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun12.getName());
+
+    createExperimentRunRequest =
+        experimentRunTest.getCreateExperimentRunRequest(
+            project.getId(), experiment2.getId(), "ExperimentRun_sprt_2");
+    createExperimentRunResponse =
+        experimentRunServiceClient2Stub.createExperimentRun(createExperimentRunRequest);
+    ExperimentRun experimentRun21 = createExperimentRunResponse.getExperimentRun();
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun21.getName());
+
+    createExperimentRunRequest =
+        experimentRunTest.getCreateExperimentRunRequest(
+            project.getId(), experiment2.getId(), "ExperimentRun_sprt_1");
+    createExperimentRunResponse =
+        experimentRunServiceClient2Stub.createExperimentRun(createExperimentRunRequest);
+    ExperimentRun experimentRun22 = createExperimentRunResponse.getExperimentRun();
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun22.getName());
+
+    addCollaboratorRequest =
+        addCollaboratorRequestProjectInterceptor(
+            project, CollaboratorTypeEnum.CollaboratorType.READ_ONLY, authClientInterceptor);
+    projectCollaboratorResponse =
+        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+    LOGGER.info("Collaborator added in server : " + projectCollaboratorResponse.getStatus());
+    assertTrue(projectCollaboratorResponse.getStatus());
+
+    FindExperimentRuns findExperimentRuns =
+        FindExperimentRuns.newBuilder().setProjectId(project.getId()).build();
+
+    AdvancedQueryExperimentRunsResponse advancedQueryExperimentRunsResponse =
+        hydratedServiceBlockingClient2Stub.findHydratedExperimentRuns(findExperimentRuns);
+
+    Action deleteAction =
+        Action.newBuilder()
+            .setModeldbServiceAction(ModelDBActionEnum.ModelDBServiceActions.DELETE)
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .build();
+    for (HydratedExperimentRun hydratedExperimentRun :
+        advancedQueryExperimentRunsResponse.getHydratedExperimentRunsList()) {
+      if (hydratedExperimentRun.getExperimentRun().equals(experimentRun21)
+          && hydratedExperimentRun.getExperimentRun().equals(experimentRun22)) {
+        assertTrue(
+            "Experiment actions not match with expected action list",
+            hydratedExperimentRun.getAllowedActionsList().contains(deleteAction));
+      } else {
+        assertFalse(
+            "Experiment actions not match with expected action list",
+            hydratedExperimentRun.getAllowedActionsList().contains(deleteAction));
+      }
+    }
+
+    addCollaboratorRequest =
+        addCollaboratorRequestProjectInterceptor(
+            project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
+    projectCollaboratorResponse =
+        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+    LOGGER.info("Collaborator updated in server : " + projectCollaboratorResponse.getStatus());
+    assertTrue(projectCollaboratorResponse.getStatus());
+
+    advancedQueryExperimentRunsResponse =
+        hydratedServiceBlockingClient2Stub.findHydratedExperimentRuns(findExperimentRuns);
+
+    for (HydratedExperimentRun hydratedExperimentRun :
+        advancedQueryExperimentRunsResponse.getHydratedExperimentRunsList()) {
+      if (hydratedExperimentRun.getExperimentRun().equals(experimentRun21)
+          || hydratedExperimentRun.getExperimentRun().equals(experimentRun22)) {
+        assertTrue(
+            "Experiment actions not match with expected action list",
+            hydratedExperimentRun.getAllowedActionsList().contains(deleteAction));
+      } else {
+        assertFalse(
+            "Experiment actions not match with expected action list",
+            hydratedExperimentRun.getAllowedActionsList().contains(deleteAction));
+      }
+    }
+
+    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project deleted successfully");
+    LOGGER.info(deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+
+    LOGGER.info("Check collaborator has delete action test stop.........");
   }
 }

@@ -1,17 +1,24 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.dto.CommitPaginationDTO;
+import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
+import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.hibernate.Session;
@@ -27,31 +34,116 @@ public class CommitDAORdbImpl implements CommitDAO {
   public Response setCommit(
       String author, Commit commit, BlobFunction setBlobs, RepositoryFunction getRepository)
       throws ModelDBException, NoSuchAlgorithmException {
-    final String rootSha = setBlobs.apply();
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      final String rootSha = setBlobs.apply(session);
+      RepositoryEntity repositoryEntity = getRepository.apply(session);
+
+      CommitEntity commitEntity =
+          saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
+      session.getTransaction().commit();
+      return Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
+    }
+  }
+
+  @Override
+  public CommitEntity saveCommitEntity(
+      Session session,
+      Commit commit,
+      String rootSha,
+      String author,
+      RepositoryEntity repositoryEntity)
+      throws ModelDBException, NoSuchAlgorithmException {
     long timeCreated = new Date().getTime();
     if (App.getInstance().getStoreClientCreationTimestamp() && commit.getDateCreated() != 0L) {
       timeCreated = commit.getDateCreated();
     }
     final String commitSha = generateCommitSHA(rootSha, commit, timeCreated);
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
-      Commit internalCommit =
-          Commit.newBuilder()
-              .setDateCreated(timeCreated)
-              .setAuthor(author)
-              .setMessage(commit.getMessage())
-              .setCommitSha(commitSha)
-              .build();
-      CommitEntity commitEntity =
-          new CommitEntity(
-              getRepository.apply(session),
-              getCommits(session, commit.getParentShasList()),
-              internalCommit,
-              rootSha);
-      session.saveOrUpdate(commitEntity);
-      session.getTransaction().commit();
-      return Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
+
+    Map<String, CommitEntity> parentCommitEntities = new HashMap<>();
+    if (!commit.getParentShasList().isEmpty()) {
+      parentCommitEntities =
+          getCommits(session, repositoryEntity.getId(), commit.getParentShasList());
+      if (parentCommitEntities.size() != commit.getParentShasCount()) {
+        for (String parentSHA : commit.getParentShasList()) {
+          if (!parentCommitEntities.containsKey(parentSHA)) {
+            throw new ModelDBException(
+                "Parent commit '" + parentSHA + "' not found in DB", Code.INVALID_ARGUMENT);
+          }
+        }
+      }
     }
+
+    Commit internalCommit =
+        Commit.newBuilder()
+            .setDateCreated(timeCreated)
+            .setAuthor(author)
+            .setMessage(commit.getMessage())
+            .setCommitSha(commitSha)
+            .build();
+    CommitEntity commitEntity =
+        new CommitEntity(
+            repositoryEntity,
+            new ArrayList<>(parentCommitEntities.values()),
+            internalCommit,
+            rootSha);
+    session.saveOrUpdate(commitEntity);
+    repositoryEntity.setDate_updated(commitEntity.getDate_created());
+    session.update(repositoryEntity);
+    return commitEntity;
+  }
+
+  @Override
+  public CommitPaginationDTO fetchCommitEntityList(
+      Session session, ListCommitsRequest request, Long repoId) throws ModelDBException {
+    StringBuilder commitQueryBuilder =
+        new StringBuilder(
+            "SELECT cm FROM "
+                + CommitEntity.class.getSimpleName()
+                + " cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ");
+    if (!request.getCommitBase().isEmpty()) {
+      CommitEntity baseCommitEntity =
+          Optional.ofNullable(session.get(CommitEntity.class, request.getCommitBase()))
+              .orElseThrow(
+                  () ->
+                      new ModelDBException(
+                          "Couldn't find base commit by sha : " + request.getCommitBase(),
+                          Code.NOT_FOUND));
+      Long baseTime = baseCommitEntity.getDate_created();
+      commitQueryBuilder.append(" AND cm.date_created >= " + baseTime);
+    }
+
+    if (!request.getCommitHead().isEmpty()) {
+      CommitEntity headCommitEntity =
+          Optional.ofNullable(session.get(CommitEntity.class, request.getCommitHead()))
+              .orElseThrow(
+                  () ->
+                      new ModelDBException(
+                          "Couldn't find head commit by sha : " + request.getCommitHead(),
+                          Code.NOT_FOUND));
+      Long headTime = headCommitEntity.getDate_created();
+      commitQueryBuilder.append(" AND cm.date_created <= " + headTime);
+    }
+
+    Query<CommitEntity> commitEntityQuery =
+        session.createQuery(commitQueryBuilder.append(" ORDER BY cm.date_created DESC").toString());
+    commitEntityQuery.setParameter("repoId", repoId);
+    if (request.hasPagination()) {
+      int pageLimit = request.getPagination().getPageLimit();
+      final int startPosition = (request.getPagination().getPageNumber() - 1) * pageLimit;
+      commitEntityQuery.setFirstResult(startPosition);
+      commitEntityQuery.setMaxResults(pageLimit);
+    }
+
+    Query countQuery = session.createQuery(commitQueryBuilder.toString());
+    countQuery.setParameter("repoId", repoId);
+    // TODO: improve query into count query
+    Long totalRecords = (long) countQuery.list().size();
+
+    CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
+    commitPaginationDTO.setCommitEntities(commitEntityQuery.list());
+    commitPaginationDTO.setTotalRecords(totalRecords);
+    return commitPaginationDTO;
   }
 
   @Override
@@ -60,93 +152,43 @@ public class CommitDAORdbImpl implements CommitDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepository.apply(session);
 
-      StringBuilder commitQueryBuilder =
-          new StringBuilder(
-              "SELECT cm FROM "
-                  + CommitEntity.class.getSimpleName()
-                  + " cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ");
-      if (!request.getCommitBase().isEmpty()) {
-        CommitEntity baseCommitEntity =
-            Optional.ofNullable(session.get(CommitEntity.class, request.getCommitBase()))
-                .orElseThrow(
-                    () ->
-                        new ModelDBException(
-                            "Couldn't find base commit by sha : " + request.getCommitBase(),
-                            Code.NOT_FOUND));
-        Long baseTime = baseCommitEntity.getDate_created();
-        commitQueryBuilder.append(" AND cm.date_created >= " + baseTime);
-      }
-
-      if (!request.getCommitHead().isEmpty()) {
-        CommitEntity headCommitEntity =
-            Optional.ofNullable(session.get(CommitEntity.class, request.getCommitHead()))
-                .orElseThrow(
-                    () ->
-                        new ModelDBException(
-                            "Couldn't find head commit by sha : " + request.getCommitHead(),
-                            Code.NOT_FOUND));
-        Long headTime = headCommitEntity.getDate_created();
-        commitQueryBuilder.append(" AND cm.date_created <= " + headTime);
-      }
-
-      Query<CommitEntity> commitEntityQuery =
-          session.createQuery(
-              commitQueryBuilder.append(" ORDER BY cm.date_created DESC").toString());
-      commitEntityQuery.setParameter("repoId", repository.getId());
-      if (request.hasPagination()) {
-        int pageLimit = request.getPagination().getPageLimit();
-        final int startPosition = (request.getPagination().getPageNumber() - 1) * pageLimit;
-        commitEntityQuery.setFirstResult(startPosition);
-        commitEntityQuery.setMaxResults(pageLimit);
-      }
-
+      CommitPaginationDTO commitPaginationDTO =
+          fetchCommitEntityList(session, request, repository.getId());
       List<Commit> commits =
-          commitEntityQuery.list().stream()
+          commitPaginationDTO.getCommitEntities().stream()
               .map(CommitEntity::toCommitProto)
               .collect(Collectors.toList());
-      return ListCommitsRequest.Response.newBuilder().addAllCommits(commits).build();
+      return ListCommitsRequest.Response.newBuilder()
+          .addAllCommits(commits)
+          .setTotalRecords(commitPaginationDTO.getTotalRecords())
+          .build();
     }
   }
 
   private String generateCommitSHA(String blobSHA, Commit commit, long timeCreated)
       throws NoSuchAlgorithmException {
-
-    StringBuilder sb = new StringBuilder();
-    if (!commit.getParentShasList().isEmpty()) {
-      List<String> parentSHAs = commit.getParentShasList();
-      parentSHAs = parentSHAs.stream().sorted().collect(Collectors.toList());
-      sb.append("parent:");
-      parentSHAs.forEach(pSHA -> sb.append(pSHA));
-    }
-    sb.append(":message:")
-        .append(commit.getMessage())
-        .append(":date_created:")
-        .append(timeCreated)
-        .append(":author:")
-        .append(commit.getAuthor())
-        .append(":rootHash:")
-        .append(blobSHA);
-
-    return FileHasher.getSha(sb.toString());
+    return VersioningUtils.generateCommitSHA(
+        commit.getParentShasList(), commit.getMessage(), timeCreated, commit.getAuthor(), blobSHA);
   }
-
   /**
-   * @param session
-   * @param ShasList : a list of sha for which the function returns commits
-   * @return
-   * @throws ModelDBException : if any of the input sha are not identified as a commit
+   * @param session session
+   * @param parentShaList : a list of sha for which the function returns commits
+   * @return {@link Map<String, CommitEntity>}
    */
-  private List<CommitEntity> getCommits(Session session, ProtocolStringList ShasList)
-      throws ModelDBException {
-    List<CommitEntity> result =
-        ShasList.stream()
-            .map(sha -> session.get(CommitEntity.class, sha))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-    if (result.size() != ShasList.size()) {
-      throw new ModelDBException("Cannot find commits", Code.INVALID_ARGUMENT);
-    }
-    return result;
+  private Map<String, CommitEntity> getCommits(
+      Session session, Long repoId, ProtocolStringList parentShaList) {
+    StringBuilder commitQueryBuilder =
+        new StringBuilder(
+            "SELECT cm FROM "
+                + CommitEntity.class.getSimpleName()
+                + " cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId AND cm.commit_hash IN (:commitHashes)");
+
+    Query<CommitEntity> commitEntityQuery =
+        session.createQuery(commitQueryBuilder.append(" ORDER BY cm.date_created DESC").toString());
+    commitEntityQuery.setParameter("repoId", repoId);
+    commitEntityQuery.setParameter("commitHashes", parentShaList);
+    return commitEntityQuery.list().stream()
+        .collect(Collectors.toMap(CommitEntity::getCommit_hash, commitEntity -> commitEntity));
   }
 
   @Override
@@ -178,13 +220,14 @@ public class CommitDAORdbImpl implements CommitDAO {
 
   @Override
   public DeleteCommitRequest.Response deleteCommit(
-      String commitHash, RepositoryFunction getRepository) throws ModelDBException {
+      DeleteCommitRequest request, RepositoryDAO repositoryDAO) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
-      RepositoryEntity repositoryEntity = getRepository.apply(session);
+      RepositoryEntity repositoryEntity =
+          repositoryDAO.getRepositoryById(session, request.getRepositoryId(), true);
       boolean exists =
           VersioningUtils.commitRepositoryMappingExists(
-              session, commitHash, repositoryEntity.getId());
+              session, request.getCommitSha(), repositoryEntity.getId());
       if (!exists) {
         throw new ModelDBException(
             "Commit_hash and repository_id mapping not found", Code.NOT_FOUND);
@@ -195,14 +238,63 @@ public class CommitDAORdbImpl implements CommitDAO {
               "From "
                   + CommitEntity.class.getSimpleName()
                   + " c WHERE c.commit_hash = :commitHash");
-      deleteQuery.setParameter("commitHash", commitHash);
+      deleteQuery.setParameter("commitHash", request.getCommitSha());
       CommitEntity commitEntity = (CommitEntity) deleteQuery.uniqueResult();
+
+      if (!commitEntity.getChild_commits().isEmpty()) {
+        throw new ModelDBException(
+            "Commit has the child, please delete child commit first", Code.FAILED_PRECONDITION);
+      }
+
+      StringBuilder getBranchByCommitHQLBuilder =
+          new StringBuilder("FROM ")
+              .append(BranchEntity.class.getSimpleName())
+              .append(" br where br.id.repository_id = :repositoryId ")
+              .append(" AND br.commit_hash = :commitHash ");
+      Query getBranchByCommitQuery = session.createQuery(getBranchByCommitHQLBuilder.toString());
+      getBranchByCommitQuery.setParameter("repositoryId", repositoryEntity.getId());
+      getBranchByCommitQuery.setParameter("commitHash", commitEntity.getCommit_hash());
+      List<BranchEntity> branchEntities = getBranchByCommitQuery.list();
+      if (branchEntities != null && !branchEntities.isEmpty()) {
+        StringBuilder errorMessage = new StringBuilder("Commit is associated with branch name : ");
+        int count = 0;
+        for (BranchEntity branchEntity : branchEntities) {
+          errorMessage.append(branchEntity.getId().getBranch());
+          if (count < branchEntities.size() - 1) {
+            errorMessage.append(", ");
+          }
+          count++;
+        }
+        throw new ModelDBException(errorMessage.toString(), Code.FAILED_PRECONDITION);
+      }
+
+      String getLabelsHql =
+          new StringBuilder("From LabelsMappingEntity lm where lm.id.")
+              .append(ModelDBConstants.ENTITY_HASH)
+              .append(" = :entityHash ")
+              .append(" AND lm.id.")
+              .append(ModelDBConstants.ENTITY_TYPE)
+              .append(" = :entityType")
+              .toString();
+      Query query = session.createQuery(getLabelsHql);
+      query.setParameter("entityHash", commitEntity.getCommit_hash());
+      query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_COMMIT_VALUE);
+      List<LabelsMappingEntity> labelsMappingEntities = query.list();
+      if (labelsMappingEntities.size() > 0) {
+        throw new ModelDBException("Commit is associated with Label", Code.FAILED_PRECONDITION);
+      }
+
+      // delete associated branch
+      repositoryDAO.deleteBranchByCommit(repositoryEntity.getId(), request.getCommitSha());
+
       if (commitEntity.getRepository().size() == 1) {
         session.delete(commitEntity);
       } else {
         commitEntity.getRepository().remove(repositoryEntity);
         session.update(commitEntity);
       }
+      repositoryEntity.setDate_updated(new Date().getTime());
+      session.update(repositoryEntity);
       session.getTransaction().commit();
       return DeleteCommitRequest.Response.newBuilder().build();
     }

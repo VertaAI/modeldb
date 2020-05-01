@@ -1,0 +1,16 @@
+.refresh {
+  position: relative;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.refreshPreloader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.toolbar {
+  margin-bottom: 17px;
+}

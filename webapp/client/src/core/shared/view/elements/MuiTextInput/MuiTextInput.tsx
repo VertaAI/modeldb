@@ -6,7 +6,11 @@ import * as React from 'react';
 import styles from './MuiTextInput.module.css';
 
 class MuiTextInput extends React.PureComponent<
-  TextFieldProps & { dataTest?: string; size?: 'small'; isError?: boolean }
+  Omit<TextFieldProps, 'size'> & {
+    dataTest?: string;
+    size?: 'small' | 'extraSmall';
+    isError?: boolean;
+  }
 > {
   public render() {
     const { dataTest, size, isError, ...restProps } = this.props;
@@ -19,6 +23,7 @@ class MuiTextInput extends React.PureComponent<
         error={this.props.error}
         className={cn(styles.root, {
           [styles.size_small]: size === 'small',
+          [styles.size_extraSmall]: size === 'extraSmall',
           [styles.error]: isError,
         })}
         margin="none"

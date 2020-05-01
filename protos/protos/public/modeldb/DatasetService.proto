@@ -5,11 +5,11 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 
 option java_multiple_files = true;
 
-import "protos/public/common/CommonService.proto";
-import "protos/public/modeldb/CommonService.proto";
+import "common/CommonService.proto";
+import "modeldb/CommonService.proto";
 import "google/api/annotations.proto";
-import "protos/public/modeldb/ExperimentService.proto";
-import "protos/public/modeldb/ExperimentRunService.proto";
+import "modeldb/ExperimentService.proto";
+import "modeldb/ExperimentRunService.proto";
 
 message Dataset {
     string id = 1;//For backend reference

@@ -1,0 +1,136 @@
+.root {
+  position: relative;
+}
+
+.header {
+  color: var(--main-text-color1);
+}
+
+.button__content {
+  display: flex;
+  align-items: center;
+}
+.button__label {
+  font-weight: normal;
+  text-transform: capitalize;
+}
+.button__icon {
+  font-size: 12px;
+}
+
+.selectedValue {
+  max-width: 100px;
+  font-weight: 500;
+  color: var(--main-text-color1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.root.opened .summary {
+  background-color: #e9ecef;
+  background-image: none;
+  border-color: rgba(27, 31, 35, 0.35);
+  box-shadow: inset 0 0.15em 0.3em rgba(27, 31, 35, 0.15);
+}
+.summary__value {
+  display: inline-block;
+  max-width: 125px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.modal {
+  visibility: hidden;
+  width: 240px;
+  border: 1px solid #d1d5da;
+  border-radius: 3px;
+  box-shadow: 0 2px 18px 0 rgba(0, 0, 0, 0.25), 0 0 1px 0 rgba(0, 0, 0, 0.32);
+  background-color: #f3f3f3;
+  margin-top: 10px;
+  color: var(--main-text-color1);
+
+  --modal-horizontal-padding: 15px;
+}
+.modal.opened {
+  visibility: visible;
+  z-index: 1000;
+}
+
+.title {
+  display: flex;
+  flex: none;
+  padding: 10px var(--modal-horizontal-padding) 7px;
+  font-size: 15px;
+}
+
+.filter {
+  padding: 0 var(--modal-horizontal-padding) 11px;
+}
+
+.tabs {
+  display: flex;
+  padding: 0 var(--modal-horizontal-padding);
+}
+
+.tab {
+  padding: 5px 13px;
+  font-size: 14px;
+  color: var(--main-text-color1);
+  cursor: default;
+  border-radius: 2px 2px 0 0;
+}
+.tab:not(.active):hover {
+  background-color: #ebebeb;
+  cursor: pointer;
+}
+.tab.active {
+  color: var(--main-text-color1);
+  font-weight: 500;
+  border-color: #e1e4e8;
+  background-color: #fff;
+}
+
+.list {
+  background-color: #fff;
+}
+
+.list__placeholder {
+  color: var(--main-text-color1);
+  padding: 16px;
+  font-size: 14px;
+  text-align: center;
+  background-color: #fff;
+}
+
+.item {
+  display: flex;
+  padding: 10px;
+  align-items: center;
+  border-bottom: 1px solid #eaecef;
+  font-size: 14px;
+  color: var(--main-text-color1);
+  cursor: pointer;
+}
+.item:last-child {
+  border-bottom: 0;
+}
+.item:hover {
+  background-color: #ebebeb;
+}
+
+.item__selectedMark {
+  opacity: 0;
+  font-size: 10px;
+  color: #aaaaaa;
+  margin-right: 8px;
+}
+.item.active .item__selectedMark {
+  opacity: 1;
+}
+
+.defaultBranch {
+  color: var(--main-text-color3);
+}

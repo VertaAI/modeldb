@@ -2,10 +2,13 @@ from __future__ import division
 
 import six
 
+import datetime
 import os
 import random
 import shutil
 import string
+
+import requests
 
 import verta
 from verta import Client
@@ -248,33 +251,34 @@ def dir_and_files(strs, tmp_path):
 
 @pytest.fixture
 def client(host, port, email, dev_key):
+    print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
     client = Client(host, port, email, dev_key, debug=True)
 
     yield client
 
     if client.proj is not None:
         utils.delete_project(client.proj.id, client._conn)
+    print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
 
 @pytest.fixture
 def experiment_run(client):
-    client.set_project()
+    proj = client.set_project()
+    print("[TEST LOG] Project ID is {}".format(proj.id))
     client.set_experiment()
-    return client.set_experiment_run()
+    run = client.set_experiment_run()
+    print("[TEST LOG] Run ID is {}".format(run.id))
+    
+    return run
 
 
 @pytest.fixture
 def repository(client):
     name = _utils.generate_default_name()
     repo = client.get_or_create_repository(name)
-    root_id = repo.get_commit()
 
     yield repo
 
-    try:
-        utils.delete_commit(repository.id, root_id, repository._conn)
-    except:
-        pass  # may have already been deleted in test
     utils.delete_repository(repo.id, client._conn)
 
 
@@ -283,9 +287,6 @@ def commit(repository):
     commit = repository.get_commit()
 
     yield commit
-
-    if commit.id is not None:
-        utils.delete_commit(repository.id, commit.id, repository._conn)
 
 
 @pytest.fixture

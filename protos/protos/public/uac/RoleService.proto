@@ -12,33 +12,9 @@ message ServiceEnum {
     enum Service {
         UNKNOWN = 0; // Service 0 should always cause an error
         ALL = 1;
-        ROLE_SERVICE = 2;
-        AUTHZ_SERVICE = 3;
+        reserved 2, 3, 5;
         MODELDB_SERVICE = 4;
     }
-};
-
-message RoleActionEnum {
-    enum RoleServiceActions {
-        UNKNOWN = 0; // Action 0 should always cause an error
-        ALL = 1;
-        GET_BY_ID = 2;
-        GET_BY_NAME = 3;
-        CREATE = 4;
-        UPDATE = 5;
-        LIST = 6;
-        DELETE = 7;
-    }
-};
-
-message AuthzActionEnum {
-    enum AuthzServiceActions {
-        UNKNOWN = 0; // Action 0 should always cause an error
-        ALL = 1;
-        IS_ALLOWED = 2;
-        GET = 3;
-    }
-
 };
 
 message ModelDBActionEnum {
@@ -57,26 +33,9 @@ message ModelDBActionEnum {
 // An action describes a specific operation that can be performed on a service
 message Action {
     ServiceEnum.Service service = 1;
+    reserved 2, 3, 5;
     oneof action {
-        RoleActionEnum.RoleServiceActions role_service_action = 2;
-        AuthzActionEnum.AuthzServiceActions authz_service_action = 3;
         ModelDBActionEnum.ModelDBServiceActions modeldb_service_action = 4;
-    }
-};
-
-message RoleResourceEnum {
-    enum RoleServiceResourceTypes {
-        UNKNOWN = 0; // Resource 0 should always cause an error
-        ALL = 1;
-        ROLE = 2;
-        ROLE_BINDING = 3;
-    }
-};
-
-message AuthzResourceEnum {
-    enum AuthzServiceResourceTypes {
-        UNKNOWN = 0; // Resource 0 should always cause an error
-        ALL = 1;
     }
 };
 
@@ -90,8 +49,16 @@ message ModelResourceEnum {
         DATASET = 5;
         DATASET_VERSION = 6;
         DASHBOARD = 7;
+        REPOSITORY = 8;
     }
 };
+
+message ResourceType {
+    reserved 1, 2, 4;
+	oneof resource {
+        ModelResourceEnum.ModelDBServiceResourceTypes modeldb_service_resource_type = 3;
+    };
+}
 
 // A resource describes a specific object in a service that can receive an action
 message Resources {
@@ -99,12 +66,7 @@ message Resources {
     // Internal ID for the resource in the service, whose meaning doesn't matter for other services
     // This is optional. If empty, means all resources
     repeated string resource_ids = 2;
-    oneof resource {
-    // Separate based on the service itself
-        RoleResourceEnum.RoleServiceResourceTypes role_service_resource_type = 3;
-        AuthzResourceEnum.AuthzServiceResourceTypes authz_service_resource_type = 4;
-        ModelResourceEnum.ModelDBServiceResourceTypes modeldb_service_resource_type = 5;
-    };
+    ResourceType resource_type = 6;
 };
 
 // Roles can be scoped by organization/team or global
@@ -130,15 +92,6 @@ message Role {
     // Allow multiple combinations at the same time
     repeated ResourceActionGroup resource_action_groups = 4;
 }
-
-message EntitiesEnum {
-    enum EntitiesTypes {
-        UNKNOWN = 0; // Resource 0 should always cause an error
-        ORGANIZATION = 1;
-        TEAM = 2;
-        USER = 3;
-    }
-};
 
 // Entities that can be bound to a role. All users in all scopes given are considered a match.
 message Entities {
@@ -244,6 +197,14 @@ message DeleteRoleBinding {
     };
 };
 
+message DeleteRoleBindings {
+    repeated string roleBindingNames = 1;
+
+    message Response {
+        bool status = 1;
+    };
+};
+
 service RoleService {
     rpc getRoleById (GetRoleById) returns (GetRoleById.Response) {
         option (google.api.http) = {
@@ -296,6 +257,12 @@ service RoleService {
     rpc deleteRoleBinding (DeleteRoleBinding) returns (DeleteRoleBinding.Response) {
         option (google.api.http) = {
             post : "/v1/role/deleteRoleBinding"
+            body : "*"
+        };
+    };
+    rpc deleteRoleBindings (DeleteRoleBindings) returns (DeleteRoleBindings.Response) {
+        option (google.api.http) = {
+            post : "/v1/role/deleteRoleBindings"
             body : "*"
         };
     };

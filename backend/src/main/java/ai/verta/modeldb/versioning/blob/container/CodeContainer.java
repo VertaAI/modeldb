@@ -11,9 +11,11 @@ import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.NotebookCodeBlob;
+import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.TreeElem;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
+import java.util.Set;
 import org.hibernate.Session;
 
 public class CodeContainer extends BlobContainer {
@@ -26,29 +28,8 @@ public class CodeContainer extends BlobContainer {
   }
 
   @Override
-  public void validate() throws ModelDBException {
-    switch (code.getContentCase()) {
-      case GIT:
-        validate(code.getGit());
-        break;
-      case NOTEBOOK:
-        final NotebookCodeBlob notebook = code.getNotebook();
-        validate(notebook.getGitRepo());
-        validate(notebook.getPath());
-        break;
-      default:
-        throw new ModelDBException("Blob unknown type", Code.INVALID_ARGUMENT);
-    }
-  }
-
-  private void validate(GitCodeBlob gitRepo) throws ModelDBException {
-    if (gitRepo.getRepo().isEmpty()) {
-      throw new ModelDBException("Code repository path should not be empty", Code.INVALID_ARGUMENT);
-    }
-  }
-
-  @Override
-  public void process(Session session, TreeElem rootTree, FileHasher fileHasher)
+  public void process(
+      Session session, TreeElem rootTree, FileHasher fileHasher, Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException {
     String blobType;
     final String blobHash;
@@ -56,15 +37,24 @@ public class CodeContainer extends BlobContainer {
       case GIT:
         blobType = GIT_CODE_BLOB;
         GitCodeBlob gitCodeBlob = code.getGit();
-        blobHash = saveBlob(session, gitCodeBlob).getBlobHash();
+        blobHash = saveBlob(session, gitCodeBlob, blobHashes).getBlobHash();
         break;
       case NOTEBOOK:
         blobType = NOTEBOOK_CODE_BLOB;
         NotebookCodeBlob notebook = code.getNotebook();
-        GitCodeBlobEntity gitCodeBlobEntity = saveBlob(session, notebook.getGitRepo());
-        String pathBlobSha = DatasetContainer.saveBlob(session, notebook.getPath());
+        GitCodeBlobEntity gitCodeBlobEntity = saveBlob(session, notebook.getGitRepo(), blobHashes);
+        PathDatasetBlob.Builder pathDatasetBlobBuilder = PathDatasetBlob.newBuilder();
+        if (notebook.getPath() != null) {
+          pathDatasetBlobBuilder.addComponents(notebook.getPath());
+        }
+        String pathBlobSha =
+            DatasetContainer.saveBlob(session, pathDatasetBlobBuilder.build(), blobHashes);
         blobHash = FileHasher.getSha(gitCodeBlobEntity.getBlobHash() + ":" + pathBlobSha);
-        session.saveOrUpdate(new NotebookCodeBlobEntity(blobHash, gitCodeBlobEntity, pathBlobSha));
+        if (!blobHashes.contains(blobHash)) {
+          session.saveOrUpdate(
+              new NotebookCodeBlobEntity(blobHash, gitCodeBlobEntity, pathBlobSha));
+          blobHashes.add(blobHash);
+        }
         break;
       default:
         throw new ModelDBException("Blob unknown type", Code.INTERNAL);
@@ -72,12 +62,18 @@ public class CodeContainer extends BlobContainer {
     rootTree.push(getLocationList(), blobHash, blobType);
   }
 
-  private GitCodeBlobEntity saveBlob(Session session, GitCodeBlob gitCodeBlob)
+  private GitCodeBlobEntity saveBlob(
+      Session session, GitCodeBlob gitCodeBlob, Set<String> blobHashes)
       throws NoSuchAlgorithmException {
-    GitCodeBlobEntity gitCodeBlobEntity =
-        new GitCodeBlobEntity(computeSHA(gitCodeBlob), gitCodeBlob);
-    session.saveOrUpdate(gitCodeBlobEntity);
-    return gitCodeBlobEntity;
+    String sha = computeSHA(gitCodeBlob);
+    if (!blobHashes.contains(sha)) {
+      GitCodeBlobEntity gitCodeBlobEntity = new GitCodeBlobEntity(sha, gitCodeBlob);
+      session.saveOrUpdate(gitCodeBlobEntity);
+      blobHashes.add(sha);
+      return gitCodeBlobEntity;
+    } else {
+      return session.get(GitCodeBlobEntity.class, sha);
+    }
   }
 
   private String computeSHA(GitCodeBlob gitCodeBlob) throws NoSuchAlgorithmException {

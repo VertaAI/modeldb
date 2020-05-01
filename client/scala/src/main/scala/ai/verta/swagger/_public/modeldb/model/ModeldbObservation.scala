@@ -6,7 +6,6 @@ import scala.util.Try
 import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
-import ai.verta.swagger._public.modeldb.model.AuthzActionEnumAuthzServiceActions._
 import ai.verta.swagger._public.modeldb.model.CollaboratorTypeEnumCollaboratorType._
 import ai.verta.swagger._public.modeldb.model.DatasetTypeEnumDatasetType._
 import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibility._
@@ -15,7 +14,6 @@ import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProv
 import ai.verta.swagger._public.modeldb.model.ModelDBActionEnumModelDBServiceActions._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.model.PathLocationTypeEnumPathLocationType._
-import ai.verta.swagger._public.modeldb.model.RoleActionEnumRoleServiceActions._
 import ai.verta.swagger._public.modeldb.model.ServiceEnumService._
 import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
@@ -26,9 +24,9 @@ import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbObservation (
-  attribute: Option[CommonKeyValue] = None,
   artifact: Option[ModeldbArtifact] = None,
-  timestamp: Option[String] = None
+  attribute: Option[CommonKeyValue] = None,
+  timestamp: Option[BigInt] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbObservation.toJson(this)
 }
@@ -37,9 +35,9 @@ object ModeldbObservation {
   def toJson(obj: ModeldbObservation): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.attribute.map(x => JField("attribute", ((x: CommonKeyValue) => CommonKeyValue.toJson(x))(x))),
         obj.artifact.map(x => JField("artifact", ((x: ModeldbArtifact) => ModeldbArtifact.toJson(x))(x))),
-        obj.timestamp.map(x => JField("timestamp", JString(x)))
+        obj.attribute.map(x => JField("attribute", ((x: CommonKeyValue) => CommonKeyValue.toJson(x))(x))),
+        obj.timestamp.map(x => JField("timestamp", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -53,9 +51,9 @@ object ModeldbObservation {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbObservation(
           // TODO: handle required
-          attribute = fieldsMap.get("attribute").map(CommonKeyValue.fromJson),
           artifact = fieldsMap.get("artifact").map(ModeldbArtifact.fromJson),
-          timestamp = fieldsMap.get("timestamp").map(JsonConverter.fromJsonString)
+          attribute = fieldsMap.get("attribute").map(CommonKeyValue.fromJson),
+          timestamp = fieldsMap.get("timestamp").map(JsonConverter.fromJsonInteger)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

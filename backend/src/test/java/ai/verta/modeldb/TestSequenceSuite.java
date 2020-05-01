@@ -1,8 +1,13 @@
 package ai.verta.modeldb;
 
+import ai.verta.modeldb.blobs.BlobEquality;
+import ai.verta.modeldb.blobs.BlobProtoEquality;
+import ai.verta.modeldb.blobs.DiffAndMerge;
 import ai.verta.modeldb.lineage.LineageServiceImplNegativeTest;
 import ai.verta.modeldb.metadata.MetadataTest;
 import ai.verta.modeldb.utils.ModelDBUtilsTest;
+import ai.verta.modeldb.versioning.blob.visitors.ValidatorBlobDiffTest;
+import ai.verta.modeldb.versioning.blob.visitors.ValidatorBlobTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -15,7 +20,6 @@ import org.junit.runners.Suite;
   CollaboratorTest.class,
   CommentTest.class,
   HydratedServiceTest.class,
-  HydratedServiceOrgTeamTest.class,
   DatasetTest.class,
   DatasetVersionTest.class,
   ModelDBUtilsTest.class,
@@ -26,7 +30,12 @@ import org.junit.runners.Suite;
   RepositoryTest.class,
   CommitTest.class,
   MetadataTest.class,
-  DiffTest.class
+  DiffTest.class,
+  BlobEquality.class,
+  BlobProtoEquality.class,
+  DiffAndMerge.class,
+  ValidatorBlobTest.class,
+  ValidatorBlobDiffTest.class
   //  ArtifactStoreTest.class
 })
 public class TestSequenceSuite {}

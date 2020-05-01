@@ -14,9 +14,9 @@
 .breadcrumb_item {
   display: inline-block;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   text-decoration: none;
-  color: #777777;
+  color: var(--main-text-color2);
   outline: none;
 }
 .breadcrumb_item:hover {

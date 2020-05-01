@@ -30,13 +30,16 @@ from ._protos.public.modeldb import CommonService_pb2 as _CommonService
 from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService
 from ._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
 from ._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
+from ._protos.public.client import Config_pb2 as _ConfigProtos
 
 from .external import six
 from .external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
 from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from ._internal_utils import _artifact_utils
+from ._internal_utils import _config_utils
 from ._internal_utils import _git_utils
+from ._internal_utils import _histogram_utils
 from ._internal_utils import _pip_requirements_utils
 from ._internal_utils import _utils
 
@@ -46,6 +49,8 @@ from ._repository import commit as commit_module
 from . import deployment
 from . import utils
 
+
+_OSS_DEFAULT_WORKSPACE = "personal"
 
 # for ExperimentRun._log_modules()
 _CUSTOM_MODULES_DIR = "/app/custom_modules/"  # location in DeploymentService model container
@@ -92,6 +97,8 @@ class Client(object):
         Whether to use a local Git repository for certain operations such as Code Versioning.
     debug : bool, default False
         Whether to print extra verbose information to aid in debugging.
+    _connect : str, default True
+        Whether to connect to server (``False`` for unit tests).
 
     Attributes
     ----------
@@ -111,8 +118,13 @@ class Client(object):
 
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
-                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False):
+                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, _connect=True):
         self._load_config()
+
+        if host is None and 'VERTA_HOST' in os.environ:
+            host = os.environ['VERTA_HOST']
+            print("set host from environment")
+        host = self._set_from_config_if_none(host, "host")
         if email is None and 'VERTA_EMAIL' in os.environ:
             email = os.environ['VERTA_EMAIL']
             print("set email from environment")
@@ -121,8 +133,9 @@ class Client(object):
             dev_key = os.environ['VERTA_DEV_KEY']
             print("set developer key from environment")
         dev_key = self._set_from_config_if_none(dev_key, "dev_key")
-        host = self._set_from_config_if_none(host, "host")
 
+        if host is None:
+            raise ValueError("`host` must be provided")
         scheme = auth = None
         if email is None and dev_key is None:
             if debug:
@@ -154,22 +167,23 @@ class Client(object):
 
         # verify connection
         conn = _utils.Connection(scheme, socket, auth, max_retries, ignore_conn_err)
-        try:
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/project/verifyConnection".format(conn.scheme, conn.socket),
-                                           conn)
-        except requests.ConnectionError:
-            six.raise_from(requests.ConnectionError("connection failed; please check `host` and `port`"),
-                           None)
+        if _connect:
+            try:
+                response = _utils.make_request("GET",
+                                               "{}://{}/api/v1/modeldb/project/verifyConnection".format(conn.scheme, conn.socket),
+                                               conn)
+            except requests.ConnectionError:
+                six.raise_from(requests.ConnectionError("connection failed; please check `host` and `port`"),
+                               None)
 
-        def is_unauthorized(response): return response.status_code == 401
+            def is_unauthorized(response): return response.status_code == 401
 
-        if is_unauthorized(response):
-            auth_error_msg = "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`"
-            six.raise_from(requests.HTTPError(auth_error_msg), None)
+            if is_unauthorized(response):
+                auth_error_msg = "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`"
+                six.raise_from(requests.HTTPError(auth_error_msg), None)
 
-        _utils.raise_for_http_error(response)
-        print("connection successfully established")
+            _utils.raise_for_http_error(response)
+            print("connection successfully established")
 
         self._conn = conn
         self._conf = _utils.Configuration(use_git, debug)
@@ -222,23 +236,39 @@ class Client(object):
             return self.expt.expt_runs
 
     def _get_personal_workspace(self):
-        response = _utils.make_request(
-            "GET",
-            "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
-            self._conn, params={'email': self._conn.auth['Grpc-Metadata-email']},
-        )
-        _utils.raise_for_http_error(response)
+        if self._conn.auth is not None:
+            response = _utils.make_request(
+                "GET",
+                "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
+                self._conn, params={'email': self._conn.auth['Grpc-Metadata-email']},
+            )
 
-        return response.json()['verta_info']['username']
+            if response.ok:
+                try:
+                    response_json = response.json()
+                except ValueError:  # not JSON response
+                    pass
+                else:
+                    return response_json['verta_info']['username']
+            else:
+                if response.status_code == 404:  # UAC not found
+                    pass
+                else:
+                    _utils.raise_for_http_error(response)
+        return _OSS_DEFAULT_WORKSPACE
 
     def _load_config(self):
         config_file = self._find_config_in_all_dirs()
         if config_file is not None:
             stream = open(config_file, 'r')
             self._config = yaml.load(stream, Loader=yaml.FullLoader)
+            # validate config against proto spec
+            _utils.json_to_proto(
+                self._config,
+                _ConfigProtos.Config,
+                ignore_unknown_fields=False,
+            )
         else:
-            self._config = None
-        if self._config is None:
             self._config = {}
 
     def _find_config_in_all_dirs(self):
@@ -248,8 +278,7 @@ class Client(object):
         return res
 
     def _find_config(self, prefix, recursive=False):
-        f = ('verta_config.yaml', 'verta_config.json')
-        for ff in f:
+        for ff in _config_utils.CONFIG_FILENAMES:
             if os.path.isfile(prefix + ff):
                 return prefix + ff
         if recursive:
@@ -260,10 +289,11 @@ class Client(object):
         return None
 
     def _set_from_config_if_none(self, var, resource_name):
-        if var is None and resource_name in self._config:
-            print("setting {} from config file".format(resource_name))
-            return self._config[resource_name]
-        return var
+        if var is None:
+            var = self._config.get(resource_name)
+            if var:
+                print("setting {} from config file".format(resource_name))
+        return var or None
 
     def set_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
         """
@@ -466,6 +496,25 @@ class Client(object):
         return expt_run
 
     def get_or_create_repository(self, name=None, workspace=None, id=None):
+        """
+        Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
+
+        Parameters
+        ----------
+        name : str
+            Name of the Repository. This parameter cannot be provided alongside `id`.
+        workspace : str, optional
+            Workspace under which the Repository with name `name` exists. If not provided, the
+            current user's personal workspace will be used.
+        id : str, optional
+            ID of the Repository, to be provided instead of `name`.
+
+        Returns
+        -------
+        :class:`~verta._repository.Repository`
+            Specified Repository.
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
@@ -929,6 +978,7 @@ class _ModelDBEntity(object):
                 except OSError:  # script not found
                     print("unable to find code file; skipping")
         else:
+            exec_path = os.path.expanduser(exec_path)
             if not os.path.isfile(exec_path):
                 raise ValueError("`exec_path` \"{}\" must be a valid filepath".format(exec_path))
 
@@ -1824,7 +1874,7 @@ class ExperimentRun(_ModelDBEntity):
         project_json = response.json()['project']
         if 'workspace_id' not in project_json:
             # workspace is OSS default
-            return "personal"
+            return _OSS_DEFAULT_WORKSPACE
         else:
             workspace_id = project_json['workspace_id']
         # try getting organization
@@ -1942,6 +1992,7 @@ class ExperimentRun(_ModelDBEntity):
 
         """
         if isinstance(artifact, six.string_types):
+            os.path.expanduser(artifact)
             artifact = open(artifact, 'rb')
 
         if hasattr(artifact, 'read') and method is not None:  # already a verta-produced stream
@@ -3367,6 +3418,7 @@ class ExperimentRun(_ModelDBEntity):
         if isinstance(paths, six.string_types):
             paths = [paths]
         if paths is not None:
+            paths = list(map(os.path.expanduser, paths))
             paths = list(map(os.path.abspath, paths))
 
         # collect local sys paths
@@ -3535,11 +3587,15 @@ class ExperimentRun(_ModelDBEntity):
 
         train_df = train_features.join(train_targets)
 
-        tempf = tempfile.TemporaryFile('w+')
-        train_df.to_csv(tempf, index=False)
-        tempf.seek(0)
+        histograms = _histogram_utils.calculate_histograms(train_df)
 
-        self._log_artifact("train_data", tempf, _CommonService.ArtifactTypeEnum.DATA, 'csv', overwrite=overwrite)
+        endpoint = "{}://{}/api/v1/monitoring/data/references/{}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+        )
+        response = _utils.make_request("PUT", endpoint, self._conn, json=histograms)
+        _utils.raise_for_http_error(response)
 
     def fetch_artifacts(self, keys):
         """

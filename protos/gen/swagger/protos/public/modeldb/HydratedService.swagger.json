@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/modeldb/HydratedService.proto",
+    "title": "modeldb/HydratedService.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -930,16 +930,6 @@
       ],
       "default": "IMAGE"
     },
-    "AuthzActionEnumAuthzServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "IS_ALLOWED",
-        "GET"
-      ],
-      "default": "UNKNOWN"
-    },
     "CollaboratorTypeEnumCollaboratorType": {
       "type": "string",
       "enum": [
@@ -983,7 +973,8 @@
         "GITHUB",
         "BITBUCKET",
         "GOOGLE",
-        "VERTA"
+        "VERTA",
+        "SAML"
       ],
       "default": "UNKNOWN"
     },
@@ -1026,27 +1017,11 @@
       ],
       "default": "LOCAL_FILE_SYSTEM"
     },
-    "RoleActionEnumRoleServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "GET_BY_ID",
-        "GET_BY_NAME",
-        "CREATE",
-        "UPDATE",
-        "LIST",
-        "DELETE"
-      ],
-      "default": "UNKNOWN"
-    },
     "ServiceEnumService": {
       "type": "string",
       "enum": [
         "UNKNOWN",
         "ALL",
-        "ROLE_SERVICE",
-        "AUTHZ_SERVICE",
         "MODELDB_SERVICE"
       ],
       "default": "UNKNOWN"
@@ -1531,6 +1506,12 @@
         },
         "versioned_inputs": {
           "$ref": "#/definitions/modeldbVersioningEntry"
+        },
+        "code_version_from_blob": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/modeldbCodeVersion"
+          }
         }
       },
       "title": "ExperimentRun Entity"
@@ -1663,6 +1644,9 @@
         },
         "sort_key": {
           "type": "string"
+        },
+        "workspace_name": {
+          "type": "string"
         }
       }
     },
@@ -1702,6 +1686,9 @@
           "format": "boolean"
         },
         "sort_key": {
+          "type": "string"
+        },
+        "workspace_name": {
           "type": "string"
         }
       }
@@ -2297,12 +2284,6 @@
         "service": {
           "$ref": "#/definitions/ServiceEnumService"
         },
-        "role_service_action": {
-          "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
-        },
-        "authz_service_action": {
-          "$ref": "#/definitions/AuthzActionEnumAuthzServiceActions"
-        },
         "modeldb_service_action": {
           "$ref": "#/definitions/ModelDBActionEnumModelDBServiceActions"
         }
@@ -2349,6 +2330,9 @@
         },
         "global_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "default_repo_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         }
       }
     },

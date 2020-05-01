@@ -4,6 +4,7 @@ import ai.verta.uac.Action;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.ResourceActionGroup;
+import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;
 import ai.verta.uac.Role;
 import ai.verta.uac.ServiceEnum;
@@ -31,7 +32,8 @@ public class RoleTestService {
   private Resources createResources(ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return Resources.newBuilder()
         .setService(ServiceEnum.Service.MODELDB_SERVICE)
-        .setModeldbServiceResourceType(modelDBServiceResourceTypes)
+        .setResourceType(
+            ResourceType.newBuilder().setModeldbServiceResourceType(modelDBServiceResourceTypes))
         .build();
   }
 

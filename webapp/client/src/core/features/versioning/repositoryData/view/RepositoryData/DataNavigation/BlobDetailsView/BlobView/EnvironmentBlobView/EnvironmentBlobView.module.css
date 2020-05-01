@@ -1,0 +1,13 @@
+.commandLineContent {
+  display: flex;
+}
+
+.commandLineView {
+  max-height: 300px;
+  flex-grow: 1;
+}
+
+.coppyCommandLine {
+  align-self: start;
+  margin-left: 5px;
+}

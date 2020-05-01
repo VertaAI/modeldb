@@ -75,12 +75,6 @@ public class ExperimentRunEntity {
           RdbmsUtils.generateCodeVersionEntity(
               ModelDBConstants.CODE_VERSION, experimentRun.getCodeVersionSnapshot()));
     }
-
-    if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
-      VersioningEntry versioningEntry = experimentRun.getVersionedInputs();
-      this.versioningModeldbEntityMappings =
-          RdbmsUtils.getVersioningMappingFromVersioningInput(versioningEntry, this);
-    }
   }
 
   @Id
@@ -180,7 +174,7 @@ public class ExperimentRunEntity {
       mappedBy = "experimentRunEntity",
       cascade = CascadeType.ALL)
   @LazyCollection(LazyCollectionOption.FALSE)
-  private List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings = new ArrayList<>();
+  private List<VersioningModeldbEntityMapping> versioned_inputs = new ArrayList<>();
 
   @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 
@@ -412,13 +406,12 @@ public class ExperimentRunEntity {
     this.attributeMapping.addAll(attributeMapping);
   }
 
-  public List<VersioningModeldbEntityMapping> getVersioningModeldbEntityMappings() {
-    return versioningModeldbEntityMappings;
+  public List<VersioningModeldbEntityMapping> getVersioned_inputs() {
+    return versioned_inputs;
   }
 
-  public void setVersioningModeldbEntityMappings(
-      List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings) {
-    this.versioningModeldbEntityMappings = versioningModeldbEntityMappings;
+  public void setVersioned_inputs(List<VersioningModeldbEntityMapping> versioned_inputs) {
+    this.versioned_inputs = versioned_inputs;
   }
 
   public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {
@@ -493,9 +486,8 @@ public class ExperimentRunEntity {
     if (code_version_snapshot != null) {
       experimentRunBuilder.setCodeVersionSnapshot(code_version_snapshot.getProtoObject());
     }
-    if (versioningModeldbEntityMappings != null && versioningModeldbEntityMappings.size() > 0) {
-      VersioningEntry versioningEntry =
-          RdbmsUtils.getVersioningEntryFromList(versioningModeldbEntityMappings);
+    if (versioned_inputs != null && versioned_inputs.size() > 0) {
+      VersioningEntry versioningEntry = RdbmsUtils.getVersioningEntryFromList(versioned_inputs);
       experimentRunBuilder.setVersionedInputs(versioningEntry);
     }
     LOGGER.trace("Returning converted ExperimentRun");

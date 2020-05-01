@@ -1,0 +1,16 @@
+.root {
+  margin-bottom: 15px;
+}
+
+.date {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--main-text-color3);
+  font-weight: 500;
+  margin-left: 13px;
+}
+
+.commits {
+  border: 1px solid var(--border-color1);
+  border-radius: 2px;
+}

@@ -13,7 +13,6 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
-import ai.verta.modeldb.collaborator.CollaboratorServiceImpl;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
@@ -347,11 +346,11 @@ public class App implements ApplicationContextAware {
     // --------------- Start Initialize DAO --------------------------
     CommitDAO commitDAO = new CommitDAORdbImpl();
     RepositoryDAO repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
-    BlobDAO blobDAO = new BlobDAORdbImpl();
+    BlobDAO blobDAO = new BlobDAORdbImpl(authService);
 
-    ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService);
+    ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, roleService);
     ExperimentRunDAO experimentRunDAO =
-        new ExperimentRunDAORdbImpl(authService, repositoryDAO, commitDAO, blobDAO);
+        new ExperimentRunDAORdbImpl(authService, roleService, repositoryDAO, commitDAO, blobDAO);
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
     ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
@@ -428,6 +427,7 @@ public class App implements ApplicationContextAware {
             roleService,
             datasetDAO,
             datasetVersionDAO,
+            projectDAO,
             experimentDAO,
             experimentRunDAO));
     LOGGER.trace("Dataset serviceImpl initialized");
@@ -446,11 +446,6 @@ public class App implements ApplicationContextAware {
             datasetDAO,
             datasetVersionDAO));
     LOGGER.trace("Hydrated serviceImpl initialized");
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      serverBuilder.addService(
-          new CollaboratorServiceImpl(authService, roleService, projectDAO, datasetDAO));
-      LOGGER.debug("Collaborator serviceImpl initialized");
-    }
     serverBuilder.addService(
         new LineageServiceImpl(lineageDAO, experimentRunDAO, datasetVersionDAO));
     LOGGER.trace("Lineage serviceImpl initialized");
@@ -462,6 +457,7 @@ public class App implements ApplicationContextAware {
             repositoryDAO,
             commitDAO,
             blobDAO,
+            projectDAO,
             experimentDAO,
             experimentRunDAO,
             new ModelDBAuthInterceptor(),

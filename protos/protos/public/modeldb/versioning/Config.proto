@@ -5,6 +5,8 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 
 option java_multiple_files = true;
 
+import "modeldb/versioning/Enums.proto";
+
 message ConfigBlob {
     repeated HyperparameterSetConfigBlob hyperparameter_set = 1;
     repeated HyperparameterConfigBlob hyperparameters = 2;
@@ -42,18 +44,20 @@ message DiscreteHyperparameterSetConfigBlob {
 }
 
 message ConfigDiff {
-    HyperparameterSetConfigDiff hyperparameter_set = 1;
-    HyperparameterConfigDiff hyperparameters = 2;
+    repeated HyperparameterSetConfigDiff hyperparameter_set = 1;
+    repeated HyperparameterConfigDiff hyperparameters = 2;
 }
 
 message HyperparameterSetConfigDiff {
-    // Sets only in A/B *or* modified between them. We can identify the modification by matching on the name.
-    repeated HyperparameterSetConfigBlob A = 1;
-    repeated HyperparameterSetConfigBlob B = 2;
+    DiffStatusEnum.DiffStatus status = 1;
+    HyperparameterSetConfigBlob A = 2;
+    HyperparameterSetConfigBlob B = 3;
+    HyperparameterSetConfigBlob C = 4;
 }
 
 message HyperparameterConfigDiff {
-    // Hyperparameters only in A/B *or* modified between them. We can identify the modification by matching on the name.
-    repeated HyperparameterConfigBlob A = 1;
-    repeated HyperparameterConfigBlob B = 2;
+    DiffStatusEnum.DiffStatus status = 1;
+    HyperparameterConfigBlob A = 2;
+    HyperparameterConfigBlob B = 3;
+    HyperparameterConfigBlob C = 4;
 }

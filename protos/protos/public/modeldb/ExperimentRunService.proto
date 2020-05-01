@@ -5,10 +5,10 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 
 option java_multiple_files = true;
 
-import "protos/public/common/CommonService.proto";
-import "protos/public/modeldb/CommonService.proto";
+import "common/CommonService.proto";
+import "modeldb/CommonService.proto";
 import "google/api/annotations.proto";
-import "google/protobuf/struct.proto";
+// import "google/protobuf/struct.proto";
 
 /*
 * ExperimentRun Entity
@@ -40,6 +40,7 @@ message ExperimentRun {
     string job_id = 28;
     string owner = 29;
     VersioningEntry versioned_inputs = 30;
+    map<string, CodeVersion> code_version_from_blob = 31;
 }
 
 message VersioningEntry {
@@ -429,6 +430,7 @@ message FindExperimentRuns {
     int32 page_limit = 7;
     bool ascending = 9;
     string sort_key = 10;
+    string workspace_name = 11;
 
     message Response {
         repeated ExperimentRun experiment_runs = 1;
@@ -738,6 +740,7 @@ service ExperimentRunService {
         DeleteExperimentRunAttributes.Response) {
         option (google.api.http) = {
             delete: "/v1/experiment-run/deleteExperimentRunAttributes"
+            body: "*"
         };
     };
 

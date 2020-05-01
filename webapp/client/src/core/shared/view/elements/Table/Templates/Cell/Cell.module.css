@@ -1,6 +1,7 @@
 .root {
-  padding: 12px 23px;
+  padding: 10px 10px !important;
   vertical-align: top;
   background-color: white;
-  border-bottom: 1px solid #e2e2e2;
+  border-bottom: 1px solid #dedede !important;
+  word-break: break-word;
 }

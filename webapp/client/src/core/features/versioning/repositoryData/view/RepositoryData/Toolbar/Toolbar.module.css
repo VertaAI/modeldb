@@ -1,0 +1,20 @@
+.root {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumbs {
+  margin-left: 16px;
+}
+
+.actions {
+  display: flex;
+  margin-left: auto;
+}
+
+.action {
+  margin-left: 5px;
+}
+.action:first-child {
+  margin-left: 0;
+}
