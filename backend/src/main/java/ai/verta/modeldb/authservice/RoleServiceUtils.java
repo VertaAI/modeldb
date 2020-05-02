@@ -294,6 +294,8 @@ public class RoleServiceUtils implements RoleService {
         DeleteRoleBindings.newBuilder().addAllRoleBindingNames(roleBindingNames).build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+
+      // TODO: try using futur stub than blocking stub
       DeleteRoleBindings.Response deleteRoleBindingResponse =
           authServiceChannel
               .getRoleServiceBlockingStub()
