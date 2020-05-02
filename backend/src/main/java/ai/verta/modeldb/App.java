@@ -56,6 +56,7 @@ import ai.verta.modeldb.versioning.VersioningServiceImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
+import io.grpc.protobuf.services.ProtoReflectionService;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
@@ -465,6 +466,7 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("Versioning serviceImpl initialized");
     serverBuilder.addService(new MetadataServiceImpl(metadataDAO));
     LOGGER.trace("Metadata serviceImpl initialized");
+    serverBuilder.addService(ProtoReflectionService.newInstance());
     LOGGER.info("All services initialized and resolved dependency before server start");
   }
 
