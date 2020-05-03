@@ -15,7 +15,7 @@ REQUEST_LATENCY = Histogram('request_latency_seconds', 'Request latency',
 )
 
 with open('model.pkl', 'rb') as f:
-    nlp = cloudpickle.load()
+    nlp = cloudpickle.load(f)
 
 
 app = Flask(__name__)
