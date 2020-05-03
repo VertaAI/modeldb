@@ -1,7 +1,7 @@
 version: "3.5"
 services:
     model:
-        image: model:01-adhoc
+        image: model:02-mdb_versioned
         container_name: model
         expose:
         - "5000"
