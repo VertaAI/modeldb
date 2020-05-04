@@ -290,7 +290,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         logAndThrowError(
             "No datasetVersion found for dataset '"
                 + request.getDatasetId()
-                + "' from the Database",
             Code.NOT_FOUND_VALUE,
             Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
       }
