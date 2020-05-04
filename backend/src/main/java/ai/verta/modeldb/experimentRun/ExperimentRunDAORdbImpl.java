@@ -1427,10 +1427,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
-      } catch (StatusRuntimeException ex) {
-        if (ex.getStatus().getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
-            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(
-                ex.getStatus().getDescription())) {
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
           LOGGER.warn(ex.getMessage());
           ExperimentRunPaginationDTO experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
           experimentRunPaginationDTO.setExperimentRuns(Collections.emptyList());

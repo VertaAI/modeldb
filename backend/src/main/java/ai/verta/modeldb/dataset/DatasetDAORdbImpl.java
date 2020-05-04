@@ -7,6 +7,7 @@ import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
@@ -34,7 +35,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -539,10 +539,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
-      } catch (StatusRuntimeException ex) {
-        if (ex.getStatus().getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
-            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(
-                ex.getStatus().getDescription())) {
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
           LOGGER.warn(ex.getMessage());
           DatasetPaginationDTO datasetPaginationDTO = new DatasetPaginationDTO();
           datasetPaginationDTO.setDatasets(Collections.emptyList());

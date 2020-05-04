@@ -8,6 +8,7 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.authservice.AuthService;
@@ -897,10 +898,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
-      } catch (StatusRuntimeException ex) {
-        if (ex.getStatus().getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
-            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(
-                ex.getStatus().getDescription())) {
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
           LOGGER.warn(ex.getMessage());
           ExperimentPaginationDTO experimentPaginationDTO = new ExperimentPaginationDTO();
           experimentPaginationDTO.setExperiments(Collections.emptyList());

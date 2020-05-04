@@ -16,6 +16,7 @@ import ai.verta.modeldb.Job;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.OperatorEnum.Operator;
@@ -1349,7 +1350,7 @@ public class RdbmsUtils {
       CriteriaQuery<?> criteriaQuery,
       Root<?> entityRootPath,
       AuthService authService)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     List<Predicate> finalPredicatesList = new ArrayList<>();
     if (!predicates.isEmpty()) {
       List<Predicate> keyValuePredicates = new ArrayList<>();
@@ -1647,12 +1648,9 @@ public class RdbmsUtils {
               if (fuzzySearchPredicate != null) {
                 keyValuePredicates.add(fuzzySearchPredicate);
               } else {
-                Status invalidValueTypeError =
-                    Status.newBuilder()
-                        .setCode(Code.FAILED_PRECONDITION_VALUE)
-                        .setMessage(ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND)
-                        .build();
-                throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+                throw new ModelDBException(
+                    ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND,
+                    io.grpc.Status.Code.FAILED_PRECONDITION);
               }
             } else {
               expression = entityRootPath.get(predicate.getKey());
