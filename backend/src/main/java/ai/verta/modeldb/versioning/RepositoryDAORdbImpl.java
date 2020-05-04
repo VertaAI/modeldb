@@ -170,9 +170,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public Response getRepository(GetRepositoryRequest request) throws Exception {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getId());
-      session.getTransaction().commit();
       return Response.newBuilder().setRepository(repository.toProto()).build();
     }
   }
@@ -613,7 +611,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public GetTagRequest.Response getTag(GetTagRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
 
       Query query = session.createQuery(GET_TAG_HQL);
@@ -625,7 +622,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
 
       CommitEntity commitEntity = session.get(CommitEntity.class, tagsEntity.getCommit_hash());
-      session.getTransaction().commit();
       return GetTagRequest.Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
     }
   }
@@ -729,12 +725,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public GetBranchRequest.Response getBranch(GetBranchRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
 
       BranchEntity branchEntity = getBranchEntity(session, repository.getId(), request.getBranch());
       CommitEntity commitEntity = session.get(CommitEntity.class, branchEntity.getCommit_hash());
-      session.getTransaction().commit();
       return GetBranchRequest.Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
     }
   }
@@ -781,7 +775,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public ListBranchesRequest.Response listBranches(ListBranchesRequest request)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
 
       Query query = session.createQuery(GET_REPOSITORY_BRANCHES_HQL);
@@ -792,7 +785,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         return ListBranchesRequest.Response.newBuilder().setTotalRecords(0).build();
       }
 
-      session.getTransaction().commit();
       List<String> branches =
           branchEntities.stream()
               .map(branchEntity -> branchEntity.getId().getBranch())
@@ -808,7 +800,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public ListCommitsLogRequest.Response listCommitsLog(ListCommitsLogRequest request)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
 
       String referenceCommit;
@@ -866,7 +857,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public FindRepositories.Response findRepositories(FindRepositories request)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       WorkspaceDTO workspaceDTO =
           roleService.getWorkspaceDTOByWorkspaceName(userInfo, request.getWorkspaceName());

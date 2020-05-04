@@ -141,6 +141,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       } else {
         DatasetVersion datasetVersion = datasetVersionList.get(1);
         if (checkDatasetVersionAlreadyExist(session, datasetVersion)) {
+          transaction.commit();
           Status status =
               Status.newBuilder()
                   .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -291,13 +292,11 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       return new ArrayList<>();
     }
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(DATASET_VERSION_BY_IDS_QUERY);
       query.setParameterList("ids", datasetVersionIds);
 
       @SuppressWarnings("unchecked")
       List<DatasetVersionEntity> datasetEntities = query.list();
-      transaction.commit();
       LOGGER.debug("DatasetVersion by Ids getting successfully");
       return RdbmsUtils.convertDatasetVersionsFromDatasetVersionEntityList(datasetEntities);
     }
