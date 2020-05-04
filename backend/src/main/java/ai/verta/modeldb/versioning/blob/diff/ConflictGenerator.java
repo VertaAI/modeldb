@@ -155,13 +155,15 @@ public class ConflictGenerator {
     List<AutogenPythonRequirementEnvironmentDiff> retList =
         new LinkedList<AutogenPythonRequirementEnvironmentDiff>();
     for (String key : keys) {
-      retList.add(
-          Utils.removeEmpty(
-              new AutogenPythonRequirementEnvironmentDiff()
-                  .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
-                  .setA(mapA.get(key))
-                  .setB(mapB.get(key))
-                  .setC(mapC.get(key))));
+      if (!mapA.get(key).equals(mapB.get(key))) {
+        retList.add(
+            Utils.removeEmpty(
+                new AutogenPythonRequirementEnvironmentDiff()
+                    .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
+                    .setA(mapA.get(key))
+                    .setB(mapB.get(key))
+                    .setC(mapC.get(key))));
+      }
     }
     return retList;
   }
@@ -204,13 +206,15 @@ public class ConflictGenerator {
     List<AutogenEnvironmentVariablesDiff> retList =
         new LinkedList<AutogenEnvironmentVariablesDiff>();
     for (String key : keys) {
-      retList.add(
-          Utils.removeEmpty(
-              new AutogenEnvironmentVariablesDiff()
-                  .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
-                  .setA(mapA.get(key))
-                  .setB(mapB.get(key))
-                  .setC(mapC.get(key))));
+      if (!mapA.get(key).equals(mapB.get(key))) {
+        retList.add(
+            Utils.removeEmpty(
+                new AutogenEnvironmentVariablesDiff()
+                    .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
+                    .setA(mapA.get(key))
+                    .setB(mapB.get(key))
+                    .setC(mapC.get(key))));
+      }
     }
     return retList;
   }
@@ -288,13 +292,15 @@ public class ConflictGenerator {
     List<AutogenHyperparameterSetConfigDiff> retList =
         new LinkedList<AutogenHyperparameterSetConfigDiff>();
     for (String key : keys) {
-      retList.add(
-          Utils.removeEmpty(
-              new AutogenHyperparameterSetConfigDiff()
-                  .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
-                  .setA(mapA.get(key))
-                  .setB(mapB.get(key))
-                  .setC(mapC.get(key))));
+      if (!mapA.get(key).equals(mapB.get(key))) {
+        retList.add(
+            Utils.removeEmpty(
+                new AutogenHyperparameterSetConfigDiff()
+                    .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
+                    .setA(mapA.get(key))
+                    .setB(mapB.get(key))
+                    .setC(mapC.get(key))));
+      }
     }
     return retList;
   }
@@ -336,13 +342,15 @@ public class ConflictGenerator {
     List<AutogenHyperparameterConfigDiff> retList =
         new LinkedList<AutogenHyperparameterConfigDiff>();
     for (String key : keys) {
-      retList.add(
-          Utils.removeEmpty(
-              new AutogenHyperparameterConfigDiff()
-                  .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
-                  .setA(mapA.get(key))
-                  .setB(mapB.get(key))
-                  .setC(mapC.get(key))));
+      if (!mapA.get(key).equals(mapB.get(key))) {
+        retList.add(
+            Utils.removeEmpty(
+                new AutogenHyperparameterConfigDiff()
+                    .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
+                    .setA(mapA.get(key))
+                    .setB(mapB.get(key))
+                    .setC(mapC.get(key))));
+      }
     }
     return retList;
   }
@@ -452,13 +460,15 @@ public class ConflictGenerator {
     keys.retainAll(mapB.keySet());
     List<AutogenS3DatasetComponentDiff> retList = new LinkedList<AutogenS3DatasetComponentDiff>();
     for (String key : keys) {
-      retList.add(
-          Utils.removeEmpty(
-              new AutogenS3DatasetComponentDiff()
-                  .setA(mapA.get(key))
-                  .setB(mapB.get(key))
-                  .setC(mapC.get(key))
-                  .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))));
+      if (!mapA.get(key).equals(mapB.get(key))) {
+        retList.add(
+            Utils.removeEmpty(
+                new AutogenS3DatasetComponentDiff()
+                    .setA(mapA.get(key))
+                    .setB(mapB.get(key))
+                    .setC(mapC.get(key))
+                    .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))));
+      }
     }
     return retList;
   }
@@ -515,13 +525,15 @@ public class ConflictGenerator {
     List<AutogenPathDatasetComponentDiff> retList =
         new LinkedList<AutogenPathDatasetComponentDiff>();
     for (String key : keys) {
-      retList.add(
-          Utils.removeEmpty(
-              new AutogenPathDatasetComponentDiff()
-                  .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
-                  .setA(mapA.get(key))
-                  .setB(mapB.get(key))
-                  .setC(mapC.get(key))));
+      if (!mapA.get(key).equals(mapB.get(key))) {
+        retList.add(
+            Utils.removeEmpty(
+                new AutogenPathDatasetComponentDiff()
+                    .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
+                    .setA(mapA.get(key))
+                    .setB(mapB.get(key))
+                    .setC(mapC.get(key))));
+      }
     }
     return retList;
   }
