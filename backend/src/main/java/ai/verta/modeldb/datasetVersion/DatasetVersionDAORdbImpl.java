@@ -9,6 +9,7 @@ import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
@@ -27,7 +28,6 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -339,10 +339,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
-      } catch (StatusRuntimeException ex) {
-        if (ex.getStatus().getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
-            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(
-                ex.getStatus().getDescription())) {
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
           LOGGER.warn(ex.getMessage());
           DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
           datasetVersionDTO.setDatasetVersions(Collections.emptyList());
