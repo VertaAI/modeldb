@@ -425,7 +425,7 @@ public class ConflictGenerator {
             .setS3(
                 getS3DatasetConflictBlob(
                     a == null ? null : a.getS3(),
-                    a == null ? null : b.getS3(),
+                    b == null ? null : b.getS3(),
                     c == null ? null : c.getS3())));
   }
 
