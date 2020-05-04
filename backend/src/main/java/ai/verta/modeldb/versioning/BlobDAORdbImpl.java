@@ -277,12 +277,22 @@ public class BlobDAORdbImpl implements BlobDAO {
       Map<String, Entry<BlobExpanded, String>> blobExpandedMap,
       InternalFolderElementEntity elementFolder,
       Blob blob) {
-    BlobExpanded blobExpanded =
-        BlobExpanded.newBuilder()
-            .addAllLocation(parentLocation)
-            .addLocation(elementFolder.getElement_name())
-            .setBlob(blob)
-            .build();
+    BlobExpanded blobExpanded;
+    if (parentLocation.size() == 1
+        && new ArrayList<>(parentLocation).get(0).equals(elementFolder.getElement_name())) {
+      blobExpanded =
+          BlobExpanded.newBuilder()
+              .addLocation(elementFolder.getElement_name())
+              .setBlob(blob)
+              .build();
+    } else {
+      blobExpanded =
+          BlobExpanded.newBuilder()
+              .addAllLocation(parentLocation)
+              .addLocation(elementFolder.getElement_name())
+              .setBlob(blob)
+              .build();
+    }
     blobExpandedMap.put(
         getStringFromLocationList(blobExpanded.getLocationList()),
         new SimpleEntry<>(blobExpanded, elementFolder.getElement_sha()));
