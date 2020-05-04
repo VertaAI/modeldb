@@ -32,6 +32,16 @@ Release Notes
      <>`__
 
 
+v0.14.4 (2020-05-04)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `run.log_training_data() no longer uploads a "train_data" artifact, and instead directly
+  generates a histogram for deployment data monitoring
+  <https://github.com/VertaAI/modeldb/pull/576>`__
+
+
 v0.14.3 (2020-04-20)
 --------------------
 
