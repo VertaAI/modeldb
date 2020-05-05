@@ -147,6 +147,10 @@ public class VersioningModeldbEntityMapping implements Serializable {
     this.config_blob_entities = config_blob_entities;
   }
 
+  public Set<ConfigBlobEntity> getConfig_blob_entities() {
+    return config_blob_entities;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

@@ -1,5 +1,7 @@
 package ai.verta.modeldb.experimentRun;
 
+import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
+
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.Artifact;
@@ -37,6 +39,7 @@ import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
+import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -332,6 +335,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 locationBlobWithHashMap,
                 experimentRunObj);
         experimentRunObj.setVersioned_inputs(versioningModeldbEntityMappings);
+        Set<HyperparameterElementMappingEntity> hyrParamMappings =
+            prepareHyperparameterElemMappings(experimentRunObj, versioningModeldbEntityMappings);
+
+        if (!hyrParamMappings.isEmpty()) {
+          experimentRunObj.setHyperparameter_element_mappings(new ArrayList<>(hyrParamMappings));
+        }
       }
       session.saveOrUpdate(experimentRunObj);
 
@@ -352,6 +361,36 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       LOGGER.debug("ExperimentRun created successfully");
       return experimentRun;
     }
+  }
+
+  private Set<HyperparameterElementMappingEntity> prepareHyperparameterElemMappings(
+      ExperimentRunEntity experimentRunObj,
+      List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings) {
+    Set<HyperparameterElementMappingEntity> hyrParamMappings = new HashSet<>();
+    versioningModeldbEntityMappings.forEach(
+        versioningModeldbEntityMapping ->
+            versioningModeldbEntityMapping
+                .getConfig_blob_entities()
+                .forEach(
+                    configBlobEntity -> {
+                      if (configBlobEntity.getHyperparameter_type().equals(HYPERPARAMETER)) {
+                        HyperparameterElementConfigBlobEntity hyperparamElemConfBlobEntity =
+                            configBlobEntity.getHyperparameterElementConfigBlobEntity();
+                        try {
+                          HyperparameterElementMappingEntity hyrParamMapping =
+                              new HyperparameterElementMappingEntity(
+                                  experimentRunObj,
+                                  hyperparamElemConfBlobEntity.getName(),
+                                  hyperparamElemConfBlobEntity.toProto());
+                          hyrParamMappings.add(hyrParamMapping);
+                        } catch (ModelDBException e) {
+                          // This is never call because if something is wrong at this point then
+                          // error will throw before this running 'for' loop
+                          LOGGER.warn(e.getMessage());
+                        }
+                      }
+                    }));
+    return hyrParamMappings;
   }
 
   @Override
@@ -1538,7 +1577,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     String queryBuilder =
         "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds)";
     Query query = session.createQuery(queryBuilder);
-    query.setParameter("hyperparameterType", ConfigBlobEntity.HYPERPARAMETER);
+    query.setParameter("hyperparameterType", HYPERPARAMETER);
     query.setParameterList("expRunIds", expRunIds);
     LOGGER.debug(
         "Final experimentRuns hyperparameter config blob final query : {}", query.getQueryString());
@@ -1551,7 +1590,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           objects -> {
             String expRunId = (String) objects[0];
             ConfigBlobEntity configBlobEntity = (ConfigBlobEntity) objects[1];
-            if (configBlobEntity.getHyperparameter_type() == ConfigBlobEntity.HYPERPARAMETER) {
+            if (configBlobEntity.getHyperparameter_type() == HYPERPARAMETER) {
               HyperparameterElementConfigBlobEntity hyperElementConfigBlobEntity =
                   configBlobEntity.getHyperparameterElementConfigBlobEntity();
               HyperparameterValuesConfigBlob valuesConfigBlob =
@@ -2039,6 +2078,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         existingMappings.addAll(finalVersionList);
       }
       runEntity.setVersioned_inputs(existingMappings);
+
+      Set<HyperparameterElementMappingEntity> hyrParamMappings =
+          prepareHyperparameterElemMappings(runEntity, versioningModeldbEntityMappings);
+
+      if (!hyrParamMappings.isEmpty()) {
+        runEntity.setHyperparameter_element_mappings(new ArrayList<>(hyrParamMappings));
+      }
 
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);

@@ -35,6 +35,7 @@ import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
+import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.config.HyperparameterSetConfigBlobEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.S3DatasetComponentBlobEntity;
@@ -152,7 +153,8 @@ public class ModelDBHibernateUtil {
     GitCodeBlobEntity.class,
     NotebookCodeBlobEntity.class,
     BranchEntity.class,
-    VersioningModeldbEntityMapping.class
+    VersioningModeldbEntityMapping.class,
+    HyperparameterElementMappingEntity.class
   };
 
   private ModelDBHibernateUtil() {}
