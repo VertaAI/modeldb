@@ -13,7 +13,7 @@
 # Ad Hoc
 The ad hoc workflow logs model ingredients to S3 and fetches them, one by one, to deploy them. This can lead to mismatched artifacts if S3 buckets are not carefully managed, and it can be difficult to track what results are associated with what model.
 
-1. Run [the notebook](https://github.com/VertaAI/modeldb/blob/master/demos/webinar-2020-5-6/01-ad_hoc/01-train/NLP training.ipynb), logging model ingredients to S3.
+1. Run [the notebook](https://github.com/VertaAI/modeldb/blob/master/demos/webinar-2020-5-6/01-ad_hoc/01-train/NLP%20training.ipynb), logging model ingredients to S3.
 1. Run [the Jenkins pipeline](https://github.com/VertaAI/modeldb/blob/master/demos/webinar-2020-5-6/01-ad_hoc/02-package/s3-build.Jenkinsfile), building a Docker image to serve the model.
     1. Or run [`02-package/run.sh`](https://github.com/VertaAI/modeldb/blob/master/demos/webinar-2020-5-6/01-ad_hoc/02-package/run.sh) directly, setting the environment variables `BUCKET`, `MODEL_PATH`, and `METADATA_PATH` to point at the model ingredients on S3.
 1. Run [`03-predict/run.sh`](https://github.com/VertaAI/modeldb/blob/master/demos/webinar-2020-5-6/01-ad_hoc/03-predict/run.sh) to serve the model.
@@ -32,16 +32,16 @@ The ModelDB Versioning workflow leverages our versioning system to snapshot mode
 1. Run [`03-predict/run.sh`](https://github.com/VertaAI/modeldb/blob/master/demos/webinar-2020-5-6/02-mdb_versioned/03-predict/run.sh) to serve the model.
     1. Run [`03-predict/predict.sh`](https://github.com/VertaAI/modeldb/blob/master/demos/webinar-2020-5-6/02-mdb_versioned/03-predict/predict.sh) to make predictions against the model at `localhost:5000`.
         - Try a few German phrases, as well!
-        ```python
-        [
-            "Guten Morgen.",  # Good morning.
-            "Gute Nacht.",  # Good night!
-            "Sie sind sehr freundlich.",  # You're very kind!
+          ```python
+          [
+              "Guten Morgen.",  # Good morning.
+              "Gute Nacht.",  # Good night!
+              "Sie sind sehr freundlich.",  # You're very kind!
 
-            "Da muss ich widersprechen.",  # I disagree.
-            "Es ist ein Notfall!",  # It's an emergency!
-            "Ich verstehe nicht.",  # I don't understand.
-            "Ich bin sauer.",  # I'm angry.
-        ]
-        ```
+              "Da muss ich widersprechen.",  # I disagree.
+              "Es ist ein Notfall!",  # It's an emergency!
+              "Ich verstehe nicht.",  # I don't understand.
+              "Ich bin sauer.",  # I'm angry.
+          ]
+          ```
     1. View live metrics from the model in your web browser at `http://localhost:9090/`.
