@@ -41,4 +41,4 @@ The ModelDB Versioning workflow leverages our versioning system to snapshot mode
               "Ich bin sauer.",              # I'm angry.
           ]
           ```
-    1. View live metrics from the model in your web browser at `http://localhost:9090/`.
+    1. View live metrics from the model in your web browser at http://localhost:9090/.
