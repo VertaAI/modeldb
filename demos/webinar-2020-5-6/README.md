@@ -31,14 +31,14 @@ The ModelDB Versioning workflow leverages our versioning system to snapshot mode
         - Try a few German phrases, as well!
           ```python
           [
-              "Guten Morgen.",  # Good morning.
-              "Gute Nacht.",  # Good night!
-              "Sie sind sehr freundlich.",  # You're very kind!
+              "Guten Morgen.",               # Good morning.
+              "Gute Nacht.",                 # Good night!
+              "Sie sind sehr freundlich.",   # You're very kind!
 
               "Da muss ich widersprechen.",  # I disagree.
-              "Es ist ein Notfall!",  # It's an emergency!
-              "Ich verstehe nicht.",  # I don't understand.
-              "Ich bin sauer.",  # I'm angry.
+              "Es ist ein Notfall!",         # It's an emergency!
+              "Ich verstehe nicht.",         # I don't understand.
+              "Ich bin sauer.",              # I'm angry.
           ]
           ```
     1. View live metrics from the model in your web browser at `http://localhost:9090/`.
