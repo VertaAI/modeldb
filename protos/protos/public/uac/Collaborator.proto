@@ -69,6 +69,15 @@ message GetCollaborator {
     }
 }
 
+message RemoveAllCollaborators {
+    repeated string resource_ids = 1; // project.id, experiment.id etc.
+    ResourceType resource_type = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
 service CollaboratorService {
     rpc addOrUpdateProjectCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
         option (google.api.http) = {
@@ -124,6 +133,12 @@ service CollaboratorService {
     rpc getRepositoryCollaborators (GetCollaborator) returns (GetCollaborator.Response){
         option (google.api.http) = {
             get: "/v1/collaborator/getRepositoryCollaborators"
+        };
+    };
+
+    rpc removeAllCollaborators (RemoveAllCollaborators) returns (RemoveAllCollaborators.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeAllCollaborators"
         };
     };
 }
