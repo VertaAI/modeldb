@@ -568,7 +568,7 @@ public class MergeTest {
                                 .setMinor(19)
                                 .setPatch(1)))
                 .setVersion(
-                    VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(4));
+                    VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(3));
         PythonEnvironmentBlob.Builder pythonBuilder3 =
             PythonEnvironmentBlob.newBuilder()
                 .addRequirements(
@@ -578,7 +578,7 @@ public class MergeTest {
                             VersionEnvironmentBlob.newBuilder()
                                 .setMajor(1)
                                 .setMinor(1)
-                                .setPatch(2)))
+                                .setPatch(1)))
                 .addRequirements(
                     PythonRequirementEnvironmentBlob.newBuilder()
                         .setLibrary("numpy")
@@ -586,10 +586,11 @@ public class MergeTest {
                         .setVersion(
                             VersionEnvironmentBlob.newBuilder()
                                 .setMajor(1)
-                                .setMinor(19)
+                                .setMinor(17)
                                 .setPatch(1)))
                 .setVersion(
-                    VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(4));
+                    VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(3));
+
         EnvironmentBlob.Builder builder =
             EnvironmentBlob.newBuilder()
                 .addAllCommandLine(Arrays.asList("ECHO 123", "ls ..", "make all"))

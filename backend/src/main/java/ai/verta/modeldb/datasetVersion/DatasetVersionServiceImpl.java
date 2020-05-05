@@ -288,8 +288,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getDatasetId(), 1, 1, request.getAscending(), sortKey, userInfo);
       if (datasetVersionDTO.getDatasetVersions().size() != 1) {
         logAndThrowError(
-            "No datasetVersion found for dataset '"
-                + request.getDatasetId(),
+            "No datasetVersion found for dataset '" + request.getDatasetId(),
             Code.NOT_FOUND_VALUE,
             Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
       }

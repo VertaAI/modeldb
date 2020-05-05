@@ -135,6 +135,7 @@ public class ConflictGenerator {
       AutogenVersionEnvironmentDiff a,
       AutogenVersionEnvironmentDiff b,
       AutogenVersionEnvironmentBlob c) {
+    if (a.equals(b)) return null;
     return Utils.removeEmpty(
         new AutogenVersionEnvironmentDiff()
             .setA(a == null ? null : a.getB())
@@ -247,6 +248,7 @@ public class ConflictGenerator {
       AutogenDockerEnvironmentDiff a,
       AutogenDockerEnvironmentDiff b,
       AutogenDockerEnvironmentBlob c) {
+    if (a.equals(b)) return null;
     return Utils.removeEmpty(
         new AutogenDockerEnvironmentDiff()
             .setA(a == null ? null : a.getB())
@@ -256,6 +258,7 @@ public class ConflictGenerator {
 
   private static AutogenCommandLineEnvironmentDiff getCommandLineDiff(
       AutogenCommandLineEnvironmentDiff a, AutogenCommandLineEnvironmentDiff b, List<String> c) {
+    if (a.equals(b)) return null;
     return Utils.removeEmpty(
         new AutogenCommandLineEnvironmentDiff()
             .setA(a == null ? null : a.getB())
@@ -414,6 +417,7 @@ public class ConflictGenerator {
 
   private static AutogenGitCodeDiff getGitDiff(
       AutogenGitCodeDiff a, AutogenGitCodeDiff b, AutogenGitCodeBlob c) {
+    if (a.equals(b)) return null;
     AutogenGitCodeDiff ret = new AutogenGitCodeDiff();
     return ret.setA(a == null ? null : a.getB())
         .setB(b == null ? null : b.getB())
