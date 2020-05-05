@@ -246,11 +246,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         }
       }
 
-      // Remove all datasetEntity collaborators
-      roleBindingNames.addAll(
-          roleService.getResourceRoleBindings(
-              datasetId, datasetEntity.getOwner(), ModelDBServiceResourceTypes.DATASET));
-
       // Delete workspace based roleBindings
       List<String> workspaceRoleBindingNames =
           getWorkspaceRoleBindings(
@@ -262,6 +257,11 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         roleBindingNames.addAll(workspaceRoleBindingNames);
       }
     }
+
+    // Remove all datasetEntity collaborators
+    roleService.deleteAllResourceCollaborators(
+        allowedDatasets.stream().map(DatasetEntity::getId).collect(Collectors.toList()),
+        ModelDBServiceResourceTypes.DATASET);
   }
 
   private List<String> getWorkspaceRoleBindings(

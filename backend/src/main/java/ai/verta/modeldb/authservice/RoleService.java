@@ -83,11 +83,6 @@ public interface RoleService {
       CollaboratorBase collaborator,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  List<String> getResourceRoleBindings(
-      String resourceId,
-      String resourceOwnerId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
   RoleBinding getRoleBindingByName(String roleBindingName);
 
   List<String> getSelfAllowedResources(
@@ -152,4 +147,7 @@ public interface RoleService {
       ModelDBServiceResourceTypes resourceType,
       boolean orgScopedPublic,
       String globalSharing);
+
+  boolean deleteAllResourceCollaborators(
+      List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 }

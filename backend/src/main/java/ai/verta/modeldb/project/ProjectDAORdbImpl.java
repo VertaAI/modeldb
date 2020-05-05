@@ -744,9 +744,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
 
       // Remove all project collaborators
-      roleBindingNames.addAll(
-          roleService.getResourceRoleBindings(
-              projectId, project.getOwner(), ModelDBServiceResourceTypes.PROJECT));
+      /*roleBindingNames.addAll(
+      roleService.getResourceRoleBindings(
+          projectId, project.getOwner(), ModelDBServiceResourceTypes.PROJECT));*/
 
       // Delete workspace based roleBindings
       List<String> workspaceRoleBindingNames =
@@ -757,6 +757,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               ProjectVisibility.forNumber(project.getProject_visibility()));
       roleBindingNames.addAll(workspaceRoleBindingNames);
     }
+
+    roleService.deleteAllResourceCollaborators(
+        allowedProjects.stream().map(ProjectEntity::getId).collect(Collectors.toList()),
+        ModelDBServiceResourceTypes.PROJECT);
   }
 
   private List<String> getWorkspaceRoleBindings(

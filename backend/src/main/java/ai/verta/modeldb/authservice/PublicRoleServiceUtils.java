@@ -157,14 +157,6 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<String> getResourceRoleBindings(
-      String resourceId,
-      String resourceOwnerId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return Collections.emptyList();
-  }
-
-  @Override
   public RoleBinding getRoleBindingByName(String roleBindingName) {
     return null;
   }
@@ -262,5 +254,11 @@ public class PublicRoleServiceUtils implements RoleService {
       boolean orgScopedPublic,
       String globalSharing) {
     return Collections.emptyList();
+  }
+
+  @Override
+  public boolean deleteAllResourceCollaborators(
+      List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return true;
   }
 }
