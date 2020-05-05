@@ -1,7 +1,6 @@
 # Prerequisites
 
 - Python requirements (`python -m pip install -r requirements.txt`)
-- ModelDB Client (`python -m pip install "verta>=0.14.4"`)
 - ModelDB (`docker-compose -f docker-compose-all.yaml pull` at this repository's root)
 - [Docker](https://docs.docker.com/get-docker/)
 - [Jenkins](https://www.jenkins.io/download/)

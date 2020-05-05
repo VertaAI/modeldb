@@ -4,4 +4,4 @@ jupyter
 numpy
 pandas
 spacy>=2
-verta
+verta>=1.14.4
