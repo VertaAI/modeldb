@@ -9,6 +9,7 @@ import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
@@ -140,6 +141,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       } else {
         DatasetVersion datasetVersion = datasetVersionList.get(1);
         if (checkDatasetVersionAlreadyExist(session, datasetVersion)) {
+          transaction.commit();
           Status status =
               Status.newBuilder()
                   .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -290,13 +292,11 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       return new ArrayList<>();
     }
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(DATASET_VERSION_BY_IDS_QUERY);
       query.setParameterList("ids", datasetVersionIds);
 
       @SuppressWarnings("unchecked")
       List<DatasetVersionEntity> datasetEntities = query.list();
-      transaction.commit();
       LOGGER.debug("DatasetVersion by Ids getting successfully");
       return RdbmsUtils.convertDatasetVersionsFromDatasetVersionEntityList(datasetEntities);
     }
@@ -331,11 +331,22 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       List<KeyValueQuery> predicates = queryParameters.getPredicatesList();
       String entityName = "datasetVersionEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, datasetVersionRoot, authService);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, datasetVersionRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
+          LOGGER.warn(ex.getMessage());
+          DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
+          datasetVersionDTO.setDatasetVersions(Collections.emptyList());
+          datasetVersionDTO.setTotalRecords(0L);
+          return datasetVersionDTO;
+        }
       }
 
       String sortBy = queryParameters.getSortKey();

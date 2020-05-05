@@ -1418,11 +1418,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       LOGGER.trace("Added entity predicates");
       String entityName = "experimentRunEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, experimentRunRoot, authService);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, experimentRunRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
+          LOGGER.warn(ex.getMessage());
+          ExperimentRunPaginationDTO experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
+          experimentRunPaginationDTO.setExperimentRuns(Collections.emptyList());
+          experimentRunPaginationDTO.setTotalRecords(0L);
+          return experimentRunPaginationDTO;
+        }
       }
 
       Order[] orderBy =

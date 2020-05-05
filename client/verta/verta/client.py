@@ -3562,6 +3562,10 @@ class ExperimentRun(_ModelDBEntity):
         """
         Associate training data with this Experiment Run.
 
+        .. versionchanged:: 0.14.4
+           Instead of uploading the data itself as a CSV artifact ``'train_data'``, this method now
+           generates a histogram for internal use by our deployment data monitoring system.
+
         Parameters
         ----------
         train_features : pd.DataFrame

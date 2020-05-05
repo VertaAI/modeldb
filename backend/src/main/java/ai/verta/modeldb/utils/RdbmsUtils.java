@@ -16,6 +16,7 @@ import ai.verta.modeldb.Job;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.OperatorEnum.Operator;
@@ -1349,10 +1350,10 @@ public class RdbmsUtils {
       CriteriaQuery<?> criteriaQuery,
       Root<?> entityRootPath,
       AuthService authService)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     List<Predicate> finalPredicatesList = new ArrayList<>();
     if (!predicates.isEmpty()) {
-      Predicate[] keyValuePredicates = new Predicate[predicates.size()];
+      List<Predicate> keyValuePredicates = new ArrayList<>();
       for (int index = 0; index < predicates.size(); index++) {
         KeyValueQuery predicate = predicates.get(index);
         String errorMessage = null;
@@ -1403,8 +1404,8 @@ public class RdbmsUtils {
               artifactPredicatesOne[indexJ] = artifactValuePredicates.get(indexJ);
             }
             subquery.where(builder.and(artifactPredicatesOne));
-            keyValuePredicates[index] =
-                getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+            keyValuePredicates.add(
+                getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             break;
           case ModelDBConstants.DATASETS:
             LOGGER.debug("switch case : Datasets");
@@ -1424,8 +1425,8 @@ public class RdbmsUtils {
               datasetPredicatesOne[indexJ] = datasetValuePredicates.get(indexJ);
             }
             subquery.where(builder.and(datasetPredicatesOne));
-            keyValuePredicates[index] =
-                getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+            keyValuePredicates.add(
+                getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             break;
           case ModelDBConstants.ATTRIBUTES:
             LOGGER.debug("switch case : Attributes");
@@ -1445,8 +1446,8 @@ public class RdbmsUtils {
               attributePredicatesOne[indexJ] = attributeValuePredicates.get(indexJ);
             }
             subquery.where(builder.and(attributePredicatesOne));
-            keyValuePredicates[index] =
-                getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+            keyValuePredicates.add(
+                getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             break;
           case ModelDBConstants.HYPERPARAMETERS:
             LOGGER.debug("switch case : Hyperparameters");
@@ -1487,7 +1488,7 @@ public class RdbmsUtils {
                     operator,
                     subqueryVersion);
             predicatesArr[1] = newHyperparameterPredicate;
-            keyValuePredicates[index] = builder.or(predicatesArr);
+            keyValuePredicates.add(builder.or(predicatesArr));
             break;
           case ModelDBConstants.METRICS:
             LOGGER.debug("switch case : Metrics");
@@ -1507,8 +1508,8 @@ public class RdbmsUtils {
               metricsPredicatesOne[indexJ] = metricsValuePredicates.get(indexJ);
             }
             subquery.where(builder.and(metricsPredicatesOne));
-            keyValuePredicates[index] =
-                getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+            keyValuePredicates.add(
+                getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             break;
           case ModelDBConstants.OBSERVATIONS:
             LOGGER.debug("switch case : Observation");
@@ -1537,8 +1538,8 @@ public class RdbmsUtils {
                     obrAttrPredicatesOne[indexJ] = obrAttrValuePredicates.get(indexJ);
                   }
                   subquery.where(builder.and(obrAttrPredicatesOne));
-                  keyValuePredicates[index] =
-                      getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+                  keyValuePredicates.add(
+                      getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
                   break;
                 case ModelDBConstants.ARTIFACTS:
                   LOGGER.debug("switch case : Observation --> Artifact");
@@ -1559,8 +1560,8 @@ public class RdbmsUtils {
                     obrArtPredicatesOne[indexJ] = obrArtValuePredicates.get(indexJ);
                   }
                   subquery.where(builder.and(obrArtPredicatesOne));
-                  keyValuePredicates[index] =
-                      getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+                  keyValuePredicates.add(
+                      getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
                   break;
 
                 default:
@@ -1581,8 +1582,8 @@ public class RdbmsUtils {
               subquery.select(
                   observationEntityRootEntityRoot.get(entityName).get(ModelDBConstants.ID));
               subquery.where(observationValuePredicate);
-              keyValuePredicates[index] =
-                  getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+              keyValuePredicates.add(
+                  getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             }
             break;
           case ModelDBConstants.FEATURES:
@@ -1598,8 +1599,8 @@ public class RdbmsUtils {
 
             subquery.select(featureEntityRoot.get(entityName).get(ModelDBConstants.ID));
             subquery.where(featureValuePredicate);
-            keyValuePredicates[index] =
-                getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+            keyValuePredicates.add(
+                getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             break;
           case ModelDBConstants.TAGS:
             LOGGER.debug("switch case : tags");
@@ -1614,8 +1615,8 @@ public class RdbmsUtils {
 
             subquery.select(tagsMappingRoot.get(entityName).get(ModelDBConstants.ID));
             subquery.where(tagValuePredicate);
-            keyValuePredicates[index] =
-                getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+            keyValuePredicates.add(
+                getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             break;
           case ModelDBConstants.VERSIONED_INPUTS:
             LOGGER.debug("switch case : versioned_inputs");
@@ -1635,8 +1636,8 @@ public class RdbmsUtils {
               versioningPredicatesOne[indexJ] = versioningValuePredicates.get(indexJ);
             }
             subquery.where(builder.and(versioningPredicatesOne));
-            keyValuePredicates[index] =
-                getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+            keyValuePredicates.add(
+                getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             break;
           default:
             predicate = predicate.toBuilder().setOperator(operator).build();
@@ -1645,18 +1646,28 @@ public class RdbmsUtils {
               Predicate fuzzySearchPredicate =
                   getFuzzyUsersQueryPredicate(authService, builder, entityRootPath, predicate);
               if (fuzzySearchPredicate != null) {
-                keyValuePredicates[index] = fuzzySearchPredicate;
+                keyValuePredicates.add(fuzzySearchPredicate);
+              } else {
+                throw new ModelDBException(
+                    ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND,
+                    io.grpc.Status.Code.FAILED_PRECONDITION);
               }
             } else {
               expression = entityRootPath.get(predicate.getKey());
               Predicate queryPredicate =
                   RdbmsUtils.getValuePredicate(builder, predicate.getKey(), expression, predicate);
-              keyValuePredicates[index] = queryPredicate;
+              keyValuePredicates.add(queryPredicate);
               criteriaQuery.multiselect(entityRootPath, expression);
             }
         }
       }
-      finalPredicatesList.add(builder.and(keyValuePredicates));
+      if (!keyValuePredicates.isEmpty()) {
+        Predicate[] finalKeyValuePredicates = new Predicate[keyValuePredicates.size()];
+        for (int indexJ = 0; indexJ < keyValuePredicates.size(); indexJ++) {
+          finalKeyValuePredicates[indexJ] = keyValuePredicates.get(indexJ);
+        }
+        finalPredicatesList.add(builder.and(finalKeyValuePredicates));
+      }
     }
     return finalPredicatesList;
   }
