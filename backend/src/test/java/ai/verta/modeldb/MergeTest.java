@@ -626,7 +626,7 @@ public class MergeTest {
 
         blobExpanded4 =
             BlobExpanded.newBuilder()
-                .setBlob(Blob.newBuilder().setEnvironment(builder.setPython(pythonBuilder2)))
+                .setBlob(Blob.newBuilder().setEnvironment(builder.setPython(pythonBuilder3)))
                 .addAllLocation(LOCATION1)
                 .build();
         break;
