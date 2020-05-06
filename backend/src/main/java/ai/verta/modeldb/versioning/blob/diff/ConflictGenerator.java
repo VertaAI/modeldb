@@ -61,7 +61,7 @@ public class ConflictGenerator {
       List<BlobDiff> locSpecificBlobDiffB,
       Blob parentBlob)
       throws ModelDBException {
-    if (locSpecificBlobDiffA.size() != locSpecificBlobDiffB.size()) {
+    if (locSpecificBlobDiffA.size() != 1) {
       LOGGER.warn("expecting diffs of same size");
       throw new ModelDBException("different size of diff not expected", Code.INTERNAL);
     }
@@ -135,6 +135,7 @@ public class ConflictGenerator {
       AutogenVersionEnvironmentDiff a,
       AutogenVersionEnvironmentDiff b,
       AutogenVersionEnvironmentBlob c) {
+    if ((a == null && b == null) || (a != null && a.equals(b))) return null;
     return Utils.removeEmpty(
         new AutogenVersionEnvironmentDiff()
             .setA(a == null ? null : a.getB())
@@ -247,6 +248,7 @@ public class ConflictGenerator {
       AutogenDockerEnvironmentDiff a,
       AutogenDockerEnvironmentDiff b,
       AutogenDockerEnvironmentBlob c) {
+    if ((a == null && b == null) || (a != null && a.equals(b))) return null;
     return Utils.removeEmpty(
         new AutogenDockerEnvironmentDiff()
             .setA(a == null ? null : a.getB())
@@ -256,6 +258,7 @@ public class ConflictGenerator {
 
   private static AutogenCommandLineEnvironmentDiff getCommandLineDiff(
       AutogenCommandLineEnvironmentDiff a, AutogenCommandLineEnvironmentDiff b, List<String> c) {
+    if ((a == null && b == null) || (a != null && a.equals(b))) return null;
     return Utils.removeEmpty(
         new AutogenCommandLineEnvironmentDiff()
             .setA(a == null ? null : a.getB())
@@ -397,23 +400,28 @@ public class ConflictGenerator {
 
   private static AutogenNotebookCodeDiff getNoteBookDiff(
       AutogenNotebookCodeDiff a, AutogenNotebookCodeDiff b, AutogenNotebookCodeBlob c) {
-    return Utils.removeEmpty(
+
+    AutogenNotebookCodeDiff diff =
         new AutogenNotebookCodeDiff()
             .setGitRepo(
                 getGitDiff(
                     a == null ? null : a.getGitRepo(),
                     b == null ? null : b.getGitRepo(),
-                    c == null ? null : c.getGitRepo()))
-            .setPath(
-                new AutogenPathDatasetComponentDiff()
-                    .setA(a == null || a.getPath() == null ? null : a.getPath().getB())
-                    .setB(b == null || b.getPath() == null ? null : b.getPath().getB())
-                    .setC(c == null ? null : c.getPath())
-                    .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))));
+                    c == null ? null : c.getGitRepo()));
+    if (((a == null || a.getPath() == null) && (b == null || b.getPath() == null))
+        || (a != null && a.equals(b))) return Utils.removeEmpty(diff);
+    diff.setPath(
+        new AutogenPathDatasetComponentDiff()
+            .setA(a == null || a.getPath() == null ? null : a.getPath().getB())
+            .setB(b == null || b.getPath() == null ? null : b.getPath().getB())
+            .setC(c == null ? null : c.getPath())
+            .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED)));
+    return Utils.removeEmpty(diff);
   }
 
   private static AutogenGitCodeDiff getGitDiff(
       AutogenGitCodeDiff a, AutogenGitCodeDiff b, AutogenGitCodeBlob c) {
+    if ((a == null && b == null) || (a != null && a.equals(b))) return null;
     AutogenGitCodeDiff ret = new AutogenGitCodeDiff();
     return ret.setA(a == null ? null : a.getB())
         .setB(b == null ? null : b.getB())
