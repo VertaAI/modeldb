@@ -156,7 +156,12 @@ public class FindRepositoriesQuery {
                     .append(" ON ");
                 String[] joinClauses = new String[2];
                 joinClauses[0] =
-                    joinAlias + ".id.entity_hash = " + alias + "." + ModelDBConstants.ID;
+                    joinAlias
+                        + ".id.entity_hash = CAST("
+                        + alias
+                        + "."
+                        + ModelDBConstants.ID
+                        + " as string)";
                 joinClauses[1] =
                     joinAlias
                         + ".id.entity_type = "
@@ -167,7 +172,6 @@ public class FindRepositoriesQuery {
             });
       }
 
-      // StringBuilder whereClause = new StringBuilder();
       List<String> whereClauseList = new ArrayList<>();
       if (workspaceDTO != null
           && workspaceDTO.getWorkspaceId() != null
@@ -240,7 +244,6 @@ public class FindRepositoriesQuery {
       if (!whereClause.toString().isEmpty()) {
         countQueryBuilder.append(" WHERE ").append(whereClause);
       }
-      countQueryBuilder.append(orderClause);
       this.countQueryString = countQueryBuilder.toString();
 
       LOGGER.trace("Creating HQL query");

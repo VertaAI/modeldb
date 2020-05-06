@@ -1178,7 +1178,6 @@ public class BlobDAORdbImpl implements BlobDAO {
     if (!whereClause.toString().isEmpty()) {
       countQueryBuilder.append(" WHERE ").append(whereClause);
     }
-    countQueryBuilder.append(orderClause);
 
     Query query = session.createQuery(finalQueryBuilder.toString());
     Query countQuery = session.createQuery(countQueryBuilder.toString());
