@@ -383,16 +383,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   private void deleteRoleBindingsOfAccessibleResources(List<RepositoryEntity> allowedResources) {
     final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     for (RepositoryEntity repositoryEntity : allowedResources) {
-      String repositoryId = String.valueOf(repositoryEntity.getId());
-      String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_REPOSITORY_OWNER,
-              repositoryId,
-              repositoryEntity.getOwner(),
-              ModelDBServiceResourceTypes.REPOSITORY.name());
-      if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
 
       // Delete workspace based roleBindings
       List<String> repoOrgWorkspaceRoleBindings =

@@ -224,15 +224,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     UserInfo unsignedUser = authService.getUnsignedUser();
     for (DatasetEntity datasetEntity : allowedDatasets) {
       String datasetId = datasetEntity.getId();
-      String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_DATASET_OWNER,
-              datasetId,
-              datasetEntity.getOwner(),
-              ModelDBServiceResourceTypes.DATASET.name());
-      if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
 
       if (datasetEntity.getDataset_visibility() == DatasetVisibility.PUBLIC.getNumber()) {
         String publicReadRoleBindingName =
