@@ -205,6 +205,15 @@ message DeleteRoleBindings {
     };
 };
 
+message RemoveResource {
+    repeated string resource_ids = 1; // project.id, experiment.id etc.
+    ResourceType resource_type = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
 service RoleService {
     rpc getRoleById (GetRoleById) returns (GetRoleById.Response) {
         option (google.api.http) = {
@@ -264,6 +273,12 @@ service RoleService {
         option (google.api.http) = {
             post : "/v1/role/deleteRoleBindings"
             body : "*"
+        };
+    };
+
+    rpc removeResource (RemoveResource) returns (RemoveResource.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeResource"
         };
     };
 };
