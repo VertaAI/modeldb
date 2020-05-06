@@ -53,11 +53,10 @@ import ai.verta.modeldb.entities.RawDatasetVersionInfoEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.entities.UserCommentEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
-import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
+import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
-import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
@@ -1069,33 +1068,20 @@ public class RdbmsUtils {
         orderByExpressionList.add(hyperparameterEntityJoin.get(ModelDBConstants.VALUE));
 
         if (parentFieldName.equals("experimentRunEntity")) {
-          Join<ExperimentRunEntity, VersioningModeldbEntityMapping> versionedInputEntityJoin =
-              root.join(ModelDBConstants.VERSIONED_INPUTS, JoinType.LEFT);
-          versionedInputEntityJoin.alias(parentFieldName + "_versionedInput");
-          versionedInputEntityJoin.on(
+          Join<ExperimentRunEntity, HyperparameterElementMappingEntity> elementMappingEntityJoin =
+              root.join(ModelDBConstants.HYPERPARAMETER_ELEMENT_MAPPINGS, JoinType.LEFT);
+          elementMappingEntityJoin.alias(parentFieldName + "_hyper_elem_mapping");
+          elementMappingEntityJoin.on(
+              builder.and(
+                  builder.equal(
+                      elementMappingEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
+                      root.get(ModelDBConstants.ID))),
               builder.equal(
-                  versionedInputEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                  root.get(ModelDBConstants.ID)));
+                  elementMappingEntityJoin.get(ModelDBConstants.NAME), keys[keys.length - 1]));
 
-          Join<VersioningModeldbEntityMapping, ConfigBlobEntity> configBlobEntityJoinJoin =
-              versionedInputEntityJoin.join("config_blob_entities", JoinType.INNER);
-          configBlobEntityJoinJoin.alias(parentFieldName + "_versionedInput_config");
-
-          configBlobEntityJoinJoin.on(
-              builder.equal(
-                  configBlobEntityJoinJoin.get("hyperparameter_type"),
-                  ConfigBlobEntity.HYPERPARAMETER));
-          Join<ConfigBlobEntity, HyperparameterElementConfigBlobEntity> configBlobEntityJoin =
-              configBlobEntityJoinJoin.join(
-                  "hyperparameterElementConfigBlobEntity", JoinType.INNER);
-          configBlobEntityJoin.alias(parentFieldName + "_versionedInput_hyper_config");
-          configBlobEntityJoin.on(
-              builder.equal(
-                  configBlobEntityJoin.get(ModelDBConstants.NAME), keys[keys.length - 1]));
-
-          orderByExpressionList.add(configBlobEntityJoin.get("int_value"));
-          orderByExpressionList.add(configBlobEntityJoin.get("float_value"));
-          orderByExpressionList.add(configBlobEntityJoin.get("string_value"));
+          orderByExpressionList.add(elementMappingEntityJoin.get("int_value"));
+          orderByExpressionList.add(elementMappingEntityJoin.get("float_value"));
+          orderByExpressionList.add(elementMappingEntityJoin.get("string_value"));
         }
         break;
       case ModelDBConstants.METRICS:
@@ -1479,7 +1465,6 @@ public class RdbmsUtils {
             Predicate newHyperparameterPredicate =
                 getVersionedInputHyperparameterPredicate(
                     entityName,
-                    criteriaQuery,
                     builder,
                     entityRootPath,
                     index,
@@ -1707,7 +1692,6 @@ public class RdbmsUtils {
 
   private static Predicate getVersionedInputHyperparameterPredicate(
       String entityName,
-      CriteriaQuery<?> criteriaQuery,
       CriteriaBuilder builder,
       Root<?> entityRootPath,
       int index,
@@ -1716,60 +1700,53 @@ public class RdbmsUtils {
       Operator operator,
       Subquery<String> subquery)
       throws InvalidProtocolBufferException {
-    Subquery<String> configSubquery = criteriaQuery.subquery(String.class);
-    Root<ConfigBlobEntity> configBlobEntityRoot = configSubquery.from(ConfigBlobEntity.class);
-    configBlobEntityRoot.alias(
-        entityName + "_" + ModelDBConstants.HYPERPARAMETER_ALIAS + "configBlobEntity_" + index);
-    Path<HyperparameterElementConfigBlobEntity> hyperparameterConfigBlobRoot =
-        configBlobEntityRoot.get("hyperparameterElementConfigBlobEntity");
+    Root<HyperparameterElementMappingEntity> elementMappingEntityRoot =
+        subquery.from(HyperparameterElementMappingEntity.class);
+    elementMappingEntityRoot.alias(
+        entityName + "_" + ModelDBConstants.HYPERPARAMETER_ALIAS + "elem_mapping_" + index);
     List<Predicate> configBlobEntityRootPredicates = new ArrayList<>();
+    Predicate idPredicate =
+        builder.equal(
+            elementMappingEntityRoot.get(entityName).get(ModelDBConstants.ID),
+            entityRootPath.get(ModelDBConstants.ID));
+    configBlobEntityRootPredicates.add(idPredicate);
+
     Predicate keyPredicate =
-        builder.equal(
-            hyperparameterConfigBlobRoot.get(ModelDBConstants.NAME), names[names.length - 1]);
+        builder.equal(elementMappingEntityRoot.get(ModelDBConstants.NAME), names[names.length - 1]);
     configBlobEntityRootPredicates.add(keyPredicate);
-    Predicate intValueTypePredicate =
-        builder.equal(
-            hyperparameterConfigBlobRoot.get("value_type"),
-            HyperparameterValuesConfigBlob.ValueCase.INT_VALUE.getNumber());
+
     Predicate intValuePredicate =
         getValuePredicate(
             builder,
             ModelDBConstants.HYPERPARAMETERS,
-            hyperparameterConfigBlobRoot.get("int_value"),
+            elementMappingEntityRoot.get("int_value"),
             predicate);
-    Predicate intPredicate = builder.and(intValueTypePredicate, intValuePredicate);
 
-    Predicate floatValueTypePredicate =
-        builder.equal(
-            hyperparameterConfigBlobRoot.get("value_type"),
-            HyperparameterValuesConfigBlob.ValueCase.FLOAT_VALUE.getNumber());
     Predicate floatValuePredicate =
         getValuePredicate(
             builder,
             ModelDBConstants.HYPERPARAMETERS,
-            hyperparameterConfigBlobRoot.get("float_value"),
+            elementMappingEntityRoot.get("float_value"),
             predicate);
-    Predicate floatPredicate = builder.and(floatValueTypePredicate, floatValuePredicate);
 
-    configBlobEntityRootPredicates.add(builder.or(intPredicate, floatPredicate));
+    Predicate stringValuePredicate =
+        getValuePredicate(
+            builder,
+            ModelDBConstants.HYPERPARAMETERS,
+            elementMappingEntityRoot.get("string_value"),
+            predicate);
 
-    configSubquery.select(configBlobEntityRoot.get("blob_hash"));
-    Predicate[] configBlobEntityRootPredicatesOne =
+    configBlobEntityRootPredicates.add(
+        builder.or(intValuePredicate, floatValuePredicate, stringValuePredicate));
+
+    Predicate[] hyprElemmappingRootPredicatesOne =
         new Predicate[configBlobEntityRootPredicates.size()];
     for (int indexJ = 0; indexJ < configBlobEntityRootPredicates.size(); indexJ++) {
-      configBlobEntityRootPredicatesOne[indexJ] = configBlobEntityRootPredicates.get(indexJ);
+      hyprElemmappingRootPredicatesOne[indexJ] = configBlobEntityRootPredicates.get(indexJ);
     }
-    configSubquery.where(builder.and(configBlobEntityRootPredicatesOne));
+    subquery.select(elementMappingEntityRoot.get(entityName).get(ModelDBConstants.ID));
+    subquery.where(builder.and(hyprElemmappingRootPredicatesOne));
 
-    Root<VersioningModeldbEntityMapping> versioningEntityRoot =
-        subquery.from(VersioningModeldbEntityMapping.class);
-    versioningEntityRoot.alias(entityName + "_" + ModelDBConstants.VERSIONED_ALIAS + index);
-
-    Predicate versionedInputSHAPredicate =
-        getPredicateFromSubquery(
-            builder, versioningEntityRoot, operator, configSubquery, "blob_hash");
-    subquery.where(builder.and(versionedInputSHAPredicate));
-    subquery.select(versioningEntityRoot.get(entityName).get(ModelDBConstants.ID));
     return getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
   }
 

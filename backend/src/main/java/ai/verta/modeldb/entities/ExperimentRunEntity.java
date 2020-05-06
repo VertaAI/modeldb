@@ -4,6 +4,7 @@ import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
+import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -175,6 +176,14 @@ public class ExperimentRunEntity {
       cascade = CascadeType.ALL)
   @LazyCollection(LazyCollectionOption.FALSE)
   private List<VersioningModeldbEntityMapping> versioned_inputs = new ArrayList<>();
+
+  @OneToMany(
+      targetEntity = HyperparameterElementMappingEntity.class,
+      mappedBy = "experimentRunEntity",
+      cascade = CascadeType.ALL)
+  @LazyCollection(LazyCollectionOption.FALSE)
+  private List<HyperparameterElementMappingEntity> hyperparameter_element_mappings =
+      new ArrayList<>();
 
   @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 
@@ -412,6 +421,11 @@ public class ExperimentRunEntity {
 
   public void setVersioned_inputs(List<VersioningModeldbEntityMapping> versioned_inputs) {
     this.versioned_inputs = versioned_inputs;
+  }
+
+  public void setHyperparameter_element_mappings(
+      List<HyperparameterElementMappingEntity> hyperparameter_element_mappings) {
+    this.hyperparameter_element_mappings = hyperparameter_element_mappings;
   }
 
   public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {

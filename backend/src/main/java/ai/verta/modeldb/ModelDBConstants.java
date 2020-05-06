@@ -95,6 +95,7 @@ public interface ModelDBConstants {
   String KEY_VALUES = "keyvalues";
   String TAG_MAPPINGS = "tagmappings";
   String VERSIONED_INPUTS = "versioned_inputs";
+  String HYPERPARAMETER_ELEMENT_MAPPINGS = "hyperparameter_element_mappings";
 
   // Common verb constants
   String ORDER_ASC = "asc";

@@ -209,6 +209,28 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="vmem-hyperparameter-element-mapping-table" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="hyperparameter_element_mapping"/>
+            </not>
+        </preConditions>
+        <createTable tableName="hyperparameter_element_mapping">
+            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="experiment_run_id" type="varchar(255)">
+                <constraints foreignKeyName="hem_fk_experiment_run_id" referencedTableName="experiment_run"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="name" type="varchar(255)" />
+            <column name="entity_type" type="varchar(50)" />
+            <column name="int_value" type="BIGINT" />
+            <column name="float_value" type="double" />
+            <column name="string_value" type="varchar(255)" />
+        </createTable>
+    </changeSet>
+
     <!-- take a below line to the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 </databaseChangeLog>

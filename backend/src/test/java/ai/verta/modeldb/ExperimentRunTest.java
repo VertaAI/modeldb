@@ -10235,7 +10235,7 @@ public class ExperimentRunTest {
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
             project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
-    hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+    hyperparameter1 = generateNumericKeyValue("C", 0.0002);
     Map<String, Location> locationMap2 = new HashMap<>();
     locationMap2.put("location-4", location4);
     createExperimentRunRequest =
@@ -10257,7 +10257,7 @@ public class ExperimentRunTest {
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
             project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
-    hyperparameter1 = generateNumericKeyValue("C", 1e-6);
+    hyperparameter1 = generateNumericKeyValue("C", 0.0003);
     createExperimentRunRequest =
         createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
     createExperimentRunResponse =
@@ -10297,10 +10297,18 @@ public class ExperimentRunTest {
         "ExperimentRun count not match with expected experimentRun count",
         experimentRunConfig2.getId(),
         response.getExperimentRuns(0).getId());
-    for (ExperimentRun exprRun : response.getExperimentRunsList()) {
+
+    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+      ExperimentRun exprRun = response.getExperimentRuns(index);
       for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("train")) {
-          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+        if (kv.getKey().equals("C")) {
+          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
+        } else if (kv.getKey().equals("train")) {
+          if (index == 0) {
+            assertEquals("Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
+          } else {
+            assertEquals("Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
+          }
         }
       }
     }
@@ -10328,6 +10336,21 @@ public class ExperimentRunTest {
         "ExperimentRun count not match with expected experimentRun count",
         experimentRunConfig1.getId(),
         response.getExperimentRuns(0).getId());
+
+    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+      ExperimentRun exprRun = response.getExperimentRuns(index);
+      for (KeyValue kv : exprRun.getHyperparametersList()) {
+        if (kv.getKey().equals("C")) {
+          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
+        } else if (kv.getKey().equals("train")) {
+          if (index == 0) {
+            assertEquals("Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
+          } else {
+            assertEquals("Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
+          }
+        }
+      }
+    }
 
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
@@ -10357,6 +10380,74 @@ public class ExperimentRunTest {
     for (ExperimentRun exprRun : response.getExperimentRunsList()) {
       for (KeyValue kv : exprRun.getHyperparametersList()) {
         if (kv.getKey().equals("train")) {
+          assertTrue("Value should be GTE 1 " + kv, kv.getValue().getNumberValue() > 1);
+        }
+      }
+    }
+
+    Value oldHyperparameterFilter = Value.newBuilder().setNumberValue(0.0002).build();
+    KeyValueQuery oldKeyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.C")
+            .setValue(oldHyperparameterFilter)
+            .setOperator(Operator.GTE)
+            .setValueType(ValueType.NUMBER)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(oldKeyValueQuery)
+            .setAscending(true)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.C")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        2,
+        response.getTotalRecords());
+
+    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+      ExperimentRun exprRun = response.getExperimentRuns(index);
+      for (KeyValue kv : exprRun.getHyperparametersList()) {
+        if (kv.getKey().equals("C")) {
+          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+        }
+      }
+    }
+
+    oldHyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
+    oldKeyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.train")
+            .setValue(oldHyperparameterFilter)
+            .setOperator(Operator.GTE)
+            .setValueType(ValueType.NUMBER)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(oldKeyValueQuery)
+            .setAscending(false)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.C")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        2,
+        response.getTotalRecords());
+
+    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+      ExperimentRun exprRun = response.getExperimentRuns(index);
+      for (KeyValue kv : exprRun.getHyperparametersList()) {
+        if (kv.getKey().equals("C")) {
           assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
         }
       }
