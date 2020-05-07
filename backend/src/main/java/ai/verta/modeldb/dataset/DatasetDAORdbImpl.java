@@ -162,7 +162,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           datasetId,
           ModelDBConstants.ROLE_DATASET_ADMIN,
           ModelDBServiceResourceTypes.DATASET,
-          false,
+          datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC),
           GLOBAL_SHARING);
       switch (workspaceType) {
         case ORGANIZATION:
