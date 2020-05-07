@@ -257,7 +257,7 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean deleteAllResourceCollaborators(
+  public boolean deleteAllResources(
       List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return true;
   }

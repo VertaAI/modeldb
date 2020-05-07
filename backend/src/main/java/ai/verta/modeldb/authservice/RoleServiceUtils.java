@@ -34,7 +34,7 @@ import ai.verta.uac.ListMyOrganizations;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Organization;
-import ai.verta.uac.RemoveResource;
+import ai.verta.uac.RemoveResources;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;
 import ai.verta.uac.Role;
@@ -1149,10 +1149,10 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean deleteAllResourceCollaborators(
+  public boolean deleteAllResources(
       List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    RemoveResource removeAllCollaboratorsRequest =
-        RemoveResource.newBuilder()
+    RemoveResources removeAllCollaboratorsRequest =
+        RemoveResources.newBuilder()
             .addAllResourceIds(resourceIds)
             .setResourceType(
                 ResourceType.newBuilder()
@@ -1162,10 +1162,10 @@ public class RoleServiceUtils implements RoleService {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
 
-      RemoveResource.Response removeAllCollaboratorResponse =
+      RemoveResources.Response removeAllCollaboratorResponse =
           authServiceChannel
               .getRoleServiceBlockingStub()
-              .removeResource(removeAllCollaboratorsRequest);
+              .removeResources(removeAllCollaboratorsRequest);
       LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(
           ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, removeAllCollaboratorResponse);

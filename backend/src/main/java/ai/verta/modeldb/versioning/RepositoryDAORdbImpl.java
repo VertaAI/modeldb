@@ -401,7 +401,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
     }
     // Remove all repositoryEntity collaborators
-    roleService.deleteAllResourceCollaborators(
+    roleService.deleteAllResources(
         allowedResources.stream()
             .map(repositoryEntity -> String.valueOf(repositoryEntity.getId()))
             .collect(Collectors.toList()),

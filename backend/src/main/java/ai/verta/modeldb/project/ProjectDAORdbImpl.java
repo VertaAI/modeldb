@@ -744,7 +744,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       roleBindingNames.addAll(workspaceRoleBindingNames);
     }
 
-    roleService.deleteAllResourceCollaborators(
+    roleService.deleteAllResources(
         allowedProjects.stream().map(ProjectEntity::getId).collect(Collectors.toList()),
         ModelDBServiceResourceTypes.PROJECT);
   }

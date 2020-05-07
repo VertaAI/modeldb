@@ -250,7 +250,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     }
 
     // Remove all datasetEntity collaborators
-    roleService.deleteAllResourceCollaborators(
+    roleService.deleteAllResources(
         allowedDatasets.stream().map(DatasetEntity::getId).collect(Collectors.toList()),
         ModelDBServiceResourceTypes.DATASET);
   }

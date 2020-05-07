@@ -148,6 +148,6 @@ public interface RoleService {
       boolean orgScopedPublic,
       String globalSharing);
 
-  boolean deleteAllResourceCollaborators(
+  boolean deleteAllResources(
       List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 }
