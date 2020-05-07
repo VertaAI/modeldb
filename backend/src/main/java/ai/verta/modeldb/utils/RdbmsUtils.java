@@ -695,7 +695,7 @@ public class RdbmsUtils {
         //            operator, value.getNumberValue());
         if (ModelDBHibernateUtil.rDBDriver.equals("org.postgresql.Driver")) {
           return getOperatorPredicate(
-              builder, valueExpression.as(Float.class), operator, value.getNumberValue());
+              builder, valueExpression.as(Double.class), operator, value.getNumberValue());
         } else {
           return getOperatorPredicate(
               builder, builder.toBigDecimal(valueExpression), operator, value.getNumberValue());
