@@ -2176,4 +2176,89 @@ public class CommitTest {
 
     LOGGER.info("Find repository blobs test end................................");
   }
+
+  @Test
+  public void checkDuplicateLocationPathWhenSingleBlobTest() {
+    LOGGER.info(
+        "Check duplication when log single blob test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    String path1 = "xyz.txt";
+    List<String> location1 = new ArrayList<>();
+    location1.add("modeldb.json");
+    BlobExpanded blobExpanded1 =
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path1))
+            .addAllLocation(location1)
+            .build();
+
+    Commit.Builder commitBuilder =
+        Commit.newBuilder()
+            .setMessage("this is the test commit message")
+            .setDateCreated(Calendar.getInstance().getTimeInMillis())
+            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
+    }
+    CreateCommitRequest createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommit(commitBuilder.build())
+            .addBlobs(blobExpanded1)
+            .build();
+
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+
+    ListCommitBlobsRequest listCommitBlobsRequest =
+        ListCommitBlobsRequest.newBuilder()
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .addLocationPrefix("modeldb.json")
+            .build();
+
+    ListCommitBlobsRequest.Response listCommitBlobsResponse =
+        versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        1,
+        listCommitBlobsResponse.getBlobsCount());
+    Assert.assertEquals(
+        "blob data not match with expected blob data",
+        blobExpanded1,
+        listCommitBlobsResponse.getBlobs(0));
+    assertEquals(
+        "Multiple location found for single commit blob",
+        1,
+        listCommitBlobsResponse.getBlobs(0).getLocationCount());
+
+    DeleteCommitRequest deleteCommitRequest =
+        DeleteCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .build();
+    versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    LOGGER.info("Check duplication when log single blob test end................................");
+  }
 }
