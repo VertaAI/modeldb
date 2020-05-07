@@ -247,6 +247,7 @@ public class RoleServiceUtils implements RoleService {
 
       return getRoleByNameResponse.getRole();
     } catch (StatusRuntimeException ex) {
+      LOGGER.warn("role name : {} role scope : {}", roleName, roleScope);
       LOGGER.warn(ex.getMessage(), ex);
       if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
         Status status =
