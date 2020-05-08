@@ -13,6 +13,7 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
@@ -2196,7 +2197,7 @@ public class DatasetTest {
         orgName,
         organization.getName());
 
-    String orgRoleName = "O_" + organization.getId() + "_GLOBAL_SHARING";
+    String orgRoleName = "O_" + organization.getId() + DatasetDAORdbImpl.GLOBAL_SHARING;
     GetRoleByName getRoleByName =
         GetRoleByName.newBuilder()
             .setName(orgRoleName)
