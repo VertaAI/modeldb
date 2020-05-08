@@ -17,9 +17,12 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.DeleteOrganization;
+import ai.verta.uac.GetRoleByName;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.Organization;
 import ai.verta.uac.OrganizationServiceGrpc;
+import ai.verta.uac.RoleScope;
+import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.SetOrganization;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
@@ -2173,6 +2176,8 @@ public class DatasetTest {
         DatasetServiceGrpc.newBlockingStub(channel);
     OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub =
         OrganizationServiceGrpc.newBlockingStub(authServiceChannelClient1);
+    RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub =
+        RoleServiceGrpc.newBlockingStub(authServiceChannelClient1);
 
     String orgName = "Org-test-verta";
     SetOrganization setOrganization =
@@ -2190,6 +2195,19 @@ public class DatasetTest {
         "Organization name not matched with expected organization name",
         orgName,
         organization.getName());
+
+    String orgRoleName = "O_" + organization.getId() + "_GLOBAL_SHARING";
+    GetRoleByName getRoleByName =
+        GetRoleByName.newBuilder()
+            .setName(orgRoleName)
+            .setScope(RoleScope.newBuilder().setOrgId(organization.getId()).build())
+            .build();
+    GetRoleByName.Response getRoleByNameResponse =
+        roleServiceBlockingStub.getRoleByName(getRoleByName);
+    assertEquals(
+        "Expected role name not found in DB",
+        orgRoleName,
+        getRoleByNameResponse.getRole().getName());
 
     CreateDataset createDatasetRequest = getDatasetRequest("rental_TEXT_train_data.csv");
     createDatasetRequest =
