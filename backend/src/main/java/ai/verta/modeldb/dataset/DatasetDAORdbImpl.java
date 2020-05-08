@@ -224,15 +224,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     UserInfo unsignedUser = authService.getUnsignedUser();
     for (DatasetEntity datasetEntity : allowedDatasets) {
       String datasetId = datasetEntity.getId();
-      String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_DATASET_OWNER,
-              datasetId,
-              datasetEntity.getOwner(),
-              ModelDBServiceResourceTypes.DATASET.name());
-      if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
 
       if (datasetEntity.getDataset_visibility() == DatasetVisibility.PUBLIC.getNumber()) {
         String publicReadRoleBindingName =
@@ -246,11 +237,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         }
       }
 
-      // Remove all datasetEntity collaborators
-      roleBindingNames.addAll(
-          roleService.getResourceRoleBindings(
-              datasetId, datasetEntity.getOwner(), ModelDBServiceResourceTypes.DATASET));
-
       // Delete workspace based roleBindings
       List<String> workspaceRoleBindingNames =
           getWorkspaceRoleBindings(
@@ -262,6 +248,11 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         roleBindingNames.addAll(workspaceRoleBindingNames);
       }
     }
+
+    // Remove all datasetEntity collaborators
+    roleService.deleteAllResources(
+        allowedDatasets.stream().map(DatasetEntity::getId).collect(Collectors.toList()),
+        ModelDBServiceResourceTypes.DATASET);
   }
 
   private List<String> getWorkspaceRoleBindings(
