@@ -29,6 +29,9 @@ import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.SetRepository.Response;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
+import ai.verta.uac.GetUser;
+import ai.verta.uac.UACServiceGrpc;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -682,5 +685,186 @@ public class RepositoryTest {
     }
 
     LOGGER.info("List repository test end................................");
+  }
+
+  @Test
+  public void findRepositoriesByFuzzyOwnerTest() {
+    LOGGER.info(
+        "FindRepositories by owner fuzzy search test start................................");
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      assertTrue(true);
+      return;
+    }
+    UACServiceGrpc.UACServiceBlockingStub uacServiceStub =
+        UACServiceGrpc.newBlockingStub(authServiceChannel);
+
+    GetUser getUserRequest =
+        GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+    // Get the user info by vertaId form the AuthService
+    UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
+    String testUser1UserName = testUser1.getVertaInfo().getUsername();
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long repoId1 = createRepository(versioningServiceBlockingStub, NAME);
+    long repoId2 = createRepository(versioningServiceBlockingStub, NAME_2);
+    long repoId3 = createRepository(versioningServiceBlockingStub, NAME_3);
+    Long[] repoIds = new Long[3];
+    repoIds[0] = repoId1;
+    repoIds[1] = repoId2;
+    repoIds[2] = repoId3;
+
+    try {
+      Value stringValue =
+          Value.newBuilder().setStringValue(testUser1UserName.substring(0, 2)).build();
+      KeyValueQuery keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("owner")
+              .setValue(stringValue)
+              .setOperator(OperatorEnum.Operator.CONTAIN)
+              .build();
+      FindRepositories findRepositoriesRequest =
+          FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
+      FindRepositories.Response findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
+      assertEquals(
+          "Project count not match with expected project count",
+          3,
+          findRepositoriesResponse.getRepositoriesCount());
+
+      assertEquals(
+          "Total records count not matched with expected records count",
+          3,
+          findRepositoriesResponse.getTotalRecords());
+
+      keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("owner")
+              .setValue(stringValue)
+              .setOperator(OperatorEnum.Operator.NOT_CONTAIN)
+              .build();
+      findRepositoriesRequest = FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
+      findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
+      assertEquals(
+          "Project count not match with expected project count",
+          0,
+          findRepositoriesResponse.getRepositoriesCount());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          0,
+          findRepositoriesResponse.getTotalRecords());
+
+      stringValue = Value.newBuilder().setStringValue("asdasdasd").build();
+      keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("owner")
+              .setValue(stringValue)
+              .setOperator(OperatorEnum.Operator.CONTAIN)
+              .build();
+
+      findRepositoriesRequest = FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
+      findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
+      assertEquals(
+          "Project count not match with expected project count",
+          0,
+          findRepositoriesResponse.getRepositoriesCount());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          0,
+          findRepositoriesResponse.getTotalRecords());
+
+    } finally {
+      for (long repoId : repoIds) {
+        DeleteRepositoryRequest deleteRepository =
+            DeleteRepositoryRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+                .build();
+        DeleteRepositoryRequest.Response deleteResult =
+            versioningServiceBlockingStub.deleteRepository(deleteRepository);
+        Assert.assertTrue(deleteResult.getStatus());
+      }
+    }
+
+    LOGGER.info(
+        "FindRepositories by owner fuzzy search test stop ................................");
+  }
+
+  @Test
+  public void findRepositoriesByOwnerArrWithInOperatorTest() {
+    LOGGER.info(
+        "FindRepositories by owner fuzzy search test start................................");
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      assertTrue(true);
+      return;
+    }
+    UACServiceGrpc.UACServiceBlockingStub uacServiceStub =
+        UACServiceGrpc.newBlockingStub(authServiceChannel);
+
+    GetUser getUserRequest =
+        GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+    // Get the user info by vertaId form the AuthService
+    UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
+
+    getUserRequest = GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
+    // Get the user info by vertaId form the AuthService
+    UserInfo testUser2 = uacServiceStub.getUser(getUserRequest);
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long repoId1 = createRepository(versioningServiceBlockingStub, NAME);
+    long repoId2 = createRepository(versioningServiceBlockingStub, NAME_2);
+    long repoId3 = createRepository(versioningServiceBlockingStub, NAME_3);
+    Long[] repoIds = new Long[3];
+    repoIds[0] = repoId1;
+    repoIds[1] = repoId2;
+    repoIds[2] = repoId3;
+
+    try {
+      String[] ownerArr = {
+        testUser1.getVertaInfo().getUserId(), testUser2.getVertaInfo().getUserId()
+      };
+      Value stringValue = Value.newBuilder().setStringValue(String.join(",", ownerArr)).build();
+      KeyValueQuery keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("owner")
+              .setValue(stringValue)
+              .setOperator(OperatorEnum.Operator.IN)
+              .build();
+      FindRepositories findRepositoriesRequest =
+          FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
+      FindRepositories.Response findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
+      assertEquals(
+          "Project count not match with expected project count",
+          3,
+          findRepositoriesResponse.getRepositoriesCount());
+
+      assertEquals(
+          "Total records count not matched with expected records count",
+          3,
+          findRepositoriesResponse.getTotalRecords());
+
+    } finally {
+      for (long repoId : repoIds) {
+        DeleteRepositoryRequest deleteRepository =
+            DeleteRepositoryRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+                .build();
+        DeleteRepositoryRequest.Response deleteResult =
+            versioningServiceBlockingStub.deleteRepository(deleteRepository);
+        Assert.assertTrue(deleteResult.getStatus());
+      }
+    }
+
+    LOGGER.info(
+        "FindRepositories by owner fuzzy search test stop ................................");
   }
 }
