@@ -851,25 +851,38 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       WorkspaceDTO workspaceDTO =
           roleService.getWorkspaceDTOByWorkspaceName(userInfo, request.getWorkspaceName());
-      FindRepositoriesQuery findRepositoriesQuery =
-          new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(session, workspaceDTO)
-              .setRepoIds(request.getRepoIdsList())
-              .setPredicates(request.getPredicatesList())
-              .setPageLimit(request.getPageLimit())
-              .setPageNumber(request.getPageNumber())
-              .build();
-      List<RepositoryEntity> repositoryEntities =
-          findRepositoriesQuery.getFindRepositoriesHQLQuery().list();
-      Long totalRecords =
-          (Long) findRepositoriesQuery.getFindRepositoriesCountHQLQuery().uniqueResult();
+      try {
+        FindRepositoriesQuery findRepositoriesQuery =
+            new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(
+                    session, authService, workspaceDTO)
+                .setRepoIds(request.getRepoIdsList())
+                .setPredicates(request.getPredicatesList())
+                .setPageLimit(request.getPageLimit())
+                .setPageNumber(request.getPageNumber())
+                .build();
+        List<RepositoryEntity> repositoryEntities =
+            findRepositoriesQuery.getFindRepositoriesHQLQuery().list();
+        Long totalRecords =
+            (Long) findRepositoriesQuery.getFindRepositoriesCountHQLQuery().uniqueResult();
 
-      return FindRepositories.Response.newBuilder()
-          .addAllRepositories(
-              repositoryEntities.stream()
-                  .map(RepositoryEntity::toProto)
-                  .collect(Collectors.toList()))
-          .setTotalRecords(totalRecords)
-          .build();
+        return FindRepositories.Response.newBuilder()
+            .addAllRepositories(
+                repositoryEntities.stream()
+                    .map(RepositoryEntity::toProto)
+                    .collect(Collectors.toList()))
+            .setTotalRecords(totalRecords)
+            .build();
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == com.google.rpc.Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
+          LOGGER.warn(ex.getMessage());
+          return FindRepositories.Response.newBuilder()
+              .addAllRepositories(Collections.emptyList())
+              .setTotalRecords(0L)
+              .build();
+        }
+        throw ex;
+      }
     }
   }
 }

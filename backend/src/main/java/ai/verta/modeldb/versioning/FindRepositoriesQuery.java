@@ -2,22 +2,28 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.OperatorEnum;
+import ai.verta.modeldb.authservice.AuthService;
+import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -37,7 +43,7 @@ public class FindRepositoriesQuery {
     return findRepositoriesCountHQLQuery;
   }
 
-  private FindRepositoriesQuery(FindRepositoriesHQLQueryBuilder builder) {
+  private FindRepositoriesQuery(FindRepositoriesHQLQueryBuilder builder) throws ModelDBException {
     this.findRepositoriesHQLQuery = builder.buildQuery();
     this.findRepositoriesCountHQLQuery = builder.buildCountQuery();
   }
@@ -48,6 +54,7 @@ public class FindRepositoriesQuery {
         LogManager.getLogger(FindRepositoriesHQLQueryBuilder.class);
 
     final Session session;
+    final AuthService authService;
     final WorkspaceDTO workspaceDTO;
     String countQueryString;
     Map<String, Object> parametersMap = new HashMap<>();
@@ -58,8 +65,10 @@ public class FindRepositoriesQuery {
     private Integer pageNumber = 0;
     private Integer pageLimit = 0;
 
-    public FindRepositoriesHQLQueryBuilder(Session session, WorkspaceDTO workspaceDTO) {
+    public FindRepositoriesHQLQueryBuilder(
+        Session session, AuthService authService, WorkspaceDTO workspaceDTO) {
       this.session = session;
+      this.authService = authService;
       this.workspaceDTO = workspaceDTO;
     }
 
@@ -87,11 +96,11 @@ public class FindRepositoriesQuery {
       return this;
     }
 
-    public FindRepositoriesQuery build() {
+    public FindRepositoriesQuery build() throws ModelDBException {
       return new FindRepositoriesQuery(this);
     }
 
-    public Query buildQuery() {
+    public Query buildQuery() throws ModelDBException {
       Query query = session.createQuery(getHQLQueryString());
       setParameterInQuery(query);
 
@@ -129,7 +138,7 @@ public class FindRepositoriesQuery {
       return query;
     }
 
-    private String getHQLQueryString() {
+    private String getHQLQueryString() throws ModelDBException {
       String alias = " repo";
       StringBuilder queryBuilder =
           new StringBuilder(" FROM ").append(RepositoryEntity.class.getSimpleName()).append(alias);
@@ -197,6 +206,11 @@ public class FindRepositoriesQuery {
             StringBuilder joinStringBuilder = new StringBuilder(joinAlias).append(".id.label ");
             setQueryParameters(joinStringBuilder, keyValueQuery, parametersMap);
             whereClauseList.add(joinStringBuilder.toString());
+          } else if (keyValueQuery.getKey().contains(ModelDBConstants.OWNER)) {
+            StringBuilder predicateStringBuilder =
+                new StringBuilder(alias).append(".").append(keyValueQuery.getKey());
+            setOwnerPredicate(index, keyValueQuery, predicateStringBuilder);
+            whereClauseList.add(predicateStringBuilder.toString());
           } else {
             StringBuilder predicateStringBuilder = new StringBuilder();
             predicateStringBuilder.append(alias).append(".").append(keyValueQuery.getKey());
@@ -248,6 +262,42 @@ public class FindRepositoriesQuery {
 
       LOGGER.trace("Creating HQL query");
       return finalQueryBuilder.toString();
+    }
+
+    private void setOwnerPredicate(
+        int index, KeyValueQuery keyValueQuery, StringBuilder predicateStringBuilder)
+        throws ModelDBException {
+      OperatorEnum.Operator operator = keyValueQuery.getOperator();
+      if (operator.equals(OperatorEnum.Operator.IN)) {
+        String ownerIdsArrString = keyValueQuery.getValue().getStringValue();
+        List<String> ownerIds = Arrays.asList(ownerIdsArrString.split(","));
+        setValueWithOperatorInQuery(predicateStringBuilder, operator, ownerIds, parametersMap);
+      } else if (operator.equals(OperatorEnum.Operator.CONTAIN)
+          || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+        UserInfoPaginationDTO userInfoPaginationDTO =
+            authService.getFuzzyUserInfoList(keyValueQuery.getValue().getStringValue());
+        List<UserInfo> userInfoList = userInfoPaginationDTO.getUserInfoList();
+        if (userInfoList != null && !userInfoList.isEmpty()) {
+          List<String> ownerIds =
+              userInfoList.stream()
+                  .map(authService::getVertaIdFromUserInfo)
+                  .collect(Collectors.toList());
+          if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
+            setValueWithOperatorInQuery(
+                predicateStringBuilder, OperatorEnum.Operator.IN, ownerIds, parametersMap);
+          } else {
+            String mapKey = "IN_VALUE_" + index;
+            predicateStringBuilder.append(" NOT IN (:").append(mapKey).append(")");
+            parametersMap.put(mapKey, ownerIds);
+          }
+        } else {
+          throw new ModelDBException(
+              ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND,
+              io.grpc.Status.Code.FAILED_PRECONDITION);
+        }
+      } else {
+        setQueryParameters(predicateStringBuilder, keyValueQuery, parametersMap);
+      }
     }
 
     private void setPredicatesWithQueryOperator(
