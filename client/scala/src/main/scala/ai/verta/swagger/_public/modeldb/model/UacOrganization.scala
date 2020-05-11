@@ -25,6 +25,8 @@ import ai.verta.swagger.client.objects._
 
 case class UacOrganization (
   created_timestamp: Option[BigInt] = None,
+  default_dataset_collaborator_type: Option[CollaboratorTypeEnumCollaboratorType] = None,
+  default_endpoint_collaborator_type: Option[CollaboratorTypeEnumCollaboratorType] = None,
   default_repo_collaborator_type: Option[CollaboratorTypeEnumCollaboratorType] = None,
   description: Option[String] = None,
   global_can_deploy: Option[TernaryEnumTernary] = None,
@@ -43,6 +45,8 @@ object UacOrganization {
     new JObject(
       List[Option[JField]](
         obj.created_timestamp.map(x => JField("created_timestamp", JInt(x))),
+        obj.default_dataset_collaborator_type.map(x => JField("default_dataset_collaborator_type", ((x: CollaboratorTypeEnumCollaboratorType) => CollaboratorTypeEnumCollaboratorType.toJson(x))(x))),
+        obj.default_endpoint_collaborator_type.map(x => JField("default_endpoint_collaborator_type", ((x: CollaboratorTypeEnumCollaboratorType) => CollaboratorTypeEnumCollaboratorType.toJson(x))(x))),
         obj.default_repo_collaborator_type.map(x => JField("default_repo_collaborator_type", ((x: CollaboratorTypeEnumCollaboratorType) => CollaboratorTypeEnumCollaboratorType.toJson(x))(x))),
         obj.description.map(x => JField("description", JString(x))),
         obj.global_can_deploy.map(x => JField("global_can_deploy", ((x: TernaryEnumTernary) => TernaryEnumTernary.toJson(x))(x))),
@@ -66,6 +70,8 @@ object UacOrganization {
         UacOrganization(
           // TODO: handle required
           created_timestamp = fieldsMap.get("created_timestamp").map(JsonConverter.fromJsonInteger),
+          default_dataset_collaborator_type = fieldsMap.get("default_dataset_collaborator_type").map(CollaboratorTypeEnumCollaboratorType.fromJson),
+          default_endpoint_collaborator_type = fieldsMap.get("default_endpoint_collaborator_type").map(CollaboratorTypeEnumCollaboratorType.fromJson),
           default_repo_collaborator_type = fieldsMap.get("default_repo_collaborator_type").map(CollaboratorTypeEnumCollaboratorType.fromJson),
           description = fieldsMap.get("description").map(JsonConverter.fromJsonString),
           global_can_deploy = fieldsMap.get("global_can_deploy").map(TernaryEnumTernary.fromJson),
