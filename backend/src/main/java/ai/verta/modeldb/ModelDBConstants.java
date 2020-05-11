@@ -137,6 +137,7 @@ public interface ModelDBConstants {
   String VERTA_ID = "verta_id";
   String EMAIL = "email";
   String USERNAME = "username";
+  String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
 
   // Set to true to export the liquibase schema as sql statements
   Boolean EXPORT_SCHEMA = false;
