@@ -219,4 +219,5 @@ public interface ModelDBConstants {
   String COMMIT = "commit";
   String VERSIONING_LOCATION = "versioning_location";
   String REPOSITORY_VISIBILITY = "repository_visibility";
+  String REPOSITORY = "repository";
 }
