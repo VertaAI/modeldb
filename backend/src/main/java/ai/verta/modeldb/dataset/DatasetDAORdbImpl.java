@@ -60,7 +60,7 @@ import org.hibernate.query.Query;
 public class DatasetDAORdbImpl implements DatasetDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetDAORdbImpl.class);
-  private static final String GLOBAL_SHARING = "_GLOBAL_SHARING";
+  public static final String GLOBAL_SHARING = "_DATASET_GLOBAL_SHARING";
   private final AuthService authService;
   private final RoleService roleService;
 
@@ -162,7 +162,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           datasetId,
           ModelDBConstants.ROLE_DATASET_ADMIN,
           ModelDBServiceResourceTypes.DATASET,
-          false,
+          datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC),
           GLOBAL_SHARING);
       switch (workspaceType) {
         case ORGANIZATION:

@@ -1062,7 +1062,6 @@ public class RoleServiceUtils implements RoleService {
       boolean orgScopedPublic,
       String globalSharing) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      Role admin = getRoleByName(roleAdminName, null);
       final CollaboratorUser collaboratorUser;
       switch (workspaceType) {
         case ORGANIZATION:
@@ -1088,6 +1087,7 @@ public class RoleServiceUtils implements RoleService {
         default:
           return;
       }
+      Role admin = getRoleByName(roleAdminName, null);
       createRoleBinding(admin, collaboratorUser, resourceId, resourceType);
     }
   }
