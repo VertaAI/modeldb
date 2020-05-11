@@ -4,7 +4,6 @@ import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -478,7 +477,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              ProjectVisibility.PRIVATE,
+              RepositoryVisibility.PRIVATE,
               ModelDBServiceResourceTypes.REPOSITORY,
               Collections.emptyList());
 
@@ -848,14 +847,40 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public FindRepositories.Response findRepositories(FindRepositories request)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       WorkspaceDTO workspaceDTO =
-          roleService.getWorkspaceDTOByWorkspaceName(userInfo, request.getWorkspaceName());
+          roleService.getWorkspaceDTOByWorkspaceName(
+              currentLoginUserInfo, request.getWorkspaceName());
       try {
+        List<String> accessibleResourceIds =
+            roleService.getAccessibleResourceIds(
+                null,
+                new CollaboratorUser(authService, currentLoginUserInfo),
+                RepositoryVisibility.PRIVATE,
+                ModelDBServiceResourceTypes.REPOSITORY,
+                request.getRepoIdsList().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.toList()));
+
+        if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
+          LOGGER.debug("Accessible Repository Ids not found, size 0");
+          return FindRepositories.Response.newBuilder()
+              .addAllRepositories(Collections.emptyList())
+              .setTotalRecords(0L)
+              .build();
+        }
+
+        for (KeyValueQuery predicate : request.getPredicatesList()) {
+          // Validate if current user has access to the entity or not where predicate key has an id
+          RdbmsUtils.validateEntityIdInPredicates(
+              ModelDBConstants.REPOSITORY, accessibleResourceIds, predicate, roleService);
+        }
+
         FindRepositoriesQuery findRepositoriesQuery =
             new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(
                     session, authService, workspaceDTO)
-                .setRepoIds(request.getRepoIdsList())
+                .setRepoIds(
+                    accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()))
                 .setPredicates(request.getPredicatesList())
                 .setPageLimit(request.getPageLimit())
                 .setPageNumber(request.getPageNumber())
