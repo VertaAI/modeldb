@@ -138,6 +138,7 @@ public class ConflictGenerator {
     if ((a == null && b == null) || (a != null && a.equals(b))) return null;
     return Utils.removeEmpty(
         new AutogenVersionEnvironmentDiff()
+            .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
             .setA(a == null ? null : a.getB())
             .setB(b == null ? null : b.getB())
             .setC(c));
@@ -251,6 +252,7 @@ public class ConflictGenerator {
     if ((a == null && b == null) || (a != null && a.equals(b))) return null;
     return Utils.removeEmpty(
         new AutogenDockerEnvironmentDiff()
+            .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
             .setA(a == null ? null : a.getB())
             .setB(b == null ? null : b.getB())
             .setC(c));
@@ -261,6 +263,7 @@ public class ConflictGenerator {
     if ((a == null && b == null) || (a != null && a.equals(b))) return null;
     return Utils.removeEmpty(
         new AutogenCommandLineEnvironmentDiff()
+            .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
             .setA(a == null ? null : a.getB())
             .setB(b == null ? null : b.getB())
             .setC(c));
