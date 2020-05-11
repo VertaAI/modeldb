@@ -566,6 +566,7 @@ class TestLogTrainingData:
         experiment_run.log_training_data(X_train, y_train)
 
 
+@pytest.mark.not_oss
 class TestHistogram:
     @staticmethod
     def assert_histograms_match_dataframe(histograms, df):
