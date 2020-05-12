@@ -479,7 +479,7 @@ public class App implements ApplicationContextAware {
 
     Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
     LOGGER.trace("spring server port number found");
-    System.getProperties().put("server.port", springServerPort);
+    System.getProperties().put("server.port", String.valueOf(springServerPort));
 
     Map<String, Object> artifactStoreConfigMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.ARTIFACT_STORE_CONFIG);
