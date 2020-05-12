@@ -106,10 +106,10 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   }
 
   public void setDatasetUpdateTime(Session session, List<String> datasetIds) {
-    Query query = session.createQuery(DATASET_UPDATE_TIME_QUERY);
-    query.setParameter("timestamp", Calendar.getInstance().getTimeInMillis());
-    query.setParameterList("ids", datasetIds);
-    int result = query.executeUpdate();
+    //    Query query = session.createQuery(DATASET_UPDATE_TIME_QUERY);
+    //    query.setParameter("timestamp", Calendar.getInstance().getTimeInMillis());
+    //    query.setParameterList("ids", datasetIds);
+    //    int result = query.executeUpdate();
   }
 
   @Override

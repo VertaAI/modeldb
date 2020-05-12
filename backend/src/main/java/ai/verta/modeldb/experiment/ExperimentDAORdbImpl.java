@@ -192,12 +192,12 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
   private void updateParentEntitiesTimestamp(
       Session session, List<String> projectIds, long currentTimestamp) {
-    if (projectIds != null && !projectIds.isEmpty()) {
-      Query query = session.createQuery(UPDATE_PARENT_TIMESTAMP_QUERY);
-      query.setParameter("timestamp", currentTimestamp);
-      query.setParameterList("ids", projectIds);
-      query.executeUpdate();
-    }
+    //    if (projectIds != null && !projectIds.isEmpty()) {
+    //      Query query = session.createQuery(UPDATE_PARENT_TIMESTAMP_QUERY);
+    //      query.setParameter("timestamp", currentTimestamp);
+    //      query.setParameterList("ids", projectIds);
+    //      query.executeUpdate();
+    //    }
   }
 
   private void checkIfEntityAlreadyExists(Experiment experiment, Boolean isInsert) {
