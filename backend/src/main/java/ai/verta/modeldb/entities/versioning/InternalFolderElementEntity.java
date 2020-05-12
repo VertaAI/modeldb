@@ -2,6 +2,7 @@ package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.modeldb.versioning.InternalFolderElement;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -56,5 +57,21 @@ public class InternalFolderElementEntity implements Serializable {
 
   public String getElement_name() {
     return element_name;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    InternalFolderElementEntity that = (InternalFolderElementEntity) o;
+    return folder_hash.equals(that.folder_hash)
+        && element_sha.equals(that.element_sha)
+        && element_type.equals(that.element_type)
+        && element_name.equals(that.element_name);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(folder_hash, element_sha, element_type, element_name);
   }
 }
