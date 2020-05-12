@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities.config;
 import ai.verta.modeldb.ModelDBException;
 import io.grpc.Status;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -78,5 +79,27 @@ public class ConfigBlobEntity implements Serializable {
     } else {
       return hyperparameterElementConfigBlobEntity.getBlobHash();
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ConfigBlobEntity that = (ConfigBlobEntity) o;
+    return blob_hash.equals(that.blob_hash)
+        && config_seq_number.equals(that.config_seq_number)
+        && hyperparameter_type.equals(that.hyperparameter_type)
+        && hyperparameterSetConfigBlobEntity.equals(that.hyperparameterSetConfigBlobEntity)
+        && hyperparameterElementConfigBlobEntity.equals(that.hyperparameterElementConfigBlobEntity);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        blob_hash,
+        config_seq_number,
+        hyperparameter_type,
+        hyperparameterSetConfigBlobEntity,
+        hyperparameterElementConfigBlobEntity);
   }
 }
