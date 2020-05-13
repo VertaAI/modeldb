@@ -53,12 +53,6 @@ def get_pip_freeze():
 
     req_specs = clean_reqs_file_lines(req_specs)
 
-    # remove non-PyPI-installable SpaCy models:
-    req_specs = [
-        req_spec for req_spec in req_specs
-        if not SPACY_MODEL_REGEX.match(req_spec)
-    ]
-
     return req_specs
 
 
@@ -329,5 +323,7 @@ def clean_reqs_file_lines(requirements):
     requirements = [req for req in requirements if not req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+'))]
     #     TODO: follow references to other requirements files
     requirements = [req for req in requirements if not req.startswith('-r ')]
+    #     non-PyPI-installable SpaCy models:
+    requirements = [req for req in requirements if not SPACY_MODEL_REGEX.match(req)]
 
     return requirements
