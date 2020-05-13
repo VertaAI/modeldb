@@ -31,6 +31,11 @@ except ImportError:  # pandas not installed
     pass
 
 try:
+    import tensorflow as tf
+except ImportError:  # TensorFlow not installed
+    tf = None
+
+try:
     import ipykernel
 except ImportError:  # Jupyter not installed
     pass
@@ -432,6 +437,11 @@ def to_builtin(obj):
         return obj.values.tolist()
     if obj_class == "Tensor" and obj_module == "torch":
         return obj.detach().numpy().tolist()
+    if tf is not None and isinstance(obj, tf.Tensor):  # if TensorFlow
+        try:
+            return obj.numpy().tolist()
+        except:  # TF 1.X or not-eager execution
+            pass
 
     # strings
     if isinstance(obj, six.string_types):  # prevent infinite loop with iter
