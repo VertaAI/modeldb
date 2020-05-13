@@ -319,16 +319,20 @@ def clean_reqs_file_lines(requirements):
     for req in requirements:
         # https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format
         if req.startswith(('--', '-c ', '-f ', '-i ')):
+            print("skipping unsupported option \"{}\"".format(req))
             continue
         # https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
         # TODO: upgrade protos and Client to handle VCS-installed packages
         if req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+')):
+            print("skipping unsupported VCS-installed package \"{}\"".format(req))
             continue
         # TODO: follow references to other requirements files
         if req.startswith('-r '):
+            print("skipping unsupported file reference \"{}\"".format(req))
             continue
-        # non-PyPI-installable SpaCy models
+        # non-PyPI-installable spaCy models
         if SPACY_MODEL_REGEX.match(req):
+            print("skipping non-PyPI-installable spaCy model \"{}\"".format(req))
             continue
 
         supported_requirements.append(req)
