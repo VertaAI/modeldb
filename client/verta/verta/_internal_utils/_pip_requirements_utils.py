@@ -315,15 +315,22 @@ def clean_reqs_file_lines(requirements):
     requirements = [req for req in requirements if not req.startswith('#')]  # comment line
 
     # remove unsupported options
-    #     https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format
-    requirements = [req for req in requirements if not req.startswith('--')]
-    requirements = [req for req in requirements if not req.startswith(('-c ', '-f ', '-i '))]
-    #     https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
-    #     TODO: upgrade protos and Client to handle VCS-installed packages
-    requirements = [req for req in requirements if not req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+'))]
-    #     TODO: follow references to other requirements files
-    requirements = [req for req in requirements if not req.startswith('-r ')]
-    #     non-PyPI-installable SpaCy models:
-    requirements = [req for req in requirements if not SPACY_MODEL_REGEX.match(req)]
+    supported_requirements = []
+    for req in requirements:
+        # https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format
+        if req.startswith(('--', '-c ', '-f ', '-i ')):
+            continue
+        # https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
+        # TODO: upgrade protos and Client to handle VCS-installed packages
+        if req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+')):
+            continue
+        # TODO: follow references to other requirements files
+        if req.startswith('-r '):
+            continue
+        # non-PyPI-installable SpaCy models
+        if SPACY_MODEL_REGEX.match(req):
+            continue
 
-    return requirements
+        supported_requirements.append(req)
+
+    return supported_requirements
