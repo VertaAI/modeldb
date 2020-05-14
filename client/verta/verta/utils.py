@@ -82,6 +82,12 @@ class ModelAPI(object):
                     data = data.item()
                 # TODO: probably should use dtype instead of inferring the type?
                 return ModelAPI._single_data_to_api(data, name)
+        # TODO: check if it's safe to use _utils.to_builtin()
+        if tf is not None and isinstance(data, tf.Tensor):  # if TensorFlow
+            try:
+                data = data.numpy()  # extract more-handleable NumPy array
+            except:  # TF 1.X or not-eager execution
+                pass  # try to proceed anyway
         try:
             first_datum = data[0]
         except:
