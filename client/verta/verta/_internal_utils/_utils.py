@@ -28,7 +28,7 @@ from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 try:
     import pandas as pd
 except ImportError:  # pandas not installed
-    pass
+    pd = None
 
 try:
     import tensorflow as tf
@@ -441,11 +441,11 @@ def to_builtin(obj):
         return obj.item()
 
     # scientific library collections
-    if obj_class == "ndarray":
+    if np is not None and isinstance(obj, np.ndarray):
         return obj.tolist()
-    if obj_class == "Series":
+    if pd is not None and isinstance(obj, pd.Series):
         return obj.values.tolist()
-    if obj_class == "DataFrame":
+    if pd is not None and isinstance(obj, pd.DataFrame):
         return obj.values.tolist()
     if obj_class == "Tensor" and obj_module == "torch":
         return obj.detach().numpy().tolist()
