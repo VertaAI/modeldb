@@ -58,6 +58,7 @@ else:
 try:
     import numpy as np
 except ImportError:  # NumPy not installed
+    np = None
     BOOL_TYPES = (bool,)
 else:
     BOOL_TYPES = (bool, np.bool_)
