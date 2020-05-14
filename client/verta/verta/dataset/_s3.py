@@ -97,10 +97,15 @@ class S3(_dataset._Dataset):
         if s3_loc.key is None:
             # TODO: handle `bucket_name` not found
             for obj in s3.list_object_versions(Bucket=s3_loc.bucket)['Versions']:
+                if obj['Key'].endswith('/'):  # folder, not object
+                    continue
                 if obj['IsLatest']:
                     yield cls._get_s3_obj_metadata(obj, s3_loc.bucket, obj['Key'])
         else:
             # TODO: handle `key` not found
+            if s3_loc.key.endswith('/'):
+                s3_path = cls._S3_PATH.format(s3_loc.bucket, s3_loc.key)
+                raise ValueError("{} must be a bucket or an object, not a folder".format(s3_path))
             if s3_loc.version_id is not None:
                 # TODO: handle `version_id` not found
                 obj = s3.head_object(Bucket=s3_loc.bucket, Key=s3_loc.key, VersionId=s3_loc.version_id)
