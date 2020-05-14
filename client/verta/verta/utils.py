@@ -118,7 +118,6 @@ class ModelAPI(object):
             A model API value node.
 
         """
-        print(data, name)
         if data is None:
             return {'type': "VertaNull",
                     'name': str(name)}
