@@ -56,7 +56,7 @@ class Notebook(_code._Code):
             notebook_path = os.path.expanduser(notebook_path)
             self._msg.notebook.path.CopyFrom(_path.Path(notebook_path)._msg.path.components[0])
             try:
-                git_blob = _git.Git()
+                git_blob = _git.Git()  # do not store as attribute, to avoid data duplication
                 repo_root = _git_utils.get_git_repo_root_dir()
             except OSError:
                 # TODO: impl and catch a more specific exception for git calls
