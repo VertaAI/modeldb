@@ -12,7 +12,6 @@ class TestS3:
         assert len(dataset._msg.s3.components) > 1
 
         for s3_obj_metadata in (component.path for component in dataset._msg.s3.components):
-            print(s3_obj_metadata)
             assert s3_obj_metadata.path != ""
             assert s3_obj_metadata.size != 0
             assert s3_obj_metadata.last_modified_at_source != 0
