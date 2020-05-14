@@ -32,6 +32,22 @@ Release Notes
      <>`__
 
 
+v0.14.5 (2020-05-13)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `support logging Keras models in TensorFlow 2.X
+  <https://github.com/VertaAI/modeldb/pull/621>`__
+- `support eagerly-executed TensorFlow Tensors in ModelAPI
+  <https://github.com/VertaAI/modeldb/pull/626>`__
+
+Bug Fixes
+^^^^^^^^^
+- `filter out spaCy models when versioning pip requirements files
+  <https://github.com/VertaAI/modeldb/pull/627>`__
+
+
 v0.14.4 (2020-05-04)
 --------------------
 
