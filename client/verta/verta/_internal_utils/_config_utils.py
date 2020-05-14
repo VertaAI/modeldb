@@ -62,6 +62,8 @@ def write_config():
 
 
 def load(config_filepath):
+    config_filepath = os.path.expanduser(config_filepath)
+
     with open(config_filepath, 'r') as f:
         if config_filepath.endswith('.yaml'):
             config = yaml.safe_load(f)
@@ -74,6 +76,8 @@ def load(config_filepath):
 
 
 def dump(config, config_filepath):
+    config_filepath = os.path.expanduser(config_filepath)
+
     with open(config_filepath, 'w') as f:
         if config_filepath.endswith('.yaml'):
             yaml.safe_dump(config, f)
@@ -97,6 +101,7 @@ def create_empty_config_file(dirpath):
 
     """
     config_filepath = os.path.join(dirpath, CONFIG_YAML_FILENAME)
+    config_filepath = os.path.expanduser(config_filepath)
     config_filepath = os.path.abspath(config_filepath)
 
     with open(config_filepath, 'w') as f:
