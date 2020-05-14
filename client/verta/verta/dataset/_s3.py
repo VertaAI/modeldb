@@ -99,8 +99,9 @@ class S3(_dataset._Dataset):
             for obj in s3.list_object_versions(Bucket=s3_loc.bucket)['Versions']:
                 if obj['Key'].endswith('/'):  # folder, not object
                     continue
-                if obj['IsLatest']:
-                    yield cls._get_s3_obj_metadata(obj, s3_loc.bucket, obj['Key'])
+                if not obj['IsLatest']:
+                    continue
+                yield cls._get_s3_obj_metadata(obj, s3_loc.bucket, obj['Key'])
         else:
             # TODO: handle `key` not found
             if s3_loc.key.endswith('/'):
