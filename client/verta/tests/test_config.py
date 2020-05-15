@@ -10,18 +10,76 @@ from . import utils
 
 
 @pytest.fixture
-def within_tempdir(tempdir):
-    """Creates and ``cd``s into a nested empty directory."""
-    pass # TODO: 5 parent dirs
+def config_filetree(tempdir):
+    """
+    Creates config files and ``cd``s into a nested directory.
 
-    pass # TODO: cwd
+    Yields
+    ------
+    config : dict
+        Expected merged config.
 
-    pass # TODO: children dirs (should not be picked up)
+    """
+    config_filename = "verta_config.yaml"
+    config_items = [
+        ('email', "hello@verta.ai"),
+        ('dev_key', "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"),
+        ('host', "app.verta.ai"),
+        ('workspace', "My Workspace"),
+        ('project', "My Project"),
+        ('experiment', "My Experiment"),
+        ('dataset', "My Dataset"),
+    ]
+    config_iter = iter(config_items)
 
-    pass # TODO: cousin dirs (should not be picked up)
+    # home dir
+    home_dir = os.path.expanduser('~')
+    with open(os.path.join(home_dir, config_filename), 'w') as f:
+        key, value = next(config_iter)
+        yaml.safe_dump({key: value})
 
-    with utils.chdir():  # TODO: cwd
-        yield
+    # 5 parent dirs
+    curr_dir = tempdir
+    for i in reversed(range(5)):
+        curr_dir = os.path.join(curr_dir, "parent{}".format(i+1))
+        os.mkdir(curr_dir)
+        with open(os.path.join(curr_dir, config_filename), 'w') as f:
+            key, value = next(config_iter)
+            yaml.safe_dump({key: value})
+
+    # cwd-to-be
+    curr_dir = os.path.join(curr_dir, "current")
+    os.mkdir(curr_dir)
+    with open(os.path.join(curr_dir, config_filename), 'w') as f:
+        key, value = next(config_iter)
+        yaml.safe_dump({key: value})
+
+    # make sure we've used every config item
+    with pytest.raises(StopIteration):
+        next(config_iter)
+
+    # children dirs (should not be picked up)
+    child_dirs = [
+        os.path.join(curr_dir, "childA"),
+        os.path.join(curr_dir, "childB"),
+    ]
+    for child_dir in child_dirs:
+        os.mkdir(child_dir)
+        with open(os.path.join(child_dir, config_filename), 'w') as f:
+            yaml.safe_dump({'INVALID_KEY': "INVALID_VALUE"})
+
+    # cousin dirs (should not be picked up)
+    cousin_dirs = [
+        os.path.join(curr_dir, "..", "..", "..", "cousinA"),
+        os.path.join(curr_dir, "..", "..", "cousinB"),
+    ]
+    for cousin_dir in cousin_dirs:
+        os.mkdir(cousin_dir)
+        with open(os.path.join(cousin_dir, config_filename), 'w') as f:
+            yaml.safe_dump({'INVALID_KEY': "INVALID_VALUE"})
+
+    with utils.chdir(curr_dir):
+        yield dict(config_items)
 
 
 @pytest.fixture
@@ -49,8 +107,8 @@ class TestRead:
 
 
 class TestWrite:
-    @pytest.mark.parametrize("dirpath", ['~', '.', '..'])
-    def test_create_empty(self, within_tempdir, dirpath):
+    @pytest.mark.parametrize("dirpath", ['~', '.'])
+    def test_create_empty(self, dirpath):
         config_filepath = _config_utils.create_empty_config_file(dirpath)
         try:
             with open(config_filepath, 'r') as f:
@@ -58,7 +116,7 @@ class TestWrite:
         finally:
             os.remove(config_filepath)
 
-    def test_update_closest(self, tempdir):
+    def test_update_closest(self, config_filetree):
         config_filepath1 = "~"
         config_filepath2 = "../.."
         config_filepath3 = ".."
