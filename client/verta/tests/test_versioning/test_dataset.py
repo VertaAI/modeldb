@@ -39,7 +39,7 @@ class TestS3:
             verta.dataset.S3("s3://verta-starter/{}/".format(strs[0]))
         err_msg = str(excinfo.value).strip()
         assert err_msg.startswith("folder ")
-        assert err_msg.endswith(" does not exist")
+        assert err_msg.endswith(" not found")
 
     def test_s3_multiple_keys(self):
         # pylint: disable=no-member
