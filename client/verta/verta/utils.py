@@ -73,19 +73,20 @@ class ModelAPI(object):
 
     @staticmethod
     def _data_to_api(data, name=""):
-        if pd is not None and isinstance(data, pd.DataFrame):
-            if len(set(data.columns)) < len(data.columns):
-                raise ValueError("column names must all be unique")
-            return {'type': "VertaList",
-                    'name': name,
-                    'value': [ModelAPI._data_to_api(data[name], str(name)) for name in data.columns]}
-        if pd is not None and isinstance(data, pd.Series):
-            name = data.name
-            data = data.iloc[0]
-            if hasattr(data, 'item'):
-                data = data.item()
-            # TODO: probably should use dtype instead of inferring the type?
-            return ModelAPI._single_data_to_api(data, name)
+        if pd is not None:
+            if isinstance(data, pd.DataFrame):
+                if len(set(data.columns)) < len(data.columns):
+                    raise ValueError("column names must all be unique")
+                return {'type': "VertaList",
+                        'name': name,
+                        'value': [ModelAPI._data_to_api(data[name], str(name)) for name in data.columns]}
+            if isinstance(data, pd.Series):
+                name = data.name
+                data = data.iloc[0]
+                if hasattr(data, 'item'):
+                    data = data.item()
+                # TODO: probably should use dtype instead of inferring the type?
+                return ModelAPI._single_data_to_api(data, name)
         # TODO: check if it's safe to use _utils.to_builtin()
         if tf is not None and isinstance(data, tf.Tensor):
             try:
