@@ -31,6 +31,16 @@ class TestS3:
         assert s3_obj_metadata.last_modified_at_source != 0
         assert s3_obj_metadata.md5 != ""
 
+    def test_nonexistent_s3_folder_error(self, strs):
+        # pylint: disable=no-member
+        pytest.importorskip("boto3")
+
+        with pytest.raises(ValueError) as excinfo:
+            verta.dataset.S3("s3://verta-starter/{}/".format(strs[0]))
+        err_msg = str(excinfo.value).strip()
+        assert err_msg.startswith("folder ")
+        assert err_msg.endswith(" does not exist")
+
     def test_s3_multiple_keys(self):
         # pylint: disable=no-member
         pytest.importorskip("boto3")
