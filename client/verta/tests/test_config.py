@@ -87,11 +87,15 @@ def config_filetree(tempdir):
 
 
 class TestRead:
+    def test_discovery(self, config_filetree):
+        pass
+    # NOTE: make sure this matches the fixture
+
     def test_merge(self, config_filetree):
         with _config_utils.read_config() as config:
             assert config == config_filetree
 
-    def test_merge_and_overwrite(self):
+    def test_merge_and_overwrite(self, config_filetree):
         pass
 
 
@@ -106,12 +110,12 @@ class TestWrite:
             os.remove(config_filepath)
 
     def test_update_closest(self, config_filetree):
-        config_filename = _config_utils.CONFIG_YAML_FILENAME
+        cwd_config_filepath = os.path.abspath(_config_utils.CONFIG_YAML_FILENAME)
         new_key = 'NEW_KEY'
         new_value = "NEW_VALUE"
 
         # config in cwd does not yet have new item
-        with open(config_filename, 'r') as f:
+        with open(cwd_config_filepath, 'r') as f:
             nearest_config = yaml.safe_load(f)
             assert new_key not in nearest_config
 
@@ -119,12 +123,16 @@ class TestWrite:
             config.update({new_key: new_value})
 
         # config in cwd updated with new item
-        with open(config_filename, 'r') as f:
+        with open(cwd_config_filepath, 'r') as f:
             nearest_config = yaml.safe_load(f)
             assert new_key in nearest_config
             assert nearest_config[new_key] == new_value
 
-        # parent config not updated with new item
-        with open(os.path.join("..", config_filename), 'r') as f:
-            parent_config = yaml.safe_load(f)
-            assert new_key not in parent_config
+        # other configs not updated with new item
+        config_filepaths = _config_utils.find_config_files()  # util tested in TestRead
+        config_filepaths = set(config_filepaths)
+        config_filepaths.remove(cwd_config_filepath)  # don't count cwd config
+        for config_filepath in config_filepaths:
+            with open(config_filepath, 'r') as f:
+                config = yaml.safe_load(f)
+                assert new_key not in config
