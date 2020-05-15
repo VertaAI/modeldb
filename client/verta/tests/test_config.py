@@ -20,7 +20,7 @@ def config_filetree(tempdir):
         Expected merged config.
 
     """
-    config_filename = "verta_config.yaml"
+    config_filename = _config_utils.CONFIG_YAML_FILENAME
     config_items = [
         ('email', "hello@verta.ai"),
         ('dev_key', "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"),
@@ -94,9 +94,6 @@ class TestRead:
     def test_merge_and_overwrite(self):
         pass
 
-    def test_ignore_children_dirs(self):
-        pass
-
 
 class TestWrite:
     @pytest.mark.parametrize("dirpath", ['~', '.'])
@@ -108,5 +105,26 @@ class TestWrite:
         finally:
             os.remove(config_filepath)
 
-    def test_update_closest(self):
-        pass
+    def test_update_closest(self, config_filetree):
+        config_filename = _config_utils.CONFIG_YAML_FILENAME
+        new_key = 'NEW_KEY'
+        new_value = "NEW_VALUE"
+
+        # config in cwd does not yet have new item
+        with open(config_filename, 'r') as f:
+            nearest_config = yaml.safe_load(f)
+            assert new_key not in nearest_config
+
+        with _config_utils.write_config() as config:
+            config.update({new_key: new_value})
+
+        # config in cwd updated with new item
+        with open(config_filename, 'r') as f:
+            nearest_config = yaml.safe_load(f)
+            assert new_key in nearest_config
+            assert nearest_config[new_key] == new_value
+
+        # parent config not updated with new item
+        with open(os.path.join("..", config_filename), 'r') as f:
+            parent_config = yaml.safe_load(f)
+            assert new_key not in parent_config
