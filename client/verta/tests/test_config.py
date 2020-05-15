@@ -1,5 +1,4 @@
 import os
-import shutil
 
 import yaml
 
@@ -34,9 +33,11 @@ def expected_config(tempdir):
     config_iter = iter(config_items)
 
     # home verta dir
-    home_dir = os.path.expanduser('~')
-    home_verta_dir = os.path.join(home_dir, ".verta")
-    with open(os.path.join(home_verta_dir, config_filename), 'w') as f:
+    if not os.path.isdir(_config_utils.HOME_VERTA_DIR):
+        # TODO: delete this dir in teardown, avoiding race conditions w/ potential parallel tests
+        os.mkdir(_config_utils.HOME_VERTA_DIR)
+    home_config_filepath = os.path.join(_config_utils.HOME_VERTA_DIR, config_filename)
+    with open(home_config_filepath, 'w') as f:
         key, value = next(config_iter)
         yaml.safe_dump({key: value}, f)
 
@@ -84,7 +85,7 @@ def expected_config(tempdir):
         with utils.chdir(curr_dir):
             yield dict(config_items)
     finally:
-        shutil.rmtree(home_verta_dir)
+        os.remove(home_config_filepath)
 
 
 class TestRead:

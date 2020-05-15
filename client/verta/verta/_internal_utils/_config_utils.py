@@ -19,6 +19,8 @@ CONFIG_FILENAMES = {
     CONFIG_JSON_FILENAME,
 }
 
+HOME_VERTA_DIR = os.path.expanduser("~/.verta")
+
 
 @contextlib.contextmanager
 def read_config():
@@ -140,9 +142,8 @@ def get_possible_config_file_dirs():
         curr_dir = os.path.dirname(curr_dir)
 
     # home verta dir
-    home_verta_dir = os.path.expanduser("~/.verta")
-    if os.path.isdir(home_verta_dir):
-        dirpaths.append(home_verta_dir)
+    if os.path.isdir(HOME_VERTA_DIR):
+        dirpaths.append(HOME_VERTA_DIR)
 
     return dirpaths
 
