@@ -204,7 +204,7 @@ def merge(accum, other):
     Merges `other` into `accum` in place.
 
     A ``dict`` at the same location will be updated. A ``list`` at the same location will be
-    appended to. A scalar at the same location will be overwritten.
+    extended. A scalar at the same location will be overwritten.
 
     Parameters
     ----------
