@@ -32,9 +32,9 @@ def config_filetree(tempdir):
     ]
     config_iter = iter(config_items)
 
-    # home dir
+    # ~/.verta/
     home_dir = os.path.expanduser('~')
-    with open(os.path.join(home_dir, config_filename), 'w') as f:
+    with open(os.path.join(home_dir, ".verta", config_filename), 'w') as f:
         key, value = next(config_iter)
         yaml.safe_dump({key: value}, f)
 
@@ -83,19 +83,6 @@ def config_filetree(tempdir):
             yield dict(config_items)
     finally:
         os.remove(os.path.join(home_dir, config_filename))
-
-
-@pytest.fixture
-def home_config_filepath():
-    config_filepath = os.path.join('~', "verta_config.yaml")
-    config_filepath = os.path.expanduser(config_filepath)
-
-    with open(config_filepath, 'w') as f:
-        yaml.safe_dump({}, f)
-
-    yield config_filepath
-
-    os.remove(config_filepath)
 
 
 class TestRead:
