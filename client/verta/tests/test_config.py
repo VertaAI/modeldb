@@ -72,8 +72,8 @@ def expected_config(tempdir):
 
         # cousin dirs (should not be picked up)
         cousin_dirs = [
-            os.path.join(curr_dir, "..", "..", "..", "cousinA"),
-            os.path.join(curr_dir, "..", "..", "cousinB"),
+            os.path.join(curr_dir, '..', '..', '..', "cousinA"),
+            os.path.join(curr_dir, '..', '..', "cousinB"),
         ]
         for cousin_dir in cousin_dirs:
             os.mkdir(cousin_dir)
@@ -88,8 +88,20 @@ def expected_config(tempdir):
 
 class TestRead:
     def test_discovery(self, expected_config):
-        pass
-    # NOTE: make sure this matches the fixture
+        config_filename = _config_utils.CONFIG_YAML_FILENAME
+
+        # NOTE: make sure this matches the fixture
+        expected_config_filepaths = list(map(os.path.abspath, [
+            config_filename,
+            os.path.join('..', config_filename),
+            os.path.join('..', '..', config_filename),
+            os.path.join('..', '..', '..', config_filename),
+            os.path.join('..', '..', '..', '..', config_filename),
+            os.path.join('..', '..', '..', '..', '..', config_filename),
+            os.path.join(os.path.expanduser('~'), ".verta", config_filename),
+        ]))
+
+        assert _config_utils.find_config_files() == expected_config_filepaths
 
     def test_merge(self, expected_config):
         with _config_utils.read_config() as config:
