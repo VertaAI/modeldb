@@ -134,12 +134,15 @@ def get_possible_config_file_dirs():
     """
     dirpaths = []
 
-    # parent dirs
+    # current dir
     curr_dir = os.getcwd()
-    while (not dirpaths  # first iteration (dirpaths empty)
-           or curr_dir != dirpaths[-1]):
-        dirpaths.append(curr_dir)
-        curr_dir = os.path.dirname(curr_dir)
+    dirpaths.append(curr_dir)
+
+    # parent dirs
+    parent_dir = os.path.dirname(curr_dir)
+    while parent_dir != dirpaths[-1]:
+        dirpaths.append(parent_dir)
+        parent_dir = os.path.dirname(parent_dir)
 
     # home verta dir
     if os.path.isdir(HOME_VERTA_DIR):
