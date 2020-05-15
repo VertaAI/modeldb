@@ -131,11 +131,11 @@ def get_possible_config_file_dirs():
 
     """
     dirpaths = []
-    cur_dir = os.getcwd()
+    curr_dir = os.getcwd()
     while (not dirpaths  # first iteration (dirpaths empty)
-           or cur_dir != dirpaths[-1]):
-        dirpaths.append(cur_dir)
-        cur_dir = os.path.dirname(cur_dir)
+           or curr_dir != dirpaths[-1]):
+        dirpaths.append(curr_dir)
+        curr_dir = os.path.dirname(curr_dir)
     dirpaths.append(os.path.expanduser("~/.verta"))
 
     return dirpaths
