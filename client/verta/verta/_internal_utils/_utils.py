@@ -28,7 +28,7 @@ from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 try:
     import pandas as pd
 except ImportError:  # pandas not installed
-    pass
+    pd = None
 
 try:
     import tensorflow as tf
@@ -54,6 +54,14 @@ else:
     except ImportError:  # abnormally nonstandard installation of Jupyter
         pass
 
+
+try:
+    import numpy as np
+except ImportError:  # NumPy not installed
+    np = None
+    BOOL_TYPES = (bool,)
+else:
+    BOOL_TYPES = (bool, np.bool_)
 
 _GRPC_PREFIX = "Grpc-Metadata-"
 
@@ -423,6 +431,10 @@ def to_builtin(obj):
     cls_ = obj.__class__
     obj_class = getattr(cls_, '__name__', None)
     obj_module = getattr(cls_, '__module__', None)
+
+    # booleans
+    if isinstance(obj, BOOL_TYPES):
+        return True if obj else False
 
     # NumPy scalars
     if obj_module == "numpy" and obj_class.startswith(('int', 'uint', 'float', 'str')):
