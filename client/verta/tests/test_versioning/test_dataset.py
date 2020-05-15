@@ -120,6 +120,33 @@ class TestS3:
         assert len(dataset._msg.s3.components) == 1
         assert dataset._msg.s3.components[0].s3_version_id == version_id
 
+    def test_versioned_folder(self):
+        s3 = pytest.importorskip("boto3").client('s3')
+        S3_PATH = verta.dataset.S3._S3_PATH
+
+        bucket = "verta-versioned-bucket"
+        folder = "data/"
+        s3_url = "s3://{}/{}".format(bucket, folder)
+
+        # collect latest versions of objects with folder as prefix
+        version_ids = {
+            S3_PATH.format(bucket, obj['Key']): obj['VersionId']
+            for obj in
+            s3.list_object_versions(Bucket=bucket, Prefix=folder)['Versions']
+            if obj['IsLatest']
+        }
+        for path, version_id in version_ids.items():
+            if version_id == "null":
+                # S3 returns "null" in its API, but we handle that as empty string
+                version_ids[path] = ""
+
+        dataset = verta.dataset.S3(s3_url)
+
+        for component in dataset._msg.s3.components:
+            assert component.s3_version_id == version_ids[component.path.path]
+            assert not component.path.path.endswith('/')
+            assert component.path.size != 0
+
     def test_repr(self):
         """Tests that __repr__() executes without error"""
         pytest.importorskip("boto3")
