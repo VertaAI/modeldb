@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import yaml
 
@@ -34,8 +35,8 @@ def expected_config(tempdir):
 
     # ~/.verta/
     home_dir = os.path.expanduser('~')
-    home_verta_dir = os.path.join(home_dir, ".verta", config_filename)
-    with open(home_verta_dir, 'w') as f:
+    home_verta_dir = os.path.join(home_dir, ".verta")
+    with open(os.path.join(home_verta_dir, config_filename), 'w') as f:
         key, value = next(config_iter)
         yaml.safe_dump({key: value}, f)
 
@@ -83,7 +84,7 @@ def expected_config(tempdir):
         with utils.chdir(curr_dir):
             yield dict(config_items)
     finally:
-        os.remove(home_verta_dir)
+        shutil.rmtree(home_verta_dir)
 
 
 class TestRead:
