@@ -100,7 +100,7 @@ class TestRead:
             os.path.join('..', '..', '..', config_filename),
             os.path.join('..', '..', '..', '..', config_filename),
             os.path.join('..', '..', '..', '..', '..', config_filename),
-            os.path.join(os.path.expanduser('~'), ".verta", config_filename),
+            os.path.join(_config_utils.HOME_VERTA_DIR, config_filename),
         ]))
 
         assert _config_utils.find_config_files() == expected_config_filepaths

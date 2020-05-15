@@ -19,7 +19,7 @@ CONFIG_FILENAMES = {
     CONFIG_JSON_FILENAME,
 }
 
-HOME_VERTA_DIR = os.path.expanduser("~/.verta")
+HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
 
 
 @contextlib.contextmanager
