@@ -37,6 +37,7 @@ def config_filetree(tempdir):
     with open(os.path.join(home_dir, config_filename), 'w') as f:
         key, value = next(config_iter)
         yaml.safe_dump({key: value}, f)
+
     try:  # delete home config during teardown
         # 5 parent dirs
         curr_dir = tempdir
