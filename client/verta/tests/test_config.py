@@ -110,7 +110,7 @@ class TestRead:
     def test_merge_and_overwrite(self, expected_config):
         cwd_config_filepath = os.path.abspath(_config_utils.CONFIG_YAML_FILENAME)
 
-        # pick an key from config
+        # pick a key from config
         config_keys = set(expected_config.keys())
         #     don't pick the key that's already in cwd config
         with open(cwd_config_filepath, 'r') as f:
