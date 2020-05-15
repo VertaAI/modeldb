@@ -10,7 +10,7 @@ from . import utils
 
 
 @pytest.fixture
-def config_filetree(tempdir):
+def expected_config(tempdir):
     """
     Creates config files and ``cd``s into a nested directory.
 
@@ -87,15 +87,15 @@ def config_filetree(tempdir):
 
 
 class TestRead:
-    def test_discovery(self, config_filetree):
+    def test_discovery(self, expected_config):
         pass
     # NOTE: make sure this matches the fixture
 
-    def test_merge(self, config_filetree):
+    def test_merge(self, expected_config):
         with _config_utils.read_config() as config:
-            assert config == config_filetree
+            assert config == expected_config
 
-    def test_merge_and_overwrite(self, config_filetree):
+    def test_merge_and_overwrite(self, expected_config):
         pass
 
 
@@ -109,7 +109,7 @@ class TestWrite:
         finally:
             os.remove(config_filepath)
 
-    def test_update_closest(self, config_filetree):
+    def test_update_closest(self, expected_config):
         cwd_config_filepath = os.path.abspath(_config_utils.CONFIG_YAML_FILENAME)
         new_key = 'NEW_KEY'
         new_value = "NEW_VALUE"
