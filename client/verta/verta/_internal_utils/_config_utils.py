@@ -28,7 +28,7 @@ def read_config():
     Yields the merged contents of all accessible config files.
 
     Even though this context does nothing on exit, it's still useful for scopes where
-    :func:`write_config` is also being used, to help make sure the contents aren't being mixed up.
+    :func:`write_config` is also used, to visually clarify which contents are being manipulated.
 
     Yields
     ------
