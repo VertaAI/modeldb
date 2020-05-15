@@ -95,11 +95,14 @@ class S3(_dataset._Dataset):
 
         if (s3_loc.key is None  # bucket
                 or s3_loc.key.endswith('/')):  # folder
-            # TODO: handle `bucket_name` and `prefix` not found
             if s3_loc.key is None:
+                # TODO: handle `bucket_name` not found
                 obj_versions = s3.list_object_versions(Bucket=s3_loc.bucket)
             else:
                 obj_versions = s3.list_object_versions(Bucket=s3_loc.bucket, Prefix=s3_loc.key)
+                if 'Versions' not in obj_versions:  # boto3 doesn't error, so we have to catch this
+                    s3_path = cls._S3_PATH.format(s3_loc.bucket, s3_loc.key)
+                    raise ValueError("folder {} not found".format(s3_path))
 
             for obj in obj_versions['Versions']:
                 if obj['Key'].endswith('/'):  # folder, not object
