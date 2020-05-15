@@ -34,7 +34,8 @@ def config_filetree(tempdir):
 
     # ~/.verta/
     home_dir = os.path.expanduser('~')
-    with open(os.path.join(home_dir, ".verta", config_filename), 'w') as f:
+    home_verta_dir = os.path.join(home_dir, ".verta", config_filename)
+    with open(home_verta_dir, 'w') as f:
         key, value = next(config_iter)
         yaml.safe_dump({key: value}, f)
 
@@ -82,7 +83,7 @@ def config_filetree(tempdir):
         with utils.chdir(curr_dir):
             yield dict(config_items)
     finally:
-        os.remove(os.path.join(home_dir, config_filename))
+        os.remove(home_verta_dir)
 
 
 class TestRead:
