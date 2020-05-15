@@ -70,6 +70,9 @@ def load(config_filepath):
         else:  # JSON
             config = json.load(f)
 
+    if config is None:  # config file was empty
+        config = {}
+
     validate(config)
 
     return config
