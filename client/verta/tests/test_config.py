@@ -36,7 +36,7 @@ def config_filetree(tempdir):
     home_dir = os.path.expanduser('~')
     with open(os.path.join(home_dir, config_filename), 'w') as f:
         key, value = next(config_iter)
-        yaml.safe_dump({key: value})
+        yaml.safe_dump({key: value}, f)
     try:  # delete home config during teardown
         # 5 parent dirs
         curr_dir = tempdir
@@ -45,14 +45,14 @@ def config_filetree(tempdir):
             os.mkdir(curr_dir)
             with open(os.path.join(curr_dir, config_filename), 'w') as f:
                 key, value = next(config_iter)
-                yaml.safe_dump({key: value})
+                yaml.safe_dump({key: value}, f)
 
         # cwd-to-be
         curr_dir = os.path.join(curr_dir, "current")
         os.mkdir(curr_dir)
         with open(os.path.join(curr_dir, config_filename), 'w') as f:
             key, value = next(config_iter)
-            yaml.safe_dump({key: value})
+            yaml.safe_dump({key: value}, f)
 
         # make sure we've used every config item
         with pytest.raises(StopIteration):
@@ -66,7 +66,7 @@ def config_filetree(tempdir):
         for child_dir in child_dirs:
             os.mkdir(child_dir)
             with open(os.path.join(child_dir, config_filename), 'w') as f:
-                yaml.safe_dump({'INVALID_KEY': "INVALID_VALUE"})
+                yaml.safe_dump({'INVALID_KEY': "INVALID_VALUE"}, f)
 
         # cousin dirs (should not be picked up)
         cousin_dirs = [
@@ -76,7 +76,7 @@ def config_filetree(tempdir):
         for cousin_dir in cousin_dirs:
             os.mkdir(cousin_dir)
             with open(os.path.join(cousin_dir, config_filename), 'w') as f:
-                yaml.safe_dump({'INVALID_KEY': "INVALID_VALUE"})
+                yaml.safe_dump({'INVALID_KEY': "INVALID_VALUE"}, f)
 
         with utils.chdir(curr_dir):
             yield dict(config_items)
@@ -98,8 +98,9 @@ def home_config_filepath():
 
 
 class TestRead:
-    def test_merge(self):
-        pass
+    def test_merge(self, config_filetree):
+        with _config_utils.read_config() as config:
+            assert config == config_filetree
 
     def test_merge_and_overwrite(self):
         pass
@@ -118,7 +119,5 @@ class TestWrite:
         finally:
             os.remove(config_filepath)
 
-    def test_update_closest(self, config_filetree):
-        config_filepath1 = "~"
-        config_filepath2 = "../.."
-        config_filepath3 = ".."
+    def test_update_closest(self):
+        pass
