@@ -56,13 +56,13 @@ class Notebook(_code._Code):
             notebook_path = os.path.expanduser(notebook_path)
             self._msg.notebook.path.CopyFrom(_path.Path(notebook_path)._msg.path.components[0])
             try:
-                self._git_blob = _git.Git()
+                git_blob = _git.Git()  # do not store as attribute, to avoid data duplication
                 repo_root = _git_utils.get_git_repo_root_dir()
             except OSError:
                 # TODO: impl and catch a more specific exception for git calls
                 print("unable to capture git environment; skipping")
             else:
-                self._msg.notebook.git_repo.CopyFrom(self._git_blob._msg.git)
+                self._msg.notebook.git_repo.CopyFrom(git_blob._msg.git)
                 # amend notebook path to be relative to repo root
                 file_msg = self._msg.notebook.path
                 file_msg.path = os.path.relpath(file_msg.path, repo_root)
@@ -74,9 +74,12 @@ class Notebook(_code._Code):
             lines.extend(_path.Path._path_component_to_repr_lines(file_msg))
         git_msg = self._msg.notebook.git_repo
         if git_msg.hash:
+            # re-use Git blob repr
+            git_blob = _git.Git(_autocapture=False)
+            git_blob._msg.git.CopyFrom(self._msg.notebook.git_repo)
             # this will intentionally add a level of indentation in the final repr
             lines.extend(
-                repr(self._git_blob).splitlines()
+                repr(git_blob).splitlines()
             )
 
         return "\n    ".join(lines)
