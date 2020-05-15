@@ -37,49 +37,51 @@ def config_filetree(tempdir):
     with open(os.path.join(home_dir, config_filename), 'w') as f:
         key, value = next(config_iter)
         yaml.safe_dump({key: value})
+    try:  # delete home config during teardown
+        # 5 parent dirs
+        curr_dir = tempdir
+        for i in reversed(range(5)):
+            curr_dir = os.path.join(curr_dir, "parent{}".format(i+1))
+            os.mkdir(curr_dir)
+            with open(os.path.join(curr_dir, config_filename), 'w') as f:
+                key, value = next(config_iter)
+                yaml.safe_dump({key: value})
 
-    # 5 parent dirs
-    curr_dir = tempdir
-    for i in reversed(range(5)):
-        curr_dir = os.path.join(curr_dir, "parent{}".format(i+1))
+        # cwd-to-be
+        curr_dir = os.path.join(curr_dir, "current")
         os.mkdir(curr_dir)
         with open(os.path.join(curr_dir, config_filename), 'w') as f:
             key, value = next(config_iter)
             yaml.safe_dump({key: value})
 
-    # cwd-to-be
-    curr_dir = os.path.join(curr_dir, "current")
-    os.mkdir(curr_dir)
-    with open(os.path.join(curr_dir, config_filename), 'w') as f:
-        key, value = next(config_iter)
-        yaml.safe_dump({key: value})
+        # make sure we've used every config item
+        with pytest.raises(StopIteration):
+            next(config_iter)
 
-    # make sure we've used every config item
-    with pytest.raises(StopIteration):
-        next(config_iter)
+        # children dirs (should not be picked up)
+        child_dirs = [
+            os.path.join(curr_dir, "childA"),
+            os.path.join(curr_dir, "childB"),
+        ]
+        for child_dir in child_dirs:
+            os.mkdir(child_dir)
+            with open(os.path.join(child_dir, config_filename), 'w') as f:
+                yaml.safe_dump({'INVALID_KEY': "INVALID_VALUE"})
 
-    # children dirs (should not be picked up)
-    child_dirs = [
-        os.path.join(curr_dir, "childA"),
-        os.path.join(curr_dir, "childB"),
-    ]
-    for child_dir in child_dirs:
-        os.mkdir(child_dir)
-        with open(os.path.join(child_dir, config_filename), 'w') as f:
-            yaml.safe_dump({'INVALID_KEY': "INVALID_VALUE"})
+        # cousin dirs (should not be picked up)
+        cousin_dirs = [
+            os.path.join(curr_dir, "..", "..", "..", "cousinA"),
+            os.path.join(curr_dir, "..", "..", "cousinB"),
+        ]
+        for cousin_dir in cousin_dirs:
+            os.mkdir(cousin_dir)
+            with open(os.path.join(cousin_dir, config_filename), 'w') as f:
+                yaml.safe_dump({'INVALID_KEY': "INVALID_VALUE"})
 
-    # cousin dirs (should not be picked up)
-    cousin_dirs = [
-        os.path.join(curr_dir, "..", "..", "..", "cousinA"),
-        os.path.join(curr_dir, "..", "..", "cousinB"),
-    ]
-    for cousin_dir in cousin_dirs:
-        os.mkdir(cousin_dir)
-        with open(os.path.join(cousin_dir, config_filename), 'w') as f:
-            yaml.safe_dump({'INVALID_KEY': "INVALID_VALUE"})
-
-    with utils.chdir(curr_dir):
-        yield dict(config_items)
+        with utils.chdir(curr_dir):
+            yield dict(config_items)
+    finally:
+        os.remove(os.path.join(home_dir, config_filename))
 
 
 @pytest.fixture
