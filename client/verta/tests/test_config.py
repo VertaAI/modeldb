@@ -33,7 +33,7 @@ def expected_config(tempdir):
     ]
     config_iter = iter(config_items)
 
-    # ~/.verta/
+    # home verta dir
     home_dir = os.path.expanduser('~')
     home_verta_dir = os.path.join(home_dir, ".verta")
     with open(os.path.join(home_verta_dir, config_filename), 'w') as f:
