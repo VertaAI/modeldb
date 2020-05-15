@@ -441,11 +441,11 @@ def to_builtin(obj):
         return obj.item()
 
     # scientific library collections
-    if obj_module == "numpy" and obj_class == "ndarray":
+    if obj_class == "ndarray":
         return obj.tolist()
-    if obj_module == "pandas" and obj_class == "Series":
+    if obj_class == "Series":
         return obj.values.tolist()
-    if obj_module == "pandas" and obj_class == "DataFrame":
+    if obj_class == "DataFrame":
         return obj.values.tolist()
     if obj_class == "Tensor" and obj_module == "torch":
         return obj.detach().numpy().tolist()
