@@ -2077,6 +2077,13 @@ class ExperimentRun(_ModelDBEntity):
                 response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                 response.raise_for_status()
 
+                # TODO: print progress
+
+                part_etags.append({
+                    'ETag': response.headers['ETag'],
+                    'PartNumber': part_num,
+                })
+
             # TODO: complete upload
         else:
             url = self._get_url_for_artifact(key, "PUT")
