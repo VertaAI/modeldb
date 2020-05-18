@@ -2041,25 +2041,39 @@ class ExperimentRun(_ModelDBEntity):
 
         self._upload_artifact(key, artifact_stream, response_msg.multipart_upload_ok)
 
-    def _upload_artifact(self, key, artifact_stream, use_multipart):
+    def _upload_artifact(self, key, artifact_stream, use_multipart, part_size=64*(10**6)):
         """
         Parameters
         ----------
         key : str
         artifact_stream : file-like
         use_multipart : bool
+        part_size : int, default 64*(10**6)
+            If `use_multipart`, number of bytes to upload per part.
 
         """
-        url = self._get_url_for_artifact(key, "PUT")
-
         artifact_stream.seek(0)
         if self._conf.debug:
             print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
 
         if use_multipart:
-            pass
+            # TODO: initiate upload
+
+            part_etags = []
+            file_parts = iter(lambda: artifact_stream.read(part_size), b'')
+            # TODO: parallelize this loop
+            for i, file_part in enumerate(file_parts):
+                part_num = i + 1
+                # TODO: get URL
+
+                part_stream = six.BytesIO(file_part)  # enables streaming by `requests`, otherwise overwhelms SSL
+                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+                response.raise_for_status()
+
+            # TODO: complete upload
         else:
+            url = self._get_url_for_artifact(key, "PUT")
             response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
             _utils.raise_for_http_error(response)
 
