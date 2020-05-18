@@ -2048,8 +2048,12 @@ class ExperimentRun(_ModelDBEntity):
             print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
 
-        response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
-        _utils.raise_for_http_error(response)
+        if url_for_artifact.multipart_upload_ok:
+            pass
+        else:
+            response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
+            _utils.raise_for_http_error(response)
+
         print("upload complete ({})".format(key))
 
     def _log_artifact_path(self, key, artifact_path, artifact_type):
