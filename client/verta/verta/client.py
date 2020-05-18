@@ -2076,7 +2076,17 @@ class ExperimentRun(_ModelDBEntity):
 
                 # TODO: print progress
 
-                # TODO: commit artifact part
+                # commit artifact part
+                url = "{}://{}/api/v1/modeldb/experiment-run/commitArtifactPart".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                )
+                msg = _CommonService.CommitArtifactPart(id=self.id, key=key)
+                msg.artifact_part.part_number = part_num
+                msg.artifact_part.etag = response.headers['ETag']
+                data = _utils.proto_to_json(msg)
+                response = _utils.make_request("POST", url, self._conn, json=data)
+                _utils.raise_for_http_error(response)
 
             # complete upload
             url = "{}://{}/api/v1/modeldb/experiment-run/commitMultipartArtifact".format(
@@ -2086,6 +2096,7 @@ class ExperimentRun(_ModelDBEntity):
             msg = _CommonService.CommitMultipartArtifact(id=self.id, key=key)
             data = _utils.proto_to_json(msg)
             response = _utils.make_request("POST", url, self._conn, json=data)
+            _utils.raise_for_http_error(response)
         else:
             url = self._get_url_for_artifact(key, "PUT")
             response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
