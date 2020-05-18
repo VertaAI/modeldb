@@ -2085,6 +2085,7 @@ class ExperimentRun(_ModelDBEntity):
                 msg.artifact_part.part_number = part_num
                 msg.artifact_part.etag = response.headers['ETag']
                 data = _utils.proto_to_json(msg)
+                # TODO: increase retries
                 response = _utils.make_request("POST", url, self._conn, json=data)
                 _utils.raise_for_http_error(response)
 
