@@ -28,6 +28,11 @@ message Artifact {
     string filename_extension = 6;
 }
 
+message ArtifactPart {
+    int part_number = 1;
+    string etag = 2;  // checksum returned by S3
+}
+
 message Feature {
     string name = 1;
 }
@@ -103,11 +108,32 @@ message GetUrlForArtifact {
     string key = 2;
     string method = 3; //This is either GET or PUT
     ArtifactTypeEnum.ArtifactType artifact_type = 4; //can inform which slot to check
+    int part_number = 5;  // if 0, don’t do multipart
 
     message Response {
         string url = 1;
         map<string, string> fields = 2;
     }
+}
+
+message CommitArtifactPart {
+    string id = 1;  // Run ID
+    string key = 2;
+    ArtifactPart artifact_part = 3;
+}
+
+message GetCommittedArtifactParts {
+    string id = 1;  // Run ID
+    string key = 2;
+
+    message Response {
+        repeated ArtifactPart artifact_parts = 1;
+    }
+}
+
+message CommitMultipartArtifact {
+    string id = 1;  // Run ID
+    string key = 2;
 }
 
 // TODO: add bulk and get_all
