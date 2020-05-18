@@ -793,6 +793,15 @@ class _ModelDBEntity(object):
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(response.json(), Message.Response)
+
+        # accommodate port-forwarded NFS store
+        if 'https://localhost' in response_msg.url[:20]:
+            response_msg.url = 'http' + response_msg.url[5:]
+        if 'localhost%3a' in response_msg.url[:20]:
+            response_msg.url = response_msg.url.replace('localhost%3a', 'localhost:')
+        if 'localhost%3A' in response_msg.url[:20]:
+            response_msg.url = response_msg.url.replace('localhost%3A', 'localhost:')
+
         return response_msg
 
     def _cache(self, filename, contents):
@@ -1080,14 +1089,6 @@ class _ModelDBEntity(object):
             # upload artifact to artifact store
             url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type).url
 
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
-
             response = _utils.make_request("PUT", url, self._conn, data=zipstream)
             _utils.raise_for_http_error(response)
 
@@ -1142,14 +1143,6 @@ class _ModelDBEntity(object):
         elif which_code == 'code_archive':
             # download artifact from artifact store
             url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type).url
-
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
@@ -2055,14 +2048,6 @@ class ExperimentRun(_ModelDBEntity):
             print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
 
-        # accommodate port-forwarded NFS store
-        if 'https://localhost' in url[:20]:
-            url = 'http' + url[5:]
-        if 'localhost%3a' in url[:20]:
-            url = url.replace('localhost%3a', 'localhost:')
-        if 'localhost%3A' in url[:20]:
-            url = url.replace('localhost%3A', 'localhost:')
-
         response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
         _utils.raise_for_http_error(response)
         print("upload complete ({})".format(key))
@@ -2136,14 +2121,6 @@ class ExperimentRun(_ModelDBEntity):
         else:
             # download artifact from artifact store
             url = self._get_url_for_artifact(key, "GET").url
-
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
