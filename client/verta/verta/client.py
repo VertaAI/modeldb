@@ -2065,7 +2065,6 @@ class ExperimentRun(_ModelDBEntity):
 
         if use_multipart:
             # upload parts
-            part_etags = []
             file_parts = iter(lambda: artifact_stream.read(part_size), b'')
             for i, file_part in enumerate(file_parts):  # TODO: parallelize this loop
                 part_num = i + 1
@@ -2077,14 +2076,16 @@ class ExperimentRun(_ModelDBEntity):
 
                 # TODO: print progress
 
-                part_etags.append({
-                    'ETag': response.headers['ETag'],
-                    'PartNumber': part_num,
-                })
-
                 # TODO: commit artifact part
 
-            # TODO: complete upload
+            # complete upload
+            url = "{}://{}/api/v1/modeldb/experiment-run/commitMultipartArtifact".format(
+                self._conn.scheme,
+                self._conn.socket,
+            )
+            msg = _CommonService.CommitMultipartArtifact(id=self.id, key=key)
+            data = _utils.proto_to_json(msg)
+            response = _utils.make_request("POST", url, self._conn, json=data)
         else:
             url = self._get_url_for_artifact(key, "PUT")
             response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
