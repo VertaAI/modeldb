@@ -793,7 +793,7 @@ class _ModelDBEntity(object):
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(response.json(), Message.Response)
-        return response_msg.url
+        return response_msg
 
     def _cache(self, filename, contents):
         """
@@ -1078,7 +1078,7 @@ class _ModelDBEntity(object):
 
         if msg.code_version.WhichOneof("code") == 'code_archive':
             # upload artifact to artifact store
-            url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type)
+            url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type).url
 
             # accommodate port-forwarded NFS store
             if 'https://localhost' in url[:20]:
@@ -1141,7 +1141,7 @@ class _ModelDBEntity(object):
             return git_snapshot
         elif which_code == 'code_archive':
             # download artifact from artifact store
-            url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type)
+            url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type).url
 
             # accommodate port-forwarded NFS store
             if 'https://localhost' in url[:20]:
@@ -2045,7 +2045,8 @@ class ExperimentRun(_ModelDBEntity):
                 _utils.raise_for_http_error(response)
 
         # upload artifact to artifact store
-        url = self._get_url_for_artifact(key, "PUT")
+        url_for_artifact = self._get_url_for_artifact(key, "PUT")
+        url = url_for_artifact.url
         artifact_stream.seek(0)  # reuse stream that was created for checksum
         if self._conf.debug:
             print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), basename))
@@ -2131,7 +2132,7 @@ class ExperimentRun(_ModelDBEntity):
             return artifact.path, artifact.path_only
         else:
             # download artifact from artifact store
-            url = self._get_url_for_artifact(key, "GET")
+            url = self._get_url_for_artifact(key, "GET").url
 
             # accommodate port-forwarded NFS store
             if 'https://localhost' in url[:20]:
