@@ -97,10 +97,10 @@ public class ParentTimestampUpdateCron extends TimerTask {
     LOGGER.debug("Repository timestamp updating");
     String repositoryUpdateQueryString =
         new StringBuilder("UPDATE repository rp INNER JOIN ")
-            .append("(SELECT rc.repository_id, cm.commit_hash, MAX(cm.date_created) AS max_date")
+            .append("(SELECT rc.repository_id, MAX(cm.date_created) AS max_date")
             .append(" FROM `commit` cm INNER JOIN repository_commit rc ")
             .append(" ON rc.commit_hash = cm.commit_hash ")
-            .append(" GROUP BY rc.repository_id, cm.commit_hash) cm_alias ")
+            .append(" GROUP BY rc.repository_id) cm_alias ")
             .append(" ON rp.id = cm_alias.repository_id AND rp.date_updated < cm_alias.max_date ")
             .append("SET rp.date_updated = cm_alias.max_date WHERE rp.id = cm_alias.repository_id")
             .toString();
