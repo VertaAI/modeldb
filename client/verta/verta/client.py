@@ -2042,6 +2042,14 @@ class ExperimentRun(_ModelDBEntity):
         self._upload_artifact(key, artifact_stream, response_msg.multipart_upload_ok)
 
     def _upload_artifact(self, key, artifact_stream, use_multipart):
+        """
+        Parameters
+        ----------
+        key : str
+        artifact_stream : file-like
+        use_multipart : bool
+
+        """
         url = self._get_url_for_artifact(key, "PUT")
 
         artifact_stream.seek(0)
