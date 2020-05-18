@@ -2044,12 +2044,15 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-        # upload artifact to artifact store
+        self._upload_artifact(key, artifact_stream)
+
+    def _upload_artifact(self, key, artifact_stream):
         url_for_artifact = self._get_url_for_artifact(key, "PUT")
         url = url_for_artifact.url
-        artifact_stream.seek(0)  # reuse stream that was created for checksum
+
+        artifact_stream.seek(0)
         if self._conf.debug:
-            print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), basename))
+            print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
 
         # accommodate port-forwarded NFS store
@@ -2062,7 +2065,7 @@ class ExperimentRun(_ModelDBEntity):
 
         response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
         _utils.raise_for_http_error(response)
-        print("upload complete ({})".format(basename))
+        print("upload complete ({})".format(key))
 
     def _log_artifact_path(self, key, artifact_path, artifact_type):
         """
