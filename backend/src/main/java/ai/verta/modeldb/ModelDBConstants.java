@@ -198,7 +198,7 @@ public interface ModelDBConstants {
   // Telemetry Constants
   String TELEMETRY = "telemetry";
   String OPT_IN = "opt_in";
-  String TELEMENTRY_FREQUENCY = "frequency"; // frequency to share data in hours
+  String FREQUENCY = "frequency"; // frequency to share data in hours
   String TELEMETRY_CONSUMER = "consumer";
   String TELEMETRY_CONSUMER_URL =
       "https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry";
@@ -221,4 +221,8 @@ public interface ModelDBConstants {
   String VERSIONING_LOCATION = "versioning_location";
   String REPOSITORY_VISIBILITY = "repository_visibility";
   String REPOSITORY = "repository";
+
+  // Cron job constant
+  String CRON_JOB = "cron_job";
+  String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
 }
