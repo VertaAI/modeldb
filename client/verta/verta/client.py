@@ -761,7 +761,7 @@ class _ModelDBEntity(object):
 
         self.__dict__.update(state)
 
-    def _get_url_for_artifact(self, key, method, artifact_type=0):
+    def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         """
         Obtains a URL to use for accessing stored artifacts.
 
@@ -774,6 +774,8 @@ class _ModelDBEntity(object):
         artifact_type : int, optional
             Variant of `_CommonService.ArtifactTypeEnum`. This informs the backend what slot to check
             for the artifact, if necessary.
+        part_num : int, optional
+            If using Multipart Upload, number of part to be uploaded.
 
         Returns
         -------
@@ -785,7 +787,11 @@ class _ModelDBEntity(object):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
         Message = _CommonService.GetUrlForArtifact
-        msg = Message(id=self.id, key=key, method=method.upper(), artifact_type=artifact_type)
+        msg = Message(
+            id=self.id, key=key,
+            method=method.upper(),
+            artifact_type=artifact_type, part_number=part_num,
+        )
         data = _utils.proto_to_json(msg)
         response = _utils.make_request("POST",
                                        self._request_url.format("getUrlForArtifact"),
@@ -2065,7 +2071,7 @@ class ExperimentRun(_ModelDBEntity):
             # TODO: parallelize this loop
             for i, file_part in enumerate(file_parts):
                 part_num = i + 1
-                # TODO: get URL
+                url = self._get_url_for_artifact(key, "PUT", part_num=part_num)
 
                 part_stream = six.BytesIO(file_part)  # enables streaming by `requests`, otherwise overwhelms SSL
                 response = _utils.make_request("PUT", url, self._conn, data=part_stream)
