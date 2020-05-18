@@ -2037,10 +2037,11 @@ class ExperimentRun(_ModelDBEntity):
                                  " consider setting overwrite=True".format(key))
             else:
                 _utils.raise_for_http_error(response)
+        response_msg = _utils.json_to_proto(response.json(), Message.Response)
 
-        self._upload_artifact(key, artifact_stream)
+        self._upload_artifact(key, artifact_stream, response_msg.multipart_upload_ok)
 
-    def _upload_artifact(self, key, artifact_stream):
+    def _upload_artifact(self, key, artifact_stream, use_multipart):
         url = self._get_url_for_artifact(key, "PUT")
 
         artifact_stream.seek(0)
@@ -2048,7 +2049,7 @@ class ExperimentRun(_ModelDBEntity):
             print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
 
-        if url_for_artifact.multipart_upload_ok:
+        if use_multipart:
             pass
         else:
             response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
