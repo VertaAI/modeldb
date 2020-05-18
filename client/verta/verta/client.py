@@ -2064,12 +2064,10 @@ class ExperimentRun(_ModelDBEntity):
             artifact_stream.seek(0)
 
         if use_multipart:
-            # TODO: initiate upload
-
+            # upload parts
             part_etags = []
             file_parts = iter(lambda: artifact_stream.read(part_size), b'')
-            # TODO: parallelize this loop
-            for i, file_part in enumerate(file_parts):
+            for i, file_part in enumerate(file_parts):  # TODO: parallelize this loop
                 part_num = i + 1
                 url = self._get_url_for_artifact(key, "PUT", part_num=part_num)
 
@@ -2083,6 +2081,8 @@ class ExperimentRun(_ModelDBEntity):
                     'ETag': response.headers['ETag'],
                     'PartNumber': part_num,
                 })
+
+                # TODO: commit artifact part
 
             # TODO: complete upload
         else:
