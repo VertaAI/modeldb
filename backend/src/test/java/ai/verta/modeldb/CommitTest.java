@@ -29,7 +29,6 @@ import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GetCommitComponentRequest;
 import ai.verta.modeldb.versioning.GetCommitRequest;
-import ai.verta.modeldb.versioning.GetRepositoryRequest;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.HyperparameterConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
@@ -1738,32 +1737,12 @@ public class CommitTest {
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     assertTrue("Commit not found in response", commitResponse.hasCommit());
 
-    GetRepositoryRequest.Response getRepositoryResponse =
-        versioningServiceBlockingStub.getRepository(
-            GetRepositoryRequest.newBuilder()
-                .setId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-                .build());
-    assertEquals(
-        "Repository updated date not match with expected date",
-        commitResponse.getCommit().getDateCreated(),
-        getRepositoryResponse.getRepository().getDateUpdated());
-
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    GetRepositoryRequest.Response getRepositoryResponse2 =
-        versioningServiceBlockingStub.getRepository(
-            GetRepositoryRequest.newBuilder()
-                .setId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-                .build());
-    assertNotEquals(
-        "Repository updated date not match with expected date",
-        getRepositoryResponse.getRepository().getDateUpdated(),
-        getRepositoryResponse2.getRepository().getDateUpdated());
 
     GetCommitRequest getCommitRequest =
         GetCommitRequest.newBuilder()
