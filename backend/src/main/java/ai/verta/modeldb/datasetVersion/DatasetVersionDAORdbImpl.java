@@ -157,6 +157,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         DatasetVersionEntity datasetVersionEntity =
             RdbmsUtils.generateDatasetVersionEntity(datasetVersion);
         session.save(datasetVersionEntity);
+        setDatasetUpdateTime(session, Collections.singletonList(datasetVersion.getDatasetId()));
+        transaction.commit();
 
         Role ownerRole =
             roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
@@ -165,9 +167,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
             new CollaboratorUser(authService, userInfo),
             datasetVersion.getId(),
             ModelDBServiceResourceTypes.DATASET_VERSION);
-
-        setDatasetUpdateTime(session, Collections.singletonList(datasetVersion.getDatasetId()));
-        transaction.commit();
         LOGGER.debug("DatasetVersion created successfully");
         return datasetVersionEntity.getProtoObject();
       }

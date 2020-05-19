@@ -246,17 +246,11 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   @Override
   public Experiment insertExperiment(Experiment experiment, UserInfo userInfo)
       throws InvalidProtocolBufferException {
+    createRolesForExperiment(experiment, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experiment, true);
       Transaction transaction = session.beginTransaction();
       session.save(RdbmsUtils.generateExperimentEntity(experiment));
-
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          experiment.getId(),
-          ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
 
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(
@@ -267,6 +261,15 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       LOGGER.debug("Experiment created successfully");
       return experiment;
     }
+  }
+
+  private void createRolesForExperiment(Experiment experiment, UserInfo userInfo) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        experiment.getId(),
+        ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
   }
 
   @Override
@@ -525,31 +528,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           session, Collections.singletonList(experimentObj.getProject_id()), currentTimestamp);
       transaction.commit();
       return experimentObj.getProtoObject();
-    }
-  }
-
-  @Override
-  public Boolean deleteExperiment(String experimentId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      // Delete the ExperimentRunEntity object
-      Query experimentRunDeleteQuery = session.createQuery(EXPERIMENT_DELETE_HQL);
-      experimentRunDeleteQuery.setParameter(ModelDBConstants.EXPERIMENT_ID_STR, experimentId);
-      List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        session.delete(experimentRunEntity);
-      }
-
-      ExperimentEntity experimentObj = session.load(ExperimentEntity.class, experimentId);
-      String projectId = experimentObj.getProject_id();
-      session.delete(experimentObj);
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session, Collections.singletonList(projectId), Calendar.getInstance().getTimeInMillis());
-      transaction.commit();
-      LOGGER.debug("Experiment deleted successfully");
-      return true;
     }
   }
 

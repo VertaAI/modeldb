@@ -321,6 +321,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
+    createRolesForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experimentRun, true);
       Transaction transaction = session.beginTransaction();
@@ -344,13 +345,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       session.saveOrUpdate(experimentRunObj);
 
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          experimentRun.getId(),
-          ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
-
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(
           session,
@@ -361,6 +355,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       LOGGER.debug("ExperimentRun created successfully");
       return experimentRun;
     }
+  }
+
+  private void createRolesForExperimentRun(ExperimentRun experimentRun, UserInfo userInfo) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        experimentRun.getId(),
+        ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
   }
 
   private Set<HyperparameterElementMappingEntity> prepareHyperparameterElemMappings(
@@ -391,51 +394,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                       }
                     }));
     return hyrParamMappings;
-  }
-
-  @Override
-  public Boolean deleteExperimentRun(String experimentRunId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-
-      List<String> accessibleExperimentRunIds =
-          getAccessibleExperimentRunIDs(
-              Collections.singletonList(experimentRunId),
-              ModelDBActionEnum.ModelDBServiceActions.UPDATE);
-      if (accessibleExperimentRunIds.isEmpty()) {
-        Status statusMessage =
-            Status.newBuilder()
-                .setCode(Code.PERMISSION_DENIED_VALUE)
-                .setMessage(
-                    "Access is denied. User is unauthorized for given ExperimentRun entities : "
-                        + accessibleExperimentRunIds)
-                .build();
-        throw StatusProto.toStatusRuntimeException(statusMessage);
-      }
-
-      // Delete the ExperimentRun comments
-      removeEntityComments(
-          session,
-          Collections.singletonList(experimentRunId),
-          ExperimentRunEntity.class.getSimpleName());
-
-      // Delete the ExperimentEntity object
-      ExperimentRunEntity experimentRunObj =
-          session.load(ExperimentRunEntity.class, experimentRunId);
-      String projectId = experimentRunObj.getProject_id();
-      String experimentId = experimentRunObj.getExperiment_id();
-      session.delete(experimentRunObj);
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(projectId),
-          Collections.singletonList(experimentId),
-          Calendar.getInstance().getTimeInMillis());
-      transaction.commit();
-      LOGGER.debug("ExperimentRun deleted successfully");
-      return true;
-    }
   }
 
   @Override

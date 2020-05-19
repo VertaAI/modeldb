@@ -342,25 +342,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
       session.saveOrUpdate(repository);
       if (create) {
-        Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
-        roleService.createRoleBinding(
-            ownerRole,
-            new CollaboratorUser(authService, userInfo),
-            String.valueOf(repository.getId()),
-            ModelDBServiceResourceTypes.REPOSITORY);
-        roleService.createWorkspaceRoleBinding(
-            repository.getWorkspace_id(),
-            WorkspaceType.forNumber(repository.getWorkspace_type()),
-            String.valueOf(repository.getId()),
-            ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-            ModelDBServiceResourceTypes.REPOSITORY,
-            request.getRepository().getRepositoryVisibility() != null
-                && request
-                    .getRepository()
-                    .getRepositoryVisibility()
-                    .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC),
-            GLOBAL_SHARING);
-
         Commit initCommit =
             Commit.newBuilder().setMessage(ModelDBConstants.INITIAL_COMMIT_MESSAGE).build();
         CommitEntity commitEntity =
@@ -375,8 +356,33 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repository);
       }
       session.getTransaction().commit();
+      if (create) {
+        createRolesForRepository(request, userInfo, repository);
+      }
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     }
+  }
+
+  private void createRolesForRepository(
+      SetRepository request, UserInfo userInfo, RepositoryEntity repository) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        String.valueOf(repository.getId()),
+        ModelDBServiceResourceTypes.REPOSITORY);
+    roleService.createWorkspaceRoleBinding(
+        repository.getWorkspace_id(),
+        WorkspaceType.forNumber(repository.getWorkspace_type()),
+        String.valueOf(repository.getId()),
+        ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+        ModelDBServiceResourceTypes.REPOSITORY,
+        request.getRepository().getRepositoryVisibility() != null
+            && request
+                .getRepository()
+                .getRepositoryVisibility()
+                .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC),
+        GLOBAL_SHARING);
   }
 
   private void deleteRoleBindingsOfAccessibleResources(List<RepositoryEntity> allowedResources) {
@@ -415,7 +421,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
       // Get self allowed resources id where user has delete permission
       List<String> allowedRepositoryIds =
@@ -432,6 +437,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       ListBranchesRequest.Response listBranchesResponse =
           listBranches(
               ListBranchesRequest.newBuilder().setRepositoryId(request.getRepositoryId()).build());
+
+      CommitPaginationDTO commitPaginationDTO =
+          commitDAO.fetchCommitEntityList(
+              session, ListCommitsRequest.newBuilder().build(), repository.getId());
+
+      session.beginTransaction();
       if (!listBranchesResponse.getBranchesList().isEmpty()) {
         String deleteBranchesHQL =
             "DELETE FROM "
@@ -443,9 +454,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         deleteBranchQuery.executeUpdate();
       }
 
-      CommitPaginationDTO commitPaginationDTO =
-          commitDAO.fetchCommitEntityList(
-              session, ListCommitsRequest.newBuilder().build(), repository.getId());
       commitPaginationDTO
           .getCommitEntities()
           .forEach(
@@ -461,10 +469,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               });
       // Delete all VersionedInputs for repository ID
       experimentRunDAO.deleteLogVersionedInputs(session, repository.getId(), null);
-
-      deleteRoleBindingsOfAccessibleResources(Collections.singletonList(repository));
       session.delete(repository);
       session.getTransaction().commit();
+
+      deleteRoleBindingsOfAccessibleResources(Collections.singletonList(repository));
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     }
   }
@@ -747,18 +755,21 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public void deleteBranchByCommit(Long repoId, String commitHash) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
-
-      StringBuilder deleteBranchesHQLBuilder =
-          new StringBuilder("DELETE FROM ")
-              .append(BranchEntity.class.getSimpleName())
-              .append(" br where br.id.repository_id = :repositoryId ")
-              .append(" AND br.commit_hash = :commitHash ");
-      Query deleteBranchQuery = session.createQuery(deleteBranchesHQLBuilder.toString());
-      deleteBranchQuery.setParameter("repositoryId", repoId);
-      deleteBranchQuery.setParameter("commitHash", commitHash);
-      deleteBranchQuery.executeUpdate();
+      deleteBranchByCommit(session, repoId, commitHash);
       session.getTransaction().commit();
     }
+  }
+
+  public void deleteBranchByCommit(Session session, Long repoId, String commitHash) {
+    StringBuilder deleteBranchesHQLBuilder =
+        new StringBuilder("DELETE FROM ")
+            .append(BranchEntity.class.getSimpleName())
+            .append(" br where br.id.repository_id = :repositoryId ")
+            .append(" AND br.commit_hash = :commitHash ");
+    Query deleteBranchQuery = session.createQuery(deleteBranchesHQLBuilder.toString());
+    deleteBranchQuery.setParameter("repositoryId", repoId);
+    deleteBranchQuery.setParameter("commitHash", commitHash);
+    deleteBranchQuery.executeUpdate();
   }
 
   @Override

@@ -220,7 +220,6 @@ public class CommitDAORdbImpl implements CommitDAO {
   public DeleteCommitRequest.Response deleteCommit(
       DeleteCommitRequest request, RepositoryDAO repositoryDAO) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repositoryEntity =
           repositoryDAO.getRepositoryById(session, request.getRepositoryId(), true);
       boolean exists =
@@ -231,13 +230,13 @@ public class CommitDAORdbImpl implements CommitDAO {
             "Commit_hash and repository_id mapping not found", Code.NOT_FOUND);
       }
 
-      Query deleteQuery =
+      Query getCommitQuery =
           session.createQuery(
               "From "
                   + CommitEntity.class.getSimpleName()
                   + " c WHERE c.commit_hash = :commitHash");
-      deleteQuery.setParameter("commitHash", request.getCommitSha());
-      CommitEntity commitEntity = (CommitEntity) deleteQuery.uniqueResult();
+      getCommitQuery.setParameter("commitHash", request.getCommitSha());
+      CommitEntity commitEntity = (CommitEntity) getCommitQuery.uniqueResult();
 
       if (!commitEntity.getChild_commits().isEmpty()) {
         throw new ModelDBException(
@@ -282,8 +281,9 @@ public class CommitDAORdbImpl implements CommitDAO {
         throw new ModelDBException("Commit is associated with Label", Code.FAILED_PRECONDITION);
       }
 
+      session.beginTransaction();
       // delete associated branch
-      repositoryDAO.deleteBranchByCommit(repositoryEntity.getId(), request.getCommitSha());
+      repositoryDAO.deleteBranchByCommit(session, repositoryEntity.getId(), request.getCommitSha());
 
       if (commitEntity.getRepository().size() == 1) {
         session.delete(commitEntity);

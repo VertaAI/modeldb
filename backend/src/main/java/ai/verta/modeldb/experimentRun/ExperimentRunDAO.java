@@ -40,14 +40,6 @@ public interface ExperimentRunDAO {
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException;
 
   /**
-   * Delete the ExperimentRun from database using experimentRunId.
-   *
-   * @param String experimentRunId
-   * @return Boolean updated status
-   */
-  Boolean deleteExperimentRun(String experimentRunId);
-
-  /**
    * Delete the ExperimentRuns from database using experimentRunId list.
    *
    * @param experimentRunIds : list of experimentRun Id
