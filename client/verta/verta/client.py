@@ -2684,6 +2684,7 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing dataset with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         if isinstance(dataset, _dataset.Dataset):
@@ -3066,6 +3067,7 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing image with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         # convert pyplot, Figure or Image to bytestream
@@ -3107,6 +3109,7 @@ class ExperimentRun(_ModelDBEntity):
             Filesystem path of the image.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         self._log_artifact_path(key, image_path, _CommonService.ArtifactTypeEnum.IMAGE)
@@ -3159,6 +3162,7 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         try:
@@ -3197,6 +3201,7 @@ class ExperimentRun(_ModelDBEntity):
             Filesystem path of the artifact.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         self._log_artifact_path(key, artifact_path, _CommonService.ArtifactTypeEnum.BLOB)
