@@ -4317,7 +4317,9 @@ public class HydratedServiceTest {
 
     try {
       hydratedServiceBlockingStub.findHydratedDatasets(findDatasets);
-      fail();
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        fail();
+      }
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -5076,7 +5078,7 @@ public class HydratedServiceTest {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
     }
 
     for (String datasetVersionId : datasetVersionIds) {

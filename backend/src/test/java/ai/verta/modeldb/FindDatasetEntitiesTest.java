@@ -1619,4 +1619,40 @@ public class FindDatasetEntitiesTest {
 
     LOGGER.info("Find Public DatasetVersions test stop................................");
   }
+
+  /** Find datasetVersions by workspace */
+  @Test
+  public void findDatasetVersionsByWorkspaceTest() {
+    LOGGER.info("FindDatasetVersions by workspace test start................................");
+
+    FindDatasetVersions findDatasetVersions = FindDatasetVersions.newBuilder().build();
+
+    FindDatasetVersions.Response response =
+        datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        datasetVersionMap.size(),
+        response.getDatasetVersionsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        datasetVersionMap.size(),
+        response.getTotalRecords());
+
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder().addDatasetVersionIds(datasetVersion1.getId()).build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        1,
+        response.getDatasetVersionsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+
+    LOGGER.info("FindDatasetVersions by workspace test stop................................");
+  }
 }
