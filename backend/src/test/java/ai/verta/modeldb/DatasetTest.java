@@ -13,6 +13,7 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
@@ -50,7 +51,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1727,10 +1727,8 @@ public class DatasetTest {
     LOGGER.info("batch delete Dataset test stop................................");
   }
 
-  // TODO: Fix this test case after background time update task
   @Test
-  @Ignore
-  public void getLastExperimentByDataset() {
+  public void getLastExperimentByDataset() throws InterruptedException {
     LOGGER.info("Get last experiment by dataset test start................................");
 
     ProjectTest projectTest = new ProjectTest();
@@ -1900,14 +1898,17 @@ public class DatasetTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
+    // wait till parent entities update date_updated field (updateParentTimestampFrequency * 2)
+    // milliseconds
+    Thread.sleep(CronJobUtils.updateParentTimestampFrequency * 1000);
+
     LastExperimentByDatasetId lastExperimentByDatasetId =
         LastExperimentByDatasetId.newBuilder().setDatasetId(dataset.getId()).build();
     LastExperimentByDatasetId.Response lastExperimentResponse =
         datasetServiceStub.getLastExperimentByDatasetId(lastExperimentByDatasetId);
-    // TODO: Fix this test case after background time update task
     assertEquals(
         "Last updated Experiment not match with expected last updated Experiment",
-        experiment2.getId(),
+        experiment1.getId(),
         lastExperimentResponse.getExperiment().getId());
 
     KeyValueQuery keyValueQuery =

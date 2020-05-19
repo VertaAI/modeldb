@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 public class CronJobUtils {
   private static final Logger LOGGER = LogManager.getLogger(CronJobUtils.class);
+  public static Integer updateParentTimestampFrequency = 60;
 
   public static void initializeBasedOnConfig(Map<String, Object> propertiesMap) {
     LOGGER.info("Enter in CronJobUtils: initializeBasedOnConfig()");
@@ -21,7 +22,7 @@ public class CronJobUtils {
           if (cronJob.getKey().equals(ModelDBConstants.UPDATE_PARENT_TIMESTAMP)) {
             Map<String, Object> updateParentTimestampCronMap =
                 (Map<String, Object>) cronJob.getValue();
-            int frequency =
+            updateParentTimestampFrequency =
                 (int) updateParentTimestampCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);
             int recordUpdateLimit =
                 (int)
@@ -29,7 +30,7 @@ public class CronJobUtils {
                         ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
             // creating an instance of task to be scheduled
             TimerTask task = new ParentTimestampUpdateCron(recordUpdateLimit);
-            ModelDBUtils.scheduleTask(task, frequency, TimeUnit.SECONDS);
+            ModelDBUtils.scheduleTask(task, updateParentTimestampFrequency, TimeUnit.SECONDS);
             LOGGER.info(
                 "{} cron job scheduled successfully", ModelDBConstants.UPDATE_PARENT_TIMESTAMP);
           }
