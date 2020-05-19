@@ -190,16 +190,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     this.roleService = roleService;
   }
 
-  private void updateParentEntitiesTimestamp(
-      Session session, List<String> projectIds, long currentTimestamp) {
-    if (projectIds != null && !projectIds.isEmpty()) {
-      Query query = session.createQuery(UPDATE_PARENT_TIMESTAMP_QUERY);
-      query.setParameter("timestamp", currentTimestamp);
-      query.setParameterList("ids", projectIds);
-      query.executeUpdate();
-    }
-  }
-
   private void checkIfEntityAlreadyExists(Experiment experiment, Boolean isInsert) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
@@ -257,12 +247,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           new CollaboratorUser(authService, userInfo),
           experiment.getId(),
           ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experiment.getProjectId()),
-          Calendar.getInstance().getTimeInMillis());
       transaction.commit();
       LOGGER.debug("Experiment created successfully");
       return experiment;
@@ -280,9 +264,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       experimentEntity.setDate_updated(currentTimestamp);
       session.update(experimentEntity);
       LOGGER.debug("Experiment name updated successfully");
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session, Collections.singletonList(experimentEntity.getProject_id()), currentTimestamp);
       transaction.commit();
       return experimentEntity.getProtoObject();
     }
@@ -299,9 +280,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       experimentEntity.setDate_updated(currentTimestamp);
       session.update(experimentEntity);
       LOGGER.debug("Experiment description updated successfully");
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session, Collections.singletonList(experimentEntity.getProject_id()), currentTimestamp);
       transaction.commit();
       return experimentEntity.getProtoObject();
     }
@@ -387,12 +365,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         experimentObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
         session.saveOrUpdate(experimentObj);
       }
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(existingProtoExperimentObj.getProjectId()),
-          Calendar.getInstance().getTimeInMillis());
       transaction.commit();
       LOGGER.debug("Experiment tags added successfully");
       return experimentObj.getProtoObject();
@@ -433,9 +405,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentObj.setDate_updated(currentTimestamp);
       session.update(experimentObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session, Collections.singletonList(experimentObj.getProject_id()), currentTimestamp);
       transaction.commit();
       LOGGER.debug("Experiment tags deleted successfully");
       return experimentObj.getProtoObject();
@@ -461,10 +430,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentObj);
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session, Collections.singletonList(experimentObj.getProject_id()), currentTimestamp);
       transaction.commit();
       LOGGER.debug("Experiment attributes added successfully");
       return experimentObj.getProtoObject();
@@ -520,9 +485,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentObj.setDate_updated(currentTimestamp);
       session.update(experimentObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session, Collections.singletonList(experimentObj.getProject_id()), currentTimestamp);
       transaction.commit();
       return experimentObj.getProtoObject();
     }
@@ -541,12 +503,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       }
 
       ExperimentEntity experimentObj = session.load(ExperimentEntity.class, experimentId);
-      String projectId = experimentObj.getProject_id();
       session.delete(experimentObj);
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session, Collections.singletonList(projectId), Calendar.getInstance().getTimeInMillis());
       transaction.commit();
       LOGGER.debug("Experiment deleted successfully");
       return true;
@@ -612,9 +569,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           roleBindingNames.add(ownerRoleBindingName);
         }
       }
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(session, projectIds, Calendar.getInstance().getTimeInMillis());
       transaction.commit();
 
       // Remove all role bindings
@@ -796,10 +750,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       experimentEntity.setDate_updated(currentTimestamp);
       session.update(experimentEntity);
       LOGGER.debug("Experiment code version snapshot updated successfully");
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session, Collections.singletonList(experimentEntity.getProject_id()), currentTimestamp);
       transaction.commit();
       return experimentEntity.getProtoObject();
     }
@@ -1006,12 +956,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
               experimentEntity, ModelDBConstants.ARTIFACTS, newArtifacts));
       experimentEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       session.update(experimentEntity);
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentEntity.getProject_id()),
-          Calendar.getInstance().getTimeInMillis());
       transaction.commit();
       LOGGER.debug("Experiment by Id getting successfully");
       return experimentEntity.getProtoObject();
@@ -1053,12 +997,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       ExperimentEntity experimentObj = session.get(ExperimentEntity.class, experimentId);
       experimentObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
       session.update(experimentObj);
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentObj.getProject_id()),
-          Calendar.getInstance().getTimeInMillis());
       transaction.commit();
       return experimentObj.getProtoObject();
     } catch (StatusRuntimeException ex) {

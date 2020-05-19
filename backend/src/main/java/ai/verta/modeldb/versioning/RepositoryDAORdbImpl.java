@@ -84,34 +84,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(" = :repositoryName ")
           .toString();
 
-  private static final String GET_REPOSITORY_COUNT_PREFIX_HQL =
-      new StringBuilder("Select count(*) From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(" where ")
-          .toString();
-  private static final String GET_REPOSITORY_COUNT_PREFIX_HQL_OSS =
-      new StringBuilder("Select count(*) From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .toString();
-
-  private static final String GET_REPOSITORY_PREFIX_HQL =
-      new StringBuilder("From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(" where ")
-          .toString();
-
-  private static final String GET_REPOSITORY_PREFIX_HQL_OSS =
-      new StringBuilder("From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .toString();
   private static final String GET_TAG_HQL =
       new StringBuilder("From ")
           .append(TagsEntity.class.getSimpleName())
@@ -140,18 +112,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(" AND br.id.")
           .append(ModelDBConstants.BRANCH)
           .append(" = :branch ")
-          .toString();
-  private static final String CHECK_COMMIT_IN_REPOSITORY_HQL =
-      new StringBuilder("From ")
-          .append(CommitEntity.class.getSimpleName())
-          .append(" br ")
-          .append(" where ")
-          .append(" br.id.")
-          .append(ModelDBConstants.REPOSITORY_ID)
-          .append(" = :repositoryId ")
-          .append(" AND br.id.")
-          .append(ModelDBConstants.COMMIT)
-          .append(" = :commit ")
           .toString();
   private static final String GET_REPOSITORY_BRANCHES_HQL =
       new StringBuilder("From ")
