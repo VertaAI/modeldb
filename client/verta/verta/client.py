@@ -3377,7 +3377,7 @@ class ExperimentRun(_ModelDBEntity):
         else:
             raise TypeError("`requirements` must be either str or list of str, not {}".format(type(requirements)))
 
-        requirements = _pip_requirements_utils.process_requirements(requirements)
+        _pip_requirements_utils.process_requirements(requirements)
 
         if self._conf.debug:
             print("[DEBUG] requirements are:")

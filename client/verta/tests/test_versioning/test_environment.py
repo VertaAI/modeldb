@@ -9,6 +9,7 @@ import six
 
 from google.protobuf import json_format
 
+import verta
 import verta.environment
 from verta._internal_utils import _pip_requirements_utils
 
@@ -138,10 +139,20 @@ class TestPython:
         with pytest.raises(ValueError):
             verta.environment.Python(constraints=reqs)
 
+    def test_inject_verta_cloudpickle(self):
+        env = verta.environment.Python(requirements=[])
+        requirements = {req.library for req in env._msg.python.requirements}
+
+        assert 'verta' in requirements
+        assert 'cloudpickle' in requirements
+
     def test_reqs_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
         reqs = verta.environment.Python.read_pip_file(requirements_file_with_unsupported_lines.name)
         env = verta.environment.Python(requirements=reqs)
-        assert not env._msg.python.requirements
+        requirements = {req.library for req in env._msg.python.requirements}
+
+        # only has injected requirements
+        assert requirements == {"verta", "cloudpickle"}
 
     def test_no_autocapture(self):
         env_ver = verta.environment.Python(_autocapture=False)
@@ -155,8 +166,8 @@ class TestPython:
     def test_repr(self):
         """Tests that __repr__() executes without error"""
         env_ver = verta.environment.Python(
-            requirements=['verta==0.14.1'],
-            constraints=['six==1.14.0'],
+            requirements=['verta=={}'.format(verta.__version__)],
+            constraints=['six=={}'.format(six.__version__)],
             env_vars=['HOME'],
         )
 

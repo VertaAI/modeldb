@@ -167,8 +167,7 @@ class Python(_environment._Environment):
         elif (isinstance(requirements, list)
               and all(isinstance(req, six.string_types) for req in requirements)):
             req_specs = copy.copy(requirements)
-            _pip_requirements_utils.strip_inexact_specifiers(req_specs)
-            _pip_requirements_utils.set_version_pins(req_specs)
+            _pip_requirements_utils.process_requirements(req_specs)
         else:
             raise TypeError("`requirements` must be list of str,"
                             " not {}".format(type(requirements)))
