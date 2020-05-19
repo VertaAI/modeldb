@@ -19,9 +19,10 @@ try:
     import tensorflow as tf
 except ImportError:
     tf = None
-    TF_MAJOR_VERSION = None
+    TF_MAJOR_VERSION_STR = None
 else:
-    TF_MAJOR_VERSION = int(tf.__version__.split('.')[0])  # TODO: use in TF integration module
+    # TODO: use in TF integration module
+    TF_MAJOR_VERSION_STR = tf.__version__.split('.')[0]  # don't cast to int at module scope; breaks autodoc
 
 # TODO: use the newly-added tf = None above for this module's install checks
 try:
@@ -238,8 +239,8 @@ def serialize_model(model):
         elif module_name.startswith("tensorflow.python.keras"):
             model_type = "tensorflow"
             tempf = tempfile.NamedTemporaryFile()
-            if (TF_MAJOR_VERSION is not None
-                    and TF_MAJOR_VERSION >= 2):  # save_format param may not exist in TF 1.X
+            if (TF_MAJOR_VERSION_STR is not None
+                    and TF_MAJOR_VERSION_STR == '2'):  # save_format param may not exist in TF 1.X
                 model.save(tempf.name, save_format='h5')  # TF 2.X uses SavedModel by default
             else:
                 model.save(tempf.name)
