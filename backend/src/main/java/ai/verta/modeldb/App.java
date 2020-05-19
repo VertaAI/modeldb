@@ -570,7 +570,7 @@ public class App implements ApplicationContextAware {
           (Map<String, Object>) propertiesMap.get(ModelDBConstants.TELEMETRY);
       if (telemetryMap != null) {
         optIn = (boolean) telemetryMap.getOrDefault(ModelDBConstants.OPT_IN, true);
-        frequency = (int) telemetryMap.getOrDefault(ModelDBConstants.FREQUENCY, 1);
+        frequency = (int) telemetryMap.getOrDefault(ModelDBConstants.TELEMENTRY_FREQUENCY, 1);
         if (telemetryMap.containsKey(ModelDBConstants.TELEMETRY_CONSUMER)) {
           consumer = (String) telemetryMap.get(ModelDBConstants.TELEMETRY_CONSUMER);
         }

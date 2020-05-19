@@ -9,8 +9,11 @@ import org.hibernate.query.Query;
 
 public class ParentTimestampUpdateCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(ParentTimestampUpdateCron.class);
+  private Integer recordUpdateLimit;
 
-  public ParentTimestampUpdateCron() {}
+  public ParentTimestampUpdateCron(int recordUpdateLimit) {
+    this.recordUpdateLimit = recordUpdateLimit;
+  }
 
   /** The action to be performed by this timer task. */
   @Override
@@ -18,19 +21,24 @@ public class ParentTimestampUpdateCron extends TimerTask {
     LOGGER.info("ParentTimestampUpdateCron wakeup");
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      // Update experiment timestamp
       session.beginTransaction();
-      // Update project timestamp
-      updateProjectByExperimentTimestamp(session);
-
-      // Update experiment timestamp
       updateExperimentByExperimentRunTimestamp(session);
+      session.getTransaction().commit();
 
-      // Update experiment timestamp
+      // Update project timestamp
+      session.beginTransaction();
+      updateProjectByExperimentTimestamp(session);
+      session.getTransaction().commit();
+
+      // Update experimentRun timestamp
+      session.beginTransaction();
       updateDatasetByDatasetVersionTimestamp(session);
+      session.getTransaction().commit();
 
-      // Update experiment timestamp
+      // Update repository timestamp
+      session.beginTransaction();
       updateRepositoryByCommitTimestamp(session);
-
       session.getTransaction().commit();
     } catch (Exception ex) {
       LOGGER.warn("ParentTimestampUpdateCron Exception: ", ex);
@@ -49,7 +57,9 @@ public class ParentTimestampUpdateCron extends TimerTask {
             .append(" FROM experiment ex ")
             .append(" GROUP BY ex.project_id) exp_alias ")
             .append("ON  p.id = exp_alias.project_id AND p.date_updated < exp_alias.max_date ")
-            .append("SET p.date_updated = exp_alias.max_date WHERE p.id = exp_alias.project_id")
+            .append("SET p.date_updated = exp_alias.max_date WHERE p.id = exp_alias.project_id ")
+            .append(" LIMIT ")
+            .append(recordUpdateLimit)
             .toString();
     Query query = session.createSQLQuery(projectUpdateQueryString);
     LOGGER.debug("Project update timestamp query: {}", query.getQueryString());
@@ -68,7 +78,9 @@ public class ParentTimestampUpdateCron extends TimerTask {
             .append(
                 "ON ex.id = expr_alias.experiment_id AND ex.date_updated < expr_alias.max_date ")
             .append(
-                "SET ex.date_updated = expr_alias.max_date WHERE ex.id = expr_alias.experiment_id")
+                "SET ex.date_updated = expr_alias.max_date WHERE ex.id = expr_alias.experiment_id ")
+            .append(" LIMIT ")
+            .append(recordUpdateLimit)
             .toString();
     Query query = session.createSQLQuery(experimentUpdateQueryString);
     LOGGER.debug("Experiment update timestamp query: {}", query.getQueryString());
@@ -85,7 +97,9 @@ public class ParentTimestampUpdateCron extends TimerTask {
             .append(" FROM dataset_version dv ")
             .append(" GROUP BY dv.dataset_id) dv_alias ")
             .append("ON d.id = dv_alias.dataset_id AND d.time_updated < dv_alias.max_date ")
-            .append("SET d.time_updated = dv_alias.max_date WHERE d.id = dv_alias.dataset_id")
+            .append("SET d.time_updated = dv_alias.max_date WHERE d.id = dv_alias.dataset_id ")
+            .append(" LIMIT ")
+            .append(recordUpdateLimit)
             .toString();
     Query query = session.createSQLQuery(datasetUpdateQueryString);
     LOGGER.debug("Dataset update timestamp query: {}", query.getQueryString());
@@ -102,7 +116,9 @@ public class ParentTimestampUpdateCron extends TimerTask {
             .append(" ON rc.commit_hash = cm.commit_hash ")
             .append(" GROUP BY rc.repository_id) cm_alias ")
             .append(" ON rp.id = cm_alias.repository_id AND rp.date_updated < cm_alias.max_date ")
-            .append("SET rp.date_updated = cm_alias.max_date WHERE rp.id = cm_alias.repository_id")
+            .append("SET rp.date_updated = cm_alias.max_date WHERE rp.id = cm_alias.repository_id ")
+            .append(" LIMIT ")
+            .append(recordUpdateLimit)
             .toString();
     Query query = session.createSQLQuery(repositoryUpdateQueryString);
     LOGGER.debug("Repository update timestamp query: {}", query.getQueryString());

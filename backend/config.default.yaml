@@ -68,4 +68,5 @@ feature-flag:
 
 cron_job:
   update_parent_timestamp:
-    frequency: 1 #frequency to update parent timestamp in minute, default 1
+    frequency: 60 #frequency to update parent timestamp in second, default 60
+    record_update_limit: 100

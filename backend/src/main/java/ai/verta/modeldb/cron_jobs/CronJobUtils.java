@@ -22,10 +22,14 @@ public class CronJobUtils {
             Map<String, Object> updateParentTimestampCronMap =
                 (Map<String, Object>) cronJob.getValue();
             int frequency =
-                (int) updateParentTimestampCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 1);
+                (int) updateParentTimestampCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);
+            int recordUpdateLimit =
+                (int)
+                    updateParentTimestampCronMap.getOrDefault(
+                        ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
             // creating an instance of task to be scheduled
-            TimerTask task = new ParentTimestampUpdateCron();
-            ModelDBUtils.scheduleTask(task, frequency, TimeUnit.MINUTES);
+            TimerTask task = new ParentTimestampUpdateCron(recordUpdateLimit);
+            ModelDBUtils.scheduleTask(task, frequency, TimeUnit.SECONDS);
             LOGGER.info(
                 "{} cron job scheduled successfully", ModelDBConstants.UPDATE_PARENT_TIMESTAMP);
           }
