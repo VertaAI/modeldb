@@ -240,7 +240,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
     }
     final Set<String> filteredExperimentRunIds;
-    if (unfilteredExperimentRunIds.size() == 0) {
+    if (unfilteredExperimentRunIds.isEmpty()) {
       filteredExperimentRunIds = unfilteredExperimentRunIds;
     } else {
       filteredExperimentRunIds = filter(session, unfilteredExperimentRunIds);
