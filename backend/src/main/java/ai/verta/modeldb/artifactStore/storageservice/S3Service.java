@@ -9,6 +9,8 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
+import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
@@ -47,7 +49,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public String generatePresignedUrl(String s3Key, String method) {
     // Validate bucket
-    doesBucketExist(bucketName);
+    Boolean result = doesBucketExist(bucketName);
 
     HttpMethod reqMethod;
     if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
@@ -74,5 +76,15 @@ public class S3Service implements ArtifactStoreService {
             .withExpiration(expiration);
 
     return s3Client.generatePresignedUrl(request).toString();
+  }
+
+  @Override
+  public void initializeMultipart(String s3Key) {
+    // Validate bucket
+    doesBucketExist(bucketName);
+    InitiateMultipartUploadRequest initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(bucketName, s3Key);
+    InitiateMultipartUploadResult result = s3Client
+        .initiateMultipartUpload(initiateMultipartUploadRequest);
+    return;
   }
 }

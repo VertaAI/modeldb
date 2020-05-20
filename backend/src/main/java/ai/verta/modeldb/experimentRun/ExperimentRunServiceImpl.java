@@ -1362,6 +1362,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
       Artifact artifact = artifacts.get(0);
 
+      artifactStoreDAO.initializeMultipart(artifact.getKey());
       ExperimentRun updatedExperimentRun =
           experimentRunDAO.logArtifacts(request.getId(), Collections.singletonList(artifact));
       LogArtifact.Response.Builder responseBuilder =
@@ -1408,6 +1409,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       List<Artifact> artifactList =
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
 
+      for (Artifact artifact: artifactList) {
+        artifactStoreDAO.initializeMultipart(artifact.getKey());
+      }
       ExperimentRun updatedExperimentRun =
           experimentRunDAO.logArtifacts(request.getId(), artifactList);
       LogArtifacts.Response.Builder responseBuilder =

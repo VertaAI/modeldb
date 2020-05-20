@@ -243,4 +243,9 @@ public class NFSService implements ArtifactStoreService {
       throw StatusProto.toStatusRuntimeException(status);
     }
   }
+
+  @Override
+  public void initializeMultipart(String s3Key) {
+
+  }
 }

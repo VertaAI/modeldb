@@ -36,4 +36,9 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
       throw StatusProto.toStatusRuntimeException(status);
     }
   }
+
+  @Override
+  public void initializeMultipart(String s3Key) {
+    artifactStoreService.initializeMultipart(s3Key);
+  }
 }
