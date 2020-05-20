@@ -301,30 +301,26 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   }
 
   /**
-   * For getting datasetVersions that user has access to (either as owner or a collaborator), fetch
-   * all datasetVersions of the requested datasetVersionIds then iterate that list and check if
-   * datasetVersion is accessible or not. The list of accessible datasetVersionIDs is built and
-   * returned by this method.
+   * For getting datasetVersions that user has access to (either as the owner or a collaborator)
+   * dataserVersion of dataset: <br>
+   *
+   * <ol>
+   *   <li>Iterate through all datasetVersions of the requested datasetVersionIds
+   *   <li>Get the dataset Id they belong to.
+   *   <li>Check if dataset is accessible or not.
+   * </ol>
+   *
+   * The list of accessible datasetVersionIDs is built and returned by this method.
    *
    * @param requestedDatasetVersionIds : datasetVersion Ids
-   * @return List<String> : list of accessible DatasetVersion Id
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
+   * @param modelDBServiceActions : modelDB action like READ, UPDATE
+   * @return List<String> : list of accessible datasetVersion Id
    */
   public List<String> getAccessibleDatasetVersionIDs(
       List<String> requestedDatasetVersionIds, ModelDBServiceActions modelDBServiceActions)
       throws InvalidProtocolBufferException {
     List<DatasetVersion> datasetVersionList =
         getDatasetVersionsByBatchIds(requestedDatasetVersionIds);
-    if (datasetVersionList.size() == 0) {
-      Status statusMessage =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  ModelDBMessages.ACCESS_IS_DENIDE_DATASET_VERSION_ENTITIES_MSG
-                      + requestedDatasetVersionIds)
-              .build();
-      throw StatusProto.toStatusRuntimeException(statusMessage);
-    }
     Map<String, String> datasetIdDatasetVersionIdMap = new HashMap<>();
     for (DatasetVersion datasetVersion : datasetVersionList) {
       datasetIdDatasetVersionIdMap.put(datasetVersion.getId(), datasetVersion.getDatasetId());
@@ -412,7 +408,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
             datasetDAO.getWorkspaceDatasetIDs(
                 queryParameters.getWorkspaceName(), currentLoginUserInfo);
         if (workspaceDatasetIDs == null || workspaceDatasetIDs.isEmpty()) {
-          LOGGER.warn(
+          LOGGER.debug(
               "accessible dataset for the datasetVersions not found for given workspace : {}",
               queryParameters.getWorkspaceName());
           DatasetVersionDTO datasetVersionPaginationDTO = new DatasetVersionDTO();
