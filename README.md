@@ -104,7 +104,7 @@ docker-compose -f docker-compose-all.yaml up
 pip install verta
 ```
 
-3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://docs.verta.ai/en/master/guides/examples.html) in our repository.*
+3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://docs.verta.ai/en/master/examples/examples.html) in our repository.*
 
 ```python
 from verta import Client
