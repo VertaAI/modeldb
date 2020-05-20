@@ -1,5 +1,5 @@
 const baseDocLink =
-  'https://verta.readthedocs.io/en/master/reference/api/experimentrun.html';
+  'https://docs.verta.ai/en/master/api/api/experimentrun.html';
 
 const vertaDocLinks = {
   log_artifact: `${baseDocLink}#artifacts`,
