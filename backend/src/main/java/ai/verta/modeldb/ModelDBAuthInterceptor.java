@@ -32,8 +32,9 @@ public class ModelDBAuthInterceptor implements ServerInterceptor {
       ServerCall<R, S> call, Metadata requestHeaders, ServerCallHandler<R, S> next) {
     LOGGER.trace("Headers : {}", requestHeaders);
     String methodName = call.getMethodDescriptor().getFullMethodName();
-    LOGGER.info("methodName: {}", methodName);
-
+    if (!ModelDBConstants.GRPC_HEALTH_CHECK_METHOD_NAME.equalsIgnoreCase(methodName)) {
+      LOGGER.info("methodName: {}", methodName);
+    }
     Context context =
         Context.current()
             .withValue(METADATA_INFO, requestHeaders)

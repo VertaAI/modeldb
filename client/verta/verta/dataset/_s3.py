@@ -93,12 +93,23 @@ class S3(_dataset._Dataset):
             six.raise_from(e, None)
         s3 = boto3.client('s3')
 
-        # TODO: handle prefixes
-        if s3_loc.key is None:
-            # TODO: handle `bucket_name` not found
-            for obj in s3.list_object_versions(Bucket=s3_loc.bucket)['Versions']:
-                if obj['IsLatest']:
-                    yield cls._get_s3_obj_metadata(obj, s3_loc.bucket, obj['Key'])
+        if (s3_loc.key is None  # bucket
+                or s3_loc.key.endswith('/')):  # folder
+            if s3_loc.key is None:
+                # TODO: handle `bucket_name` not found
+                obj_versions = s3.list_object_versions(Bucket=s3_loc.bucket)
+            else:
+                obj_versions = s3.list_object_versions(Bucket=s3_loc.bucket, Prefix=s3_loc.key)
+                if 'Versions' not in obj_versions:  # boto3 doesn't error, so we have to catch this
+                    s3_path = cls._S3_PATH.format(s3_loc.bucket, s3_loc.key)
+                    raise ValueError("folder {} not found".format(s3_path))
+
+            for obj in obj_versions['Versions']:
+                if obj['Key'].endswith('/'):  # folder, not object
+                    continue
+                if not obj['IsLatest']:
+                    continue
+                yield cls._get_s3_obj_metadata(obj, s3_loc.bucket, obj['Key'])
         else:
             # TODO: handle `key` not found
             if s3_loc.version_id is not None:
@@ -148,6 +159,7 @@ class S3(_dataset._Dataset):
 
 
 class S3Location(object):
+    # TODO: handle prefixes
     def __init__(self, path, version_id=None):
         bucket, key = self._parse_s3_url(path)
         if (version_id is not None) and (key is None):

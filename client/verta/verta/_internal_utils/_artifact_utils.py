@@ -16,6 +16,16 @@ except ImportError:  # joblib not installed
     pass
 
 try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
+    TF_MAJOR_VERSION_STR = None
+else:
+    # TODO: use in TF integration module
+    TF_MAJOR_VERSION_STR = tf.__version__.split('.')[0]  # don't cast to int at module scope; breaks autodoc
+
+# TODO: use the newly-added tf = None above for this module's install checks
+try:
     from tensorflow import keras
 except ImportError:  # TensorFlow not installed
     pass
@@ -229,7 +239,11 @@ def serialize_model(model):
         elif module_name.startswith("tensorflow.python.keras"):
             model_type = "tensorflow"
             tempf = tempfile.NamedTemporaryFile()
-            model.save(tempf.name)  # Keras provides this fn
+            if (TF_MAJOR_VERSION_STR is not None
+                    and TF_MAJOR_VERSION_STR == '2'):  # save_format param may not exist in TF 1.X
+                model.save(tempf.name, save_format='h5')  # TF 2.X uses SavedModel by default
+            else:
+                model.save(tempf.name)
             tempf.seek(0)
             bytestream = tempf
             method = "keras"

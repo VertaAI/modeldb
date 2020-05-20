@@ -73,16 +73,15 @@ public interface DatasetVersionDAO {
    * @param datasetVersionIds : list of datasetVersion.id
    * @return {@link Boolean} : status
    */
-  Boolean deleteDatasetVersions(List<String> datasetVersionIds, Boolean parentExists);
+  Boolean deleteDatasetVersions(List<String> datasetVersionIds);
 
   /**
    * Delete all datasetVersions with dataset ids matching the ids in request.
    *
    * @param datasetIds : list of dataset.id
-   * @param parentExists : If datasetVersion of parent dataset exist then set true
    * @return {@link Boolean} : status
    */
-  Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds, Boolean parentExists);
+  Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds);
 
   /**
    * Fetch the datasetVersion with id matching the id in request

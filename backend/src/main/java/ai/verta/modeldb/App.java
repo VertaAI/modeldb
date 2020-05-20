@@ -16,6 +16,7 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -335,6 +336,9 @@ public class App implements ApplicationContextAware {
     // --------------- Finish Initialize Database base on configuration --------------------------
 
     initializeTelemetryBasedOnConfig(propertiesMap);
+
+    // Initialize cron jobs
+    CronJobUtils.initializeBasedOnConfig(propertiesMap);
   }
 
   private static void initializeRelationalDBServices(
@@ -480,7 +484,7 @@ public class App implements ApplicationContextAware {
 
     Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
     LOGGER.trace("spring server port number found");
-    System.getProperties().put("server.port", springServerPort);
+    System.getProperties().put("server.port", String.valueOf(springServerPort));
 
     Map<String, Object> artifactStoreConfigMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.ARTIFACT_STORE_CONFIG);

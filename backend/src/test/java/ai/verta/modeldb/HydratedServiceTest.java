@@ -2695,7 +2695,9 @@ public class HydratedServiceTest {
 
     try {
       hydratedServiceBlockingStub.findHydratedExperiments(findExperiments);
-      fail();
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        fail();
+      }
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2717,7 +2719,9 @@ public class HydratedServiceTest {
 
     try {
       hydratedServiceBlockingStub.findHydratedExperiments(findExperiments);
-      fail();
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        fail();
+      }
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());

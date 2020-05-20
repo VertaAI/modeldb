@@ -775,7 +775,6 @@
             <column name="versioning_blob_type"/>
         </createIndex>
     </changeSet>
-
     <changeSet id="lineage_versioning_blob_index" author="lezhevg">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -833,4 +832,119 @@
             </column>
         </createIndex>
     </changeSet>
+    <changeSet author="anandJ" id="index_exp_project_id_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_project_id_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_project_id_date_updated"
+                     tableName="experiment">
+            <column name="project_id"/>
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_project_id_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_project_p_id_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_project_p_id_date_updated"
+                     tableName="project">
+            <column name="id"/>
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_run_ex_id_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_run_exp_id_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_run_exp_id_date_updated"
+                     tableName="experiment_run">
+            <column name="experiment_id"/>
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dv_dataset_id_time_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dv_dataset_id_time_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dv_dataset_id_time_updated"
+                     tableName="dataset_version">
+            <column name="dataset_id"/>
+            <column name="time_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dv_dataset_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dv_dataset_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dv_dataset_id"
+                     tableName="dataset_version">
+            <column name="dataset_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dataset_id_time_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dataset_id_time_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dataset_id_time_updated"
+                     tableName="dataset">
+            <column name="id"/>
+            <column name="time_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_repo_repo_id_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_repo_id_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_repo_id_date_updated"
+                     tableName="repository">
+            <column name="id"/>
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_repository_commit_repo_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_repository_commit_repo_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_repository_commit_repo_id"
+                     tableName="repository_commit">
+            <column name="repository_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_commit_commit_hash_date_created">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_commit_hash_date_created"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_commit_hash_date_created"
+                     tableName="commit">
+            <column name="commit_hash"/>
+            <column name="date_created"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

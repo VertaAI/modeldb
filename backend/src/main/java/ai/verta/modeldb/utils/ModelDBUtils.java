@@ -69,6 +69,10 @@ public class ModelDBUtils {
 
   public static Map<String, Object> readYamlProperties(String filePath) throws IOException {
     LOGGER.info("Reading File {} as YAML", filePath);
+    String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
+    if (telepresenceRoot != null) {
+      filePath = telepresenceRoot + filePath;
+    }
     InputStream inputStream = new FileInputStream(new File(filePath));
     Yaml yaml = new Yaml();
     @SuppressWarnings("unchecked")

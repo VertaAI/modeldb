@@ -9,6 +9,7 @@ import six
 
 from google.protobuf import json_format
 
+import verta
 import verta.environment
 from verta._internal_utils import _pip_requirements_utils
 
@@ -16,7 +17,7 @@ from verta._internal_utils import _pip_requirements_utils
 @pytest.fixture
 def requirements_file():
     with tempfile.NamedTemporaryFile('w+') as tempf:
-        # create constraints file from pip freeze
+        # create requirements file from pip freeze
         pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
         pip_freeze = six.ensure_str(pip_freeze)
         tempf.write(pip_freeze)
@@ -30,7 +31,7 @@ def requirements_file():
 @pytest.fixture
 def requirements_file_without_versions():
     with tempfile.NamedTemporaryFile('w+') as tempf:
-        # create constraints file from pip freeze
+        # create requirements file from pip freeze
         pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
         pip_freeze = six.ensure_str(pip_freeze)
         stripped_pip_freeze = '\n'.join(
@@ -39,6 +40,32 @@ def requirements_file_without_versions():
             in pip_freeze.splitlines()
         )
         tempf.write(stripped_pip_freeze)
+        tempf.flush()  # flush object buffer
+        os.fsync(tempf.fileno())  # flush OS buffer
+        tempf.seek(0)
+
+        yield tempf
+
+
+@pytest.fixture
+def requirements_file_with_unsupported_lines():
+    with tempfile.NamedTemporaryFile('w+') as tempf:
+        requirements = [
+            "",
+            "# this is a comment",
+            "--no-binary :all:",
+            "--only-binary :none:",
+            "--require-hashes",
+            "--pre",
+            "--trusted-host localhost:3000",
+            "-c some_constraints.txt",
+            "-f file://dummy",
+            "-i https://pypi.org/simple",
+            "-e git+git@github.com:VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta",
+            "-r more_requirements.txt",
+            "en-core-web-sm==2.2.5",
+        ]
+        tempf.write('\n'.join(requirements))
         tempf.flush()  # flush object buffer
         os.fsync(tempf.fileno())  # flush OS buffer
         tempf.seek(0)
@@ -112,6 +139,21 @@ class TestPython:
         with pytest.raises(ValueError):
             verta.environment.Python(constraints=reqs)
 
+    def test_inject_verta_cloudpickle(self):
+        env = verta.environment.Python(requirements=[])
+        requirements = {req.library for req in env._msg.python.requirements}
+
+        assert 'verta' in requirements
+        assert 'cloudpickle' in requirements
+
+    def test_reqs_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
+        reqs = verta.environment.Python.read_pip_file(requirements_file_with_unsupported_lines.name)
+        env = verta.environment.Python(requirements=reqs)
+        requirements = {req.library for req in env._msg.python.requirements}
+
+        # only has injected requirements
+        assert requirements == {"verta", "cloudpickle"}
+
     def test_no_autocapture(self):
         env_ver = verta.environment.Python(_autocapture=False)
 
@@ -124,8 +166,8 @@ class TestPython:
     def test_repr(self):
         """Tests that __repr__() executes without error"""
         env_ver = verta.environment.Python(
-            requirements=['verta==0.14.1'],
-            constraints=['six==1.14.0'],
+            requirements=['verta=={}'.format(verta.__version__)],
+            constraints=['six=={}'.format(six.__version__)],
             env_vars=['HOME'],
         )
 

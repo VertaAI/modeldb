@@ -104,6 +104,17 @@ class RoleServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def listRoles(scope_org_id: String, scope_team_id: String)(implicit ec: ExecutionContext): Try[UacListRolesResponse] = Await.result(listRolesAsync(scope_org_id, scope_team_id), Duration.Inf)
 
+  def removeResourcesAsync(resource_ids: List[String], resource_type_modeldb_service_resource_type: String)(implicit ec: ExecutionContext): Future[Try[UacRemoveResourcesResponse]] = {
+    val __query = Map[String,String](
+      "resource_ids" -> client.toQuery(resource_ids),
+      "resource_type.modeldb_service_resource_type" -> client.toQuery(resource_type_modeldb_service_resource_type)
+    )
+    val body: String = null
+    return client.request[String, UacRemoveResourcesResponse]("DELETE", basePath + s"/collaborator/removeResources", __query, body, UacRemoveResourcesResponse.fromJson)
+  }
+
+  def removeResources(resource_ids: List[String], resource_type_modeldb_service_resource_type: String)(implicit ec: ExecutionContext): Try[UacRemoveResourcesResponse] = Await.result(removeResourcesAsync(resource_ids, resource_type_modeldb_service_resource_type), Duration.Inf)
+
   def setRoleAsync(body: UacSetRole)(implicit ec: ExecutionContext): Future[Try[UacSetRoleResponse]] = {
     val __query = Map[String,String](
     )

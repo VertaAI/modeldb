@@ -3377,7 +3377,7 @@ class ExperimentRun(_ModelDBEntity):
         else:
             raise TypeError("`requirements` must be either str or list of str, not {}".format(type(requirements)))
 
-        requirements = _pip_requirements_utils.process_requirements(requirements)
+        _pip_requirements_utils.process_requirements(requirements)
 
         if self._conf.debug:
             print("[DEBUG] requirements are:")
@@ -3561,6 +3561,10 @@ class ExperimentRun(_ModelDBEntity):
     def log_training_data(self, train_features, train_targets, overwrite=False):
         """
         Associate training data with this Experiment Run.
+
+        .. versionchanged:: 0.14.4
+           Instead of uploading the data itself as a CSV artifact ``'train_data'``, this method now
+           generates a histogram for internal use by our deployment data monitoring system.
 
         Parameters
         ----------

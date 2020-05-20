@@ -288,8 +288,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getDatasetId(), 1, 1, request.getAscending(), sortKey, userInfo);
       if (datasetVersionDTO.getDatasetVersions().size() != 1) {
         logAndThrowError(
-            ModelDBConstants.INTERNAL_ERROR,
-            Code.INTERNAL_VALUE,
+            "No datasetVersion found for dataset '" + request.getDatasetId(),
+            Code.NOT_FOUND_VALUE,
             Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
       }
 
@@ -884,6 +884,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build();
       throw StatusProto.toStatusRuntimeException(statusMessage);
     }
-    return datasetVersionDAO.deleteDatasetVersions(datasetVersionIds, true);
+    return datasetVersionDAO.deleteDatasetVersions(datasetVersionIds);
   }
 }

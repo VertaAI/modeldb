@@ -2663,6 +2663,23 @@ public class FindProjectEntitiesTest {
     assertEquals(
         "Project count not match with expected project count", 0, response.getProjectsCount());
 
+    stringValue = Value.newBuilder().setStringValue("asdasdasd").build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("owner")
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.CONTAIN)
+            .build();
+
+    findProjects = FindProjects.newBuilder().addPredicates(keyValueQuery).build();
+
+    response = projectServiceStub.findProjects(findProjects);
+    LOGGER.info("FindProjects Response : " + response.getProjectsList());
+    assertEquals(
+        "Project count not match with expected project count",
+        0,
+        response.getProjectsList().size());
+
     LOGGER.info("FindProjects by owner fuzzy search test stop ................................");
   }
 }

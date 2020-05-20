@@ -11,6 +11,58 @@
     "application/json"
   ],
   "paths": {
+    "/collaborator/removeResources": {
+      "delete": {
+        "operationId": "removeResources",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacRemoveResourcesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "resource_ids",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "resource_type.modeldb_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "PROJECT",
+              "EXPERIMENT",
+              "EXPERIMENT_RUN",
+              "DATASET",
+              "DATASET_VERSION",
+              "DASHBOARD",
+              "REPOSITORY"
+            ],
+            "default": "UNKNOWN"
+          }
+        ],
+        "tags": [
+          "RoleService"
+        ]
+      }
+    },
     "/role/deleteRole": {
       "post": {
         "operationId": "deleteRole",
@@ -607,6 +659,15 @@
           "items": {
             "$ref": "#/definitions/uacRole"
           }
+        }
+      }
+    },
+    "uacRemoveResourcesResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },

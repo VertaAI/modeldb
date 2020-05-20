@@ -4,7 +4,6 @@ import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -85,34 +84,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(" = :repositoryName ")
           .toString();
 
-  private static final String GET_REPOSITORY_COUNT_PREFIX_HQL =
-      new StringBuilder("Select count(*) From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(" where ")
-          .toString();
-  private static final String GET_REPOSITORY_COUNT_PREFIX_HQL_OSS =
-      new StringBuilder("Select count(*) From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .toString();
-
-  private static final String GET_REPOSITORY_PREFIX_HQL =
-      new StringBuilder("From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(" where ")
-          .toString();
-
-  private static final String GET_REPOSITORY_PREFIX_HQL_OSS =
-      new StringBuilder("From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .toString();
   private static final String GET_TAG_HQL =
       new StringBuilder("From ")
           .append(TagsEntity.class.getSimpleName())
@@ -142,18 +113,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(ModelDBConstants.BRANCH)
           .append(" = :branch ")
           .toString();
-  private static final String CHECK_COMMIT_IN_REPOSITORY_HQL =
-      new StringBuilder("From ")
-          .append(CommitEntity.class.getSimpleName())
-          .append(" br ")
-          .append(" where ")
-          .append(" br.id.")
-          .append(ModelDBConstants.REPOSITORY_ID)
-          .append(" = :repositoryId ")
-          .append(" AND br.id.")
-          .append(ModelDBConstants.COMMIT)
-          .append(" = :commit ")
-          .toString();
   private static final String GET_REPOSITORY_BRANCHES_HQL =
       new StringBuilder("From ")
           .append(BranchEntity.class.getSimpleName())
@@ -170,9 +129,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public Response getRepository(GetRepositoryRequest request) throws Exception {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getId());
-      session.getTransaction().commit();
       return Response.newBuilder().setRepository(repository.toProto()).build();
     }
   }
@@ -370,21 +327,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   private void deleteRoleBindingsOfAccessibleResources(List<RepositoryEntity> allowedResources) {
     final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     for (RepositoryEntity repositoryEntity : allowedResources) {
-      String repositoryId = String.valueOf(repositoryEntity.getId());
-      String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_REPOSITORY_OWNER,
-              repositoryId,
-              repositoryEntity.getOwner(),
-              ModelDBServiceResourceTypes.REPOSITORY.name());
-      if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
-
-      // Remove all repositoryEntity collaborators
-      roleBindingNames.addAll(
-          roleService.getResourceRoleBindings(
-              repositoryId, repositoryEntity.getOwner(), ModelDBServiceResourceTypes.REPOSITORY));
 
       // Delete workspace based roleBindings
       List<String> repoOrgWorkspaceRoleBindings =
@@ -402,6 +344,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         roleBindingNames.addAll(repoOrgWorkspaceRoleBindings);
       }
     }
+    // Remove all repositoryEntity collaborators
+    roleService.deleteAllResources(
+        allowedResources.stream()
+            .map(repositoryEntity -> String.valueOf(repositoryEntity.getId()))
+            .collect(Collectors.toList()),
+        ModelDBServiceResourceTypes.REPOSITORY);
 
     // Remove all role bindings
     roleService.deleteRoleBindings(roleBindingNames);
@@ -474,7 +422,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              ProjectVisibility.PRIVATE,
+              RepositoryVisibility.PRIVATE,
               ModelDBServiceResourceTypes.REPOSITORY,
               Collections.emptyList());
 
@@ -598,7 +546,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public GetTagRequest.Response getTag(GetTagRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
 
       Query query = session.createQuery(GET_TAG_HQL);
@@ -610,7 +557,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
 
       CommitEntity commitEntity = session.get(CommitEntity.class, tagsEntity.getCommit_hash());
-      session.getTransaction().commit();
       return GetTagRequest.Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
     }
   }
@@ -714,12 +660,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public GetBranchRequest.Response getBranch(GetBranchRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
 
       BranchEntity branchEntity = getBranchEntity(session, repository.getId(), request.getBranch());
       CommitEntity commitEntity = session.get(CommitEntity.class, branchEntity.getCommit_hash());
-      session.getTransaction().commit();
       return GetBranchRequest.Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
     }
   }
@@ -766,7 +710,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public ListBranchesRequest.Response listBranches(ListBranchesRequest request)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
 
       Query query = session.createQuery(GET_REPOSITORY_BRANCHES_HQL);
@@ -777,7 +720,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         return ListBranchesRequest.Response.newBuilder().setTotalRecords(0).build();
       }
 
-      session.getTransaction().commit();
       List<String> branches =
           branchEntities.stream()
               .map(branchEntity -> branchEntity.getId().getBranch())
@@ -793,7 +735,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public ListCommitsLogRequest.Response listCommitsLog(ListCommitsLogRequest request)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
 
       String referenceCommit;
@@ -851,29 +792,67 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public FindRepositories.Response findRepositories(FindRepositories request)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       WorkspaceDTO workspaceDTO =
-          roleService.getWorkspaceDTOByWorkspaceName(userInfo, request.getWorkspaceName());
-      FindRepositoriesQuery findRepositoriesQuery =
-          new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(session, workspaceDTO)
-              .setRepoIds(request.getRepoIdsList())
-              .setPredicates(request.getPredicatesList())
-              .setPageLimit(request.getPageLimit())
-              .setPageNumber(request.getPageNumber())
-              .build();
-      List<RepositoryEntity> repositoryEntities =
-          findRepositoriesQuery.getFindRepositoriesHQLQuery().list();
-      Long totalRecords =
-          (Long) findRepositoriesQuery.getFindRepositoriesCountHQLQuery().uniqueResult();
+          roleService.getWorkspaceDTOByWorkspaceName(
+              currentLoginUserInfo, request.getWorkspaceName());
+      try {
+        List<String> accessibleResourceIds =
+            roleService.getAccessibleResourceIds(
+                null,
+                new CollaboratorUser(authService, currentLoginUserInfo),
+                RepositoryVisibility.PRIVATE,
+                ModelDBServiceResourceTypes.REPOSITORY,
+                request.getRepoIdsList().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.toList()));
 
-      return FindRepositories.Response.newBuilder()
-          .addAllRepositories(
-              repositoryEntities.stream()
-                  .map(RepositoryEntity::toProto)
-                  .collect(Collectors.toList()))
-          .setTotalRecords(totalRecords)
-          .build();
+        if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
+          LOGGER.debug("Accessible Repository Ids not found, size 0");
+          return FindRepositories.Response.newBuilder()
+              .addAllRepositories(Collections.emptyList())
+              .setTotalRecords(0L)
+              .build();
+        }
+
+        for (KeyValueQuery predicate : request.getPredicatesList()) {
+          // Validate if current user has access to the entity or not where predicate key has an id
+          RdbmsUtils.validateEntityIdInPredicates(
+              ModelDBConstants.REPOSITORY, accessibleResourceIds, predicate, roleService);
+        }
+
+        FindRepositoriesQuery findRepositoriesQuery =
+            new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(
+                    session, authService, workspaceDTO)
+                .setRepoIds(
+                    accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()))
+                .setPredicates(request.getPredicatesList())
+                .setPageLimit(request.getPageLimit())
+                .setPageNumber(request.getPageNumber())
+                .build();
+        List<RepositoryEntity> repositoryEntities =
+            findRepositoriesQuery.getFindRepositoriesHQLQuery().list();
+        Long totalRecords =
+            (Long) findRepositoriesQuery.getFindRepositoriesCountHQLQuery().uniqueResult();
+
+        return FindRepositories.Response.newBuilder()
+            .addAllRepositories(
+                repositoryEntities.stream()
+                    .map(RepositoryEntity::toProto)
+                    .collect(Collectors.toList()))
+            .setTotalRecords(totalRecords)
+            .build();
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == com.google.rpc.Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
+          LOGGER.warn(ex.getMessage());
+          return FindRepositories.Response.newBuilder()
+              .addAllRepositories(Collections.emptyList())
+              .setTotalRecords(0L)
+              .build();
+        }
+        throw ex;
+      }
     }
   }
 }

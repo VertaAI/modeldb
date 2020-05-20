@@ -1,5 +1,7 @@
 package ai.verta.modeldb.experimentRun;
 
+import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
+
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.Artifact;
@@ -37,6 +39,7 @@ import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
+import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -209,22 +212,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     this.blobDAO = blobDAO;
   }
 
-  private void updateParentEntitiesTimestamp(
-      Session session, List<String> projectIds, List<String> experimentIds, long currentTimestamp) {
-    if (projectIds != null && !projectIds.isEmpty()) {
-      Query query = session.createQuery(UPDATE_PROJECT_HQL);
-      query.setParameter("timestamp", currentTimestamp);
-      query.setParameterList("ids", projectIds);
-      query.executeUpdate();
-    }
-    if (experimentIds != null && !experimentIds.isEmpty()) {
-      Query query = session.createQuery(UPDATE_EXP_TIMESTAMP_HQL);
-      query.setParameter("timestamp", currentTimestamp);
-      query.setParameterList("ids", experimentIds);
-      query.executeUpdate();
-    }
-  }
-
   private void checkIfEntityAlreadyExists(ExperimentRun experimentRun, Boolean isInsert) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = null;
@@ -332,6 +319,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 locationBlobWithHashMap,
                 experimentRunObj);
         experimentRunObj.setVersioned_inputs(versioningModeldbEntityMappings);
+        Set<HyperparameterElementMappingEntity> hyrParamMappings =
+            prepareHyperparameterElemMappings(experimentRunObj, versioningModeldbEntityMappings);
+
+        if (!hyrParamMappings.isEmpty()) {
+          experimentRunObj.setHyperparameter_element_mappings(new ArrayList<>(hyrParamMappings));
+        }
       }
       session.saveOrUpdate(experimentRunObj);
 
@@ -342,16 +335,40 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           experimentRun.getId(),
           ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
 
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRun.getProjectId()),
-          Collections.singletonList(experimentRun.getExperimentId()),
-          Calendar.getInstance().getTimeInMillis());
       transaction.commit();
       LOGGER.debug("ExperimentRun created successfully");
       return experimentRun;
     }
+  }
+
+  private Set<HyperparameterElementMappingEntity> prepareHyperparameterElemMappings(
+      ExperimentRunEntity experimentRunObj,
+      List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings) {
+    Set<HyperparameterElementMappingEntity> hyrParamMappings = new HashSet<>();
+    versioningModeldbEntityMappings.forEach(
+        versioningModeldbEntityMapping ->
+            versioningModeldbEntityMapping
+                .getConfig_blob_entities()
+                .forEach(
+                    configBlobEntity -> {
+                      if (configBlobEntity.getHyperparameter_type().equals(HYPERPARAMETER)) {
+                        HyperparameterElementConfigBlobEntity hyperparamElemConfBlobEntity =
+                            configBlobEntity.getHyperparameterElementConfigBlobEntity();
+                        try {
+                          HyperparameterElementMappingEntity hyrParamMapping =
+                              new HyperparameterElementMappingEntity(
+                                  experimentRunObj,
+                                  hyperparamElemConfBlobEntity.getName(),
+                                  hyperparamElemConfBlobEntity.toProto());
+                          hyrParamMappings.add(hyrParamMapping);
+                        } catch (ModelDBException e) {
+                          // This is never call because if something is wrong at this point then
+                          // error will throw before this running 'for' loop
+                          LOGGER.warn(e.getMessage());
+                        }
+                      }
+                    }));
+    return hyrParamMappings;
   }
 
   @Override
@@ -387,12 +404,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       String experimentId = experimentRunObj.getExperiment_id();
       session.delete(experimentRunObj);
 
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(projectId),
-          Collections.singletonList(experimentId),
-          Calendar.getInstance().getTimeInMillis());
       transaction.commit();
       LOGGER.debug("ExperimentRun deleted successfully");
       return true;
@@ -447,10 +458,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           roleBindingNames.add(ownerRoleBindingName);
         }
       }
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session, projectIds, experimentIds, Calendar.getInstance().getTimeInMillis());
       transaction.commit();
 
       // Remove all role bindings
@@ -597,12 +604,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntity.setDate_updated(currentTimestamp);
       session.update(experimentRunEntity);
       LOGGER.debug("ExperimentRun name updated successfully");
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntity.getProject_id()),
-          Collections.singletonList(experimentRunEntity.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunEntity.getProtoObject();
     }
@@ -621,12 +622,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntity.setDate_updated(currentTimestamp);
       session.update(experimentRunEntity);
       LOGGER.debug("ExperimentRun description updated successfully");
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntity.getProject_id()),
-          Collections.singletonList(experimentRunEntity.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunEntity.getProtoObject();
     }
@@ -656,13 +651,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntity.setDate_updated(currentTimestamp);
       session.update(experimentRunEntity);
       LOGGER.debug("ExperimentRun code version snapshot updated successfully");
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntity.getProject_id()),
-          Collections.singletonList(experimentRunEntity.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunEntity.getProtoObject();
     }
@@ -680,12 +668,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntity.setDate_updated(currentTimestamp);
       session.update(experimentRunEntity);
       LOGGER.debug("ExperimentRun parentId updated successfully");
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntity.getProject_id()),
-          Collections.singletonList(experimentRunEntity.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunEntity.getProtoObject();
     }
@@ -722,12 +704,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         experimentRunObj.setDate_updated(currentTimestamp);
         session.saveOrUpdate(experimentRunObj);
       }
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunObj.getProject_id()),
-          Collections.singletonList(experimentRunObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       LOGGER.debug("ExperimentRun tags added successfully");
       return experimentRunObj.getProtoObject();
@@ -755,12 +731,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunObj.setDate_updated(currentTimestamp);
       session.update(experimentRunObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunObj.getProject_id()),
-          Collections.singletonList(experimentRunObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       LOGGER.debug("ExperimentRun tags deleted successfully");
       return experimentRunObj.getProtoObject();
@@ -790,12 +760,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
     }
@@ -870,12 +834,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
     }
@@ -972,12 +930,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
     }
     return getExperimentRun(experimentRunId);
@@ -1023,12 +975,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
     }
@@ -1095,13 +1041,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           session.get(ExperimentRunEntity.class, experimentRunId);
       experimentRunObj.setDate_updated(currentTimestamp);
       session.update(experimentRunObj);
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunObj.getProject_id()),
-          Collections.singletonList(experimentRunObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunObj.getProtoObject();
     } catch (StatusRuntimeException ex) {
@@ -1153,12 +1092,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
     }
@@ -1225,12 +1158,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
     }
@@ -1418,11 +1345,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       LOGGER.trace("Added entity predicates");
       String entityName = "experimentRunEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, experimentRunRoot, authService);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, experimentRunRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
+          LOGGER.warn(ex.getMessage());
+          ExperimentRunPaginationDTO experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
+          experimentRunPaginationDTO.setExperimentRuns(Collections.emptyList());
+          experimentRunPaginationDTO.setTotalRecords(0L);
+          return experimentRunPaginationDTO;
+        }
       }
 
       Order[] orderBy =
@@ -1525,7 +1463,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     String queryBuilder =
         "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds)";
     Query query = session.createQuery(queryBuilder);
-    query.setParameter("hyperparameterType", ConfigBlobEntity.HYPERPARAMETER);
+    query.setParameter("hyperparameterType", HYPERPARAMETER);
     query.setParameterList("expRunIds", expRunIds);
     LOGGER.debug(
         "Final experimentRuns hyperparameter config blob final query : {}", query.getQueryString());
@@ -1538,7 +1476,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           objects -> {
             String expRunId = (String) objects[0];
             ConfigBlobEntity configBlobEntity = (ConfigBlobEntity) objects[1];
-            if (configBlobEntity.getHyperparameter_type() == ConfigBlobEntity.HYPERPARAMETER) {
+            if (configBlobEntity.getHyperparameter_type() == HYPERPARAMETER) {
               HyperparameterElementConfigBlobEntity hyperElementConfigBlobEntity =
                   configBlobEntity.getHyperparameterElementConfigBlobEntity();
               HyperparameterValuesConfigBlob valuesConfigBlob =
@@ -1716,12 +1654,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
     }
@@ -1750,12 +1682,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunObj.setDate_updated(currentTimestamp);
       session.update(experimentRunObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunObj.getProject_id()),
-          Collections.singletonList(experimentRunObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       LOGGER.debug("ExperimentRun Attributes deleted successfully");
       return experimentRunObj.getProtoObject();
@@ -1773,12 +1699,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       LOGGER.debug("ExperimentRun JobID added successfully");
       return experimentRunEntityObj.getProtoObject();
@@ -2027,15 +1947,16 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       runEntity.setVersioned_inputs(existingMappings);
 
+      Set<HyperparameterElementMappingEntity> hyrParamMappings =
+          prepareHyperparameterElemMappings(runEntity, versioningModeldbEntityMappings);
+
+      if (!hyrParamMappings.isEmpty()) {
+        runEntity.setHyperparameter_element_mappings(new ArrayList<>(hyrParamMappings));
+      }
+
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
       session.saveOrUpdate(runEntity);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(runEntity.getProject_id()),
-          Collections.singletonList(runEntity.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       LOGGER.debug("ExperimentRun versioning added successfully");
       return LogVersionedInput.Response.newBuilder()

@@ -126,7 +126,6 @@ public class BlobDAORdbImpl implements BlobDAO {
       RepositoryFunction repositoryFunction, String commitHash, ProtocolStringList locationList)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
 
@@ -141,7 +140,6 @@ public class BlobDAORdbImpl implements BlobDAO {
       String folderHash = commit.getRootSha();
       if (locationList.isEmpty()) { // getting root
         Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
-        session.getTransaction().commit();
         if (folder == null) { // root is empty
           return GetCommitComponentRequest.Response.newBuilder().build();
         }
@@ -171,7 +169,6 @@ public class BlobDAORdbImpl implements BlobDAO {
           folderHash = elementEntity.getElement_sha();
           if (index == locationList.size() - 1) {
             Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
-            session.getTransaction().commit();
             if (folder == null) { // folder is empty
               return GetCommitComponentRequest.Response.newBuilder().build();
             }
@@ -180,7 +177,6 @@ public class BlobDAORdbImpl implements BlobDAO {
         } else {
           if (index == locationList.size() - 1) {
             ai.verta.modeldb.versioning.Blob blob = getBlob(session, elementEntity);
-            session.getTransaction().commit();
             return GetCommitComponentRequest.Response.newBuilder().setBlob(blob).build();
           } else {
             throw new ModelDBException(
@@ -277,12 +273,22 @@ public class BlobDAORdbImpl implements BlobDAO {
       Map<String, Entry<BlobExpanded, String>> blobExpandedMap,
       InternalFolderElementEntity elementFolder,
       Blob blob) {
-    BlobExpanded blobExpanded =
-        BlobExpanded.newBuilder()
-            .addAllLocation(parentLocation)
-            .addLocation(elementFolder.getElement_name())
-            .setBlob(blob)
-            .build();
+    BlobExpanded blobExpanded;
+    if (parentLocation.size() == 1
+        && new ArrayList<>(parentLocation).get(0).equals(elementFolder.getElement_name())) {
+      blobExpanded =
+          BlobExpanded.newBuilder()
+              .addLocation(elementFolder.getElement_name())
+              .setBlob(blob)
+              .build();
+    } else {
+      blobExpanded =
+          BlobExpanded.newBuilder()
+              .addAllLocation(parentLocation)
+              .addLocation(elementFolder.getElement_name())
+              .setBlob(blob)
+              .build();
+    }
     blobExpandedMap.put(
         getStringFromLocationList(blobExpanded.getLocationList()),
         new SimpleEntry<>(blobExpanded, elementFolder.getElement_sha()));
@@ -376,7 +382,6 @@ public class BlobDAORdbImpl implements BlobDAO {
       RepositoryFunction repositoryFunction, String commitHash, List<String> locationList)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
 
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
       if (commit == null) {
@@ -405,7 +410,6 @@ public class BlobDAORdbImpl implements BlobDAO {
   public ComputeRepositoryDiffRequest.Response computeRepositoryDiff(
       RepositoryDAO repositoryDAO, ComputeRepositoryDiffRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
 
       // validating request
       validateDiffMergeRequest(
@@ -480,7 +484,6 @@ public class BlobDAORdbImpl implements BlobDAO {
           getCommitBlobMapWithHash(
               session, internalCommitB.getRootSha(), new ArrayList<>(), Collections.emptyList());
 
-      session.getTransaction().commit();
       return computeDiffFromCommitMaps(locationBlobsMapCommitA, locationBlobsMapCommitB);
     }
   }
@@ -1175,7 +1178,6 @@ public class BlobDAORdbImpl implements BlobDAO {
     if (!whereClause.toString().isEmpty()) {
       countQueryBuilder.append(" WHERE ").append(whereClause);
     }
-    countQueryBuilder.append(orderClause);
 
     Query query = session.createQuery(finalQueryBuilder.toString());
     Query countQuery = session.createQuery(countQueryBuilder.toString());

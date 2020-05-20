@@ -70,7 +70,10 @@ public class DiffMerger {
                         // TODO: error otherwise
                         if (diffA != null && diffB != null) {
                           if (!elA.contains(diffA)) { // diff is applied on a state different from A
-                            conflictKeys.add(key);
+                            if (!elA.contains(
+                                diffB)) { // post diff the end state is different from A
+                              conflictKeys.add(key);
+                            }
                           } else {
                             elA.remove(diffA);
                             // Send the current set of keys colliding in case the merger wants to

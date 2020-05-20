@@ -10,6 +10,7 @@ import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.Project;
@@ -51,6 +52,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -640,14 +642,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return newProject;
   }
 
-  private void deleteExperimentsWithPagination(
-      Session session, List<String> projectIds, List<String> roleBindingNames) {
+  private void deleteExperimentsWithPagination(Session session, List<String> projectIds) {
     int lowerBound = 0;
-    final int pagesize = 100;
+    final int pagesize = 500;
     Long count = getExperimentCount(projectIds);
     LOGGER.debug("Total experimentEntities {}", count);
 
     while (lowerBound < count) {
+      List<String> roleBindingNames = new LinkedList<>();
       Transaction transaction = session.beginTransaction();
       // Delete the ExperimentEntity object
       Query experimentDeleteQuery = session.createQuery(FIND_EXPERIMENT_BY_PROJECT_IDS_HQL);
@@ -668,19 +670,20 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           roleBindingNames.add(ownerRoleBindingName);
         }
       }
+      roleService.deleteRoleBindings(roleBindingNames);
       transaction.commit();
       lowerBound += pagesize;
     }
   }
 
-  private void deleteExperimentRunsWithPagination(
-      Session session, List<String> projectIds, List<String> roleBindingNames) {
+  private void deleteExperimentRunsWithPagination(Session session, List<String> projectIds) {
     int lowerBound = 0;
-    final int pagesize = 100;
+    final int pagesize = 500;
     Long count = getExperimentRunCount(projectIds);
     LOGGER.debug("Total experimentRunEntities {}", count);
 
     while (lowerBound < count) {
+      List<String> roleBindingNames = new LinkedList<>();
       Transaction transaction = session.beginTransaction();
 
       Query experimentRunDeleteQuery = session.createQuery(FIND_EXPERIMENT_RUN_BY_PROJECT_IDS_HQL);
@@ -707,7 +710,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       if (!experimentRunIds.isEmpty()) {
         removeEntityComments(session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
       }
-
+      roleService.deleteRoleBindings(roleBindingNames);
       transaction.commit();
       lowerBound += pagesize;
     }
@@ -718,15 +721,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     UserInfo unsignedUser = authService.getUnsignedUser();
     for (ProjectEntity project : allowedProjects) {
       String projectId = project.getId();
-      String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_PROJECT_OWNER,
-              projectId,
-              project.getOwner(),
-              ModelDBServiceResourceTypes.PROJECT.name());
-      if (ownerRoleBindingName != null) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
 
       if (project.getProject_visibility() == ProjectVisibility.PUBLIC.getNumber()) {
         String publicReadRoleBindingName =
@@ -740,11 +734,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         }
       }
 
-      // Remove all project collaborators
-      roleBindingNames.addAll(
-          roleService.getResourceRoleBindings(
-              projectId, project.getOwner(), ModelDBServiceResourceTypes.PROJECT));
-
       // Delete workspace based roleBindings
       List<String> workspaceRoleBindingNames =
           getWorkspaceRoleBindings(
@@ -754,6 +743,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               ProjectVisibility.forNumber(project.getProject_visibility()));
       roleBindingNames.addAll(workspaceRoleBindingNames);
     }
+
+    roleService.deleteAllResources(
+        allowedProjects.stream().map(ProjectEntity::getId).collect(Collectors.toList()),
+        ModelDBServiceResourceTypes.PROJECT);
   }
 
   private List<String> getWorkspaceRoleBindings(
@@ -791,11 +784,11 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<ProjectEntity> projectEntities = getProjectEntityByBatchIds(session, projectIds);
 
-      deleteExperimentsWithPagination(session, allowedProjectIds, roleBindingNames);
+      deleteExperimentsWithPagination(session, allowedProjectIds);
 
       LOGGER.debug("num bindings after Experiment {}", roleBindingNames.size());
       // Delete the ExperimentRunEntity object
-      deleteExperimentRunsWithPagination(session, allowedProjectIds, roleBindingNames);
+      deleteExperimentRunsWithPagination(session, allowedProjectIds);
       LOGGER.debug("num bindings after Experiment Run {}", roleBindingNames.size());
       Transaction transaction = session.beginTransaction();
       for (String projectId : allowedProjectIds) {
@@ -1134,11 +1127,22 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
 
       String entityName = "projectEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, projectRoot, authService);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, projectRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
+          LOGGER.warn(ex.getMessage());
+          ProjectPaginationDTO projectPaginationDTO = new ProjectPaginationDTO();
+          projectPaginationDTO.setProjects(Collections.emptyList());
+          projectPaginationDTO.setTotalRecords(0L);
+          return projectPaginationDTO;
+        }
       }
 
       Order orderBy =

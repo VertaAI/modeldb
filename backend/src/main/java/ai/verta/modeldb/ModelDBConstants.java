@@ -95,6 +95,7 @@ public interface ModelDBConstants {
   String KEY_VALUES = "keyvalues";
   String TAG_MAPPINGS = "tagmappings";
   String VERSIONED_INPUTS = "versioned_inputs";
+  String HYPERPARAMETER_ELEMENT_MAPPINGS = "hyperparameter_element_mappings";
 
   // Common verb constants
   String ORDER_ASC = "asc";
@@ -136,6 +137,7 @@ public interface ModelDBConstants {
   String VERTA_ID = "verta_id";
   String EMAIL = "email";
   String USERNAME = "username";
+  String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
 
   // Set to true to export the liquibase schema as sql statements
   Boolean EXPORT_SCHEMA = false;
@@ -146,6 +148,7 @@ public interface ModelDBConstants {
   String INTERNAL_ERROR = "Internal server error";
   String NON_EQ_ID_PRED_ERROR_MESSAGE =
       "Only equality predicates supported on ids. Use EQ Operator.";
+  String INTERNAL_MSG_USERS_NOT_FOUND = "MDB Users not found.";
 
   // Relational Query alias
   String ARTIFACT_ALIAS = "_art_";
@@ -217,4 +220,11 @@ public interface ModelDBConstants {
   String COMMIT = "commit";
   String VERSIONING_LOCATION = "versioning_location";
   String REPOSITORY_VISIBILITY = "repository_visibility";
+  String REPOSITORY = "repository";
+
+  // Cron job constant
+  String FREQUENCY = "frequency"; // frequency to run cron job in second
+  String RECORD_UPDATE_LIMIT = "record_update_limit";
+  String CRON_JOB = "cron_job";
+  String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
 }
