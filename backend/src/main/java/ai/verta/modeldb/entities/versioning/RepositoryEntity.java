@@ -76,7 +76,7 @@ public class RepositoryEntity {
   private Integer repository_visibility = null;
 
   @Column(name = "deleted")
-  private Boolean deleted;
+  private Boolean deleted = false;
 
   public Long getId() {
     return id;

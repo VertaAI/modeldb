@@ -96,7 +96,7 @@ public class DatasetEntity {
   private Integer workspace_type;
 
   @Column(name = "deleted")
-  private Boolean deleted;
+  private Boolean deleted = false;
 
   public String getId() {
     return id;

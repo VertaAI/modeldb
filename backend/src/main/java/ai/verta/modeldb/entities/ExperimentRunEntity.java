@@ -186,7 +186,7 @@ public class ExperimentRunEntity {
       new ArrayList<>();
 
   @Column(name = "deleted")
-  private Boolean deleted;
+  private Boolean deleted = false;
 
   @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 

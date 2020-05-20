@@ -128,7 +128,7 @@ public class DatasetVersionEntity {
   private QueryDatasetVersionInfoEntity query_dataset_version_info;
 
   @Column(name = "deleted")
-  private Boolean deleted;
+  private Boolean deleted = false;
 
   public String getId() {
     return id;

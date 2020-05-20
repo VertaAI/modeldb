@@ -109,7 +109,7 @@ public class ExperimentEntity {
   private CodeVersionEntity code_version_snapshot;
 
   @Column(name = "deleted")
-  private Boolean deleted;
+  private Boolean deleted = false;
 
   @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
 
