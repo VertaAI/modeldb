@@ -1,6 +1,7 @@
 #ModelDB Properties
 grpcServer:
   port: 8085
+  requestTimeout: 30 #time in second
 
 springServer:
   port: 8086

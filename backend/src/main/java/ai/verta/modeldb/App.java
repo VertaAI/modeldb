@@ -134,6 +134,7 @@ public class App implements ApplicationContextAware {
   // Feature flags
   private Boolean disabledAuthz = false;
   private Boolean storeClientCreationTimestamp = false;
+  private Integer requestTimeout = 30;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -199,9 +200,11 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("grpc server port number found");
     ServerBuilder<?> serverBuilder = ServerBuilder.forPort(grpcServerPort);
 
+    App app = App.getInstance();
+    app.requestTimeout = (Integer) grpcServerMap.getOrDefault(ModelDBConstants.REQUEST_TIMEOUT, 30);
+
     Map<String, Object> featureFlagMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
-    App app = App.getInstance();
     if (featureFlagMap != null) {
       app.setDisabledAuthz(
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
@@ -657,5 +660,9 @@ public class App implements ApplicationContextAware {
 
   public Boolean getStoreClientCreationTimestamp() {
     return storeClientCreationTimestamp;
+  }
+
+  public Integer getRequestTimeout() {
+    return requestTimeout;
   }
 }

@@ -13,6 +13,7 @@ import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.DeleteRoleBinding;
@@ -119,20 +120,7 @@ public class RoleServiceUtils implements RoleService {
                     .addResourceIds(resourceId)
                     .build())
             .build();
-    try {
-      setRoleBindingOnAuthService(newRoleBinding);
-    } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
-    }
+    setRoleBindingOnAuthService(newRoleBinding);
   }
 
   @Override
@@ -178,16 +166,18 @@ public class RoleServiceUtils implements RoleService {
         throw StatusProto.toStatusRuntimeException(status);
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<Boolean>) () -> {
+        try{
+          isSelfAllowed(
+                  modelDBServiceResourceTypes,
+                  modelDBServiceActions,
+                  resourceId);
+        } catch (StatusRuntimeException ex1){
+          ModelDBUtils.retryOrThrowException(ex1, null);
+          throw ex1;
+        }
+        throw ex;
+      });
     }
   }
 
@@ -218,16 +208,13 @@ public class RoleServiceUtils implements RoleService {
       return getSelfAllowedActionsBatchResponse.getActionsMap();
 
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (Map<String, Actions>) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<Map<String, Actions>>) () -> {
+        try{
+          return getSelfAllowedActionsBatch(resourceIds, type);
+        } catch (StatusRuntimeException ex1){
+          return (Map<String, Actions>) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -248,17 +235,13 @@ public class RoleServiceUtils implements RoleService {
 
       return getRoleByNameResponse.getRole();
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn("role name : {} role scope : {}", roleName, roleScope);
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (Role) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<Role>) () -> {
+        try{
+          return getRoleByName(roleName, roleScope);
+        } catch (StatusRuntimeException ex1){
+          return (Role) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -277,16 +260,13 @@ public class RoleServiceUtils implements RoleService {
 
       return deleteRoleBindingResponse.getStatus();
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), "Exception deleting rolebinding", roleBindingId);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (Boolean) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<Boolean>) () -> {
+        try{
+          return deleteRoleBinding(roleBindingId);
+        } catch (StatusRuntimeException ex1){
+          return (Boolean) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -307,16 +287,13 @@ public class RoleServiceUtils implements RoleService {
 
       return deleteRoleBindingResponse.getStatus();
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), "Exception deleting rolebinding", roleBindingNames);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (Boolean) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<Boolean>) () -> {
+        try{
+          return deleteRoleBindings(roleBindingNames);
+        } catch (StatusRuntimeException ex1){
+          return (Boolean) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -330,16 +307,15 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, setRoleBindingResponse);
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<Void>) () -> {
+        try{
+          setRoleBindingOnAuthService(roleBinding);
+        } catch (StatusRuntimeException ex1){
+          ModelDBUtils.retryOrThrowException(ex1, null);
+          throw ex1;
+        }
+        throw ex;
+      });
     }
   }
 
@@ -358,16 +334,17 @@ public class RoleServiceUtils implements RoleService {
           modelDBServiceResourceTypes,
           requestHeaders);
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (List<GetCollaboratorResponse>) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<List<GetCollaboratorResponse>>) () -> {
+        try{
+          return getResourceCollaborators(
+                  modelDBServiceResourceTypes,
+                  resourceId,
+                  resourceOwnerId,
+                  requestHeaders);
+        } catch (StatusRuntimeException ex1){
+          return (List<GetCollaboratorResponse>) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -654,12 +631,13 @@ public class RoleServiceUtils implements RoleService {
     } catch (StatusRuntimeException ex) {
       LOGGER.warn(roleBindingName + " : " + ex.getMessage());
       if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        return (RoleBinding) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<RoleBinding>) () -> {
+          try{
+            return getRoleBindingByName(roleBindingName);
+          } catch (StatusRuntimeException ex1){
+            return (RoleBinding) ModelDBUtils.retryOrThrowException(ex1, null);
+          }
+        });
       } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
         return RoleBinding.newBuilder().build();
       }
@@ -705,16 +683,15 @@ public class RoleServiceUtils implements RoleService {
         return Collections.emptyList();
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (List<String>) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<List<String>>) () -> {
+        try{
+          return getSelfAllowedResources(
+                  modelDBServiceResourceTypes,
+                  modelDBServiceActions);
+        } catch (StatusRuntimeException ex1){
+          return (List<String>) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -756,16 +733,15 @@ public class RoleServiceUtils implements RoleService {
         return Collections.emptyList();
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (List<String>) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<List<String>>) () -> {
+        try{
+          return getSelfDirectlyAllowedResources(
+                  modelDBServiceResourceTypes,
+                  modelDBServiceActions);
+        } catch (StatusRuntimeException ex1){
+          return (List<String>) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -810,16 +786,16 @@ public class RoleServiceUtils implements RoleService {
         return Collections.emptyList();
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (List<String>) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<List<String>>) () -> {
+        try{
+          return getAllowedResources(
+                  modelDBServiceResourceTypes,
+                  modelDBServiceActions,
+                  collaboratorBase);
+        } catch (StatusRuntimeException ex1){
+          return (List<String>) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -831,16 +807,13 @@ public class RoleServiceUtils implements RoleService {
           authServiceChannel.getTeamServiceBlockingStub().getTeamById(getTeamById);
       return getTeamByIdResponse.getTeam();
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (GeneratedMessageV3) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<GeneratedMessageV3>) () -> {
+        try{
+          return getTeamById(teamId);
+        } catch (StatusRuntimeException ex1){
+          return (GeneratedMessageV3) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -853,16 +826,13 @@ public class RoleServiceUtils implements RoleService {
           authServiceChannel.getTeamServiceBlockingStub().getTeamByName(getTeamByName);
       return getTeamByNameResponse.getTeam();
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (GeneratedMessageV3) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<GeneratedMessageV3>) () -> {
+        try{
+          return getTeamByName(orgId, teamName);
+        } catch (StatusRuntimeException ex1){
+          return (GeneratedMessageV3) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -874,16 +844,13 @@ public class RoleServiceUtils implements RoleService {
           authServiceChannel.getOrganizationServiceBlockingStub().getOrganizationById(getOrgById);
       return getOrgByIdResponse.getOrganization();
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (GeneratedMessageV3) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<GeneratedMessageV3>) () -> {
+        try{
+          return getOrgById(orgId);
+        } catch (StatusRuntimeException ex1){
+          return (GeneratedMessageV3) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -898,16 +865,13 @@ public class RoleServiceUtils implements RoleService {
               .getOrganizationByName(getOrgByName);
       return getOrgByNameResponse.getOrganization();
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage());
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (GeneratedMessageV3) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<GeneratedMessageV3>) () -> {
+        try{
+          return getOrgByName(name);
+        } catch (StatusRuntimeException ex1){
+          return (GeneratedMessageV3) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -1039,16 +1003,13 @@ public class RoleServiceUtils implements RoleService {
               .listMyOrganizations(listMyOrganizations);
       return listMyOrganizationsResponse.getOrganizationsList();
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage());
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (List<Organization>) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<List<Organization>>) () -> {
+        try{
+          return listMyOrganizations();
+        } catch (StatusRuntimeException ex1){
+          return (List<Organization>) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -1173,16 +1134,13 @@ public class RoleServiceUtils implements RoleService {
 
       return removeAllCollaboratorResponse.getStatus();
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), "Exception deleting resourceId", resourceIds);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (Boolean) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<Boolean>) () -> {
+        try{
+          return deleteAllResources(resourceIds, modelDBServiceResourceTypes);
+        } catch (StatusRuntimeException ex1){
+          return (Boolean) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 }

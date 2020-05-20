@@ -138,6 +138,7 @@ public interface ModelDBConstants {
   String EMAIL = "email";
   String USERNAME = "username";
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
+  String REQUEST_TIMEOUT = "requestTimeout";
 
   // Set to true to export the liquibase schema as sql statements
   Boolean EXPORT_SCHEMA = false;

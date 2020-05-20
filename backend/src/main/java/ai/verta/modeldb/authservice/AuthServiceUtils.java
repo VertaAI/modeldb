@@ -3,6 +3,7 @@ package ai.verta.modeldb.authservice;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.dto.UserInfoPaginationDTO;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Empty;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.GetUsers;
@@ -46,16 +47,13 @@ public class AuthServiceUtils implements AuthService {
         return userInfo;
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (UserInfo) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<UserInfo>) () -> {
+        try{
+          return getCurrentLoginUserInfo();
+        } catch (StatusRuntimeException ex1){
+          return (UserInfo) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -81,16 +79,13 @@ public class AuthServiceUtils implements AuthService {
         return userInfo;
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (UserInfo) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<UserInfo>) () -> {
+        try{
+          return getUnsignedUser();
+        } catch (StatusRuntimeException ex1){
+          return (UserInfo) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -123,16 +118,13 @@ public class AuthServiceUtils implements AuthService {
         return userInfo;
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (UserInfo) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<UserInfo>) () -> {
+        try{
+          return getUserInfo(vertaId, vertaIdentifier);
+        } catch (StatusRuntimeException ex1){
+          return (UserInfo) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -168,16 +160,13 @@ public class AuthServiceUtils implements AuthService {
       }
       return useInfoMap;
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (Map<String, UserInfo>) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<Map<String, UserInfo>>) () -> {
+        try{
+          return getUserInfoFromAuthServer(vertaIdList, emailIdList, usernameList);
+        } catch (StatusRuntimeException ex1){
+          return (Map<String, UserInfo>) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 
@@ -241,16 +230,13 @@ public class AuthServiceUtils implements AuthService {
       paginationDTO.setTotalRecords(response.getTotalRecords());
       return paginationDTO;
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (UserInfoPaginationDTO) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<UserInfoPaginationDTO>) () -> {
+        try{
+          return getFuzzyUserInfoList(usernameChar);
+        } catch (StatusRuntimeException ex1){
+          return (UserInfoPaginationDTO) ModelDBUtils.retryOrThrowException(ex1, null);
+        }
+      });
     }
   }
 }

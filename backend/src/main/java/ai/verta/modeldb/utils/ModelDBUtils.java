@@ -508,4 +508,26 @@ public class ModelDBUtils {
   public static String getLocationWithSlashOperator(List<String> locations) {
     return String.join("/", locations);
   }
+
+  public interface RetryCallInterface<T> {
+      T retryCall();
+  }
+
+  public static Object retryOrThrowException(StatusRuntimeException ex, RetryCallInterface<?> retryCallInterface) {
+    String errorMessage = "UAC Service unavailable : " + ex.getMessage();
+    LOGGER.warn(errorMessage, ex);
+    if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
+      if (retryCallInterface != null){
+        return retryCallInterface.retryCall();
+      }
+
+      Status status =
+              Status.newBuilder()
+                      .setCode(Code.UNAVAILABLE_VALUE)
+                      .setMessage(errorMessage)
+                      .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+    throw ex;
+  }
 }
