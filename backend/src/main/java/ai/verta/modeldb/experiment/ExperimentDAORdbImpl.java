@@ -17,9 +17,7 @@ import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.ExperimentEntity;
-import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -143,6 +141,17 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       new StringBuffer("From ExperimentEntity ere where ere.")
           .append(ModelDBConstants.ID)
           .append(" IN (:experimentIds) ")
+          .toString();
+  private static final String updateDeletedStatusExperimentQueryString =
+      new StringBuilder("UPDATE ")
+          .append(ExperimentEntity.class.getSimpleName())
+          .append(" expr ")
+          .append("SET expr.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE expr.")
+          .append(ModelDBConstants.ID)
+          .append(" IN (:experimentIds)")
           .toString();
 
   /**
@@ -491,28 +500,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   }
 
   @Override
-  public Boolean deleteExperiment(String experimentId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      // Delete the ExperimentRunEntity object
-      Query experimentRunDeleteQuery = session.createQuery(EXPERIMENT_DELETE_HQL);
-      experimentRunDeleteQuery.setParameter(ModelDBConstants.EXPERIMENT_ID_STR, experimentId);
-      List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        session.delete(experimentRunEntity);
-      }
-
-      ExperimentEntity experimentObj = session.load(ExperimentEntity.class, experimentId);
-      session.delete(experimentObj);
-      transaction.commit();
-      LOGGER.debug("Experiment deleted successfully");
-      return true;
-    }
-  }
-
-  @Override
-  public Boolean deleteExperiments(List<String> experimentIds)
-      throws InvalidProtocolBufferException {
+  public Boolean deleteExperiments(List<String> experimentIds) {
     List<String> accessibleExperimentIds =
         getAccessibleExperimentIDs(experimentIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
@@ -526,67 +514,17 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           Any.pack(DeleteExperiments.getDefaultInstance()));
     }
 
-    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      // Delete the ExperimentRunEntity object
-      Query experimentRunDeleteQuery = session.createQuery(EXPERIMENT_DELETE_BATCH_HQL);
-      experimentRunDeleteQuery.setParameterList("experimentIds", experimentIds);
-      List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
-      List<String> experimentRunIds = new ArrayList<>();
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        experimentRunIds.add(experimentRunEntity.getId());
-        session.delete(experimentRunEntity);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-                experimentRunEntity.getId(),
-                experimentRunEntity.getOwner(),
-                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
-      // Delete the ExperimentRUn comments
-      if (!experimentRunIds.isEmpty()) {
-        removeEntityComments(session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
-      }
-
-      List<String> projectIds = new ArrayList<>();
-      for (String experimentId : experimentIds) {
-        ExperimentEntity experimentObj = session.load(ExperimentEntity.class, experimentId);
-        projectIds.add(experimentObj.getProject_id());
-        session.delete(experimentObj);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_OWNER,
-                experimentObj.getId(),
-                experimentObj.getOwner(),
-                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT.name());
-        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
+      Query deletedExperimentQuery = session.createQuery(updateDeletedStatusExperimentQueryString);
+      deletedExperimentQuery.setParameter("deleted", true);
+      deletedExperimentQuery.setParameter("experimentIds", accessibleExperimentIds);
+      int updatedCount = deletedExperimentQuery.executeUpdate();
+      LOGGER.debug(
+          "Mark Experiments as deleted : {}, count : {}", accessibleExperimentIds, updatedCount);
       transaction.commit();
-
-      // Remove all role bindings
-      roleService.deleteRoleBindings(roleBindingNames);
-
       LOGGER.debug("Experiment deleted successfully");
       return true;
-    }
-  }
-
-  private void removeEntityComments(Session session, List<String> entityIds, String entityName) {
-    Query commentDeleteQuery = session.createQuery(COMMENT_DELETE_HQL);
-    commentDeleteQuery.setParameterList("entityIds", entityIds);
-    commentDeleteQuery.setParameter("entityName", entityName);
-    LOGGER.debug("Comments delete query : {}", commentDeleteQuery.getQueryString());
-    List<CommentEntity> commentEntities = commentDeleteQuery.list();
-    for (CommentEntity commentEntity : commentEntities) {
-      session.delete(commentEntity);
     }
   }
 

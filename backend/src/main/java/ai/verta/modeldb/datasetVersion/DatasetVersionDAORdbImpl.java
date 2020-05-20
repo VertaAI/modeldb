@@ -83,6 +83,28 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(ModelDBConstants.ID)
           .append(" = :datasetVersionId")
           .toString();
+  private static final String updateDeletedStatusDatasetVersionQueryString =
+      new StringBuilder("UPDATE ")
+          .append(DatasetVersionEntity.class.getSimpleName())
+          .append(" dv ")
+          .append("SET dv.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE dv.")
+          .append(ModelDBConstants.ID)
+          .append(" IN (:datasetVersionIds)")
+          .toString();
+  private static final String deletedStatusDatasetVersionByDatasetQueryString =
+      new StringBuilder("UPDATE ")
+          .append(DatasetVersionEntity.class.getSimpleName())
+          .append(" dv ")
+          .append("SET dv.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE dv.")
+          .append(ModelDBConstants.DATASET_ID)
+          .append(" IN (:datasetIds)")
+          .toString();
 
   public DatasetVersionDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
@@ -182,29 +204,16 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public Boolean deleteDatasetVersions(List<String> datasetVersionIds) {
-    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      for (String datasetVersionId : datasetVersionIds) {
-        DatasetVersionEntity datasetVersionObj =
-            session.load(DatasetVersionEntity.class, datasetVersionId);
-        session.delete(datasetVersionObj);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_DATASET_VERSION_OWNER,
-                datasetVersionObj.getId(),
-                datasetVersionObj.getOwner(),
-                ModelDBServiceResourceTypes.DATASET_VERSION.name());
-        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
+      Query deletedDatasetVersionQuery =
+          session.createQuery(updateDeletedStatusDatasetVersionQueryString);
+      deletedDatasetVersionQuery.setParameter("deleted", true);
+      deletedDatasetVersionQuery.setParameter("datasetVersionIds", datasetVersionIds);
+      int updatedCount = deletedDatasetVersionQuery.executeUpdate();
+      LOGGER.debug(
+          "Mark DatasetVersions as deleted : {}, count : {}", datasetVersionIds, updatedCount);
       transaction.commit();
-
-      // Remove all role bindings
-      roleService.deleteRoleBindings(roleBindingNames);
-
       LOGGER.debug("DatasetVersion deleted successfully");
       return true;
     }
@@ -214,14 +223,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query query = session.createQuery(DATASET_VERSION_BY_DATA_SET_IDS_QUERY);
+      Query query = session.createQuery(deletedStatusDatasetVersionByDatasetQueryString);
+      query.setParameter("deleted", true);
       query.setParameterList("datasetIds", datasetIds);
-      List<DatasetVersionEntity> datasetVersionEntities = query.list();
-      for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
-        session.delete(datasetVersionEntity);
-      }
+      int updatedCount = query.executeUpdate();
       transaction.commit();
-      LOGGER.debug("DatasetVersion deleted successfully");
+      LOGGER.debug("DatasetVersion deleted successfully, updated Row: {}", updatedCount);
       return true;
     }
   }

@@ -30,7 +30,6 @@ import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
@@ -197,6 +196,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append("From ExperimentRunEntity ere where ere.")
           .append(ModelDBConstants.EXPERIMENT_ID)
           .append(" IN (:experimentIds) ")
+          .toString();
+  private static final String updateDeletedStatusExperimentRunQueryString =
+      new StringBuilder("UPDATE ")
+          .append(ExperimentRunEntity.class.getSimpleName())
+          .append(" expr ")
+          .append("SET expr.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE expr.")
+          .append(ModelDBConstants.ID)
+          .append(" IN (:experimentRunIds)")
           .toString();
 
   public ExperimentRunDAORdbImpl(
@@ -372,47 +382,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public Boolean deleteExperimentRun(String experimentRunId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-
-      List<String> accessibleExperimentRunIds =
-          getAccessibleExperimentRunIDs(
-              Collections.singletonList(experimentRunId),
-              ModelDBActionEnum.ModelDBServiceActions.UPDATE);
-      if (accessibleExperimentRunIds.isEmpty()) {
-        Status statusMessage =
-            Status.newBuilder()
-                .setCode(Code.PERMISSION_DENIED_VALUE)
-                .setMessage(
-                    "Access is denied. User is unauthorized for given ExperimentRun entities : "
-                        + accessibleExperimentRunIds)
-                .build();
-        throw StatusProto.toStatusRuntimeException(statusMessage);
-      }
-
-      // Delete the ExperimentRun comments
-      removeEntityComments(
-          session,
-          Collections.singletonList(experimentRunId),
-          ExperimentRunEntity.class.getSimpleName());
-
-      // Delete the ExperimentEntity object
-      ExperimentRunEntity experimentRunObj =
-          session.load(ExperimentRunEntity.class, experimentRunId);
-      String projectId = experimentRunObj.getProject_id();
-      String experimentId = experimentRunObj.getExperiment_id();
-      session.delete(experimentRunObj);
-
-      transaction.commit();
-      LOGGER.debug("ExperimentRun deleted successfully");
-      return true;
-    }
-  }
-
-  @Override
   public Boolean deleteExperimentRuns(List<String> experimentRunIds) {
-    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
@@ -429,53 +399,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(statusMessage);
       }
-
-      // Delete the ExperimentRUn comments
-      if (!experimentRunIds.isEmpty()) {
-        removeEntityComments(session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
-      }
-
-      // Delete the ExperimentEntity object
-      Query query = session.createQuery(GET_EXP_RUN_BY_IDS_HQL);
-      query.setParameterList("ids", experimentRunIds);
-
-      List<String> projectIds = new ArrayList<>();
-      List<String> experimentIds = new ArrayList<>();
-      @SuppressWarnings("unchecked")
-      List<ExperimentRunEntity> experimentRunEntities = query.list();
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        projectIds.add(experimentRunEntity.getProject_id());
-        experimentIds.add(experimentRunEntity.getExperiment_id());
-        session.delete(experimentRunEntity);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-                experimentRunEntity.getId(),
-                experimentRunEntity.getOwner(),
-                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
+      Query query = session.createQuery(updateDeletedStatusExperimentRunQueryString);
+      query.setParameter("deleted", true);
+      query.setParameter("experimentRunIds", accessibleExperimentRunIds);
+      int updatedCount = query.executeUpdate();
+      LOGGER.debug(
+          "Mark ExperimentRun as deleted : {}, count : {}",
+          accessibleExperimentRunIds,
+          updatedCount);
       transaction.commit();
-
-      // Remove all role bindings
-      roleService.deleteRoleBindings(roleBindingNames);
-
       LOGGER.debug("ExperimentRun deleted successfully");
       return true;
-    }
-  }
-
-  private void removeEntityComments(Session session, List<String> entityIds, String entityName) {
-    Query commentDeleteQuery = session.createQuery(COMMENT_DELETE_HQL);
-    commentDeleteQuery.setParameterList("entityIds", entityIds);
-    commentDeleteQuery.setParameter("entityName", entityName);
-    LOGGER.debug("Comments delete query : {}", commentDeleteQuery.getQueryString());
-    List<CommentEntity> commentEntities = commentDeleteQuery.list();
-    for (CommentEntity commentEntity : commentEntities) {
-      session.delete(commentEntity);
     }
   }
 
