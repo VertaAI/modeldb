@@ -330,7 +330,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     for (LineageEntry lineageEntry : lineageEntries) {
       validate(session, experimentRunIds, blobs, lineageEntry);
     }
-    if (experimentRunIds.size() != 0) {
+    if (!experimentRunIds.isEmpty()) {
       validate(session, experimentRunIds);
     }
   }
