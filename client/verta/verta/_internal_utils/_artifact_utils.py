@@ -31,6 +31,38 @@ except ImportError:  # TensorFlow not installed
     pass
 
 
+# NOTE: keep up-to-date with Deployment API
+BLACKLISTED_KEYS = {
+    'model_api.json',
+    'model.pkl',
+    'requirements.txt',
+    'train_data',
+    'tf_saved_model',
+    'custom_modules',
+    'setup_script',
+}
+
+
+def validate_key(key):
+    """
+    Validates user-specified artifact key.
+
+    Parameters
+    ----------
+    key : str
+        Name of artifact.
+
+    Raises
+    ------
+    ValueError
+        If `key` is blacklisted.
+
+    """
+    if key in BLACKLISTED_KEYS:
+        msg = "\"{}\" is reserved for internal use; please use a different key".format(key)
+        raise ValueError(msg)
+
+
 def get_file_ext(file):
     """
     Obtain the filename extension of `file`.
