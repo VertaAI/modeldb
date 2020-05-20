@@ -292,7 +292,7 @@
             </not>
         </preConditions>
         <addColumn tableName="project">
-            <column name="deleted" type="boolean"/>
+            <column name="deleted" type="boolean" defaultValue="false"/>
         </addColumn>
     </changeSet>
 
@@ -303,7 +303,7 @@
             </not>
         </preConditions>
         <addColumn tableName="experiment">
-            <column name="deleted" type="boolean"/>
+            <column name="deleted" type="boolean" defaultValue="false"/>
         </addColumn>
     </changeSet>
 
@@ -314,7 +314,7 @@
             </not>
         </preConditions>
         <addColumn tableName="experiment_run">
-            <column name="deleted" type="boolean"/>
+            <column name="deleted" type="boolean" defaultValue="false"/>
         </addColumn>
     </changeSet>
 
@@ -325,7 +325,7 @@
             </not>
         </preConditions>
         <addColumn tableName="dataset">
-            <column name="deleted" type="boolean"/>
+            <column name="deleted" type="boolean" defaultValue="false"/>
         </addColumn>
     </changeSet>
 
@@ -336,7 +336,7 @@
             </not>
         </preConditions>
         <addColumn tableName="dataset_version">
-            <column name="deleted" type="boolean"/>
+            <column name="deleted" type="boolean" defaultValue="false"/>
         </addColumn>
     </changeSet>
 
@@ -347,7 +347,7 @@
             </not>
         </preConditions>
         <addColumn tableName="repository">
-            <column name="deleted" type="boolean"/>
+            <column name="deleted" type="boolean" defaultValue="false"/>
         </addColumn>
     </changeSet>
 
