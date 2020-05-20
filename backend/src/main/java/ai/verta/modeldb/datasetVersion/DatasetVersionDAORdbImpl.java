@@ -83,13 +83,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(ModelDBConstants.ID)
           .append(" = :datasetVersionId")
           .toString();
-  private static final String DATASET_UPDATE_TIME_QUERY =
-      new StringBuilder("UPDATE DatasetEntity ds SET ds.")
-          .append(ModelDBConstants.TIME_UPDATED)
-          .append(" = :timestamp where ds.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:ids) ")
-          .toString();
 
   public DatasetVersionDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
@@ -103,13 +96,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     query.setParameter("version", newDatasetVersion.getVersion());
     Long count = (Long) query.uniqueResult();
     return count > 0;
-  }
-
-  public void setDatasetUpdateTime(Session session, List<String> datasetIds) {
-    Query query = session.createQuery(DATASET_UPDATE_TIME_QUERY);
-    query.setParameter("timestamp", Calendar.getInstance().getTimeInMillis());
-    query.setParameterList("ids", datasetIds);
-    int result = query.executeUpdate();
   }
 
   @Override
@@ -157,7 +143,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         DatasetVersionEntity datasetVersionEntity =
             RdbmsUtils.generateDatasetVersionEntity(datasetVersion);
         session.save(datasetVersionEntity);
-        setDatasetUpdateTime(session, Collections.singletonList(datasetVersion.getDatasetId()));
         transaction.commit();
 
         Role ownerRole =
@@ -196,15 +181,13 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   }
 
   @Override
-  public Boolean deleteDatasetVersions(List<String> datasetVersionIds, Boolean parentExists) {
+  public Boolean deleteDatasetVersions(List<String> datasetVersionIds) {
     final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      List<String> datasetIds = new ArrayList<>();
       for (String datasetVersionId : datasetVersionIds) {
         DatasetVersionEntity datasetVersionObj =
             session.load(DatasetVersionEntity.class, datasetVersionId);
-        datasetIds.add(datasetVersionObj.getDataset_id());
         session.delete(datasetVersionObj);
 
         String ownerRoleBindingName =
@@ -217,7 +200,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           roleBindingNames.add(ownerRoleBindingName);
         }
       }
-      setDatasetUpdateTime(session, datasetIds);
       transaction.commit();
 
       // Remove all role bindings
@@ -229,7 +211,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   }
 
   @Override
-  public Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds, Boolean parentExists) {
+  public Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(DATASET_VERSION_BY_DATA_SET_IDS_QUERY);
@@ -237,9 +219,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       List<DatasetVersionEntity> datasetVersionEntities = query.list();
       for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
         session.delete(datasetVersionEntity);
-      }
-      if (parentExists) {
-        setDatasetUpdateTime(session, datasetIds);
       }
       transaction.commit();
       LOGGER.debug("DatasetVersion deleted successfully");
@@ -453,7 +432,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
       session.update(datasetVersionObj);
-      setDatasetUpdateTime(session, Collections.singletonList(datasetVersionObj.getDataset_id()));
       transaction.commit();
       LOGGER.debug("DatasetVersion updated successfully");
       return datasetVersionObj.getProtoObject();
@@ -491,7 +469,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         datasetVersionObj.setTime_updated(currentTimestamp);
         session.saveOrUpdate(datasetVersionObj);
       }
-      setDatasetUpdateTime(session, Collections.singletonList(datasetVersionObj.getDataset_id()));
       transaction.commit();
       LOGGER.debug("DatasetVersion tags added successfully");
       return datasetVersionObj.getProtoObject();
@@ -534,7 +511,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           session.get(DatasetVersionEntity.class, datasetVersionId);
       datasetVersionObj.setTime_updated(currentTimestamp);
       session.update(datasetVersionObj);
-      setDatasetUpdateTime(session, Collections.singletonList(datasetVersionObj.getDataset_id()));
       transaction.commit();
       LOGGER.debug("DatasetVersion tags deleted successfully");
       return datasetVersionObj.getProtoObject();
@@ -555,7 +531,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
       session.saveOrUpdate(datasetVersionObj);
-      setDatasetUpdateTime(session, Collections.singletonList(datasetVersionObj.getDataset_id()));
       transaction.commit();
       LOGGER.debug("DatasetVersion attributes added successfully");
       return datasetVersionObj.getProtoObject();
@@ -604,7 +579,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
       session.saveOrUpdate(datasetVersionObj);
-      setDatasetUpdateTime(session, Collections.singletonList(datasetVersionObj.getDataset_id()));
       transaction.commit();
       return datasetVersionObj.getProtoObject();
     }
@@ -659,7 +633,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
       session.update(datasetVersionObj);
-      setDatasetUpdateTime(session, Collections.singletonList(datasetVersionObj.getDataset_id()));
       transaction.commit();
       return datasetVersionObj.getProtoObject();
     }
@@ -677,7 +650,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
       session.update(datasetVersionObj);
-      setDatasetUpdateTime(session, Collections.singletonList(datasetVersionObj.getDataset_id()));
       transaction.commit();
       LOGGER.debug("DatasetVersion updated successfully");
       return datasetVersionObj.getProtoObject();

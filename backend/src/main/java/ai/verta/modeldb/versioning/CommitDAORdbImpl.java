@@ -88,8 +88,6 @@ public class CommitDAORdbImpl implements CommitDAO {
             internalCommit,
             rootSha);
     session.saveOrUpdate(commitEntity);
-    repositoryEntity.setDate_updated(commitEntity.getDate_created());
-    session.update(repositoryEntity);
     return commitEntity;
   }
 
@@ -291,8 +289,6 @@ public class CommitDAORdbImpl implements CommitDAO {
         commitEntity.getRepository().remove(repositoryEntity);
         session.update(commitEntity);
       }
-      repositoryEntity.setDate_updated(new Date().getTime());
-      session.update(repositoryEntity);
       session.getTransaction().commit();
       return DeleteCommitRequest.Response.newBuilder().build();
     }

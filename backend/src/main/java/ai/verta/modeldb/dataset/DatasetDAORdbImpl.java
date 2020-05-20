@@ -359,20 +359,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public Boolean setUpdateTime(List<String> datasetIds, long timestamp) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      Query query = session.createQuery(UPDATE_TIME_QUERY);
-      query.setParameter("timestamp", timestamp);
-      query.setParameterList("ids", datasetIds);
-      int result = query.executeUpdate();
-      transaction.commit();
-      LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
-      return result > 0;
-    }
-  }
-
-  @Override
   public Dataset getDatasetById(String datasetId) throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);

@@ -884,6 +884,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build();
       throw StatusProto.toStatusRuntimeException(statusMessage);
     }
-    return datasetVersionDAO.deleteDatasetVersions(datasetVersionIds, true);
+    return datasetVersionDAO.deleteDatasetVersions(datasetVersionIds);
   }
 }

@@ -13,6 +13,7 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
@@ -1727,7 +1728,7 @@ public class DatasetTest {
   }
 
   @Test
-  public void getLastExperimentByDataset() {
+  public void getLastExperimentByDataset() throws InterruptedException {
     LOGGER.info("Get last experiment by dataset test start................................");
 
     ProjectTest projectTest = new ProjectTest();
@@ -1896,6 +1897,10 @@ public class DatasetTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
+
+    // wait till parent entities update date_updated field (updateParentTimestampFrequency * 2)
+    // milliseconds
+    Thread.sleep(CronJobUtils.updateParentTimestampFrequency * 1000);
 
     LastExperimentByDatasetId lastExperimentByDatasetId =
         LastExperimentByDatasetId.newBuilder().setDatasetId(dataset.getId()).build();
