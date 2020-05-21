@@ -797,6 +797,26 @@ service ExperimentRunService {
         };
     };
 
+    rpc commitArtifactPart(CommitArtifactPart) returns (CommitArtifactPart.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment-run/commitArtifactPart"
+            body: "*"
+        };
+    };
+
+    rpc getCommittedArtifactParts(GetCommittedArtifactParts) returns (GetCommittedArtifactParts.Response) {
+        option (google.api.http) = {
+            get: "/v1/experiment-run/getCommittedArtifactParts"
+        };
+    };
+
+    rpc commitMultipartArtifact(CommitMultipartArtifact) returns (CommitMultipartArtifact.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment-run/commitMultipartArtifact"
+            body: "*"
+        };
+    };
+
     // queries
     rpc findExperimentRuns(FindExperimentRuns) returns (FindExperimentRuns.Response){
         option (google.api.http) = {

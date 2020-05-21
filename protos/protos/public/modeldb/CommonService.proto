@@ -120,6 +120,9 @@ message CommitArtifactPart {
     string id = 1;  // Run ID
     string key = 2;
     ArtifactPart artifact_part = 3;
+
+    message Response{
+    }
 }
 
 message GetCommittedArtifactParts {
@@ -134,6 +137,9 @@ message GetCommittedArtifactParts {
 message CommitMultipartArtifact {
     string id = 1;  // Run ID
     string key = 2;
+
+    message Response {
+    }
 }
 
 // TODO: add bulk and get_all
