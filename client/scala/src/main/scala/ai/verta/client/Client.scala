@@ -1,7 +1,11 @@
 package ai.verta.client
 
+// TODO: add Scaladoc on top of methods
+
 import ai.verta.client.entities.{Experiment, ExperimentRun, GetOrCreateEntity, Project}
+import ai.verta.client.repository.Repository
 import ai.verta.swagger._public.modeldb.model.ModeldbCreateProject
+import ai.verta.swagger._public.modeldb.versioning.model.VersioningRepository
 import ai.verta.swagger.client.{ClientSet, HttpClient}
 
 import scala.concurrent.ExecutionContext
@@ -54,4 +58,36 @@ class Client(conn: ClientConnection) {
         }
       }))
   }
+
+  // TODO: implement getOrCreateRepository and getRepository
+  // TODO: write tests for them
+  /**
+  */
+  def getOrCreateRepository(name: String, workspace: String = "", id: String = "")(implicit ec: ExecutionContext) = {
+    GetOrCreateEntity.getOrCreate[Repository](
+      get = () => {
+        clientSet.versioningService.GetRepository(
+          id_named_id_workspace_name = workspace,
+          id_named_id_name = name,
+          id_repo_id = BigInt(id)
+        )
+        .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+      },
+      create = () => {
+        clientSet.versioningService.CreateRepository(
+          id_named_id_workspace_name = workspace,
+          body = VersioningRepository(
+            name = Some(name),
+            id = Some(BigInt(id)),
+            workspace_id = Some(workspace)
+          )
+        )
+        .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+      }
+    )
+  }
+
+  // def getRepository(id: String)(implicit ec: ExecutionContext) = {
+  //   clientSet.versioningService.get
+  // }
 }
