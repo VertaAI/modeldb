@@ -796,6 +796,8 @@ class _ModelDBEntity(object):
         response = _utils.make_request("POST",
                                        self._request_url.format("getUrlForArtifact"),
                                        self._conn, json=data)
+        # TODO: if not ok and `part_num`, raise exception
+        #     TODO: if ok and not `multipart_upload_ok`, raise same exception
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(response.json(), Message.Response)
@@ -2043,25 +2045,27 @@ class ExperimentRun(_ModelDBEntity):
                                  " consider setting overwrite=True".format(key))
             else:
                 _utils.raise_for_http_error(response)
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
 
-        self._upload_artifact(key, artifact_stream, response_msg.multipart_upload_ok)
+        self._upload_artifact(key, artifact_stream)
 
-    def _upload_artifact(self, key, artifact_stream, use_multipart, part_size=64*(10**6)):
+    def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
         """
         Parameters
         ----------
         key : str
         artifact_stream : file-like
-        use_multipart : bool
         part_size : int, default 64*(10**6)
-            If `use_multipart`, number of bytes to upload per part.
+            If using multipart upload, number of bytes to upload per part.
 
         """
         artifact_stream.seek(0)
         if self._conf.debug:
             print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
+
+        url = self._get_url_for_artifact(key, "PUT")
+        # TODO: change _get_url_for_artifact to return full msg
+        use_multipart = False
 
         if use_multipart:
             # upload parts
@@ -2099,7 +2103,6 @@ class ExperimentRun(_ModelDBEntity):
             response = _utils.make_request("POST", url, self._conn, json=data)
             _utils.raise_for_http_error(response)
         else:
-            url = self._get_url_for_artifact(key, "PUT")
             response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
             _utils.raise_for_http_error(response)
 
