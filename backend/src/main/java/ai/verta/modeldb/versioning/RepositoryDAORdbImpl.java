@@ -48,8 +48,6 @@ import org.hibernate.query.Query;
 
 public class RepositoryDAORdbImpl implements RepositoryDAO {
 
-  private static final String GET_REPOSITORY_BY_IDS_QUERY =
-      "From RepositoryEntity ent where ent.id IN (:ids)";
   private static final Logger LOGGER = LogManager.getLogger(RepositoryDAORdbImpl.class);
   private static final String GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
   private final AuthService authService;
@@ -119,7 +117,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(ModelDBConstants.REPOSITORY_ID)
           .append(" = :repoId ")
           .toString();
-  private static final String updateDeletedStatusRepositoryQueryString =
+  private static final String UPDATE_DELETED_STATUS_REPOSITORY_QUERY_STRING =
       new StringBuilder("UPDATE ")
           .append(RepositoryEntity.class.getSimpleName())
           .append(" rp ")
@@ -369,7 +367,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
 
       Query deletedRepositoriesQuery =
-          session.createQuery(updateDeletedStatusRepositoryQueryString);
+          session.createQuery(UPDATE_DELETED_STATUS_REPOSITORY_QUERY_STRING);
       deletedRepositoriesQuery.setParameter("deleted", true);
       deletedRepositoriesQuery.setParameter("repIds", allowedRepositoryIds);
       int updatedCount = deletedRepositoriesQuery.executeUpdate();

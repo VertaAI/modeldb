@@ -62,13 +62,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   private final AuthService authService;
   private final RoleService roleService;
 
-  private static final String UPDATE_PARENT_TIMESTAMP_QUERY =
-      new StringBuilder("UPDATE ProjectEntity p SET p.")
-          .append(ModelDBConstants.DATE_UPDATED)
-          .append(" = :timestamp where p.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:ids) ")
-          .toString();
   private static final String CHECK_ENTITY_PREFIX =
       "Select count(*) From ExperimentEntity ee where ee.";
   private static final String CHECK_ENTITY_BY_PROJ_ID_AND_NAME_QUERY =
@@ -110,23 +103,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           .append(ModelDBConstants.KEY)
           .append(" in (:keys) ")
           .toString();
-  private static final String EXPERIMENT_DELETE_HQL =
-      new StringBuffer("From ExperimentRunEntity ere where ere.")
-          .append(ModelDBConstants.EXPERIMENT_ID)
-          .append(" = :experimentId")
-          .toString();
-  private static final String EXPERIMENT_DELETE_BATCH_HQL =
-      new StringBuffer("From ExperimentRunEntity ere where ere.")
-          .append(ModelDBConstants.EXPERIMENT_ID)
-          .append(" IN (:experimentIds) ")
-          .toString();
-  private static final String COMMENT_DELETE_HQL =
-      new StringBuffer("From CommentEntity ce where ce.")
-          .append(ModelDBConstants.ENTITY_ID)
-          .append(" IN (:entityIds) AND ce.")
-          .append(ModelDBConstants.ENTITY_NAME)
-          .append(" =:entityName")
-          .toString();
   private static final String DELETE_ARTIFACT_QUERY =
       new StringBuffer("delete from ArtifactEntity ar WHERE ar.experimentEntity.")
           .append(ModelDBConstants.ID)
@@ -142,7 +118,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           .append(ModelDBConstants.ID)
           .append(" IN (:experimentIds) ")
           .toString();
-  private static final String updateDeletedStatusExperimentQueryString =
+  private static final String UPDATE_DELETED_STATUS_EXPERIMENT_QUERY_STRING =
       new StringBuilder("UPDATE ")
           .append(ExperimentEntity.class.getSimpleName())
           .append(" expr ")
@@ -516,7 +492,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query deletedExperimentQuery = session.createQuery(updateDeletedStatusExperimentQueryString);
+      Query deletedExperimentQuery =
+          session.createQuery(UPDATE_DELETED_STATUS_EXPERIMENT_QUERY_STRING);
       deletedExperimentQuery.setParameter("deleted", true);
       deletedExperimentQuery.setParameter("experimentIds", accessibleExperimentIds);
       int updatedCount = deletedExperimentQuery.executeUpdate();

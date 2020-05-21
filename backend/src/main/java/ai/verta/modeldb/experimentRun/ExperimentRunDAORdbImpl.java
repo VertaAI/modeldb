@@ -105,22 +105,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
-  private static final String UPDATE_PROJECT_HQL =
-      new StringBuilder("UPDATE ProjectEntity p SET p.")
-          .append(ModelDBConstants.DATE_UPDATED)
-          .append(" = :timestamp where p.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:ids) ")
-          .toString();
-  private static final String UPDATE_EXP_TIMESTAMP_HQL =
-      new StringBuilder()
-          .append("UPDATE ExperimentEntity exp SET exp.")
-          .append(ModelDBConstants.DATE_UPDATED)
-          .append(" = :timestamp")
-          .append(" where exp.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:ids) ")
-          .toString();
   private static final String CHECK_EXP_RUN_EXISTS_AT_INSERT_HQL =
       new StringBuilder("Select count(*) From ExperimentRunEntity ere where ")
           .append(" ere." + ModelDBConstants.NAME + " = :experimentRunName ")
@@ -133,14 +117,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .toString();
   private static final String GET_EXP_RUN_BY_IDS_HQL =
       "From ExperimentRunEntity exr where exr.id IN (:ids)";
-  private static final String COMMENT_DELETE_HQL =
-      new StringBuilder()
-          .append("From CommentEntity ce where ce.")
-          .append(ModelDBConstants.ENTITY_ID)
-          .append(" IN (:entityIds) AND ce.")
-          .append(ModelDBConstants.ENTITY_NAME)
-          .append(" =:entityName")
-          .toString();
   private static final String DELETE_ALL_TAGS_HQL =
       new StringBuilder("delete from TagsMapping tm WHERE tm.experimentRunEntity.")
           .append(ModelDBConstants.ID)
@@ -197,7 +173,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append(ModelDBConstants.EXPERIMENT_ID)
           .append(" IN (:experimentIds) ")
           .toString();
-  private static final String updateDeletedStatusExperimentRunQueryString =
+  private static final String UPDATE_DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING =
       new StringBuilder("UPDATE ")
           .append(ExperimentRunEntity.class.getSimpleName())
           .append(" expr ")
@@ -399,7 +375,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(statusMessage);
       }
-      Query query = session.createQuery(updateDeletedStatusExperimentRunQueryString);
+      Query query = session.createQuery(UPDATE_DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING);
       query.setParameter("deleted", true);
       query.setParameter("experimentRunIds", accessibleExperimentRunIds);
       int updatedCount = query.executeUpdate();

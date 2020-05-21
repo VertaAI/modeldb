@@ -83,7 +83,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(ModelDBConstants.ID)
           .append(" = :datasetVersionId")
           .toString();
-  private static final String updateDeletedStatusDatasetVersionQueryString =
+  private static final String UPDATE_DELETED_STATUS_DATASET_VERSION_QUERY_STRING =
       new StringBuilder("UPDATE ")
           .append(DatasetVersionEntity.class.getSimpleName())
           .append(" dv ")
@@ -94,7 +94,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(ModelDBConstants.ID)
           .append(" IN (:datasetVersionIds)")
           .toString();
-  private static final String deletedStatusDatasetVersionByDatasetQueryString =
+  private static final String DELETED_STATUS_DATASET_VERSION_BY_DATASET_QUERY_STRING =
       new StringBuilder("UPDATE ")
           .append(DatasetVersionEntity.class.getSimpleName())
           .append(" dv ")
@@ -207,7 +207,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       Query deletedDatasetVersionQuery =
-          session.createQuery(updateDeletedStatusDatasetVersionQueryString);
+          session.createQuery(UPDATE_DELETED_STATUS_DATASET_VERSION_QUERY_STRING);
       deletedDatasetVersionQuery.setParameter("deleted", true);
       deletedDatasetVersionQuery.setParameter("datasetVersionIds", datasetVersionIds);
       int updatedCount = deletedDatasetVersionQuery.executeUpdate();
@@ -223,7 +223,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query query = session.createQuery(deletedStatusDatasetVersionByDatasetQueryString);
+      Query query = session.createQuery(DELETED_STATUS_DATASET_VERSION_BY_DATASET_QUERY_STRING);
       query.setParameter("deleted", true);
       query.setParameterList("datasetIds", datasetIds);
       int updatedCount = query.executeUpdate();

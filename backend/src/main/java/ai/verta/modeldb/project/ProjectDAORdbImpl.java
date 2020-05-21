@@ -111,13 +111,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.ID)
           .append(" = :projectId")
           .toString();
-  private static final String FIND_COMMENTS_HQL =
-      new StringBuilder("From CommentEntity ce where ce.")
-          .append(ModelDBConstants.ENTITY_ID)
-          .append(" IN (:entityIds) AND ce.")
-          .append(ModelDBConstants.ENTITY_NAME)
-          .append(" =:entityName")
-          .toString();
   private static final String GET_PROJECT_EXPERIMENTS_COUNT_HQL =
       new StringBuilder("SELECT COUNT(*) FROM ExperimentEntity ee WHERE ee.")
           .append(ModelDBConstants.PROJECT_ID)
@@ -153,7 +146,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.ID)
           .append(" = :projectId")
           .toString();
-  private static final String updateDeletedStatusProjectQueryString =
+  private static final String UPDATE_DELETED_STATUS_PROJECT_QUERY_STRING =
       new StringBuilder("UPDATE ")
           .append(ProjectEntity.class.getSimpleName())
           .append(" pr ")
@@ -668,7 +661,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query deletedProjectQuery = session.createQuery(updateDeletedStatusProjectQueryString);
+      Query deletedProjectQuery = session.createQuery(UPDATE_DELETED_STATUS_PROJECT_QUERY_STRING);
       deletedProjectQuery.setParameter("deleted", true);
       deletedProjectQuery.setParameter("projectIds", allowedProjectIds);
       int updatedCount = deletedProjectQuery.executeUpdate();

@@ -66,13 +66,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   // Queries
   private static final String GET_DATASET_BY_IDS_QUERY =
       "From DatasetEntity ds where ds.id IN (:ids)";
-  private static final String UPDATE_TIME_QUERY =
-      new StringBuilder("UPDATE DatasetEntity ds SET ds.")
-          .append(ModelDBConstants.TIME_UPDATED)
-          .append(" = :timestamp where ds.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:ids) ")
-          .toString();
   private static final String GET_DATASET_ATTRIBUTES_QUERY =
       new StringBuilder("From AttributeEntity attr where attr.")
           .append(ModelDBConstants.KEY)
@@ -84,7 +77,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       new StringBuilder("Select count(*) From DatasetEntity ds where ")
           .append(" ds." + ModelDBConstants.NAME + " = :datasetName ")
           .toString();
-  private static final String updateDeletedStatusDatasetQueryString =
+  private static final String UPDATE_DELETED_STATUS_DATASET_QUERY_STRING =
       new StringBuilder("UPDATE ")
           .append(DatasetEntity.class.getSimpleName())
           .append(" dt ")
@@ -324,7 +317,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query deletedDatasetsQuery = session.createQuery(updateDeletedStatusDatasetQueryString);
+      Query deletedDatasetsQuery = session.createQuery(UPDATE_DELETED_STATUS_DATASET_QUERY_STRING);
       deletedDatasetsQuery.setParameter("deleted", true);
       deletedDatasetsQuery.setParameter("datasetIds", allowedDatasetIds);
       int updatedCount = deletedDatasetsQuery.executeUpdate();
