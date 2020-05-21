@@ -59,15 +59,21 @@ class Client(conn: ClientConnection) {
       }))
   }
 
-  // TODO: implement getOrCreateRepository and getRepository
+  // TODO: implement getRepository
   // TODO: write tests for them
   /**
   */
-  def getOrCreateRepository(name: String, workspace: String = "", id: String = "")(implicit ec: ExecutionContext) = {
+  def getOrCreateRepository(name: String, workspace: String = null, id: String = "0")(implicit ec: ExecutionContext) = {
+    // TODO: handle the case when workspace and/or id are null
+
+    // if (workspace == null) {
+    //   workspace = "personal workspace"
+    // }
+
     GetOrCreateEntity.getOrCreate[Repository](
       get = () => {
         clientSet.versioningService.GetRepository(
-          id_named_id_workspace_name = workspace,
+          id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
           id_named_id_name = name,
           id_repo_id = BigInt(id)
         )
@@ -75,16 +81,20 @@ class Client(conn: ClientConnection) {
       },
       create = () => {
         clientSet.versioningService.CreateRepository(
-          id_named_id_workspace_name = workspace,
+          id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
           body = VersioningRepository(
             name = Some(name),
-            id = Some(BigInt(id)),
             workspace_id = Some(workspace)
           )
         )
         .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
       }
     )
+  }
+
+  // TODO: implement getting personal workspace functionality.
+  def getPersonalWorkspace() = {
+    "personal"
   }
 
   // def getRepository(id: String)(implicit ec: ExecutionContext) = {
