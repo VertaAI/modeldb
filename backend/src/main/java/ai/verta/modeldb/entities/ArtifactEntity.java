@@ -74,6 +74,12 @@ public class ArtifactEntity {
   @Column(name = "filename_extension", length = 50)
   private String filename_extension;
 
+  @Column(name = "upload_id")
+  private String uploadId;
+
+  @Column(name = "upload_completed")
+  private boolean uploadCompleted;
+
   @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @JoinColumn(name = "project_id")
   private ProjectEntity projectEntity;
@@ -185,6 +191,22 @@ public class ArtifactEntity {
 
   public String getField_type() {
     return field_type;
+  }
+
+  public void setUploadId(String uploadId) {
+    this.uploadId = uploadId;
+  }
+
+  public String getUploadId() {
+    return uploadId;
+  }
+
+  public boolean isUploadCompleted() {
+    return uploadCompleted;
+  }
+
+  public void setUploadCompleted(boolean uploadCompleted) {
+    this.uploadCompleted = uploadCompleted;
   }
 
   public Artifact getProtoObject() {

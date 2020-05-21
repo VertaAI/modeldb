@@ -9,6 +9,7 @@ import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.entities.ArtifactEntity;
+import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.ArtifactStoreMapping;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -115,6 +116,7 @@ public class ModelDBHibernateUtil {
     ExperimentRunEntity.class,
     KeyValueEntity.class,
     ArtifactEntity.class,
+    ArtifactPartEntity.class,
     FeatureEntity.class,
     TagsMapping.class,
     ObservationEntity.class,
