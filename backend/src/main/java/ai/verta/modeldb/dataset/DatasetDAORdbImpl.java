@@ -93,28 +93,30 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     this.roleService = roleService;
   }
 
-  private void checkDatasetAlreadyExist(Session session, Dataset dataset) {
-    ModelDBHibernateUtil.checkIfEntityAlreadyExists(
-        session,
-        "ds",
-        CHECK_DATASE_QUERY_PREFIX,
-        "Dataset",
-        "datasetName",
-        dataset.getName(),
-        ModelDBConstants.WORKSPACE,
-        dataset.getWorkspaceId(),
-        dataset.getWorkspaceType(),
-        LOGGER);
+  private void checkDatasetAlreadyExist(Dataset dataset) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      ModelDBHibernateUtil.checkIfEntityAlreadyExists(
+          session,
+          "ds",
+          CHECK_DATASE_QUERY_PREFIX,
+          "Dataset",
+          "datasetName",
+          dataset.getName(),
+          ModelDBConstants.WORKSPACE,
+          dataset.getWorkspaceId(),
+          dataset.getWorkspaceType(),
+          LOGGER);
+    }
   }
 
   @Override
   public Dataset createDataset(Dataset dataset, UserInfo userInfo)
       throws InvalidProtocolBufferException {
+    // Check entity already exists
+    checkDatasetAlreadyExist(dataset);
     createRolesForDataset(dataset, userInfo);
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      // Check entity already exists
-      checkDatasetAlreadyExist(session, dataset);
       Transaction transaction = session.beginTransaction();
       DatasetEntity datasetEntity = RdbmsUtils.generateDatasetEntity(dataset);
       session.save(datasetEntity);
@@ -615,7 +617,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
               .setWorkspaceTypeValue(datasetObj.getWorkspace_type())
               .build();
       // Check entity already exists
-      checkDatasetAlreadyExist(session, dataset);
+      checkDatasetAlreadyExist(dataset);
 
       Transaction transaction = session.beginTransaction();
       datasetObj.setName(datasetName);

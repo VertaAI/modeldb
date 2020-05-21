@@ -152,6 +152,17 @@ public interface ExperimentDAO {
       throws InvalidProtocolBufferException;
 
   /**
+   * Delete the Experiment from database using experimentId.
+   *
+   * <p>TODO : Add logic of Deleting ExperimentRun associated with Experiment.
+   *
+   * @param String experimentId
+   * @return Boolean updated status
+   * @throws InvalidProtocolBufferException
+   */
+  Boolean deleteExperiment(String experimentId) throws InvalidProtocolBufferException;
+
+  /**
    * Delete the Experiments from database using experimentIds list.
    *
    * @param experimentIds : list of experimentRunId

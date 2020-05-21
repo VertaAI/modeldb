@@ -494,6 +494,26 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   }
 
   @Override
+  public Boolean deleteExperiment(String experimentId) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = session.beginTransaction();
+      // Delete the ExperimentRunEntity object
+      Query experimentRunDeleteQuery = session.createQuery(EXPERIMENT_DELETE_HQL);
+      experimentRunDeleteQuery.setParameter(ModelDBConstants.EXPERIMENT_ID_STR, experimentId);
+      List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
+      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
+        session.delete(experimentRunEntity);
+      }
+
+      ExperimentEntity experimentObj = session.load(ExperimentEntity.class, experimentId);
+      session.delete(experimentObj);
+      transaction.commit();
+      LOGGER.debug("Experiment deleted successfully");
+      return true;
+    }
+  }
+
+  @Override
   public Boolean deleteExperiments(List<String> experimentIds)
       throws InvalidProtocolBufferException {
     List<String> accessibleExperimentIds =

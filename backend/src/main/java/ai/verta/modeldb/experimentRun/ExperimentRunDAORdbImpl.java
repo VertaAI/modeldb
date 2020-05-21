@@ -374,6 +374,45 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
+  public Boolean deleteExperimentRun(String experimentRunId) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = session.beginTransaction();
+
+      List<String> accessibleExperimentRunIds =
+          getAccessibleExperimentRunIDs(
+              Collections.singletonList(experimentRunId),
+              ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+      if (accessibleExperimentRunIds.isEmpty()) {
+        Status statusMessage =
+            Status.newBuilder()
+                .setCode(Code.PERMISSION_DENIED_VALUE)
+                .setMessage(
+                    "Access is denied. User is unauthorized for given ExperimentRun entities : "
+                        + accessibleExperimentRunIds)
+                .build();
+        throw StatusProto.toStatusRuntimeException(statusMessage);
+      }
+
+      // Delete the ExperimentRun comments
+      removeEntityComments(
+          session,
+          Collections.singletonList(experimentRunId),
+          ExperimentRunEntity.class.getSimpleName());
+
+      // Delete the ExperimentEntity object
+      ExperimentRunEntity experimentRunObj =
+          session.load(ExperimentRunEntity.class, experimentRunId);
+      String projectId = experimentRunObj.getProject_id();
+      String experimentId = experimentRunObj.getExperiment_id();
+      session.delete(experimentRunObj);
+
+      transaction.commit();
+      LOGGER.debug("ExperimentRun deleted successfully");
+      return true;
+    }
+  }
+
+  @Override
   public Boolean deleteExperimentRuns(List<String> experimentRunIds) {
     final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
