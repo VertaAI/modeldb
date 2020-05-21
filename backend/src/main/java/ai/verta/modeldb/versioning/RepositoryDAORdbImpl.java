@@ -128,6 +128,23 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(ModelDBConstants.ID)
           .append(" IN (:repoIds)")
           .toString();
+  private static final String GET_REPOSITORY_BY_ID_HQL =
+      new StringBuilder("From ")
+          .append(RepositoryEntity.class.getSimpleName())
+          .append(" ")
+          .append(SHORT_NAME)
+          .append(" where ")
+          .append(" ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append(ModelDBConstants.ID)
+          .append(" = :repoId ")
+          .append(" AND ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append(ModelDBConstants.DELETED)
+          .append(" = false ")
+          .toString();
 
   public RepositoryDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
@@ -247,7 +264,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   private Optional<RepositoryEntity> getRepositoryById(Session session, long id) {
-    return Optional.ofNullable(session.get(RepositoryEntity.class, id));
+    Query query = session.createQuery(GET_REPOSITORY_BY_ID_HQL);
+    query.setParameter("repoId", id);
+    return Optional.ofNullable((RepositoryEntity) query.uniqueResult());
   }
 
   private Optional<RepositoryEntity> getRepositoryByName(
@@ -369,7 +388,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       Query deletedRepositoriesQuery =
           session.createQuery(UPDATE_DELETED_STATUS_REPOSITORY_QUERY_STRING);
       deletedRepositoriesQuery.setParameter("deleted", true);
-      deletedRepositoriesQuery.setParameter("repIds", allowedRepositoryIds);
+      deletedRepositoriesQuery.setParameter("repoIds", allowedRepositoryIds);
       int updatedCount = deletedRepositoriesQuery.executeUpdate();
       LOGGER.debug(
           "Mark Repositories as deleted : {}, count : {}", allowedRepositoryIds, updatedCount);
@@ -439,6 +458,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         Predicate predicate2 = exp.in(accessibleResourceIds);
         finalPredicatesList.add(predicate2);
       }
+
+      finalPredicatesList.add(
+          criteriaBuilder.equal(repositoryEntityRoot.get(ModelDBConstants.DELETED), false));
 
       Order orderBy = criteriaBuilder.desc(repositoryEntityRoot.get(ModelDBConstants.DATE_UPDATED));
 

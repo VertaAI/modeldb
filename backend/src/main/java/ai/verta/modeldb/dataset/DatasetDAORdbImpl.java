@@ -65,7 +65,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   // Queries
   private static final String GET_DATASET_BY_IDS_QUERY =
-      "From DatasetEntity ds where ds.id IN (:ids)";
+      "From DatasetEntity ds where ds.id IN (:ids) AND ds.deleted = false ";
   private static final String GET_DATASET_ATTRIBUTES_QUERY =
       new StringBuilder("From AttributeEntity attr where attr.")
           .append(ModelDBConstants.KEY)
@@ -457,6 +457,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           return datasetPaginationDTO;
         }
       }
+
+      finalPredicatesList.add(builder.equal(datasetRoot.get(ModelDBConstants.DELETED), false));
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {

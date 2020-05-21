@@ -613,6 +613,8 @@ public class DeleteEntitiesCron extends TimerTask {
                 }
               }
             });
+
+        session.delete(repository);
         transaction.commit();
       }
     }
