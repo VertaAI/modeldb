@@ -6,6 +6,10 @@ springServer:
   port: 8086
   shutdownTimeout: 30 #time in second
 
+mdb_service_user:
+  email:
+  devKey:
+
 artifactStoreConfig:
   artifactStoreType: NFS #S3, GCP, NFS
   S3:
