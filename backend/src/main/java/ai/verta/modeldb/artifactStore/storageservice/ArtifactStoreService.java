@@ -1,8 +1,12 @@
 package ai.verta.modeldb.artifactStore.storageservice;
 
+import ai.verta.modeldb.ModelDBException;
+import java.util.Optional;
+
 public interface ArtifactStoreService {
 
-  String generatePresignedUrl(String s3Key, String method);
+  Optional<String> initiateMultipart(String s3Key) throws ModelDBException;
 
-  void initializeMultipart(String s3Key);
+  String generatePresignedUrl(String s3Key, String method, long partNumber, String s)
+      throws ModelDBException;
 }

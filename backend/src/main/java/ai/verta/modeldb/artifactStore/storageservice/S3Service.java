@@ -2,6 +2,7 @@ package ai.verta.modeldb.artifactStore.storageservice;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -14,6 +15,7 @@ import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -47,9 +49,27 @@ public class S3Service implements ArtifactStoreService {
   }
 
   @Override
-  public String generatePresignedUrl(String s3Key, String method) {
+  public Optional<String> initiateMultipart(String s3Key) throws ModelDBException {
     // Validate bucket
-    Boolean result = doesBucketExist(bucketName);
+    Boolean exist = doesBucketExist(bucketName);
+    if (!exist) {
+      throw new ModelDBException("Bucket does not exists", io.grpc.Status.Code.INTERNAL);
+    }
+    InitiateMultipartUploadRequest initiateMultipartUploadRequest =
+        new InitiateMultipartUploadRequest(bucketName, s3Key);
+    InitiateMultipartUploadResult result =
+        s3Client.initiateMultipartUpload(initiateMultipartUploadRequest);
+    return Optional.ofNullable(result.getUploadId());
+  }
+
+  @Override
+  public String generatePresignedUrl(String s3Key, String method, long partNumber, String uploadId)
+      throws ModelDBException {
+    // Validate bucket
+    Boolean exist = doesBucketExist(bucketName);
+    if (!exist) {
+      throw new ModelDBException("Bucket does not exists", io.grpc.Status.Code.INTERNAL);
+    }
 
     HttpMethod reqMethod;
     if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
@@ -74,17 +94,9 @@ public class S3Service implements ArtifactStoreService {
         new GeneratePresignedUrlRequest(bucketName, s3Key)
             .withMethod(reqMethod)
             .withExpiration(expiration);
+    request.addRequestParameter("partNumber", String.valueOf(partNumber));
+    request.addRequestParameter("uploadId", uploadId);
 
     return s3Client.generatePresignedUrl(request).toString();
-  }
-
-  @Override
-  public void initializeMultipart(String s3Key) {
-    // Validate bucket
-    doesBucketExist(bucketName);
-    InitiateMultipartUploadRequest initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(bucketName, s3Key);
-    InitiateMultipartUploadResult result = s3Client
-        .initiateMultipartUpload(initiateMultipartUploadRequest);
-    return;
   }
 }

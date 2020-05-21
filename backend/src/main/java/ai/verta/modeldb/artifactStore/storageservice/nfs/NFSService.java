@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -226,8 +227,7 @@ public class NFSService implements ArtifactStoreService {
     return getUrl(artifactPath, app.getStoreArtifactEndpoint(), scheme);
   }
 
-  @Override
-  public String generatePresignedUrl(String artifactPath, String method) {
+  private String generatePresignedUrl(String artifactPath, String method) {
     LOGGER.trace("NFSService - generatePresignedUrl called");
     if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
       LOGGER.trace("NFSService - generatePresignedUrl - put url returned");
@@ -245,7 +245,13 @@ public class NFSService implements ArtifactStoreService {
   }
 
   @Override
-  public void initializeMultipart(String s3Key) {
+  public Optional<String> initiateMultipart(String s3Key) {
+    return Optional.empty();
+  }
 
+  @Override
+  public String generatePresignedUrl(
+      String artifactPath, String method, long partNumber, String uploadId) {
+    return generatePresignedUrl(artifactPath, method);
   }
 }

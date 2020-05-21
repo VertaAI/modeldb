@@ -84,11 +84,13 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1222,7 +1224,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
-      String s3Key = null;
+      final String s3Key;
+      final String uploadId;
 
       /*Process code*/
       if (request.getArtifactType() == ArtifactType.CODE) {
@@ -1230,9 +1233,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         errorMessage =
             "Code versioning artifact not found at experimentRun, experiment and project level";
         s3Key = getUrlForCode(request);
+        uploadId = null;
       } else if (request.getArtifactType() == ArtifactType.DATA) {
         errorMessage = "Data versioning artifact not found";
-        s3Key = getUrlForData(request);
+        Entry<String, String> s3KeyUploadId = getUrlForData(request);
+        s3Key = s3KeyUploadId.getKey();
+        uploadId = s3KeyUploadId.getValue();
       } else {
         errorMessage =
             "ExperimentRun ID "
@@ -1240,9 +1246,14 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                 + " does not have the artifact "
                 + request.getKey();
 
-        s3Key =
-            getS3Path(
-                experimentRunDAO.getExperimentRunArtifacts(request.getId()), request.getKey());
+        Entry<String, String> s3KeyUploadId =
+            experimentRunDAO.getExperimentRunArtifactsS3PathAndMultipartUploadID(
+                request.getId(),
+                request.getKey(),
+                request.getPartNumber(),
+                key -> artifactStoreDAO.initializeMultipart(key));
+        s3Key = s3KeyUploadId.getKey();
+        uploadId = s3KeyUploadId.getValue();
       }
       if (s3Key == null) {
         LOGGER.warn(errorMessage);
@@ -1255,7 +1266,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
       GetUrlForArtifact.Response response =
-          artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
+          artifactStoreDAO.getUrlForArtifactMultipart(
+              s3Key, request.getMethod(), request.getPartNumber(), uploadId);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1264,7 +1276,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     }
   }
 
-  private String getUrlForData(GetUrlForArtifact request) throws InvalidProtocolBufferException {
+  private Map.Entry<String, String> getUrlForData(GetUrlForArtifact request)
+      throws InvalidProtocolBufferException, ModelDBException {
 
     assert (request.getArtifactType().equals(ArtifactType.DATA));
     assert (!request.getId().isEmpty());
@@ -1273,14 +1286,20 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     List<Artifact> datasets = exprRun.getDatasetsList();
     for (Artifact dataset : datasets) {
       if (dataset.getKey().equals(request.getKey()))
-        return datasetVersionDAO.getUrlForDatasetVersion(
-            dataset.getLinkedArtifactId(), request.getMethod());
+        return new SimpleEntry<>(
+            datasetVersionDAO.getUrlForDatasetVersion(
+                dataset.getLinkedArtifactId(), request.getMethod()),
+            null);
     }
     // if the loop above did not return anything that means there was no Dataset logged with the
     // particular key
     // pre the dataset-as-fcc project datasets were stored as artifacts, so check there before
     // returning
-    return getS3Path(experimentRunDAO.getExperimentRunArtifacts(request.getId()), request.getKey());
+    return experimentRunDAO.getExperimentRunArtifactsS3PathAndMultipartUploadID(
+        request.getId(),
+        request.getKey(),
+        request.getPartNumber(),
+        s3Key -> artifactStoreDAO.initializeMultipart(s3Key));
   }
 
   private String getUrlForCode(GetUrlForArtifact request) throws InvalidProtocolBufferException {
@@ -1305,13 +1324,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
     }
     return s3Key;
-  }
-
-  private String getS3Path(List<Artifact> experimentRunArtifacts, String artifactKey) {
-    for (Artifact artifact : experimentRunArtifacts) {
-      if (artifactKey.equalsIgnoreCase(artifact.getKey())) return artifact.getPath();
-    }
-    return null;
   }
 
   @Override
@@ -1362,7 +1374,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
       Artifact artifact = artifacts.get(0);
 
-      artifactStoreDAO.initializeMultipart(artifact.getKey());
       ExperimentRun updatedExperimentRun =
           experimentRunDAO.logArtifacts(request.getId(), Collections.singletonList(artifact));
       LogArtifact.Response.Builder responseBuilder =
@@ -1409,9 +1420,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       List<Artifact> artifactList =
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
 
-      for (Artifact artifact: artifactList) {
-        artifactStoreDAO.initializeMultipart(artifact.getKey());
-      }
       ExperimentRun updatedExperimentRun =
           experimentRunDAO.logArtifacts(request.getId(), artifactList);
       LogArtifacts.Response.Builder responseBuilder =

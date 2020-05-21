@@ -74,6 +74,7 @@ import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -82,6 +83,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -2245,6 +2248,57 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
           .build();
+    }
+  }
+
+  @Override
+  public Entry<String, String> getExperimentRunArtifactsS3PathAndMultipartUploadID(
+      String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      ExperimentRunEntity experimentRunObj =
+          session.get(ExperimentRunEntity.class, experimentRunId);
+      if (experimentRunObj == null) {
+        LOGGER.warn(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.NOT_FOUND_VALUE)
+                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+      Map<String, List<ArtifactEntity>> artifactEntityMap = experimentRunObj.getArtifactEntityMap();
+
+      List<ArtifactEntity> result =
+          (artifactEntityMap != null && artifactEntityMap.containsKey(ModelDBConstants.ARTIFACTS))
+              ? artifactEntityMap.get(ModelDBConstants.ARTIFACTS)
+              : Collections.emptyList();
+      for (ArtifactEntity artifactEntity : result) {
+        if (artifactEntity.getKey().equals(key)) {
+          String uploadId;
+          if (partNumber != 0) {
+            uploadId = artifactEntity.getUploadId();
+            if (uploadId == null) {
+              uploadId = initializeMultipart.apply(key).orElse(null);
+            }
+            if (uploadId == null) {
+              throw new ModelDBException(
+                  "Can't initialize multipart upload", io.grpc.Status.Code.FAILED_PRECONDITION);
+            }
+            if (!Objects.equals(uploadId, artifactEntity.getUploadId())
+                || artifactEntity.isUploadCompleted()) {
+              session.beginTransaction();
+              artifactEntity.setUploadId(uploadId);
+              artifactEntity.setUploadCompleted(false);
+              session.getTransaction().commit();
+            }
+          } else {
+            uploadId = null;
+          }
+          return new AbstractMap.SimpleEntry<>(artifactEntity.getPath(), uploadId);
+        }
+      }
+      return new AbstractMap.SimpleEntry<>(null, null);
     }
   }
 }

@@ -24,6 +24,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.hibernate.Session;
 
 public interface ExperimentRunDAO {
@@ -500,4 +501,8 @@ public interface ExperimentRunDAO {
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException, InvalidProtocolBufferException;
+
+  Entry<String, String> getExperimentRunArtifactsS3PathAndMultipartUploadID(
+      String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
+      throws ModelDBException;
 }
