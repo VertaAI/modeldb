@@ -41,10 +41,14 @@ public class CronJobUtils {
             Map<String, Object> deleteEntitiesCronMap = (Map<String, Object>) cronJob.getValue();
             deleteEntitiesFrequency =
                 (int) deleteEntitiesCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);
+            int recordUpdateLimit =
+                (int) deleteEntitiesCronMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
             // creating an instance of task to be scheduled
-            TimerTask task = new DeleteEntitiesCron(authService, roleService);
+            TimerTask task = new DeleteEntitiesCron(authService, roleService, recordUpdateLimit);
             ModelDBUtils.scheduleTask(task, deleteEntitiesFrequency, TimeUnit.SECONDS);
             LOGGER.info("{} cron job scheduled successfully", ModelDBConstants.DELETE_ENTITIES);
+          } else {
+            LOGGER.warn("Unknown config key ({}) found for the cron job", cronJob.getKey());
           }
         }
       }

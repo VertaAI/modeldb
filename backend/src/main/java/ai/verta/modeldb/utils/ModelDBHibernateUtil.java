@@ -1,6 +1,6 @@
 package ai.verta.modeldb.utils;
 
-import static ai.verta.modeldb.authservice.AuthServiceChannel.isMigrationUtilsCall;
+import static ai.verta.modeldb.authservice.AuthServiceChannel.isBackgroundUtilsCall;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
@@ -594,7 +594,7 @@ public class ModelDBHibernateUtil {
     if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
       new Thread(
               () -> {
-                isMigrationUtilsCall = true;
+                isBackgroundUtilsCall = true;
                 int index = 0;
                 try {
                   CompletableFuture<Boolean>[] completableFutures =
@@ -640,7 +640,7 @@ public class ModelDBHibernateUtil {
                   LOGGER.warn(
                       "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
                 }
-                isMigrationUtilsCall = false;
+                isBackgroundUtilsCall = false;
               })
           .start();
     }

@@ -35,6 +35,7 @@ public interface ModelDBConstants {
   String STARTER_PROJECT_ID = "starterProjectId";
   String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
   String userDir = "user.dir";
+  String MDB_SERVICE_USER = "mdb_service_user";
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
@@ -139,6 +140,7 @@ public interface ModelDBConstants {
   String USERNAME = "username";
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
   String DELETED = "deleted";
+  String DEV_KEY = "devKey";
 
   // Set to true to export the liquibase schema as sql statements
   Boolean EXPORT_SCHEMA = false;
