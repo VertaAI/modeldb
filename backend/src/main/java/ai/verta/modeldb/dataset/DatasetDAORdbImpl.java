@@ -220,42 +220,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     return findDatasets(findDatasets, userInfo, datasetVisibility);
   }
 
-  private void deleteRoleBindingsOfAccessibleDatasets(
-      List<DatasetEntity> allowedDatasets, List<String> roleBindingNames) {
-    UserInfo unsignedUser = authService.getUnsignedUser();
-    for (DatasetEntity datasetEntity : allowedDatasets) {
-      String datasetId = datasetEntity.getId();
-
-      if (datasetEntity.getDataset_visibility() == DatasetVisibility.PUBLIC.getNumber()) {
-        String publicReadRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_DATASET_PUBLIC_READ,
-                datasetId,
-                authService.getVertaIdFromUserInfo(unsignedUser),
-                ModelDBServiceResourceTypes.DATASET.name());
-        if (publicReadRoleBindingName != null && !publicReadRoleBindingName.isEmpty()) {
-          roleBindingNames.add(publicReadRoleBindingName);
-        }
-      }
-
-      // Delete workspace based roleBindings
-      List<String> workspaceRoleBindingNames =
-          getWorkspaceRoleBindings(
-              datasetEntity.getWorkspace(),
-              WorkspaceType.forNumber(datasetEntity.getWorkspace_type()),
-              datasetEntity.getId(),
-              DatasetVisibility.forNumber(datasetEntity.getDataset_visibility()));
-      if (!workspaceRoleBindingNames.isEmpty()) {
-        roleBindingNames.addAll(workspaceRoleBindingNames);
-      }
-    }
-
-    // Remove all datasetEntity collaborators
-    roleService.deleteAllResources(
-        allowedDatasets.stream().map(DatasetEntity::getId).collect(Collectors.toList()),
-        ModelDBServiceResourceTypes.DATASET);
-  }
-
   private List<String> getWorkspaceRoleBindings(
       String workspaceId,
       WorkspaceType workspaceType,
