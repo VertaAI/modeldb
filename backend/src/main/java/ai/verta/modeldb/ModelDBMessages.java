@@ -14,7 +14,7 @@ public interface ModelDBMessages {
   String GETTING_PROJECT_BY_ID_MSG_STR = "Project by Id getting successfully";
   String GET_DATASET_VERSION_MSG = "Getting dataset version.";
   String VALUE_ALREADY_PRESENT_IN_DATASET_MSG = "Updated value is already present in Dataset";
-  String ACCESS_IS_DENIDE_DATASET_VERSION_ENTITIES_MSG =
+  String ACCESS_IS_DENIED_DATASET_VERSION_ENTITIES_MSG =
       "Access is denied. User is unauthorized for given DatasetVersion entities : ";
   String ACCESS_IS_DENIDE_DATASET_ENTITITY_MSG =
       "Access is denied. User is unauthorized for given Dataset entity";

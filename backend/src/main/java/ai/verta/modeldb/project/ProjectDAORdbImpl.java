@@ -1072,7 +1072,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       List<KeyValueQuery> predicates = new ArrayList<>(queryParameters.getPredicatesList());
       for (KeyValueQuery predicate : predicates) {
         // Validate if current user has access to the entity or not where predicate key has an id
-        RdbmsUtils.validateEntityIdInPredicates(
+        RdbmsUtils.validatePredicates(
             ModelDBConstants.PROJECTS, accessibleProjectIds, predicate, roleService);
       }
 

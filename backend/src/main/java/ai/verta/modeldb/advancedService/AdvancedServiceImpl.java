@@ -58,7 +58,6 @@ import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
-import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
@@ -1100,22 +1099,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             ModelDBServiceActions.READ);
       }
 
-      if (!request.getDatasetVersionIdsList().isEmpty()) {
-        DatasetVersionServiceImpl datasetVersionService =
-            new DatasetVersionServiceImpl(authService, roleService, datasetDAO, datasetVersionDAO);
-        List<String> accessibleDatasetVersionIDs =
-            datasetVersionService.getAccessibleDatasetVersionIDs(
-                request.getDatasetVersionIdsList(), ModelDBServiceActions.READ);
-        request =
-            request
-                .toBuilder()
-                .clearDatasetVersionIds()
-                .addAllDatasetVersionIds(accessibleDatasetVersionIDs)
-                .build();
-      }
-
       DatasetVersionDTO datasetVersionPaginationDTO =
-          datasetVersionDAO.findDatasetVersions(request, userInfo);
+          datasetVersionDAO.findDatasetVersions(datasetDAO, request, userInfo);
       LOGGER.debug(
           "DatasetVersionPaginationDTO record count : "
               + datasetVersionPaginationDTO.getTotalRecords());

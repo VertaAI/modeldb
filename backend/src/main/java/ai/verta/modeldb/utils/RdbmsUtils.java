@@ -1844,7 +1844,24 @@ public class RdbmsUtils {
     return versioningEntry.build();
   }
 
-  public static void validateEntityIdInPredicates(
+  /**
+   * Validating predicate with following condition
+   *
+   * <p>Validate if current user has access to the entity or not where predicate key has an id with
+   * only allowed 'EQ' operators
+   *
+   * <p>Validate predicate id is in accessible ids or not.
+   *
+   * <p>Only allow 'EQ' operator for predicate key has an id.
+   *
+   * <p>Workspace & workspace type should not allowed in the predicate
+   *
+   * @param entityName : dataset, project etc.
+   * @param accessibleEntityIds : accessible entity ids like project.ids, dataset.ids etc.
+   * @param predicate : predicate request
+   * @param roleService : role service
+   */
+  public static void validatePredicates(
       String entityName,
       List<String> accessibleEntityIds,
       KeyValueQuery predicate,
