@@ -117,7 +117,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(ModelDBConstants.REPOSITORY_ID)
           .append(" = :repoId ")
           .toString();
-  private static final String UPDATE_DELETED_STATUS_REPOSITORY_QUERY_STRING =
+  private static final String DELETED_STATUS_REPOSITORY_QUERY_STRING =
       new StringBuilder("UPDATE ")
           .append(RepositoryEntity.class.getSimpleName())
           .append(" rp ")
@@ -352,7 +352,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
       // Get self allowed resources id where user has delete permission
       List<String> allowedRepositoryIds =
@@ -366,18 +365,16 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             Code.PERMISSION_DENIED);
       }
 
-      Query deletedRepositoriesQuery =
-          session.createQuery(UPDATE_DELETED_STATUS_REPOSITORY_QUERY_STRING);
+      Query deletedRepositoriesQuery = session.createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING);
       deletedRepositoriesQuery.setParameter("deleted", true);
       deletedRepositoriesQuery.setParameter("repoIds", allowedRepositoryIds);
+      Transaction transaction = session.beginTransaction();
       int updatedCount = deletedRepositoriesQuery.executeUpdate();
       LOGGER.debug(
           "Mark Repositories as deleted : {}, count : {}", allowedRepositoryIds, updatedCount);
       // Delete all VersionedInputs for repository ID
       experimentRunDAO.deleteLogVersionedInputs(session, repository.getId(), null);
       transaction.commit();
-      session.delete(repository);
-      session.getTransaction().commit();
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     }
   }

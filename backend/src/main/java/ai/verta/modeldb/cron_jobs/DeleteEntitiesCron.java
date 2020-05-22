@@ -103,18 +103,10 @@ public class DeleteEntitiesCron extends TimerTask {
 
     List<String> projectIds = new ArrayList<>();
     if (!projectEntities.isEmpty()) {
-      List<String> roleBindingNames = new LinkedList<>();
       for (ProjectEntity projectEntity : projectEntities) {
         projectIds.add(projectEntity.getId());
       }
-      // Get roleBindings by accessible projects
-      getRoleBindingsOfAccessibleProjects(projectEntities, roleBindingNames);
-      LOGGER.debug("num bindings after Projects {}", roleBindingNames.size());
-
-      // Remove all role bindings
-      if (!roleBindingNames.isEmpty()) {
-        roleService.deleteRoleBindings(roleBindingNames);
-      }
+      deleteRoleBindingsForProjects(projectEntities);
 
       Transaction transaction = session.beginTransaction();
       String updateDeletedStatusExperimentQueryString =
@@ -133,23 +125,6 @@ public class DeleteEntitiesCron extends TimerTask {
       deletedExperimentQuery.setParameter("projectIds", projectIds);
       deletedExperimentQuery.executeUpdate();
 
-      String updateDeletedStatusExperimentRunQueryString =
-          new StringBuilder("UPDATE ")
-              .append(ExperimentRunEntity.class.getSimpleName())
-              .append(" expr ")
-              .append("SET expr.")
-              .append(ModelDBConstants.DELETED)
-              .append(" = :deleted ")
-              .append(" WHERE expr.")
-              .append(ModelDBConstants.PROJECT_ID)
-              .append(" IN (:projectIds)")
-              .toString();
-      Query deletedExperimentRunQuery =
-          session.createQuery(updateDeletedStatusExperimentRunQueryString);
-      deletedExperimentRunQuery.setParameter("deleted", true);
-      deletedExperimentRunQuery.setParameter("projectIds", projectIds);
-      deletedExperimentRunQuery.executeUpdate();
-
       for (ProjectEntity projectEntity : projectEntities) {
         session.delete(projectEntity);
       }
@@ -159,7 +134,25 @@ public class DeleteEntitiesCron extends TimerTask {
     LOGGER.debug("Project Deleted successfully : Deleted projects count {}", projectIds.size());
   }
 
-  private void getRoleBindingsOfAccessibleProjects(
+  private void deleteRoleBindingsForProjects(List<ProjectEntity> projectEntities) {
+    // set roleBindings name by accessible projects
+    List<String> roleBindingNames = new LinkedList<>();
+    setRoleBindingsNameOfAccessibleProjectsInRoleBindingNamesList(
+        projectEntities, roleBindingNames);
+    LOGGER.debug("num bindings after Projects {}", roleBindingNames.size());
+
+    // Delete all resources
+    roleService.deleteAllResources(
+        projectEntities.stream().map(ProjectEntity::getId).collect(Collectors.toList()),
+        ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+
+    // Remove all role bindings
+    if (!roleBindingNames.isEmpty()) {
+      roleService.deleteRoleBindings(roleBindingNames);
+    }
+  }
+
+  private void setRoleBindingsNameOfAccessibleProjectsInRoleBindingNamesList(
       List<ProjectEntity> allowedProjects, List<String> roleBindingNames) {
     UserInfo unsignedUser = authService.getUnsignedUser();
     for (ProjectEntity project : allowedProjects) {
@@ -200,10 +193,6 @@ public class DeleteEntitiesCron extends TimerTask {
               "_GLOBAL_SHARING");
       roleBindingNames.addAll(workspaceRoleBindingNames);
     }
-
-    roleService.deleteAllResources(
-        allowedProjects.stream().map(ProjectEntity::getId).collect(Collectors.toList()),
-        ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT);
   }
 
   private void deleteExperiments(Session session) {
@@ -224,23 +213,10 @@ public class DeleteEntitiesCron extends TimerTask {
 
     List<String> experimentIds = new ArrayList<>();
     if (!experimentEntities.isEmpty()) {
-      List<String> roleBindingNames = new LinkedList<>();
       for (ExperimentEntity experimentEntity : experimentEntities) {
         experimentIds.add(experimentEntity.getId());
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_OWNER,
-                experimentEntity.getId(),
-                experimentEntity.getOwner(),
-                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT.name());
-        if (ownerRoleBindingName != null) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
       }
-
-      if (!roleBindingNames.isEmpty()) {
-        roleService.deleteRoleBindings(roleBindingNames);
-      }
+      deleteRoleBindingsForExperiments(experimentEntities);
 
       Transaction transaction = session.beginTransaction();
       String updateDeletedStatusExperimentRunQueryString =
@@ -270,6 +246,24 @@ public class DeleteEntitiesCron extends TimerTask {
         "Experiment deleted successfully : Deleted experiments count {}", experimentIds.size());
   }
 
+  private void deleteRoleBindingsForExperiments(List<ExperimentEntity> experimentEntities) {
+    List<String> roleBindingNames = new LinkedList<>();
+    for (ExperimentEntity experimentEntity : experimentEntities) {
+      String ownerRoleBindingName =
+          roleService.buildRoleBindingName(
+              ModelDBConstants.ROLE_EXPERIMENT_OWNER,
+              experimentEntity.getId(),
+              experimentEntity.getOwner(),
+              ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT.name());
+      if (ownerRoleBindingName != null) {
+        roleBindingNames.add(ownerRoleBindingName);
+      }
+    }
+    if (!roleBindingNames.isEmpty()) {
+      roleService.deleteRoleBindings(roleBindingNames);
+    }
+  }
+
   private void deleteExperimentRuns(Session session) {
     LOGGER.debug("ExperimentRun deleting");
     String deleteExperimentRunQueryString =
@@ -288,22 +282,10 @@ public class DeleteEntitiesCron extends TimerTask {
 
     List<String> experimentRunIds = new ArrayList<>();
     if (!experimentRunEntities.isEmpty()) {
-      List<String> roleBindingNames = new LinkedList<>();
       for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
         experimentRunIds.add(experimentRunEntity.getId());
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-                experimentRunEntity.getId(),
-                experimentRunEntity.getOwner(),
-                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        if (ownerRoleBindingName != null) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
       }
-      if (!roleBindingNames.isEmpty()) {
-        roleService.deleteRoleBindings(roleBindingNames);
-      }
+      deleteRoleBindingsForExperimentRuns(experimentRunEntities);
 
       Transaction transaction = session.beginTransaction();
       // Delete the ExperimentRun comments
@@ -320,6 +302,25 @@ public class DeleteEntitiesCron extends TimerTask {
     LOGGER.debug(
         "ExperimentRun deleted successfully : Deleted experimentRuns count {}",
         experimentRunIds.size());
+  }
+
+  private void deleteRoleBindingsForExperimentRuns(
+      List<ExperimentRunEntity> experimentRunEntities) {
+    List<String> roleBindingNames = new LinkedList<>();
+    for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
+      String ownerRoleBindingName =
+          roleService.buildRoleBindingName(
+              ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
+              experimentRunEntity.getId(),
+              experimentRunEntity.getOwner(),
+              ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
+      if (ownerRoleBindingName != null) {
+        roleBindingNames.add(ownerRoleBindingName);
+      }
+    }
+    if (!roleBindingNames.isEmpty()) {
+      roleService.deleteRoleBindings(roleBindingNames);
+    }
   }
 
   private void removeEntityComments(Session session, List<String> entityIds, String entityName) {
@@ -366,16 +367,7 @@ public class DeleteEntitiesCron extends TimerTask {
       for (DatasetEntity datasetEntity : datasetEntities) {
         datasetIds.add(datasetEntity.getId());
       }
-
-      // Remove roleBindings by accessible datasets
-      List<String> roleBindingNames = new LinkedList<>();
-      deleteRoleBindingsOfAccessibleDatasets(datasetEntities, roleBindingNames);
-      LOGGER.debug("num bindings after Datasets {}", roleBindingNames.size());
-
-      // Remove all role bindings
-      if (!roleBindingNames.isEmpty()) {
-        roleService.deleteRoleBindings(roleBindingNames);
-      }
+      deleteRoleBindingsForDatasets(datasetEntities);
 
       Transaction transaction = session.beginTransaction();
       String updateDeletedStatusDatasetVersionQueryString =
@@ -403,7 +395,24 @@ public class DeleteEntitiesCron extends TimerTask {
     LOGGER.debug("Dataset Deleted successfully : Deleted datasets count {}", datasetIds.isEmpty());
   }
 
-  private void deleteRoleBindingsOfAccessibleDatasets(
+  private void deleteRoleBindingsForDatasets(List<DatasetEntity> datasetEntities) {
+    // Remove roleBindings by accessible datasets
+    List<String> roleBindingNames = new LinkedList<>();
+    setRoleBindingsNameOfAccessibleDatasetsInRoleBindingsList(datasetEntities, roleBindingNames);
+    LOGGER.debug("num bindings after Datasets {}", roleBindingNames.size());
+
+    // Remove all datasetEntity collaborators
+    roleService.deleteAllResources(
+        datasetEntities.stream().map(DatasetEntity::getId).collect(Collectors.toList()),
+        ModelResourceEnum.ModelDBServiceResourceTypes.DATASET);
+
+    // Remove all role bindings
+    if (!roleBindingNames.isEmpty()) {
+      roleService.deleteRoleBindings(roleBindingNames);
+    }
+  }
+
+  private void setRoleBindingsNameOfAccessibleDatasetsInRoleBindingsList(
       List<DatasetEntity> allowedDatasets, List<String> roleBindingNames) {
     UserInfo unsignedUser = authService.getUnsignedUser();
     for (DatasetEntity datasetEntity : allowedDatasets) {
@@ -444,11 +453,6 @@ public class DeleteEntitiesCron extends TimerTask {
         roleBindingNames.addAll(workspaceRoleBindingNames);
       }
     }
-
-    // Remove all datasetEntity collaborators
-    roleService.deleteAllResources(
-        allowedDatasets.stream().map(DatasetEntity::getId).collect(Collectors.toList()),
-        ModelResourceEnum.ModelDBServiceResourceTypes.DATASET);
   }
 
   private List<String> getWorkspaceRoleBindingsForDataset(
@@ -512,6 +516,21 @@ public class DeleteEntitiesCron extends TimerTask {
     LOGGER.debug("DatasetVersion delete query: {}", datasetVersionDeleteQuery.getQueryString());
     List<DatasetVersionEntity> datasetVersionEntities = datasetVersionDeleteQuery.list();
 
+    // Remove all role bindings
+    deleteRoleBindingsForDatasetVersions(datasetVersionEntities);
+
+    Transaction transaction = session.beginTransaction();
+    for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
+      session.delete(datasetVersionEntity);
+    }
+    transaction.commit();
+    LOGGER.debug(
+        "DatasetVersion Deleted successfully : Deleted datasetVersions count {}",
+        datasetVersionEntities.size());
+  }
+
+  private void deleteRoleBindingsForDatasetVersions(
+      List<DatasetVersionEntity> datasetVersionEntities) {
     // Remove roleBindings by accessible datasetVersions
     List<String> roleBindingNames = new LinkedList<>();
     for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
@@ -529,15 +548,6 @@ public class DeleteEntitiesCron extends TimerTask {
     if (!roleBindingNames.isEmpty()) {
       roleService.deleteRoleBindings(roleBindingNames);
     }
-
-    Transaction transaction = session.beginTransaction();
-    for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
-      session.delete(datasetVersionEntity);
-    }
-    transaction.commit();
-    LOGGER.debug(
-        "DatasetVersion Deleted successfully : Deleted datasetVersions count {}",
-        datasetVersionEntities.size());
   }
 
   private void deleteRepositories(Session session) {
@@ -561,7 +571,7 @@ public class DeleteEntitiesCron extends TimerTask {
 
     if (!repositoryEntities.isEmpty()) {
       for (RepositoryEntity repository : repositoryEntities) {
-        deleteRoleBindingsOfAccessibleResources(Collections.singletonList(repository));
+        deleteRoleBindingsOfRepositories(Collections.singletonList(repository));
 
         Transaction transaction = session.beginTransaction();
         String getRepositoryBranchesHql =
@@ -622,7 +632,7 @@ public class DeleteEntitiesCron extends TimerTask {
         repositoryEntities.size());
   }
 
-  private void deleteRoleBindingsOfAccessibleResources(List<RepositoryEntity> allowedResources) {
+  private void deleteRoleBindingsOfRepositories(List<RepositoryEntity> allowedResources) {
     final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     for (RepositoryEntity repositoryEntity : allowedResources) {
       String ownerRoleBindingName =

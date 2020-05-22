@@ -118,7 +118,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           .append(ModelDBConstants.ID)
           .append(" IN (:experimentIds) ")
           .toString();
-  private static final String UPDATE_DELETED_STATUS_EXPERIMENT_QUERY_STRING =
+  private static final String DELETED_STATUS_EXPERIMENT_QUERY_STRING =
       new StringBuilder("UPDATE ")
           .append(ExperimentEntity.class.getSimpleName())
           .append(" expr ")
@@ -492,8 +492,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query deletedExperimentQuery =
-          session.createQuery(UPDATE_DELETED_STATUS_EXPERIMENT_QUERY_STRING);
+      Query deletedExperimentQuery = session.createQuery(DELETED_STATUS_EXPERIMENT_QUERY_STRING);
       deletedExperimentQuery.setParameter("deleted", true);
       deletedExperimentQuery.setParameter("experimentIds", accessibleExperimentIds);
       int updatedCount = deletedExperimentQuery.executeUpdate();

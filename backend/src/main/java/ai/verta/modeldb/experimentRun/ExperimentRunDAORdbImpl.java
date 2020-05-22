@@ -173,7 +173,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append(ModelDBConstants.EXPERIMENT_ID)
           .append(" IN (:experimentIds) ")
           .toString();
-  private static final String UPDATE_DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING =
+  private static final String DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING =
       new StringBuilder("UPDATE ")
           .append(ExperimentRunEntity.class.getSimpleName())
           .append(" expr ")
@@ -375,7 +375,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(statusMessage);
       }
-      Query query = session.createQuery(UPDATE_DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING);
+      Query query = session.createQuery(DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING);
       query.setParameter("deleted", true);
       query.setParameter("experimentRunIds", accessibleExperimentRunIds);
       int updatedCount = query.executeUpdate();

@@ -146,7 +146,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.ID)
           .append(" = :projectId")
           .toString();
-  private static final String UPDATE_DELETED_STATUS_PROJECT_QUERY_STRING =
+  private static final String DELETED_STATUS_PROJECT_QUERY_STRING =
       new StringBuilder("UPDATE ")
           .append(ProjectEntity.class.getSimpleName())
           .append(" pr ")
@@ -661,7 +661,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query deletedProjectQuery = session.createQuery(UPDATE_DELETED_STATUS_PROJECT_QUERY_STRING);
+      Query deletedProjectQuery = session.createQuery(DELETED_STATUS_PROJECT_QUERY_STRING);
       deletedProjectQuery.setParameter("deleted", true);
       deletedProjectQuery.setParameter("projectIds", allowedProjectIds);
       int updatedCount = deletedProjectQuery.executeUpdate();
