@@ -236,21 +236,24 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   @Override
   public Experiment insertExperiment(Experiment experiment, UserInfo userInfo)
       throws InvalidProtocolBufferException {
+    createRoleBindingsForExperiment(experiment, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experiment, true);
       Transaction transaction = session.beginTransaction();
       session.save(RdbmsUtils.generateExperimentEntity(experiment));
-
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          experiment.getId(),
-          ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
       transaction.commit();
       LOGGER.debug("Experiment created successfully");
       return experiment;
     }
+  }
+
+  private void createRoleBindingsForExperiment(Experiment experiment, UserInfo userInfo) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        experiment.getId(),
+        ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
   }
 
   @Override
