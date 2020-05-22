@@ -1301,7 +1301,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       List<String> projectIds = new ArrayList<>();
       if (!queryParameters.getProjectId().isEmpty()) {
         projectIds.add(queryParameters.getProjectId());
-      } else if (accessibleExperimentRunIds.isEmpty()) {
+      } else if (accessibleExperimentRunIds.isEmpty()
+          && queryParameters.getExperimentId().isEmpty()) {
         List<String> workspaceProjectIDs =
             projectDAO.getWorkspaceProjectIDs(
                 queryParameters.getWorkspaceName(), currentLoginUserInfo);
@@ -1317,7 +1318,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         projectIds.addAll(workspaceProjectIDs);
       }
 
-      if (accessibleExperimentRunIds.isEmpty() && projectIds.isEmpty()) {
+      if (accessibleExperimentRunIds.isEmpty()
+          && projectIds.isEmpty()
+          && queryParameters.getExperimentId().isEmpty()) {
         String errorMessage =
             "Access is denied. Accessible projects not found for given ExperimentRun IDs : "
                 + accessibleExperimentRunIds;
