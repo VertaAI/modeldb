@@ -94,8 +94,10 @@ public class S3Service implements ArtifactStoreService {
         new GeneratePresignedUrlRequest(bucketName, s3Key)
             .withMethod(reqMethod)
             .withExpiration(expiration);
-    request.addRequestParameter("partNumber", String.valueOf(partNumber));
-    request.addRequestParameter("uploadId", uploadId);
+    if (partNumber != 0) {
+      request.addRequestParameter("partNumber", String.valueOf(partNumber));
+      request.addRequestParameter("uploadId", uploadId);
+    }
 
     return s3Client.generatePresignedUrl(request).toString();
   }
