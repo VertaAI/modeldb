@@ -72,7 +72,7 @@ class Client(conn: ClientConnection) {
         clientSet.versioningService.GetRepository(
           id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
           id_named_id_name = URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"),
-          id_repo_id = BigInt("0") // dummy values
+          id_repo_id = BigInt("13212312") // dummy values
         )
         .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
       },
@@ -90,7 +90,7 @@ class Client(conn: ClientConnection) {
   }
 
   // TODO: implement getting personal workspace functionality.
-  /** Get the user's personal workspace 
+  /** Get the user's personal workspace
    */
   private def getPersonalWorkspace()(implicit ec: ExecutionContext): String = {
     "personal"
@@ -118,8 +118,8 @@ class Client(conn: ClientConnection) {
   // TODO: figure out what to do with extraneous parameters
   def getRepository(id: String)(implicit ec: ExecutionContext) = {
     clientSet.versioningService.GetRepository2(
-      id_named_id_workspace_name = "$", // dummy values
-      id_named_id_name = "$", // dummy values
+      id_named_id_workspace_name = getPersonalWorkspace(), // dummy values
+      id_named_id_name = "", // dummy values
       id_repo_id = BigInt(id)
     )
     .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))

@@ -27,7 +27,7 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
   // }
 
   /** Get the id of repository
-  */
+   */
   private def getId(): BigInt = {
     repo.id match {
       case Some(v) => v

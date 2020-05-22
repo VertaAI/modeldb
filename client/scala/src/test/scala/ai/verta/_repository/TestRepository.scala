@@ -21,4 +21,26 @@ class TestRepository extends FunSuite {
     }
   }
 
+
+  test("get repo by id (not exist)") {
+    val client = new Client(ClientConnection.fromEnvironment())
+
+    try {
+      assert(client.getRepository("124112413").isInstanceOf[Failure[HttpException]])
+    } finally {
+      client.close()
+    }
+  }
+
+
+  test("get repo by id") {
+    val client = new Client(ClientConnection.fromEnvironment())
+
+    try {
+      assert(client.getRepository("3").isInstanceOf[Success[Repository]])
+    } finally {
+      client.close()
+    }
+  }
+
 }
