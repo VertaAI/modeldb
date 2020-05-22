@@ -63,9 +63,9 @@ class Client(conn: ClientConnection) {
   }
 
   /** Get the repository by name (and workspace). If not exist, create new repository
-  * @param name name of the repository
-  * @param workspace name of the workspace. If not provided, personal workspace will be used.
-  */
+   * @param name Name of the Repository
+   * @param workspace Workspace under which the Repository with name name exists. If not provided, the current user’s personal workspace will be used.
+   */
   def getOrCreateRepository(name: String, workspace: String = null)(implicit ec: ExecutionContext) = {
     GetOrCreateEntity.getOrCreate[Repository](
       get = () => {
@@ -90,7 +90,9 @@ class Client(conn: ClientConnection) {
   }
 
   // TODO: implement getting personal workspace functionality.
-  def getPersonalWorkspace()(implicit ec: ExecutionContext): String = {
+  /** Get the user's personal workspace 
+   */
+  private def getPersonalWorkspace()(implicit ec: ExecutionContext): String = {
     "personal"
     // val response = clientSet.UACService.getUser(
     //   email = conn.auth.email,
@@ -111,12 +113,15 @@ class Client(conn: ClientConnection) {
     // return ret
   }
 
-  // def getRepository(id: String)(implicit ec: ExecutionContext) = {
-  //   clientSet.versioningService.GetRepository2(
-  //     id_named_id_workspace_name = "", // dummy values
-  //     id_named_id_name = "", // dummy values
-  //     id_repo_id = BigInt(id)
-  //   )
-  //   .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
-  // }
+  // Doesn't work yet; GetRepository2 requires workspace name and repo name
+  // (it probably shouldn't)
+  // TODO: figure out what to do with extraneous parameters
+  def getRepository(id: String)(implicit ec: ExecutionContext) = {
+    clientSet.versioningService.GetRepository2(
+      id_named_id_workspace_name = "$", // dummy values
+      id_named_id_name = "$", // dummy values
+      id_repo_id = BigInt(id)
+    )
+    .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+  }
 }
