@@ -1,6 +1,5 @@
 package ai.verta.modeldb.versioning;
 
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -353,7 +352,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               ModelDBServiceResourceTypes.REPOSITORY,
               repositoryEntity
                   .getRepository_visibility()
-                  .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
+                  .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC_VALUE),
               GLOBAL_SHARING);
       if (!repoOrgWorkspaceRoleBindings.isEmpty()) {
         roleBindingNames.addAll(repoOrgWorkspaceRoleBindings);
