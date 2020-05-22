@@ -1,6 +1,7 @@
 package ai.verta.client
 
 // TODO: add Scaladoc on top of methods
+// TODO: write tests for getOrCreateRepository and getRepository
 
 import ai.verta.client.entities.{Experiment, ExperimentRun, GetOrCreateEntity, Project}
 import ai.verta._repository.Repository
@@ -61,44 +62,28 @@ class Client(conn: ClientConnection) {
       }))
   }
 
-  // TODO: implement getRepository
-  // TODO: write tests for them
   /**
   */
-  def getOrCreateRepository(name: String, workspace: String = null, id: String = null)(implicit ec: ExecutionContext) = {
-    if ((name == null && id == null) || (name != null && id != null))
-      throw new IllegalArgumentException("Must provide either name or id only")
-
-    val get_fn = if (name == null) () => {
-      clientSet.versioningService.GetRepository2(
-        id_named_id_workspace_name = "",
-        id_named_id_name = "",
-        id_repo_id = BigInt(id)
-      )
-      .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
-    } else () => {
-      clientSet.versioningService.GetRepository(
-        id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
-        id_named_id_name = URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"),
-        id_repo_id = BigInt("0")
-      )
-      .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
-    }
-
-    val create_fn = () => {
-      clientSet.versioningService.CreateRepository(
-        id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
-        body = VersioningRepository(
-          name = Some(name),
-          workspace_id = Some(workspace)
-        )
-      )
-      .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
-    }
-
+  def getOrCreateRepository(name: String, workspace: String = null)(implicit ec: ExecutionContext) = {
     GetOrCreateEntity.getOrCreate[Repository](
-      get = get_fn,
-      create = create_fn
+      get = () => {
+        clientSet.versioningService.GetRepository(
+          id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
+          id_named_id_name = URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"),
+          id_repo_id = BigInt("0") // dummy values
+        )
+        .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+      },
+      create = () => {
+        clientSet.versioningService.CreateRepository(
+          id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
+          body = VersioningRepository(
+            name = Some(name),
+            workspace_id = Some(workspace) // call getPersonalWorkspace for this?
+          )
+        )
+        .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+      }
     )
   }
 
@@ -124,7 +109,12 @@ class Client(conn: ClientConnection) {
     // return ret
   }
 
-  // def getRepository(id: String)(implicit ec: ExecutionContext) = {
-  //   clientSet.versioningService.get
-  // }
+  def getRepository(id: String)(implicit ec: ExecutionContext) = {
+    clientSet.versioningService.GetRepository2(
+      id_named_id_workspace_name = "", // dummy values
+      id_named_id_name = "", // dummy values
+      id_repo_id = BigInt(id)
+    )
+    .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+  }
 }
