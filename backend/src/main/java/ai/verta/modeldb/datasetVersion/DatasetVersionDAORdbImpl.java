@@ -66,7 +66,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(" = false ")
           .toString();
   private static final String CHECK_DATASET_VERSION_EXISTS_BY_ID_HQL =
-      new StringBuilder("Select count(*) From DatasetVersionEntity dsv where ")
+      new StringBuilder("Select count(dsv." + ModelDBConstants.ID + ") From DatasetVersionEntity dsv where ")
           .append(" dsv." + ModelDBConstants.ID + " = :datasetVersionId ")
           .append(" AND dsv." + ModelDBConstants.DELETED + " = false ")
           .toString();
