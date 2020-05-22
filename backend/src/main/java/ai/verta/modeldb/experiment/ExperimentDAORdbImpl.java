@@ -84,7 +84,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           .append(" = :experimentId AND attr.field_type = :fieldType")
           .toString();
   private static final String EXPERIMENT_BY_BATCH_IDS_QUERY =
-      "From ExperimentEntity ex where ex.id IN (:ids) AND ex.deleted = false";
+      "From ExperimentEntity ex where ex.id IN (:ids) AND ex." + ModelDBConstants.DELETED + " = false";
   private static final String DELETE_TAGS_PREFIX_QUERY =
       new StringBuffer("delete from TagsMapping tm WHERE tm.experimentEntity.")
           .append(ModelDBConstants.ID)
@@ -584,7 +584,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           stringQueryBuilder.append(" AND ");
         }
       }
-      Query query = session.createQuery(stringQueryBuilder.toString() + " AND ee.deleted = false ");
+      Query query = session.createQuery(stringQueryBuilder.toString() + " AND ee." + ModelDBConstants.DELETED + " = false ");
       for (Entry<String, Object> paramEntry : paramMap.entrySet()) {
         query.setParameter(paramEntry.getKey(), paramEntry.getValue());
       }

@@ -118,7 +118,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String GET_EXP_RUN_BY_IDS_HQL =
-      "From ExperimentRunEntity exr where exr.id IN (:ids) AND exr.deleted = false ";
+      "From ExperimentRunEntity exr where exr.id IN (:ids) AND exr." + ModelDBConstants.DELETED + " = false ";
   private static final String DELETE_ALL_TAGS_HQL =
       new StringBuilder("delete from TagsMapping tm WHERE tm.experimentRunEntity.")
           .append(ModelDBConstants.ID)
@@ -1720,7 +1720,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           stringQueryBuilder.append(" AND ");
         }
       }
-      Query query = session.createQuery(stringQueryBuilder.toString() + " AND er.deleted = false ");
+      Query query = session.createQuery(stringQueryBuilder.toString() + " AND er." + ModelDBConstants.DELETED + " = false ");
       for (Map.Entry<String, Object> paramEntry : paramMap.entrySet()) {
         query.setParameter(paramEntry.getKey(), paramEntry.getValue());
       }

@@ -73,7 +73,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   private static final String DATASET_VERSION_BY_DATA_SET_IDS_QUERY =
       "From DatasetVersionEntity ds where ds.dataset_id IN (:datasetIds) ";
   private static final String DATASET_VERSION_BY_IDS_QUERY =
-      "From DatasetVersionEntity ds where ds.id IN (:ids) AND ds.deleted = false ";
+      "From DatasetVersionEntity ds where ds.id IN (:ids) AND ds." + ModelDBConstants.DELETED + " = false ";
   private static final String DELETE_DATASET_VERSION_QUERY_PREFIX =
       new StringBuilder("delete from TagsMapping tm WHERE ")
           .append(" tm.datasetVersionEntity." + ModelDBConstants.ID + " = :datasetVersionId ")

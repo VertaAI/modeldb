@@ -65,7 +65,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   // Queries
   private static final String GET_DATASET_BY_IDS_QUERY =
-      "From DatasetEntity ds where ds.id IN (:ids) AND ds.deleted = false ";
+      "From DatasetEntity ds where ds.id IN (:ids) AND ds." + ModelDBConstants.DELETED + " = false ";
   private static final String GET_DATASET_ATTRIBUTES_QUERY =
       new StringBuilder("From AttributeEntity attr where attr.")
           .append(ModelDBConstants.KEY)
