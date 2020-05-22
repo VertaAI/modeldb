@@ -66,12 +66,20 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(ModelDBConstants.DATASET_ID)
           .append(" = :datasetId AND dsv.")
           .append(ModelDBConstants.VERSION)
-          .append(" =:version")
+          .append(" =:version ")
+          .append(" AND dsv.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = false ")
+          .toString();
+  private static final String CHECK_DATASET_VERSION_EXISTS_BY_ID_HQL =
+      new StringBuilder("Select count(dsv." + ModelDBConstants.ID + ") From DatasetVersionEntity dsv where ")
+          .append(" dsv." + ModelDBConstants.ID + " = :datasetVersionId ")
+          .append(" AND dsv." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String DATASET_VERSION_BY_DATA_SET_IDS_QUERY =
       "From DatasetVersionEntity ds where ds.dataset_id IN (:datasetIds) ";
   private static final String DATASET_VERSION_BY_IDS_QUERY =
-      "From DatasetVersionEntity ds where ds.id IN (:ids)";
+      "From DatasetVersionEntity ds where ds.id IN (:ids) AND ds." + ModelDBConstants.DELETED + " = false ";
   private static final String DELETE_DATASET_VERSION_QUERY_PREFIX =
       new StringBuilder("delete from TagsMapping tm WHERE ")
           .append(" tm.datasetVersionEntity." + ModelDBConstants.ID + " = :datasetVersionId ")
@@ -249,7 +257,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
-      if (datasetVersionObj == null) {
+      if (datasetVersionObj == null || datasetVersionObj.getDeleted()) {
         LOGGER.warn(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
         Status status =
             Status.newBuilder()
@@ -455,6 +463,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           return datasetVersionDTO;
         }
       }
+
+      finalPredicatesList.add(
+          builder.equal(datasetVersionRoot.get(ModelDBConstants.DELETED), false));
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {
@@ -787,8 +798,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public boolean isDatasetVersionExists(Session session, String datasetVersionId) {
-    DatasetVersionEntity datasetVersionEntity =
-        session.get(DatasetVersionEntity.class, datasetVersionId);
-    return datasetVersionEntity != null;
+    Query query = session.createQuery(CHECK_DATASET_VERSION_EXISTS_BY_ID_HQL);
+    query.setParameter("datasetVersionId", datasetVersionId);
+    Long count = (Long) query.uniqueResult();
+    return count > 0;
   }
 }

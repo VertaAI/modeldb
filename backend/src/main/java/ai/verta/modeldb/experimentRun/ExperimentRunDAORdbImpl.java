@@ -110,13 +110,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append(" ere." + ModelDBConstants.NAME + " = :experimentRunName ")
           .append(" AND ere." + ModelDBConstants.PROJECT_ID + " = :projectId ")
           .append(" AND ere." + ModelDBConstants.EXPERIMENT_ID + " = :experimentId ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String CHECK_EXP_RUN_EXISTS_AT_UPDATE_HQL =
       new StringBuilder("Select count(*) From ExperimentRunEntity ere where ")
           .append(" ere." + ModelDBConstants.ID + " = :experimentRunId ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String GET_EXP_RUN_BY_IDS_HQL =
-      "From ExperimentRunEntity exr where exr.id IN (:ids)";
+      "From ExperimentRunEntity exr where exr.id IN (:ids) AND exr." + ModelDBConstants.DELETED + " = false ";
   private static final String DELETE_ALL_TAGS_HQL =
       new StringBuilder("delete from TagsMapping tm WHERE tm.experimentRunEntity.")
           .append(ModelDBConstants.ID)
@@ -501,9 +503,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public boolean isExperimentRunExists(Session session, String experimentRunId) {
-    ExperimentRunEntity experimentRunEntity =
-        session.get(ExperimentRunEntity.class, experimentRunId);
-    return experimentRunEntity != null;
+    Query query = session.createQuery(CHECK_EXP_RUN_EXISTS_AT_UPDATE_HQL);
+    query.setParameter("experimentRunId", experimentRunId);
+    Long count = (Long) query.uniqueResult();
+    return count > 0;
   }
 
   @Override
@@ -1280,6 +1283,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
+      finalPredicatesList.add(
+          builder.equal(experimentRunRoot.get(ModelDBConstants.DELETED), false));
+
       Order[] orderBy =
           RdbmsUtils.getOrderArrBasedOnSortKey(
               queryParameters.getSortKey(),
@@ -1719,7 +1725,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           stringQueryBuilder.append(" AND ");
         }
       }
-      Query query = session.createQuery(stringQueryBuilder.toString());
+      Query query = session.createQuery(stringQueryBuilder.toString() + " AND er." + ModelDBConstants.DELETED + " = false ");
       for (Map.Entry<String, Object> paramEntry : paramMap.entrySet()) {
         query.setParameter(paramEntry.getKey(), paramEntry.getValue());
       }
