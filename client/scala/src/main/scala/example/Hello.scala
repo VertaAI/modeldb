@@ -10,6 +10,7 @@ object Hello extends App {
 
   val client = new Client(ClientConnection.fromEnvironment())
   try {
+    println(client.getOrCreateRepository("New Repo"))
     println(client.getOrCreateProject("scala test")
       .flatMap(_.getOrCreateExperiment("experiment"))
       .flatMap(_.getOrCreateExperimentRun())
