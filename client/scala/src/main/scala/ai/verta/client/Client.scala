@@ -62,7 +62,9 @@ class Client(conn: ClientConnection) {
       }))
   }
 
-  /**
+  /** Get the repository by name (and workspace). If not exist, create new repository
+  * @param name name of the repository
+  * @param workspace name of the workspace. If not provided, personal workspace will be used.
   */
   def getOrCreateRepository(name: String, workspace: String = null)(implicit ec: ExecutionContext) = {
     GetOrCreateEntity.getOrCreate[Repository](
@@ -109,12 +111,12 @@ class Client(conn: ClientConnection) {
     // return ret
   }
 
-  def getRepository(id: String)(implicit ec: ExecutionContext) = {
-    clientSet.versioningService.GetRepository2(
-      id_named_id_workspace_name = "", // dummy values
-      id_named_id_name = "", // dummy values
-      id_repo_id = BigInt(id)
-    )
-    .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
-  }
+  // def getRepository(id: String)(implicit ec: ExecutionContext) = {
+  //   clientSet.versioningService.GetRepository2(
+  //     id_named_id_workspace_name = "", // dummy values
+  //     id_named_id_name = "", // dummy values
+  //     id_repo_id = BigInt(id)
+  //   )
+  //   .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+  // }
 }
