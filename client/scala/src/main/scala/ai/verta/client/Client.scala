@@ -11,6 +11,8 @@ import ai.verta.swagger.client.{ClientSet, HttpClient}
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
+import java.net.URLEncoder
+
 class Client(conn: ClientConnection) {
   val httpClient = new HttpClient(conn.host, Map(
     "Grpc-Metadata-email" -> conn.auth.email,
@@ -63,38 +65,63 @@ class Client(conn: ClientConnection) {
   // TODO: write tests for them
   /**
   */
-  def getOrCreateRepository(name: String, workspace: String = null, id: String = "0")(implicit ec: ExecutionContext) = {
-    // TODO: handle the case when workspace and/or id are null
+  def getOrCreateRepository(name: String, workspace: String = null, id: String = null)(implicit ec: ExecutionContext) = {
+    if ((name == null && id == null) || (name != null && id != null))
+      throw new IllegalArgumentException("Must provide either name or id only")
 
-    // if (workspace == null) {
-    //   workspace = "personal workspace"
-    // }
+    val get_fn = if (name == null) () => {
+      clientSet.versioningService.GetRepository2(
+        id_named_id_workspace_name = "",
+        id_named_id_name = "",
+        id_repo_id = BigInt(id)
+      )
+      .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+    } else () => {
+      clientSet.versioningService.GetRepository(
+        id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
+        id_named_id_name = URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"),
+        id_repo_id = BigInt("0")
+      )
+      .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+    }
+
+    val create_fn = () => {
+      clientSet.versioningService.CreateRepository(
+        id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
+        body = VersioningRepository(
+          name = Some(name),
+          workspace_id = Some(workspace)
+        )
+      )
+      .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+    }
 
     GetOrCreateEntity.getOrCreate[Repository](
-      get = () => {
-        clientSet.versioningService.GetRepository(
-          id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
-          id_named_id_name = name,
-          id_repo_id = BigInt(id)
-        )
-        .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
-      },
-      create = () => {
-        clientSet.versioningService.CreateRepository(
-          id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
-          body = VersioningRepository(
-            name = Some(name),
-            workspace_id = Some(workspace)
-          )
-        )
-        .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
-      }
+      get = get_fn,
+      create = create_fn
     )
   }
 
   // TODO: implement getting personal workspace functionality.
-  def getPersonalWorkspace() = {
+  def getPersonalWorkspace()(implicit ec: ExecutionContext): String = {
     "personal"
+    // val response = clientSet.UACService.getUser(
+    //   email = conn.auth.email,
+    //   user_id = "abc",
+    //   username = "abc"
+    // )
+    //
+    // val ret = response match {
+    //   case Success(r) => r.verta_info.map(_.username) match {
+    //     case Some(Some(username)) => username
+    //     case _ => "personal"
+    //   }
+    //   case _ => "personal"
+    // }
+    //
+    // println(ret)
+    //
+    // return ret
   }
 
   // def getRepository(id: String)(implicit ec: ExecutionContext) = {
