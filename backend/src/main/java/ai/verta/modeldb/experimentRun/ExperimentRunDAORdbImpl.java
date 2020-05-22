@@ -1285,7 +1285,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   ModelDBActionEnum.ModelDBServiceActions.READ);
           accessibleExperimentRunIds.addAll(accessibleExperimentRunId);
           // Validate if current user has access to the entity or not where predicate key has an id
-          RdbmsUtils.validateEntityIdInPredicates(
+          RdbmsUtils.validatePredicates(
               ModelDBConstants.EXPERIMENT_RUNS, accessibleExperimentRunIds, predicate, roleService);
         }
       }

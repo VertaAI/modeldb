@@ -832,7 +832,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
         for (KeyValueQuery predicate : request.getPredicatesList()) {
           // Validate if current user has access to the entity or not where predicate key has an id
-          RdbmsUtils.validateEntityIdInPredicates(
+          RdbmsUtils.validatePredicates(
               ModelDBConstants.REPOSITORY, accessibleResourceIds, predicate, roleService);
         }
 

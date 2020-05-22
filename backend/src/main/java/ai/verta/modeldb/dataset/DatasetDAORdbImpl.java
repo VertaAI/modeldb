@@ -408,7 +408,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       List<KeyValueQuery> predicates = new ArrayList<>(queryParameters.getPredicatesList());
       for (KeyValueQuery predicate : predicates) {
         // Validate if current user has access to the entity or not where predicate key has an id
-        RdbmsUtils.validateEntityIdInPredicates(
+        RdbmsUtils.validatePredicates(
             ModelDBConstants.DATASETS, accessibleDatasetIds, predicate, roleService);
       }
 

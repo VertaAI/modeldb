@@ -191,13 +191,13 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public Boolean deleteDatasetVersions(List<String> datasetVersionIds)
       throws InvalidProtocolBufferException {
     List<String> accessibleDatasetVersionIds =
-        getAccessibleDatasetVersionIDs(datasetVersionIds, ModelDBServiceActions.UPDATE);
+        getAccessibleDatasetVersionIDs(datasetVersionIds, ModelDBServiceActions.DELETE);
     if (accessibleDatasetVersionIds.isEmpty()) {
       Status statusMessage =
           Status.newBuilder()
               .setCode(Code.PERMISSION_DENIED_VALUE)
               .setMessage(
-                  ModelDBMessages.ACCESS_IS_DENIDE_DATASET_VERSION_ENTITIES_MSG + datasetVersionIds)
+                  ModelDBMessages.ACCESS_IS_DENIED_DATASET_VERSION_ENTITIES_MSG + datasetVersionIds)
               .build();
       throw StatusProto.toStatusRuntimeException(statusMessage);
     }
@@ -382,8 +382,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
                   Collections.singletonList(predicate.getValue().getStringValue()),
                   ModelDBActionEnum.ModelDBServiceActions.READ);
           accessibleDatasetVersionIds.addAll(accessibleDatasetVersionId);
-          // Validate if current user has access to the entity or not where predicate key has an id
-          RdbmsUtils.validateEntityIdInPredicates(
+          RdbmsUtils.validatePredicates(
               ModelDBConstants.DATASETS_VERSIONS,
               accessibleDatasetVersionIds,
               predicate,
