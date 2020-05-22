@@ -2,6 +2,7 @@ package ai.verta._repository
 
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningRepository
+import ai.verta.client.getPersonalWorkspace
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
@@ -13,23 +14,33 @@ import scala.util.{Failure, Success, Try}
 class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
   // TODO: implement get commit
 
-  /** Get commit by commit sha
-  * @param id sha id of the commit
+  /** Get commit by its SHA id
+  * @param id SHA ID of the commit
+  * @return specified commit
   */
-  // def getCommitById(val id: String)(implicit ec: ExecutionContext) {
-  //   clientSet.versioningService.GetCommit2(
-  //     repository_id_repo_id = getId(),
-  //     commit_sha = id,
-  //     repository_id_named_id_name = "", // dummy value
-  //     repository_id_named_id_workspace_name = "" // dummy value
-  //   )
-  //   .map(r => if r.commit.isEmpty null else new Commit(clientSet, r.commit.get))
-  // }
+  def getCommitById(id: String)(implicit ec: ExecutionContext): Try[Commit] = {
+    clientSet.versioningService.GetCommit2(
+      repository_id_repo_id = getId(),
+      commit_sha = id,
+      repository_id_named_id_name = getName(),
+      repository_id_named_id_workspace_name = getPersonalWorkspace()
+    )
+    .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, r.commit.get))
+  }
 
   /** Get the id of repository
    */
   private def getId(): BigInt = {
     repo.id match {
+      case Some(v) => v
+      case _ => null
+    }
+  }
+
+  /** Get the name of repository
+   */
+  private def getName(): String = {
+    repo.name match {
       case Some(v) => v
       case _ => null
     }

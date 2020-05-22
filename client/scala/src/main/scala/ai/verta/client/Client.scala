@@ -89,34 +89,10 @@ class Client(conn: ClientConnection) {
     )
   }
 
-  // TODO: implement getting personal workspace functionality.
-  /** Get the user's personal workspace
-   */
-  private def getPersonalWorkspace()(implicit ec: ExecutionContext): String = {
-    "personal"
-    // val response = clientSet.UACService.getUser(
-    //   email = conn.auth.email,
-    //   user_id = "abc",
-    //   username = "abc"
-    // )
-    //
-    // val ret = response match {
-    //   case Success(r) => r.verta_info.map(_.username) match {
-    //     case Some(Some(username)) => username
-    //     case _ => "personal"
-    //   }
-    //   case _ => "personal"
-    // }
-    //
-    // println(ret)
-    //
-    // return ret
-  }
-
   // Doesn't work yet; GetRepository2 requires workspace name and repo name
   // (it probably shouldn't)
   // TODO: figure out what to do with extraneous parameters
-  def getRepository(id: String)(implicit ec: ExecutionContext) = {
+  def getRepository(id: String)(implicit ec: ExecutionContext): Try[Repository] = {
     clientSet.versioningService.GetRepository2(
       id_named_id_workspace_name = getPersonalWorkspace(), // dummy values
       id_named_id_name = "", // dummy values

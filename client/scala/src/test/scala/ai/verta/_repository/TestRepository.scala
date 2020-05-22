@@ -21,7 +21,6 @@ class TestRepository extends FunSuite {
     }
   }
 
-
   test("get repo by id (not exist)") {
     val client = new Client(ClientConnection.fromEnvironment())
 
@@ -32,12 +31,27 @@ class TestRepository extends FunSuite {
     }
   }
 
-
   test("get repo by id") {
     val client = new Client(ClientConnection.fromEnvironment())
 
     try {
       assert(client.getRepository("3").isInstanceOf[Success[Repository]])
+    } finally {
+      client.close()
+    }
+  }
+
+  test("get commit by id") {
+    val client = new Client(ClientConnection.fromEnvironment())
+
+    try {
+        assert(
+          client.getOrCreateRepository("New Repo")
+          .flatMap(_.getCommitById("f502d423d86df839bd5d1aba2ee04dcc52d4292980e89573faef649fdd643b03"))
+          .isInstanceOf[Success[Commit]]
+        )
+      // assert(client.getRepository("3").isInstanceOf[Success[Repository]])
+      println
     } finally {
       client.close()
     }
