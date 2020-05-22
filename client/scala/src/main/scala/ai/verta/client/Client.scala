@@ -3,7 +3,7 @@ package ai.verta.client
 // TODO: add Scaladoc on top of methods
 
 import ai.verta.client.entities.{Experiment, ExperimentRun, GetOrCreateEntity, Project}
-import ai.verta.client.repository.Repository
+import ai.verta._repository.Repository
 import ai.verta.swagger._public.modeldb.model.ModeldbCreateProject
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningRepository
 import ai.verta.swagger.client.{ClientSet, HttpClient}
