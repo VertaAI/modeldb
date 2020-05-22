@@ -317,13 +317,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
       session.getTransaction().commit();
       if (create) {
-        createRolesForRepository(request, userInfo, repository);
+        createRoleBindingsForRepository(request, userInfo, repository);
       }
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     }
   }
 
-  private void createRolesForRepository(
+  private void createRoleBindingsForRepository(
       SetRepository request, UserInfo userInfo, RepositoryEntity repository) {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
     roleService.createRoleBinding(
@@ -381,6 +381,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
       // Get self allowed resources id where user has delete permission
       List<String> allowedRepositoryIds =
@@ -397,12 +398,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       ListBranchesRequest.Response listBranchesResponse =
           listBranches(
               ListBranchesRequest.newBuilder().setRepositoryId(request.getRepositoryId()).build());
-
-      CommitPaginationDTO commitPaginationDTO =
-          commitDAO.fetchCommitEntityList(
-              session, ListCommitsRequest.newBuilder().build(), repository.getId());
-
-      session.beginTransaction();
       if (!listBranchesResponse.getBranchesList().isEmpty()) {
         String deleteBranchesHQL =
             "DELETE FROM "
@@ -414,6 +409,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         deleteBranchQuery.executeUpdate();
       }
 
+      CommitPaginationDTO commitPaginationDTO =
+          commitDAO.fetchCommitEntityList(
+              session, ListCommitsRequest.newBuilder().build(), repository.getId());
       commitPaginationDTO
           .getCommitEntities()
           .forEach(
@@ -429,10 +427,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               });
       // Delete all VersionedInputs for repository ID
       experimentRunDAO.deleteLogVersionedInputs(session, repository.getId(), null);
-      session.delete(repository);
-      session.getTransaction().commit();
 
       deleteRoleBindingsOfAccessibleResources(Collections.singletonList(repository));
+      session.delete(repository);
+      session.getTransaction().commit();
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     }
   }
@@ -708,15 +706,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.delete(branchEntity);
       session.getTransaction().commit();
       return DeleteBranchRequest.Response.newBuilder().build();
-    }
-  }
-
-  @Override
-  public void deleteBranchByCommit(Long repoId, String commitHash) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
-      deleteBranchByCommit(session, repoId, commitHash);
-      session.getTransaction().commit();
     }
   }
 

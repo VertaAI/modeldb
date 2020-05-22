@@ -202,7 +202,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   @Override
   public Project insertProject(Project project, UserInfo userInfo)
       throws InvalidProtocolBufferException {
-    createRolesForProject(project, userInfo);
+    createRoleBindingsForProject(project, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       checkIfEntityAlreadyExists(session, project);
@@ -215,7 +215,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
   }
 
-  private void createRolesForProject(Project project, UserInfo userInfo) {
+  private void createRoleBindingsForProject(Project project, UserInfo userInfo) {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_OWNER, null);
     roleService.createRoleBinding(
         ownerRole,
