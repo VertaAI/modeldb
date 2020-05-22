@@ -185,6 +185,9 @@ public class ExperimentRunEntity {
   private List<HyperparameterElementMappingEntity> hyperparameter_element_mappings =
       new ArrayList<>();
 
+  @Column(name = "deleted")
+  private Boolean deleted = false;
+
   @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 
   @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
@@ -426,6 +429,14 @@ public class ExperimentRunEntity {
   public void setHyperparameter_element_mappings(
       List<HyperparameterElementMappingEntity> hyperparameter_element_mappings) {
     this.hyperparameter_element_mappings = hyperparameter_element_mappings;
+  }
+
+  public Boolean getDeleted() {
+    return deleted;
+  }
+
+  public void setDeleted(Boolean deleted) {
+    this.deleted = deleted;
   }
 
   public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {

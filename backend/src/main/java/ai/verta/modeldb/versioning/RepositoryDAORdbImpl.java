@@ -7,7 +7,6 @@ import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
-import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
@@ -44,12 +43,11 @@ import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 public class RepositoryDAORdbImpl implements RepositoryDAO {
 
-  private static final String GET_REPOSITORY_BY_IDS_QUERY =
-      "From RepositoryEntity ent where ent.id IN (:ids)";
   private static final Logger LOGGER = LogManager.getLogger(RepositoryDAORdbImpl.class);
   private static final String GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
   private final AuthService authService;
@@ -118,6 +116,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(" br where br.id.")
           .append(ModelDBConstants.REPOSITORY_ID)
           .append(" = :repoId ")
+          .toString();
+  private static final String DELETED_STATUS_REPOSITORY_QUERY_STRING =
+      new StringBuilder("UPDATE ")
+          .append(RepositoryEntity.class.getSimpleName())
+          .append(" rp ")
+          .append("SET rp.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE rp.")
+          .append(ModelDBConstants.ID)
+          .append(" IN (:repoIds)")
           .toString();
 
   public RepositoryDAORdbImpl(AuthService authService, RoleService roleService) {
@@ -344,43 +353,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         GLOBAL_SHARING);
   }
 
-  private void deleteRoleBindingsOfAccessibleResources(List<RepositoryEntity> allowedResources) {
-    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
-    for (RepositoryEntity repositoryEntity : allowedResources) {
-
-      // Delete workspace based roleBindings
-      List<String> repoOrgWorkspaceRoleBindings =
-          roleService.getWorkspaceRoleBindings(
-              repositoryEntity.getWorkspace_id(),
-              WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
-              String.valueOf(repositoryEntity.getId()),
-              ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-              ModelDBServiceResourceTypes.REPOSITORY,
-              repositoryEntity
-                  .getRepository_visibility()
-                  .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC_VALUE),
-              GLOBAL_SHARING);
-      if (!repoOrgWorkspaceRoleBindings.isEmpty()) {
-        roleBindingNames.addAll(repoOrgWorkspaceRoleBindings);
-      }
-    }
-    // Remove all repositoryEntity collaborators
-    roleService.deleteAllResources(
-        allowedResources.stream()
-            .map(repositoryEntity -> String.valueOf(repositoryEntity.getId()))
-            .collect(Collectors.toList()),
-        ModelDBServiceResourceTypes.REPOSITORY);
-
-    // Remove all role bindings
-    roleService.deleteRoleBindings(roleBindingNames);
-  }
-
   @Override
   public DeleteRepositoryRequest.Response deleteRepository(
       DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
       // Get self allowed resources id where user has delete permission
       List<String> allowedRepositoryIds =
@@ -394,42 +371,16 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             Code.PERMISSION_DENIED);
       }
 
-      ListBranchesRequest.Response listBranchesResponse =
-          listBranches(
-              ListBranchesRequest.newBuilder().setRepositoryId(request.getRepositoryId()).build());
-      if (!listBranchesResponse.getBranchesList().isEmpty()) {
-        String deleteBranchesHQL =
-            "DELETE FROM "
-                + BranchEntity.class.getSimpleName()
-                + " br where br.id.repository_id = :repositoryId AND br.id.branch IN (:branches)";
-        Query deleteBranchQuery = session.createQuery(deleteBranchesHQL);
-        deleteBranchQuery.setParameter("repositoryId", repository.getId());
-        deleteBranchQuery.setParameterList("branches", listBranchesResponse.getBranchesList());
-        deleteBranchQuery.executeUpdate();
-      }
-
-      CommitPaginationDTO commitPaginationDTO =
-          commitDAO.fetchCommitEntityList(
-              session, ListCommitsRequest.newBuilder().build(), repository.getId());
-      commitPaginationDTO
-          .getCommitEntities()
-          .forEach(
-              commitEntity -> {
-                if (commitEntity.getRepository().contains(repository)) {
-                  commitEntity.getRepository().remove(repository);
-                  if (commitEntity.getRepository().isEmpty()) {
-                    session.delete(commitEntity);
-                  } else {
-                    session.update(commitEntity);
-                  }
-                }
-              });
+      Query deletedRepositoriesQuery = session.createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING);
+      deletedRepositoriesQuery.setParameter("deleted", true);
+      deletedRepositoriesQuery.setParameter("repoIds", allowedRepositoryIds);
+      Transaction transaction = session.beginTransaction();
+      int updatedCount = deletedRepositoriesQuery.executeUpdate();
+      LOGGER.debug(
+          "Mark Repositories as deleted : {}, count : {}", allowedRepositoryIds, updatedCount);
       // Delete all VersionedInputs for repository ID
       experimentRunDAO.deleteLogVersionedInputs(session, repository.getId(), null);
-
-      deleteRoleBindingsOfAccessibleResources(Collections.singletonList(repository));
-      session.delete(repository);
-      session.getTransaction().commit();
+      transaction.commit();
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     }
   }
