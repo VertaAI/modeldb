@@ -7,9 +7,11 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import com.amazonaws.SdkClientException;
+import com.amazonaws.services.s3.model.PartETag;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import java.util.List;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,5 +56,11 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
   @Override
   public Optional<String> initializeMultipart(String s3Key) throws ModelDBException {
     return artifactStoreService.initiateMultipart(s3Key);
+  }
+
+  @Override
+  public void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
+      throws ModelDBException {
+    artifactStoreService.commitMultipart(s3Path, uploadId, partETags);
   }
 }

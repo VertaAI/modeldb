@@ -5,10 +5,16 @@ import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.Artifact;
+import ai.verta.modeldb.ArtifactPart;
 import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitArtifactPart.Response;
+import ai.verta.modeldb.CommitMultipartArtifact;
+import ai.verta.modeldb.CreateJob;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
+import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.GitSnapshot;
 import ai.verta.modeldb.KeyValueQuery;
@@ -28,6 +34,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
+import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.entities.CommentEntity;
@@ -66,6 +73,7 @@ import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelResourceEnum;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
+import com.amazonaws.services.s3.model.PartETag;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -75,6 +83,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -85,6 +94,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -2251,54 +2261,150 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
+  private Optional<ArtifactEntity> getExperimentRunArtifact(
+      Session session, String experimentRunId, String key) {
+    ExperimentRunEntity experimentRunObj = session.get(ExperimentRunEntity.class, experimentRunId);
+    if (experimentRunObj == null) {
+      LOGGER.warn(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.NOT_FOUND_VALUE)
+              .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+    Map<String, List<ArtifactEntity>> artifactEntityMap = experimentRunObj.getArtifactEntityMap();
+
+    List<ArtifactEntity> result =
+        (artifactEntityMap != null && artifactEntityMap.containsKey(ModelDBConstants.ARTIFACTS))
+            ? artifactEntityMap.get(ModelDBConstants.ARTIFACTS)
+            : Collections.emptyList();
+    return result.stream()
+        .filter(artifactEntity -> artifactEntity.getKey().equals(key))
+        .findFirst();
+  }
+
   @Override
   public Entry<String, String> getExperimentRunArtifactsS3PathAndMultipartUploadID(
       String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
-      if (experimentRunObj == null) {
-        LOGGER.warn(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
+      ArtifactEntity artifactEntity = getArtifactEntity(session, experimentRunId, key);
+      return getS3PathAndMultipartUploadId(
+          session, artifactEntity, partNumber != 0, key, initializeMultipart);
+    }
+  }
+
+  public ArtifactEntity getArtifactEntity(Session session, String experimentRunId, String key)
+      throws ModelDBException {
+    Optional<ArtifactEntity> artifactEntityOptional =
+        getExperimentRunArtifact(session, experimentRunId, key);
+    return artifactEntityOptional.orElseThrow(
+        () -> new ModelDBException("Can't find specified artifact", io.grpc.Status.Code.NOT_FOUND));
+  }
+
+  private SimpleEntry<String, String> getS3PathAndMultipartUploadId(
+      Session session,
+      ArtifactEntity artifactEntity,
+      boolean partNumberSpecified,
+      String key,
+      S3KeyFunction initializeMultipart) {
+    String uploadId;
+    if (partNumberSpecified) {
+      uploadId = artifactEntity.getUploadId();
+      try {
+        String message = null;
+        if (uploadId == null) {
+          if (initializeMultipart == null) {
+            message = "Multipart wasn't initialized";
+          } else {
+            uploadId = initializeMultipart.apply(key).orElse(null);
+          }
+        }
+        if (uploadId == null) {
+          message = "Can't initialize multipart upload";
+        }
+        if (message != null) {
+          LOGGER.info(message);
+          throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
+        }
+      } catch (ModelDBException e) {
         Status status =
             Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(e.getMessage())
+                .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
-      Map<String, List<ArtifactEntity>> artifactEntityMap = experimentRunObj.getArtifactEntityMap();
-
-      List<ArtifactEntity> result =
-          (artifactEntityMap != null && artifactEntityMap.containsKey(ModelDBConstants.ARTIFACTS))
-              ? artifactEntityMap.get(ModelDBConstants.ARTIFACTS)
-              : Collections.emptyList();
-      for (ArtifactEntity artifactEntity : result) {
-        if (artifactEntity.getKey().equals(key)) {
-          String uploadId;
-          if (partNumber != 0) {
-            uploadId = artifactEntity.getUploadId();
-            if (uploadId == null) {
-              uploadId = initializeMultipart.apply(key).orElse(null);
-            }
-            if (uploadId == null) {
-              throw new ModelDBException(
-                  "Can't initialize multipart upload", io.grpc.Status.Code.FAILED_PRECONDITION);
-            }
-            if (!Objects.equals(uploadId, artifactEntity.getUploadId())
-                || artifactEntity.isUploadCompleted()) {
-              session.beginTransaction();
-              artifactEntity.setUploadId(uploadId);
-              artifactEntity.setUploadCompleted(false);
-              session.getTransaction().commit();
-            }
-          } else {
-            uploadId = null;
-          }
-          return new AbstractMap.SimpleEntry<>(artifactEntity.getPath(), uploadId);
-        }
+      if (!Objects.equals(uploadId, artifactEntity.getUploadId())
+          || artifactEntity.isUploadCompleted()) {
+        session.beginTransaction();
+        artifactEntity.setUploadId(uploadId);
+        artifactEntity.setUploadCompleted(false);
+        session.getTransaction().commit();
       }
-      return new AbstractMap.SimpleEntry<>(null, null);
+    } else {
+      uploadId = null;
     }
+    return new AbstractMap.SimpleEntry<>(artifactEntity.getPath(), uploadId);
+  }
+
+  @Override
+  public Response commitArtifactPart(CommitArtifactPart request) throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      ArtifactEntity artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
+      ArtifactPart artifactPart = request.getArtifactPart();
+      ArtifactPartEntity artifactPartEntity =
+          new ArtifactPartEntity(
+              artifactEntity, artifactPart.getPartNumber(), artifactPart.getEtag());
+      session.beginTransaction();
+      session.saveOrUpdate(artifactPartEntity);
+      session.getTransaction().commit();
+      return Response.newBuilder().build();
+    }
+  }
+
+  @Override
+  public GetCommittedArtifactParts.Response getCommitedArtifactParts(
+      GetCommittedArtifactParts request) throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Set<ArtifactPartEntity> artifactPartEntities =
+          getArtifactPartEntities(session, request.getId(), request.getKey());
+      GetCommittedArtifactParts.Response.Builder response =
+          GetCommittedArtifactParts.Response.newBuilder();
+      artifactPartEntities.forEach(
+          artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
+      return response.build();
+    }
+  }
+
+  private Set<ArtifactPartEntity> getArtifactPartEntities(
+      Session session, String experimentRunId, String key) throws ModelDBException {
+    ArtifactEntity artifactEntity = getArtifactEntity(session, experimentRunId, key);
+    return artifactEntity.getArtifactPartEntities();
+  }
+
+  @Override
+  public CommitMultipartArtifact.Response commitMultipartArtifact(
+      CommitMultipartArtifact request, CommitMultipartFunction commitMultipartFunction)
+      throws ModelDBException {
+    SimpleEntry<String, String> result;
+    List<PartETag> partETags;
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      ArtifactEntity artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
+      Set<ArtifactPartEntity> artifactPartEntities = artifactEntity.getArtifactPartEntities();
+      partETags =
+          artifactPartEntities.stream()
+              .map(ArtifactPartEntity::toPartETag)
+              .collect(Collectors.toList());
+      session.beginTransaction();
+      artifactEntity.setUploadCompleted(true);
+      artifactPartEntities.forEach(session::delete);
+      session.getTransaction().commit();
+      result = getS3PathAndMultipartUploadId(session, artifactEntity, true, request.getKey(), null);
+    }
+    commitMultipartFunction.apply(result.getKey(), result.getValue(), partETags);
+    return CommitMultipartArtifact.Response.newBuilder().build();
   }
 }

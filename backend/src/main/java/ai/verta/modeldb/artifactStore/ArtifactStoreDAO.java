@@ -3,6 +3,8 @@ package ai.verta.modeldb.artifactStore;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetUrlForArtifact.Response;
 import ai.verta.modeldb.ModelDBException;
+import com.amazonaws.services.s3.model.PartETag;
+import java.util.List;
 import java.util.Optional;
 
 public interface ArtifactStoreDAO {
@@ -12,4 +14,7 @@ public interface ArtifactStoreDAO {
       throws ModelDBException;
 
   Optional<String> initializeMultipart(String s3Path) throws ModelDBException;
+
+  void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
+      throws ModelDBException;
 }
