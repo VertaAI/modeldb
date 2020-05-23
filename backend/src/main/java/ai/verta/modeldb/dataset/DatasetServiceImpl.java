@@ -859,7 +859,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.findDatasetVersions(findDatasetVersions, userInfo);
+          datasetVersionDAO.findDatasetVersions(datasetDAO, findDatasetVersions, userInfo);
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
       if (datasetVersionDTO != null
@@ -952,7 +952,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.findDatasetVersions(findDatasetVersions, userInfo);
+          datasetVersionDAO.findDatasetVersions(datasetDAO, findDatasetVersions, userInfo);
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
       if (datasetVersionDTO != null

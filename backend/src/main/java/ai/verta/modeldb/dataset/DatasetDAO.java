@@ -232,4 +232,7 @@ public interface DatasetDAO {
    */
   Dataset setDatasetWorkspace(String datasetId, WorkspaceDTO workspaceDTO)
       throws InvalidProtocolBufferException;
+
+  List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo)
+      throws InvalidProtocolBufferException;
 }
