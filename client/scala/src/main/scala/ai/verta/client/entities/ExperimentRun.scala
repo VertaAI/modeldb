@@ -19,7 +19,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   def tags()(implicit ec: ExecutionContext) = new Tags(clientSet, ec, this)
 
   override def getTags()(implicit ec: ExecutionContext): Try[List[String]] = {
-    clientSet.experimentRunService.getExperimentRunTags(run.id.get)
+    clientSet.experimentRunService.getExperimentRunTags(run.id)
       .map(r => r.tags.getOrElse(Nil))
   }
 
@@ -56,7 +56,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
 
   def getHyperparameters()(implicit ec: ExecutionContext): Try[Map[String, Any]] = {
     clientSet.experimentRunService.getHyperparameters(
-      id = run.id.get
+      id = run.id
     )
       .flatMap(r => {
         if (r.hyperparameters.isEmpty)
@@ -86,7 +86,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
 
   def getMetrics()(implicit ec: ExecutionContext): Try[Map[String, Any]] = {
     clientSet.experimentRunService.getMetrics(
-      id = run.id.get
+      id = run.id
     )
       .flatMap(r => {
         if (r.metrics.isEmpty)
@@ -116,9 +116,9 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
 
   def getAttributes(keys: List[String] = Nil)(implicit ec: ExecutionContext): Try[Map[String, Any]] = {
     clientSet.experimentRunService.getExperimentRunAttributes(
-      id = run.id.get,
-      attribute_keys = keys,
-      get_all = keys.isEmpty
+      id = run.id,
+      attribute_keys = Some(keys),
+      get_all = Some(keys.isEmpty)
     )
       .flatMap(r => {
         if (r.attributes.isEmpty)
@@ -151,7 +151,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   }
 
   def getObservation(key: String)(implicit ec: ExecutionContext) = {
-    clientSet.experimentRunService.getObservations(id = run.id.get, observation_key = key)
+    clientSet.experimentRunService.getObservations(id = run.id, observation_key = Some(key))
       .map(res => {
         res.observations.map(obs => {
           obs.map(o => {
@@ -165,7 +165,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   }
 
   def getObservations()(implicit ec: ExecutionContext) = {
-    clientSet.experimentRunService.getExperimentRunById(run.id.get)
+    clientSet.experimentRunService.getExperimentRunById(run.id)
       .map(runResp => {
         val observations = runResp.experiment_run.get.observations
         val obsMap = new mutable.HashMap[String, List[(LocalDateTime, Any)]]()
