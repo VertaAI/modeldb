@@ -19,9 +19,7 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
   def getCommitById(id: String)(implicit ec: ExecutionContext): Try[Commit] = {
     clientSet.versioningService.GetCommit2(
       repository_id_repo_id = getId(),
-      commit_sha = id,
-      repository_id_named_id_name = getName(),
-      repository_id_named_id_workspace_name = getPersonalWorkspace()
+      commit_sha = id
     )
     .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get))
   }

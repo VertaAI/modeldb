@@ -18,10 +18,7 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, val commi
   def log()(implicit ec: ExecutionContext): Try[List[Commit]] = {
     clientSet.versioningService.ListCommitsLog4(
       repository_id_repo_id = repo.id.get,
-      commit_sha = commit.commit_sha.get,
-      repository_id_named_id_name = repo.name.get,
-      repository_id_named_id_workspace_name = getPersonalWorkspace(),
-      branch = ""
+      commit_sha = commit.commit_sha.get
     ) // Try[VersioningListCommitsLogRequestResponse]
     .map(r => r.commits) // Try[Option[List[VersioningCommit]]]
     .map(ls => if (ls.isEmpty) null else ls.get.map(c => new Commit(clientSet, repo, c))) // Try[List[Commit]]
