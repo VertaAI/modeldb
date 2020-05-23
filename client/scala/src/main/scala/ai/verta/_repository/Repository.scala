@@ -2,7 +2,7 @@ package ai.verta._repository
 
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningRepository
-import ai.verta.client.getPersonalWorkspace
+import ai.verta.client.{getPersonalWorkspace, urlEncode}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
@@ -32,7 +32,18 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
      clientSet.versioningService.GetBranch2(
        branch = branch,
        repository_id_repo_id = getId()
-       // repository_id_named_id_name = getName(),
+     )
+     .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get))
+   }
+
+   /** Get commit by specified tag
+    *  @param tag tag of commit.
+    *  @return specified commit
+    */
+   def getCommitByTag(tag: String)(implicit ec: ExecutionContext): Try[Commit] = {
+     clientSet.versioningService.GetTag2(
+       tag = urlEncode(tag),
+       repository_id_repo_id = getId()
      )
      .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get))
    }

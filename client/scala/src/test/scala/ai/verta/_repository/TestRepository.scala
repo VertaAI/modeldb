@@ -68,4 +68,19 @@ class TestRepository extends FunSuite {
       client.close()
     }
   }
+
+
+  test("get commit on a tag branch") {
+    val client = new Client(ClientConnection.fromEnvironment())
+
+    try {
+        println(
+          client.getOrCreateRepository("New Repo")
+          .flatMap(_.getCommitByTag("Some Tag"))
+          .isInstanceOf[Success[Commit]]
+        )
+    } finally {
+      client.close()
+    }
+  }
 }
