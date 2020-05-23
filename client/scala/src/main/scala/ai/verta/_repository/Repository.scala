@@ -24,6 +24,19 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
     .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get))
   }
 
+  /** Get commit by specified branch
+   *  @param branch branch of commit. If not passed, then use "master" branch
+   *  @return specified commit
+   */
+   def getCommitByBranch(branch: String = "master")(implicit ec: ExecutionContext): Try[Commit] = {
+     clientSet.versioningService.GetBranch2(
+       branch = branch,
+       repository_id_repo_id = getId()
+       // repository_id_named_id_name = getName(),
+     )
+     .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get))
+   }
+
   /** Get the id of repository
    */
   private def getId(): BigInt = {

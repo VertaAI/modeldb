@@ -55,4 +55,17 @@ class TestRepository extends FunSuite {
     }
   }
 
+  test("get commit on master branch") {
+    val client = new Client(ClientConnection.fromEnvironment())
+
+    try {
+        println(
+          client.getOrCreateRepository("New Repo")
+          .flatMap(_.getCommitByBranch())
+          .isInstanceOf[Success[Commit]]
+        )
+    } finally {
+      client.close()
+    }
+  }
 }
