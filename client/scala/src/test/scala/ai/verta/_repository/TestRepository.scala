@@ -59,7 +59,7 @@ class TestRepository extends FunSuite {
     val client = new Client(ClientConnection.fromEnvironment())
 
     try {
-        println(
+        assert(
           client.getOrCreateRepository("New Repo")
           .flatMap(_.getCommitByBranch())
           .isInstanceOf[Success[Commit]]
@@ -74,9 +74,9 @@ class TestRepository extends FunSuite {
     val client = new Client(ClientConnection.fromEnvironment())
 
     try {
-        println(
+        assert(
           client.getOrCreateRepository("New Repo")
-          .flatMap(_.getCommitByTag("Some Tag"))
+          .flatMap(_.getCommitByTag("Some tag"))
           .isInstanceOf[Success[Commit]]
         )
     } finally {
