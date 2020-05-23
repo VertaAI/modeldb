@@ -12,8 +12,6 @@ import ai.verta.swagger.client.{ClientSet, HttpClient}
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
-import java.net.URLEncoder
-
 class Client(conn: ClientConnection) {
   val httpClient = new HttpClient(conn.host, Map(
     "Grpc-Metadata-email" -> conn.auth.email,
@@ -71,8 +69,7 @@ class Client(conn: ClientConnection) {
       get = () => {
         clientSet.versioningService.GetRepository(
           id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
-          id_named_id_name = URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"),
-          id_repo_id = Some(BigInt("13212312")) // dummy values
+          id_named_id_name = urlEncode(name)
         )
         .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
       },
