@@ -50,8 +50,6 @@ class TestRepository extends FunSuite {
           .flatMap(_.getCommitById("f502d423d86df839bd5d1aba2ee04dcc52d4292980e89573faef649fdd643b03"))
           .isInstanceOf[Success[Commit]]
         )
-      // assert(client.getRepository("3").isInstanceOf[Success[Repository]])
-      println
     } finally {
       client.close()
     }

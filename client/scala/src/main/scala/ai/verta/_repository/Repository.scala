@@ -12,12 +12,10 @@ import scala.util.{Failure, Success, Try}
  *  There should not be a need to instantiate this class directly; please use Client's getOrCreateRepository
  */
 class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
-  // TODO: implement get commit
-
   /** Get commit by its SHA id
-  * @param id SHA ID of the commit
-  * @return specified commit
-  */
+   * @param id SHA ID of the commit
+   * @return specified commit
+   */
   def getCommitById(id: String)(implicit ec: ExecutionContext): Try[Commit] = {
     clientSet.versioningService.GetCommit2(
       repository_id_repo_id = getId(),
@@ -25,7 +23,7 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
       repository_id_named_id_name = getName(),
       repository_id_named_id_workspace_name = getPersonalWorkspace()
     )
-    .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, r.commit.get))
+    .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get))
   }
 
   /** Get the id of repository

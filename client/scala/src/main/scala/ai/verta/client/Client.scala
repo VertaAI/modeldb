@@ -92,9 +92,10 @@ class Client(conn: ClientConnection) {
   // Doesn't work yet; GetRepository2 requires workspace name and repo name
   // (it probably shouldn't)
   // TODO: figure out what to do with extraneous parameters
+  // TODO: add scaladoc for this once implemented
   def getRepository(id: String)(implicit ec: ExecutionContext): Try[Repository] = {
     clientSet.versioningService.GetRepository2(
-      id_named_id_workspace_name = getPersonalWorkspace(), // dummy values
+      id_named_id_workspace_name = getPersonalWorkspace(),
       id_named_id_name = "", // dummy values
       id_repo_id = BigInt(id)
     )
