@@ -1,4 +1,4 @@
-package ai.verta._blobs
+package ai.verta.blobs
 
 import ai.verta.swagger._public.modeldb.versioning.model._
 
@@ -14,7 +14,7 @@ case class Git(
   val versioningGitCodeBlob = VersioningGitCodeBlob(
     branch = branch, hash = hash, is_dirty = isDirty, tag = tag, repo = repo
   )
-  
+
   val versioningBlob = VersioningBlob(
       code = Some(VersioningCodeBlob(git = Some(versioningGitCodeBlob)))
   )

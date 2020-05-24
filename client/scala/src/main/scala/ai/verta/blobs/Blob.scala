@@ -1,4 +1,4 @@
-package ai.verta._blobs
+package ai.verta.blobs
 
 import ai.verta.swagger._public.modeldb.versioning.model._
 
