@@ -392,7 +392,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       Query deletedRepositoriesQuery = session.createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING);
       deletedRepositoriesQuery.setParameter("deleted", true);
-      deletedRepositoriesQuery.setParameter("repoIds", allowedRepositoryIds);
+      deletedRepositoriesQuery.setParameter(
+          "repoIds", allowedRepositoryIds.stream().map(Long::valueOf).collect(Collectors.toList()));
       Transaction transaction = session.beginTransaction();
       int updatedCount = deletedRepositoriesQuery.executeUpdate();
       LOGGER.debug(
