@@ -14,7 +14,7 @@ import scala.annotation.switch
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
  *  TODO: privatize blobs
  *  TODO: clean up blobs retrieval
- *  TODO: write tests for interactions with blobs: load, update, get, save, etc.
+ *  TODO: write tests for interactions with blobs: load, update, get, save, remove etc.
  */
 class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commit: VersioningCommit) {
   var saved = true // whether the commit instance is saved to database
@@ -55,9 +55,9 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commi
    *  @param path location of a blob
    *  @return ModelDB versioning blob
    */
-  def get(path: String)(implicit ec: ExecutionContext): Option[VersioningBlob] = {
+  def get(path: String)(implicit ec: ExecutionContext): Option[Blob] = {
     load_blobs()
-    blobs.get(path)
+    blobs.get(path).map(versioningBlobToBlob)
   }
 
   /** Adds blob to this commit at path
@@ -67,15 +67,18 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commi
    */
   def update[T <: Blob](path: String, blob: T)(implicit ec: ExecutionContext): Unit = {
     load_blobs()
-
-    if (saved) {
-      commit = VersioningCommit(
-        parent_shas = commit.commit_sha.map(List(_))
-      )
-    }
-
     blobs.put(path, blob.versioningBlob)
-    saved = false
+    becomeChild()
+  }
+
+  /** Deletes the blob at path from this commit and return it
+   *  @param path Location of the blob to removed
+   *  @return the blob (if existed at path), or None
+   */
+  def remove(path: String)(implicit ec: ExecutionContext): Option[Blob] = {
+    load_blobs()
+    becomeChild()
+    blobs.remove(path).map(versioningBlobToBlob)
   }
 
   /** Saves this commit to ModelDB
@@ -115,6 +118,20 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commi
         repository_id_repo_id = repo.id.get,
         tag = urlEncode(tag)
       )
+    }
+  }
+
+
+  /*** HELPER METHODS ***/
+
+  /** Become child of current commit (if current commit is saved)
+   */
+  private def becomeChild() = {
+    if (saved) {
+      commit = VersioningCommit(
+        parent_shas = commit.commit_sha.map(List(_))
+      )
+      saved = false
     }
   }
 }
