@@ -105,7 +105,7 @@
         <sql>UPDATE dataset SET workspace = owner where owner is not null</sql>
         <sql>UPDATE dataset SET workspace_type = 2 where owner is not null</sql>
     </changeSet>
-    <changeSet id="11-index-projectname-workspace-workspacetype" author="raviS" failOnError="false">
+<!--     <changeSet id="11-index-projectname-workspace-workspacetype" author="raviS" failOnError="false">
         <createIndex indexName="p_name_wspace_wspace_type"
                      tableName="project" unique="true">
             <column name="name" type="varchar(255)"/>
@@ -118,9 +118,9 @@
             <column name="workspace" type="varchar(255)"/>
             <column name="workspace_type" type="int"/>
         </createIndex>
-    </changeSet>
+    </changeSet> -->
 
-    <changeSet id="11.1-index-projectname-workspace-workspacetype" author="anandJ">
+<!--     <changeSet id="11.1-index-projectname-workspace-workspacetype" author="anandJ">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="p_name_wspace_wspace_type"/>
@@ -146,7 +146,7 @@
             <column name="workspace" type="varchar(255)"/>
             <column name="workspace_type" type="int"/>
         </createIndex>
-    </changeSet>
+    </changeSet> -->
 
     <changeSet id="12-create-indexes-lineage" author="lezhevg" failOnError="false">
         <createIndex indexName="p_input_lineage"
@@ -350,7 +350,21 @@
             <column name="deleted" type="boolean" defaultValue="false"/>
         </addColumn>
     </changeSet>
+<changeSet id="11.1-drop-index-projectname-workspace-workspacetype" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+                <indexExists indexName="p_name_wspace_wspace_type"/>
+        </preConditions>
+        <dropIndex indexName="p_name_wspace_wspace_type"
+                     tableName="project"/>
+    </changeSet>
 
+    <changeSet id="11.2-drop-index-datasetname-workspace-workspacetype" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+                <indexExists indexName="d_name_wspace_wspace_type"/>
+        </preConditions>
+        <dropIndex indexName="d_name_wspace_wspace_type"
+                     tableName="dataset"/>
+    </changeSet>
     <!-- take a below line to the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 </databaseChangeLog>
