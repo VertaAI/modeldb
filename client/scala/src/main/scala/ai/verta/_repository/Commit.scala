@@ -1,25 +1,27 @@
 package ai.verta._repository
 
 import ai.verta.client.{getPersonalWorkspace, urlEncode}
+import ai.verta._blobs._
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 import scala.collection.mutable.HashMap
+import scala.annotation.switch
 
 /** Commit within a ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
  *  TODO: privatize blobs
  *  TODO: clean up blobs retrieval
- *  TODO: write tests for interactions with blobs
+ *  TODO: write tests for interactions with blobs: load, update, get, save, etc.
  */
-class Commit(val clientSet: ClientSet, val repo: VersioningRepository, val commit: VersioningCommit) {
+class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commit: VersioningCommit) {
   var saved = true // whether the commit instance is saved to database
   var loaded_from_remote = false // whether blob has been retrieved from remote
   var blobs = new HashMap[String, VersioningBlob]() // mutable map for storing blobs
 
-  /** Retrieve blobs
+  /** Retrieve commit's blobs from remote
    */
   def load_blobs()(implicit ec: ExecutionContext): Unit = {
     if (!loaded_from_remote) {
@@ -41,12 +43,51 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, val commi
       commit_sha = id,
       repository_id_repo_id = repo.id.get
     ) // Try[VersioningListCommitBlobsRequestResponse]
-    .map(r => r.blobs) // Try[List[VersioningBlobExpanded]]
+    .map(_.blobs) // Try[Option[List[VersioningBlobExpanded]]]
     .map(ls => if (ls.isEmpty) null else ls.get.map(
       blob => {
         blob.location.get.map(l => blobs.put(l, blob.blob.get))
       }
     ))
+  }
+
+  /** Retrieves the blob at path from this commit
+   *  @param path location of a blob
+   *  @return ModelDB versioning blob
+   */
+  def get(path: String)(implicit ec: ExecutionContext): Option[VersioningBlob] = {
+    load_blobs()
+    blobs.get(path)
+  }
+
+  /** Adds blob to this commit at path
+   *  If path is already in this Commit, it will be updated to the new blob
+   *  @param path Location to add blob to
+   *  @param blob ModelDB versioning blob.
+   */
+  def update[T <: Blob](path: String, blob: T)(implicit ec: ExecutionContext): Unit = {
+    load_blobs()
+
+    if (saved) {
+      commit = VersioningCommit(
+        parent_shas = commit.commit_sha.map(List(_))
+      )
+    }
+
+    blobs.put(path, blob.versioningBlob)
+    saved = false
+  }
+
+  /** Saves this commit to ModelDB
+   *  @param message description of this commit
+   *  TODO: implement this method
+   *  TODO: write tests for this method
+   */
+  def save(message: String) = {
+    if (!saved) {
+      // TODO: implement
+      saved = true
+    }
   }
 
   /** Return ancestors, starting from this Commit until the root of the Repository
@@ -57,7 +98,7 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, val commi
       repository_id_repo_id = repo.id.get,
       commit_sha = commit.commit_sha.get
     ) // Try[VersioningListCommitsLogRequestResponse]
-    .map(r => r.commits) // Try[Option[List[VersioningCommit]]]
+    .map(_.commits) // Try[Option[List[VersioningCommit]]]
     .map(ls => if (ls.isEmpty) null else ls.get.map(c => new Commit(clientSet, repo, c))) // Try[List[Commit]]
   }
 
