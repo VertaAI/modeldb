@@ -38,7 +38,7 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commi
   /** Retrieve blobs associated to commit with given id and update blobs
    *  @param id id of the commit
    */
-  private def load_blobs_from_id(id: String)(implicit ec: ExecutionContext): Try[List[List[Option[VersioningBlob]]]] = {
+  private def load_blobs_from_id(id: String)(implicit ec: ExecutionContext): Try[List[Option[VersioningBlob]]] = {
     clientSet.versioningService.ListCommitBlobs2(
       commit_sha = id,
       repository_id_repo_id = repo.id.get
@@ -46,7 +46,8 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commi
     .map(_.blobs) // Try[Option[List[VersioningBlobExpanded]]]
     .map(ls => if (ls.isEmpty) null else ls.get.map(
       blob => {
-        blob.location.get.map(l => blobs.put(l, blob.blob.get))
+        var joinedLocation = blob.location.get.mkString("/")
+        blobs.put(joinedLocation, blob.blob.get)
       }
     ))
   }
@@ -84,11 +85,18 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commi
   /** Saves this commit to ModelDB
    *  @param message description of this commit
    *  TODO: implement this method
+   *  TODO: incorporate diff
    *  TODO: write tests for this method
    */
-  def save(message: String) = {
+  def save(message: String)(implicit ec: ExecutionContext) = {
     if (!saved) {
-      // TODO: implement
+      clientSet.versioningService.CreateCommit2(
+        body = VersioningCreateCommitRequest(
+          commit = Some(commit),
+          blobs = Some(blobsDictToList())
+        ),
+        repository_id_repo_id = repo.id.get
+      )
       saved = true
     }
   }
@@ -133,5 +141,27 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commi
       )
       saved = false
     }
+  }
+
+  /** Convert a location to "repeated string" representation
+      Based on Python's implementation
+      @param path path
+      @return the repeated string representation of the path
+   */
+   private def pathToLocation(path: String): List[String] = {
+     if (path.charAt(0) == '/') pathToLocation(path.substring(1))
+     else path.split("/").toList
+   }
+
+   /** Convert the dictionary of blobs into list form for API requests
+    *  @return the list required
+    */
+  private def blobsDictToList(): List[VersioningBlobExpanded] = {
+    val ret = for ((path, blob) <- blobs) yield VersioningBlobExpanded(
+        blob = Some(blob),
+        location = Some(pathToLocation(path))
+    )
+
+    ret.toList
   }
 }
