@@ -121,9 +121,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           getDatasetVersionFromRequest(authService, request, userInfo, existingDatasetVersion);
 
       if (datasetVersionList.size() == 1) {
-        DatasetVersion datasetVersion = datasetVersionList.get(0);
-        createRoleBindingsForDatasetVersion(userInfo, datasetVersion);
-        return datasetVersion;
+        return datasetVersionList.get(0);
       } else {
         DatasetVersion datasetVersion = datasetVersionList.get(1);
         if (checkDatasetVersionAlreadyExist(session, datasetVersion)) {
