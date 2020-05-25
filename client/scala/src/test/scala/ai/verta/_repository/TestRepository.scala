@@ -15,10 +15,11 @@ class TestRepository extends FunSuite {
   def fixture =
     new {
         val client = new Client(ClientConnection.fromEnvironment())
-        val repo = client.getOrCreateRepository("New Repo").get
+        val repo = client.getOrCreateRepository("My Repo").get
     }
 
   def cleanup(f: AnyRef{val client: Client; val repo: Repository}) = {
+    f.client.deleteRepository(f.repo.repo.id.get.toString)
     f.client.close()
   }
 
@@ -26,7 +27,7 @@ class TestRepository extends FunSuite {
     val f = fixture
 
     try {
-      assert(f.client.getOrCreateRepository("New Repo").isInstanceOf[Success[Repository]])
+      assert(f.client.getOrCreateRepository("My Repo").isInstanceOf[Success[Repository]])
     } finally {
       cleanup(f)
     }
@@ -62,8 +63,8 @@ class TestRepository extends FunSuite {
       .map(_.commit).get.commit_sha.get
 
       assert(
-        f.client.getOrCreateRepository("New Repo")
-        .flatMap(_.getCommitById(id))
+        f.repo
+        .getCommitById(id)
         .isInstanceOf[Success[Commit]]
       )
     } finally {

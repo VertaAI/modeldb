@@ -18,12 +18,12 @@ class TestCommit extends FunSuite {
   def fixture =
     new {
         val client = new Client(ClientConnection.fromEnvironment())
-        client.getOrCreateRepository("New Repo")
-        val commit = client.getOrCreateRepository("New Repo")
-        .flatMap(_.getCommitByBranch()).get
+        val repo = client.getOrCreateRepository("My Repo").get
+        val commit = repo.getCommitByBranch().get
     }
 
-  def cleanup(f: AnyRef{val client: Client; val commit: Commit}) = {
+  def cleanup(f: AnyRef{val client: Client; val repo: Repository; val commit: Commit}) = {
+    f.client.deleteRepository(f.repo.repo.id.get.toString)
     f.client.close()
   }
 

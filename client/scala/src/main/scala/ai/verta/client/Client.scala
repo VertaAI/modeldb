@@ -6,7 +6,7 @@ package ai.verta.client
 import ai.verta.client.entities.{Experiment, ExperimentRun, GetOrCreateEntity, Project}
 import ai.verta._repository.Repository
 import ai.verta.swagger._public.modeldb.model.ModeldbCreateProject
-import ai.verta.swagger._public.modeldb.versioning.model.VersioningRepository
+import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.swagger.client.{ClientSet, HttpClient}
 
 import scala.concurrent.ExecutionContext
@@ -95,5 +95,15 @@ class Client(conn: ClientConnection) {
       id_repo_id = BigInt(id)
     )
     .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+  }
+
+
+  /** Get repository based on id
+   *  @param id id of the repository
+   */
+  def deleteRepository(id: String)(implicit ec: ExecutionContext): Try[VersioningDeleteRepositoryRequestResponse] = {
+    clientSet.versioningService.DeleteRepository2(
+      repository_id_repo_id = BigInt(id)
+    )
   }
 }
