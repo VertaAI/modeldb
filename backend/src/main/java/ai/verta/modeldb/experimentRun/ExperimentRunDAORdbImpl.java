@@ -2279,7 +2279,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           if (partNumber != 0) {
             uploadId = artifactEntity.getUploadId();
             if (uploadId == null) {
-              uploadId = initializeMultipart.apply(key).orElse(null);
+              uploadId = initializeMultipart.apply(artifactEntity.getPath()).orElse(null);
             }
             if (uploadId == null) {
               throw new ModelDBException(
