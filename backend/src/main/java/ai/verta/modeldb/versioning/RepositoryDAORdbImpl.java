@@ -327,6 +327,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             LOGGER);
         repository.update(request);
       }
+      repository.setDeleted(true);
       session.saveOrUpdate(repository);
       if (create) {
         Commit initCommit =
@@ -342,9 +343,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         saveBranch(
             session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repository);
       }
-      session.getTransaction().commit();
       if (create) {
-        createRoleBindingsForRepository(request, userInfo, repository);
+        try {
+          createRoleBindingsForRepository(request, userInfo, repository);
+          repository.setDeleted(false);
+          session.update(repository);
+        } catch (Exception ex) {
+          session.delete(repository);
+          throw ex;
+        } finally {
+          session.getTransaction().commit();
+        }
       }
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     }
