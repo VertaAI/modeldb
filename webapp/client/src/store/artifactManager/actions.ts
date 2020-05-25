@@ -168,8 +168,6 @@ export const downloadArtifact = (
   }
 };
 const downloadFromUrl = async (url: string) => {
-  await fetchWithErrorNormalizing(url); // check that the file is available
-
   const link = document.createElement('a');
   link.style.display = 'none';
   document.body.appendChild(link);
