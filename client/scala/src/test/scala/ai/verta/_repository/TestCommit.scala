@@ -46,7 +46,23 @@ class TestCommit extends FunSuite {
 
     try {
         f.commit.update("abc/cde", Git(hash = Some("abc"), repo = Some("abc")))
-        assert(f.commit.save("Some message").isInstanceOf[Success[_]])
+        assert(!f.commit.saved)
+        assert(f.commit.get("abc/cde").isDefined)
+        assert(f.commit.save("Some message 1").isInstanceOf[Success[_]])
+        assert(f.commit.saved)
+
+
+        f.commit.update("def/ghi", Git(hash = Some("abc"), repo = Some("abc")))
+        assert(!f.commit.saved)
+        assert(f.commit.get("def/ghi").isDefined)
+        assert(f.commit.save("Some message 2").isInstanceOf[Success[_]])
+
+        f.commit.remove("abc/cde")
+        assert(!f.commit.saved)
+        assert(f.commit.save("Some message 3").isInstanceOf[Success[_]])
+        assert(f.commit.saved)
+        assert(f.commit.get("abc/cde").isEmpty)
+
     } finally {
       cleanup(f)
     }
