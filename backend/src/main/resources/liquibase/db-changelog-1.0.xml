@@ -127,10 +127,11 @@
             </not>
         </preConditions>
         <createIndex indexName="p_name_wspace_wspace_type"
-                     tableName="project" unique="true">
+                     tableName="project">
             <column name="name" type="varchar(255)"/>
             <column name="workspace" type="varchar(255)"/>
             <column name="workspace_type" type="int"/>
+            <column name="deleted" type="boolean"/>
         </createIndex>
     </changeSet>
 
@@ -141,10 +142,11 @@
             </not>
         </preConditions>
         <createIndex indexName="d_name_wspace_wspace_type"
-                     tableName="dataset" unique="true">
+                     tableName="dataset">
             <column name="name" type="varchar(255)"/>
             <column name="workspace" type="varchar(255)"/>
             <column name="workspace_type" type="int"/>
+            <column name="deleted" type="boolean"/>
         </createIndex>
     </changeSet>
 
