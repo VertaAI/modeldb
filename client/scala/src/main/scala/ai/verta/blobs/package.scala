@@ -8,7 +8,7 @@ package object blobs {
    */
   def versioningBlobToBlob(vb: VersioningBlob): Blob = vb match {
     case VersioningBlob(
-      Some(VersioningCodeBlob(Some(VersioningGitCodeBlob(branch, hash, is_dirty, repo, tag)), None)),
-      None, None, None) => Git(branch, hash, is_dirty, repo, tag)
+      Some(VersioningCodeBlob(Some(VersioningGitCodeBlob(branch, hash, is_dirty, repo, tag)), _)),
+      _, _, _) => Git(branch, hash, is_dirty, repo, tag)
   }
 }

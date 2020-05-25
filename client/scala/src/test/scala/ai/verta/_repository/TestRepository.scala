@@ -3,6 +3,7 @@ import ai.verta.client._
 import ai.verta.swagger.client.HttpException
 
 import scala.concurrent.ExecutionContext
+import scala.language.reflectiveCalls
 import scala.util.{Try, Success, Failure}
 
 import org.scalatest.FunSuite
@@ -11,76 +12,90 @@ import org.scalatest.Assertions._
 class TestRepository extends FunSuite {
   implicit val ec = ExecutionContext.global
 
-  test("get or create") {
-    val client = new Client(ClientConnection.fromEnvironment())
+  def fixture =
+    new {
+        val client = new Client(ClientConnection.fromEnvironment())
+        val repo = client.getOrCreateRepository("New Repo").get
+    }
+
+  def cleanup(f: AnyRef{val client: Client; val repo: Repository}) = {
+    f.client.close()
+  }
+
+  test("get/create by name") {
+    val f = fixture
 
     try {
-      assert(client.getOrCreateRepository("New Repo").isInstanceOf[Success[Repository]])
+      assert(f.client.getOrCreateRepository("New Repo").isInstanceOf[Success[Repository]])
     } finally {
-      client.close()
+      cleanup(f)
     }
   }
 
   test("get repo by id (not exist)") {
-    val client = new Client(ClientConnection.fromEnvironment())
+    val f = fixture
 
     try {
-      assert(client.getRepository("124112413").isInstanceOf[Failure[HttpException]])
+      assert(f.client.getRepository("124112413").isInstanceOf[Failure[HttpException]])
     } finally {
-      client.close()
+      cleanup(f)
     }
   }
 
   test("get repo by id") {
-    val client = new Client(ClientConnection.fromEnvironment())
+    val f = fixture
 
     try {
-      assert(client.getRepository("3").isInstanceOf[Success[Repository]])
+      assert(f.client.getRepository(f.repo.repo.id.get.toString)
+      .isInstanceOf[Success[Repository]])
     } finally {
-      client.close()
+      cleanup(f)
     }
   }
 
   test("get commit by id") {
-    val client = new Client(ClientConnection.fromEnvironment())
+    val f = fixture
 
     try {
-        assert(
-          client.getOrCreateRepository("New Repo")
-          .flatMap(_.getCommitById("f502d423d86df839bd5d1aba2ee04dcc52d4292980e89573faef649fdd643b03"))
-          .isInstanceOf[Success[Commit]]
-        )
+      val id = f.repo
+      .getCommitByBranch()
+      .map(_.commit).get.commit_sha.get
+
+      assert(
+        f.client.getOrCreateRepository("New Repo")
+        .flatMap(_.getCommitById(id))
+        .isInstanceOf[Success[Commit]]
+      )
     } finally {
-      client.close()
+      cleanup(f)
     }
   }
 
   test("get commit on master branch") {
-    val client = new Client(ClientConnection.fromEnvironment())
+    val f = fixture
 
     try {
-        assert(
-          client.getOrCreateRepository("New Repo")
-          .flatMap(_.getCommitByBranch())
-          .isInstanceOf[Success[Commit]]
-        )
+      assert(
+        f.repo.getCommitByBranch()
+        .isInstanceOf[Success[Commit]]
+      )
     } finally {
-      client.close()
+      cleanup(f)
     }
   }
 
 
-  test("get commit on a tag branch") {
-    val client = new Client(ClientConnection.fromEnvironment())
-
-    try {
-        assert(
-          client.getOrCreateRepository("New Repo")
-          .flatMap(_.getCommitByTag("Some tag"))
-          .isInstanceOf[Success[Commit]]
-        )
-    } finally {
-      client.close()
-    }
-  }
+  // test("get commit on a tag branch") {
+  //   val f = fixture
+  //
+  //   try {
+  //     assert(
+  //       f.repo
+  //       .flatMap(_.getCommitByTag("Some tag"))
+  //       .isInstanceOf[Success[Commit]]
+  //     )
+  //   } finally {
+  //     cleanup(f)
+  //   }
+  // }
 }
