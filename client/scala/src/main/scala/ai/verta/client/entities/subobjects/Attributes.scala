@@ -38,7 +38,7 @@ class Attributes(clientSet: ClientSet, ec: ExecutionContext, run: ExperimentRun)
 
   override def seq: mutable.Map[String, Any] =
     mutable.Map(
-      clientSet.experimentRunService.getExperimentRunAttributes(run.run.id.get, Nil, true)
+      clientSet.experimentRunService.getExperimentRunAttributes(id = run.run.id, attribute_keys = None, get_all = Some(true))
         .flatMap(_.attributes match {
           case Some(x) => Success(x)
           case None => Success(Nil)

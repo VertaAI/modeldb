@@ -190,40 +190,42 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   @Override
   public Project insertProject(Project project, UserInfo userInfo)
       throws InvalidProtocolBufferException {
+    createRoleBindingsForProject(project, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       checkIfEntityAlreadyExists(session, project);
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);
       session.save(projectEntity);
-
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          project.getId(),
-          ModelDBServiceResourceTypes.PROJECT);
-      if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
-        Role publicReadRole =
-            roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_PUBLIC_READ, null);
-        UserInfo unsignedUser = authService.getUnsignedUser();
-        roleService.createRoleBinding(
-            publicReadRole,
-            new CollaboratorUser(authService, unsignedUser),
-            project.getId(),
-            ModelDBServiceResourceTypes.PROJECT);
-      }
-
-      createWorkspaceRoleBinding(
-          project.getWorkspaceId(),
-          project.getWorkspaceType(),
-          project.getId(),
-          project.getProjectVisibility());
-
       transaction.commit();
       LOGGER.debug("Project created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
       return projectEntity.getProtoObject();
     }
+  }
+
+  private void createRoleBindingsForProject(Project project, UserInfo userInfo) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        project.getId(),
+        ModelDBServiceResourceTypes.PROJECT);
+    if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
+      Role publicReadRole =
+          roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_PUBLIC_READ, null);
+      UserInfo unsignedUser = authService.getUnsignedUser();
+      roleService.createRoleBinding(
+          publicReadRole,
+          new CollaboratorUser(authService, unsignedUser),
+          project.getId(),
+          ModelDBServiceResourceTypes.PROJECT);
+    }
+
+    createWorkspaceRoleBinding(
+        project.getWorkspaceId(),
+        project.getWorkspaceType(),
+        project.getId(),
+        project.getProjectVisibility());
   }
 
   private void createWorkspaceRoleBinding(

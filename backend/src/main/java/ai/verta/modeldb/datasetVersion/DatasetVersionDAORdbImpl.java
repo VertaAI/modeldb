@@ -144,7 +144,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       createDatasetVersionLock.lock();
-      Transaction transaction = session.beginTransaction();
 
       String lastDatasetVersionQueryStr =
           DATASET_VERSION_BY_DATA_SET_IDS_QUERY + " ORDER BY ds.version DESC";
@@ -161,12 +160,10 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           getDatasetVersionFromRequest(authService, request, userInfo, existingDatasetVersion);
 
       if (datasetVersionList.size() == 1) {
-        transaction.commit();
         return datasetVersionList.get(0);
       } else {
         DatasetVersion datasetVersion = datasetVersionList.get(1);
         if (checkDatasetVersionAlreadyExist(session, datasetVersion)) {
-          transaction.commit();
           Status status =
               Status.newBuilder()
                   .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -178,18 +175,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
                   .build();
           throw StatusProto.toStatusRuntimeException(status);
         }
+        createRoleBindingsForDatasetVersion(userInfo, datasetVersion);
 
         DatasetVersionEntity datasetVersionEntity =
             RdbmsUtils.generateDatasetVersionEntity(datasetVersion);
+        Transaction transaction = session.beginTransaction();
         session.save(datasetVersionEntity);
-
-        Role ownerRole =
-            roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
-        roleService.createRoleBinding(
-            ownerRole,
-            new CollaboratorUser(authService, userInfo),
-            datasetVersion.getId(),
-            ModelDBServiceResourceTypes.DATASET_VERSION);
         transaction.commit();
         LOGGER.debug("DatasetVersion created successfully");
         return datasetVersionEntity.getProtoObject();
@@ -197,6 +188,16 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     } finally {
       createDatasetVersionLock.unlock();
     }
+  }
+
+  public void createRoleBindingsForDatasetVersion(
+      UserInfo userInfo, DatasetVersion datasetVersion) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        datasetVersion.getId(),
+        ModelDBServiceResourceTypes.DATASET_VERSION);
   }
 
   @Override
