@@ -183,7 +183,7 @@ class Commit(
    */
   private def init() = {
     saved = true
-    loaded_from_remote = false
+    // loaded_from_remote = false
     // blobs = new HashMap[String, VersioningBlob]()
   }
 

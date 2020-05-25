@@ -20,7 +20,7 @@ class TestCommit extends FunSuite {
     try {
         assert(
           client.getOrCreateRepository("New Repo")
-          .flatMap(_.getCommitById("f502d423d86df839bd5d1aba2ee04dcc52d4292980e89573faef649fdd643b03"))
+          .flatMap(_.getCommitByBranch())
           .flatMap(_.log())
           .isInstanceOf[Success[List[Commit]]]
         )
