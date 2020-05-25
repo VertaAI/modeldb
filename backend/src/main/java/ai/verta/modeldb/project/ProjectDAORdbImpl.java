@@ -125,8 +125,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.PROJECT_IDS)
           .append(")")
           .toString();
-  private static final String GET_PROJECT_BY_ID_HQL = "From ProjectEntity p where p.id = :id";
-  private static final String GET_PROJECT_BY_IDS_HQL = "From ProjectEntity p where p.id IN (:ids)";
+  private static final String GET_PROJECT_BY_ID_HQL =
+      "From ProjectEntity p where p.id = :id AND p." + ModelDBConstants.DELETED + " = false";
+  private static final String GET_PROJECT_BY_IDS_HQL =
+      "From ProjectEntity p where p.id IN (:ids) AND p." + ModelDBConstants.DELETED + " = false";
   private static final String GET_PROJECT_BY_SHORT_NAME_AND_OWNER_HQL =
       new StringBuilder("From ProjectEntity p where p.")
           .append(ModelDBConstants.SHORT_NAME)
@@ -996,6 +998,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           return projectPaginationDTO;
         }
       }
+
+      finalPredicatesList.add(builder.equal(projectRoot.get(ModelDBConstants.DELETED), false));
 
       Order orderBy =
           RdbmsUtils.getOrderBasedOnSortKey(

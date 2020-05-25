@@ -548,6 +548,12 @@ public class ModelDBHibernateUtil {
       boolean shouldSetName,
       List<String> ordering) {
     StringBuilder stringQueryBuilder = new StringBuilder(command);
+    stringQueryBuilder
+        .append(" AND ")
+        .append(shortName)
+        .append(".")
+        .append(ModelDBConstants.DELETED)
+        .append(" = false ");
     if (workspaceId != null && !workspaceId.isEmpty()) {
       if (shouldSetName) {
         stringQueryBuilder.append(" AND ");
