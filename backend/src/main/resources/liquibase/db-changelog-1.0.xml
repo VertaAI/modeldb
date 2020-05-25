@@ -266,7 +266,7 @@
                   referencedColumnNames="id"/>
             </column>
             <column name="part_number" type="int8">
-                <constraints nullable="false"/>
+                <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="etag" type="varchar(255)"/>
         </createTable>

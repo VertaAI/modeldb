@@ -2318,7 +2318,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           if (initializeMultipart == null) {
             message = "Multipart wasn't initialized";
           } else {
-            uploadId = initializeMultipart.apply(key).orElse(null);
+            uploadId = initializeMultipart.apply(artifactEntity.getPath()).orElse(null);
           }
         }
         if (uploadId == null) {
@@ -2401,6 +2401,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.beginTransaction();
       artifactEntity.setUploadCompleted(true);
       artifactPartEntities.forEach(session::delete);
+      artifactPartEntities.clear();
       session.getTransaction().commit();
       result = getS3PathAndMultipartUploadId(session, artifactEntity, true, request.getKey(), null);
     }
