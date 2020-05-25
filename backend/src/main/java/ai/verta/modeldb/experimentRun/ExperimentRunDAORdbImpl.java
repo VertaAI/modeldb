@@ -305,6 +305,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
+    createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experimentRun, true);
       Transaction transaction = session.beginTransaction();
@@ -327,18 +328,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
       session.saveOrUpdate(experimentRunObj);
-
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          experimentRun.getId(),
-          ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
-
       transaction.commit();
       LOGGER.debug("ExperimentRun created successfully");
       return experimentRun;
     }
+  }
+
+  private void createRoleBindingsForExperimentRun(ExperimentRun experimentRun, UserInfo userInfo) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        experimentRun.getId(),
+        ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
   }
 
   private Set<HyperparameterElementMappingEntity> prepareHyperparameterElemMappings(
