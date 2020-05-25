@@ -7,7 +7,8 @@ import ai.verta.swagger._public.modeldb.versioning.model._
  */
 case class Git(
   val branch: Option[String] = None, val hash: Option[String] = None,
-  val isDirty: Option[Boolean], val tag: Option[String] = None, val repo: Option[String] = None
+  val isDirty: Option[Boolean] = None, val tag: Option[String] = None,
+  val repo: Option[String] = None
 ) extends Code {
   // Basically a wrapper for VersioningGitCodeBlob
 

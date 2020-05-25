@@ -16,7 +16,10 @@ import scala.annotation.switch
  *  TODO: clean up blobs retrieval
  *  TODO: write tests for interactions with blobs: load, update, get, save, remove etc.
  */
-class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commit: VersioningCommit) {
+class Commit(
+  val clientSet: ClientSet, val repo: VersioningRepository,
+  var commit: VersioningCommit, var commit_branch: Option[String] = None
+) {
   var saved = true // whether the commit instance is saved to database
   var loaded_from_remote = false // whether blob has been retrieved from remote
   var blobs = new HashMap[String, VersioningBlob]() // mutable map for storing blobs
@@ -92,12 +95,16 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commi
     if (!saved) {
       clientSet.versioningService.CreateCommit2(
         body = VersioningCreateCommitRequest(
-          commit = Some(commit),
-          blobs = Some(blobsDictToList())
+          commit = Some(withMessage(message)),
+          blobs = Some(blobsList)
         ),
         repository_id_repo_id = repo.id.get
       )
-      saved = true
+      .map(r => if (!r.commit.isEmpty) {
+        commit = r.commit.get
+        commit_branch.map(setBranch(_))
+        init()
+      })
     }
   }
 
@@ -129,7 +136,6 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commi
     }
   }
 
-
   /*** HELPER METHODS ***/
 
   /** Become child of current commit (if current commit is saved)
@@ -156,12 +162,42 @@ class Commit(val clientSet: ClientSet, val repo: VersioningRepository, var commi
    /** Convert the dictionary of blobs into list form for API requests
     *  @return the list required
     */
-  private def blobsDictToList(): List[VersioningBlobExpanded] = {
-    val ret = for ((path, blob) <- blobs) yield VersioningBlobExpanded(
+  private def blobsList: List[VersioningBlobExpanded] = {
+    (for ((path, blob) <- blobs) yield VersioningBlobExpanded(
         blob = Some(blob),
         location = Some(pathToLocation(path))
-    )
+    )).toList
+  }
 
-    ret.toList
+  /** Add message to current commit. Done before saving
+   *  @param message message
+   */
+  private def withMessage(message: String) = VersioningCommit(
+        author = commit.author,
+        commit_sha = commit.commit_sha,
+        message = Some(message),
+        parent_shas = commit.parent_shas
+  )
+
+  /** Reset the state of commit
+   */
+  private def init() = {
+    saved = true
+    loaded_from_remote = false
+    // blobs = new HashMap[String, VersioningBlob]()
+  }
+
+  /** Set the commit of named branch to current commit
+   *  @param branch branch
+   */
+  private def setBranch(branch: String)(implicit ec: ExecutionContext) = {
+    clientSet.versioningService.SetBranch2(
+      body = "\"" + commit.commit_sha.get + "\"",
+      branch = branch,
+      repository_id_repo_id = repo.id.get
+    ) match {
+      case Success(_) => {commit_branch = Some(branch)}
+      case Failure(_) => {}
+    }
   }
 }

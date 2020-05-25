@@ -34,7 +34,7 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
        branch = branch,
        repository_id_repo_id = getId()
      )
-     .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get))
+     .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get, Some(branch)))
    }
 
    /** Get commit by specified tag
