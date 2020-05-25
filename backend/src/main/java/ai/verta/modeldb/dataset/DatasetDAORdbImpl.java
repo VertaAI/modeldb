@@ -344,40 +344,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       List<KeyValueQuery> predicates = new ArrayList<>(queryParameters.getPredicatesList());
       for (KeyValueQuery predicate : predicates) {
-        // Validate if current user has access to the entity or not where predicate key has a
-        // datasetId
-        if (predicate.getKey().equals(ModelDBConstants.ID)) {
-          if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
-            Status statusMessage =
-                Status.newBuilder()
-                    .setCode(Code.INVALID_ARGUMENT_VALUE)
-                    .setMessage("Unknown 'Operator' type recognized, valid 'Operator' type is EQ")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(statusMessage);
-          }
-          String datasetId = predicate.getValue().getStringValue();
-          if (accessibleDatasetIds.isEmpty() || !accessibleDatasetIds.contains(datasetId)) {
-            Status statusMessage =
-                Status.newBuilder()
-                    .setCode(Code.PERMISSION_DENIED_VALUE)
-                    .setMessage(
-                        "Access is denied. User is unauthorized for given Dataset entity ID : "
-                            + datasetId)
-                    .build();
-            throw StatusProto.toStatusRuntimeException(statusMessage);
-          }
-        }
-
-        if (predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE)
-            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_NAME)
-            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_TYPE)) {
-          Status statusMessage =
-              Status.newBuilder()
-                  .setCode(Code.INVALID_ARGUMENT_VALUE)
-                  .setMessage("Workspace name OR type not supported as predicate")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(statusMessage);
-        }
+        // Validate if current user has access to the entity or not where predicate key has an id
+        RdbmsUtils.validatePredicates(
+            ModelDBConstants.DATASETS, accessibleDatasetIds, predicate, roleService);
       }
 
       String workspaceName = queryParameters.getWorkspaceName();
@@ -905,5 +874,17 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       transaction.commit();
       return datasetEntity.getProtoObject();
     }
+  }
+
+  @Override
+  public List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo)
+      throws InvalidProtocolBufferException {
+    FindDatasets findDatasets =
+        FindDatasets.newBuilder().setWorkspaceName(workspaceName).setIdsOnly(true).build();
+    DatasetPaginationDTO datasetPaginationDTO =
+        findDatasets(findDatasets, currentLoginUserInfo, DatasetVisibility.PRIVATE);
+    return datasetPaginationDTO.getDatasets().stream()
+        .map(Dataset::getId)
+        .collect(Collectors.toList());
   }
 }

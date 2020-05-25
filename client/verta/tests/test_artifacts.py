@@ -6,6 +6,8 @@ import os
 import sys
 import zipfile
 
+from verta._internal_utils import _artifact_utils
+
 from . import utils
 
 
@@ -85,6 +87,16 @@ class TestArtifacts:
         for key, artifact in reversed(list(zip(strs, all_values))):
             with pytest.raises(ValueError):
                 experiment_run.log_artifact(key, artifact)
+
+    def test_blacklisted_key_error(self, experiment_run, all_values):
+        all_values = (value  # log_artifact treats str value as filepath to open
+                      for value in all_values if not isinstance(value, str))
+
+        for key, artifact in zip(_artifact_utils.BLACKLISTED_KEYS, all_values):
+            with pytest.raises(ValueError):
+                experiment_run.log_artifact(key, artifact)
+            with pytest.raises(ValueError):
+                experiment_run.log_artifact_path(key, artifact)
 
 
 class TestModels:
@@ -321,6 +333,26 @@ class TestImages:
         for key, image in reversed(list(six.viewitems(images))):
             with pytest.raises(ValueError):
                 experiment_run.log_image(key, image)
+
+    def test_blacklisted_key_error(self, experiment_run, all_values):
+        all_values = (value  # log_artifact treats str value as filepath to open
+                      for value in all_values if not isinstance(value, str))
+
+        for key, artifact in zip(_artifact_utils.BLACKLISTED_KEYS, all_values):
+            with pytest.raises(ValueError):
+                experiment_run.log_image(key, artifact)
+            with pytest.raises(ValueError):
+                experiment_run.log_image_path(key, artifact)
+
+
+class TestDatasets:
+    def test_blacklisted_key_error(self, experiment_run, all_values):
+        all_values = (value  # log_artifact treats str value as filepath to open
+                      for value in all_values if not isinstance(value, str))
+
+        for key, artifact in zip(_artifact_utils.BLACKLISTED_KEYS, all_values):
+            with pytest.raises(ValueError):
+                experiment_run.log_dataset(key, artifact)
 
 
 class TestOverwrite:

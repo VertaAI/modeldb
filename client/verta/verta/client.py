@@ -793,7 +793,17 @@ class _ModelDBEntity(object):
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(response.json(), Message.Response)
-        return response_msg.url
+        url = response_msg.url
+
+        # accommodate port-forwarded NFS store
+        if 'https://localhost' in url[:20]:
+            url = 'http' + url[5:]
+        if 'localhost%3a' in url[:20]:
+            url = url.replace('localhost%3a', 'localhost:')
+        if 'localhost%3A' in url[:20]:
+            url = url.replace('localhost%3A', 'localhost:')
+
+        return url
 
     def _cache(self, filename, contents):
         """
@@ -1080,14 +1090,6 @@ class _ModelDBEntity(object):
             # upload artifact to artifact store
             url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type)
 
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
-
             response = _utils.make_request("PUT", url, self._conn, data=zipstream)
             _utils.raise_for_http_error(response)
 
@@ -1142,14 +1144,6 @@ class _ModelDBEntity(object):
         elif which_code == 'code_archive':
             # download artifact from artifact store
             url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type)
-
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
@@ -2051,14 +2045,6 @@ class ExperimentRun(_ModelDBEntity):
             print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), basename))
             artifact_stream.seek(0)
 
-        # accommodate port-forwarded NFS store
-        if 'https://localhost' in url[:20]:
-            url = 'http' + url[5:]
-        if 'localhost%3a' in url[:20]:
-            url = url.replace('localhost%3a', 'localhost:')
-        if 'localhost%3A' in url[:20]:
-            url = url.replace('localhost%3A', 'localhost:')
-
         response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
         _utils.raise_for_http_error(response)
         print("upload complete ({})".format(basename))
@@ -2132,14 +2118,6 @@ class ExperimentRun(_ModelDBEntity):
         else:
             # download artifact from artifact store
             url = self._get_url_for_artifact(key, "GET")
-
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
@@ -2684,6 +2662,7 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing dataset with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         if isinstance(dataset, _dataset.Dataset):
@@ -3066,6 +3045,7 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing image with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         # convert pyplot, Figure or Image to bytestream
@@ -3107,6 +3087,7 @@ class ExperimentRun(_ModelDBEntity):
             Filesystem path of the image.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         self._log_artifact_path(key, image_path, _CommonService.ArtifactTypeEnum.IMAGE)
@@ -3159,6 +3140,7 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         try:
@@ -3197,6 +3179,7 @@ class ExperimentRun(_ModelDBEntity):
             Filesystem path of the artifact.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         self._log_artifact_path(key, artifact_path, _CommonService.ArtifactTypeEnum.BLOB)

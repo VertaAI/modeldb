@@ -2682,4 +2682,30 @@ public class FindProjectEntitiesTest {
 
     LOGGER.info("FindProjects by owner fuzzy search test stop ................................");
   }
+
+  @Test
+  public void findExperimentRunsByExperimentTest() {
+    LOGGER.info("FindExperimentRuns by experiment test start.........");
+
+    FindExperimentRuns findExperimentRuns =
+        FindExperimentRuns.newBuilder().setExperimentId(experiment1.getId()).build();
+
+    FindExperimentRuns.Response response =
+        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+    LOGGER.info("FindExperimentRuns Response : " + response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        2,
+        response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun not match with expected experimentRun",
+        experimentRun12.getId(),
+        response.getExperimentRunsList().get(0).getId());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        2,
+        response.getTotalRecords());
+
+    LOGGER.info("FindExperimentRuns by experiment test stop.........");
+  }
 }
