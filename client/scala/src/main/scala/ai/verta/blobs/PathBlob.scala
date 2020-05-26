@@ -10,7 +10,7 @@ import java.io.File
 /** Captures metadata about files
  *  @param paths list of filepaths or directory paths
  */
-case class Path(val paths: List[String]) extends Dataset {
+case class PathBlob(val paths: List[String]) extends Dataset {
   val BufferSize = 8192
 
   val components = paths.flatMap((path: String) => get_path_metadata(new File(path)))
