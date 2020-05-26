@@ -21,8 +21,8 @@ class S3Location(val path: String, val versionID: Option[String] = None) {
   val key = obtainKey(uri.getPath())
 
   private def obtainKey(rawPath: String): Option[String] = {
-    if (rawPath.length() == 0) None
-    else if (rawPath.charAt(0) == '/') obtainKey(rawPath.substring(1))
+    if (rawPath.length() == 0 || (rawPath.charAt(0) == '/' && rawPath.length() == 1)) None
+    else if (rawPath.charAt(0) == '/') Some(rawPath.substring(1))
     else Some(rawPath)
   }
 }
