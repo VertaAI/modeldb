@@ -5,8 +5,6 @@ import ai.verta.swagger._public.modeldb.versioning.model._
 import java.security.{MessageDigest, DigestInputStream}
 import java.io.{File, FileInputStream}
 
-import java.io.File
-
 /** Captures metadata about files
  *  @param paths list of filepaths or directory paths
  */
