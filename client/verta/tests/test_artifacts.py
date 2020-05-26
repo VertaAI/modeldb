@@ -2,13 +2,32 @@ import pytest
 
 import six
 
+import hashlib
 import os
-import sys
+import tempfile
 import zipfile
 
 from verta._internal_utils import _artifact_utils
 
 from . import utils
+
+
+class TestUtils:
+    def test_calc_checksum(self):
+        FILE_SIZE = 6*10**6  # 6 MB
+
+        with tempfile.NamedTemporaryFile(suffix='.txt') as tempf:
+            tempf.truncate(FILE_SIZE)  # zero-filled
+            tempf.flush()  # flush object buffer
+            os.fsync(tempf.fileno())  # flush OS buffer
+
+            tempf.seek(0)
+            piecewise_checksum = _artifact_utils.calc_checksum(tempf, FILE_SIZE//2)
+
+            tempf.seek(0)
+            whole_checksum = hashlib.sha256(tempf.read()).hexdigest()
+
+            assert piecewise_checksum == whole_checksum
 
 
 class TestArtifacts:
