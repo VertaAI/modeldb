@@ -18,7 +18,7 @@ class S3Location(val path: String, val versionID: Option[String] = None) {
   if (uri.getScheme() != "s3") throw new IllegalArgumentException("Illegal path")
 
   val bucketName = uri.getAuthority()
-  val key: Option[String] = obtainKey(uri.getPath())
+  val key = obtainKey(uri.getPath())
 
   private def obtainKey(rawPath: String): Option[String] = {
     if (rawPath.length() == 0) None
