@@ -11,7 +11,7 @@ import java.io.{File, FileInputStream}
 case class PathBlob(val paths: List[String]) extends Dataset {
   val BufferSize = 8192
 
-  val components = paths.map(expanduser _).flatMap((path: String) => get_path_metadata(new File(path)))
+  val components = paths.distinct.map(expanduser _).flatMap((path: String) => getPathMetadata(new File(path)))
 
   val versioningBlob = VersioningBlob(
     dataset = Some(VersioningDatasetBlob(
@@ -49,16 +49,16 @@ case class PathBlob(val paths: List[String]) extends Dataset {
     *  @param file file
     *  TODO: use non-recursive DFS/BFS instead to prevent stack overflow
     */
-   private def get_path_metadata(file: File): List[VersioningPathDatasetComponentBlob] = {
-     if (file.isDirectory()) file.listFiles().toList.flatMap(get_path_metadata)
-     else List(get_file_metadata(file))
+   private def getPathMetadata(file: File): List[VersioningPathDatasetComponentBlob] = {
+     if (file.isDirectory()) file.listFiles().toList.flatMap(getPathMetadata)
+     else List(getFileMetadata(file))
    }
 
    /** Get the metadata of the file
     *  @param file file
     *  @return the metadata of the file, as required by VersioningPathDatasetComponentBlob
     */
-   private def get_file_metadata(file: File) = VersioningPathDatasetComponentBlob(
+   private def getFileMetadata(file: File) = VersioningPathDatasetComponentBlob(
        last_modified_at_source = Some(BigInt(file.lastModified())),
        md5 = Some(hash(file, "MD5")),
        path = Some(file.getPath()),

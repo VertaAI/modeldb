@@ -16,8 +16,8 @@ import org.scalatest.Assertions._
 import scala.collection.mutable.HashSet
 
 
-class TestPathBlobs extends FunSuite {
-  test("PathBlob should retrieve file in subdirectories, but not folders") {
+class TestPathBlob extends FunSuite {
+  test("PathBlob should retrieve and store files in subdirs, but not the subdirs themselves") {
     val workingDir = System.getProperty("user.dir")
     val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
     var path = PathBlob(List(testDir))
