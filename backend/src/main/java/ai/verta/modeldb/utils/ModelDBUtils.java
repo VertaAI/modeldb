@@ -34,6 +34,7 @@ import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
@@ -56,6 +57,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
@@ -478,6 +480,27 @@ public class ModelDBUtils {
     }
     ErrorCountResource.inc(statusRuntimeException);
     responseObserver.onError(statusRuntimeException);
+  }
+
+  public static boolean needToRetry(Exception ex) {
+    Throwable communicationsException = findCommunicationsFailedCause(ex);
+    if (communicationsException.getCause() instanceof CommunicationsException) {
+      LOGGER.warn(communicationsException.getMessage());
+      return true;
+    }
+    return false;
+  }
+
+  public static Throwable findCommunicationsFailedCause(Throwable throwable) {
+    if (throwable == null) {
+      return null;
+    }
+    Throwable rootCause = throwable;
+    while (rootCause.getCause() != null
+        && !(rootCause.getCause() instanceof CommunicationsException)) {
+      rootCause = rootCause.getCause();
+    }
+    return rootCause;
   }
 
   /**

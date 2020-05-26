@@ -130,6 +130,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepositoryById(session, request.getId());
       return Response.newBuilder().setRepository(repository.toProto()).build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getRepository(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -319,6 +325,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         createRoleBindingsForRepository(request, userInfo, repository);
       }
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setRepository(commitDAO, request, userInfo, create);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -431,6 +443,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.delete(repository);
       session.getTransaction().commit();
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteRepository(request, commitDAO, experimentRunDAO);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -524,9 +543,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       long totalRecords = RdbmsUtils.count(session, repositoryEntityRoot, criteriaQuery);
       builder.setTotalRecords(totalRecords);
       return builder.build();
-    } catch (ModelDBException e) {
-      LOGGER.warn(e.getMessage(), e);
-      throw e;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return listRepositories(request, currentLoginUserInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -560,6 +582,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.save(tagsEntity);
       session.getTransaction().commit();
       return SetTagRequest.Response.newBuilder().build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setTag(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -578,6 +606,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       CommitEntity commitEntity = session.get(CommitEntity.class, tagsEntity.getCommit_hash());
       return GetTagRequest.Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getTag(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -594,6 +628,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.delete(tagsEntity);
       session.getTransaction().commit();
       return DeleteTagRequest.Response.newBuilder().build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteTag(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -620,6 +660,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .addAllTags(tags)
           .setTotalRecords(tags.size())
           .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return listTags(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -633,6 +679,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         return SetBranchRequest.Response.newBuilder().build();
       session.getTransaction().commit();
       return SetBranchRequest.Response.newBuilder().build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setBranch(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -685,6 +737,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       BranchEntity branchEntity = getBranchEntity(session, repository.getId(), request.getBranch());
       CommitEntity commitEntity = session.get(CommitEntity.class, branchEntity.getCommit_hash());
       return GetBranchRequest.Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getBranch(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -705,6 +763,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.delete(branchEntity);
       session.getTransaction().commit();
       return DeleteBranchRequest.Response.newBuilder().build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteBranch(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -742,6 +806,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .addAllBranches(branches)
           .setTotalRecords(branches.size())
           .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return listBranches(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -799,6 +869,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               commits.stream().map(CommitEntity::toCommitProto).collect(Collectors.toList()))
           .setTotalRecords(commits.size())
           .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return listCommitsLog(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -865,6 +941,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               .setTotalRecords(0L)
               .build();
         }
+        throw ex;
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return findRepositories(request);
+      } else {
         throw ex;
       }
     }

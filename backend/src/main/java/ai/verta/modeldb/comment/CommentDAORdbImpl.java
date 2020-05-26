@@ -7,6 +7,7 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.UserCommentEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.UserInfo;
 import com.google.rpc.Code;
@@ -74,6 +75,12 @@ public class CommentDAORdbImpl implements CommentDAO {
       transaction.commit();
       LOGGER.debug("Comment inserted successfully");
       return newComment;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addComment(entityType, entityId, newComment);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -99,6 +106,12 @@ public class CommentDAORdbImpl implements CommentDAO {
       LOGGER.debug("Comment updated successfully");
       transaction.commit();
       return userCommentEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateComment(entityType, entityId, updatedComment);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -115,6 +128,12 @@ public class CommentDAORdbImpl implements CommentDAO {
       }
       LOGGER.debug("Got {} comments", userCommentEntities.size());
       return RdbmsUtils.convertUserCommentListFromUserComments(userCommentEntities);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getComments(entityType, entityId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -136,6 +155,12 @@ public class CommentDAORdbImpl implements CommentDAO {
       transaction.commit();
       LOGGER.debug("Comments deleted successfully");
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteComment(entityType, entityId, commentId, userInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 }

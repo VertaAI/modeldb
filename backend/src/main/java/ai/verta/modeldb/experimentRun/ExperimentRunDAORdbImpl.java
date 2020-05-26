@@ -71,7 +71,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -251,6 +250,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        checkIfEntityAlreadyExists(experimentRun, isInsert);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -331,6 +336,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun created successfully");
       return experimentRun;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return insertExperimentRun(experimentRun, userInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -409,6 +420,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun deleted successfully");
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteExperimentRun(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -467,6 +484,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       LOGGER.debug("ExperimentRun deleted successfully");
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteExperimentRuns(experimentRunIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -552,6 +575,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("ExperimentRuns size is {}", experimentRuns.size());
       return experimentRuns;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRuns(key, value, userInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -566,6 +595,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       List<ExperimentRunEntity> experimentRunEntities = query.list();
       LOGGER.debug("Got ExperimentRun by Ids");
       return RdbmsUtils.convertExperimentRunsFromExperimentRunEntityList(experimentRunEntities);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunsByBatchIds(experimentRunIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -586,6 +621,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("Got ExperimentRun successfully");
       return experimentRunEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRun(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -610,6 +651,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       LOGGER.debug("ExperimentRun name updated successfully");
       transaction.commit();
       return experimentRunEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateExperimentRunName(experimentRunId, experimentRunName);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -628,6 +675,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       LOGGER.debug("ExperimentRun description updated successfully");
       transaction.commit();
       return experimentRunEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateExperimentRunDescription(experimentRunId, experimentRunDescription);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -657,6 +710,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       LOGGER.debug("ExperimentRun code version snapshot updated successfully");
       transaction.commit();
       return experimentRunEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return logExperimentRunCodeVersion(experimentRunId, updatedCodeVersion);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -674,6 +733,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       LOGGER.debug("ExperimentRun parentId updated successfully");
       transaction.commit();
       return experimentRunEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setParentExperimentRunId(experimentRunId, parentExperimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -711,6 +776,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun tags added successfully");
       return experimentRunObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addExperimentRunTags(experimentRunId, tagsList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -738,6 +809,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun tags deleted successfully");
       return experimentRunObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteExperimentRunTags(experimentRunId, experimentRunTagList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -766,6 +843,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return logObservations(experimentRunId, observations);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -795,6 +878,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
       return observationEntities;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getObservationByKey(experimentRunId, observationKey);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -840,6 +929,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return logMetrics(experimentRunId, newMetrics);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -860,6 +955,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("Got ExperimentRun Metrics");
       return experimentRunObj.getProtoObject().getMetricsList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunMetrics(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -880,6 +981,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("Got ExperimentRun Datasets");
       return experimentRunObj.getProtoObject().getDatasetsList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunDatasets(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -935,6 +1042,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return logDatasets(experimentRunId, newDatasets, overwrite);
+      } else {
+        throw ex;
+      }
     }
     return getExperimentRun(experimentRunId);
   }
@@ -981,6 +1094,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return logArtifacts(experimentRunId, newArtifacts);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1009,6 +1128,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunArtifacts(experimentRunId);
+      } else {
+        throw ex;
       }
     }
   }
@@ -1047,11 +1172,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.update(experimentRunObj);
       transaction.commit();
       return experimentRunObj.getProtoObject();
-    } catch (StatusRuntimeException ex) {
-      if (transaction != null) {
-        transaction.rollback();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteArtifacts(experimentRunId, artifactKey);
+      } else {
+        throw ex;
       }
-      throw ex;
     }
   }
 
@@ -1098,6 +1224,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return logHyperparameters(experimentRunId, newHyperparameters);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1118,6 +1250,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("Got ExperimentRun Hyperparameters");
       return experimentRunObj.getProtoObject().getHyperparametersList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunHyperparameters(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1164,6 +1302,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return logAttributes(experimentRunId, newAttributes);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1191,6 +1335,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         query.setParameter(ModelDBConstants.FIELD_TYPE_STR, ModelDBConstants.ATTRIBUTES);
         List<AttributeEntity> attributeEntities = query.list();
         return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunAttributes(experimentRunId, attributeKeyList, getAll);
+      } else {
+        throw ex;
       }
     }
   }
@@ -1461,6 +1611,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunPaginationDTO.setExperimentRuns(experimentRuns);
       experimentRunPaginationDTO.setTotalRecords(totalRecords);
       return experimentRunPaginationDTO;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return findExperimentRuns(projectDAO, currentLoginUserInfo, queryParameters);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1644,6 +1800,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           session.get(ExperimentRunEntity.class, experimentRunId);
       LOGGER.debug("Got ExperimentRun Tags");
       return experimentRunObj.getProtoObject().getTagsList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunTags(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1663,6 +1825,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
       return experimentRunEntityObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addExperimentRunAttributes(experimentRunId, attributesList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1692,6 +1860,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun Attributes deleted successfully");
       return experimentRunObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteExperimentRunAttributes(experimentRunId, attributeKeyList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1709,6 +1883,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun JobID added successfully");
       return experimentRunEntityObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return logJobId(experimentRunId, jobId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1719,6 +1899,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           session.get(ExperimentRunEntity.class, experimentRunId);
       LOGGER.debug("Got ExperimentRun JobID");
       return experimentRunEntityObj.getJob_id();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getJobId(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1771,6 +1957,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun copied successfully");
       return experimentRunObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deepCopyExperimentRunForUser(srcExperimentRun, newExperiment, newProject, newOwner);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1815,6 +2007,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       List<ExperimentRunEntity> experimentRunObjList = query.list();
       return RdbmsUtils.convertExperimentRunsFromExperimentRunEntityList(experimentRunObjList);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRuns(keyValues);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1832,6 +2030,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getProjectIdByExperimentRunId(experimentRunId);
+      } else {
+        throw ex;
       }
     }
   }
@@ -1851,6 +2055,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             experimentRunEntity.getId(), experimentRunEntity.getProject_id());
       }
       return experimentRunIdToProjectIdMap;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getProjectIdsFromExperimentRunIds(experimentRunIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1878,6 +2088,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Query experimentRunQuery = session.createQuery(queryBuilder.toString());
       experimentRunQuery.setParameterList("ids", experimentRunIds);
       return experimentRunQuery.list();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getSelectedFieldsByExperimentRunIds(experimentRunIds, selectedFields);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1894,6 +2110,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         experimentRunIds.add(experimentRunEntity.getId());
       }
       return experimentRunIds;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunIdsByProjectIds(projectIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1910,6 +2132,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         experimentRunIds.add(experimentRunEntity.getId());
       }
       return experimentRunIds;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunIdsByExperimentIds(experimentIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1969,6 +2197,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       return LogVersionedInput.Response.newBuilder()
           .setExperimentRun(runEntity.getProtoObject())
           .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return logVersionedInput(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -2011,6 +2245,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getVersionedInputs(request);
+      } else {
+        throw ex;
       }
     }
   }
@@ -2056,6 +2296,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
           .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return listCommitExperimentRuns(projectDAO, request, repositoryFunction, commitFunction);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -2114,6 +2360,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
           .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return listBlobExperimentRuns(projectDAO, request, repositoryFunction, commitFunction);
+      } else {
+        throw ex;
+      }
     }
   }
 }

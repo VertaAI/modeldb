@@ -34,6 +34,7 @@ import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
@@ -45,7 +46,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -212,6 +212,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Project created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
       return projectEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return insertProject(project, userInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -278,6 +284,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Project name updated successfully");
       transaction.commit();
       return projectEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateProjectName(projectId, projectName);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -293,6 +305,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Project description updated successfully");
       transaction.commit();
       return projectEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateProjectDescription(projectId, projectDescription);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -308,6 +326,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Project readme updated successfully");
       transaction.commit();
       return projectEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateProjectReadme(projectId, projectReadme);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -344,6 +368,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Project code version snapshot updated successfully");
       transaction.commit();
       return projectEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return logProjectCodeVersion(projectId, updatedCodeVersion);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -386,6 +416,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.saveOrUpdate(projectObj);
       transaction.commit();
       return projectObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateProjectAttributes(projectId, attribute);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -413,6 +449,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         @SuppressWarnings("unchecked")
         List<AttributeEntity> attributeEntities = query.list();
         return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getProjectAttributes(projectId, attributeKeyList, getAll);
+      } else {
+        throw ex;
       }
     }
   }
@@ -447,6 +489,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       transaction.commit();
       LOGGER.debug("Project tags added successfully");
       return projectObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addProjectTags(projectId, tagsList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -473,6 +521,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       transaction.commit();
       LOGGER.debug("Project tags deleted successfully");
       return projectObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteProjectTags(projectId, projectTagList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -529,6 +583,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       transaction.commit();
       LOGGER.debug("Project attributes added successfully");
       return projectObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addProjectAttributes(projectId, attributesList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -554,6 +614,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.update(projectObj);
       transaction.commit();
       return projectObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteProjectAttributes(projectId, attributeKeyList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -562,6 +628,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
       return projectObj.getProtoObject().getTagsList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getProjectTags(projectId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -808,6 +880,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       LOGGER.debug("Project deleted successfully");
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteProjects(projectIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -830,6 +908,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Long count = (Long) query.uniqueResult();
       LOGGER.debug("Experiment Count : {}", count);
       return count;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentCount(projectIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -841,6 +925,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Long count = (Long) query.uniqueResult();
       LOGGER.debug("ExperimentRun Count : {}", count);
       return count;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunCount(projectIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -859,6 +949,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
       return projectEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getProjectByID(id);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -889,6 +985,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       transaction.commit();
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
       return projectEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setProjectShortName(projectId, projectShortName, userInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -952,6 +1054,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       transaction.commit();
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
       return projectEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setProjectVisibility(projectId, projectVisibility);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1029,6 +1137,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       List<ProjectEntity> projectEntities = getProjectEntityByBatchIds(session, projectIds);
       LOGGER.debug("Project by Ids getting successfully");
       return RdbmsUtils.convertProjectsFromProjectEntityList(projectEntities);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getProjectsByBatchIds(projectIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1200,6 +1314,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       projectPaginationDTO.setProjects(projects);
       projectPaginationDTO.setTotalRecords(totalRecords);
       return projectPaginationDTO;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return findProjects(queryParameters, host, currentLoginUserInfo, projectVisibility);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1243,6 +1363,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       transaction.commit();
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
       return projectEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return logArtifacts(projectId, newArtifacts);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1271,6 +1397,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getProjectArtifacts(projectId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1296,11 +1428,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.update(projectObj);
       transaction.commit();
       return projectObj.getProtoObject();
-    } catch (StatusRuntimeException ex) {
-      if (transaction != null) {
-        transaction.rollback();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteArtifacts(projectId, artifactKey);
+      } else {
+        throw ex;
       }
-      throw ex;
     }
   }
 
@@ -1318,6 +1451,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         projectOwnersMap.put(projectEntity.getId(), projectEntity.getOwner());
       }
       return projectOwnersMap;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getOwnersByProjectIds(projectIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1348,6 +1487,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Project workspace updated successfully");
       transaction.commit();
       return projectEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setProjectWorkspace(projectId, workspaceDTO);
+      } else {
+        throw ex;
+      }
     }
   }
 

@@ -8,6 +8,7 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.entities.JobEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -62,6 +63,12 @@ public class JobDAORdbImpl implements JobDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(statusMessage);
       }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        validateEntityUser(entityFieldKey, entityFieldValue, userInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -74,6 +81,12 @@ public class JobDAORdbImpl implements JobDAO {
       transaction.commit();
       LOGGER.debug("Job inserted successfully");
       return jobObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return insertJob(job);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -97,6 +110,12 @@ public class JobDAORdbImpl implements JobDAO {
       }
       LOGGER.debug("Job getting successfully");
       return jobObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getJob(entityFieldKey, entityFieldValue);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -118,6 +137,12 @@ public class JobDAORdbImpl implements JobDAO {
       transaction.commit();
       LOGGER.debug("Job deleted successfully");
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteJob(jobId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -143,6 +168,12 @@ public class JobDAORdbImpl implements JobDAO {
       transaction.commit();
       LOGGER.debug("Job updated successfully");
       return jobEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateJob(jobId, jobStatus, endTime);
+      } else {
+        throw ex;
+      }
     }
   }
 }

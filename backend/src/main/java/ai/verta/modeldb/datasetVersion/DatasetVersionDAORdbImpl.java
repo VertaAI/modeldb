@@ -152,6 +152,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         LOGGER.debug("DatasetVersion created successfully");
         return datasetVersionEntity.getProtoObject();
       }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return createDatasetVersion(request, dataset, userInfo);
+      } else {
+        throw ex;
+      }
     } finally {
       createDatasetVersionLock.unlock();
     }
@@ -228,6 +234,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       LOGGER.debug("DatasetVersion deleted successfully");
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetVersions(datasetVersionIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -244,6 +256,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       transaction.commit();
       LOGGER.debug("DatasetVersion deleted successfully");
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetVersionsByDatasetIDs(datasetIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -264,6 +282,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       }
       LOGGER.debug("DatasetVersion getting successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetVersion(datasetVersionId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -298,6 +322,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       List<DatasetVersionEntity> datasetEntities = query.list();
       LOGGER.debug("DatasetVersion by Ids getting successfully");
       return RdbmsUtils.convertDatasetVersionsFromDatasetVersionEntityList(datasetEntities);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetVersionsByBatchIds(datasetVersionIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -550,6 +580,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       datasetVersionPaginationDTO.setDatasetVersions(datasetVersions);
       datasetVersionPaginationDTO.setTotalRecords(totalRecords);
       return datasetVersionPaginationDTO;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return findDatasetVersions(datasetDAO, queryParameters, currentLoginUserInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -568,6 +604,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       transaction.commit();
       LOGGER.debug("DatasetVersion updated successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateDatasetVersionDescription(datasetVersionId, datasetVersionDescription);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -605,6 +647,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       transaction.commit();
       LOGGER.debug("DatasetVersion tags added successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addDatasetVersionTags(datasetVersionId, tagsList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -616,6 +664,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           session.get(DatasetVersionEntity.class, datasetVersionId);
       LOGGER.debug("DatasetVersion getting successfully");
       return datasetVersionObj.getProtoObject().getTagsList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetVersionTags(datasetVersionId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -647,6 +701,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       transaction.commit();
       LOGGER.debug("DatasetVersion tags deleted successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetVersionTags(datasetVersionId, datasetVersionTagList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -667,6 +727,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       transaction.commit();
       LOGGER.debug("DatasetVersion attributes added successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addDatasetVersionAttributes(datasetVersionId, attributesList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -714,6 +780,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       session.saveOrUpdate(datasetVersionObj);
       transaction.commit();
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateDatasetVersionAttributes(datasetVersionId, attribute);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -735,6 +807,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         @SuppressWarnings("unchecked")
         List<AttributeEntity> attributeEntities = query.list();
         return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetVersionAttributes(datasetVersionId, attributeKeyList, getAll);
+      } else {
+        throw ex;
       }
     }
   }
@@ -768,6 +846,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       session.update(datasetVersionObj);
       transaction.commit();
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetVersionAttributes(datasetVersionId, attributeKeyList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -786,6 +870,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       transaction.commit();
       LOGGER.debug("DatasetVersion updated successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setDatasetVersionVisibility(datasetVersionId, datasetVersionVisibility);
+      } else {
+        throw ex;
+      }
     }
   }
 

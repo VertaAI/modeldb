@@ -106,6 +106,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           dataset.getWorkspaceId(),
           dataset.getWorkspaceType(),
           LOGGER);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        checkDatasetAlreadyExist(dataset);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -124,6 +130,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       LOGGER.debug("Dataset created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
       return datasetEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return createDataset(dataset, userInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -192,6 +204,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       List<DatasetEntity> datasetEntities = getDatasetEntityList(session, sharedDatasetIds);
       LOGGER.debug("Got Dataset by Ids successfully");
       return RdbmsUtils.convertDatasetsFromDatasetEntityList(datasetEntities);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetByIds(sharedDatasetIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -357,6 +375,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       LOGGER.debug("Dataset deleted successfully");
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasets(datasetIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -374,6 +398,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       }
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
       return datasetObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetById(datasetId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -551,6 +581,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       datasetPaginationDTO.setDatasets(datasets);
       datasetPaginationDTO.setTotalRecords(totalRecords);
       return datasetPaginationDTO;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return findDatasets(queryParameters, currentLoginUserInfo, datasetVisibility);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -595,6 +631,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
       return datasetObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateDatasetName(datasetId, datasetName);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -610,6 +652,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
       return datasetObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateDatasetDescription(datasetId, datasetDescription);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -643,6 +691,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       }
       LOGGER.debug("Dataset tags added successfully");
       return datasetObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addDatasetTags(datasetId, tagsList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -652,6 +706,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       LOGGER.debug("Got Dataset");
       return datasetObj.getProtoObject().getTagsList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetTags(datasetId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -681,6 +741,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       transaction.commit();
       LOGGER.debug("Dataset tags deleted successfully");
       return datasetObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetTags(datasetId, datasetTagList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -698,6 +764,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       transaction.commit();
       LOGGER.debug("Dataset attributes added successfully");
       return datasetObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addDatasetAttributes(datasetId, attributesList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -740,6 +812,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.saveOrUpdate(datasetObj);
       transaction.commit();
       return datasetObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateDatasetAttributes(datasetId, attribute);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -760,6 +838,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         @SuppressWarnings("unchecked")
         List<AttributeEntity> attributeEntities = query.list();
         return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetAttributes(datasetId, attributeKeyList, getAll);
+      } else {
+        throw ex;
       }
     }
   }
@@ -792,6 +876,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.update(datasetObj);
       transaction.commit();
       return datasetObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetAttributes(datasetId, attributeKeyList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -826,6 +916,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       LOGGER.debug("Dataset by Id getting successfully");
       return datasetEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setDatasetVisibility(datasetId, datasetVisibility);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -910,6 +1006,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         datasetOwnersMap.put(datasetEntity.getId(), datasetEntity.getOwner());
       }
       return datasetOwnersMap;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getOwnersByDatasetIds(datasetIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -937,6 +1039,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       transaction.commit();
       LOGGER.debug("Dataset workspace updated successfully");
       return datasetEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setDatasetWorkspace(datasetId, workspaceDTO);
+      } else {
+        throw ex;
+      }
     }
   }
 
