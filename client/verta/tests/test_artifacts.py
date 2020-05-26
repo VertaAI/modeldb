@@ -13,7 +13,7 @@ from . import utils
 
 
 class TestUtils:
-    def test_calc_checksum(self):
+    def test_calc_sha256(self):
         FILE_SIZE = 6*10**6  # 6 MB
 
         with tempfile.NamedTemporaryFile(suffix='.txt') as tempf:
@@ -22,7 +22,7 @@ class TestUtils:
             os.fsync(tempf.fileno())  # flush OS buffer
 
             tempf.seek(0)
-            piecewise_checksum = _artifact_utils.calc_checksum(tempf, FILE_SIZE//2)
+            piecewise_checksum = _artifact_utils.calc_sha256(tempf, FILE_SIZE//2)
 
             tempf.seek(0)
             whole_checksum = hashlib.sha256(tempf.read()).hexdigest()

@@ -330,7 +330,7 @@ def deserialize_model(bytestring):
     return bytestream
 
 
-def calc_checksum(bytestream, chunk_size=5*10**6):
+def calc_sha256(bytestream, chunk_size=5*10**6):
     """
     Calculates the SHA-256 checksum of a bytestream.
 

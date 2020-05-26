@@ -1063,7 +1063,7 @@ class _ModelDBEntity(object):
             key = 'code'
             extension = 'zip'
 
-            artifact_hash = _artifact_utils.calc_checksum(zipstream)
+            artifact_hash = _artifact_utils.calc_sha256(zipstream)
             zipstream.seek(0)
             basename = key + os.extsep + extension
             artifact_path = os.path.join(artifact_hash, basename)
@@ -1997,7 +1997,7 @@ class ExperimentRun(_ModelDBEntity):
             extension = _artifact_utils.ext_from_method(method)
 
         # calculate checksum
-        artifact_hash = _artifact_utils.calc_checksum(artifact_stream)
+        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
         artifact_stream.seek(0)
 
         # determine basename
