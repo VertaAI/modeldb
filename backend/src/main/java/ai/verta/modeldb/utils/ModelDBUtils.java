@@ -484,7 +484,8 @@ public class ModelDBUtils {
 
   public static boolean needToRetry(Exception ex) {
     Throwable communicationsException = findCommunicationsFailedCause(ex);
-    if (communicationsException.getCause() instanceof CommunicationsException) {
+    if ((communicationsException.getCause() instanceof CommunicationsException)
+            || (communicationsException.getCause() instanceof SocketException)) {
       LOGGER.warn(communicationsException.getMessage());
       return true;
     }
@@ -497,7 +498,7 @@ public class ModelDBUtils {
     }
     Throwable rootCause = throwable;
     while (rootCause.getCause() != null
-        && !(rootCause.getCause() instanceof CommunicationsException)) {
+        && !(rootCause.getCause() instanceof CommunicationsException || rootCause.getCause() instanceof SocketException)) {
       rootCause = rootCause.getCause();
     }
     return rootCause;
