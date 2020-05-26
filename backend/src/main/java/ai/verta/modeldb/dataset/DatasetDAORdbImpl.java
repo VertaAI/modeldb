@@ -114,40 +114,42 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       throws InvalidProtocolBufferException {
     // Check entity already exists
     checkDatasetAlreadyExist(dataset);
+    createRoleBindingsForDataset(dataset, userInfo);
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       DatasetEntity datasetEntity = RdbmsUtils.generateDatasetEntity(dataset);
       session.save(datasetEntity);
-
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          dataset.getId(),
-          ModelDBServiceResourceTypes.DATASET);
-      if (dataset.getDatasetVisibility().equals(DatasetVisibility.PUBLIC)) {
-        Role publicReadRole =
-            roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_PUBLIC_READ, null);
-        UserInfo unsignedUser = authService.getUnsignedUser();
-        roleService.createRoleBinding(
-            publicReadRole,
-            new CollaboratorUser(authService, unsignedUser),
-            dataset.getId(),
-            ModelDBServiceResourceTypes.DATASET);
-      }
-
-      createWorkspaceRoleBinding(
-          dataset.getWorkspaceId(),
-          dataset.getWorkspaceType(),
-          dataset.getId(),
-          dataset.getDatasetVisibility());
-
       transaction.commit();
       LOGGER.debug("Dataset created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
       return datasetEntity.getProtoObject();
     }
+  }
+
+  private void createRoleBindingsForDataset(Dataset dataset, UserInfo userInfo) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        dataset.getId(),
+        ModelDBServiceResourceTypes.DATASET);
+    if (dataset.getDatasetVisibility().equals(DatasetVisibility.PUBLIC)) {
+      Role publicReadRole =
+          roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_PUBLIC_READ, null);
+      UserInfo unsignedUser = authService.getUnsignedUser();
+      roleService.createRoleBinding(
+          publicReadRole,
+          new CollaboratorUser(authService, unsignedUser),
+          dataset.getId(),
+          ModelDBServiceResourceTypes.DATASET);
+    }
+
+    createWorkspaceRoleBinding(
+        dataset.getWorkspaceId(),
+        dataset.getWorkspaceType(),
+        dataset.getId(),
+        dataset.getDatasetVisibility());
   }
 
   private void createWorkspaceRoleBinding(
@@ -345,6 +347,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       for (DatasetEntity datasetObj : datasetEntities) {
         session.delete(datasetObj);
       }
+
       // Remove roleBindings by accessible datasets
       deleteRoleBindingsOfAccessibleDatasets(datasetEntities, roleBindingNames);
       transaction.commit();
@@ -354,20 +357,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       LOGGER.debug("Dataset deleted successfully");
       return true;
-    }
-  }
-
-  @Override
-  public Boolean setUpdateTime(List<String> datasetIds, long timestamp) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      Query query = session.createQuery(UPDATE_TIME_QUERY);
-      query.setParameter("timestamp", timestamp);
-      query.setParameterList("ids", datasetIds);
-      int result = query.executeUpdate();
-      transaction.commit();
-      LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
-      return result > 0;
     }
   }
 
@@ -421,40 +410,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       List<KeyValueQuery> predicates = new ArrayList<>(queryParameters.getPredicatesList());
       for (KeyValueQuery predicate : predicates) {
-        // Validate if current user has access to the entity or not where predicate key has a
-        // datasetId
-        if (predicate.getKey().equals(ModelDBConstants.ID)) {
-          if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
-            Status statusMessage =
-                Status.newBuilder()
-                    .setCode(Code.INVALID_ARGUMENT_VALUE)
-                    .setMessage("Unknown 'Operator' type recognized, valid 'Operator' type is EQ")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(statusMessage);
-          }
-          String datasetId = predicate.getValue().getStringValue();
-          if (accessibleDatasetIds.isEmpty() || !accessibleDatasetIds.contains(datasetId)) {
-            Status statusMessage =
-                Status.newBuilder()
-                    .setCode(Code.PERMISSION_DENIED_VALUE)
-                    .setMessage(
-                        "Access is denied. User is unauthorized for given Dataset entity ID : "
-                            + datasetId)
-                    .build();
-            throw StatusProto.toStatusRuntimeException(statusMessage);
-          }
-        }
-
-        if (predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE)
-            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_NAME)
-            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_TYPE)) {
-          Status statusMessage =
-              Status.newBuilder()
-                  .setCode(Code.INVALID_ARGUMENT_VALUE)
-                  .setMessage("Workspace name OR type not supported as predicate")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(statusMessage);
-        }
+        // Validate if current user has access to the entity or not where predicate key has an id
+        RdbmsUtils.validatePredicates(
+            ModelDBConstants.DATASETS, accessibleDatasetIds, predicate, roleService);
       }
 
       String workspaceName = queryParameters.getWorkspaceName();
@@ -619,7 +577,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset updateDatasetName(String datasetId, String datasetName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetEntity datasetObj = session.load(DatasetEntity.class, datasetId);
 
       Dataset dataset =
@@ -633,6 +590,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       datasetObj.setName(datasetName);
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.update(datasetObj);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
@@ -644,10 +602,10 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset updateDatasetDescription(String datasetId, String datasetDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetEntity datasetObj = session.load(DatasetEntity.class, datasetId);
       datasetObj.setDescription(datasetDescription);
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.update(datasetObj);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
@@ -659,7 +617,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset addDatasetTags(String datasetId, List<String> tagsList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
@@ -680,9 +637,10 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             RdbmsUtils.convertTagListFromTagMappingList(datasetObj, newTags);
         datasetObj.getTags().addAll(newTagMappings);
         datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
+        Transaction transaction = session.beginTransaction();
         session.saveOrUpdate(datasetObj);
+        transaction.commit();
       }
-      transaction.commit();
       LOGGER.debug("Dataset tags added successfully");
       return datasetObj.getProtoObject();
     }
@@ -730,12 +688,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset addDatasetAttributes(String datasetId, List<KeyValue> attributesList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       datasetObj.setAttributeMapping(
           RdbmsUtils.convertAttributesFromAttributeEntityList(
               datasetObj, ModelDBConstants.ATTRIBUTES, attributesList));
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(datasetObj);
       transaction.commit();
       LOGGER.debug("Dataset attributes added successfully");
@@ -747,7 +705,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset updateDatasetAttributes(String datasetId, KeyValue attribute)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
@@ -779,6 +736,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         datasetObj.setAttributeMapping(Collections.singletonList(updatedAttributeObj));
       }
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(datasetObj);
       transaction.commit();
       return datasetObj.getProtoObject();
@@ -841,7 +799,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset setDatasetVisibility(String datasetId, DatasetVisibility datasetVisibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetEntity datasetEntity = session.load(DatasetEntity.class, datasetId);
 
       Integer oldVisibilityInt = datasetEntity.getDataset_visibility();
@@ -852,6 +809,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       if (!oldVisibility.equals(datasetVisibility)) {
         datasetEntity.setDataset_visibility(datasetVisibility.ordinal());
         datasetEntity.setTime_updated(Calendar.getInstance().getTimeInMillis());
+        Transaction transaction = session.beginTransaction();
         session.update(datasetEntity);
         deleteOldVisibilityBasedBinding(
             oldVisibility,
@@ -863,9 +821,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             datasetId,
             datasetEntity.getWorkspace_type(),
             datasetEntity.getWorkspace());
+        transaction.commit();
       }
 
-      transaction.commit();
       LOGGER.debug("Dataset by Id getting successfully");
       return datasetEntity.getProtoObject();
     }
@@ -960,7 +918,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       throws InvalidProtocolBufferException {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetEntity datasetEntity = session.load(DatasetEntity.class, datasetId);
       getWorkspaceRoleBindings(
           datasetEntity.getWorkspace(),
@@ -975,10 +932,23 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       datasetEntity.setWorkspace(workspaceDTO.getWorkspaceId());
       datasetEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
       datasetEntity.setTime_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.update(datasetEntity);
-      LOGGER.debug("Dataset workspace updated successfully");
       transaction.commit();
+      LOGGER.debug("Dataset workspace updated successfully");
       return datasetEntity.getProtoObject();
     }
+  }
+
+  @Override
+  public List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo)
+      throws InvalidProtocolBufferException {
+    FindDatasets findDatasets =
+        FindDatasets.newBuilder().setWorkspaceName(workspaceName).setIdsOnly(true).build();
+    DatasetPaginationDTO datasetPaginationDTO =
+        findDatasets(findDatasets, currentLoginUserInfo, DatasetVisibility.PRIVATE);
+    return datasetPaginationDTO.getDatasets().stream()
+        .map(Dataset::getId)
+        .collect(Collectors.toList());
   }
 }

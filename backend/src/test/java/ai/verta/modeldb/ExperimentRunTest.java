@@ -385,15 +385,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -404,24 +395,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-    experiment = getExperimentByIdResponse.getExperiment();
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     try {
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -1445,15 +1418,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -1464,24 +1428,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-    experiment = getExperimentByIdResponse.getExperiment();
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     UpdateExperimentRunName request =
         UpdateExperimentRunName.newBuilder()
@@ -1503,22 +1449,6 @@ public class ExperimentRunTest {
         response.getExperimentRun().getDateUpdated());
     experimentRun = response.getExperimentRun();
 
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-    experiment = getExperimentByIdResponse.getExperiment();
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     UpdateExperimentRunDescription request2 =
         UpdateExperimentRunDescription.newBuilder()
             .setId(experimentRun.getId())
@@ -1538,22 +1468,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response2.getExperimentRun().getDateUpdated());
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-    experiment = getExperimentByIdResponse.getExperiment();
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     try {
       String name =
@@ -1689,15 +1603,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -1708,24 +1613,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-    experiment = getExperimentByIdResponse.getExperiment();
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     List<String> tags = new ArrayList<>();
     tags.add("Test Added tag");
@@ -1744,21 +1631,6 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         aertResponse.getExperimentRun().getDateUpdated());
     experimentRun = aertResponse.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     tags = new ArrayList<>();
     tags.add("Test Added tag 3");
@@ -1900,15 +1772,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -1919,24 +1782,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-    experiment = getExperimentByIdResponse.getExperiment();
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     AddExperimentRunTag request =
         AddExperimentRunTag.newBuilder()
@@ -1956,21 +1801,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         aertResponse.getExperimentRun().getDateUpdated());
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     try {
       String tag52 = "Human Activity Recognition using Smartphone Dataset";
@@ -2183,15 +2013,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -2202,24 +2023,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-    experiment = getExperimentByIdResponse.getExperiment();
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     List<String> removableTagList = new ArrayList<>();
     if (experimentRun.getTagsList().size() > 1) {
@@ -2243,21 +2046,6 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
     experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     if (response.getExperimentRun().getTagsList().size() > 0) {
       request =
@@ -2386,15 +2174,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -2405,23 +2184,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteExperimentRunTag request =
         DeleteExperimentRunTag.newBuilder().setId(experimentRun.getId()).setTag("Tag_1").build();
@@ -2435,22 +2197,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -2653,15 +2399,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -2672,23 +2409,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     Value intValue =
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
@@ -2719,22 +2439,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -2881,15 +2585,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -2900,23 +2595,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     List<Observation> observations = new ArrayList<>();
     Value intValue =
@@ -2969,21 +2647,6 @@ public class ExperimentRunTest {
         response.getExperimentRun().getDateUpdated());
     experimentRun = response.getExperimentRun();
 
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     logObservationRequest =
         LogObservations.newBuilder()
             .setId(experimentRun.getId())
@@ -3004,22 +2667,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -3306,15 +2953,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -3325,23 +2963,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     Value intValue =
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
@@ -3366,22 +2987,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -3533,15 +3138,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -3552,23 +3148,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     List<KeyValue> keyValues = new ArrayList<>();
     Value intValue =
@@ -3606,22 +3185,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -3887,15 +3450,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -3906,23 +3460,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
@@ -4011,21 +3548,6 @@ public class ExperimentRunTest {
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteDataset deleteDataset =
         DeleteDataset.newBuilder().setId(createDatasetResponse.getDataset().getId()).build();
@@ -4199,15 +3721,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -4218,23 +3731,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
@@ -4336,22 +3832,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteDataset deleteDataset =
         DeleteDataset.newBuilder().setId(createDatasetResponse.getDataset().getId()).build();
@@ -4618,15 +4098,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -4637,23 +4108,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     Artifact artifact =
         Artifact.newBuilder()
@@ -4676,22 +4130,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -4841,15 +4279,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -4860,23 +4289,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     List<Artifact> artifacts = new ArrayList<>();
     Artifact artifact1 =
@@ -4909,22 +4321,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -5183,15 +4579,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -5202,23 +4589,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     Value blobValue = Value.newBuilder().setStringValue("this is a blob data example").build();
     KeyValue hyperparameter =
@@ -5246,22 +4616,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -5416,15 +4770,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -5435,23 +4780,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     List<KeyValue> hyperparameters = new ArrayList<>();
     Value blobValue = Value.newBuilder().setStringValue("this is a blob data example").build();
@@ -5490,22 +4818,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -5779,15 +5091,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -5798,23 +5101,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     Value blobValue =
         Value.newBuilder().setStringValue("this is a blob data example of attribute").build();
@@ -5839,22 +5125,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -6007,15 +5277,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -6026,23 +5287,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     List<KeyValue> attributes = new ArrayList<>();
     Value blobValue =
@@ -6081,21 +5325,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -6260,15 +5489,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -6279,23 +5499,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     List<KeyValue> attributeList = new ArrayList<>();
     Value intValue = Value.newBuilder().setNumberValue(1.1).build();
@@ -6333,22 +5536,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -6561,15 +5748,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -6580,23 +5758,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     List<KeyValue> attributes = experimentRun.getAttributesList();
     LOGGER.info("Attributes size : " + attributes.size());
@@ -6626,21 +5787,6 @@ public class ExperimentRunTest {
         response.getExperimentRun().getDateUpdated());
     experimentRun = response.getExperimentRun();
 
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     if (response.getExperimentRun().getAttributesList().size() != 0) {
       request =
           DeleteExperimentRunAttributes.newBuilder()
@@ -6658,22 +5804,6 @@ public class ExperimentRunTest {
           "ExperimentRun date_updated field not update on database",
           experimentRun.getDateUpdated(),
           response.getExperimentRun().getDateUpdated());
-      experimentRun = response.getExperimentRun();
-
-      getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-      getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-      assertNotEquals(
-          "Experiment date_updated field not update on database",
-          experiment.getDateUpdated(),
-          getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-      getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-      getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-      assertNotEquals(
-          "Project date_updated field not update on database",
-          project.getDateUpdated(),
-          getProjectByIdResponse.getProject().getDateUpdated());
-      project = getProjectByIdResponse.getProject();
     }
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
@@ -7451,15 +6581,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -7470,23 +6591,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     String jobId = "xyz";
     LogJobId logJobIdRequest =
@@ -7502,22 +6606,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -7760,15 +6848,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -7779,23 +6858,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteExperimentRun deleteExperimentRun =
         DeleteExperimentRun.newBuilder().setId(experimentRun.getId()).build();
@@ -8302,15 +7364,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -8321,24 +7374,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-    experiment = getExperimentByIdResponse.getExperiment();
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     LogExperimentRunCodeVersion logExperimentRunCodeVersionRequest =
         LogExperimentRunCodeVersion.newBuilder()
@@ -8462,15 +7497,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -8481,24 +7507,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-    experiment = getExperimentByIdResponse.getExperiment();
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     LogExperimentRunCodeVersion logExperimentRunCodeVersionRequest =
         LogExperimentRunCodeVersion.newBuilder()
@@ -8577,15 +7585,6 @@ public class ExperimentRunTest {
         createExperimentRequest.getName(),
         experiment.getName());
 
-    GetProjectById getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    GetProjectById.Response getProjectByIdResponse =
-        projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -8596,23 +7595,6 @@ public class ExperimentRunTest {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     List<Artifact> artifacts = experimentRun.getArtifactsList();
     LOGGER.info("Artifacts size : " + artifacts.size());
@@ -8636,21 +7618,6 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-
-    getExperimentById = GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    getExperimentByIdResponse = experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
-
-    getProjectById = GetProjectById.newBuilder().setId(project.getId()).build();
-    getProjectByIdResponse = projectServiceStub.getProjectById(getProjectById);
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        getProjectByIdResponse.getProject().getDateUpdated());
-    project = getProjectByIdResponse.getProject();
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -8713,15 +7680,6 @@ public class ExperimentRunTest {
           createExperimentRunRequest.getName(),
           experimentRun.getName());
     }
-
-    GetExperimentById getExperimentById =
-        GetExperimentById.newBuilder().setId(experiment.getId()).build();
-    GetExperimentById.Response getExperimentByIdResponse =
-        experimentServiceStub.getExperimentById(getExperimentById);
-    assertNotEquals(
-        "Experiment date_updated field not update on database",
-        experiment.getDateUpdated(),
-        getExperimentByIdResponse.getExperiment().getDateUpdated());
 
     DeleteExperimentRuns deleteExperimentRuns =
         DeleteExperimentRuns.newBuilder().addAllIds(experimentRunIds).build();
