@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import hashlib
 import os
 import tempfile
 
@@ -327,3 +328,37 @@ def deserialize_model(bytestring):
         bytestream.seek(0)
 
     return bytestream
+
+
+def calc_sha256(bytestream, chunk_size=5*10**6):
+    """
+    Calculates the SHA-256 checksum of a bytestream.
+
+    Parameters
+    ----------
+    bytestream : file-like opened in binary mode
+        Bytestream.
+    chunk_size : int, default 5 MB
+        Number of bytes to read into memory at a time.
+
+    Returns
+    -------
+    checksum : str
+        SHA-256 hash of `bytestream`'s contents.
+
+    Raises
+    ------
+    TypeError
+        If `bytestream` is opened in text mode instead of binary mode.
+
+    """
+    checksum = hashlib.sha256()
+
+    try:
+        parts = iter(lambda: bytestream.read(chunk_size), b'')
+        for part in parts:
+            checksum.update(part)
+    finally:
+        reset_stream(bytestream)  # reset cursor to beginning as a courtesy
+
+    return checksum.hexdigest()
