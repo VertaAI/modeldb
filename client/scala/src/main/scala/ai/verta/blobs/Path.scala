@@ -49,6 +49,7 @@ case class Path(val paths: List[String]) extends Dataset {
    /** Get the metadata of path.
     *  Handle the case where the path is a directory, in which case the method is called recursively
     *  @param file file
+    *  TODO: use non-recursive DFS/BFS instead to prevent stack overflow
     */
    private def get_path_metadata(file: File): List[VersioningPathDatasetComponentBlob] = {
      if (file.isDirectory()) file.listFiles().toList.flatMap(get_path_metadata)
