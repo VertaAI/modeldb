@@ -9,3 +9,5 @@ trait Blob {
 trait Code extends Blob
 
 trait Configuration extends Blob
+
+trait Dataset extends Blob

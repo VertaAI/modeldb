@@ -11,18 +11,15 @@ object Hello extends App {
 
   val client = new Client(ClientConnection.fromEnvironment())
   try {
-    val r = client.getOrCreateRepository("Some Repo").get
-    println(r)
-    println(client.deleteRepository(r.repo.id.get.toString))
-    // println(client.getOrCreateProject("scala test")
-    //   .flatMap(_.getOrCreateExperiment("experiment"))
-    //   .flatMap(_.getOrCreateExperimentRun())
-    //   .flatMap(run => {
-    //     run.hyperparameters += (("foo", 2), ("bar", "baz"))
-    //     run.logArtifactObj("dummy", new DummyArtifact("hello")).get
-    //     Try(run.getArtifactObj("dummy").get.asInstanceOf[DummyArtifact])
-    //   })
-    //   .get)
+    println(client.getOrCreateProject("scala test")
+      .flatMap(_.getOrCreateExperiment("experiment"))
+      .flatMap(_.getOrCreateExperimentRun())
+      .flatMap(run => {
+        run.hyperparameters += (("foo", 2), ("bar", "baz"))
+        run.logArtifactObj("dummy", new DummyArtifact("hello")).get
+        Try(run.getArtifactObj("dummy").get.asInstanceOf[DummyArtifact])
+      })
+      .get)
   } finally {
     client.close()
   }
