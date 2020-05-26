@@ -5,7 +5,6 @@ from __future__ import print_function
 import ast
 import copy
 import glob
-import hashlib
 import importlib
 import os
 import pprint
@@ -1064,7 +1063,7 @@ class _ModelDBEntity(object):
             key = 'code'
             extension = 'zip'
 
-            artifact_hash = hashlib.sha256(zipstream.read()).hexdigest()
+            artifact_hash = _artifact_utils.calc_checksum(zipstream)
             zipstream.seek(0)
             basename = key + os.extsep + extension
             artifact_path = os.path.join(artifact_hash, basename)
@@ -1998,7 +1997,7 @@ class ExperimentRun(_ModelDBEntity):
             extension = _artifact_utils.ext_from_method(method)
 
         # calculate checksum
-        artifact_hash = hashlib.sha256(artifact_stream.read()).hexdigest()
+        artifact_hash = _artifact_utils.calc_checksum(artifact_stream)
         artifact_stream.seek(0)
 
         # determine basename
