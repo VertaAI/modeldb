@@ -18,6 +18,8 @@ import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.TagsEntity;
+import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.uac.ModelResourceEnum;
 import ai.verta.uac.UserInfo;
@@ -553,7 +555,7 @@ public class DeleteEntitiesCron extends TimerTask {
   private void deleteRepositories(Session session) {
     LOGGER.debug("Repository deleting");
     String alias = "rp";
-    String deleteRepositorysQueryString =
+    String deleteRepositoriesQueryString =
         new StringBuilder("FROM ")
             .append(RepositoryEntity.class.getSimpleName())
             .append(" ")
@@ -564,7 +566,7 @@ public class DeleteEntitiesCron extends TimerTask {
             .append(ModelDBConstants.DELETED)
             .append(" = :deleted ")
             .toString();
-    Query repositoryDeleteQuery = session.createQuery(deleteRepositorysQueryString);
+    Query repositoryDeleteQuery = session.createQuery(deleteRepositoriesQueryString);
     repositoryDeleteQuery.setParameter("deleted", true);
     LOGGER.debug("Repository delete query: {}", repositoryDeleteQuery.getQueryString());
     List<RepositoryEntity> repositoryEntities = repositoryDeleteQuery.list();
@@ -574,6 +576,19 @@ public class DeleteEntitiesCron extends TimerTask {
         deleteRoleBindingsOfRepositories(Collections.singletonList(repository));
 
         Transaction transaction = session.beginTransaction();
+
+        String deleteTagsHql =
+            new StringBuilder("DELETE " + TagsEntity.class.getSimpleName() + " te where te.id.")
+                .append(ModelDBConstants.REPOSITORY_ID)
+                .append(" = :repoId ")
+                .toString();
+        Query deleteTagsQuery = session.createQuery(deleteTagsHql);
+        deleteTagsQuery.setParameter("repoId", repository.getId());
+        deleteTagsQuery.executeUpdate();
+
+        deleteLabels(
+            session, String.valueOf(repository.getId()), IDTypeEnum.IDType.VERSIONING_REPOSITORY);
+
         String getRepositoryBranchesHql =
             new StringBuilder("From ")
                 .append(BranchEntity.class.getSimpleName())
@@ -617,6 +632,8 @@ public class DeleteEntitiesCron extends TimerTask {
               if (commitEntity.getRepository().contains(repository)) {
                 commitEntity.getRepository().remove(repository);
                 if (commitEntity.getRepository().isEmpty()) {
+                  deleteLabels(
+                      session, commitEntity.getCommit_hash(), IDTypeEnum.IDType.VERSIONING_COMMIT);
                   session.delete(commitEntity);
                 } else {
                   session.update(commitEntity);
@@ -628,8 +645,23 @@ public class DeleteEntitiesCron extends TimerTask {
       }
     }
     LOGGER.debug(
-        "Repository Deleted successfully : Deleted repositorys count {}",
+        "Repository Deleted successfully : Deleted repositories count {}",
         repositoryEntities.size());
+  }
+
+  private void deleteLabels(Session session, Object entityHash, IDTypeEnum.IDType idType) {
+    String deleteLabelsQueryString =
+        new StringBuilder("DELETE LabelsMappingEntity lm where lm.id.")
+            .append(ModelDBConstants.ENTITY_HASH)
+            .append(" = :entityHash ")
+            .append(" AND lm.id.")
+            .append(ModelDBConstants.ENTITY_TYPE)
+            .append(" = :entityType")
+            .toString();
+    Query deleteLabelsQuery = session.createQuery(deleteLabelsQueryString);
+    deleteLabelsQuery.setParameter("entityHash", entityHash);
+    deleteLabelsQuery.setParameter("entityType", idType.getNumber());
+    deleteLabelsQuery.executeUpdate();
   }
 
   private void deleteRoleBindingsOfRepositories(List<RepositoryEntity> allowedResources) {
