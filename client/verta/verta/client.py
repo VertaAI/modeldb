@@ -796,8 +796,6 @@ class _ModelDBEntity(object):
         response = _utils.make_request("POST",
                                        self._request_url.format("getUrlForArtifact"),
                                        self._conn, json=data)
-        # TODO: if not ok and `part_num`, raise exception
-        #     TODO: if ok and not `multipart_upload_ok`, raise same exception
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(response.json(), Message.Response)
@@ -2063,9 +2061,11 @@ class ExperimentRun(_ModelDBEntity):
             print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
 
-        # TODO: is multipart_upload_ok == True if no part_number?
-        # TODO: does passing part_number raise immediate exception?
-        url_for_artifact = self._get_url_for_artifact(key, "PUT")
+        try:
+            url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
+        except requests.HTTPError:  # backend knows it doesn't support multipart upload
+            # TODO: check if ^ is true
+            url_for_artifact = self._get_url_for_artifact(key, "PUT")
 
         if url_for_artifact.multipart_upload_ok:
             # upload parts
