@@ -14,6 +14,7 @@ import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -408,6 +409,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         deleteBranchQuery.executeUpdate();
       }
 
+      String deleteTagsHql =
+          new StringBuilder("DELETE " + TagsEntity.class.getSimpleName() + " te where te.id.")
+              .append(ModelDBConstants.REPOSITORY_ID)
+              .append(" = :repoId ")
+              .toString();
+      Query deleteTagsQuery = session.createQuery(deleteTagsHql);
+      deleteTagsQuery.setParameter("repoId", repository.getId());
+      deleteTagsQuery.executeUpdate();
+
+      deleteLabels(
+          session, String.valueOf(repository.getId()), IDTypeEnum.IDType.VERSIONING_REPOSITORY);
+
       CommitPaginationDTO commitPaginationDTO =
           commitDAO.fetchCommitEntityList(
               session, ListCommitsRequest.newBuilder().build(), repository.getId());
@@ -418,6 +431,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 if (commitEntity.getRepository().contains(repository)) {
                   commitEntity.getRepository().remove(repository);
                   if (commitEntity.getRepository().isEmpty()) {
+                    deleteLabels(
+                        session,
+                        commitEntity.getCommit_hash(),
+                        IDTypeEnum.IDType.VERSIONING_COMMIT);
                     session.delete(commitEntity);
                   } else {
                     session.update(commitEntity);
@@ -432,6 +449,21 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.getTransaction().commit();
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     }
+  }
+
+  public void deleteLabels(Session session, Object entityHash, IDTypeEnum.IDType idType) {
+    String deleteLabelsQueryString =
+        new StringBuilder("DELETE LabelsMappingEntity lm where lm.id.")
+            .append(ModelDBConstants.ENTITY_HASH)
+            .append(" = :entityHash ")
+            .append(" AND lm.id.")
+            .append(ModelDBConstants.ENTITY_TYPE)
+            .append(" = :entityType")
+            .toString();
+    Query deleteLabelsQuery = session.createQuery(deleteLabelsQueryString);
+    deleteLabelsQuery.setParameter("entityHash", entityHash);
+    deleteLabelsQuery.setParameter("entityType", idType.getNumber());
+    deleteLabelsQuery.executeUpdate();
   }
 
   @Override
