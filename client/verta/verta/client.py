@@ -2074,7 +2074,7 @@ class ExperimentRun(_ModelDBEntity):
                 part_num = i + 1
 
                 # get presigned URL
-                url = self._get_url_for_artifact(key, "PUT", part_num=part_num)
+                url = self._get_url_for_artifact(key, "PUT", part_num=part_num).url
 
                 # upload part
                 part_stream = six.BytesIO(file_part)  # enables streaming by `requests`, otherwise overwhelms SSL
