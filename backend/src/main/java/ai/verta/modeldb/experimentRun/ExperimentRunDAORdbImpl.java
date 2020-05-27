@@ -2366,7 +2366,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public GetCommittedArtifactParts.Response getCommitedArtifactParts(
+  public GetCommittedArtifactParts.Response getCommittedArtifactParts(
       GetCommittedArtifactParts request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Set<ArtifactPartEntity> artifactPartEntities =
