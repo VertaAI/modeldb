@@ -34,7 +34,7 @@ class TestS3 extends FunSuite {
     }
   }
 
-  test("S3 blob should retrieve the file correctly") {
+  test("S3 blob should retrieve the file (i.e with key) correctly") {
     val s3Loc = new S3Location("s3://verta-scala-test/testdir/testfile")
     val s3 = S3(List(s3Loc))
 
@@ -45,5 +45,40 @@ class TestS3 extends FunSuite {
     assert(s3File.size.get > 0)
     assert(s3File.last_modified_at_source.get > 0)
     assert(s3File.md5.get.length > 0)
+  }
+
+  test("S3 blob should retrieve the entire bucket correctly") {
+    val s3Loc = new S3Location("s3://verta-scala-test")
+    val s3 = S3(List(s3Loc))
+
+    assert(
+      s3.components
+      .map(_.path.get)
+      .filter(_.path.get != "")
+      .filter(_.size.get != 0)
+      .filter(_.last_modified_at_source.get != 0)
+      .filter(_.md5.get != "")
+      .length == s3.components.length
+    )
+  }
+
+  test("S3 should retrieve multiple keys correctly") {
+
+    val s3 = S3(List(
+      new S3Location("s3://verta-scala-test/testdir/testfile"),
+      new S3Location("s3://verta-scala-test/testdir/testsubdir/testfile2")
+    ))
+
+    assert(s3.components.length == 2)
+
+    assert(
+      s3.components
+      .map(_.path.get)
+      .filter(_.path.get != "")
+      .filter(_.size.get != 0)
+      .filter(_.last_modified_at_source.get != 0)
+      .filter(_.md5.get != "")
+      .length == s3.components.length
+    )
   }
 }
