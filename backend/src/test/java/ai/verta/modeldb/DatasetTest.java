@@ -1863,8 +1863,12 @@ public class DatasetTest {
     LogDataset logDatasetRequest =
         LogDataset.newBuilder().setId(experimentRun2.getId()).setDataset(artifact).build();
 
-    LogDataset.Response response = experimentRunServiceStub.logDataset(logDatasetRequest);
+    experimentRunServiceStub.logDataset(logDatasetRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun2.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
     assertTrue(
         "Experiment dataset not match with expected dataset",
@@ -1886,8 +1890,10 @@ public class DatasetTest {
     logDatasetRequest =
         LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
 
-    response = experimentRunServiceStub.logDataset(logDatasetRequest);
+    experimentRunServiceStub.logDataset(logDatasetRequest);
 
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
     assertTrue(
         "Experiment dataset not match with expected dataset",
@@ -2081,8 +2087,12 @@ public class DatasetTest {
     LogDataset logDatasetRequest =
         LogDataset.newBuilder().setId(experimentRun2.getId()).setDataset(artifact).build();
 
-    LogDataset.Response response = experimentRunServiceStub.logDataset(logDatasetRequest);
+    experimentRunServiceStub.logDataset(logDatasetRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun2.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
     assertTrue(
         "Experiment dataset not match with expected dataset",
@@ -2104,8 +2114,10 @@ public class DatasetTest {
     logDatasetRequest =
         LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
 
-    response = experimentRunServiceStub.logDataset(logDatasetRequest);
+    experimentRunServiceStub.logDataset(logDatasetRequest);
 
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
     assertTrue(
         "Experiment dataset not match with expected dataset",
