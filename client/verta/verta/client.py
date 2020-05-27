@@ -2049,6 +2049,8 @@ class ExperimentRun(_ModelDBEntity):
 
     def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
         """
+        Uploads `artifact_stream` to ModelDB artifact store.
+
         Parameters
         ----------
         key : str
