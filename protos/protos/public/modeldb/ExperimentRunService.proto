@@ -8,6 +8,7 @@ option java_multiple_files = true;
 import "common/CommonService.proto";
 import "modeldb/CommonService.proto";
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 // import "google/protobuf/struct.proto";
 
 /*
@@ -56,9 +57,6 @@ message Location {
 message LogVersionedInput {
     string id = 1;
     VersioningEntry versioned_inputs = 2;
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 message GetVersionedInput {
     string id = 1;
@@ -159,77 +157,45 @@ message GetExperimentRunByName {
 message UpdateExperimentRunName {
     string id = 1;
     string name = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 message UpdateExperimentRunDescription {
     string id = 1;
     string description = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 // tags
 message AddExperimentRunTags {
     string id = 1;
     repeated string tags = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message DeleteExperimentRunTags {
     string id = 1;
     repeated string tags = 2;
     bool delete_all = 3;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 // tag
 message AddExperimentRunTag {
     string id = 1;
     string tag = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message DeleteExperimentRunTag {
     string id = 1;
     string tag = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 // attributes
 message AddExperimentRunAttributes {
     string id = 1;
     repeated common.KeyValue attributes = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message DeleteExperimentRunAttributes {
     string id = 1;
     repeated string attribute_keys = 2;
     bool delete_all = 3;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 // code version
@@ -237,10 +203,6 @@ message LogExperimentRunCodeVersion {
     string id = 1;
     CodeVersion code_version = 2;
     bool overwrite = 3;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message GetExperimentRunCodeVersion {
@@ -255,20 +217,12 @@ message GetExperimentRunCodeVersion {
 message LogObservation {
     string id = 1;
     Observation observation = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 // observations
 message LogObservations {
     string id = 1;
     repeated Observation observations = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message GetObservations {
@@ -284,20 +238,12 @@ message GetObservations {
 message LogMetric {
     string id = 1;
     common.KeyValue metric = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 // metrics
 message LogMetrics {
     string id = 1;
     repeated common.KeyValue metrics = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message GetMetrics {
@@ -313,10 +259,6 @@ message LogDataset {
     string id = 1;
     Artifact dataset = 2;
     bool overwrite = 3;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 // datasets
@@ -324,10 +266,6 @@ message LogDatasets {
     string id = 1;
     repeated Artifact datasets = 2;
     bool overwrite = 3;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message GetDatasets {
@@ -342,49 +280,29 @@ message GetDatasets {
 message LogArtifact {
     string id = 1;
     Artifact artifact = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 // artifacts
 message LogArtifacts {
     string id = 1;
     repeated Artifact artifacts = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message DeleteArtifact {
     string id = 1;
     string key = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 // hyperparameter
 message LogHyperparameter {
     string id = 1;
     common.KeyValue hyperparameter = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 // hyperparameters
 message LogHyperparameters {
     string id = 1;
     repeated common.KeyValue hyperparameters = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message GetHyperparameters {
@@ -399,20 +317,12 @@ message GetHyperparameters {
 message LogAttribute {
     string id = 1;
     common.KeyValue attribute = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 // attributes
 message LogAttributes {
     string id = 1;
     repeated common.KeyValue attributes = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message FindExperimentRuns {
@@ -468,10 +378,6 @@ message TopExperimentRunsSelector {
 message LogJobId {
     string id = 1;
     string job_id = 2;
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message GetJobId {
@@ -498,10 +404,6 @@ message GetChildrenExperimentRuns {
 message SetParentExperimentRunId {
     string experiment_run_id = 1;// self experimentRunId
     string parent_id = 2; // Parent ExperimentRunId
-
-    message Response {
-        ExperimentRun experiment_run = 1;
-    }
 }
 
 message GetExperimentRunsByDatasetVersionId {
@@ -566,21 +468,21 @@ service ExperimentRunService {
         };
     };
 
-    rpc updateExperimentRunName(UpdateExperimentRunName) returns (UpdateExperimentRunName.Response) {
+    rpc updateExperimentRunName(UpdateExperimentRunName) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/updateExperimentRunName"
             body: "*"
         };
     };
 
-    rpc updateExperimentRunDescription(UpdateExperimentRunDescription) returns (UpdateExperimentRunDescription.Response) {
+    rpc updateExperimentRunDescription(UpdateExperimentRunDescription) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/updateExperimentRunDescription"
             body: "*"
         };
     };
     // tags
-    rpc addExperimentRunTags(AddExperimentRunTags) returns (AddExperimentRunTags.Response){
+    rpc addExperimentRunTags(AddExperimentRunTags) returns (google.protobuf.Empty){
         option (google.api.http) = {
             post: "/v1/experiment-run/addExperimentRunTags"
             body: "*"
@@ -593,8 +495,7 @@ service ExperimentRunService {
         };
     };
 
-    rpc deleteExperimentRunTags(DeleteExperimentRunTags) returns (
-        DeleteExperimentRunTags.Response) {
+    rpc deleteExperimentRunTags(DeleteExperimentRunTags) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/v1/experiment-run/deleteExperimentRunTags"
             body: "*"
@@ -602,15 +503,14 @@ service ExperimentRunService {
     };
 
     // tag
-    rpc addExperimentRunTag(AddExperimentRunTag) returns (AddExperimentRunTag.Response){
+    rpc addExperimentRunTag(AddExperimentRunTag) returns (google.protobuf.Empty){
         option (google.api.http) = {
             post: "/v1/experiment-run/addExperimentRunTag"
             body: "*"
         };
     };
 
-    rpc deleteExperimentRunTag(DeleteExperimentRunTag) returns (
-        DeleteExperimentRunTag.Response) {
+    rpc deleteExperimentRunTag(DeleteExperimentRunTag) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/v1/experiment-run/deleteExperimentRunTag"
             body: "*"
@@ -618,7 +518,7 @@ service ExperimentRunService {
     };
 
     // observation
-    rpc logObservation(LogObservation) returns (LogObservation.Response) {
+    rpc logObservation(LogObservation) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logObservation"
             body: "*"
@@ -626,7 +526,7 @@ service ExperimentRunService {
     };
 
     // observations
-    rpc logObservations(LogObservations) returns (LogObservations.Response) {
+    rpc logObservations(LogObservations) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logObservations"
             body: "*"
@@ -640,7 +540,7 @@ service ExperimentRunService {
     };
 
     // metric
-    rpc logMetric(LogMetric) returns (LogMetric.Response) {
+    rpc logMetric(LogMetric) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logMetric"
             body: "*"
@@ -648,7 +548,7 @@ service ExperimentRunService {
     };
 
     // metrics
-    rpc logMetrics(LogMetrics) returns (LogMetrics.Response) {
+    rpc logMetrics(LogMetrics) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logMetrics"
             body: "*"
@@ -662,7 +562,7 @@ service ExperimentRunService {
     };
 
     // dataset
-    rpc logDataset(LogDataset) returns (LogDataset.Response) {
+    rpc logDataset(LogDataset) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logDataset"
             body: "*"
@@ -670,7 +570,7 @@ service ExperimentRunService {
     };
 
     // datasets
-    rpc logDatasets(LogDatasets) returns (LogDatasets.Response) {
+    rpc logDatasets(LogDatasets) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logDatasets"
             body: "*"
@@ -684,7 +584,7 @@ service ExperimentRunService {
     };
 
     // hyperparameter
-    rpc logHyperparameter(LogHyperparameter) returns (LogHyperparameter.Response) {
+    rpc logHyperparameter(LogHyperparameter) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logHyperparameter"
             body: "*"
@@ -692,7 +592,7 @@ service ExperimentRunService {
     }
 
     // hyperparameters
-    rpc logHyperparameters(LogHyperparameters) returns (LogHyperparameters.Response) {
+    rpc logHyperparameters(LogHyperparameters) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logHyperparameters"
             body: "*"
@@ -706,7 +606,7 @@ service ExperimentRunService {
     };
 
     // attribute
-    rpc logAttribute(LogAttribute) returns (LogAttribute.Response) {
+    rpc logAttribute(LogAttribute) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logAttribute"
             body: "*"
@@ -714,7 +614,7 @@ service ExperimentRunService {
     };
 
     // attributes
-    rpc logAttributes(LogAttributes) returns (LogAttributes.Response) {
+    rpc logAttributes(LogAttributes) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logAttributes"
             body: "*"
@@ -728,16 +628,14 @@ service ExperimentRunService {
         };
     };
 
-    rpc addExperimentRunAttributes(AddExperimentRunAttributes) returns (
-        AddExperimentRunAttributes.Response){
+    rpc addExperimentRunAttributes(AddExperimentRunAttributes) returns (google.protobuf.Empty){
         option (google.api.http) = {
             post: "/v1/experiment-run/addExperimentRunAttributes"
             body: "*"
         };
     };
 
-    rpc deleteExperimentRunAttributes(DeleteExperimentRunAttributes) returns (
-        DeleteExperimentRunAttributes.Response) {
+    rpc deleteExperimentRunAttributes(DeleteExperimentRunAttributes) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/v1/experiment-run/deleteExperimentRunAttributes"
             body: "*"
@@ -745,8 +643,7 @@ service ExperimentRunService {
     };
 
     // code version
-    rpc logExperimentRunCodeVersion(LogExperimentRunCodeVersion) returns (
-        LogExperimentRunCodeVersion.Response) {
+    rpc logExperimentRunCodeVersion(LogExperimentRunCodeVersion) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logExperimentRunCodeVersion"
             body: "*"
@@ -761,7 +658,7 @@ service ExperimentRunService {
     };
 
     // artifact
-    rpc logArtifact(LogArtifact) returns (LogArtifact.Response) {
+    rpc logArtifact(LogArtifact) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logArtifact"
             body: "*"
@@ -769,7 +666,7 @@ service ExperimentRunService {
     };
 
     // artifacts
-    rpc logArtifacts(LogArtifacts) returns (LogArtifacts.Response) {
+    rpc logArtifacts(LogArtifacts) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logArtifacts"
             body: "*"
@@ -782,7 +679,7 @@ service ExperimentRunService {
         };
     };
 
-    rpc deleteArtifact(DeleteArtifact) returns (DeleteArtifact.Response){
+    rpc deleteArtifact(DeleteArtifact) returns (google.protobuf.Empty){
         option (google.api.http) = {
             delete: "/v1/experiment-run/deleteArtifact"
             body: "*"
@@ -817,7 +714,7 @@ service ExperimentRunService {
     };
 
     // jobs
-    rpc logJobId (LogJobId) returns (LogJobId.Response){
+    rpc logJobId (LogJobId) returns (google.protobuf.Empty){
         option (google.api.http) = {
             get: "/v1/experiment-run/logJobId"
         };
@@ -835,7 +732,7 @@ service ExperimentRunService {
         };
     };
 
-    rpc setParentExperimentRunId (SetParentExperimentRunId) returns (SetParentExperimentRunId.Response){
+    rpc setParentExperimentRunId (SetParentExperimentRunId) returns (google.protobuf.Empty){
         option (google.api.http) = {
             post: "/v1/experiment-run/setParentExperimentRunId"
             body: "*"
@@ -855,7 +752,7 @@ service ExperimentRunService {
         };
     };
 
-    rpc logVersionedInput(LogVersionedInput) returns (LogVersionedInput.Response) {
+    rpc logVersionedInput(LogVersionedInput) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/experiment-run/logVersionedInput"
             body: "*"
