@@ -790,7 +790,8 @@ class _ModelDBEntity(object):
         msg = Message(
             id=self.id, key=key,
             method=method.upper(),
-            artifact_type=artifact_type, part_number=part_num,
+            artifact_type=artifact_type,
+            part_number=part_num,
         )
         data = _utils.proto_to_json(msg)
         response = _utils.make_request("POST",
