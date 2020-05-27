@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.model._
 import collection.JavaConverters._
 
 /** Captures metadata about S3 objects
+ *  TODO: make sure the paths are distinct (by overrwiting equals and hashCode of S3Location)
  */
 case class S3(val paths: List[S3Location]) extends Dataset {
   val s3: AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
@@ -46,7 +47,7 @@ case class S3(val paths: List[S3Location]) extends Dataset {
     .filter(_.isLatest())
     .map(getVersionMetadata _)
 
-    if (versionListing.isTruncated()) handleVersionListing(s3.listNextBatchOfVersions(versionListing)) ::: batch
+    if batch ::: (versionListing.isTruncated()) handleVersionListing(s3.listNextBatchOfVersions(versionListing))
     else batch
   }
 
