@@ -2411,7 +2411,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       GetCommittedArtifactParts.Response response =
-          experimentRunDAO.getCommitedArtifactParts(request);
+          experimentRunDAO.getCommittedArtifactParts(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
