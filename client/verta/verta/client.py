@@ -2070,9 +2070,7 @@ class ExperimentRun(_ModelDBEntity):
         if url_for_artifact.multipart_upload_ok:
             # TODO: parallelize this
             file_parts = iter(lambda: artifact_stream.read(part_size), b'')
-            for i, file_part in enumerate(file_parts):
-                part_num = i + 1
-
+            for part_num, file_part in enumerate(file_parts, start=1):
                 # get presigned URL
                 url = self._get_url_for_artifact(key, "PUT", part_num=part_num).url
 
