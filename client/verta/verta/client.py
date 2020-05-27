@@ -2055,7 +2055,7 @@ class ExperimentRun(_ModelDBEntity):
         ----------
         key : str
         artifact_stream : file-like
-        part_size : int, default 64*(10**6)
+        part_size : int, default 64 MB
             If using multipart upload, number of bytes to upload per part.
 
         """
