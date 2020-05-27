@@ -2066,8 +2066,8 @@ class ExperimentRun(_ModelDBEntity):
 
         try:
             url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
-        except requests.HTTPError:  # backend knows it doesn't support multipart upload
-            # TODO: check if ^ is true
+        except requests.HTTPError:  # backend knows it doesn't support multipart upload, e.g. NFS
+            # TODO: check if ^ case actually raises error
             url_for_artifact = self._get_url_for_artifact(key, "PUT")
 
         if url_for_artifact.multipart_upload_ok:
