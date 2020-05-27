@@ -512,7 +512,7 @@ public interface ExperimentRunDAO {
 
   Response commitArtifactPart(CommitArtifactPart request) throws ModelDBException;
 
-  GetCommittedArtifactParts.Response getCommitedArtifactParts(GetCommittedArtifactParts request)
+  GetCommittedArtifactParts.Response getCommittedArtifactParts(GetCommittedArtifactParts request)
       throws ModelDBException;
 
   CommitMultipartArtifact.Response commitMultipartArtifact(
