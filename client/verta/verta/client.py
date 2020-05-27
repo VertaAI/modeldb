@@ -2040,6 +2040,8 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, json=data)
         if not response.ok:
             if response.status_code == 409:
+                # TODO: check if multipart upload was in progress
+                # TODO: get last part number
                 raise ValueError("artifact with key {} already exists;"
                                  " consider setting overwrite=True".format(key))
             else:
@@ -2047,6 +2049,8 @@ class ExperimentRun(_ModelDBEntity):
 
         self._upload_artifact(key, artifact_stream)
 
+    # TODO: consider making part_size constant
+    # TODO: add start_part_num
     def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
         """
         Uploads `artifact_stream` to ModelDB artifact store.
