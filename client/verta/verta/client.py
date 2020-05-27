@@ -2039,19 +2039,39 @@ class ExperimentRun(_ModelDBEntity):
                                        "{}://{}/api/v1/modeldb/experiment-run/logArtifact".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
         if not response.ok:
+            conflict_error = ValueError("artifact with key {} already exists;"
+                                        " consider setting overwrite=True".format(key))
             if response.status_code == 409:
-                # TODO: check if multipart upload was in progress
-                # TODO: get last part number
-                raise ValueError("artifact with key {} already exists;"
-                                 " consider setting overwrite=True".format(key))
+                # TODO: check that `artifact_hash` hasn't changed
+
+                # check if multipart upload was in progress
+                url = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                )
+                msg = _CommonService.GetCommittedArtifactParts(id=self.id, key=key)
+                data = _utils.proto_to_json(msg)
+                response = _utils.make_request("GET", url, self._conn, json=data)
+                if response.status_code == 404:  # old backend without multipart support
+                    # TODO: check if this also happens when artifact was not multipart
+                    raise conflict_error
+                elif not response.ok:
+                    _utils.raise_for_http_error(response)
+
+                # get last part number
+                response_msg = _utils.json_to_proto(response.json(), Message.Response)
+                if not response_msg.artifact_parts:  # multipart upload completed, or no parts committed
+                    raise conflict_error
+                last_part_num = max(part.part_number for part in response_msg.artifact_parts)
+
+                # resume upload
+                self._upload_artifact(key, artifact_stream, start_part_num=last_part_num+1)
             else:
                 _utils.raise_for_http_error(response)
 
         self._upload_artifact(key, artifact_stream)
 
-    # TODO: consider making part_size constant
-    # TODO: add start_part_num
-    def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
+    def _upload_artifact(self, key, artifact_stream, start_part_num=1):
         """
         Uploads `artifact_stream` to ModelDB artifact store.
 
@@ -2059,8 +2079,8 @@ class ExperimentRun(_ModelDBEntity):
         ----------
         key : str
         artifact_stream : file-like
-        part_size : int, default 64 MB
-            If using multipart upload, number of bytes to upload per part.
+        start_part_num : int, default 1
+            If using multipart upload, which part to start with.
 
         """
         artifact_stream.seek(0)
@@ -2072,9 +2092,15 @@ class ExperimentRun(_ModelDBEntity):
         url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
 
         if url_for_artifact.multipart_upload_ok:
+            file_parts = iter(lambda: artifact_stream.read(_artifact_utils.MULTIPART_UPLOAD_PART_SIZE), b'')
+            enumerated_file_parts = enumerate(file_parts, start=1)
+
+            # advance iterator until `start_part_num`
+            for _ in range(start_part_num - 1):
+                six.next(file_parts)
+
             # TODO: parallelize this
-            file_parts = iter(lambda: artifact_stream.read(part_size), b'')
-            for part_num, file_part in enumerate(file_parts, start=1):
+            for part_num, file_part in enumerated_file_parts:
                 # get presigned URL
                 url = self._get_url_for_artifact(key, "PUT", part_num=part_num).url
 

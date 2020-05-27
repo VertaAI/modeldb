@@ -31,6 +31,10 @@ except ImportError:  # TensorFlow not installed
     pass
 
 
+# NOTE: changing this might break multipart upload continuation
+MULTIPART_UPLOAD_PART_SIZE = 64*(10**6)  # 64 MB
+
+
 # NOTE: keep up-to-date with Deployment API
 BLACKLISTED_KEYS = {
     'model_api.json',
