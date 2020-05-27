@@ -2064,6 +2064,7 @@ class ExperimentRun(_ModelDBEntity):
             print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
 
+        # check if multipart upload ok
         try:
             url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
         except requests.HTTPError:  # backend knows it doesn't support multipart upload, e.g. NFS
@@ -2071,20 +2072,22 @@ class ExperimentRun(_ModelDBEntity):
             url_for_artifact = self._get_url_for_artifact(key, "PUT")
 
         if url_for_artifact.multipart_upload_ok:
-            # upload parts
             # TODO: parallelize this
             file_parts = iter(lambda: artifact_stream.read(part_size), b'')
             for i, file_part in enumerate(file_parts):
                 part_num = i + 1
+
+                # get presigned URL
                 url = self._get_url_for_artifact(key, "PUT", part_num=part_num)
 
+                # upload part
                 part_stream = six.BytesIO(file_part)  # enables streaming by `requests`, otherwise overwhelms SSL
                 response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                 response.raise_for_status()
 
                 # TODO: print progress
 
-                # commit artifact part
+                # commit part
                 url = "{}://{}/api/v1/modeldb/experiment-run/commitArtifactPart".format(
                     self._conn.scheme,
                     self._conn.socket,
@@ -2109,8 +2112,8 @@ class ExperimentRun(_ModelDBEntity):
         else:
             # upload full artifact
             response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
-            # TODO: check artifact length, suggest size problem to user
             _utils.raise_for_http_error(response)
+            # TODO: check artifact length, suggest size problem to user
 
         print("upload complete ({})".format(key))
 
