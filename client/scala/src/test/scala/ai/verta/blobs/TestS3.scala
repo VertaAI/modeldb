@@ -33,4 +33,17 @@ class TestS3 extends FunSuite {
       val s3 = new S3Location("http://verta-starter/census-train.csv")
     }
   }
+
+  test("S3 blob should retrieve the file correctly") {
+    val s3Loc = new S3Location("s3://verta-scala-test/testdir/testfile")
+    val s3 = S3(List(s3Loc))
+
+    assert(s3.components.length == 1)
+
+    val s3File = s3.components.head.path.get
+    assert(s3File.path.get.equals("s3://verta-scala-test/testdir/testfile"))
+    assert(s3File.size.get > 0)
+    assert(s3File.last_modified_at_source.get > 0)
+    assert(s3File.md5.get.length > 0)
+  }
 }

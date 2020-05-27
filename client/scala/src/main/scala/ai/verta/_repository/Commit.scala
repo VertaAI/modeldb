@@ -12,7 +12,6 @@ import scala.annotation.switch
 
 /** Commit within a ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
- *  TODO: privatize blobs
  *  TODO: clean up blobs retrieval
  *  TODO: write tests for interactions with blobs: load, update, get, save, remove etc.
  */
@@ -26,7 +25,7 @@ class Commit(
 
   /** Retrieve commit's blobs from remote
    */
-  def load_blobs()(implicit ec: ExecutionContext): Unit = {
+  private def load_blobs()(implicit ec: ExecutionContext): Unit = {
     if (!loaded_from_remote) {
       val ids: List[String] = commit.commit_sha match {
         case Some(v) => List(v)

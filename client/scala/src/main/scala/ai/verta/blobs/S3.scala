@@ -13,7 +13,7 @@ import collection.JavaConverters._
  *  TODO: make sure the paths are distinct (by overrwiting equals and hashCode of S3Location)
  */
 case class S3(val paths: List[S3Location]) extends Dataset {
-  val s3: AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
+  private val s3: AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
 
   val components = paths.flatMap(getS3LocMetadata _)
 
@@ -22,8 +22,6 @@ case class S3(val paths: List[S3Location]) extends Dataset {
       s3 = Some(VersioningS3DatasetBlob(Some(components)))
     ))
   )
-
-  // s3.close()
 
   /** Helper function to query metadata of S3 Location
    */

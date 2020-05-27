@@ -12,6 +12,8 @@ package object blobs {
     case VersioningBlob(Some(VersioningCodeBlob(Some(git), _)), _, _, _) => Git()
 
     case VersioningBlob(_, _, Some(VersioningDatasetBlob(Some(path), _)), _) => PathBlob(List())
+
+    case _ => Git()
   }
 
 
