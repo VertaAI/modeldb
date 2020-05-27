@@ -2065,11 +2065,7 @@ class ExperimentRun(_ModelDBEntity):
             artifact_stream.seek(0)
 
         # check if multipart upload ok
-        try:
-            url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
-        except requests.HTTPError:  # backend knows it doesn't support multipart upload, e.g. NFS
-            # TODO: check if ^ case actually raises error
-            url_for_artifact = self._get_url_for_artifact(key, "PUT")
+        url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
 
         if url_for_artifact.multipart_upload_ok:
             # TODO: parallelize this
