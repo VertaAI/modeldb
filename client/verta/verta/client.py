@@ -2063,14 +2063,15 @@ class ExperimentRun(_ModelDBEntity):
             print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
 
-        url = self._get_url_for_artifact(key, "PUT")
-        # TODO: change _get_url_for_artifact to return full msg
-        use_multipart = False
+        # TODO: is multipart_upload_ok == True if no part_number?
+        # TODO: does passing part_number raise immediate exception?
+        url_for_artifact = self._get_url_for_artifact(key, "PUT")
 
-        if use_multipart:
+        if url_for_artifact.multipart_upload_ok:
             # upload parts
+            # TODO: parallelize this
             file_parts = iter(lambda: artifact_stream.read(part_size), b'')
-            for i, file_part in enumerate(file_parts):  # TODO: parallelize this loop
+            for i, file_part in enumerate(file_parts):
                 part_num = i + 1
                 url = self._get_url_for_artifact(key, "PUT", part_num=part_num)
 
@@ -2103,7 +2104,9 @@ class ExperimentRun(_ModelDBEntity):
             response = _utils.make_request("POST", url, self._conn, json=data)
             _utils.raise_for_http_error(response)
         else:
-            response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
+            # upload full artifact
+            response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
+            # TODO: check artifact length, suggest size problem to user
             _utils.raise_for_http_error(response)
 
         print("upload complete ({})".format(key))
