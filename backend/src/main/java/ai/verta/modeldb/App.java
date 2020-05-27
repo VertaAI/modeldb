@@ -177,105 +177,112 @@ public class App implements ApplicationContextAware {
     return app;
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
+    try {
+      LOGGER.info("Backend server starting.");
+      final java.util.logging.Logger logger =
+          java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
+      logger.setLevel(Level.WARNING);
+      // --------------- Start reading properties --------------------------
+      Map<String, Object> propertiesMap =
+          ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
+      // --------------- End reading properties --------------------------
 
-    LOGGER.info("Backend server starting.");
-    final java.util.logging.Logger logger =
-        java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
-    logger.setLevel(Level.WARNING);
-    // --------------- Start reading properties --------------------------
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    // --------------- End reading properties --------------------------
+      // --------------- Start Initialize modelDB gRPC server --------------------------
+      Map<String, Object> grpcServerMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.GRPC_SERVER);
+      if (grpcServerMap == null) {
+        throw new ModelDBException("grpcServer configuration not found in properties.");
+      }
 
-    // --------------- Start Initialize modelDB gRPC server --------------------------
-    Map<String, Object> grpcServerMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.GRPC_SERVER);
-    if (grpcServerMap == null) {
-      throw new ModelDBException("grpcServer configuration not found in properties.");
-    }
+      Integer grpcServerPort = (Integer) grpcServerMap.get(ModelDBConstants.PORT);
+      LOGGER.trace("grpc server port number found");
+      ServerBuilder<?> serverBuilder = ServerBuilder.forPort(grpcServerPort);
 
-    Integer grpcServerPort = (Integer) grpcServerMap.get(ModelDBConstants.PORT);
-    LOGGER.trace("grpc server port number found");
-    ServerBuilder<?> serverBuilder = ServerBuilder.forPort(grpcServerPort);
+      Map<String, Object> featureFlagMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
+      App app = App.getInstance();
+      if (featureFlagMap != null) {
+        app.setDisabledAuthz(
+            (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
+        app.storeClientCreationTimestamp =
+            (Boolean)
+                featureFlagMap.getOrDefault(
+                    ModelDBConstants.STORE_CLIENT_CREATION_TIMESTAMP, false);
+      }
 
-    Map<String, Object> featureFlagMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
-    App app = App.getInstance();
-    if (featureFlagMap != null) {
-      app.setDisabledAuthz(
-          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
-      app.storeClientCreationTimestamp =
-          (Boolean)
-              featureFlagMap.getOrDefault(ModelDBConstants.STORE_CLIENT_CREATION_TIMESTAMP, false);
-    }
+      AuthService authService = new PublicAuthServiceUtils();
+      RoleService roleService = new PublicRoleServiceUtils(authService);
 
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
+      Map<String, Object> authServicePropMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
+      if (authServicePropMap != null) {
+        String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
+        Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
+        app.setAuthServerHost(authServiceHost);
+        app.setAuthServerPort(authServicePort);
 
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
+        authService = new AuthServiceUtils();
+        roleService = new RoleServiceUtils(authService);
+      }
 
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
+      Map<String, Object> databasePropMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
 
-    Map<String, Object> databasePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
+      HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
+      serverBuilder.addService(healthStatusManager.getHealthService());
+      healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
-    HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
-    serverBuilder.addService(healthStatusManager.getHealthService());
-    healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
+      // ----------------- Start Initialize database & modelDB services with DAO ---------
+      initializeServicesBaseOnDataBase(
+          serverBuilder, databasePropMap, propertiesMap, authService, roleService);
+      // ----------------- Finish Initialize database & modelDB services with DAO --------
 
-    // ----------------- Start Initialize database & modelDB services with DAO ---------
-    initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
-    // ----------------- Finish Initialize database & modelDB services with DAO --------
+      serverBuilder.intercept(new ModelDBAuthInterceptor());
 
-    serverBuilder.intercept(new ModelDBAuthInterceptor());
+      Server server = serverBuilder.build();
+      // --------------- Finish Initialize modelDB gRPC server --------------------------
 
-    Server server = serverBuilder.build();
-    // --------------- Finish Initialize modelDB gRPC server --------------------------
+      // --------------- Start modelDB gRPC server --------------------------
+      server.start();
+      up.inc();
+      LOGGER.info("Backend server started listening on {}", grpcServerPort);
 
-    // --------------- Start modelDB gRPC server --------------------------
-    server.start();
-    up.inc();
-    LOGGER.info("Backend server started listening on {}", grpcServerPort);
-
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  int activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
-                  while (activeRequestCount > 0) {
-                    activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
-                    System.err.println("Active Request Count in while: " + activeRequestCount);
+      Runtime.getRuntime()
+          .addShutdownHook(
+              new Thread(
+                  () -> {
+                    int activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
+                    while (activeRequestCount > 0) {
+                      activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
+                      System.err.println("Active Request Count in while: " + activeRequestCount);
+                      try {
+                        Thread.sleep(1000); // wait for 1s
+                      } catch (InterruptedException e) {
+                        e.printStackTrace();
+                      }
+                    }
+                    // Use stderr here since the logger may have been reset by its JVM shutdown
+                    // hook.
+                    System.err.println(
+                        "*** Shutting down gRPC server since JVM is shutting down ***");
+                    server.shutdown();
                     try {
-                      Thread.sleep(1000); // wait for 1s
+                      server.awaitTermination();
                     } catch (InterruptedException e) {
                       e.printStackTrace();
                     }
-                  }
-                  // Use stderr here since the logger may have been reset by its JVM shutdown hook.
-                  System.err.println(
-                      "*** Shutting down gRPC server since JVM is shutting down ***");
-                  server.shutdown();
-                  try {
-                    server.awaitTermination();
-                  } catch (InterruptedException e) {
-                    e.printStackTrace();
-                  }
-                  System.err.println("*** Server Shutdown ***");
-                }));
+                    System.err.println("*** Server Shutdown ***");
+                  }));
 
-    // ----------- Don't exit the main thread. Wait until server is terminated -----------
-    server.awaitTermination();
-    up.dec();
+      // ----------- Don't exit the main thread. Wait until server is terminated -----------
+      server.awaitTermination();
+      up.dec();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      initiateShutdown(0);
+      System.exit(0);
+    }
   }
 
   public static void initializeServicesBaseOnDataBase(
@@ -317,7 +324,7 @@ public class App implements ApplicationContextAware {
         // ---------------
         app.databasePropMap = databasePropMap;
         app.propertiesMap = propertiesMap;
-        ModelDBHibernateUtil.getSessionFactory();
+        ModelDBHibernateUtil.createOrGetSessionFactory();
 
         LOGGER.trace("RDBMS configured with server");
         // --------------- Finish Initialize relational Database base on configuration
