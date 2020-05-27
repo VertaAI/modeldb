@@ -61,7 +61,8 @@ case class S3(val paths: List[S3Location]) extends Dataset {
       Some(VersioningPathDatasetComponentBlob(
         md5 = Some(md5.substring(1, md5.length() - 1)), // trim the opening and closing quotes
         path = Some(getPath(version.getBucketName(), version.getKey())),
-        // last_modified_at_source = Some(BigInt(version.getLastModified())),
+        last_modified_at_source = Some(BigInt(version.getLastModified().getTime())),
+        // convert time to UNIX timestamp (ms)
         size = Some(version.getSize())
       )),
       if (version.getVersionId() == null) None else Some(version.getVersionId())
@@ -79,7 +80,8 @@ case class S3(val paths: List[S3Location]) extends Dataset {
       Some(VersioningPathDatasetComponentBlob(
         md5 = Some(md5.substring(1, md5.length() - 1)), // trim the opening and closing quotes
         path = Some(getPath(bucketName, key)),
-        // last_modified_at_source = Some(BigInt(version.getLastModified())),
+        last_modified_at_source = Some(BigInt(obj.getLastModified().getTime())),
+        // convert time to UNIX timestamp (ms)
         size = Some(obj.getContentLength())
       )),
       if (obj.getVersionId() == null) None else Some(obj.getVersionId())
