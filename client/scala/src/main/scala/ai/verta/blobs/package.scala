@@ -4,6 +4,8 @@ import ai.verta.swagger._public.modeldb.versioning.model._
 
 package object blobs {
   /** Helper function to convert a VersioningBlob instance to corresponding Blob subclass instance
+   *  @param vb the VersioningBlob instance
+   *  @return an instance of a Blob subclass
    *  TODO: finish the pattern matching with other blob subclasses
    */
   def versioningBlobToBlob(vb: VersioningBlob): Blob = vb match {
