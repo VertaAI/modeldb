@@ -2401,9 +2401,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       String errorMessage = null;
       if (request.getId().isEmpty()) {
-        errorMessage = "ExperimentRun ID not found in CommitArtifactPart request";
+        errorMessage = "ExperimentRun ID not found in GetCommittedArtifactParts request";
       } else if (request.getKey().isEmpty()) {
-        errorMessage = "Artifact key not found in CommitArtifactPart request";
+        errorMessage = "Artifact key not found in GetCommittedArtifactParts request";
       }
 
       if (errorMessage != null) {
