@@ -47,7 +47,7 @@ case class S3(val paths: List[S3Location]) extends Dataset {
     .filter(_.isLatest())
     .map(getVersionMetadata _)
 
-    if batch ::: (versionListing.isTruncated()) handleVersionListing(s3.listNextBatchOfVersions(versionListing))
+    if (versionListing.isTruncated()) batch ::: handleVersionListing(s3.listNextBatchOfVersions(versionListing))
     else batch
   }
 
