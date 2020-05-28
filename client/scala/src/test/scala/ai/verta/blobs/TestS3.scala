@@ -15,7 +15,6 @@ import org.scalatest.Assertions._
 
 import scala.collection.mutable.HashSet
 
-
 class TestS3 extends FunSuite {
   test("S3Location should correctly determine bucket name and key") {
     val s31 = new S3Location("s3://verta-starter/census-train.csv")

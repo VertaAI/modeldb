@@ -10,7 +10,8 @@ import com.amazonaws.services.s3.model._
 import collection.JavaConverters._
 
 /** Captures metadata about S3 objects
- *  TODO: make sure the paths are distinct (by overrwiting equals and hashCode of S3Location)
+ *  TODO: make sure the paths are distinct (via a mutable set)
+ *  TODO: handle the case where an invalid path is passed
  */
 case class S3(val paths: List[S3Location]) extends Dataset {
   private val s3: AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
