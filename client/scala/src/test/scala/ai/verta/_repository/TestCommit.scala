@@ -79,4 +79,28 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("revert with no commit passed should successfully the latest commit") {
+    val f = fixture
+
+    try {
+        f.commit.update("abc/cde", Git(hash = Some("abc"), repo = Some("abc")))
+        f.commit.save("Some message 1")
+
+        f.commit.update("def/ghi", Git(hash = Some("abc"), repo = Some("abc")))
+        f.commit.save("Some message 2")
+        val prevHead = f.commit.commit.commit_sha.get
+
+        val revAttempt = f.commit.revert(message = Some("Revert test"))
+        assert(revAttempt.isSuccess)
+        assert(revAttempt.get.commit.message.get.equals("Revert test"))
+        // previous sha should be the parent sha:
+        assert(revAttempt.get.commit.parent_shas.get.head.equals(prevHead))
+
+        assert(revAttempt.get.get("abc/cde").isDefined)
+        assert(revAttempt.get.get("def/ghi").isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
 }

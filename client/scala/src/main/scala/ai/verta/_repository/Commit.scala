@@ -165,14 +165,49 @@ class Commit(
    *  @param branch branch name
    *  @return if not saved, a failure; otherwise, this commit as the head of `branch`
    */
-  def newBranch(branch: String)(implicit ec: ExecutionContext) = {
+  def newBranch(branch: String)(implicit ec: ExecutionContext) = Try (
     if (!saved)
-      Failure(new IllegalStateException("Commit must be saved before it can be attached to a branch"))
+      throw new IllegalStateException("Commit must be saved before it can be attached to a branch")
     else {
       setBranch(branch)
-      Success(this)
+      this
     }
-  }
+  )
+
+  /** Reverts all the commits beginning with other up through this Commit
+   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
+   *  @param other Base for the revert. If not provided, this commit will be reverted
+   *  @param message Description of the revert. If not provided, a default message will be used
+   *  @return Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository
+   */
+  def revert(other: Option[Commit] = None, message: Option[String] = None)(implicit ec: ExecutionContext) =
+  Try(
+    if (!saved)
+      throw new IllegalStateException("This commit must be saved")
+    else if (other.isDefined && !other.get.saved)
+      throw new IllegalStateException("Other commit must be saved")
+    else if (other.isDefined && other.get.repo.id.get != repo.id.get)
+      throw new IllegalStateException("Two commits must belong to the same repository")
+    else {
+      clientSet.versioningService.RevertRepositoryCommits2(
+        body = VersioningRevertRepositoryCommitsRequest(
+          base_commit_sha = Some(commit.commit_sha.get),
+          commit_to_revert_sha = Some(if (other.isDefined) other.get.commit.commit_sha.get
+          else commit.commit_sha.get),
+          content = Some(VersioningCommit(message=message))
+        ),
+        commit_to_revert_sha = if (other.isDefined) other.get.commit.commit_sha.get
+        else commit.commit_sha.get,
+        repository_id_repo_id = repo.id.get
+      ).map(r => if (r.commit.isDefined) {
+        commit = r.commit.get
+        commit_branch.map(setBranch(_))
+        init()
+      })
+
+      this
+    }
+  )
 
   /*** HELPER METHODS ***/
 
@@ -221,8 +256,8 @@ class Commit(
    */
   private def init() = {
     saved = true
-    // loaded_from_remote = false
-    // blobs = new HashMap[String, VersioningBlob]()
+    loaded_from_remote = false
+    blobs = new HashMap[String, VersioningBlob]()
   }
 
   /** Set the commit of named branch to current commit
