@@ -34,10 +34,10 @@ public class LineageDAORdbImpl implements LineageDAO {
   public Response addLineage(AddLineage addLineage, IsExistsPredicate isExistsPredicate)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       validate(addLineage.getInputList(), addLineage.getOutputList());
       validateExistence(
           addLineage.getInputList(), addLineage.getOutputList(), isExistsPredicate, session);
+      session.beginTransaction();
       for (LineageEntry input : addLineage.getInputList()) {
         for (LineageEntry output : addLineage.getOutputList()) {
           addLineage(session, input, output);
@@ -57,8 +57,8 @@ public class LineageDAORdbImpl implements LineageDAO {
   @Override
   public DeleteLineage.Response deleteLineage(DeleteLineage deleteLineage) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       validate(deleteLineage.getInputList(), deleteLineage.getOutputList());
+      session.beginTransaction();
       for (LineageEntry input : deleteLineage.getInputList()) {
         for (LineageEntry output : deleteLineage.getOutputList()) {
           deleteLineage(session, input, output);

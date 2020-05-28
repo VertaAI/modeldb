@@ -154,12 +154,17 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
+        if (createDatasetVersionLock.isLocked()) {
+          createDatasetVersionLock.unlock();
+        }
         return createDatasetVersion(request, dataset, userInfo);
       } else {
         throw ex;
       }
     } finally {
-      createDatasetVersionLock.unlock();
+      if (createDatasetVersionLock.isLocked()) {
+        createDatasetVersionLock.unlock();
+      }
     }
   }
 
@@ -246,10 +251,10 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(DATASET_VERSION_BY_DATA_SET_IDS_QUERY);
       query.setParameterList("datasetIds", datasetIds);
       List<DatasetVersionEntity> datasetVersionEntities = query.list();
+      Transaction transaction = session.beginTransaction();
       for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
         session.delete(datasetVersionEntity);
       }
@@ -594,12 +599,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       String datasetVersionId, String datasetVersionDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       datasetVersionObj.setDescription(datasetVersionDescription);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.update(datasetVersionObj);
       transaction.commit();
       LOGGER.debug("DatasetVersion updated successfully");
@@ -617,7 +622,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public DatasetVersion addDatasetVersionTags(String datasetVersionId, List<String> tagsList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       if (datasetVersionObj == null) {
@@ -642,9 +646,10 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
             RdbmsUtils.convertTagListFromTagMappingList(datasetVersionObj, newTags);
         datasetVersionObj.getTags().addAll(newTagMappings);
         datasetVersionObj.setTime_updated(currentTimestamp);
+        Transaction transaction = session.beginTransaction();
         session.saveOrUpdate(datasetVersionObj);
+        transaction.commit();
       }
-      transaction.commit();
       LOGGER.debug("DatasetVersion tags added successfully");
       return datasetVersionObj.getProtoObject();
     } catch (Exception ex) {
@@ -715,7 +720,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       String datasetVersionId, List<KeyValue> attributesList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       datasetVersionObj.setAttributeMapping(
@@ -723,6 +727,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
               datasetVersionObj, ModelDBConstants.ATTRIBUTES, attributesList));
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(datasetVersionObj);
       transaction.commit();
       LOGGER.debug("DatasetVersion attributes added successfully");
@@ -740,7 +745,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public DatasetVersion updateDatasetVersionAttributes(String datasetVersionId, KeyValue attribute)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       if (datasetVersionObj == null) {
@@ -777,6 +781,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       }
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(datasetVersionObj);
       transaction.commit();
       return datasetVersionObj.getProtoObject();
@@ -860,12 +865,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       String datasetVersionId, DatasetVisibilityEnum.DatasetVisibility datasetVersionVisibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       datasetVersionObj.setDataset_version_visibility(datasetVersionVisibility.ordinal());
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.update(datasetVersionObj);
       transaction.commit();
       LOGGER.debug("DatasetVersion updated successfully");
