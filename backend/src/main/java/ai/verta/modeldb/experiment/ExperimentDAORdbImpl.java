@@ -17,9 +17,7 @@ import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.ExperimentEntity;
-import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -64,13 +62,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   private final AuthService authService;
   private final RoleService roleService;
 
-  private static final String UPDATE_PARENT_TIMESTAMP_QUERY =
-      new StringBuilder("UPDATE ProjectEntity p SET p.")
-          .append(ModelDBConstants.DATE_UPDATED)
-          .append(" = :timestamp where p.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:ids) ")
-          .toString();
   private static final String CHECK_ENTITY_PREFIX =
       "Select count(*) From ExperimentEntity ee where ee.";
   private static final String CHECK_ENTITY_BY_PROJ_ID_AND_NAME_QUERY =
@@ -93,7 +84,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           .append(" = :experimentId AND attr.field_type = :fieldType")
           .toString();
   private static final String EXPERIMENT_BY_BATCH_IDS_QUERY =
-      "From ExperimentEntity ex where ex.id IN (:ids)";
+      "From ExperimentEntity ex where ex.id IN (:ids) AND ex."
+          + ModelDBConstants.DELETED
+          + " = false";
   private static final String DELETE_TAGS_PREFIX_QUERY =
       new StringBuffer("delete from TagsMapping tm WHERE tm.experimentEntity.")
           .append(ModelDBConstants.ID)
@@ -112,23 +105,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           .append(ModelDBConstants.KEY)
           .append(" in (:keys) ")
           .toString();
-  private static final String EXPERIMENT_DELETE_HQL =
-      new StringBuffer("From ExperimentRunEntity ere where ere.")
-          .append(ModelDBConstants.EXPERIMENT_ID)
-          .append(" = :experimentId")
-          .toString();
-  private static final String EXPERIMENT_DELETE_BATCH_HQL =
-      new StringBuffer("From ExperimentRunEntity ere where ere.")
-          .append(ModelDBConstants.EXPERIMENT_ID)
-          .append(" IN (:experimentIds) ")
-          .toString();
-  private static final String COMMENT_DELETE_HQL =
-      new StringBuffer("From CommentEntity ce where ce.")
-          .append(ModelDBConstants.ENTITY_ID)
-          .append(" IN (:entityIds) AND ce.")
-          .append(ModelDBConstants.ENTITY_NAME)
-          .append(" =:entityName")
-          .toString();
   private static final String DELETE_ARTIFACT_QUERY =
       new StringBuffer("delete from ArtifactEntity ar WHERE ar.experimentEntity.")
           .append(ModelDBConstants.ID)
@@ -143,6 +119,17 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       new StringBuffer("From ExperimentEntity ere where ere.")
           .append(ModelDBConstants.ID)
           .append(" IN (:experimentIds) ")
+          .toString();
+  private static final String DELETED_STATUS_EXPERIMENT_QUERY_STRING =
+      new StringBuilder("UPDATE ")
+          .append(ExperimentEntity.class.getSimpleName())
+          .append(" expr ")
+          .append("SET expr.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE expr.")
+          .append(ModelDBConstants.ID)
+          .append(" IN (:experimentIds)")
           .toString();
 
   /**
@@ -236,21 +223,24 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   @Override
   public Experiment insertExperiment(Experiment experiment, UserInfo userInfo)
       throws InvalidProtocolBufferException {
+    createRoleBindingsForExperiment(experiment, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experiment, true);
       Transaction transaction = session.beginTransaction();
       session.save(RdbmsUtils.generateExperimentEntity(experiment));
-
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          experiment.getId(),
-          ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
       transaction.commit();
       LOGGER.debug("Experiment created successfully");
       return experiment;
     }
+  }
+
+  private void createRoleBindingsForExperiment(Experiment experiment, UserInfo userInfo) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        experiment.getId(),
+        ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
   }
 
   @Override
@@ -491,28 +481,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   }
 
   @Override
-  public Boolean deleteExperiment(String experimentId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      // Delete the ExperimentRunEntity object
-      Query experimentRunDeleteQuery = session.createQuery(EXPERIMENT_DELETE_HQL);
-      experimentRunDeleteQuery.setParameter(ModelDBConstants.EXPERIMENT_ID_STR, experimentId);
-      List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        session.delete(experimentRunEntity);
-      }
-
-      ExperimentEntity experimentObj = session.load(ExperimentEntity.class, experimentId);
-      session.delete(experimentObj);
-      transaction.commit();
-      LOGGER.debug("Experiment deleted successfully");
-      return true;
-    }
-  }
-
-  @Override
-  public Boolean deleteExperiments(List<String> experimentIds)
-      throws InvalidProtocolBufferException {
+  public Boolean deleteExperiments(List<String> experimentIds) {
     List<String> accessibleExperimentIds =
         getAccessibleExperimentIDs(experimentIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
@@ -526,67 +495,17 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           Any.pack(DeleteExperiments.getDefaultInstance()));
     }
 
-    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      // Delete the ExperimentRunEntity object
-      Query experimentRunDeleteQuery = session.createQuery(EXPERIMENT_DELETE_BATCH_HQL);
-      experimentRunDeleteQuery.setParameterList("experimentIds", experimentIds);
-      List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
-      List<String> experimentRunIds = new ArrayList<>();
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        experimentRunIds.add(experimentRunEntity.getId());
-        session.delete(experimentRunEntity);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-                experimentRunEntity.getId(),
-                experimentRunEntity.getOwner(),
-                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
-      // Delete the ExperimentRUn comments
-      if (!experimentRunIds.isEmpty()) {
-        removeEntityComments(session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
-      }
-
-      List<String> projectIds = new ArrayList<>();
-      for (String experimentId : experimentIds) {
-        ExperimentEntity experimentObj = session.load(ExperimentEntity.class, experimentId);
-        projectIds.add(experimentObj.getProject_id());
-        session.delete(experimentObj);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_OWNER,
-                experimentObj.getId(),
-                experimentObj.getOwner(),
-                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT.name());
-        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
+      Query deletedExperimentQuery = session.createQuery(DELETED_STATUS_EXPERIMENT_QUERY_STRING);
+      deletedExperimentQuery.setParameter("deleted", true);
+      deletedExperimentQuery.setParameter("experimentIds", accessibleExperimentIds);
+      int updatedCount = deletedExperimentQuery.executeUpdate();
+      LOGGER.debug(
+          "Mark Experiments as deleted : {}, count : {}", accessibleExperimentIds, updatedCount);
       transaction.commit();
-
-      // Remove all role bindings
-      roleService.deleteRoleBindings(roleBindingNames);
-
       LOGGER.debug("Experiment deleted successfully");
       return true;
-    }
-  }
-
-  private void removeEntityComments(Session session, List<String> entityIds, String entityName) {
-    Query commentDeleteQuery = session.createQuery(COMMENT_DELETE_HQL);
-    commentDeleteQuery.setParameterList("entityIds", entityIds);
-    commentDeleteQuery.setParameter("entityName", entityName);
-    LOGGER.debug("Comments delete query : {}", commentDeleteQuery.getQueryString());
-    List<CommentEntity> commentEntities = commentDeleteQuery.list();
-    for (CommentEntity commentEntity : commentEntities) {
-      session.delete(commentEntity);
     }
   }
 
@@ -669,7 +588,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           stringQueryBuilder.append(" AND ");
         }
       }
-      Query query = session.createQuery(stringQueryBuilder.toString());
+      Query query =
+          session.createQuery(
+              stringQueryBuilder.toString() + " AND ee." + ModelDBConstants.DELETED + " = false ");
       for (Entry<String, Object> paramEntry : paramMap.entrySet()) {
         query.setParameter(paramEntry.getKey(), paramEntry.getValue());
       }
@@ -858,6 +779,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           return experimentPaginationDTO;
         }
       }
+
+      finalPredicatesList.add(builder.equal(experimentRoot.get(ModelDBConstants.DELETED), false));
 
       Order orderBy =
           RdbmsUtils.getOrderBasedOnSortKey(

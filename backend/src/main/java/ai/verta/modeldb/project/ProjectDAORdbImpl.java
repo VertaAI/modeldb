@@ -25,9 +25,6 @@ import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.CommentEntity;
-import ai.verta.modeldb.entities.ExperimentEntity;
-import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.experiment.ExperimentDAO;
@@ -52,7 +49,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -115,27 +111,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.ID)
           .append(" = :projectId")
           .toString();
-  private static final String FIND_EXPERIMENT_BY_PROJECT_IDS_HQL =
-      new StringBuilder("From ExperimentEntity ee where ee.")
-          .append(ModelDBConstants.PROJECT_ID)
-          .append(" IN (:")
-          .append(ModelDBConstants.PROJECT_IDS)
-          .append(") ")
-          .toString();
-  private static final String FIND_EXPERIMENT_RUN_BY_PROJECT_IDS_HQL =
-      new StringBuilder("From ExperimentRunEntity ee where ee.")
-          .append(ModelDBConstants.PROJECT_ID)
-          .append(" IN (:")
-          .append(ModelDBConstants.PROJECT_IDS)
-          .append(") ")
-          .toString();
-  private static final String FIND_COMMENTS_HQL =
-      new StringBuilder("From CommentEntity ce where ce.")
-          .append(ModelDBConstants.ENTITY_ID)
-          .append(" IN (:entityIds) AND ce.")
-          .append(ModelDBConstants.ENTITY_NAME)
-          .append(" =:entityName")
-          .toString();
   private static final String GET_PROJECT_EXPERIMENTS_COUNT_HQL =
       new StringBuilder("SELECT COUNT(*) FROM ExperimentEntity ee WHERE ee.")
           .append(ModelDBConstants.PROJECT_ID)
@@ -150,8 +125,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.PROJECT_IDS)
           .append(")")
           .toString();
-  private static final String GET_PROJECT_BY_ID_HQL = "From ProjectEntity p where p.id = :id";
-  private static final String GET_PROJECT_BY_IDS_HQL = "From ProjectEntity p where p.id IN (:ids)";
+  private static final String GET_PROJECT_BY_ID_HQL =
+      "From ProjectEntity p where p.id = :id AND p." + ModelDBConstants.DELETED + " = false";
+  private static final String GET_PROJECT_BY_IDS_HQL =
+      "From ProjectEntity p where p.id IN (:ids) AND p." + ModelDBConstants.DELETED + " = false";
   private static final String GET_PROJECT_BY_SHORT_NAME_AND_OWNER_HQL =
       new StringBuilder("From ProjectEntity p where p.")
           .append(ModelDBConstants.SHORT_NAME)
@@ -170,6 +147,17 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(" in (:keys) AND ar.projectEntity.")
           .append(ModelDBConstants.ID)
           .append(" = :projectId")
+          .toString();
+  private static final String DELETED_STATUS_PROJECT_QUERY_STRING =
+      new StringBuilder("UPDATE ")
+          .append(ProjectEntity.class.getSimpleName())
+          .append(" pr ")
+          .append("SET pr.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE pr.")
+          .append(ModelDBConstants.ID)
+          .append(" IN (:projectIds)")
           .toString();
 
   public ProjectDAORdbImpl(
@@ -202,40 +190,42 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   @Override
   public Project insertProject(Project project, UserInfo userInfo)
       throws InvalidProtocolBufferException {
+    createRoleBindingsForProject(project, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       checkIfEntityAlreadyExists(session, project);
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);
       session.save(projectEntity);
-
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          project.getId(),
-          ModelDBServiceResourceTypes.PROJECT);
-      if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
-        Role publicReadRole =
-            roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_PUBLIC_READ, null);
-        UserInfo unsignedUser = authService.getUnsignedUser();
-        roleService.createRoleBinding(
-            publicReadRole,
-            new CollaboratorUser(authService, unsignedUser),
-            project.getId(),
-            ModelDBServiceResourceTypes.PROJECT);
-      }
-
-      createWorkspaceRoleBinding(
-          project.getWorkspaceId(),
-          project.getWorkspaceType(),
-          project.getId(),
-          project.getProjectVisibility());
-
       transaction.commit();
       LOGGER.debug("Project created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
       return projectEntity.getProtoObject();
     }
+  }
+
+  private void createRoleBindingsForProject(Project project, UserInfo userInfo) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        project.getId(),
+        ModelDBServiceResourceTypes.PROJECT);
+    if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
+      Role publicReadRole =
+          roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_PUBLIC_READ, null);
+      UserInfo unsignedUser = authService.getUnsignedUser();
+      roleService.createRoleBinding(
+          publicReadRole,
+          new CollaboratorUser(authService, unsignedUser),
+          project.getId(),
+          ModelDBServiceResourceTypes.PROJECT);
+    }
+
+    createWorkspaceRoleBinding(
+        project.getWorkspaceId(),
+        project.getWorkspaceType(),
+        project.getId(),
+        project.getProjectVisibility());
   }
 
   private void createWorkspaceRoleBinding(
@@ -642,113 +632,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return newProject;
   }
 
-  private void deleteExperimentsWithPagination(Session session, List<String> projectIds) {
-    int lowerBound = 0;
-    final int pagesize = 500;
-    Long count = getExperimentCount(projectIds);
-    LOGGER.debug("Total experimentEntities {}", count);
-
-    while (lowerBound < count) {
-      List<String> roleBindingNames = new LinkedList<>();
-      Transaction transaction = session.beginTransaction();
-      // Delete the ExperimentEntity object
-      Query experimentDeleteQuery = session.createQuery(FIND_EXPERIMENT_BY_PROJECT_IDS_HQL);
-      experimentDeleteQuery.setParameterList(ModelDBConstants.PROJECT_IDS, projectIds);
-      experimentDeleteQuery.setFirstResult(lowerBound);
-      experimentDeleteQuery.setMaxResults(pagesize);
-      List<ExperimentEntity> experimentEntities = experimentDeleteQuery.list();
-      for (ExperimentEntity experimentEntity : experimentEntities) {
-        session.delete(experimentEntity);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_OWNER,
-                experimentEntity.getId(),
-                experimentEntity.getOwner(),
-                ModelDBServiceResourceTypes.EXPERIMENT.name());
-        if (ownerRoleBindingName != null) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
-      roleService.deleteRoleBindings(roleBindingNames);
-      transaction.commit();
-      lowerBound += pagesize;
-    }
-  }
-
-  private void deleteExperimentRunsWithPagination(Session session, List<String> projectIds) {
-    int lowerBound = 0;
-    final int pagesize = 500;
-    Long count = getExperimentRunCount(projectIds);
-    LOGGER.debug("Total experimentRunEntities {}", count);
-
-    while (lowerBound < count) {
-      List<String> roleBindingNames = new LinkedList<>();
-      Transaction transaction = session.beginTransaction();
-
-      Query experimentRunDeleteQuery = session.createQuery(FIND_EXPERIMENT_RUN_BY_PROJECT_IDS_HQL);
-      experimentRunDeleteQuery.setParameterList(ModelDBConstants.PROJECT_IDS, projectIds);
-      experimentRunDeleteQuery.setFirstResult(lowerBound);
-      experimentRunDeleteQuery.setMaxResults(pagesize);
-      List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
-      List<String> experimentRunIds = new ArrayList<>();
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        experimentRunIds.add(experimentRunEntity.getId());
-        session.delete(experimentRunEntity);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-                experimentRunEntity.getId(),
-                experimentRunEntity.getOwner(),
-                ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        if (ownerRoleBindingName != null) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
-      // Delete the ExperimentRUn comments
-      if (!experimentRunIds.isEmpty()) {
-        removeEntityComments(session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
-      }
-      roleService.deleteRoleBindings(roleBindingNames);
-      transaction.commit();
-      lowerBound += pagesize;
-    }
-  }
-
-  private void getRoleBindingsOfAccessibleProjects(
-      List<ProjectEntity> allowedProjects, List<String> roleBindingNames) {
-    UserInfo unsignedUser = authService.getUnsignedUser();
-    for (ProjectEntity project : allowedProjects) {
-      String projectId = project.getId();
-
-      if (project.getProject_visibility() == ProjectVisibility.PUBLIC.getNumber()) {
-        String publicReadRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_PROJECT_PUBLIC_READ,
-                projectId,
-                authService.getVertaIdFromUserInfo(unsignedUser),
-                ModelDBServiceResourceTypes.PROJECT.name());
-        if (publicReadRoleBindingName != null) {
-          roleBindingNames.add(publicReadRoleBindingName);
-        }
-      }
-
-      // Delete workspace based roleBindings
-      List<String> workspaceRoleBindingNames =
-          getWorkspaceRoleBindings(
-              project.getWorkspace(),
-              WorkspaceType.forNumber(project.getWorkspace_type()),
-              project.getId(),
-              ProjectVisibility.forNumber(project.getProject_visibility()));
-      roleBindingNames.addAll(workspaceRoleBindingNames);
-    }
-
-    roleService.deleteAllResources(
-        allowedProjects.stream().map(ProjectEntity::getId).collect(Collectors.toList()),
-        ModelDBServiceResourceTypes.PROJECT);
-  }
-
   private List<String> getWorkspaceRoleBindings(
       String workspaceId,
       WorkspaceType workspaceType,
@@ -765,7 +648,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   }
 
   @Override
-  public Boolean deleteProjects(List<String> projectIds) throws InvalidProtocolBufferException {
+  public Boolean deleteProjects(List<String> projectIds) {
 
     // Get self allowed resources id where user has delete permission
     List<String> allowedProjectIds =
@@ -780,43 +663,16 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throw StatusProto.toStatusRuntimeException(status);
     }
 
-    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      List<ProjectEntity> projectEntities = getProjectEntityByBatchIds(session, projectIds);
-
-      deleteExperimentsWithPagination(session, allowedProjectIds);
-
-      LOGGER.debug("num bindings after Experiment {}", roleBindingNames.size());
-      // Delete the ExperimentRunEntity object
-      deleteExperimentRunsWithPagination(session, allowedProjectIds);
-      LOGGER.debug("num bindings after Experiment Run {}", roleBindingNames.size());
       Transaction transaction = session.beginTransaction();
-      for (String projectId : allowedProjectIds) {
-        ProjectEntity projectObj = session.load(ProjectEntity.class, projectId);
-        session.delete(projectObj);
-      }
-
-      // Get roleBindings by accessible projects
-      getRoleBindingsOfAccessibleProjects(projectEntities, roleBindingNames);
-      LOGGER.debug("num bindings after Projects {}", roleBindingNames.size());
+      Query deletedProjectQuery = session.createQuery(DELETED_STATUS_PROJECT_QUERY_STRING);
+      deletedProjectQuery.setParameter("deleted", true);
+      deletedProjectQuery.setParameter("projectIds", allowedProjectIds);
+      int updatedCount = deletedProjectQuery.executeUpdate();
+      LOGGER.debug("Mark Projects as deleted : {}, count : {}", allowedProjectIds, updatedCount);
       transaction.commit();
-
-      // Remove all role bindings
-      roleService.deleteRoleBindings(roleBindingNames);
-
       LOGGER.debug("Project deleted successfully");
       return true;
-    }
-  }
-
-  private void removeEntityComments(Session session, List<String> entityIds, String entityName) {
-    Query commentDeleteQuery = session.createQuery(FIND_COMMENTS_HQL);
-    commentDeleteQuery.setParameterList("entityIds", entityIds);
-    commentDeleteQuery.setParameter("entityName", entityName);
-    LOGGER.debug("Comments delete query : {}", commentDeleteQuery.getQueryString());
-    List<CommentEntity> commentEntities = commentDeleteQuery.list();
-    for (CommentEntity commentEntity : commentEntities) {
-      session.delete(commentEntity);
     }
   }
 
@@ -1144,6 +1000,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           return projectPaginationDTO;
         }
       }
+
+      finalPredicatesList.add(builder.equal(projectRoot.get(ModelDBConstants.DELETED), false));
 
       Order orderBy =
           RdbmsUtils.getOrderBasedOnSortKey(

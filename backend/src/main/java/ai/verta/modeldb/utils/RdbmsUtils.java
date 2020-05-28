@@ -539,6 +539,19 @@ public class RdbmsUtils {
       }
     }
 
+    finalQueryBuilder
+        .append(" AND ")
+        .append(alias)
+        .append(".")
+        .append(ModelDBConstants.DELETED)
+        .append(" = false ");
+    countQueryBuilder
+        .append(" AND ")
+        .append(alias)
+        .append(".")
+        .append(ModelDBConstants.DELETED)
+        .append(" = false ");
+
     sortBy = (sortBy == null || sortBy.isEmpty()) ? ModelDBConstants.DATE_UPDATED : sortBy;
 
     if (order) {
@@ -693,7 +706,7 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (ModelDBHibernateUtil.rDBDriver.equals("org.postgresql.Driver")) {
+        if (ModelDBHibernateUtil.rDBDriver.equals(ModelDBConstants.POSTGRES_DB_DRIVER)) {
           return getOperatorPredicate(
               builder, valueExpression.as(Double.class), operator, value.getNumberValue());
         } else {

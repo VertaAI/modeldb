@@ -75,6 +75,9 @@ public class RepositoryEntity {
   @Column(name = "repository_visibility")
   private Integer repository_visibility = null;
 
+  @Column(name = "deleted")
+  private Boolean deleted = false;
+
   public Long getId() {
     return id;
   }
@@ -105,6 +108,14 @@ public class RepositoryEntity {
 
   public Integer getWorkspace_type() {
     return workspace_type;
+  }
+
+  public Boolean getDeleted() {
+    return deleted;
+  }
+
+  public void setDeleted(Boolean deleted) {
+    this.deleted = deleted;
   }
 
   public Repository toProto() {
