@@ -57,7 +57,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
@@ -485,8 +484,11 @@ public class ModelDBUtils {
   public static boolean needToRetry(Exception ex) {
     Throwable communicationsException = findCommunicationsFailedCause(ex);
     if ((communicationsException.getCause() instanceof CommunicationsException)
-            || (communicationsException.getCause() instanceof SocketException)) {
+        || (communicationsException.getCause() instanceof SocketException)) {
       LOGGER.warn(communicationsException.getMessage());
+      if (ModelDBHibernateUtil.ping()) {
+        ModelDBHibernateUtil.resetSessionFactory();
+      }
       return true;
     }
     return false;
@@ -498,7 +500,8 @@ public class ModelDBUtils {
     }
     Throwable rootCause = throwable;
     while (rootCause.getCause() != null
-        && !(rootCause.getCause() instanceof CommunicationsException || rootCause.getCause() instanceof SocketException)) {
+        && !(rootCause.getCause() instanceof CommunicationsException
+            || rootCause.getCause() instanceof SocketException)) {
       rootCause = rootCause.getCause();
     }
     return rootCause;
