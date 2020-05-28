@@ -113,6 +113,10 @@ public class App implements ApplicationContextAware {
   private String authServerHost = null;
   private Integer authServerPort = null;
 
+  // Service Account details
+  private String serviceUserEmail = null;
+  private String serviceUserDevKey = null;
+
   // S3 Artifact store
   private String cloudAccessKey = null;
   private String cloudSecretKey = null;
@@ -287,6 +291,16 @@ public class App implements ApplicationContextAware {
       throws ModelDBException {
 
     App app = App.getInstance();
+    Map<String, Object> serviceUserDetailMap =
+        (Map<String, Object>) propertiesMap.get(ModelDBConstants.MDB_SERVICE_USER);
+    if (serviceUserDetailMap == null) {
+      throw new ModelDBException("service user configuration not found in properties.");
+    }
+    app.serviceUserEmail = (String) serviceUserDetailMap.get(ModelDBConstants.EMAIL);
+    LOGGER.trace("service user email found");
+    app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
+    LOGGER.trace("service user devKey found");
+
     Map<String, Object> featureFlagMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
     if (featureFlagMap != null) {
@@ -338,7 +352,7 @@ public class App implements ApplicationContextAware {
     initializeTelemetryBasedOnConfig(propertiesMap);
 
     // Initialize cron jobs
-    CronJobUtils.initializeBasedOnConfig(propertiesMap);
+    CronJobUtils.initializeBasedOnConfig(propertiesMap, authService, roleService);
   }
 
   private static void initializeRelationalDBServices(
@@ -657,5 +671,13 @@ public class App implements ApplicationContextAware {
 
   public Boolean getStoreClientCreationTimestamp() {
     return storeClientCreationTimestamp;
+  }
+
+  public String getServiceUserEmail() {
+    return serviceUserEmail;
+  }
+
+  public String getServiceUserDevKey() {
+    return serviceUserDevKey;
   }
 }

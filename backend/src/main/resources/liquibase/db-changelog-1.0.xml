@@ -285,6 +285,72 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="add-project-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-experiment-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-experiment-run-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment_run" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment_run">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-dataset-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="dataset" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="dataset">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-dataset-version-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="dataset_version" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="dataset_version">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-repository-version-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="repository" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="repository">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+
     <!-- take a below line to the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 </databaseChangeLog>

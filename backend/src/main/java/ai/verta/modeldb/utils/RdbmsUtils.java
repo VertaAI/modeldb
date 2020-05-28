@@ -539,6 +539,19 @@ public class RdbmsUtils {
       }
     }
 
+    finalQueryBuilder
+        .append(" AND ")
+        .append(alias)
+        .append(".")
+        .append(ModelDBConstants.DELETED)
+        .append(" = false ");
+    countQueryBuilder
+        .append(" AND ")
+        .append(alias)
+        .append(".")
+        .append(ModelDBConstants.DELETED)
+        .append(" = false ");
+
     sortBy = (sortBy == null || sortBy.isEmpty()) ? ModelDBConstants.DATE_UPDATED : sortBy;
 
     if (order) {
