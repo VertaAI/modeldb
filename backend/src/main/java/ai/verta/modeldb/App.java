@@ -293,13 +293,16 @@ public class App implements ApplicationContextAware {
     App app = App.getInstance();
     Map<String, Object> serviceUserDetailMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.MDB_SERVICE_USER);
-    if (serviceUserDetailMap == null) {
-      throw new ModelDBException("service user configuration not found in properties.");
+    if (serviceUserDetailMap != null) {
+      if (serviceUserDetailMap.containsKey(ModelDBConstants.EMAIL)) {
+        app.serviceUserEmail = (String) serviceUserDetailMap.get(ModelDBConstants.EMAIL);
+        LOGGER.trace("service user email found");
+      }
+      if (serviceUserDetailMap.containsKey(ModelDBConstants.DEV_KEY)) {
+        app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
+        LOGGER.trace("service user devKey found");
+      }
     }
-    app.serviceUserEmail = (String) serviceUserDetailMap.get(ModelDBConstants.EMAIL);
-    LOGGER.trace("service user email found");
-    app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
-    LOGGER.trace("service user devKey found");
 
     Map<String, Object> featureFlagMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
