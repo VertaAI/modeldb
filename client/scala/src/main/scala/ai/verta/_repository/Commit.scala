@@ -123,15 +123,54 @@ class Commit(
    *  @param tag tag
    */
   def tag(tag: String)(implicit ec: ExecutionContext) = {
-    if (!saved) {
-      throw new IllegalStateException("Commit must be saved before it can be tagged")
-    }
-    else {
-      clientSet.versioningService.SetTag2(
+    if (!saved)
+      Failure(new IllegalStateException("Commit must be saved before it can be tagged"))
+    else clientSet.versioningService.SetTag2(
         body = "\"" + commit.commit_sha.get + "\"",
         repository_id_repo_id = repo.id.get,
         tag = urlEncode(tag)
-      )
+    )
+  }
+
+  /** Generates folder names and blob names in this commit by walking through its folder tree.
+   */
+  // def walk()(implicit ec: ExecutionContext) = {
+  //   if (!saved)
+  //     Failure(new IllegalStateException("Commit must be saved before it can be walked"))
+  //   else {
+  //     var locations = List(List("")) // LIFO
+  //     var ret = List()
+  //
+  //     while (!locations.isEmpty) {
+  //       location = locations.head
+  //       locations.drop(1)
+  //
+  //       val response = clientSet.versioningService.GetCommitComponent2(
+  //         commit_sha = commit.commit_sha.get,
+  //         repository_id_repo_id = repo.id.get,
+  //         location = location
+  //       )
+  //
+  //       if (response.isDefined) {
+  //         val folderPath = location.mkString("/")
+  //         val folderNames = ...
+  //         val blobNames = ...
+  //       }
+  //     }
+  //   }
+  // }
+
+  /** Creates a branch at this Commit and returns the checked-out branch
+   *  If the branch already exists, it will be moved to this commit.
+   *  @param branch branch name
+   *  @return if not saved, a failure; otherwise, this commit as the head of `branch`
+   */
+  def newBranch(branch: String)(implicit ec: ExecutionContext) = {
+    if (!saved)
+      Failure(new IllegalStateException("Commit must be saved before it can be attached to a branch"))
+    else {
+      setBranch(branch)
+      Success(this)
     }
   }
 
@@ -172,10 +211,10 @@ class Commit(
    *  @param message message
    */
   private def withMessage(message: String) = VersioningCommit(
-        author = commit.author,
-        commit_sha = commit.commit_sha,
-        message = Some(message),
-        parent_shas = commit.parent_shas
+    author = commit.author,
+    commit_sha = commit.commit_sha,
+    message = Some(message),
+    parent_shas = commit.parent_shas
   )
 
   /** Reset the state of commit

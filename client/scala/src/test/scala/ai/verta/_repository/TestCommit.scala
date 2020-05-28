@@ -68,4 +68,15 @@ class TestCommit extends FunSuite {
     }
   }
 
+  test("newBranch should successfully create a new branch") {
+    val f = fixture
+
+    try {
+        val trySetBranch = f.commit.newBranch("new-branch")
+        assert(trySetBranch.isSuccess)
+        assert(trySetBranch.get.commit_branch.get.equals("new-branch"))
+    } finally {
+      cleanup(f)
+    }
+  }
 }

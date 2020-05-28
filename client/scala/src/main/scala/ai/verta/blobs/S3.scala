@@ -12,7 +12,6 @@ import collection.JavaConverters._
 import scala.collection.mutable.HashSet
 
 /** Captures metadata about S3 objects
- *  TODO: make sure the paths are distinct (via a mutable set)
  *  TODO: handle the case where an invalid path is passed
  */
 case class S3(val paths: List[S3Location]) extends Dataset {

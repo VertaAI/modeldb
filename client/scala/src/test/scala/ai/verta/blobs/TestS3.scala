@@ -50,6 +50,8 @@ class TestS3 extends FunSuite {
     val s3Loc = new S3Location("s3://verta-scala-test")
     val s3 = S3(List(s3Loc))
 
+    assert(s3.components.length > 0)
+
     assert(
       s3.components
       .map(_.path.get)
