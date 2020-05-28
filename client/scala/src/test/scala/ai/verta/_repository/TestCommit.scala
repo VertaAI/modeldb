@@ -12,6 +12,8 @@ import scala.util.{Try, Success, Failure}
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
 
+import scala.collection.mutable.HashSet
+
 class TestCommit extends FunSuite {
   implicit val ec = ExecutionContext.global
 
@@ -99,6 +101,61 @@ class TestCommit extends FunSuite {
 
         assert(revAttempt.get.get("abc/cde").isDefined)
         assert(revAttempt.get.get("def/ghi").isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("merge two commits with no conflictss") {
+    val f = fixture
+
+    try {
+        val branch1 = f.repo.getCommitByBranch().flatMap(_.newBranch("a")).get
+        branch1.update("abc/cde", Git(hash = Some("abc"), repo = Some("abc")))
+        branch1.save("Some message 1")
+        val parent1 = branch1.commit.commit_sha.get
+
+        val branch2 = f.repo.getCommitByBranch().flatMap(_.newBranch("b")).get
+        branch2.update("def/ghi", Git(hash = Some("abc"), repo = Some("abc")))
+        branch2.save("Some message 2")
+        val parent2 = branch2.commit.commit_sha.get
+
+        val mergeAttempt = branch1.merge(branch2, message = Some("Merge test"))
+        assert(mergeAttempt.isSuccess)
+
+        val merged = mergeAttempt.get
+        assert(merged.commit.message.get.equals("Merge test"))
+        // previous sha should be the parent sha:
+
+        assert(merged.get("abc/cde").isDefined)
+        assert(merged.get("def/ghi").isDefined)
+
+        val parents = HashSet[String](parent1, parent2)
+        val merged_parents = merged.commit.parent_shas.get
+
+        assert(merged_parents.length == 2)
+        assert(parents contains merged_parents.head)
+        assert(parents contains merged_parents.tail.head)
+
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("merge two commits with conflictss") {
+    val f = fixture
+
+    try {
+        val branch1 = f.repo.getCommitByBranch().flatMap(_.newBranch("a")).get
+        branch1.update("abc/cde", Git(hash = Some("abc"), repo = Some("abc")))
+        branch1.save("Some message 1")
+
+        val branch2 = f.repo.getCommitByBranch().flatMap(_.newBranch("b")).get
+        branch2.update("abc/cde", Git(hash = Some("few"), repo = Some("fwe")))
+        branch2.save("Some message 2")
+
+        val mergeAttempt = branch1.merge(branch2, message = Some("Merge test"))
+        assert(mergeAttempt.isFailure)
     } finally {
       cleanup(f)
     }

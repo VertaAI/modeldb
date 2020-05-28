@@ -178,7 +178,7 @@ class Commit(
    *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
    *  @param other Base for the revert. If not provided, this commit will be reverted
    *  @param message Description of the revert. If not provided, a default message will be used
-   *  @return Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository
+   *  @return Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository; success otherwise.
    */
   def revert(other: Option[Commit] = None, message: Option[String] = None)(implicit ec: ExecutionContext) =
   Try(
@@ -206,6 +206,50 @@ class Commit(
       })
 
       this
+    }
+  )
+
+  /** Merges a branch headed by other into this commit
+   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
+   *  @param other Commit to be merged
+   *  @param message Description of the revert. If not provided, a default message will be used
+   *  @return Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository; success otherwise.
+   *  TODO: is dry run?
+   */
+  def merge(other: Commit, message: Option[String] = None)(implicit ec: ExecutionContext) =
+  Try(
+    if (!saved)
+      throw new IllegalStateException("This commit must be saved")
+    else if (!other.saved)
+      throw new IllegalStateException("Other commit must be saved")
+    else if (other.repo.id.get != repo.id.get)
+      throw new IllegalStateException("Two commits must belong to the same repository")
+    else {
+      val queryAttempt = clientSet.versioningService.MergeRepositoryCommits2(
+        body = VersioningMergeRepositoryCommitsRequest(
+          commit_sha_a = other.commit.commit_sha,
+          commit_sha_b = commit.commit_sha,
+          content = Some(VersioningCommit(message=message))
+        ),
+        repository_id_repo_id = repo.id.get
+      ).map(r =>
+      if (r.conflicts.isDefined) throw new IllegalStateException(
+        List(
+          "Merge conflict.", "Resolution is not currently supported through the client",
+          "Please create a new Commit with the updated blobs.",
+          "See https://docs.verta.ai/en/master/examples/tutorials/merge.html for instructions"
+        ).mkString("\n")
+      )
+      else if (r.commit.isDefined) {
+        commit = r.commit.get
+        commit_branch.map(setBranch(_))
+        init()
+      })
+
+      queryAttempt match {
+        case Failure(e) => throw e
+        case _ => this
+      }
     }
   )
 
