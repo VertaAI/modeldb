@@ -8,7 +8,6 @@ import ai.verta.swagger._public.modeldb.versioning.model._
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 import scala.collection.mutable.HashMap
-import scala.annotation.switch
 
 /** Commit within a ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
@@ -90,8 +89,10 @@ class Commit(
    *  TODO: incorporate diff
    *  TODO: write tests for this method
    */
-  def save(message: String)(implicit ec: ExecutionContext) = {
-    if (!saved) {
+  def save(message: String)(implicit ec: ExecutionContext) = Try(
+    if (saved)
+      throw new IllegalArgumentException("Commit is already saved")
+    else {
       clientSet.versioningService.CreateCommit2(
         body = VersioningCreateCommitRequest(
           commit = Some(withMessage(message)),
@@ -105,7 +106,7 @@ class Commit(
         init()
       })
     }
-  }
+  )
 
   /** Return ancestors, starting from this Commit until the root of the Repository
    *  @return a list of ancestors
@@ -212,7 +213,7 @@ class Commit(
   /** Merges a branch headed by other into this commit
    *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
    *  @param other Commit to be merged
-   *  @param message Description of the revert. If not provided, a default message will be used
+   *  @param message Description of the merge. If not provided, a default message will be used
    *  @return Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository; success otherwise.
    *  TODO: is dry run?
    */
