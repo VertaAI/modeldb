@@ -2321,9 +2321,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             uploadId = initializeMultipart.apply(artifactEntity.getPath()).orElse(null);
           }
         }
-        if (uploadId == null) {
-          message = "Can't initialize multipart upload";
-        }
         if (message != null) {
           LOGGER.info(message);
           throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
