@@ -77,7 +77,6 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
-import com.google.protobuf.Empty;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
@@ -510,7 +509,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   @Override
   public void updateExperimentRunDescription(
-      UpdateExperimentRunDescription request, StreamObserver<Empty> responseObserver) {
+      UpdateExperimentRunDescription request,
+      StreamObserver<UpdateExperimentRunDescription.Response> responseObserver) {
     QPSCountResource.inc();
 
     try (RequestLatencyResource latencyResource =
@@ -523,7 +523,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateExperimentRunDescription.getDefaultInstance()))
+                .addDetails(Any.pack(UpdateExperimentRunDescription.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -535,17 +535,19 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.updateExperimentRunDescription(request.getId(), request.getDescription());
 
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(UpdateExperimentRunDescription.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateExperimentRunDescription.Response.getDefaultInstance());
     }
   }
 
   @Override
   public void updateExperimentRunName(
-      UpdateExperimentRunName request, StreamObserver<Empty> responseObserver) {
+      UpdateExperimentRunName request,
+      StreamObserver<UpdateExperimentRunName.Response> responseObserver) {
     QPSCountResource.inc();
 
     try (RequestLatencyResource latencyResource =
@@ -557,7 +559,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateExperimentRunName.getDefaultInstance()))
+                .addDetails(Any.pack(UpdateExperimentRunName.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -570,17 +572,19 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.updateExperimentRunName(
           request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
 
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(UpdateExperimentRunName.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateExperimentRunName.Response.getDefaultInstance());
     }
   }
 
   @Override
   public void addExperimentRunTags(
-      AddExperimentRunTags request, StreamObserver<Empty> responseObserver) {
+      AddExperimentRunTags request,
+      StreamObserver<AddExperimentRunTags.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -600,7 +604,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(AddExperimentRunTags.getDefaultInstance()))
+                .addDetails(Any.pack(AddExperimentRunTags.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -612,17 +616,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.addExperimentRunTags(
           request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(AddExperimentRunTags.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, AddExperimentRunTags.Response.getDefaultInstance());
     }
   }
 
   @Override
   public void addExperimentRunTag(
-      AddExperimentRunTag request, StreamObserver<Empty> responseObserver) {
+      AddExperimentRunTag request, StreamObserver<AddExperimentRunTag.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -642,7 +647,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(AddExperimentRunTag.getDefaultInstance()))
+                .addDetails(Any.pack(AddExperimentRunTag.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -655,11 +660,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.addExperimentRunTags(
           request.getId(),
           ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(AddExperimentRunTag.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, AddExperimentRunTag.Response.getDefaultInstance());
     }
   }
 
@@ -697,7 +703,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   @Override
   public void deleteExperimentRunTags(
-      DeleteExperimentRunTags request, StreamObserver<Empty> responseObserver) {
+      DeleteExperimentRunTags request,
+      StreamObserver<DeleteExperimentRunTags.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -717,7 +724,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteExperimentRunTags.getDefaultInstance()))
+                .addDetails(Any.pack(DeleteExperimentRunTags.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -729,17 +736,19 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.deleteExperimentRunTags(
           request.getId(), request.getTagsList(), request.getDeleteAll());
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(DeleteExperimentRunTags.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteExperimentRunTags.Response.getDefaultInstance());
     }
   }
 
   @Override
   public void deleteExperimentRunTag(
-      DeleteExperimentRunTag request, StreamObserver<Empty> responseObserver) {
+      DeleteExperimentRunTag request,
+      StreamObserver<DeleteExperimentRunTag.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -759,7 +768,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteExperimentRunTag.getDefaultInstance()))
+                .addDetails(Any.pack(DeleteExperimentRunTag.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -771,17 +780,19 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.deleteExperimentRunTags(
           request.getId(), Collections.singletonList(request.getTag()), false);
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(DeleteExperimentRunTag.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteExperimentRunTag.Response.getDefaultInstance());
     }
   }
 
   @Override
   public void addExperimentRunAttributes(
-      AddExperimentRunAttributes request, StreamObserver<Empty> responseObserver) {
+      AddExperimentRunAttributes request,
+      StreamObserver<AddExperimentRunAttributes.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -802,7 +813,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(AddExperimentRunAttributes.getDefaultInstance()))
+                .addDetails(Any.pack(AddExperimentRunAttributes.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -813,17 +824,19 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.addExperimentRunAttributes(request.getId(), request.getAttributesList());
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(AddExperimentRunAttributes.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, AddExperimentRunAttributes.Response.getDefaultInstance());
     }
   }
 
   @Override
   public void deleteExperimentRunAttributes(
-      DeleteExperimentRunAttributes request, StreamObserver<Empty> responseObserver) {
+      DeleteExperimentRunAttributes request,
+      StreamObserver<DeleteExperimentRunAttributes.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -846,7 +859,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteExperimentRunAttributes.getDefaultInstance()))
+                .addDetails(Any.pack(DeleteExperimentRunAttributes.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -858,16 +871,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.deleteExperimentRunAttributes(
           request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(DeleteExperimentRunAttributes.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteExperimentRunAttributes.Response.getDefaultInstance());
     }
   }
 
   @Override
-  public void logObservation(LogObservation request, StreamObserver<Empty> responseObserver) {
+  public void logObservation(
+      LogObservation request, StreamObserver<LogObservation.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -889,7 +904,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogObservation.getDefaultInstance()))
+                .addDetails(Any.pack(LogObservation.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -901,16 +916,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logObservations(
           request.getId(), Collections.singletonList(request.getObservation()));
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogObservation.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, LogObservation.Response.getDefaultInstance());
     }
   }
 
   @Override
-  public void logObservations(LogObservations request, StreamObserver<Empty> responseObserver) {
+  public void logObservations(
+      LogObservations request, StreamObserver<LogObservations.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -929,7 +945,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogObservations.getDefaultInstance()))
+                .addDetails(Any.pack(LogObservations.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -940,11 +956,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logObservations(request.getId(), request.getObservationsList());
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogObservations.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, LogObservations.Response.getDefaultInstance());
     }
   }
 
@@ -991,7 +1007,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logMetric(LogMetric request, StreamObserver<Empty> responseObserver) {
+  public void logMetric(LogMetric request, StreamObserver<LogMetric.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -1012,7 +1028,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogMetric.getDefaultInstance()))
+                .addDetails(Any.pack(LogMetric.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -1023,16 +1039,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logMetrics(request.getId(), Collections.singletonList(request.getMetric()));
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogMetric.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, LogMetric.Response.getDefaultInstance());
     }
   }
 
   @Override
-  public void logMetrics(LogMetrics request, StreamObserver<Empty> responseObserver) {
+  public void logMetrics(LogMetrics request, StreamObserver<LogMetrics.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -1051,7 +1067,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogMetrics.getDefaultInstance()))
+                .addDetails(Any.pack(LogMetrics.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -1062,11 +1078,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logMetrics(request.getId(), request.getMetricsList());
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogMetrics.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, LogMetrics.Response.getDefaultInstance());
     }
   }
 
@@ -1258,7 +1274,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logArtifact(LogArtifact request, StreamObserver<Empty> responseObserver) {
+  public void logArtifact(
+      LogArtifact request, StreamObserver<LogArtifact.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -1282,7 +1299,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogArtifact.getDefaultInstance()))
+                .addDetails(Any.pack(LogArtifact.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -1300,21 +1317,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       if (artifacts.size() != 1) {
         errorMessage = "Expected artifacts count is one but found " + artifacts.size();
         ModelDBUtils.logAndThrowError(
-            errorMessage, Code.INTERNAL_VALUE, Any.pack(LogArtifact.getDefaultInstance()));
+            errorMessage, Code.INTERNAL_VALUE, Any.pack(LogArtifact.Response.getDefaultInstance()));
       }
       Artifact artifact = artifacts.get(0);
 
       experimentRunDAO.logArtifacts(request.getId(), Collections.singletonList(artifact));
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogArtifact.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, LogArtifact.Response.getDefaultInstance());
     }
   }
 
   @Override
-  public void logArtifacts(LogArtifacts request, StreamObserver<Empty> responseObserver) {
+  public void logArtifacts(
+      LogArtifacts request, StreamObserver<LogArtifacts.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -1333,7 +1351,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogArtifacts.getDefaultInstance()))
+                .addDetails(Any.pack(LogArtifacts.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -1347,11 +1365,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
 
       experimentRunDAO.logArtifacts(request.getId(), artifactList);
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogArtifacts.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, LogArtifacts.Response.getDefaultInstance());
     }
   }
 
@@ -1391,7 +1409,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   @Override
   public void logExperimentRunCodeVersion(
-      LogExperimentRunCodeVersion request, StreamObserver<Empty> responseObserver) {
+      LogExperimentRunCodeVersion request,
+      StreamObserver<LogExperimentRunCodeVersion.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -1412,7 +1431,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogExperimentRunCodeVersion.getDefaultInstance()))
+                .addDetails(Any.pack(LogExperimentRunCodeVersion.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -1444,11 +1463,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           throw StatusProto.toStatusRuntimeException(status);
         }
       }
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogExperimentRunCodeVersion.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, LogExperimentRunCodeVersion.Response.getDefaultInstance());
     }
   }
 
@@ -1494,7 +1514,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logHyperparameter(LogHyperparameter request, StreamObserver<Empty> responseObserver) {
+  public void logHyperparameter(
+      LogHyperparameter request, StreamObserver<LogHyperparameter.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -1514,7 +1535,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogHyperparameter.getDefaultInstance()))
+                .addDetails(Any.pack(LogHyperparameter.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -1526,17 +1547,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logHyperparameters(
           request.getId(), Collections.singletonList(request.getHyperparameter()));
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogHyperparameter.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, LogHyperparameter.Response.getDefaultInstance());
     }
   }
 
   @Override
   public void logHyperparameters(
-      LogHyperparameters request, StreamObserver<Empty> responseObserver) {
+      LogHyperparameters request, StreamObserver<LogHyperparameters.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -1556,7 +1578,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogHyperparameters.getDefaultInstance()))
+                .addDetails(Any.pack(LogHyperparameters.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -1567,11 +1589,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logHyperparameters(request.getId(), request.getHyperparametersList());
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogHyperparameters.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, LogHyperparameters.Response.getDefaultInstance());
     }
   }
 
@@ -1614,7 +1637,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logAttribute(LogAttribute request, StreamObserver<Empty> responseObserver) {
+  public void logAttribute(
+      LogAttribute request, StreamObserver<LogAttribute.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -1633,7 +1657,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogAttribute.getDefaultInstance()))
+                .addDetails(Any.pack(LogAttribute.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -1645,16 +1669,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logAttributes(
           request.getId(), Collections.singletonList(request.getAttribute()));
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogAttribute.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, LogAttribute.Response.getDefaultInstance());
     }
   }
 
   @Override
-  public void logAttributes(LogAttributes request, StreamObserver<Empty> responseObserver) {
+  public void logAttributes(
+      LogAttributes request, StreamObserver<LogAttributes.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -1673,7 +1698,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogAttributes.getDefaultInstance()))
+                .addDetails(Any.pack(LogAttributes.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -1684,11 +1709,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logAttributes(request.getId(), request.getAttributesList());
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogAttributes.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, LogAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -1858,7 +1883,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logJobId(LogJobId request, StreamObserver<Empty> responseObserver) {
+  public void logJobId(LogJobId request, StreamObserver<LogJobId.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -1877,7 +1902,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(LogJobId.getDefaultInstance()))
+                .addDetails(Any.pack(LogJobId.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -1888,11 +1913,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logJobId(request.getId(), request.getJobId());
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogJobId.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, LogJobId.Response.getDefaultInstance());
     }
   }
 
@@ -1976,7 +2001,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   @Override
   public void setParentExperimentRunId(
-      SetParentExperimentRunId request, StreamObserver<Empty> responseObserver) {
+      SetParentExperimentRunId request,
+      StreamObserver<SetParentExperimentRunId.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -2019,16 +2045,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.setParentExperimentRunId(
           request.getExperimentRunId(), request.getParentId());
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(SetParentExperimentRunId.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, SetParentExperimentRunId.Response.getDefaultInstance());
     }
   }
 
   @Override
-  public void logDataset(LogDataset request, StreamObserver<Empty> responseObserver) {
+  public void logDataset(LogDataset request, StreamObserver<LogDataset.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -2048,7 +2075,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       if (errorMessage != null) {
         logAndThrowError(
-            errorMessage, Code.INVALID_ARGUMENT_VALUE, Any.pack(LogDataset.getDefaultInstance()));
+            errorMessage,
+            Code.INVALID_ARGUMENT_VALUE,
+            Any.pack(LogDataset.Response.getDefaultInstance()));
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
@@ -2061,16 +2090,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.logDatasets(
           request.getId(), Collections.singletonList(dataset), request.getOverwrite());
 
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogDataset.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, LogDataset.Response.getDefaultInstance());
     }
   }
 
   @Override
-  public void logDatasets(LogDatasets request, StreamObserver<Empty> responseObserver) {
+  public void logDatasets(
+      LogDatasets request, StreamObserver<ai.verta.modeldb.LogDatasets.Response> responseObserver) {
     QPSCountResource.inc();
 
     try (RequestLatencyResource latencyResource =
@@ -2086,7 +2116,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       if (errorMessage != null) {
         logAndThrowError(
-            errorMessage, Code.INVALID_ARGUMENT_VALUE, Any.pack(LogDatasets.getDefaultInstance()));
+            errorMessage,
+            Code.INVALID_ARGUMENT_VALUE,
+            Any.pack(LogDatasets.Response.getDefaultInstance()));
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
@@ -2096,11 +2128,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logDatasets(
           request.getId(), request.getDatasetsList(), request.getOverwrite());
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogDatasets.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, LogDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -2116,7 +2148,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void deleteArtifact(DeleteArtifact request, StreamObserver<Empty> responseObserver) {
+  public void deleteArtifact(
+      DeleteArtifact request, StreamObserver<DeleteArtifact.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -2135,7 +2168,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteArtifact.getDefaultInstance()))
+                .addDetails(Any.pack(DeleteArtifact.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -2146,11 +2179,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.deleteArtifacts(request.getId(), request.getKey());
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(DeleteArtifact.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(responseObserver, e, DeleteArtifact.Response.getDefaultInstance());
     }
   }
 
@@ -2181,7 +2214,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logVersionedInput(LogVersionedInput request, StreamObserver<Empty> responseObserver) {
+  public void logVersionedInput(
+      LogVersionedInput request, StreamObserver<LogVersionedInput.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -2201,16 +2235,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteArtifact.getDefaultInstance()))
+                .addDetails(Any.pack(DeleteArtifact.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
 
       experimentRunDAO.logVersionedInput(request);
-      responseObserver.onNext(Empty.newBuilder().build());
+      responseObserver.onNext(LogVersionedInput.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, Empty.getDefaultInstance());
+      ModelDBUtils.observeError(
+          responseObserver, e, LogVersionedInput.Response.getDefaultInstance());
     }
   }
 
