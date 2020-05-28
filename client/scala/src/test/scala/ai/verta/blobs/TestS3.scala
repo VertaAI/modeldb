@@ -80,4 +80,15 @@ class TestS3 extends FunSuite {
       .length == s3.components.length
     )
   }
+
+  test("S3 should not have duplicate paths") {
+    val s3 = S3(List(
+      new S3Location("s3://verta-scala-test/testdir/testfile"),
+      new S3Location("s3://verta-scala-test/testdir/testfile"),
+      new S3Location("s3://verta-scala-test/testdir/"),
+      new S3Location("s3://verta-scala-test/testdir/testsubdir/"),
+      new S3Location("s3://verta-scala-test/testdir/testsubdir/testfile2")
+    ))
+    assert(s3.components.length == 2)
+  }
 }
