@@ -2074,8 +2074,16 @@ class ExperimentRun(_ModelDBEntity):
                 # get presigned URL
                 url = self._get_url_for_artifact(key, "PUT", part_num=part_num).url
 
+                # wrap file part into bytestream to avoid OverflowError
+                #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
+                #     ``requests`` will overwhelm CPython's SSL lib when it tries to sign the
+                #     payload. But passing a buffered bytestream instead of the raw bytestring
+                #     indicates to ``requests`` that it should perform a streaming upload via
+                #     HTTP/1.1 chunked transfer encoding and avoid this issue.
+                #     https://github.com/psf/requests/issues/2717
+                part_stream = six.BytesIO(file_part)
+
                 # upload part
-                part_stream = six.BytesIO(file_part)  # enables streaming by `requests`, otherwise overwhelms SSL
                 response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                 response.raise_for_status()
 
