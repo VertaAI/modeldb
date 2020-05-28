@@ -204,26 +204,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             ModelDBServiceResourceTypes.REPOSITORY,
             repository.getId().toString(),
             ModelDBServiceActions.UPDATE);
-      }
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY,
-          repository.getId().toString(),
-          ModelDBServiceActions.READ);
-    } catch (InvalidProtocolBufferException e) {
-      LOGGER.error(e);
-      throw new ModelDBException("Unexpected error", e);
-    }
-    try {
-      if (checkWrite) {
+      } else {
         roleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.REPOSITORY,
             repository.getId().toString(),
-            ModelDBServiceActions.UPDATE);
+            ModelDBServiceActions.READ);
       }
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY,
-          repository.getId().toString(),
-          ModelDBServiceActions.READ);
     } catch (InvalidProtocolBufferException e) {
       LOGGER.error(e);
       throw new ModelDBException("Unexpected error", e);
