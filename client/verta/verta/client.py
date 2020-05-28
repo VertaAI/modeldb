@@ -2107,7 +2107,6 @@ class ExperimentRun(_ModelDBEntity):
             # upload full artifact
             response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
             _utils.raise_for_http_error(response)
-            # TODO: check artifact length, suggest size problem to user
 
         print("upload complete ({})".format(key))
 
