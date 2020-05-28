@@ -486,7 +486,7 @@ public class ModelDBUtils {
     if ((communicationsException.getCause() instanceof CommunicationsException)
         || (communicationsException.getCause() instanceof SocketException)) {
       LOGGER.warn(communicationsException.getMessage());
-      if (ModelDBHibernateUtil.ping()) {
+      if (ModelDBHibernateUtil.checkDBConnection()) {
         ModelDBHibernateUtil.resetSessionFactory();
       }
       return true;

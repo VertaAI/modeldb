@@ -267,7 +267,9 @@ public class ModelDBHibernateUtil {
 
   private static SessionFactory loopBack(SessionFactory sessionFactory) {
     try {
-      boolean dbConnectionLive = ping();
+      boolean dbConnectionLive =
+          checkDBConnection(
+              rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
       if (dbConnectionLive) {
         return sessionFactory;
       }
@@ -433,6 +435,11 @@ public class ModelDBHibernateUtil {
         }
       }
     }
+  }
+
+  public static boolean checkDBConnection() {
+    return checkDBConnection(
+        rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
   }
 
   private static boolean checkDBConnection(
