@@ -9,9 +9,11 @@ package object blobs {
    *  TODO: finish the pattern matching with other blob subclasses
    */
   def versioningBlobToBlob(vb: VersioningBlob): Blob = vb match {
-    case VersioningBlob(Some(VersioningCodeBlob(Some(git), _)), _, _, _) => Git()
+    case VersioningBlob(Some(VersioningCodeBlob(Some(git), _)), _, _, _) => new Git(git)
 
-    case VersioningBlob(_, _, Some(VersioningDatasetBlob(Some(path), _)), _) => PathBlob(List())
+    case VersioningBlob(_, _, Some(VersioningDatasetBlob(Some(path), _)), _) => new PathBlob(path)
+
+    case VersioningBlob(_, _, Some(VersioningDatasetBlob(_, Some(s3))), _) => new S3(s3)
 
     case _ => Git()
   }

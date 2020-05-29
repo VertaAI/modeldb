@@ -12,11 +12,16 @@ case class Git(
 ) extends Code {
   // Basically a wrapper for VersioningGitCodeBlob
 
-  val versioningGitCodeBlob = VersioningGitCodeBlob(
+  /*  Constructor for conversion from VersioningBlob instance  */
+  def this(gitBlob: VersioningGitCodeBlob) {
+    this(gitBlob.branch, gitBlob.hash, gitBlob.is_dirty, gitBlob.tag, gitBlob.repo)
+  }
+
+  var versioningGitCodeBlob = VersioningGitCodeBlob(
     branch = branch, hash = hash, is_dirty = isDirty, tag = tag, repo = repo
   )
 
-  val versioningBlob = VersioningBlob(
+  var versioningBlob = VersioningBlob(
       code = Some(VersioningCodeBlob(git = Some(versioningGitCodeBlob)))
   )
 }

@@ -12,7 +12,7 @@ import scala.collection.mutable.HashMap
 /** Commit within a ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
  *  TODO: clean up blobs retrieval
- *  TODO: write tests for interactions with blobs: load, update, get, save, remove etc.
+ *  TODO: improve createCommit
  */
 class Commit(
   val clientSet: ClientSet, val repo: VersioningRepository,
@@ -67,10 +67,10 @@ class Commit(
    *  @param path Location to add blob to
    *  @param blob Instance of Blob subclass.
    */
-  def update[T <: Blob](path: String, blob: T)(implicit ec: ExecutionContext): Unit = {
+  def update[T <: Blob](path: String, blob: T)(implicit ec: ExecutionContext) = {
     load_blobs()
-    blobs.put(path, blob.versioningBlob)
     becomeChild()
+    blobs.put(path, blob.versioningBlob)
   }
 
   /** Deletes the blob at path from this commit and return it
@@ -178,13 +178,13 @@ class Commit(
    *  @param reference Commit to be compared to. If not provided, first parent will be used.
    *  @return None if this commit or reference has not yet been saved, or if they do not belong to the same repository; otherwise diff object.
    */
-  def diffFrom(reference: Option[Commit] = None)(implicit ec: ExecutionContext) = Try(
+  def diffFrom(reference: Option[Commit] = None)(implicit ec: ExecutionContext) = {
     if (!saved)
-      throw new IllegalStateException("Commit must be saved before a diff can be calculated")
+      Failure(new IllegalStateException("Commit must be saved before a diff can be calculated"))
     else if (reference.isDefined && !reference.get.saved)
-      throw new IllegalStateException("Reference must be saved before a diff can be calculated")
+      Failure(new IllegalStateException("Reference must be saved before a diff can be calculated"))
     else if (reference.isDefined && reference.get.repo.id.get != repo.id.get)
-      throw new IllegalStateException("Reference and this commit must belong to the same repository")
+      Failure(new IllegalStateException("Reference and this commit must belong to the same repository"))
     else {
       clientSet.versioningService.ComputeRepositoryDiff2(
         repository_id_repo_id = repo.id.get,
@@ -192,9 +192,9 @@ class Commit(
           if (reference.isDefined) reference.get.commit.commit_sha.get else commit.parent_shas.get.head
         ),
         commit_b = Some(commit.commit_sha.get)
-      ).map(r => new Diff(r.diffs)).get
+      ).map(r => new Diff(r.diffs))
     }
-  )
+  }
 
   /** Applies a diff to this Commit.
    *  This method creates a new commit in ModelDB, and assigns a new ID to this object.
@@ -299,6 +299,7 @@ class Commit(
   }
 
   /** Helper function to create a new commit and assign to current instance.
+   *  TODO: better error handling for this
    */
   private def createCommit(message: String, blobs: Option[List[VersioningBlobExpanded]] = None,
     commitBase: Option[String] = None,

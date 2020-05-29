@@ -11,11 +11,22 @@ import scala.collection.mutable.HashSet
  *  TODO: handle the case where an invalid path is passed
  */
 case class PathBlob(val paths: List[String]) extends Dataset {
+  /* Auxiliary constructor to convert a versioning blob instance */
+  def this(vb: VersioningPathDatasetBlob) = {
+    this(List())
+    components = vb.components.get
+    versioningBlob = VersioningBlob(
+      dataset = Some(VersioningDatasetBlob(
+        path = Some(vb)
+      ))
+    )
+  }
+
   val BufferSize = 8192
   private var pathSet = new HashSet[String]() // for deduplication
 
-  val components = paths.map(expanduser _).flatMap((path: String) => getPathMetadata(new File(path)))
-  val versioningBlob = VersioningBlob(
+  var components = paths.map(expanduser _).flatMap((path: String) => getPathMetadata(new File(path)))
+  var versioningBlob = VersioningBlob(
     dataset = Some(VersioningDatasetBlob(
       path = Some(VersioningPathDatasetBlob(Some(components)))
     ))

@@ -15,12 +15,23 @@ import scala.collection.mutable.HashSet
  *  TODO: handle the case where an invalid path is passed
  */
 case class S3(val paths: List[S3Location]) extends Dataset {
+  /* Auxiliary constructor to convert a versioning blob instance */
+  def this(s3Blob: VersioningS3DatasetBlob) {
+    this(List())
+    components = s3Blob.components.get
+    versioningBlob = VersioningBlob(
+      dataset = Some(VersioningDatasetBlob(
+        s3 = Some(s3Blob)
+      ))
+    )
+  }
+
   private val s3: AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build()
   private var pathSet = new HashSet[String]() // for deduplication
 
-  val components = paths.flatMap(getS3LocMetadata _)
+  var components = paths.flatMap(getS3LocMetadata _)
 
-  val versioningBlob = VersioningBlob(
+  var versioningBlob = VersioningBlob(
     dataset = Some(VersioningDatasetBlob(
       s3 = Some(VersioningS3DatasetBlob(Some(components)))
     ))

@@ -210,10 +210,9 @@ class TestCommit extends FunSuite {
         assert(branch1.get("def/ghi").isDefined)
         assert(branch1.get("abc/cde").get.isInstanceOf[S3])
         assert(branch1.commit.message.get.equals("apply diff"))
+
     } finally {
       cleanup(f)
     }
   }
-
-  // test add empty blob (e.g S3)
 }
