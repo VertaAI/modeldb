@@ -5,7 +5,6 @@ from __future__ import print_function
 import ast
 import copy
 import glob
-import hashlib
 import importlib
 import os
 import pprint
@@ -777,8 +776,8 @@ class _ModelDBEntity(object):
 
         Returns
         -------
-        str
-            Generated URL.
+        response_msg : `_CommonService.GetUrlForArtifact.Response`
+            Backend response.
 
         """
         if method.upper() not in ("GET", "PUT"):
@@ -793,8 +792,8 @@ class _ModelDBEntity(object):
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(response.json(), Message.Response)
-        url = response_msg.url
 
+        url = response_msg.url
         # accommodate port-forwarded NFS store
         if 'https://localhost' in url[:20]:
             url = 'http' + url[5:]
@@ -802,8 +801,9 @@ class _ModelDBEntity(object):
             url = url.replace('localhost%3a', 'localhost:')
         if 'localhost%3A' in url[:20]:
             url = url.replace('localhost%3A', 'localhost:')
+        response_msg.url = url
 
-        return url
+        return response_msg
 
     def _cache(self, filename, contents):
         """
@@ -1064,7 +1064,7 @@ class _ModelDBEntity(object):
             key = 'code'
             extension = 'zip'
 
-            artifact_hash = hashlib.sha256(zipstream.read()).hexdigest()
+            artifact_hash = _artifact_utils.calc_sha256(zipstream)
             zipstream.seek(0)
             basename = key + os.extsep + extension
             artifact_path = os.path.join(artifact_hash, basename)
@@ -1088,7 +1088,7 @@ class _ModelDBEntity(object):
 
         if msg.code_version.WhichOneof("code") == 'code_archive':
             # upload artifact to artifact store
-            url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type)
+            url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type).url
 
             response = _utils.make_request("PUT", url, self._conn, data=zipstream)
             _utils.raise_for_http_error(response)
@@ -1143,7 +1143,7 @@ class _ModelDBEntity(object):
             return git_snapshot
         elif which_code == 'code_archive':
             # download artifact from artifact store
-            url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type)
+            url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type).url
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
@@ -1998,7 +1998,7 @@ class ExperimentRun(_ModelDBEntity):
             extension = _artifact_utils.ext_from_method(method)
 
         # calculate checksum
-        artifact_hash = hashlib.sha256(artifact_stream.read()).hexdigest()
+        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
         artifact_stream.seek(0)
 
         # determine basename
@@ -2039,7 +2039,7 @@ class ExperimentRun(_ModelDBEntity):
                 _utils.raise_for_http_error(response)
 
         # upload artifact to artifact store
-        url = self._get_url_for_artifact(key, "PUT")
+        url = self._get_url_for_artifact(key, "PUT").url
         artifact_stream.seek(0)  # reuse stream that was created for checksum
         if self._conf.debug:
             print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), basename))
@@ -2117,7 +2117,7 @@ class ExperimentRun(_ModelDBEntity):
             return artifact.path, artifact.path_only
         else:
             # download artifact from artifact store
-            url = self._get_url_for_artifact(key, "GET")
+            url = self._get_url_for_artifact(key, "GET").url
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
