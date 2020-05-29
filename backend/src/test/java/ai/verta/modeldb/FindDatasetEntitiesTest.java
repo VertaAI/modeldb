@@ -12,6 +12,8 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
@@ -64,6 +66,7 @@ public class FindDatasetEntitiesTest {
   private static DatasetVersion datasetVersion3;
   private static DatasetVersion datasetVersion4;
   private static Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -102,6 +105,8 @@ public class FindDatasetEntitiesTest {
 
     serverBuilder.build().start();
     ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
 
     // Create all service blocking stub
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
@@ -118,6 +123,8 @@ public class FindDatasetEntitiesTest {
 
     // Remove all entities
     removeEntities();
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
 
     // shutdown test server
     serverBuilder.build().shutdownNow();

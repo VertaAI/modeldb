@@ -9,6 +9,8 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.api.client.util.IOUtils;
 import io.grpc.ManagedChannel;
@@ -61,6 +63,7 @@ public class NFSArtifactStoreTest {
   private static ProjectServiceGrpc.ProjectServiceBlockingStub projectServiceStub;
   private static ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub;
   private static ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub experimentRunServiceStub;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -99,6 +102,8 @@ public class NFSArtifactStoreTest {
 
     serverBuilder.build().start();
     ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
 
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
@@ -117,6 +122,8 @@ public class NFSArtifactStoreTest {
 
     // Remove all entities
     removeEntities();
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
 
     // shutdown test server
     serverBuilder.build().shutdownNow();
