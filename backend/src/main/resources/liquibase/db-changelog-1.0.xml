@@ -15,12 +15,7 @@
         <tagDatabase tag="1.0"/>
     </changeSet>
 
-    <changeSet author="raviS" id="2-createSequence" failOnError="false">
-        <createSequence incrementBy="1"
-                        sequenceName="hibernate_sequence" startValue="1"/>
-    </changeSet>
-
-    <changeSet id="2.1-createSequence" author="anandJ" >
+    <changeSet author="raviS" id="2-createSequence">
         <preConditions onFail="MARK_RAN">
             <not>
                 <sequenceExists sequenceName="hibernate_sequence"/>
@@ -38,13 +33,7 @@
         <tagDatabase tag="1.1"/>
     </changeSet>
 
-    <changeSet id="tables-3" author="anandJ" failOnError="false">
-        <addColumn tableName="user_comment">
-            <column name="owner" type="varchar(255)"/>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="tables-3.1" author="anandJ">
+    <changeSet id="tables-3" author="anandJ">
         <preConditions onFail="MARK_RAN">
             <not>
                 <columnExists tableName="user_comment" columnName="owner"/>
@@ -59,13 +48,7 @@
         <tagDatabase tag="tables-1.2"/>
     </changeSet>
 
-    <changeSet id="tables-4" author="anandJ" failOnError="false">
-        <addColumn tableName="artifact">
-            <column name="store_type_path" type="text"/>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="tables-4.1" author="anandJ">
+    <changeSet id="tables-4" author="anandJ">
         <preConditions onFail="MARK_RAN">
             <not>
                 <columnExists tableName="artifact" columnName="store_type_path"/>
