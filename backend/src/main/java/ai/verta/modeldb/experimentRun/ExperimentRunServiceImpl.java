@@ -8,6 +8,8 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitMultipartArtifact;
 import ai.verta.modeldb.CreateExperimentRun;
 import ai.verta.modeldb.DeleteArtifact;
 import ai.verta.modeldb.DeleteExperiment;
@@ -24,6 +26,7 @@ import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetChildrenExperimentRuns;
+import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunById;
 import ai.verta.modeldb.GetExperimentRunByName;
@@ -84,11 +87,13 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1222,7 +1227,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
-      String s3Key = null;
+      final String s3Key;
+      final String uploadId;
 
       /*Process code*/
       if (request.getArtifactType() == ArtifactType.CODE) {
@@ -1230,9 +1236,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         errorMessage =
             "Code versioning artifact not found at experimentRun, experiment and project level";
         s3Key = getUrlForCode(request);
+        uploadId = null;
       } else if (request.getArtifactType() == ArtifactType.DATA) {
         errorMessage = "Data versioning artifact not found";
-        s3Key = getUrlForData(request);
+        Entry<String, String> s3KeyUploadId = getUrlForData(request);
+        s3Key = s3KeyUploadId.getKey();
+        uploadId = s3KeyUploadId.getValue();
       } else {
         errorMessage =
             "ExperimentRun ID "
@@ -1240,9 +1249,14 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                 + " does not have the artifact "
                 + request.getKey();
 
-        s3Key =
-            getS3Path(
-                experimentRunDAO.getExperimentRunArtifacts(request.getId()), request.getKey());
+        Entry<String, String> s3KeyUploadId =
+            experimentRunDAO.getExperimentRunArtifactS3PathAndMultipartUploadID(
+                request.getId(),
+                request.getKey(),
+                request.getPartNumber(),
+                key -> artifactStoreDAO.initializeMultipart(key));
+        s3Key = s3KeyUploadId.getKey();
+        uploadId = s3KeyUploadId.getValue();
       }
       if (s3Key == null) {
         LOGGER.warn(errorMessage);
@@ -1255,7 +1269,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
       GetUrlForArtifact.Response response =
-          artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
+          artifactStoreDAO.getUrlForArtifactMultipart(
+              s3Key, request.getMethod(), request.getPartNumber(), uploadId);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1264,7 +1279,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     }
   }
 
-  private String getUrlForData(GetUrlForArtifact request) throws InvalidProtocolBufferException {
+  private Map.Entry<String, String> getUrlForData(GetUrlForArtifact request)
+      throws InvalidProtocolBufferException, ModelDBException {
 
     assert (request.getArtifactType().equals(ArtifactType.DATA));
     assert (!request.getId().isEmpty());
@@ -1273,14 +1289,20 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     List<Artifact> datasets = exprRun.getDatasetsList();
     for (Artifact dataset : datasets) {
       if (dataset.getKey().equals(request.getKey()))
-        return datasetVersionDAO.getUrlForDatasetVersion(
-            dataset.getLinkedArtifactId(), request.getMethod());
+        return new SimpleEntry<>(
+            datasetVersionDAO.getUrlForDatasetVersion(
+                dataset.getLinkedArtifactId(), request.getMethod()),
+            null);
     }
     // if the loop above did not return anything that means there was no Dataset logged with the
     // particular key
     // pre the dataset-as-fcc project datasets were stored as artifacts, so check there before
     // returning
-    return getS3Path(experimentRunDAO.getExperimentRunArtifacts(request.getId()), request.getKey());
+    return experimentRunDAO.getExperimentRunArtifactS3PathAndMultipartUploadID(
+        request.getId(),
+        request.getKey(),
+        request.getPartNumber(),
+        s3Key -> artifactStoreDAO.initializeMultipart(s3Key));
   }
 
   private String getUrlForCode(GetUrlForArtifact request) throws InvalidProtocolBufferException {
@@ -1305,13 +1327,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
     }
     return s3Key;
-  }
-
-  private String getS3Path(List<Artifact> experimentRunArtifacts, String artifactKey) {
-    for (Artifact artifact : experimentRunArtifacts) {
-      if (artifactKey.equalsIgnoreCase(artifact.getKey())) return artifact.getPath();
-    }
-    return null;
   }
 
   @Override
@@ -2346,6 +2361,93 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, GetVersionedInput.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void commitArtifactPart(
+      CommitArtifactPart request, StreamObserver<CommitArtifactPart.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in CommitArtifactPart request";
+      } else if (request.getKey().isEmpty()) {
+        errorMessage = "Artifact key not found in CommitArtifactPart request";
+      } else if (request.getArtifactPart().getPartNumber() == 0) {
+        errorMessage = "Artifact part number is not specified in CommitArtifactPart request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      CommitArtifactPart.Response response = experimentRunDAO.commitArtifactPart(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, CommitArtifactPart.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getCommittedArtifactParts(
+      GetCommittedArtifactParts request,
+      StreamObserver<GetCommittedArtifactParts.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in GetCommittedArtifactParts request";
+      } else if (request.getKey().isEmpty()) {
+        errorMessage = "Artifact key not found in GetCommittedArtifactParts request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      GetCommittedArtifactParts.Response response =
+          experimentRunDAO.getCommittedArtifactParts(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetCommittedArtifactParts.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void commitMultipartArtifact(
+      CommitMultipartArtifact request,
+      StreamObserver<CommitMultipartArtifact.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in CommitMultipartArtifact request";
+      } else if (request.getKey().isEmpty()) {
+        errorMessage = "Artifact key not found in CommitMultipartArtifact request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      CommitMultipartArtifact.Response response =
+          experimentRunDAO.commitMultipartArtifact(
+              request,
+              (s3Key, uploadId, partETags) ->
+                  artifactStoreDAO.commitMultipart(s3Key, uploadId, partETags));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, CommitMultipartArtifact.Response.getDefaultInstance());
     }
   }
 }
