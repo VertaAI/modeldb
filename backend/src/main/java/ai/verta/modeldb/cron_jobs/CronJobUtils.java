@@ -1,5 +1,6 @@
 package ai.verta.modeldb.cron_jobs;
 
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -17,6 +18,8 @@ public class CronJobUtils {
 
   public static void initializeBasedOnConfig(
       Map<String, Object> propertiesMap, AuthService authService, RoleService roleService) {
+
+    App app = App.getInstance();
     LOGGER.info("Enter in CronJobUtils: initializeBasedOnConfig()");
     if (propertiesMap.containsKey(ModelDBConstants.CRON_JOB)) {
       Map<String, Object> cronJobMap =
@@ -37,7 +40,9 @@ public class CronJobUtils {
             ModelDBUtils.scheduleTask(task, updateParentTimestampFrequency, TimeUnit.SECONDS);
             LOGGER.info(
                 "{} cron job scheduled successfully", ModelDBConstants.UPDATE_PARENT_TIMESTAMP);
-          } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)) {
+          } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
+              && app.getServiceUserEmail() != null
+              && app.getServiceUserDevKey() != null) {
             Map<String, Object> deleteEntitiesCronMap = (Map<String, Object>) cronJob.getValue();
             deleteEntitiesFrequency =
                 (int) deleteEntitiesCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);

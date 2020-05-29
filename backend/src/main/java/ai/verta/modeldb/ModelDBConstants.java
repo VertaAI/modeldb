@@ -171,6 +171,7 @@ public interface ModelDBConstants {
   String ROLE_REPOSITORY_READ_ONLY = "REPOSITORY_READ_ONLY";
   String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
+  String POSTGRES_DB_DRIVER = "org.postgresql.Driver";
 
   enum UserIdentifier {
     VERTA_ID,

@@ -230,26 +230,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             ModelDBServiceResourceTypes.REPOSITORY,
             repository.getId().toString(),
             ModelDBServiceActions.UPDATE);
-      }
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY,
-          repository.getId().toString(),
-          ModelDBServiceActions.READ);
-    } catch (InvalidProtocolBufferException e) {
-      LOGGER.error(e);
-      throw new ModelDBException("Unexpected error", e);
-    }
-    try {
-      if (checkWrite) {
+      } else {
         roleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.REPOSITORY,
             repository.getId().toString(),
-            ModelDBServiceActions.UPDATE);
+            ModelDBServiceActions.READ);
       }
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY,
-          repository.getId().toString(),
-          ModelDBServiceActions.READ);
     } catch (InvalidProtocolBufferException e) {
       LOGGER.error(e);
       throw new ModelDBException("Unexpected error", e);
@@ -292,7 +278,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository;
-      session.beginTransaction();
       if (create) {
         WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(request.getId(), false, true);
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -327,6 +312,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             LOGGER);
         repository.update(request);
       }
+      repository.setDeleted(true);
+      session.beginTransaction();
       session.saveOrUpdate(repository);
       if (create) {
         Commit initCommit =
@@ -345,6 +332,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.getTransaction().commit();
       if (create) {
         createRoleBindingsForRepository(request, userInfo, repository);
+
+        // Update repository deleted status to false after roleBindings created successfully
+        session.beginTransaction();
+        repository.setDeleted(false);
+        session.update(repository);
+        session.getTransaction().commit();
       }
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     }
