@@ -1250,7 +1250,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                 + request.getKey();
 
         Entry<String, String> s3KeyUploadId =
-            experimentRunDAO.getExperimentRunArtifactsS3PathAndMultipartUploadID(
+            experimentRunDAO.getExperimentRunArtifactS3PathAndMultipartUploadID(
                 request.getId(),
                 request.getKey(),
                 request.getPartNumber(),
@@ -1298,7 +1298,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     // particular key
     // pre the dataset-as-fcc project datasets were stored as artifacts, so check there before
     // returning
-    return experimentRunDAO.getExperimentRunArtifactsS3PathAndMultipartUploadID(
+    return experimentRunDAO.getExperimentRunArtifactS3PathAndMultipartUploadID(
         request.getId(),
         request.getKey(),
         request.getPartNumber(),
