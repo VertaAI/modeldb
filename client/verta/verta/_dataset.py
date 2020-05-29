@@ -46,7 +46,7 @@ class Dataset(object):
 
         if _dataset_id is not None:
             dataset = Dataset._get(conn, _dataset_id=_dataset_id)
-            if dataset is not None:
+            if dataset is not None and dataset.id:
                 print("set existing Dataset: {}".format(dataset.name))
             else:
                 raise ValueError("Dataset with ID {} not found".format(_dataset_id))
@@ -58,7 +58,7 @@ class Dataset(object):
             except requests.HTTPError as e:
                 if e.response.status_code == 403:  # cannot create in other workspace
                     dataset = Dataset._get(conn, name, workspace)
-                    if dataset is not None:
+                    if dataset is not None and dataset.id:
                         print("set existing Dataset: {} from {}".format(dataset.name, WORKSPACE_PRINT_MSG))
                     else:  # no accessible dataset in other workspace
                         six.raise_from(e, None)
@@ -69,7 +69,11 @@ class Dataset(object):
                             " cannot set `desc`, `tags`, `attrs`, or `public_within_org`".format(name)
                         )
                     dataset = Dataset._get(conn, name, workspace)
-                    print("set existing Dataset: {} from {}".format(dataset.name, WORKSPACE_PRINT_MSG))
+                    if dataset is not None and dataset.id:
+                        print("set existing Dataset: {} from {}".format(dataset.name, WORKSPACE_PRINT_MSG))
+                    else:
+                        raise RuntimeError("unable to retrieve Dataset {};"
+                                           " please notify the Verta development team".format(name))
                 else:
                     raise e
             else:
@@ -464,7 +468,7 @@ class DatasetVersion(object):
         if _dataset_version_id is not None:
             # retrieve dataset version by id
             dataset_version = DatasetVersion._get(conn, _dataset_version_id)
-            if dataset_version is None:
+            if dataset_version is None or not dataset.id:
                 raise ValueError("DatasetVersion with ID {} not found".format(_dataset_version_id))
         else:
             # create new version under dataset
