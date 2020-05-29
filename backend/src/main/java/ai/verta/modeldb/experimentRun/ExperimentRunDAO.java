@@ -120,8 +120,12 @@ public interface ExperimentRunDAO {
   /**
    * @param experimentRunId : experimentRun.id
    * @param experimentRunDescription : updated experimentRun description from client request
+   * @return {@link ExperimentRun} : updated experimentRun
+   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  void updateExperimentRunDescription(String experimentRunId, String experimentRunDescription);
+  ExperimentRun updateExperimentRunDescription(
+      String experimentRunId, String experimentRunDescription)
+      throws InvalidProtocolBufferException;
 
   /**
    * @param experimentRunId : experimentRun.id
@@ -142,9 +146,10 @@ public interface ExperimentRunDAO {
    *
    * @param experimentRunId : ExperimentRun.id
    * @param tagsList : tag list
+   * @return ExperimentRun : updatedExperimentRun
    * @throws InvalidProtocolBufferException : InvalidProtocolBufferException
    */
-  void addExperimentRunTags(String experimentRunId, List<String> tagsList)
+  ExperimentRun addExperimentRunTags(String experimentRunId, List<String> tagsList)
       throws InvalidProtocolBufferException;
 
   /**
@@ -153,9 +158,12 @@ public interface ExperimentRunDAO {
    * @param deleteAll : flag
    * @param experimentRunTagList : tags list for deletion
    * @param experimentRunId : ExperimentRun.id
+   * @return ExperimentRun updatedExperimentRun
+   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  void deleteExperimentRunTags(
-      String experimentRunId, List<String> experimentRunTagList, Boolean deleteAll);
+  ExperimentRun deleteExperimentRunTags(
+      String experimentRunId, List<String> experimentRunTagList, Boolean deleteAll)
+      throws InvalidProtocolBufferException;
 
   /**
    * ExperimentRun has Observations list field. Add new Observation in that Observations List.

@@ -611,8 +611,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public void updateExperimentRunDescription(
-      String experimentRunId, String experimentRunDescription) {
+  public ExperimentRun updateExperimentRunDescription(
+      String experimentRunId, String experimentRunDescription)
+      throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntity =
@@ -623,6 +624,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.update(experimentRunEntity);
       LOGGER.debug("ExperimentRun description updated successfully");
       transaction.commit();
+      return experimentRunEntity.getProtoObject();
     }
   }
 
@@ -669,7 +671,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public void addExperimentRunTags(String experimentRunId, List<String> tagsList)
+  public ExperimentRun addExperimentRunTags(String experimentRunId, List<String> tagsList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
@@ -701,12 +703,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       transaction.commit();
       LOGGER.debug("ExperimentRun tags added successfully");
+      return experimentRunObj.getProtoObject();
     }
   }
 
   @Override
-  public void deleteExperimentRunTags(
-      String experimentRunId, List<String> experimentRunTagList, Boolean deleteAll) {
+  public ExperimentRun deleteExperimentRunTags(
+      String experimentRunId, List<String> experimentRunTagList, Boolean deleteAll)
+      throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       if (deleteAll) {
@@ -726,6 +730,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.update(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun tags deleted successfully");
+      return experimentRunObj.getProtoObject();
     }
   }
 

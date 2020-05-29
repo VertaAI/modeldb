@@ -533,9 +533,14 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      experimentRunDAO.updateExperimentRunDescription(request.getId(), request.getDescription());
+      ExperimentRun updatedExperimentRun =
+          experimentRunDAO.updateExperimentRunDescription(
+              request.getId(), request.getDescription());
 
-      responseObserver.onNext(UpdateExperimentRunDescription.Response.newBuilder().build());
+      responseObserver.onNext(
+          UpdateExperimentRunDescription.Response.newBuilder()
+              .setExperimentRun(updatedExperimentRun)
+              .build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -614,9 +619,13 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      experimentRunDAO.addExperimentRunTags(
-          request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
-      responseObserver.onNext(AddExperimentRunTags.Response.newBuilder().build());
+      ExperimentRun updatedExperimentRun =
+          experimentRunDAO.addExperimentRunTags(
+              request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+      responseObserver.onNext(
+          AddExperimentRunTags.Response.newBuilder()
+              .setExperimentRun(updatedExperimentRun)
+              .build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -657,10 +666,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      experimentRunDAO.addExperimentRunTags(
-          request.getId(),
-          ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
-      responseObserver.onNext(AddExperimentRunTag.Response.newBuilder().build());
+      ExperimentRun updatedExperimentRun =
+          experimentRunDAO.addExperimentRunTags(
+              request.getId(),
+              ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
+      responseObserver.onNext(
+          AddExperimentRunTag.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -734,9 +745,13 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      experimentRunDAO.deleteExperimentRunTags(
-          request.getId(), request.getTagsList(), request.getDeleteAll());
-      responseObserver.onNext(DeleteExperimentRunTags.Response.newBuilder().build());
+      ExperimentRun updatedExperimentRun =
+          experimentRunDAO.deleteExperimentRunTags(
+              request.getId(), request.getTagsList(), request.getDeleteAll());
+      responseObserver.onNext(
+          DeleteExperimentRunTags.Response.newBuilder()
+              .setExperimentRun(updatedExperimentRun)
+              .build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -778,9 +793,13 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      experimentRunDAO.deleteExperimentRunTags(
-          request.getId(), Collections.singletonList(request.getTag()), false);
-      responseObserver.onNext(DeleteExperimentRunTag.Response.newBuilder().build());
+      ExperimentRun updatedExperimentRun =
+          experimentRunDAO.deleteExperimentRunTags(
+              request.getId(), Collections.singletonList(request.getTag()), false);
+      responseObserver.onNext(
+          DeleteExperimentRunTag.Response.newBuilder()
+              .setExperimentRun(updatedExperimentRun)
+              .build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {

@@ -1445,7 +1445,17 @@ public class ExperimentRunTest {
                     + Calendar.getInstance().getTimeInMillis())
             .build();
 
-    experimentRunServiceStub.updateExperimentRunDescription(request2);
+    UpdateExperimentRunDescription.Response response2 =
+        experimentRunServiceStub.updateExperimentRunDescription(request2);
+    assertEquals(
+        "ExperimentRun Description do not match with expected experimentRun name",
+        request2.getDescription(),
+        response2.getExperimentRun().getDescription());
+
+    assertNotEquals(
+        "ExperimentRun date_updated field not update on database",
+        experimentRun.getDateUpdated(),
+        response2.getExperimentRun().getDateUpdated());
 
     try {
       String name =
@@ -1599,13 +1609,16 @@ public class ExperimentRunTest {
     AddExperimentRunTags request =
         AddExperimentRunTags.newBuilder().setId(experimentRun.getId()).addAllTags(tags).build();
 
-    experimentRunServiceStub.addExperimentRunTags(request);
+    AddExperimentRunTags.Response aertResponse =
+        experimentRunServiceStub.addExperimentRunTags(request);
+    LOGGER.info("AddExperimentRunTags Response : \n" + aertResponse.getExperimentRun());
+    assertEquals(4, aertResponse.getExperimentRun().getTagsCount());
 
-    GetTags tagsRequest = GetTags.newBuilder().setId(experimentRun.getId()).build();
-    GetTags.Response getTagsResponse = experimentRunServiceStub.getExperimentRunTags(tagsRequest);
-
-    LOGGER.info("GetExperimentRunTags Response : \n" + getTagsResponse);
-    assertEquals(4, getTagsResponse.getTagsCount());
+    assertNotEquals(
+        "ExperimentRun date_updated field not update on database",
+        experimentRun.getDateUpdated(),
+        aertResponse.getExperimentRun().getDateUpdated());
+    experimentRun = aertResponse.getExperimentRun();
 
     tags = new ArrayList<>();
     tags.add("Test Added tag 3");
@@ -1614,12 +1627,9 @@ public class ExperimentRunTest {
     request =
         AddExperimentRunTags.newBuilder().setId(experimentRun.getId()).addAllTags(tags).build();
 
-    experimentRunServiceStub.addExperimentRunTags(request);
-
-    tagsRequest = GetTags.newBuilder().setId(experimentRun.getId()).build();
-    getTagsResponse = experimentRunServiceStub.getExperimentRunTags(tagsRequest);
-    LOGGER.info("GetExperimentRunTags Response : \n" + getTagsResponse);
-    assertEquals(5, getTagsResponse.getTagsCount());
+    aertResponse = experimentRunServiceStub.addExperimentRunTags(request);
+    LOGGER.info("AddExperimentRunTags Response : \n" + aertResponse.getExperimentRun());
+    assertEquals(5, aertResponse.getExperimentRun().getTagsCount());
 
     try {
       String tag52 = "Human Activity Recognition using Smartphone Dataset";
@@ -1767,24 +1777,18 @@ public class ExperimentRunTest {
             .setTag("Added new tag 1")
             .build();
 
-    experimentRunServiceStub.addExperimentRunTag(request);
-
-    GetTags tagsRequest = GetTags.newBuilder().setId(experimentRun.getId()).build();
-    GetTags.Response getTagsResponse = experimentRunServiceStub.getExperimentRunTags(tagsRequest);
-    LOGGER.info("GetExperimentRunTag Response : \n" + getTagsResponse);
+    AddExperimentRunTag.Response aertResponse =
+        experimentRunServiceStub.addExperimentRunTag(request);
+    LOGGER.info("AddExperimentRunTag Response : \n" + aertResponse.getExperimentRun());
     assertEquals(
         "ExperimentRun tags not match with expected experimentRun tags",
         3,
-        getTagsResponse.getTagsCount());
+        aertResponse.getExperimentRun().getTagsCount());
 
-    GetExperimentRunById getExperimentRunById =
-        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
-    GetExperimentRunById.Response getExpRunResponse =
-        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        getExpRunResponse.getExperimentRun().getDateUpdated());
+        aertResponse.getExperimentRun().getDateUpdated());
 
     try {
       String tag52 = "Human Activity Recognition using Smartphone Dataset";
@@ -2019,26 +2023,29 @@ public class ExperimentRunTest {
             .addAllTags(removableTagList)
             .build();
 
-    experimentRunServiceStub.deleteExperimentRunTags(request);
-
-    GetTags tagsRequest = GetTags.newBuilder().setId(experimentRun.getId()).build();
-    GetTags.Response getTagsResponse = experimentRunServiceStub.getExperimentRunTags(tagsRequest);
+    DeleteExperimentRunTags.Response response =
+        experimentRunServiceStub.deleteExperimentRunTags(request);
     LOGGER.info(
-        "GetExperimentRunTags after Delete tags Response : \n" + getTagsResponse.getTagsList());
-    assertTrue(getTagsResponse.getTagsList().size() <= 1);
+        "DeleteExperimentRunTags Response : \n" + response.getExperimentRun().getTagsList());
+    assertTrue(response.getExperimentRun().getTagsList().size() <= 1);
 
-    if (getTagsResponse.getTagsList().size() > 0) {
+    assertNotEquals(
+        "ExperimentRun date_updated field not update on database",
+        experimentRun.getDateUpdated(),
+        response.getExperimentRun().getDateUpdated());
+    experimentRun = response.getExperimentRun();
+
+    if (response.getExperimentRun().getTagsList().size() > 0) {
       request =
           DeleteExperimentRunTags.newBuilder()
               .setId(experimentRun.getId())
               .setDeleteAll(true)
               .build();
 
-      experimentRunServiceStub.deleteExperimentRunTags(request);
-
-      tagsRequest = GetTags.newBuilder().setId(experimentRun.getId()).build();
-      getTagsResponse = experimentRunServiceStub.getExperimentRunTags(tagsRequest);
-      assertEquals(0, getTagsResponse.getTagsList().size());
+      response = experimentRunServiceStub.deleteExperimentRunTags(request);
+      LOGGER.info(
+          "DeleteExperimentRunTags Response : \n" + response.getExperimentRun().getTagsList());
+      assertEquals(0, response.getExperimentRun().getTagsList().size());
     }
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
@@ -2169,12 +2176,15 @@ public class ExperimentRunTest {
     DeleteExperimentRunTag request =
         DeleteExperimentRunTag.newBuilder().setId(experimentRun.getId()).setTag("Tag_1").build();
 
-    experimentRunServiceStub.deleteExperimentRunTag(request);
+    DeleteExperimentRunTag.Response response =
+        experimentRunServiceStub.deleteExperimentRunTag(request);
+    LOGGER.info("DeleteExperimentRunTag Response : \n" + response.getExperimentRun().getTagsList());
+    assertFalse(response.getExperimentRun().getTagsList().contains("tag_abc"));
 
-    GetTags tagsRequest = GetTags.newBuilder().setId(experimentRun.getId()).build();
-    GetTags.Response getTagsResponse = experimentRunServiceStub.getExperimentRunTags(tagsRequest);
-    LOGGER.info("DeleteExperimentRunTag Response : \n" + getTagsResponse.getTagsList());
-    assertFalse(getTagsResponse.getTagsList().contains("tag_abc"));
+    assertNotEquals(
+        "ExperimentRun date_updated field not update on database",
+        experimentRun.getDateUpdated(),
+        response.getExperimentRun().getDateUpdated());
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
