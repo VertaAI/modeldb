@@ -518,4 +518,11 @@ public class ExperimentRunEntity {
     LOGGER.trace("Returning converted ExperimentRun");
     return experimentRunBuilder.build();
   }
+
+  public Map<String, List<ArtifactEntity>> getArtifactEntityMap() {
+    if (artifactEntityMap.size() == 0) {
+      addArtifactInMap(artifactMapping);
+    }
+    return artifactEntityMap;
+  }
 }

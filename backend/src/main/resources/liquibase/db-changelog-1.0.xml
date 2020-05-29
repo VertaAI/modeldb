@@ -449,6 +449,47 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="artifact_table_update_upload_id" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="artifact" columnName="upload_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="artifact">
+            <column name="upload_id" type="varchar(255)" defaultValue="null" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="artifact_table_update_upload_completed" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="artifact" columnName="upload_completed"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="artifact">
+            <column name="upload_completed" type="boolean" defaultValue="true" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="artifact_part_table_create" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artifact_part"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artifact_part">
+            <column name="artifact_id" type="int8">
+                <constraints primaryKey="true" nullable="false"
+                  foreignKeyName="artifact_id" referencedTableName="artifact"
+                  referencedColumnNames="id"/>
+            </column>
+            <column name="part_number" type="int8">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="etag" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+  
     <changeSet id="add-project-deleted-column" author="anandJ">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -515,6 +556,6 @@
         </addColumn>
     </changeSet>
 
-    <!-- take a below line to the end of this file -->
+    <!-- keep the line below at the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 </databaseChangeLog>
