@@ -65,7 +65,7 @@ class Commit(
   /** Adds blob to this commit at path
    *  If path is already in this Commit, it will be updated to the new blob
    *  @param path Location to add blob to
-   *  @param blob ModelDB versioning blob.
+   *  @param blob Instance of Blob subclass.
    */
   def update[T <: Blob](path: String, blob: T)(implicit ec: ExecutionContext): Unit = {
     load_blobs()
@@ -85,28 +85,14 @@ class Commit(
 
   /** Saves this commit to ModelDB
    *  @param message description of this commit
-   *  TODO: implement this method
-   *  TODO: incorporate diff
    *  TODO: write tests for this method
    */
-  def save(message: String)(implicit ec: ExecutionContext) = Try(
+  def save(message: String)(implicit ec: ExecutionContext) = {
     if (saved)
-      throw new IllegalArgumentException("Commit is already saved")
-    else {
-      clientSet.versioningService.CreateCommit2(
-        body = VersioningCreateCommitRequest(
-          commit = Some(addMessage(message)),
-          blobs = Some(blobsList)
-        ),
-        repository_id_repo_id = repo.id.get
-      )
-      .map(r => if (!r.commit.isEmpty) {
-        commit = r.commit.get
-        commit_branch.map(setBranch(_))
-        init()
-      })
-    }
-  )
+      Failure(new IllegalArgumentException("Commit is already saved"))
+    else
+      createCommit(message = message, blobs = Some(blobsList))
+  }
 
   /** Return ancestors, starting from this Commit until the root of the Repository
    *  @return a list of ancestors
@@ -134,30 +120,43 @@ class Commit(
   }
 
   /** Generates folder names and blob names in this commit by walking through its folder tree.
+   *  TODO: finish the implementation
    */
   // def walk()(implicit ec: ExecutionContext) = {
   //   if (!saved)
   //     Failure(new IllegalStateException("Commit must be saved before it can be walked"))
   //   else {
-  //     var locations = List(List("")) // LIFO
+  //     var locations = List(List("")) // stack
   //     var ret = List()
   //
-  //     while (!locations.isEmpty) {
-  //       location = locations.head
+  //     (Iterator.continually {
+  //       var location = locations.head
   //       locations.drop(1)
   //
   //       val response = clientSet.versioningService.GetCommitComponent2(
   //         commit_sha = commit.commit_sha.get,
   //         repository_id_repo_id = repo.id.get,
-  //         location = location
+  //         location = Some(location)
   //       )
   //
-  //       if (response.isDefined) {
-  //         val folderPath = location.mkString("/")
-  //         val folderNames = ...
-  //         val blobNames = ...
-  //       }
-  //     }
+  //     }).takeWhile(_ => !locations.isEmpty)
+
+      // while (!locations.isEmpty) {
+      //   location = locations.head
+      //   locations.drop(1)
+      //
+      //   val response = clientSet.versioningService.GetCommitComponent2(
+      //     commit_sha = commit.commit_sha.get,
+      //     repository_id_repo_id = repo.id.get,
+      //     location = location
+      //   )
+      //
+      //   if (response.isDefined) {
+      //     val folderPath = location.mkString("/")
+      //     val folderNames = ...
+      //     val blobNames = ...
+      //   }
+      // }
   //   }
   // }
 
@@ -174,6 +173,40 @@ class Commit(
       this
     }
   )
+
+  /** Returns the diff from reference to self
+   *  @param reference Commit to be compared to. If not provided, first parent will be used.
+   *  @return None if this commit or reference has not yet been saved, or if they do not belong to the same repository; otherwise diff object.
+   */
+  def diffFrom(reference: Option[Commit] = None)(implicit ec: ExecutionContext) = Try(
+    if (!saved)
+      throw new IllegalStateException("Commit must be saved before a diff can be calculated")
+    else if (reference.isDefined && !reference.get.saved)
+      throw new IllegalStateException("Reference must be saved before a diff can be calculated")
+    else if (reference.isDefined && reference.get.repo.id.get != repo.id.get)
+      throw new IllegalStateException("Reference and this commit must belong to the same repository")
+    else {
+      clientSet.versioningService.ComputeRepositoryDiff2(
+        repository_id_repo_id = repo.id.get,
+        commit_a = Some(
+          if (reference.isDefined) reference.get.commit.commit_sha.get else commit.parent_shas.get.head
+        ),
+        commit_b = Some(commit.commit_sha.get)
+      ).map(r => new Diff(r.diffs)).get
+    }
+  )
+
+  /** Applies a diff to this Commit.
+   *  This method creates a new commit in ModelDB, and assigns a new ID to this object.
+   */
+  def applyDiff(diff: Diff, message: String)(implicit ec: ExecutionContext) = {
+    if (!saved)
+      Failure(new IllegalStateException("Commit must be saved before a diff can be applied"))
+    else {
+      becomeChild()
+      createCommit(message = message, diffs = diff.blobDiffs, commitBase = Some(commit.parent_shas.get.head))
+    }
+  }
 
   /** Reverts all the commits beginning with other up through this Commit
    *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
@@ -263,6 +296,27 @@ class Commit(
       )
       saved = false
     }
+  }
+
+  /** Helper function to create a new commit and assign to current instance.
+   */
+  private def createCommit(message: String, blobs: Option[List[VersioningBlobExpanded]] = None,
+    commitBase: Option[String] = None,
+    diffs: Option[List[VersioningBlobDiff]] = None)(implicit ec: ExecutionContext) = {
+      clientSet.versioningService.CreateCommit2(
+        body = VersioningCreateCommitRequest(
+          commit = Some(addMessage(message)),
+          blobs = blobs,
+          commit_base = commitBase,
+          diffs = diffs
+        ),
+        repository_id_repo_id = repo.id.get
+      )
+      .map(r => if (!r.commit.isEmpty) {
+        commit = r.commit.get
+        commit_branch.map(setBranch(_))
+        init()
+      })
   }
 
   /** Convert a location to "repeated string" representation

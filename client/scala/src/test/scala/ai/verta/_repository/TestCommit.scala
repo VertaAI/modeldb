@@ -14,6 +14,9 @@ import org.scalatest.Assertions._
 
 import scala.collection.mutable.HashSet
 
+/**
+ * TODO: write test for diffs, save
+ */
 class TestCommit extends FunSuite {
   implicit val ec = ExecutionContext.global
 
@@ -106,7 +109,7 @@ class TestCommit extends FunSuite {
     }
   }
 
-  test("merge two commits with no conflictss") {
+  test("merge two commits with no conflicts") {
     val f = fixture
 
     try {
@@ -142,7 +145,7 @@ class TestCommit extends FunSuite {
     }
   }
 
-  test("merge two commits with conflictss") {
+  test("merge two commits with conflicts") {
     val f = fixture
 
     try {
@@ -181,4 +184,36 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test ("diffFrom and applyDiff of 2 different branches") {
+    val f = fixture
+
+    try {
+        val branch1 = f.repo.getCommitByBranch().flatMap(_.newBranch("a")).get
+        branch1.update("abc/cde", Git(hash = Some("abc"), repo = Some("abc")))
+        branch1.save("Some message 11")
+        branch1.update("wuv/ajf", Git(hash = Some("abc"), repo = Some("abc")))
+        branch1.save("Some message 12")
+        val parent1 = branch1.commit.commit_sha.get
+
+        val branch2 = f.repo.getCommitByBranch().flatMap(_.newBranch("b")).get
+        branch2.update("abc/cde", S3(List(new S3Location("s3://verta-scala-test"))))
+        branch2.save("Some message 21")
+        branch2.update("def/ghi", Git(hash = Some("abc"), repo = Some("abc")))
+        branch2.save("Some message 22")
+        val parent2 = branch2.commit.commit_sha.get
+
+        val diff = branch2.diffFrom(Some(branch1)).get
+
+        branch1.applyDiff(diff, "apply diff")
+        assert(branch1.get("wuv/ajf").isEmpty)
+        assert(branch1.get("def/ghi").isDefined)
+        assert(branch1.get("abc/cde").get.isInstanceOf[S3])
+        assert(branch1.commit.message.get.equals("apply diff"))
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  // test add empty blob (e.g S3)
 }
