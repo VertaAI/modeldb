@@ -345,7 +345,6 @@ message LogArtifact {
 
     message Response {
         ExperimentRun experiment_run = 1;
-        bool multipart_upload_ok = 2;
     }
 }
 
