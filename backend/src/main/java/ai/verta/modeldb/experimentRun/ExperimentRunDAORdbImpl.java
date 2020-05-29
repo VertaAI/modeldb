@@ -10,7 +10,6 @@ import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
 import ai.verta.modeldb.CommitArtifactPart.Response;
 import ai.verta.modeldb.CommitMultipartArtifact;
-import ai.verta.modeldb.CreateJob;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
@@ -2265,7 +2264,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Session session, String experimentRunId, String key) {
     ExperimentRunEntity experimentRunObj = session.get(ExperimentRunEntity.class, experimentRunId);
     if (experimentRunObj == null) {
-      LOGGER.warn(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
+      LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       Status status =
           Status.newBuilder()
               .setCode(Code.NOT_FOUND_VALUE)
@@ -2291,7 +2290,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ArtifactEntity artifactEntity = getArtifactEntity(session, experimentRunId, key);
       return getS3PathAndMultipartUploadId(
-          session, artifactEntity, partNumber != 0, key, initializeMultipart);
+          session, artifactEntity, partNumber != 0, initializeMultipart);
     }
   }
 
@@ -2307,7 +2306,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Session session,
       ArtifactEntity artifactEntity,
       boolean partNumberSpecified,
-      String key,
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified) {
@@ -2330,7 +2328,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(e.getMessage())
-                .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
+                .addDetails(Any.pack(CommitMultipartArtifact.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -2386,23 +2384,27 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public CommitMultipartArtifact.Response commitMultipartArtifact(
       CommitMultipartArtifact request, CommitMultipartFunction commitMultipartFunction)
       throws ModelDBException {
-    SimpleEntry<String, String> result;
     List<PartETag> partETags;
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ArtifactEntity artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
+      if (artifactEntity.getUploadId() == null) {
+        String message = "Multipart wasn't initialized";
+        LOGGER.info(message);
+        throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
+      }
       Set<ArtifactPartEntity> artifactPartEntities = artifactEntity.getArtifactPartEntities();
       partETags =
           artifactPartEntities.stream()
               .map(ArtifactPartEntity::toPartETag)
               .collect(Collectors.toList());
+      commitMultipartFunction.apply(
+          artifactEntity.getPath(), artifactEntity.getUploadId(), partETags);
       session.beginTransaction();
       artifactEntity.setUploadCompleted(true);
       artifactPartEntities.forEach(session::delete);
       artifactPartEntities.clear();
       session.getTransaction().commit();
-      result = getS3PathAndMultipartUploadId(session, artifactEntity, true, request.getKey(), null);
     }
-    commitMultipartFunction.apply(result.getKey(), result.getValue(), partETags);
     return CommitMultipartArtifact.Response.newBuilder().build();
   }
 }
