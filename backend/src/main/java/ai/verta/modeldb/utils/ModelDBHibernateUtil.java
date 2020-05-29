@@ -4,6 +4,7 @@ import static ai.verta.modeldb.authservice.AuthServiceChannel.isBackgroundUtilsC
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
@@ -167,7 +168,7 @@ public class ModelDBHibernateUtil {
         .getConnection();
   }
 
-  public static SessionFactory getSessionFactory() {
+  public static SessionFactory createOrGetSessionFactory() throws ModelDBException {
     if (sessionFactory == null) {
       LOGGER.info("Fetching sessionFactory");
       try {
@@ -254,18 +255,25 @@ public class ModelDBHibernateUtil {
         isReady = true;
         return sessionFactory;
       } catch (Exception e) {
-        e.printStackTrace();
         LOGGER.warn(
             "ModelDBHibernateUtil getSessionFactory() getting error : {}", e.getMessage(), e);
         if (registry != null) {
           StandardServiceRegistryBuilder.destroy(registry);
         }
-        Status status =
-            Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new ModelDBException(e.getMessage());
       }
     } else {
       return loopBack(sessionFactory);
+    }
+  }
+
+  public static SessionFactory getSessionFactory() {
+    try {
+      return createOrGetSessionFactory();
+    } catch (Exception e) {
+      Status status =
+          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
+      throw StatusProto.toStatusRuntimeException(status);
     }
   }
 
@@ -278,7 +286,7 @@ public class ModelDBHibernateUtil {
       // Check DB connection based on the periodic time logic
       checkDBConnectionInLoop(false);
       ModelDBHibernateUtil.sessionFactory = null;
-      sessionFactory = getSessionFactory();
+      sessionFactory = createOrGetSessionFactory();
       LOGGER.debug("ModelDBHibernateUtil getSessionFactory() DB connection got successfully");
       return sessionFactory;
     } catch (Exception ex) {
