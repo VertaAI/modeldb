@@ -502,7 +502,7 @@ public interface ExperimentRunDAO {
       CommitFunction commitFunction)
       throws ModelDBException, InvalidProtocolBufferException;
 
-  Entry<String, String> getExperimentRunArtifactsS3PathAndMultipartUploadID(
+  Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
       String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
       throws ModelDBException;
 }

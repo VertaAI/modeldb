@@ -2252,7 +2252,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public Entry<String, String> getExperimentRunArtifactsS3PathAndMultipartUploadID(
+  public Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
       String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -2281,16 +2281,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             if (uploadId == null) {
               uploadId = initializeMultipart.apply(artifactEntity.getPath()).orElse(null);
             }
-            if (uploadId == null) {
-              throw new ModelDBException(
-                  "Can't initialize multipart upload", io.grpc.Status.Code.FAILED_PRECONDITION);
-            }
-            if (!Objects.equals(uploadId, artifactEntity.getUploadId())
-                || artifactEntity.isUploadCompleted()) {
-              session.beginTransaction();
-              artifactEntity.setUploadId(uploadId);
-              artifactEntity.setUploadCompleted(false);
-              session.getTransaction().commit();
+            if (uploadId != null) {
+              if (!Objects.equals(uploadId, artifactEntity.getUploadId())
+                  || artifactEntity.isUploadCompleted()) {
+                session.beginTransaction();
+                artifactEntity.setUploadId(uploadId);
+                artifactEntity.setUploadCompleted(false);
+                session.getTransaction().commit();
+              }
             }
           } else {
             uploadId = null;
