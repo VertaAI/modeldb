@@ -49,6 +49,16 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
      .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get))
    }
 
+   /** Delete a tag from this repository
+    *  @param tag tag
+    */
+    def deleteTag(tag: String)(implicit ec: ExecutionContext) = {
+      clientSet.versioningService.DeleteTag2(
+          repository_id_repo_id = repo.id.get,
+          tag = urlEncode(tag)
+      )
+    }
+
   /** Get the id of repository
    */
   private def getId(): BigInt = {

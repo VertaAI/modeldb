@@ -43,7 +43,7 @@ class TestCommit extends FunSuite {
   }
 
 
-  test("update commit") {
+  test("update and remove should properly maintain blobs") {
     val f = fixture
 
     try {
@@ -156,6 +156,27 @@ class TestCommit extends FunSuite {
 
         val mergeAttempt = branch1.merge(branch2, message = Some("Merge test"))
         assert(mergeAttempt.isFailure)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("merge unsaved commits should return exception") {
+    val f = fixture
+
+    try {
+        val branch1 = f.repo.getCommitByBranch().flatMap(_.newBranch("a")).get
+        branch1.update("abc/cde", Git(hash = Some("abc"), repo = Some("abc")))
+
+        val branch2 = f.repo.getCommitByBranch().flatMap(_.newBranch("b")).get
+        branch2.update("abc/cde", Git(hash = Some("few"), repo = Some("fwe")))
+        branch2.save("Some message 2")
+
+        val mergeAttempt = branch1.merge(branch2, message = Some("Merge test"))
+        assert(mergeAttempt.isFailure)
+
+        val mergeAttempt2 = branch2.merge(branch1, message = Some("Merge test"))
+        assert(mergeAttempt2.isFailure)
     } finally {
       cleanup(f)
     }

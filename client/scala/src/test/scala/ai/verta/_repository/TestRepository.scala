@@ -33,11 +33,11 @@ class TestRepository extends FunSuite {
     }
   }
 
-  test("get repo by id (not exist)") {
+  test("get repo by id (not exist) should fail") {
     val f = fixture
 
     try {
-      assert(f.client.getRepository("124112413").isInstanceOf[Failure[HttpException]])
+      assert(f.client.getRepository("124112413").isFailure)
     } finally {
       cleanup(f)
     }
@@ -86,17 +86,15 @@ class TestRepository extends FunSuite {
   }
 
 
-  // test("get commit on a tag branch") {
-  //   val f = fixture
-  //
-  //   try {
-  //     assert(
-  //       f.repo
-  //       .flatMap(_.getCommitByTag("Some tag"))
-  //       .isInstanceOf[Success[Commit]]
-  //     )
-  //   } finally {
-  //     cleanup(f)
-  //   }
-  // }
+  test("get commit by tag") {
+    val f = fixture
+
+    try {
+      f.repo.getCommitByBranch().flatMap(_.tag("Some tag"))
+      assert(f.repo.getCommitByTag("Some tag").isSuccess)
+      f.repo.deleteTag("Some tag")
+    } finally {
+      cleanup(f)
+    }
+  }
 }

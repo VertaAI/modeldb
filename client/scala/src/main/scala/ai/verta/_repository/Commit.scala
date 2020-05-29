@@ -55,7 +55,7 @@ class Commit(
 
   /** Retrieves the blob at path from this commit
    *  @param path location of a blob
-   *  @return ModelDB versioning blob
+   *  @return ModelDB versioning blob. If not existed, return None
    */
   def get(path: String)(implicit ec: ExecutionContext): Option[Blob] = {
     load_blobs()
@@ -95,7 +95,7 @@ class Commit(
     else {
       clientSet.versioningService.CreateCommit2(
         body = VersioningCreateCommitRequest(
-          commit = Some(withMessage(message)),
+          commit = Some(addMessage(message)),
           blobs = Some(blobsList)
         ),
         repository_id_repo_id = repo.id.get
@@ -181,8 +181,7 @@ class Commit(
    *  @param message Description of the revert. If not provided, a default message will be used
    *  @return Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository; success otherwise.
    */
-  def revert(other: Option[Commit] = None, message: Option[String] = None)(implicit ec: ExecutionContext) =
-  Try(
+  def revert(other: Option[Commit] = None, message: Option[String] = None)(implicit ec: ExecutionContext) = Try(
     if (!saved)
       throw new IllegalStateException("This commit must be saved")
     else if (other.isDefined && !other.get.saved)
@@ -217,8 +216,7 @@ class Commit(
    *  @return Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository; success otherwise.
    *  TODO: is dry run?
    */
-  def merge(other: Commit, message: Option[String] = None)(implicit ec: ExecutionContext) =
-  Try(
+  def merge(other: Commit, message: Option[String] = None)(implicit ec: ExecutionContext) = Try(
     if (!saved)
       throw new IllegalStateException("This commit must be saved")
     else if (!other.saved)
@@ -290,7 +288,7 @@ class Commit(
   /** Add message to current commit. Done before saving
    *  @param message message
    */
-  private def withMessage(message: String) = VersioningCommit(
+  private def addMessage(message: String) = VersioningCommit(
     author = commit.author,
     commit_sha = commit.commit_sha,
     message = Some(message),
