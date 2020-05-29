@@ -508,14 +508,15 @@ public interface ExperimentRunDAO {
 
   Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
       String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
-      throws ModelDBException;
+      throws ModelDBException, InvalidProtocolBufferException;
 
-  Response commitArtifactPart(CommitArtifactPart request) throws ModelDBException;
+  Response commitArtifactPart(CommitArtifactPart request)
+      throws ModelDBException, InvalidProtocolBufferException;
 
   GetCommittedArtifactParts.Response getCommittedArtifactParts(GetCommittedArtifactParts request)
-      throws ModelDBException;
+      throws ModelDBException, InvalidProtocolBufferException;
 
   CommitMultipartArtifact.Response commitMultipartArtifact(
       CommitMultipartArtifact request, CommitMultipartFunction commitMultipart)
-      throws ModelDBException;
+      throws ModelDBException, InvalidProtocolBufferException;
 }

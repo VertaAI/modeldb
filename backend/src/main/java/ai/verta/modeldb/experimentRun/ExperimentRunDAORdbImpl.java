@@ -69,7 +69,9 @@ import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum;
+import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.amazonaws.services.s3.model.PartETag;
@@ -2261,7 +2263,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private Optional<ArtifactEntity> getExperimentRunArtifact(
-      Session session, String experimentRunId, String key) {
+      Session session,
+      String experimentRunId,
+      String key,
+      ModelDBServiceActions modelDBServiceActions)
+      throws InvalidProtocolBufferException {
     ExperimentRunEntity experimentRunObj = session.get(ExperimentRunEntity.class, experimentRunId);
     if (experimentRunObj == null) {
       LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
@@ -2272,6 +2278,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .build();
       throw StatusProto.toStatusRuntimeException(status);
     }
+
+    String projectId = experimentRunObj.getProject_id();
+
+    // Validate if current user has access to the entity or not
+    roleService.validateEntityUserWithUserInfo(
+        ModelDBServiceResourceTypes.PROJECT, projectId, modelDBServiceActions);
     Map<String, List<ArtifactEntity>> artifactEntityMap = experimentRunObj.getArtifactEntityMap();
 
     List<ArtifactEntity> result =
@@ -2286,18 +2298,23 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
       String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
-      throws ModelDBException {
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ArtifactEntity artifactEntity = getArtifactEntity(session, experimentRunId, key);
+      ArtifactEntity artifactEntity =
+          getArtifactEntity(session, experimentRunId, key, ModelDBServiceActions.UPDATE);
       return getS3PathAndMultipartUploadId(
           session, artifactEntity, partNumber != 0, initializeMultipart);
     }
   }
 
-  public ArtifactEntity getArtifactEntity(Session session, String experimentRunId, String key)
-      throws ModelDBException {
+  public ArtifactEntity getArtifactEntity(
+      Session session,
+      String experimentRunId,
+      String key,
+      ModelDBServiceActions modelDBServiceActions)
+      throws ModelDBException, InvalidProtocolBufferException {
     Optional<ArtifactEntity> artifactEntityOptional =
-        getExperimentRunArtifact(session, experimentRunId, key);
+        getExperimentRunArtifact(session, experimentRunId, key, modelDBServiceActions);
     return artifactEntityOptional.orElseThrow(
         () -> new ModelDBException("Can't find specified artifact", io.grpc.Status.Code.NOT_FOUND));
   }
@@ -2346,9 +2363,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public Response commitArtifactPart(CommitArtifactPart request) throws ModelDBException {
+  public Response commitArtifactPart(CommitArtifactPart request)
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ArtifactEntity artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
+      ArtifactEntity artifactEntity =
+          getArtifactEntity(
+              session, request.getId(), request.getKey(), ModelDBServiceActions.UPDATE);
       ArtifactPart artifactPart = request.getArtifactPart();
       ArtifactPartEntity artifactPartEntity =
           new ArtifactPartEntity(
@@ -2362,7 +2382,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public GetCommittedArtifactParts.Response getCommittedArtifactParts(
-      GetCommittedArtifactParts request) throws ModelDBException {
+      GetCommittedArtifactParts request) throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Set<ArtifactPartEntity> artifactPartEntities =
           getArtifactPartEntities(session, request.getId(), request.getKey());
@@ -2375,18 +2395,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private Set<ArtifactPartEntity> getArtifactPartEntities(
-      Session session, String experimentRunId, String key) throws ModelDBException {
-    ArtifactEntity artifactEntity = getArtifactEntity(session, experimentRunId, key);
+      Session session, String experimentRunId, String key)
+      throws ModelDBException, InvalidProtocolBufferException {
+    ArtifactEntity artifactEntity =
+        getArtifactEntity(session, experimentRunId, key, ModelDBServiceActions.READ);
     return artifactEntity.getArtifactPartEntities();
   }
 
   @Override
   public CommitMultipartArtifact.Response commitMultipartArtifact(
       CommitMultipartArtifact request, CommitMultipartFunction commitMultipartFunction)
-      throws ModelDBException {
+      throws ModelDBException, InvalidProtocolBufferException {
     List<PartETag> partETags;
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ArtifactEntity artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
+      ArtifactEntity artifactEntity =
+          getArtifactEntity(
+              session, request.getId(), request.getKey(), ModelDBServiceActions.UPDATE);
       if (artifactEntity.getUploadId() == null) {
         String message = "Multipart wasn't initialized";
         LOGGER.info(message);
