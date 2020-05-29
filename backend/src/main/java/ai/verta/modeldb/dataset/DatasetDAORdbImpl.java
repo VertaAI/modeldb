@@ -19,7 +19,6 @@ import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.DatasetEntity;
-import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -66,14 +65,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   // Queries
   private static final String GET_DATASET_BY_IDS_QUERY =
-      "From DatasetEntity ds where ds.id IN (:ids)";
-  private static final String UPDATE_TIME_QUERY =
-      new StringBuilder("UPDATE DatasetEntity ds SET ds.")
-          .append(ModelDBConstants.TIME_UPDATED)
-          .append(" = :timestamp where ds.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:ids) ")
-          .toString();
+      "From DatasetEntity ds where ds.id IN (:ids) AND ds."
+          + ModelDBConstants.DELETED
+          + " = false ";
   private static final String GET_DATASET_ATTRIBUTES_QUERY =
       new StringBuilder("From AttributeEntity attr where attr.")
           .append(ModelDBConstants.KEY)
@@ -85,8 +79,17 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       new StringBuilder("Select count(*) From DatasetEntity ds where ")
           .append(" ds." + ModelDBConstants.NAME + " = :datasetName ")
           .toString();
-  private static final String DATASET_VERSION_BY_DATA_SET_IDS_QUERY =
-      "From DatasetVersionEntity ds where ds.dataset_id IN (:datasetIds) ";
+  private static final String DELETED_STATUS_DATASET_QUERY_STRING =
+      new StringBuilder("UPDATE ")
+          .append(DatasetEntity.class.getSimpleName())
+          .append(" dt ")
+          .append("SET dt.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE dt.")
+          .append(ModelDBConstants.ID)
+          .append(" IN (:datasetIds)")
+          .toString();
 
   public DatasetDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
@@ -221,42 +224,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     return findDatasets(findDatasets, userInfo, datasetVisibility);
   }
 
-  private void deleteRoleBindingsOfAccessibleDatasets(
-      List<DatasetEntity> allowedDatasets, List<String> roleBindingNames) {
-    UserInfo unsignedUser = authService.getUnsignedUser();
-    for (DatasetEntity datasetEntity : allowedDatasets) {
-      String datasetId = datasetEntity.getId();
-
-      if (datasetEntity.getDataset_visibility() == DatasetVisibility.PUBLIC.getNumber()) {
-        String publicReadRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_DATASET_PUBLIC_READ,
-                datasetId,
-                authService.getVertaIdFromUserInfo(unsignedUser),
-                ModelDBServiceResourceTypes.DATASET.name());
-        if (publicReadRoleBindingName != null && !publicReadRoleBindingName.isEmpty()) {
-          roleBindingNames.add(publicReadRoleBindingName);
-        }
-      }
-
-      // Delete workspace based roleBindings
-      List<String> workspaceRoleBindingNames =
-          getWorkspaceRoleBindings(
-              datasetEntity.getWorkspace(),
-              WorkspaceType.forNumber(datasetEntity.getWorkspace_type()),
-              datasetEntity.getId(),
-              DatasetVisibility.forNumber(datasetEntity.getDataset_visibility()));
-      if (!workspaceRoleBindingNames.isEmpty()) {
-        roleBindingNames.addAll(workspaceRoleBindingNames);
-      }
-    }
-
-    // Remove all datasetEntity collaborators
-    roleService.deleteAllResources(
-        allowedDatasets.stream().map(DatasetEntity::getId).collect(Collectors.toList()),
-        ModelDBServiceResourceTypes.DATASET);
-  }
-
   private List<String> getWorkspaceRoleBindings(
       String workspaceId,
       WorkspaceType workspaceType,
@@ -299,29 +266,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     return workspaceRoleBindings;
   }
 
-  public void deleteDatasetVersionsByDatasetIDs(
-      Session session, List<String> datasetIds, List<String> roleBindingNames) {
-    Query query = session.createQuery(DATASET_VERSION_BY_DATA_SET_IDS_QUERY);
-    query.setParameterList("datasetIds", datasetIds);
-    List<DatasetVersionEntity> datasetVersionEntities = query.list();
-    for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
-      session.delete(datasetVersionEntity);
-
-      String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_DATASET_VERSION_OWNER,
-              datasetVersionEntity.getId(),
-              datasetVersionEntity.getOwner(),
-              ModelDBServiceResourceTypes.DATASET_VERSION.name());
-      if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
-    }
-    LOGGER.debug("DatasetVersion deleted successfully");
-  }
-
   @Override
-  public Boolean deleteDatasets(List<String> datasetIds) throws InvalidProtocolBufferException {
+  public Boolean deleteDatasets(List<String> datasetIds) {
     // Get self allowed resources id where user has delete permission
     List<String> allowedDatasetIds =
         roleService.getAccessibleResourceIdsByActions(
@@ -337,24 +283,14 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       throw StatusProto.toStatusRuntimeException(status);
     }
 
-    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      List<DatasetEntity> datasetEntities = getDatasetEntityList(session, allowedDatasetIds);
       Transaction transaction = session.beginTransaction();
-      deleteDatasetVersionsByDatasetIDs(session, allowedDatasetIds, roleBindingNames);
-
-      // Remove dataset collaborator mappings
-      for (DatasetEntity datasetObj : datasetEntities) {
-        session.delete(datasetObj);
-      }
-
-      // Remove roleBindings by accessible datasets
-      deleteRoleBindingsOfAccessibleDatasets(datasetEntities, roleBindingNames);
+      Query deletedDatasetsQuery = session.createQuery(DELETED_STATUS_DATASET_QUERY_STRING);
+      deletedDatasetsQuery.setParameter("deleted", true);
+      deletedDatasetsQuery.setParameter("datasetIds", allowedDatasetIds);
+      int updatedCount = deletedDatasetsQuery.executeUpdate();
+      LOGGER.debug("Mark Datasets as deleted : {}, count : {}", allowedDatasetIds, updatedCount);
       transaction.commit();
-
-      // Remove all role bindings
-      roleService.deleteRoleBindings(roleBindingNames);
-
       LOGGER.debug("Dataset deleted successfully");
       return true;
     }
@@ -494,6 +430,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           return datasetPaginationDTO;
         }
       }
+
+      finalPredicatesList.add(builder.equal(datasetRoot.get(ModelDBConstants.DELETED), false));
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {

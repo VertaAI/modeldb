@@ -54,9 +54,15 @@ import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
+import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
+import io.jaegertracing.Configuration;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.grpc.TracingServerInterceptor;
+import io.opentracing.contrib.jdbc.TracingDriver;
+import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
@@ -113,6 +119,10 @@ public class App implements ApplicationContextAware {
   private String authServerHost = null;
   private Integer authServerPort = null;
 
+  // Service Account details
+  private String serviceUserEmail = null;
+  private String serviceUserDevKey = null;
+
   // S3 Artifact store
   private String cloudAccessKey = null;
   private String cloudSecretKey = null;
@@ -134,6 +144,9 @@ public class App implements ApplicationContextAware {
   // Feature flags
   private Boolean disabledAuthz = false;
   private Boolean storeClientCreationTimestamp = false;
+
+  private Boolean traceEnabled = false;
+  private static TracingServerInterceptor tracingInterceptor;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -211,6 +224,15 @@ public class App implements ApplicationContextAware {
                     ModelDBConstants.STORE_CLIENT_CREATION_TIMESTAMP, false);
       }
 
+      if (propertiesMap.containsKey("enableTrace") && (Boolean) propertiesMap.get("enableTrace")) {
+        app.traceEnabled = true;
+        Tracer tracer = Configuration.fromEnv().getTracer();
+        app.tracingInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
+        GlobalTracer.register(tracer);
+        io.opentracing.contrib.jdbc.TracingDriver.load();
+        io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
+        TracingDriver.setInterceptorProperty(true);
+      }
       AuthService authService = new PublicAuthServiceUtils();
       RoleService roleService = new PublicRoleServiceUtils(authService);
 
@@ -294,6 +316,19 @@ public class App implements ApplicationContextAware {
       throws ModelDBException {
 
     App app = App.getInstance();
+    Map<String, Object> serviceUserDetailMap =
+        (Map<String, Object>) propertiesMap.get(ModelDBConstants.MDB_SERVICE_USER);
+    if (serviceUserDetailMap != null) {
+      if (serviceUserDetailMap.containsKey(ModelDBConstants.EMAIL)) {
+        app.serviceUserEmail = (String) serviceUserDetailMap.get(ModelDBConstants.EMAIL);
+        LOGGER.trace("service user email found");
+      }
+      if (serviceUserDetailMap.containsKey(ModelDBConstants.DEV_KEY)) {
+        app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
+        LOGGER.trace("service user devKey found");
+      }
+    }
+
     Map<String, Object> featureFlagMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
     if (featureFlagMap != null) {
@@ -345,7 +380,7 @@ public class App implements ApplicationContextAware {
     initializeTelemetryBasedOnConfig(propertiesMap);
 
     // Initialize cron jobs
-    CronJobUtils.initializeBasedOnConfig(propertiesMap);
+    CronJobUtils.initializeBasedOnConfig(propertiesMap, authService, roleService);
   }
 
   private static void initializeRelationalDBServices(
@@ -410,15 +445,18 @@ public class App implements ApplicationContextAware {
       AuthService authService,
       RoleService roleService) {
     App app = App.getInstance();
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new ProjectServiceImpl(
             authService, roleService, projectDAO, experimentRunDAO, artifactStoreDAO));
     LOGGER.trace("Project serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new ExperimentServiceImpl(
             authService, roleService, experimentDAO, projectDAO, artifactStoreDAO));
     LOGGER.trace("Experiment serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new ExperimentRunServiceImpl(
             authService,
             roleService,
@@ -428,11 +466,12 @@ public class App implements ApplicationContextAware {
             artifactStoreDAO,
             datasetVersionDAO));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
-    serverBuilder.addService(new JobServiceImpl(authService, jobDAO));
+    wrapService(serverBuilder, new JobServiceImpl(authService, jobDAO));
     LOGGER.trace("Job serviceImpl initialized");
-    serverBuilder.addService(new CommentServiceImpl(authService, commentDAO));
+    wrapService(serverBuilder, new CommentServiceImpl(authService, commentDAO));
     LOGGER.trace("Comment serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new DatasetServiceImpl(
             authService,
             roleService,
@@ -442,10 +481,12 @@ public class App implements ApplicationContextAware {
             experimentDAO,
             experimentRunDAO));
     LOGGER.trace("Dataset serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new DatasetVersionServiceImpl(authService, roleService, datasetDAO, datasetVersionDAO));
     LOGGER.trace("Dataset Version serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new AdvancedServiceImpl(
             authService,
             roleService,
@@ -457,11 +498,12 @@ public class App implements ApplicationContextAware {
             datasetDAO,
             datasetVersionDAO));
     LOGGER.trace("Hydrated serviceImpl initialized");
-    serverBuilder.addService(
-        new LineageServiceImpl(lineageDAO, experimentRunDAO, datasetVersionDAO));
+    wrapService(
+        serverBuilder, new LineageServiceImpl(lineageDAO, experimentRunDAO, datasetVersionDAO));
     LOGGER.trace("Lineage serviceImpl initialized");
 
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new VersioningServiceImpl(
             authService,
             roleService,
@@ -474,9 +516,16 @@ public class App implements ApplicationContextAware {
             new ModelDBAuthInterceptor(),
             new FileHasher()));
     LOGGER.trace("Versioning serviceImpl initialized");
-    serverBuilder.addService(new MetadataServiceImpl(metadataDAO));
+    wrapService(serverBuilder, new MetadataServiceImpl(metadataDAO));
     LOGGER.trace("Metadata serviceImpl initialized");
     LOGGER.info("All services initialized and resolved dependency before server start");
+  }
+
+  private static void wrapService(ServerBuilder<?> serverBuilder, BindableService bindableService) {
+    App app = App.getInstance();
+    if (app.traceEnabled)
+      serverBuilder.addService(app.tracingInterceptor.intercept(bindableService));
+    else serverBuilder.addService(bindableService);
   }
 
   private static ArtifactStoreService initializeServicesBaseOnArtifactStoreType(
@@ -664,5 +713,17 @@ public class App implements ApplicationContextAware {
 
   public Boolean getStoreClientCreationTimestamp() {
     return storeClientCreationTimestamp;
+  }
+
+  public String getServiceUserEmail() {
+    return serviceUserEmail;
+  }
+
+  public String getServiceUserDevKey() {
+    return serviceUserDevKey;
+  }
+
+  public Boolean getTraceEnabled() {
+    return traceEnabled;
   }
 }
