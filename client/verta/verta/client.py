@@ -1190,7 +1190,7 @@ class Project(_ModelDBEntity):
 
         if _proj_id is not None:
             proj = Project._get(conn, _proj_id=_proj_id)
-            if proj is not None:
+            if proj is not None and proj.id:
                 print("set existing Project: {}".format(proj.name))
             else:
                 raise ValueError("Project with ID {} not found".format(_proj_id))
@@ -1202,7 +1202,7 @@ class Project(_ModelDBEntity):
             except requests.HTTPError as e:
                 if e.response.status_code == 403:  # cannot create in other workspace
                     proj = Project._get(conn, proj_name, workspace)
-                    if proj is not None:
+                    if proj is not None and proj.id:
                         print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
                     else:  # no accessible project in other workspace
                         six.raise_from(e, None)
@@ -1213,7 +1213,11 @@ class Project(_ModelDBEntity):
                             " cannot set `desc`, `tags`, `attrs`, or `public_within_org`".format(proj_name)
                         )
                     proj = Project._get(conn, proj_name, workspace)
-                    print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
+                    if proj is not None and proj.id:
+                        print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
+                    else:
+                        raise RuntimeError("unable to retrieve Project {};"
+                                           " please notify the Verta development team".format(proj_name))
                 else:
                     raise e
             else:
@@ -1351,7 +1355,7 @@ class Experiment(_ModelDBEntity):
 
         if _expt_id is not None:
             expt = Experiment._get(conn, _expt_id=_expt_id)
-            if expt is not None:
+            if expt is not None and expt.id:
                 print("set existing Experiment: {}".format(expt.name))
             else:
                 raise ValueError("Experiment with ID {} not found".format(_expt_id))
@@ -1366,7 +1370,11 @@ class Experiment(_ModelDBEntity):
                         warnings.warn("Experiment with name {} already exists;"
                                       " cannot initialize `desc`, `tags`, or `attrs`".format(expt_name))
                     expt = Experiment._get(conn, proj_id, expt_name)
-                    print("set existing Experiment: {}".format(expt.name))
+                    if expt is not None and expt.id:
+                        print("set existing Experiment: {}".format(expt.name))
+                    else:
+                        raise RuntimeError("unable to retrieve Experiment {};"
+                                           " please notify the Verta development team".format(expt_name))
                 else:
                     raise e
             else:
@@ -1797,8 +1805,8 @@ class ExperimentRun(_ModelDBEntity):
 
         if _expt_run_id is not None:
             expt_run = ExperimentRun._get(conn, _expt_run_id=_expt_run_id)
-            if expt_run is not None:
-                pass
+            if expt_run is not None and expt_run.id:
+                print("set existing ExperimentRun: {}".format(expt_run.name))
             else:
                 raise ValueError("ExperimentRun with ID {} not found".format(_expt_run_id))
         elif None not in (proj_id, expt_id):
@@ -1812,7 +1820,11 @@ class ExperimentRun(_ModelDBEntity):
                         warnings.warn("ExperimentRun with name {} already exists;"
                                       " cannot initialize `desc`, `tags`, or `attrs`".format(expt_run_name))
                     expt_run = ExperimentRun._get(conn, expt_id, expt_run_name)
-                    print("set existing ExperimentRun: {}".format(expt_run.name))
+                    if expt_run is not None and expt_run.id:
+                        print("set existing ExperimentRun: {}".format(expt_run.name))
+                    else:
+                        raise RuntimeError("unable to retrieve ExperimentRun {};"
+                                           " please notify the Verta development team".format(expt_run_name))
                 else:
                     raise e
             else:
