@@ -267,7 +267,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectName(String projectId, String projectName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
 
       Project project =
@@ -280,9 +279,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       projectEntity.setName(projectName);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
-      LOGGER.debug("Project name updated successfully");
       transaction.commit();
+      LOGGER.debug("Project name updated successfully");
       return projectEntity.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -297,13 +297,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectDescription(String projectId, String projectDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
       projectEntity.setDescription(projectDescription);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
-      LOGGER.debug("Project description updated successfully");
       transaction.commit();
+      LOGGER.debug("Project description updated successfully");
       return projectEntity.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -318,13 +318,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectReadme(String projectId, String projectReadme)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
       projectEntity.setReadme_text(projectReadme);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
-      LOGGER.debug("Project readme updated successfully");
       transaction.commit();
+      LOGGER.debug("Project readme updated successfully");
       return projectEntity.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -339,7 +339,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project logProjectCodeVersion(String projectId, CodeVersion updatedCodeVersion)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = session.get(ProjectEntity.class, projectId);
 
       CodeVersionEntity existingCodeVersionEntity = projectEntity.getCode_version_snapshot();
@@ -364,9 +363,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         }
       }
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
-      LOGGER.debug("Project code version snapshot updated successfully");
       transaction.commit();
+      LOGGER.debug("Project code version snapshot updated successfully");
       return projectEntity.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -381,7 +381,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectAttributes(String projectId, KeyValue attribute)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
       if (projectObj == null) {
         String errorMessage = "Project not found for given ID";
@@ -413,6 +412,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         projectObj.setAttributeMapping(Collections.singletonList(updatedAttributeObj));
       }
       projectObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(projectObj);
       transaction.commit();
       return projectObj.getProtoObject();
@@ -463,7 +463,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project addProjectTags(String projectId, List<String> tagsList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
       if (projectObj == null) {
         String errorMessage = "Project not found for given ID";
@@ -484,9 +483,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             RdbmsUtils.convertTagListFromTagMappingList(projectObj, newTags);
         projectObj.getTags().addAll(newTagMappings);
         projectObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
+        Transaction transaction = session.beginTransaction();
         session.saveOrUpdate(projectObj);
+        transaction.commit();
       }
-      transaction.commit();
       LOGGER.debug("Project tags added successfully");
       return projectObj.getProtoObject();
     } catch (Exception ex) {
@@ -573,12 +573,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project addProjectAttributes(String projectId, List<KeyValue> attributesList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
       projectObj.setAttributeMapping(
           RdbmsUtils.convertAttributesFromAttributeEntityList(
               projectObj, ModelDBConstants.ATTRIBUTES, attributesList));
       projectObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(projectObj);
       transaction.commit();
       LOGGER.debug("Project attributes added successfully");
@@ -724,13 +724,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
     while (lowerBound < count) {
       List<String> roleBindingNames = new LinkedList<>();
-      Transaction transaction = session.beginTransaction();
       // Delete the ExperimentEntity object
       Query experimentDeleteQuery = session.createQuery(FIND_EXPERIMENT_BY_PROJECT_IDS_HQL);
       experimentDeleteQuery.setParameterList(ModelDBConstants.PROJECT_IDS, projectIds);
       experimentDeleteQuery.setFirstResult(lowerBound);
       experimentDeleteQuery.setMaxResults(pagesize);
       List<ExperimentEntity> experimentEntities = experimentDeleteQuery.list();
+
+      Transaction transaction = session.beginTransaction();
       for (ExperimentEntity experimentEntity : experimentEntities) {
         session.delete(experimentEntity);
 
@@ -758,7 +759,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
     while (lowerBound < count) {
       List<String> roleBindingNames = new LinkedList<>();
-      Transaction transaction = session.beginTransaction();
 
       Query experimentRunDeleteQuery = session.createQuery(FIND_EXPERIMENT_RUN_BY_PROJECT_IDS_HQL);
       experimentRunDeleteQuery.setParameterList(ModelDBConstants.PROJECT_IDS, projectIds);
@@ -766,6 +766,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       experimentRunDeleteQuery.setMaxResults(pagesize);
       List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
       List<String> experimentRunIds = new ArrayList<>();
+      Transaction transaction = session.beginTransaction();
       for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
         experimentRunIds.add(experimentRunEntity.getId());
         session.delete(experimentRunEntity);
@@ -962,7 +963,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project setProjectShortName(String projectId, String projectShortName, UserInfo userInfo)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(GET_PROJECT_BY_SHORT_NAME_AND_OWNER_HQL);
       query.setParameter("projectShortName", projectShortName);
       query.setParameter("vertaId", authService.getVertaIdFromUserInfo(userInfo));
@@ -981,6 +981,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       projectEntity = (ProjectEntity) query.uniqueResult();
       projectEntity.setShort_name(projectShortName);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
@@ -1026,7 +1027,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project setProjectVisibility(String projectId, ProjectVisibility projectVisibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(GET_PROJECT_BY_ID_HQL);
       query.setParameter("id", projectId);
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
@@ -1039,7 +1039,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       if (!oldVisibility.equals(projectVisibility)) {
         projectEntity.setProject_visibility(projectVisibility.ordinal());
         projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+        Transaction transaction = session.beginTransaction();
         session.update(projectEntity);
+        transaction.commit();
         deleteOldVisibilityBasedBinding(
             oldVisibility,
             projectId,
@@ -1051,7 +1053,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             projectEntity.getWorkspace_type(),
             projectEntity.getWorkspace());
       }
-      transaction.commit();
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
       return projectEntity.getProtoObject();
     } catch (Exception ex) {
@@ -1327,7 +1328,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project logArtifacts(String projectId, List<Artifact> newArtifacts)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(GET_PROJECT_BY_ID_HQL);
       query.setParameter("id", projectId);
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
@@ -1359,6 +1359,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
               projectEntity, ModelDBConstants.ARTIFACTS, newArtifacts));
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
@@ -1409,9 +1410,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   @Override
   public Project deleteArtifacts(String projectId, String artifactKey)
       throws InvalidProtocolBufferException {
-    Transaction transaction = null;
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
 
       if (false) { // Change it with parameter for support to delete all artifacts
         Query query = session.createQuery(DELETE_ALL_ARTIFACTS_HQL);
@@ -1465,8 +1465,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throws InvalidProtocolBufferException {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-
-      Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
       List<String> roleBindingNames =
           getWorkspaceRoleBindings(
@@ -1483,9 +1481,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       projectEntity.setWorkspace(workspaceDTO.getWorkspaceId());
       projectEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
-      LOGGER.debug("Project workspace updated successfully");
       transaction.commit();
+      LOGGER.debug("Project workspace updated successfully");
       return projectEntity.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {

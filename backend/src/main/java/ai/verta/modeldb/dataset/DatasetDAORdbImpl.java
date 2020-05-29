@@ -123,8 +123,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     createRoleBindingsForDataset(dataset, userInfo);
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetEntity datasetEntity = RdbmsUtils.generateDatasetEntity(dataset);
+      Transaction transaction = session.beginTransaction();
       session.save(datasetEntity);
       transaction.commit();
       LOGGER.debug("Dataset created successfully");
@@ -365,10 +365,10 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       for (DatasetEntity datasetObj : datasetEntities) {
         session.delete(datasetObj);
       }
+      transaction.commit();
 
       // Remove roleBindings by accessible datasets
       deleteRoleBindingsOfAccessibleDatasets(datasetEntities, roleBindingNames);
-      transaction.commit();
 
       // Remove all role bindings
       roleService.deleteRoleBindings(roleBindingNames);
@@ -901,6 +901,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         datasetEntity.setTime_updated(Calendar.getInstance().getTimeInMillis());
         Transaction transaction = session.beginTransaction();
         session.update(datasetEntity);
+        transaction.commit();
+        //FIXME: RoleBinding modification is outside Transaction and can lead to consistency
         deleteOldVisibilityBasedBinding(
             oldVisibility,
             datasetId,
@@ -911,7 +913,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             datasetId,
             datasetEntity.getWorkspace_type(),
             datasetEntity.getWorkspace());
-        transaction.commit();
       }
 
       LOGGER.debug("Dataset by Id getting successfully");

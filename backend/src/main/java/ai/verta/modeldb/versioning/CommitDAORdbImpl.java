@@ -237,7 +237,6 @@ public class CommitDAORdbImpl implements CommitDAO {
   public DeleteCommitRequest.Response deleteCommit(
       DeleteCommitRequest request, RepositoryDAO repositoryDAO) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repositoryEntity =
           repositoryDAO.getRepositoryById(session, request.getRepositoryId(), true);
       boolean exists =
@@ -299,6 +298,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         throw new ModelDBException("Commit is associated with Label", Code.FAILED_PRECONDITION);
       }
 
+      session.beginTransaction();
       // delete associated branch
       repositoryDAO.deleteBranchByCommit(session, repositoryEntity.getId(), request.getCommitSha());
 

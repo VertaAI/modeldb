@@ -682,7 +682,6 @@ public class BlobDAORdbImpl implements BlobDAO {
               readSession, parentCommit.getRootSha(), new ArrayList<>(), Collections.emptyList());
     }
     try (Session writeSession = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      writeSession.beginTransaction();
       List<ai.verta.modeldb.versioning.BlobDiff> diffB =
           computeDiffFromCommitMaps(locationBlobsMapParentCommit, locationBlobsMapCommitB)
               .getDiffsList();
@@ -707,6 +706,7 @@ public class BlobDAORdbImpl implements BlobDAO {
           mergeMessage = "Merge " + branchOrCommitA + " into " + branchOrCommitB;
         }
 
+        writeSession.beginTransaction();
         CommitEntity commitEntity =
             getCommitEntityObj(
                 writeSession,
@@ -730,8 +730,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                 .getDiffsList();
         List<BlobDiff> blobDiffList =
             getConflictDiff(diffA, diffB, conflictLocationMap, locationBlobsMapParentCommitSimple);
-        writeSession.getTransaction().commit();
-        LOGGER.debug("conflict found", conflictLocationMap);
+        LOGGER.debug("conflict found {}", conflictLocationMap);
         return MergeRepositoryCommitsRequest.Response.newBuilder()
             .setCommonBase(parentCommitProto)
             .addAllConflicts(blobDiffList)
@@ -860,7 +859,6 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       List<String> parentSHAs = Collections.singletonList(request.getBaseCommitSha());
       List<CommitEntity> parentCommits = Collections.singletonList(baseCommitEntity);
       String revertMessage = request.getContent().getMessage();
@@ -868,6 +866,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         revertMessage = VersioningUtils.revertCommitMessage(commitToRevertEntity.toCommitProto());
       }
 
+      Transaction transaction = session.beginTransaction();
       CommitEntity commitEntity =
           getCommitEntityObj(
               session,
@@ -1267,7 +1266,6 @@ public class BlobDAORdbImpl implements BlobDAO {
   public FindRepositoriesBlobs.Response findRepositoriesBlobs(FindRepositoriesBlobs request)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
 
       Map<String, Object> resultSetMap = getRootShaListByCommitsOrRepos(session, request);
 

@@ -270,7 +270,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository;
-      session.beginTransaction();
       if (create) {
         WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(request.getId(), false, true);
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -305,6 +304,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             LOGGER);
         repository.update(request);
       }
+      session.beginTransaction();
       session.saveOrUpdate(repository);
       if (create) {
         Commit initCommit =
@@ -392,7 +392,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
       // Get self allowed resources id where user has delete permission
       List<String> allowedRepositoryIds =
@@ -409,6 +408,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       ListBranchesRequest.Response listBranchesResponse =
           listBranches(
               ListBranchesRequest.newBuilder().setRepositoryId(request.getRepositoryId()).build());
+      session.beginTransaction();
       if (!listBranchesResponse.getBranchesList().isEmpty()) {
         String deleteBranchesHQL =
             "DELETE FROM "
@@ -439,9 +439,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       // Delete all VersionedInputs for repository ID
       experimentRunDAO.deleteLogVersionedInputs(session, repository.getId(), null);
 
-      deleteRoleBindingsOfAccessibleResources(Collections.singletonList(repository));
       session.delete(repository);
       session.getTransaction().commit();
+      deleteRoleBindingsOfAccessibleResources(Collections.singletonList(repository));
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     } catch (Exception ex) {
       ex.printStackTrace();
@@ -555,7 +555,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public SetTagRequest.Response setTag(SetTagRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
 
       boolean exists =
@@ -579,6 +578,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
 
       tagsEntity = new TagsEntity(repository.getId(), request.getCommitSha(), request.getTag());
+      session.beginTransaction();
       session.save(tagsEntity);
       session.getTransaction().commit();
       return SetTagRequest.Response.newBuilder().build();
@@ -618,13 +618,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public DeleteTagRequest.Response deleteTag(DeleteTagRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
       TagsEntity tagsEntity =
           session.get(TagsEntity.class, new TagsEntity.TagId(request.getTag(), repository.getId()));
       if (tagsEntity == null) {
         throw new ModelDBException("Tag not found " + request.getTag(), Code.NOT_FOUND);
       }
+      session.beginTransaction();
       session.delete(tagsEntity);
       session.getTransaction().commit();
       return DeleteTagRequest.Response.newBuilder().build();
@@ -672,11 +672,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public SetBranchRequest.Response setBranch(SetBranchRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
 
-      if (saveBranch(session, request.getCommitSha(), request.getBranch(), repository))
-        return SetBranchRequest.Response.newBuilder().build();
+      session.beginTransaction();
+      saveBranch(session, request.getCommitSha(), request.getBranch(), repository);
       session.getTransaction().commit();
       return SetBranchRequest.Response.newBuilder().build();
     } catch (Exception ex) {
@@ -688,7 +687,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
   }
 
-  private boolean saveBranch(
+  private void saveBranch(
       Session session, String commitSHA, String branch, RepositoryEntity repository)
       throws ModelDBException {
     boolean exists =
@@ -707,13 +706,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     query.setParameter("branch", branch);
     BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
     if (branchEntity != null) {
-      if (branchEntity.getCommit_hash().equals(commitSHA)) return true;
+      if (branchEntity.getCommit_hash().equals(commitSHA)) return;
       session.delete(branchEntity);
     }
 
     branchEntity = new BranchEntity(repository.getId(), commitSHA, branch);
     session.save(branchEntity);
-    return false;
   }
 
   @Override
@@ -750,7 +748,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public DeleteBranchRequest.Response deleteBranch(DeleteBranchRequest request)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
       BranchEntity branchEntity =
           session.get(
@@ -760,6 +757,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         throw new ModelDBException(
             ModelDBConstants.BRANCH_NOT_FOUND + request.getBranch(), Code.NOT_FOUND);
       }
+      session.beginTransaction();
       session.delete(branchEntity);
       session.getTransaction().commit();
       return DeleteBranchRequest.Response.newBuilder().build();

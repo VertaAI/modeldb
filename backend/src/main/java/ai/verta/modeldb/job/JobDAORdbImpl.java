@@ -75,8 +75,8 @@ public class JobDAORdbImpl implements JobDAO {
   @Override
   public Job insertJob(Job job) throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       JobEntity jobObj = RdbmsUtils.generateJobEntity(job);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(jobObj);
       transaction.commit();
       LOGGER.debug("Job inserted successfully");
@@ -122,7 +122,6 @@ public class JobDAORdbImpl implements JobDAO {
   @Override
   public Boolean deleteJob(String jobId) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       JobEntity jobEntity = session.load(JobEntity.class, jobId);
       if (jobEntity == null) {
         LOGGER.warn(ModelDBMessages.JOB_NOT_FOUND_ERROR_MSG);
@@ -133,6 +132,7 @@ public class JobDAORdbImpl implements JobDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+      Transaction transaction = session.beginTransaction();
       session.delete(jobEntity);
       transaction.commit();
       LOGGER.debug("Job deleted successfully");
@@ -150,7 +150,6 @@ public class JobDAORdbImpl implements JobDAO {
   public Job updateJob(String jobId, JobStatus jobStatus, String endTime)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       JobEntity jobEntity = session.get(JobEntity.class, jobId);
       if (jobEntity == null) {
         LOGGER.warn(ModelDBMessages.JOB_NOT_FOUND_ERROR_MSG);
@@ -163,8 +162,8 @@ public class JobDAORdbImpl implements JobDAO {
       }
       jobEntity.setJob_status(jobStatus.ordinal());
       jobEntity.setEnd_time(endTime);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(jobEntity);
-
       transaction.commit();
       LOGGER.debug("Job updated successfully");
       return jobEntity.getProtoObject();

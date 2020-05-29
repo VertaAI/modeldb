@@ -5078,11 +5078,7 @@ public class HydratedServiceTest {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-        assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
-      } else {
-        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-      }
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     for (String datasetVersionId : datasetVersionIds) {
