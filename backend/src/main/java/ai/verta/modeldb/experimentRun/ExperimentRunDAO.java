@@ -3,9 +3,13 @@ package ai.verta.modeldb.experimentRun;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitArtifactPart.Response;
+import ai.verta.modeldb.CommitMultipartArtifact;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
+import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBException;
@@ -504,5 +508,15 @@ public interface ExperimentRunDAO {
 
   Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
       String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
-      throws ModelDBException;
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  Response commitArtifactPart(CommitArtifactPart request)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  GetCommittedArtifactParts.Response getCommittedArtifactParts(GetCommittedArtifactParts request)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  CommitMultipartArtifact.Response commitMultipartArtifact(
+      CommitMultipartArtifact request, CommitMultipartFunction commitMultipart)
+      throws ModelDBException, InvalidProtocolBufferException;
 }

@@ -1,5 +1,7 @@
 package ai.verta.modeldb.entities;
 
+import ai.verta.modeldb.ArtifactPart;
+import com.amazonaws.services.s3.model.PartETag;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.CascadeType;
@@ -51,5 +53,13 @@ public class ArtifactPartEntity implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(artifactEntity, partNumber, etag);
+  }
+
+  public ArtifactPart toProto() {
+    return ArtifactPart.newBuilder().setPartNumber(partNumber).setEtag(etag).build();
+  }
+
+  public PartETag toPartETag() {
+    return new PartETag((int) partNumber, etag);
   }
 }

@@ -9,12 +9,18 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
+import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
+import com.amazonaws.services.s3.model.PartETag;
+import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import java.util.List;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -100,5 +106,28 @@ public class S3Service implements ArtifactStoreService {
     }
 
     return s3Client.generatePresignedUrl(request).toString();
+  }
+
+  @Override
+  public void commitMultipart(String s3Key, String uploadId, List<PartETag> partETags)
+      throws ModelDBException {
+    // Validate bucket
+    Boolean exist = doesBucketExist(bucketName);
+    if (!exist) {
+      throw new ModelDBException("Bucket does not exists", io.grpc.Status.Code.INTERNAL);
+    }
+    CompleteMultipartUploadRequest completeMultipartUploadRequest =
+        new CompleteMultipartUploadRequest(bucketName, s3Key, uploadId, partETags);
+    try {
+      CompleteMultipartUploadResult result =
+          s3Client.completeMultipartUpload(completeMultipartUploadRequest);
+      LOGGER.info("upload result: {}", result);
+    } catch (AmazonS3Exception e) {
+      if (e.getStatusCode() == HttpStatusCodes.STATUS_CODE_BAD_REQUEST) {
+        LOGGER.info("message: {} additional details: {}", e.getMessage(), e.getAdditionalDetails());
+        throw new ModelDBException(e.getErrorMessage(), io.grpc.Status.Code.FAILED_PRECONDITION);
+      }
+      throw e;
+    }
   }
 }

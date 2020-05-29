@@ -8,6 +8,8 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitMultipartArtifact;
 import ai.verta.modeldb.CreateExperimentRun;
 import ai.verta.modeldb.DeleteArtifact;
 import ai.verta.modeldb.DeleteExperiment;
@@ -24,6 +26,7 @@ import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetChildrenExperimentRuns;
+import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunById;
 import ai.verta.modeldb.GetExperimentRunByName;
@@ -2358,6 +2361,93 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, GetVersionedInput.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void commitArtifactPart(
+      CommitArtifactPart request, StreamObserver<CommitArtifactPart.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in CommitArtifactPart request";
+      } else if (request.getKey().isEmpty()) {
+        errorMessage = "Artifact key not found in CommitArtifactPart request";
+      } else if (request.getArtifactPart().getPartNumber() == 0) {
+        errorMessage = "Artifact part number is not specified in CommitArtifactPart request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      CommitArtifactPart.Response response = experimentRunDAO.commitArtifactPart(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, CommitArtifactPart.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getCommittedArtifactParts(
+      GetCommittedArtifactParts request,
+      StreamObserver<GetCommittedArtifactParts.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in GetCommittedArtifactParts request";
+      } else if (request.getKey().isEmpty()) {
+        errorMessage = "Artifact key not found in GetCommittedArtifactParts request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      GetCommittedArtifactParts.Response response =
+          experimentRunDAO.getCommittedArtifactParts(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetCommittedArtifactParts.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void commitMultipartArtifact(
+      CommitMultipartArtifact request,
+      StreamObserver<CommitMultipartArtifact.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in CommitMultipartArtifact request";
+      } else if (request.getKey().isEmpty()) {
+        errorMessage = "Artifact key not found in CommitMultipartArtifact request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      CommitMultipartArtifact.Response response =
+          experimentRunDAO.commitMultipartArtifact(
+              request,
+              (s3Key, uploadId, partETags) ->
+                  artifactStoreDAO.commitMultipart(s3Key, uploadId, partETags));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, CommitMultipartArtifact.Response.getDefaultInstance());
     }
   }
 }
