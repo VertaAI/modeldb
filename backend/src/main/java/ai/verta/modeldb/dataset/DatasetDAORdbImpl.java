@@ -902,6 +902,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         Transaction transaction = session.beginTransaction();
         session.update(datasetEntity);
         transaction.commit();
+        //FIXME: RoleBinding modification is outside Transaction and can lead to consistency
         deleteOldVisibilityBasedBinding(
             oldVisibility,
             datasetId,
