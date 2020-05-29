@@ -35,6 +35,7 @@ public interface ModelDBConstants {
   String STARTER_PROJECT_ID = "starterProjectId";
   String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
   String userDir = "user.dir";
+  String MDB_SERVICE_USER = "mdb_service_user";
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
@@ -138,6 +139,8 @@ public interface ModelDBConstants {
   String EMAIL = "email";
   String USERNAME = "username";
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
+  String DELETED = "deleted";
+  String DEV_KEY = "devKey";
 
   // Set to true to export the liquibase schema as sql statements
   Boolean EXPORT_SCHEMA = false;
@@ -168,6 +171,7 @@ public interface ModelDBConstants {
   String ROLE_REPOSITORY_READ_ONLY = "REPOSITORY_READ_ONLY";
   String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
+  String POSTGRES_DB_DRIVER = "org.postgresql.Driver";
 
   enum UserIdentifier {
     VERTA_ID,
@@ -221,4 +225,11 @@ public interface ModelDBConstants {
   String VERSIONING_LOCATION = "versioning_location";
   String REPOSITORY_VISIBILITY = "repository_visibility";
   String REPOSITORY = "repository";
+
+  // Cron job constant
+  String FREQUENCY = "frequency"; // frequency to run cron job in second
+  String RECORD_UPDATE_LIMIT = "record_update_limit";
+  String CRON_JOB = "cron_job";
+  String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
+  String DELETE_ENTITIES = "delete_entities";
 }

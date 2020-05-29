@@ -22,6 +22,7 @@ import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.DatasetBlob;
 import ai.verta.modeldb.versioning.DeleteCommitRequest;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
+import ai.verta.modeldb.versioning.DeleteTagRequest;
 import ai.verta.modeldb.versioning.DockerEnvironmentBlob;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.FileHasher;
@@ -29,7 +30,6 @@ import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GetCommitComponentRequest;
 import ai.verta.modeldb.versioning.GetCommitRequest;
-import ai.verta.modeldb.versioning.GetRepositoryRequest;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.HyperparameterConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
@@ -45,6 +45,7 @@ import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RevertRepositoryCommitsRequest;
 import ai.verta.modeldb.versioning.SetBranchRequest;
+import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
@@ -1738,32 +1739,12 @@ public class CommitTest {
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     assertTrue("Commit not found in response", commitResponse.hasCommit());
 
-    GetRepositoryRequest.Response getRepositoryResponse =
-        versioningServiceBlockingStub.getRepository(
-            GetRepositoryRequest.newBuilder()
-                .setId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-                .build());
-    assertEquals(
-        "Repository updated date not match with expected date",
-        commitResponse.getCommit().getDateCreated(),
-        getRepositoryResponse.getRepository().getDateUpdated());
-
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    GetRepositoryRequest.Response getRepositoryResponse2 =
-        versioningServiceBlockingStub.getRepository(
-            GetRepositoryRequest.newBuilder()
-                .setId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-                .build());
-    assertNotEquals(
-        "Repository updated date not match with expected date",
-        getRepositoryResponse.getRepository().getDateUpdated(),
-        getRepositoryResponse2.getRepository().getDateUpdated());
 
     GetCommitRequest getCommitRequest =
         GetCommitRequest.newBuilder()
@@ -2260,5 +2241,70 @@ public class CommitTest {
     Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Check duplication when log single blob test end................................");
+  }
+
+  @Test
+  public void deleteCommitWithTagsTest() throws NoSuchAlgorithmException, ModelDBException {
+    LOGGER.info("Delete commit with tags test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    CreateCommitRequest createCommitRequest =
+        CommitTest.getCreateCommitRequest(
+            id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+
+    String tag = "v1.0";
+    SetTagRequest setTagRequest =
+        SetTagRequest.newBuilder()
+            .setTag(tag)
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .build();
+    versioningServiceBlockingStub.setTag(setTagRequest);
+
+    DeleteCommitRequest deleteCommitRequest =
+        DeleteCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .build();
+    try {
+      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.FAILED_PRECONDITION.getCode(), status.getCode());
+    }
+
+    DeleteTagRequest deleteTagRequest =
+        DeleteTagRequest.newBuilder()
+            .setTag(tag)
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .build();
+    versioningServiceBlockingStub.deleteTag(deleteTagRequest);
+
+    versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+    LOGGER.info("Delete commit with tags test end................................");
   }
 }

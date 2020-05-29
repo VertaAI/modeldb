@@ -38,7 +38,7 @@ class Hyperparameters(clientSet: ClientSet, ec: ExecutionContext, run: Experimen
 
   override def seq: mutable.Map[String, Any] =
     mutable.Map(
-      clientSet.experimentRunService.getHyperparameters(run.run.id.get)
+      clientSet.experimentRunService.getHyperparameters(run.run.id)
         .flatMap(_.hyperparameters match {
           case Some(x) => Success(x)
           case None => Success(Nil)

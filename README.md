@@ -45,7 +45,7 @@
   <span> · </span>
   <a href="https://docs.verta.ai/en/master/examples/tutorials/workflow.html">Workflow</a>
   <span> · </span>
-  <a href="https://docs.verta.ai/en/master/guides/examples.html">Examples</a>
+  <a href="https://docs.verta.ai/en/master/examples/examples.html">Examples</a>
   <span> · </span>
   <a href="#contributions">Contribute</a>
   <span> · </span>
@@ -104,7 +104,7 @@ docker-compose -f docker-compose-all.yaml up
 pip install verta
 ```
 
-3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://docs.verta.ai/en/master/guides/examples.html) in our repository.*
+3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://docs.verta.ai/en/master/examples/examples.html) in our repository.*
 
 ```python
 from verta import Client
@@ -199,7 +199,7 @@ Other supporting material for deployment and documentation is at:
 ## Contributions
 
 As seen from the [Architecture](#architecture) ModelDB provides a full stack solution to tracking, versioning and auditing  machine learning models.
-We are open to contributions to any of the modules in form of Pull Requests. 
+We are open to contributions to any of the modules in form of Pull Requests.
 
 The main skill sets for each module are as below:
 

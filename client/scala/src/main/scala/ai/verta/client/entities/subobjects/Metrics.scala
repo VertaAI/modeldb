@@ -38,7 +38,7 @@ class Metrics(clientSet: ClientSet, ec: ExecutionContext, run: ExperimentRun) ex
 
   override def seq: mutable.Map[String, Any] =
     mutable.Map(
-      clientSet.experimentRunService.getMetrics(run.run.id.get)
+      clientSet.experimentRunService.getMetrics(run.run.id)
         .flatMap(_.metrics match {
           case Some(x) => Success(x)
           case None => Success(Nil)
