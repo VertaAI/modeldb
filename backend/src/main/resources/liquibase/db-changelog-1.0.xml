@@ -29,10 +29,6 @@
         <tagDatabase tag="1.1"/>
     </changeSet>
 
-    <changeSet id="tag-1.1" author="raviS">
-        <tagDatabase tag="1.1"/>
-    </changeSet>
-
     <changeSet id="tables-3" author="anandJ">
         <preConditions onFail="MARK_RAN">
             <not>
