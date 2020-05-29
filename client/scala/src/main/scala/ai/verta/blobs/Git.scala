@@ -12,7 +12,7 @@ case class Git(
 ) extends Code {
   // Basically a wrapper for VersioningGitCodeBlob
 
-  /*  Constructor for conversion from VersioningBlob instance  */
+  /*  Auxiliary constructor for conversion from VersioningBlob instance  */
   def this(gitBlob: VersioningGitCodeBlob) {
     this(gitBlob.branch, gitBlob.hash, gitBlob.is_dirty, gitBlob.tag, gitBlob.repo)
   }

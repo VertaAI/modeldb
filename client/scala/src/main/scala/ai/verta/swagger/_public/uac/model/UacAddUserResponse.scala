@@ -5,8 +5,8 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.uac.model.CollaboratorTypeEnumCollaboratorType._
 import ai.verta.swagger._public.uac.model.TernaryEnumTernary._
+import ai.verta.swagger._public.uac.model.CollaboratorTypeEnumCollaboratorType._
 import ai.verta.swagger.client.objects._
 
 case class UacAddUserResponse (

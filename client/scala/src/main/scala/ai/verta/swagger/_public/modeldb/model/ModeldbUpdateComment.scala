@@ -5,8 +5,8 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProvider._
 import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
+import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProvider._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbUpdateComment (

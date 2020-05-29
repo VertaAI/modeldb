@@ -5,10 +5,10 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.model.JobStatusEnumJobStatus._
+import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger._public.modeldb.model.JobTypeEnumJobType._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
-import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
+import ai.verta.swagger._public.modeldb.model.JobStatusEnumJobStatus._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbJob (

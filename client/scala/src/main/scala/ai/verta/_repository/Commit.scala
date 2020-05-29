@@ -120,45 +120,54 @@ class Commit(
   }
 
   /** Generates folder names and blob names in this commit by walking through its folder tree.
-   *  TODO: finish the implementation
+   *  TODO: handle the case when the commit is not saved
    */
-  // def walk()(implicit ec: ExecutionContext) = {
-  //   if (!saved)
-  //     Failure(new IllegalStateException("Commit must be saved before it can be walked"))
-  //   else {
-  //     var locations = List(List("")) // stack
-  //     var ret = List()
-  //
-  //     (Iterator.continually {
-  //       var location = locations.head
-  //       locations.drop(1)
-  //
-  //       val response = clientSet.versioningService.GetCommitComponent2(
-  //         commit_sha = commit.commit_sha.get,
-  //         repository_id_repo_id = repo.id.get,
-  //         location = Some(location)
-  //       )
-  //
-  //     }).takeWhile(_ => !locations.isEmpty)
+  def walk()(implicit ec: ExecutionContext) = generateWalk(List(List()))
 
-      // while (!locations.isEmpty) {
-      //   location = locations.head
-      //   locations.drop(1)
-      //
-      //   val response = clientSet.versioningService.GetCommitComponent2(
-      //     commit_sha = commit.commit_sha.get,
-      //     repository_id_repo_id = repo.id.get,
-      //     location = location
-      //   )
-      //
-      //   if (response.isDefined) {
-      //     val folderPath = location.mkString("/")
-      //     val folderNames = ...
-      //     val blobNames = ...
-      //   }
-      // }
-  //   }
-  // }
+  private def generateWalk(locations: List[List[String]])(implicit ec: ExecutionContext): Stream[Try[WalkOutput]] = {
+    if (locations.isEmpty) Stream()
+    else {
+      var location = locations.head
+      var newLocations = locations.drop(1)
+
+      val response = clientSet.versioningService.GetCommitComponent2(
+        commit_sha = commit.commit_sha.get,
+        repository_id_repo_id = repo.id.get,
+        location = if (location.length > 0) Some(location) else None
+      )
+
+      val next = response match {
+        case Failure(e) => Failure(e)
+        case _ => {
+          val folderPath = location.mkString("/")
+          val responseFolder = response.get.folder
+
+          val folderNames = responseFolder
+          .flatMap(_.sub_folders) // Option[List[VersioningFolderElement]]
+          .map(folders => folders.map(folder => folder.element_name.get))
+          // Option[List[String]]
+          .map(_.sortWith((name1: String, name2: String) => name1 < name2))
+
+          val blobNames = responseFolder
+          .flatMap(_.blobs) // Option[List[VersioningFolderElement]]
+          .map(folders => folders.map(folder => folder.element_name.get))
+          // Option[List[String]]
+          .map(_.sortWith((name1: String, name2: String) => name1 < name2))
+
+          // Extend locations to contain new locations:
+          folderNames.map(_.reverse)
+          .map(folders => folders.map(folder => location ::: List(folder)))
+          // Option[List[List[String]]]
+          // push new location to stack:
+          .map(folders => folders.map(folder => {newLocations = folder :: newLocations}))
+
+          Success(new WalkOutput(folderPath, folderNames, blobNames))
+        }
+      }
+
+      next #:: generateWalk(newLocations)
+    }
+  }
 
   /** Creates a branch at this Commit and returns the checked-out branch
    *  If the branch already exists, it will be moved to this commit.
@@ -372,3 +381,11 @@ class Commit(
     }
   }
 }
+
+
+/** A class to represent the output of Commit's walk method
+ *  @param folderPath path to current folder
+ *  @param folderNames names of subfolders in current folder
+ *  @param blobNames names of blobs in current folder
+*/
+class WalkOutput(val folderPath: String, val folderNames: Option[List[String]], val blobNames: Option[List[String]]) {}

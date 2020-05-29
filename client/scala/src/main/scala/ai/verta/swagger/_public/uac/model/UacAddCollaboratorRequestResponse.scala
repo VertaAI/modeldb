@@ -5,13 +5,13 @@ import scala.util.Try
 
 import net.liftweb.json._
 
+import ai.verta.swagger._public.uac.model.TernaryEnumTernary._
+import ai.verta.swagger._public.uac.model.IdServiceProviderEnumIdServiceProvider._
+import ai.verta.swagger._public.uac.model.UacFlagEnum._
+import ai.verta.swagger._public.uac.model.ServiceEnumService._
+import ai.verta.swagger._public.uac.model.ModelDBActionEnumModelDBServiceActions._
 import ai.verta.swagger._public.uac.model.CollaboratorTypeEnumCollaboratorType._
 import ai.verta.swagger._public.uac.model.EntitiesEnumEntitiesTypes._
-import ai.verta.swagger._public.uac.model.IdServiceProviderEnumIdServiceProvider._
-import ai.verta.swagger._public.uac.model.ModelDBActionEnumModelDBServiceActions._
-import ai.verta.swagger._public.uac.model.ServiceEnumService._
-import ai.verta.swagger._public.uac.model.TernaryEnumTernary._
-import ai.verta.swagger._public.uac.model.UacFlagEnum._
 import ai.verta.swagger._public.uac.model.UacShareViaEnum._
 import ai.verta.swagger.client.objects._
 
