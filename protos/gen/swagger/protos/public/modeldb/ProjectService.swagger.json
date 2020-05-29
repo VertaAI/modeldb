@@ -1705,10 +1705,6 @@
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
-        },
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
         }
       }
     },
@@ -1723,10 +1719,6 @@
           "additionalProperties": {
             "type": "string"
           }
-        },
-        "multipart_upload_ok": {
-          "type": "boolean",
-          "format": "boolean"
         }
       }
     },
