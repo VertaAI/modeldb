@@ -32,8 +32,7 @@ public class ArtifactPartEntity implements Serializable {
   @Column(name = "part_number", nullable = false)
   private long partNumber;
 
-  @Column
-  private String etag;
+  @Column private String etag;
 
   @Override
   public boolean equals(Object o) {
@@ -44,9 +43,9 @@ public class ArtifactPartEntity implements Serializable {
       return false;
     }
     ArtifactPartEntity that = (ArtifactPartEntity) o;
-    return partNumber == that.partNumber &&
-        Objects.equals(artifactEntity, that.artifactEntity) &&
-        Objects.equals(etag, that.etag);
+    return partNumber == that.partNumber
+        && Objects.equals(artifactEntity, that.artifactEntity)
+        && Objects.equals(etag, that.etag);
   }
 
   @Override
