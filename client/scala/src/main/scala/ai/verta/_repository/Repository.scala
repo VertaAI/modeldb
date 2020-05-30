@@ -10,7 +10,6 @@ import scala.util.{Failure, Success, Try}
 
 /** ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Client's getOrCreateRepository
- *  TODO: refactor get commit methods using higher order function
  */
 class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
   /** Get commit by its SHA id

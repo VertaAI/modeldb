@@ -2,6 +2,8 @@ package ai.verta
 
 import ai.verta.swagger._public.modeldb.versioning.model._
 
+import scala.sys.process._
+
 package object blobs {
   /** Helper function to convert a VersioningBlob instance to corresponding Blob subclass instance
    *  @param vb the VersioningBlob instance
@@ -25,5 +27,22 @@ package object blobs {
    *  @return path, but with (first occurence of) ~ replace with user's home directory
    */
   def expanduser(path: String) = path.replaceFirst("~", System.getProperty("user.home"))
+
+  // def autocaptureGit() = {
+  //
+  // }
+
+  /** Helper function to get remote repository url */
+  def getGitRemoteURL() = Seq("git", "ls-remote", "--get-url").!!.trim()
+
+  /** Helper function to get current branch (or first branch alphabetically if there isn't one).  */
+  def getGitBranchName(ref: String = "HEAD") = {
+    val branches = Seq("git", "branch", "--points-at", ref).!!.trim().split("\n")
+    val INDICATOR = "* "
+
+    val curBranch = branches.filter(_ startsWith INDICATOR)
+
+    if (!curBranch.isEmpty) curBranch.head.substring(INDICATOR.length) else branches.head
+  }
 
 }
