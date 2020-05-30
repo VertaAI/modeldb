@@ -121,6 +121,7 @@ class Commit(
 
   /** Generates folder names and blob names in this commit by walking through its folder tree.
    *  TODO: handle the case when the commit is not saved
+   *  TODO: modify the WalkOutput so that the folders are mutable
    */
   def walk()(implicit ec: ExecutionContext) = generateWalk(List(List()))
 
@@ -144,22 +145,22 @@ class Commit(
 
           val folderNames = responseFolder
           .flatMap(_.sub_folders) // Option[List[VersioningFolderElement]]
-          .map(folders => folders.map(folder => folder.element_name.get))
+          .map(_.map(folder => folder.element_name.get))
           // Option[List[String]]
           .map(_.sortWith((name1: String, name2: String) => name1 < name2))
 
           val blobNames = responseFolder
           .flatMap(_.blobs) // Option[List[VersioningFolderElement]]
-          .map(folders => folders.map(folder => folder.element_name.get))
+          .map(_.map(folder => folder.element_name.get))
           // Option[List[String]]
           .map(_.sortWith((name1: String, name2: String) => name1 < name2))
 
           // Extend locations to contain new locations:
-          folderNames.map(_.reverse)
-          .map(folders => folders.map(folder => location ::: List(folder)))
+          newLocations = folderNames
+          .map(_.map(folder => location ::: List(folder))) // inefficient
           // Option[List[List[String]]]
           // push new location to stack:
-          .map(folders => folders.map(folder => {newLocations = folder :: newLocations}))
+          .getOrElse(Nil) ::: newLocations
 
           Success(new WalkOutput(folderPath, folderNames, blobNames))
         }
@@ -185,7 +186,7 @@ class Commit(
 
   /** Returns the diff from reference to self
    *  @param reference Commit to be compared to. If not provided, first parent will be used.
-   *  @return None if this commit or reference has not yet been saved, or if they do not belong to the same repository; otherwise diff object.
+   *  @return Failure if this commit or reference has not yet been saved, or if they do not belong to the same repository; otherwise diff object.
    */
   def diffFrom(reference: Option[Commit] = None)(implicit ec: ExecutionContext) = {
     if (!saved)
