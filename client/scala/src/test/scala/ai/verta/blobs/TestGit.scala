@@ -7,23 +7,23 @@ import scala.util.{Try, Success, Failure}
 
 class TestGit extends FunSuite {
   test("get remote") {
-    assert(getGitRemoteURL().get contains "modeldb.git")
+    assert(Git.getGitRemoteURL().get contains "modeldb.git")
   }
 
   test("get branch") {
-    assert(getGitBranchName().get.length > 0)
+    assert(Git.getGitBranchName().get.length > 0)
   }
 
   test("get root directory of git repository") {
-    assert(getGitRepoRootDir().get.length > 0)
+    assert(Git.getGitRepoRootDir().get.length > 0)
   }
 
   test("get commit hash") {
-    assert(getGitCommitHash().get.length > 0)
+    assert(Git.getGitCommitHash().get.length > 0)
   }
 
   test("get commit dirtiness") {
-    val dirtiness = getGitCommitDirtiness()
+    val dirtiness = Git.getGitCommitDirtiness()
     assert(dirtiness.isInstanceOf[Success[Boolean]])
   }
 }
