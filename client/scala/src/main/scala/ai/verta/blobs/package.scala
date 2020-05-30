@@ -36,6 +36,11 @@ package object blobs {
   /** Helper function to get remote repository url */
   def getGitRemoteURL() = Try(Seq("git", "ls-remote", "--get-url").!!.trim())
 
+  /** Helper function to get current commit's hash */
+  def getGitCommitHash(ref: String = "HEAD") =
+    Try(Seq("git", "rev-parse", f"${ref}^{commit}").!!.trim()) orElse
+    Try(Seq("git", "rev-parse", "--verify", ref).!!.trim())
+
   /** Helper function to get current branch (or first branch alphabetically if there isn't one).  */
   def getGitBranchName(ref: String = "HEAD") = Try {
     val branches = Seq("git", "branch", "--points-at", ref).!!.trim().split("\n")
@@ -46,11 +51,27 @@ package object blobs {
     if (!curBranch.isEmpty) curBranch.head.substring(INDICATOR.length) else branches.head
   }
 
+  /** Helper function to retrieve tag of commit */
+  def getGitCommitTag(ref: String = "HEAD"): Try[Option[String]] = Try {
+    val tags = Seq("git", "tag", "--points-at", ref).!!.trim().split("\n")
+    if (tags.isEmpty) None else Some(tags.head)
+  }
+
   /** Helper function to retrieve git repository root directory */
   def getGitRepoRootDir() = Try {
     val dirPath = Seq("git", "rev-parse", "--show-toplevel").!!.trim()
 
     // Add trailing separator:
     if (dirPath.endsWith("/")) dirPath else dirPath + "/"
+  }
+
+  /** Helper function to check if a commit is dirty */
+  def getGitCommitDirtiness(ref: Option[String] = None) = ref match {
+    case None => Try {
+      !Seq("git", "status", "--porcelain").!!.split("\n").forall(_ startsWith "??")
+    }
+    case Some(_) => Try { // compare `ref` to the working tree and index
+      Seq("git", "diff-index", ref.get).!!.split("\n").length > 0
+    }
   }
 }
