@@ -5,10 +5,14 @@ import org.scalatest.Assertions._
 
 class TestGit extends FunSuite {
   test("get remote") {
-    assert(getGitRemoteURL() contains "modeldb.git")
+    assert(getGitRemoteURL().get contains "modeldb.git")
   }
 
   test("get branch") {
-    println(getGitBranchName())
+    assert(getGitBranchName().get.length > 0)
+  }
+
+  test("get root directory of git repository") {
+    assert(getGitRepoRootDir().get.length > 0)
   }
 }

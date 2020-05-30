@@ -2,6 +2,7 @@ package ai.verta
 
 import ai.verta.swagger._public.modeldb.versioning.model._
 
+import scala.util.{Failure, Success, Try}
 import scala.sys.process._
 
 package object blobs {
@@ -33,10 +34,10 @@ package object blobs {
   // }
 
   /** Helper function to get remote repository url */
-  def getGitRemoteURL() = Seq("git", "ls-remote", "--get-url").!!.trim()
+  def getGitRemoteURL() = Try(Seq("git", "ls-remote", "--get-url").!!.trim())
 
   /** Helper function to get current branch (or first branch alphabetically if there isn't one).  */
-  def getGitBranchName(ref: String = "HEAD") = {
+  def getGitBranchName(ref: String = "HEAD") = Try {
     val branches = Seq("git", "branch", "--points-at", ref).!!.trim().split("\n")
     val INDICATOR = "* "
 
@@ -45,4 +46,11 @@ package object blobs {
     if (!curBranch.isEmpty) curBranch.head.substring(INDICATOR.length) else branches.head
   }
 
+  /** Helper function to retrieve git repository root directory */
+  def getGitRepoRootDir() = Try {
+    val dirPath = Seq("git", "rev-parse", "--show-toplevel").!!.trim()
+
+    // Add trailing separator:
+    if (dirPath.endsWith("/")) dirPath else dirPath + "/"
+  }
 }
