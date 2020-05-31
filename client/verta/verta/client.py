@@ -2071,6 +2071,8 @@ class ExperimentRun(_ModelDBEntity):
             # TODO: parallelize this
             file_parts = iter(lambda: artifact_stream.read(part_size), b'')
             for part_num, file_part in enumerate(file_parts, start=1):
+                print("uploading part {}".format(part_num), end='\r')
+
                 # get presigned URL
                 url = self._get_url_for_artifact(key, "PUT", part_num=part_num).url
 
@@ -2087,8 +2089,6 @@ class ExperimentRun(_ModelDBEntity):
                 response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                 response.raise_for_status()
 
-                # TODO: print progress
-
                 # commit part
                 url = "{}://{}/api/v1/modeldb/experiment-run/commitArtifactPart".format(
                     self._conn.scheme,
@@ -2101,6 +2101,7 @@ class ExperimentRun(_ModelDBEntity):
                 # TODO: increase retries
                 response = _utils.make_request("POST", url, self._conn, json=data)
                 _utils.raise_for_http_error(response)
+            print("upload complete")
 
             # complete upload
             url = "{}://{}/api/v1/modeldb/experiment-run/commitMultipartArtifact".format(
