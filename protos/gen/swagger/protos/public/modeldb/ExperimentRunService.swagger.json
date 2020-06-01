@@ -1923,12 +1923,7 @@
       "title": "attributes"
     },
     "modeldbAddExperimentRunAttributesResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbAddExperimentRunTag": {
       "type": "object",
@@ -2172,12 +2167,7 @@
       }
     },
     "modeldbDeleteArtifactResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbDeleteExperimentRun": {
       "type": "object",
@@ -2206,12 +2196,7 @@
       }
     },
     "modeldbDeleteExperimentRunAttributesResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbDeleteExperimentRunResponse": {
       "type": "object",
@@ -2742,12 +2727,7 @@
       "title": "artifact"
     },
     "modeldbLogArtifactResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogArtifacts": {
       "type": "object",
@@ -2765,12 +2745,7 @@
       "title": "artifacts"
     },
     "modeldbLogArtifactsResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogAttribute": {
       "type": "object",
@@ -2785,12 +2760,7 @@
       "title": "attribute"
     },
     "modeldbLogAttributeResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogAttributes": {
       "type": "object",
@@ -2808,12 +2778,7 @@
       "title": "attributes"
     },
     "modeldbLogAttributesResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogDataset": {
       "type": "object",
@@ -2832,12 +2797,7 @@
       "title": "dataset"
     },
     "modeldbLogDatasetResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogDatasets": {
       "type": "object",
@@ -2859,12 +2819,7 @@
       "title": "datasets"
     },
     "modeldbLogDatasetsResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogExperimentRunCodeVersion": {
       "type": "object",
@@ -2883,12 +2838,7 @@
       "title": "code version"
     },
     "modeldbLogExperimentRunCodeVersionResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogHyperparameter": {
       "type": "object",
@@ -2903,12 +2853,7 @@
       "title": "hyperparameter"
     },
     "modeldbLogHyperparameterResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogHyperparameters": {
       "type": "object",
@@ -2926,20 +2871,10 @@
       "title": "hyperparameters"
     },
     "modeldbLogHyperparametersResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogJobIdResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogMetric": {
       "type": "object",
@@ -2954,12 +2889,7 @@
       "title": "metric"
     },
     "modeldbLogMetricResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogMetrics": {
       "type": "object",
@@ -2977,12 +2907,7 @@
       "title": "metrics"
     },
     "modeldbLogMetricsResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogObservation": {
       "type": "object",
@@ -2997,12 +2922,7 @@
       "title": "observation"
     },
     "modeldbLogObservationResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogObservations": {
       "type": "object",
@@ -3020,12 +2940,7 @@
       "title": "observations"
     },
     "modeldbLogObservationsResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogVersionedInput": {
       "type": "object",
@@ -3039,12 +2954,7 @@
       }
     },
     "modeldbLogVersionedInputResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbObservation": {
       "type": "object",
@@ -3074,12 +2984,7 @@
       }
     },
     "modeldbSetParentExperimentRunIdResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbSortExperimentRunsResponse": {
       "type": "object",
@@ -3138,12 +3043,7 @@
       }
     },
     "modeldbUpdateExperimentRunNameResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbVersioningEntry": {
       "type": "object",
