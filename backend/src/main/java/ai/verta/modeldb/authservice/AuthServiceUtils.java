@@ -29,6 +29,10 @@ public class AuthServiceUtils implements AuthService {
 
   @Override
   public UserInfo getCurrentLoginUserInfo() {
+    return getCurrentLoginUserInfo(true);
+  }
+
+  private UserInfo getCurrentLoginUserInfo(boolean retry) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.AUTH_SERVICE_REQ_SENT_MSG);
       UserInfo userInfo =
@@ -47,18 +51,18 @@ public class AuthServiceUtils implements AuthService {
         return userInfo;
       }
     } catch (StatusRuntimeException ex) {
-      return (UserInfo) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<UserInfo>) () -> {
-        try{
-          return getCurrentLoginUserInfo();
-        } catch (StatusRuntimeException ex1){
-          return (UserInfo) ModelDBUtils.retryOrThrowException(ex1, null);
-        }
-      });
+      return (UserInfo)
+          ModelDBUtils.retryOrThrowException(
+              ex, retry, (ModelDBUtils.RetryCallInterface<UserInfo>) this::getCurrentLoginUserInfo);
     }
   }
 
   @Override
   public UserInfo getUnsignedUser() {
+    return getUnsignedUser(true);
+  }
+
+  private UserInfo getUnsignedUser(boolean retry) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.AUTH_SERVICE_REQ_SENT_MSG);
       GetUser getUserRequest =
@@ -79,18 +83,19 @@ public class AuthServiceUtils implements AuthService {
         return userInfo;
       }
     } catch (StatusRuntimeException ex) {
-      return (UserInfo) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<UserInfo>) () -> {
-        try{
-          return getUnsignedUser();
-        } catch (StatusRuntimeException ex1){
-          return (UserInfo) ModelDBUtils.retryOrThrowException(ex1, null);
-        }
-      });
+      return (UserInfo)
+          ModelDBUtils.retryOrThrowException(
+              ex, retry, (ModelDBUtils.RetryCallInterface<UserInfo>) this::getUnsignedUser);
     }
   }
 
   @Override
   public UserInfo getUserInfo(String vertaId, ModelDBConstants.UserIdentifier vertaIdentifier) {
+    return getUserInfo(true, vertaId, vertaIdentifier);
+  }
+
+  private UserInfo getUserInfo(
+      boolean retry, String vertaId, ModelDBConstants.UserIdentifier vertaIdentifier) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       GetUser getUserRequest;
       if (vertaIdentifier == ModelDBConstants.UserIdentifier.EMAIL_ID) {
@@ -118,13 +123,12 @@ public class AuthServiceUtils implements AuthService {
         return userInfo;
       }
     } catch (StatusRuntimeException ex) {
-      return (UserInfo) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<UserInfo>) () -> {
-        try{
-          return getUserInfo(vertaId, vertaIdentifier);
-        } catch (StatusRuntimeException ex1){
-          return (UserInfo) ModelDBUtils.retryOrThrowException(ex1, null);
-        }
-      });
+      return (UserInfo)
+          ModelDBUtils.retryOrThrowException(
+              ex,
+              retry,
+              (ModelDBUtils.RetryCallInterface<UserInfo>)
+                  (retry1) -> getUserInfo(retry1, vertaId, vertaIdentifier));
     }
   }
 
@@ -137,6 +141,11 @@ public class AuthServiceUtils implements AuthService {
   @Override
   public Map<String, UserInfo> getUserInfoFromAuthServer(
       Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
+    return getUserInfoFromAuthServer(true, vertaIdList, emailIdList, usernameList);
+  }
+
+  private Map<String, UserInfo> getUserInfoFromAuthServer(
+      boolean retry, Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       GetUsers.Builder getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
       if (emailIdList != null && !emailIdList.isEmpty()) {
@@ -160,13 +169,13 @@ public class AuthServiceUtils implements AuthService {
       }
       return useInfoMap;
     } catch (StatusRuntimeException ex) {
-      return (Map<String, UserInfo>) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<Map<String, UserInfo>>) () -> {
-        try{
-          return getUserInfoFromAuthServer(vertaIdList, emailIdList, usernameList);
-        } catch (StatusRuntimeException ex1){
-          return (Map<String, UserInfo>) ModelDBUtils.retryOrThrowException(ex1, null);
-        }
-      });
+      return (Map<String, UserInfo>)
+          ModelDBUtils.retryOrThrowException(
+              ex,
+              retry,
+              (ModelDBUtils.RetryCallInterface<Map<String, UserInfo>>)
+                  (retry1) ->
+                      getUserInfoFromAuthServer(retry1, vertaIdList, emailIdList, usernameList));
     }
   }
 
@@ -207,6 +216,10 @@ public class AuthServiceUtils implements AuthService {
 
   @Override
   public UserInfoPaginationDTO getFuzzyUserInfoList(String usernameChar) {
+    return getFuzzyUserInfoList(true, usernameChar);
+  }
+
+  private UserInfoPaginationDTO getFuzzyUserInfoList(boolean retry, String usernameChar) {
     if (usernameChar.isEmpty()) {
       UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
       paginationDTO.setUserInfoList(Collections.emptyList());
@@ -230,13 +243,12 @@ public class AuthServiceUtils implements AuthService {
       paginationDTO.setTotalRecords(response.getTotalRecords());
       return paginationDTO;
     } catch (StatusRuntimeException ex) {
-      return (UserInfoPaginationDTO) ModelDBUtils.retryOrThrowException(ex, (ModelDBUtils.RetryCallInterface<UserInfoPaginationDTO>) () -> {
-        try{
-          return getFuzzyUserInfoList(usernameChar);
-        } catch (StatusRuntimeException ex1){
-          return (UserInfoPaginationDTO) ModelDBUtils.retryOrThrowException(ex1, null);
-        }
-      });
+      return (UserInfoPaginationDTO)
+          ModelDBUtils.retryOrThrowException(
+              ex,
+              retry,
+              (ModelDBUtils.RetryCallInterface<UserInfoPaginationDTO>)
+                  (retry1) -> getFuzzyUserInfoList(retry1, usernameChar));
     }
   }
 }

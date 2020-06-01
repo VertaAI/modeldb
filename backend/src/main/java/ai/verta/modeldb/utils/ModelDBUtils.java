@@ -2,6 +2,7 @@ package ai.verta.modeldb.utils;
 
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.common.ValueTypeEnum;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
@@ -510,22 +511,32 @@ public class ModelDBUtils {
   }
 
   public interface RetryCallInterface<T> {
-      T retryCall();
+    T retryCall(boolean retry);
   }
 
-  public static Object retryOrThrowException(StatusRuntimeException ex, RetryCallInterface<?> retryCallInterface) {
+  public static Object retryOrThrowException(
+      StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
     String errorMessage = "UAC Service unavailable : " + ex.getMessage();
     LOGGER.warn(errorMessage, ex);
     if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-      if (retryCallInterface != null){
-        return retryCallInterface.retryCall();
+      if (retry && retryCallInterface != null) {
+        try {
+          App app = App.getInstance();
+          Thread.sleep(app.getRequestTimeout() * 1000);
+          retry = false;
+        } catch (InterruptedException e) {
+          Status status =
+              Status.newBuilder()
+                  .setCode(Code.INTERNAL_VALUE)
+                  .setMessage("Thread interrupted while UAC retrying call")
+                  .build();
+          throw StatusProto.toStatusRuntimeException(status);
+        }
+        return retryCallInterface.retryCall(retry);
       }
 
       Status status =
-              Status.newBuilder()
-                      .setCode(Code.UNAVAILABLE_VALUE)
-                      .setMessage(errorMessage)
-                      .build();
+          Status.newBuilder().setCode(Code.UNAVAILABLE_VALUE).setMessage(errorMessage).build();
       throw StatusProto.toStatusRuntimeException(status);
     }
     throw ex;
