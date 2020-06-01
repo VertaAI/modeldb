@@ -14,6 +14,8 @@ import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
@@ -81,6 +83,7 @@ public class DatasetTest {
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
   private static App app;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -117,10 +120,14 @@ public class DatasetTest {
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -1904,9 +1911,8 @@ public class DatasetTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
-    // wait till parent entities update date_updated field (updateParentTimestampFrequency * 2)
-    // milliseconds
-    Thread.sleep(CronJobUtils.updateParentTimestampFrequency * 1000);
+    ParentTimestampUpdateCron parentTimestampUpdateCron = new ParentTimestampUpdateCron(100);
+    parentTimestampUpdateCron.run();
 
     LastExperimentByDatasetId lastExperimentByDatasetId =
         LastExperimentByDatasetId.newBuilder().setDatasetId(dataset.getId()).build();

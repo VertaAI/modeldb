@@ -57,7 +57,6 @@ message LogVersionedInput {
     string id = 1;
     VersioningEntry versioned_inputs = 2;
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 message GetVersionedInput {
@@ -161,7 +160,6 @@ message UpdateExperimentRunName {
     string name = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 message UpdateExperimentRunDescription {
@@ -218,7 +216,6 @@ message AddExperimentRunAttributes {
     repeated common.KeyValue attributes = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -228,7 +225,6 @@ message DeleteExperimentRunAttributes {
     bool delete_all = 3;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -239,7 +235,6 @@ message LogExperimentRunCodeVersion {
     bool overwrite = 3;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -257,7 +252,6 @@ message LogObservation {
     Observation observation = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -267,7 +261,6 @@ message LogObservations {
     repeated Observation observations = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -286,7 +279,6 @@ message LogMetric {
     common.KeyValue metric = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -296,7 +288,6 @@ message LogMetrics {
     repeated common.KeyValue metrics = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -315,7 +306,6 @@ message LogDataset {
     bool overwrite = 3;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -326,7 +316,6 @@ message LogDatasets {
     bool overwrite = 3;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -344,7 +333,6 @@ message LogArtifact {
     Artifact artifact = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -354,7 +342,6 @@ message LogArtifacts {
     repeated Artifact artifacts = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -363,7 +350,6 @@ message DeleteArtifact {
     string key = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -373,7 +359,6 @@ message LogHyperparameter {
     common.KeyValue hyperparameter = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -383,7 +368,6 @@ message LogHyperparameters {
     repeated common.KeyValue hyperparameters = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -401,7 +385,6 @@ message LogAttribute {
     common.KeyValue attribute = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -411,7 +394,6 @@ message LogAttributes {
     repeated common.KeyValue attributes = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -470,7 +452,6 @@ message LogJobId {
     string job_id = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -500,7 +481,6 @@ message SetParentExperimentRunId {
     string parent_id = 2; // Parent ExperimentRunId
 
     message Response {
-        ExperimentRun experiment_run = 1;
     }
 }
 
@@ -792,6 +772,26 @@ service ExperimentRunService {
     rpc getUrlForArtifact(GetUrlForArtifact) returns (GetUrlForArtifact.Response) {
         option (google.api.http) = {
             post: "/v1/experiment-run/getUrlForArtifact"
+            body: "*"
+        };
+    };
+
+    rpc commitArtifactPart(CommitArtifactPart) returns (CommitArtifactPart.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment-run/commitArtifactPart"
+            body: "*"
+        };
+    };
+
+    rpc getCommittedArtifactParts(GetCommittedArtifactParts) returns (GetCommittedArtifactParts.Response) {
+        option (google.api.http) = {
+            get: "/v1/experiment-run/getCommittedArtifactParts"
+        };
+    };
+
+    rpc commitMultipartArtifact(CommitMultipartArtifact) returns (CommitMultipartArtifact.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment-run/commitMultipartArtifact"
             body: "*"
         };
     };

@@ -8,6 +8,7 @@ import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
@@ -278,6 +279,26 @@ public class CommitDAORdbImpl implements CommitDAO {
       List<LabelsMappingEntity> labelsMappingEntities = query.list();
       if (labelsMappingEntities.size() > 0) {
         throw new ModelDBException("Commit is associated with Label", Code.FAILED_PRECONDITION);
+      }
+
+      String getTagsHql =
+          new StringBuilder("From TagsEntity te where te.id.")
+              .append(ModelDBConstants.REPOSITORY_ID)
+              .append(" = :repoId ")
+              .append(" AND te.commit_hash")
+              .append(" = :commitHash")
+              .toString();
+      Query getTagsQuery = session.createQuery(getTagsHql);
+      getTagsQuery.setParameter("repoId", repositoryEntity.getId());
+      getTagsQuery.setParameter("commitHash", commitEntity.getCommit_hash());
+      List<TagsEntity> tagsEntities = getTagsQuery.list();
+      if (tagsEntities.size() > 0) {
+        throw new ModelDBException(
+            "Commit is associated with Tags : "
+                + tagsEntities.stream()
+                    .map(tagsEntity -> tagsEntity.getId().getTag())
+                    .collect(Collectors.joining(",")),
+            Code.FAILED_PRECONDITION);
       }
 
       // delete associated branch

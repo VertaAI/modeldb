@@ -302,6 +302,11 @@
 				tableName="versioning_modeldb_entity_mapping"/>
 	</changeSet>
 	<changeSet id="createTempTableWithNewKeysOfFolderElement" author="lezhevg">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="folder_element_temp"/>
+			</not>
+		</preConditions>
 		<createTable tableName="folder_element_temp">
 			<column name="folder_hash" type="varchar(64)">
 				<constraints primaryKey="true" nullable="false"/>
@@ -313,6 +318,7 @@
 			<column name="element_type" type="varchar(50)"/>
 		</createTable>
 	</changeSet>
+
 	<changeSet id="copyDataToANewTable" author="lezhevg">
 		<sql>
 			INSERT INTO folder_element_temp SELECT folder_hash, element_sha, element_name, element_type  FROM folder_element;
