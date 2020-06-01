@@ -32,6 +32,27 @@ class TestPathBlob extends FunSuite {
     assert(component.last_modified_at_source.get > 0)
   }
 
+  test("PathBlob should retrieve multiple files correctly") {
+    val workingDir = System.getProperty("user.dir")
+    val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
+    val testfile1 = testDir + "/testfile"
+    val testfile2 = testDir + "/testsubdir/testfile2"
+
+    var path = PathBlob(List(testfile1, testfile2))
+
+    assert(path.components.length == 2)
+    var set = HashSet[String](
+      path.components.head.path.get,
+      path.components.tail.head.path.get
+    )
+
+    assert(set.contains(testfile1))
+    assert(set.contains(testfile2))
+
+    assert(path.components.filter(_.size.get > 0).filter(_.md5.get != "")
+    .filter(_.last_modified_at_source.get > 0).length == path.components.length)
+  }
+
   test("PathBlob should retrieve and store files in subdirs, but not the subdirs themselves") {
     val workingDir = System.getProperty("user.dir")
     val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
