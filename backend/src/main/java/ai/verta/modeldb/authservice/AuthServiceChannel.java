@@ -32,7 +32,9 @@ public class AuthServiceChannel implements AutoCloseable {
   private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStub;
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
-  public static boolean isMigrationUtilsCall = false;
+  public static boolean isBackgroundUtilsCall = false;
+  private String serviceUserEmail;
+  private String serviceUserDevKey;
 
   public AuthServiceChannel() {
     App app = App.getInstance();
@@ -44,6 +46,9 @@ public class AuthServiceChannel implements AutoCloseable {
           ManagedChannelBuilder.forTarget(host + ModelDBConstants.STRING_COLON + port)
               .usePlaintext()
               .build();
+
+      this.serviceUserEmail = app.getServiceUserEmail();
+      this.serviceUserDevKey = app.getServiceUserDevKey();
     } else {
       Status status =
           Status.newBuilder()
@@ -56,9 +61,15 @@ public class AuthServiceChannel implements AutoCloseable {
 
   private Metadata getMetadataHeaders() {
     Metadata requestHeaders;
-    if (isMigrationUtilsCall && ModelDBAuthInterceptor.METADATA_INFO.get() == null) {
-      Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+    if (isBackgroundUtilsCall && ModelDBAuthInterceptor.METADATA_INFO.get() == null) {
       requestHeaders = new Metadata();
+      Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key<String> dev_key =
+          Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+
+      requestHeaders.put(email_key, this.serviceUserEmail);
+      requestHeaders.put(dev_key, this.serviceUserDevKey);
       requestHeaders.put(source_key, "PythonClient");
     } else {
       requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();

@@ -32,6 +32,35 @@ Release Notes
      <>`__
 
 
+v0.14.6 (2020-05-29)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `enable multipart artifact uploads
+  <https://github.com/VertaAI/modeldb/pull/643>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix Notebook Blob repr
+  <https://github.com/VertaAI/modeldb/pull/629>`__
+- `support NumPy bool_ and pandas 1.X in ModelAPI
+  <https://github.com/VertaAI/modeldb/pull/630>`__
+- `ignore folders in S3 versioning Blobs
+  <https://github.com/VertaAI/modeldb/pull/631>`__
+- `inject verta and cloudpickle into Python environment Blobs
+  <https://github.com/VertaAI/modeldb/pull/644>`__
+- `blacklist deployment artifact keys
+  <https://github.com/VertaAI/modeldb/pull/648>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `remove logic duplication for fixing NFS URLs
+  <https://github.com/VertaAI/modeldb/pull/659>`__
+- `calculate SHA-256 checksums for artifacts in chunks
+  <https://github.com/VertaAI/modeldb/pull/670>`__
+
+
 v0.14.5 (2020-05-13)
 --------------------
 

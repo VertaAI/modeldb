@@ -15,16 +15,20 @@ import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
+import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -32,8 +36,10 @@ import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -60,12 +66,23 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(ModelDBConstants.DATASET_ID)
           .append(" = :datasetId AND dsv.")
           .append(ModelDBConstants.VERSION)
-          .append(" =:version")
+          .append(" =:version ")
+          .append(" AND dsv.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = false ")
+          .toString();
+  private static final String CHECK_DATASET_VERSION_EXISTS_BY_ID_HQL =
+      new StringBuilder(
+              "Select count(dsv." + ModelDBConstants.ID + ") From DatasetVersionEntity dsv where ")
+          .append(" dsv." + ModelDBConstants.ID + " = :datasetVersionId ")
+          .append(" AND dsv." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String DATASET_VERSION_BY_DATA_SET_IDS_QUERY =
       "From DatasetVersionEntity ds where ds.dataset_id IN (:datasetIds) ";
   private static final String DATASET_VERSION_BY_IDS_QUERY =
-      "From DatasetVersionEntity ds where ds.id IN (:ids)";
+      "From DatasetVersionEntity ds where ds.id IN (:ids) AND ds."
+          + ModelDBConstants.DELETED
+          + " = false ";
   private static final String DELETE_DATASET_VERSION_QUERY_PREFIX =
       new StringBuilder("delete from TagsMapping tm WHERE ")
           .append(" tm.datasetVersionEntity." + ModelDBConstants.ID + " = :datasetVersionId ")
@@ -82,6 +99,28 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       new StringBuilder("delete from AttributeEntity attr WHERE attr.datasetVersionEntity.")
           .append(ModelDBConstants.ID)
           .append(" = :datasetVersionId")
+          .toString();
+  private static final String UPDATE_DELETED_STATUS_DATASET_VERSION_QUERY_STRING =
+      new StringBuilder("UPDATE ")
+          .append(DatasetVersionEntity.class.getSimpleName())
+          .append(" dv ")
+          .append("SET dv.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE dv.")
+          .append(ModelDBConstants.ID)
+          .append(" IN (:datasetVersionIds)")
+          .toString();
+  private static final String DELETED_STATUS_DATASET_VERSION_BY_DATASET_QUERY_STRING =
+      new StringBuilder("UPDATE ")
+          .append(DatasetVersionEntity.class.getSimpleName())
+          .append(" dv ")
+          .append("SET dv.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE dv.")
+          .append(ModelDBConstants.DATASET_ID)
+          .append(" IN (:datasetIds)")
           .toString();
 
   public DatasetVersionDAORdbImpl(AuthService authService, RoleService roleService) {
@@ -105,7 +144,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       createDatasetVersionLock.lock();
-      Transaction transaction = session.beginTransaction();
 
       String lastDatasetVersionQueryStr =
           DATASET_VERSION_BY_DATA_SET_IDS_QUERY + " ORDER BY ds.version DESC";
@@ -122,12 +160,10 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           getDatasetVersionFromRequest(authService, request, userInfo, existingDatasetVersion);
 
       if (datasetVersionList.size() == 1) {
-        transaction.commit();
         return datasetVersionList.get(0);
       } else {
         DatasetVersion datasetVersion = datasetVersionList.get(1);
         if (checkDatasetVersionAlreadyExist(session, datasetVersion)) {
-          transaction.commit();
           Status status =
               Status.newBuilder()
                   .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -139,18 +175,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
                   .build();
           throw StatusProto.toStatusRuntimeException(status);
         }
+        createRoleBindingsForDatasetVersion(userInfo, datasetVersion);
 
         DatasetVersionEntity datasetVersionEntity =
             RdbmsUtils.generateDatasetVersionEntity(datasetVersion);
+        Transaction transaction = session.beginTransaction();
         session.save(datasetVersionEntity);
-
-        Role ownerRole =
-            roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
-        roleService.createRoleBinding(
-            ownerRole,
-            new CollaboratorUser(authService, userInfo),
-            datasetVersion.getId(),
-            ModelDBServiceResourceTypes.DATASET_VERSION);
         transaction.commit();
         LOGGER.debug("DatasetVersion created successfully");
         return datasetVersionEntity.getProtoObject();
@@ -160,8 +190,19 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     }
   }
 
+  public void createRoleBindingsForDatasetVersion(
+      UserInfo userInfo, DatasetVersion datasetVersion) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        datasetVersion.getId(),
+        ModelDBServiceResourceTypes.DATASET_VERSION);
+  }
+
   @Override
   public DatasetVersionDTO getDatasetVersions(
+      DatasetDAO datasetDAO,
       String datasetId,
       int pageNumber,
       int pageLimit,
@@ -177,34 +218,21 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
             .setAscending(isAscending)
             .setSortKey(sortKey)
             .build();
-    return findDatasetVersions(findDatasetVersions, currentLoginUser);
+    return findDatasetVersions(datasetDAO, findDatasetVersions, currentLoginUser);
   }
 
   @Override
   public Boolean deleteDatasetVersions(List<String> datasetVersionIds) {
-    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      for (String datasetVersionId : datasetVersionIds) {
-        DatasetVersionEntity datasetVersionObj =
-            session.load(DatasetVersionEntity.class, datasetVersionId);
-        session.delete(datasetVersionObj);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_DATASET_VERSION_OWNER,
-                datasetVersionObj.getId(),
-                datasetVersionObj.getOwner(),
-                ModelDBServiceResourceTypes.DATASET_VERSION.name());
-        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
+      Query deletedDatasetVersionQuery =
+          session.createQuery(UPDATE_DELETED_STATUS_DATASET_VERSION_QUERY_STRING);
+      deletedDatasetVersionQuery.setParameter("deleted", true);
+      deletedDatasetVersionQuery.setParameter("datasetVersionIds", datasetVersionIds);
+      int updatedCount = deletedDatasetVersionQuery.executeUpdate();
+      LOGGER.debug(
+          "Mark DatasetVersions as deleted : {}, count : {}", datasetVersionIds, updatedCount);
       transaction.commit();
-
-      // Remove all role bindings
-      roleService.deleteRoleBindings(roleBindingNames);
-
       LOGGER.debug("DatasetVersion deleted successfully");
       return true;
     }
@@ -214,14 +242,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query query = session.createQuery(DATASET_VERSION_BY_DATA_SET_IDS_QUERY);
+      Query query = session.createQuery(DELETED_STATUS_DATASET_VERSION_BY_DATASET_QUERY_STRING);
+      query.setParameter("deleted", true);
       query.setParameterList("datasetIds", datasetIds);
-      List<DatasetVersionEntity> datasetVersionEntities = query.list();
-      for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
-        session.delete(datasetVersionEntity);
-      }
+      int updatedCount = query.executeUpdate();
       transaction.commit();
-      LOGGER.debug("DatasetVersion deleted successfully");
+      LOGGER.debug("DatasetVersion deleted successfully, updated Row: {}", updatedCount);
       return true;
     }
   }
@@ -232,7 +258,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
-      if (datasetVersionObj == null) {
+      if (datasetVersionObj == null || datasetVersionObj.getDeleted()) {
         LOGGER.warn(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
         Status status =
             Status.newBuilder()
@@ -280,11 +306,95 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     }
   }
 
+  /**
+   * For getting datasetVersions that user has access to (either as the owner or a collaborator)
+   * dataserVersion of dataset: <br>
+   *
+   * <ol>
+   *   <li>Iterate through all datasetVersions of the requested datasetVersionIds
+   *   <li>Get the dataset Id they belong to.
+   *   <li>Check if dataset is accessible or not.
+   * </ol>
+   *
+   * The list of accessible datasetVersionIDs is built and returned by this method.
+   *
+   * @param requestedDatasetVersionIds : datasetVersion Ids
+   * @param modelDBServiceActions : modelDB action like READ, UPDATE
+   * @return List<String> : list of accessible datasetVersion Id
+   */
+  public List<String> getAccessibleDatasetVersionIDs(
+      List<String> requestedDatasetVersionIds, ModelDBServiceActions modelDBServiceActions)
+      throws InvalidProtocolBufferException {
+    List<DatasetVersion> datasetVersionList =
+        getDatasetVersionsByBatchIds(requestedDatasetVersionIds);
+    Map<String, String> datasetIdDatasetVersionIdMap = new HashMap<>();
+    for (DatasetVersion datasetVersion : datasetVersionList) {
+      datasetIdDatasetVersionIdMap.put(datasetVersion.getId(), datasetVersion.getDatasetId());
+    }
+    Set<String> datasetIdSet = new HashSet<>(datasetIdDatasetVersionIdMap.values());
+
+    List<String> accessibleDatasetVersionIds = new ArrayList<>();
+    List<String> allowedDatasetIds;
+    // Validate if current user has access to the entity or not
+    if (datasetIdSet.size() == 1) {
+      roleService.isSelfAllowed(
+          ModelDBServiceResourceTypes.DATASET,
+          modelDBServiceActions,
+          new ArrayList<>(datasetIdSet).get(0));
+      accessibleDatasetVersionIds.addAll(requestedDatasetVersionIds);
+    } else {
+      allowedDatasetIds =
+          roleService.getSelfAllowedResources(
+              ModelDBServiceResourceTypes.DATASET, modelDBServiceActions);
+      // Validate if current user has access to the entity or not
+      allowedDatasetIds.retainAll(datasetIdSet);
+      for (Map.Entry<String, String> entry : datasetIdDatasetVersionIdMap.entrySet()) {
+        if (allowedDatasetIds.contains(entry.getValue())) {
+          accessibleDatasetVersionIds.add(entry.getKey());
+        }
+      }
+    }
+    return accessibleDatasetVersionIds;
+  }
+
   @Override
   public DatasetVersionDTO findDatasetVersions(
-      FindDatasetVersions queryParameters, UserInfo userInfo)
+      DatasetDAO datasetDAO, FindDatasetVersions queryParameters, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+
+      List<String> accessibleDatasetVersionIds = new ArrayList<>();
+      if (!queryParameters.getDatasetVersionIdsList().isEmpty()) {
+        accessibleDatasetVersionIds.addAll(
+            getAccessibleDatasetVersionIDs(
+                queryParameters.getDatasetVersionIdsList(),
+                ModelDBActionEnum.ModelDBServiceActions.READ));
+        if (accessibleDatasetVersionIds.isEmpty()) {
+          String errorMessage =
+              "Access is denied. User is unauthorized for given DatasetVersion IDs : "
+                  + accessibleDatasetVersionIds;
+          ModelDBUtils.logAndThrowError(
+              errorMessage,
+              Code.PERMISSION_DENIED_VALUE,
+              Any.pack(FindDatasetVersions.getDefaultInstance()));
+        }
+      }
+
+      List<KeyValueQuery> predicates = new ArrayList<>(queryParameters.getPredicatesList());
+      for (KeyValueQuery predicate : predicates) {
+        if (predicate.getKey().equals(ModelDBConstants.ID)) {
+          List<String> accessibleDatasetVersionId =
+              getAccessibleDatasetVersionIDs(
+                  Collections.singletonList(predicate.getValue().getStringValue()),
+                  ModelDBActionEnum.ModelDBServiceActions.READ);
+          accessibleDatasetVersionIds.addAll(accessibleDatasetVersionId);
+          RdbmsUtils.validatePredicates(
+              ModelDBConstants.DATASETS_VERSIONS,
+              accessibleDatasetVersionIds,
+              predicate,
+              roleService);
+        }
+      }
 
       CriteriaBuilder builder = session.getCriteriaBuilder();
       // Using FROM and JOIN
@@ -295,19 +405,47 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       datasetVersionRoot.alias("ds");
       List<Predicate> finalPredicatesList = new ArrayList<>();
 
+      List<String> datasetIds = new ArrayList<>();
       if (!queryParameters.getDatasetId().isEmpty()) {
-        Expression<String> exp = datasetVersionRoot.get(ModelDBConstants.DATASET_ID);
-        Predicate predicate1 = builder.equal(exp, queryParameters.getDatasetId());
-        finalPredicatesList.add(predicate1);
+        datasetIds.add(queryParameters.getDatasetId());
+      } else if (accessibleDatasetVersionIds.isEmpty()) {
+        List<String> workspaceDatasetIDs =
+            datasetDAO.getWorkspaceDatasetIDs(
+                queryParameters.getWorkspaceName(), currentLoginUserInfo);
+        if (workspaceDatasetIDs == null || workspaceDatasetIDs.isEmpty()) {
+          LOGGER.debug(
+              "accessible dataset for the datasetVersions not found for given workspace : {}",
+              queryParameters.getWorkspaceName());
+          DatasetVersionDTO datasetVersionPaginationDTO = new DatasetVersionDTO();
+          datasetVersionPaginationDTO.setDatasetVersions(Collections.emptyList());
+          datasetVersionPaginationDTO.setTotalRecords(0L);
+          return datasetVersionPaginationDTO;
+        }
+        datasetIds.addAll(workspaceDatasetIDs);
       }
 
-      if (!queryParameters.getDatasetVersionIdsList().isEmpty()) {
+      if (accessibleDatasetVersionIds.isEmpty() && datasetIds.isEmpty()) {
+        String errorMessage =
+            "Access is denied. Accessible datasets not found for given DatasetVersion IDs : "
+                + accessibleDatasetVersionIds;
+        ModelDBUtils.logAndThrowError(
+            errorMessage,
+            Code.PERMISSION_DENIED_VALUE,
+            Any.pack(FindDatasetVersions.getDefaultInstance()));
+      }
+
+      if (!datasetIds.isEmpty()) {
+        Expression<String> datasetExpression = datasetVersionRoot.get(ModelDBConstants.DATASET_ID);
+        Predicate datasetsPredicate = datasetExpression.in(datasetIds);
+        finalPredicatesList.add(datasetsPredicate);
+      }
+
+      if (!accessibleDatasetVersionIds.isEmpty()) {
         Expression<String> exp = datasetVersionRoot.get(ModelDBConstants.ID);
-        Predicate predicate2 = exp.in(queryParameters.getDatasetVersionIdsList());
+        Predicate predicate2 = exp.in(accessibleDatasetVersionIds);
         finalPredicatesList.add(predicate2);
       }
 
-      List<KeyValueQuery> predicates = queryParameters.getPredicatesList();
       String entityName = "datasetVersionEntity";
       try {
         List<Predicate> queryPredicatesList =
@@ -326,6 +464,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           return datasetVersionDTO;
         }
       }
+
+      finalPredicatesList.add(
+          builder.equal(datasetVersionRoot.get(ModelDBConstants.DELETED), false));
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {
@@ -658,8 +799,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public boolean isDatasetVersionExists(Session session, String datasetVersionId) {
-    DatasetVersionEntity datasetVersionEntity =
-        session.get(DatasetVersionEntity.class, datasetVersionId);
-    return datasetVersionEntity != null;
+    Query query = session.createQuery(CHECK_DATASET_VERSION_EXISTS_BY_ID_HQL);
+    query.setParameter("datasetVersionId", datasetVersionId);
+    Long count = (Long) query.uniqueResult();
+    return count > 0;
   }
 }

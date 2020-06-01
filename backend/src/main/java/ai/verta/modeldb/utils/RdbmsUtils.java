@@ -539,6 +539,19 @@ public class RdbmsUtils {
       }
     }
 
+    finalQueryBuilder
+        .append(" AND ")
+        .append(alias)
+        .append(".")
+        .append(ModelDBConstants.DELETED)
+        .append(" = false ");
+    countQueryBuilder
+        .append(" AND ")
+        .append(alias)
+        .append(".")
+        .append(ModelDBConstants.DELETED)
+        .append(" = false ");
+
     sortBy = (sortBy == null || sortBy.isEmpty()) ? ModelDBConstants.DATE_UPDATED : sortBy;
 
     if (order) {
@@ -693,7 +706,7 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (ModelDBHibernateUtil.rDBDriver.equals("org.postgresql.Driver")) {
+        if (ModelDBHibernateUtil.rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
           return getOperatorPredicate(
               builder, valueExpression.as(Double.class), operator, value.getNumberValue());
         } else {
@@ -1844,7 +1857,24 @@ public class RdbmsUtils {
     return versioningEntry.build();
   }
 
-  public static void validateEntityIdInPredicates(
+  /**
+   * Validating predicate with following condition
+   *
+   * <p>Validate if current user has access to the entity or not where predicate key has an id with
+   * only allowed 'EQ' operators
+   *
+   * <p>Validate predicate id is in accessible ids or not.
+   *
+   * <p>Only allow 'EQ' operator for predicate key has an id.
+   *
+   * <p>Workspace & workspace type should not allowed in the predicate
+   *
+   * @param entityName : dataset, project etc.
+   * @param accessibleEntityIds : accessible entity ids like project.ids, dataset.ids etc.
+   * @param predicate : predicate request
+   * @param roleService : role service
+   */
+  public static void validatePredicates(
       String entityName,
       List<String> accessibleEntityIds,
       KeyValueQuery predicate,
