@@ -58,7 +58,7 @@ public class ParentTimestampUpdateCron extends TimerTask {
   }
 
   private String getProjectUpdateQueryString() {
-    if (ModelDBHibernateUtil.rDBDriver.equals(ModelDBConstants.POSTGRES_DB_DRIVER)) {
+    if (ModelDBHibernateUtil.rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
       return new StringBuilder("with ex_alias as ")
           .append(" ( SELECT ex.project_id, MAX(ex.date_updated) AS max_date ")
           .append(" FROM experiment ex ")
@@ -94,7 +94,7 @@ public class ParentTimestampUpdateCron extends TimerTask {
   }
 
   private String getExperimentUpdateQueryString() {
-    if (ModelDBHibernateUtil.rDBDriver.equals(ModelDBConstants.POSTGRES_DB_DRIVER)) {
+    if (ModelDBHibernateUtil.rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
       return new StringBuilder("with expr_alias as ")
           .append(" ( SELECT expr.experiment_id, MAX(expr.date_updated) AS max_date ")
           .append(" FROM experiment_run expr ")
@@ -131,7 +131,7 @@ public class ParentTimestampUpdateCron extends TimerTask {
   }
 
   private String getDatasetUpdateQueryString() {
-    if (ModelDBHibernateUtil.rDBDriver.equals(ModelDBConstants.POSTGRES_DB_DRIVER)) {
+    if (ModelDBHibernateUtil.rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
       return new StringBuilder("with dsv_alias as ")
           .append(" ( SELECT dsv.dataset_id, MAX(dsv.time_updated) AS max_date ")
           .append(" FROM dataset_version dsv ")
@@ -167,7 +167,7 @@ public class ParentTimestampUpdateCron extends TimerTask {
   }
 
   private String getRepositoryUpdateQueryString() {
-    if (ModelDBHibernateUtil.rDBDriver.equals(ModelDBConstants.POSTGRES_DB_DRIVER)) {
+    if (ModelDBHibernateUtil.rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
       return new StringBuilder("with cm_alias as ")
           .append(" ( SELECT rc.repository_id, MAX(cm.date_created) AS max_date ")
           .append(" FROM commit cm INNER JOIN repository_commit rc ")
