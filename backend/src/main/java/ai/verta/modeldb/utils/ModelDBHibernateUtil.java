@@ -181,10 +181,10 @@ public class ModelDBHibernateUtil {
             (Map<String, Object>) databasePropMap.get("RdbConfiguration");
 
         databaseName = (String) rDBPropMap.get("RdbDatabaseName");
-        if (app.getTraceEnabled()) {
+        if (!app.getTraceEnabled()) {
           rDBDriver = (String) rDBPropMap.get("RdbDriver");
         } else {
-          rDBDriver = (String) rDBPropMap.get("io.opentracing.contrib.jdbc.TracingDriver");
+          rDBDriver = "io.opentracing.contrib.jdbc.TracingDriver";
         }
         rDBUrl = (String) rDBPropMap.get("RdbUrl");
         String rDBDialect = (String) rDBPropMap.get("RdbDialect");
