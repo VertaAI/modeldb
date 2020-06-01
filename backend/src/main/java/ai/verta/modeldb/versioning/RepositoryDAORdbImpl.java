@@ -297,6 +297,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 workspaceDTO,
                 request.getRepository().getOwner(),
                 request.getRepository().getRepositoryVisibility());
+        repository.setDeleted(true);
       } else {
         repository = getRepositoryById(session, request.getId(), true);
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -312,7 +313,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             LOGGER);
         repository.update(request);
       }
-      repository.setDeleted(true);
       session.beginTransaction();
       session.saveOrUpdate(repository);
       if (create) {

@@ -5,20 +5,20 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
-import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
-import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
+import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
+import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
+import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbLogMetricsResponse (
+case class ModeldbCommitArtifactPartResponse (
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbLogMetricsResponse.toJson(this)
+  def toJson(): JValue = ModeldbCommitArtifactPartResponse.toJson(this)
 }
 
-object ModeldbLogMetricsResponse {
-  def toJson(obj: ModeldbLogMetricsResponse): JObject = {
+object ModeldbCommitArtifactPartResponse {
+  def toJson(obj: ModeldbCommitArtifactPartResponse): JObject = {
     new JObject(
       List[Option[JField]](
       ).flatMap(x => x match {
@@ -28,11 +28,11 @@ object ModeldbLogMetricsResponse {
     )
   }
 
-  def fromJson(value: JValue): ModeldbLogMetricsResponse =
+  def fromJson(value: JValue): ModeldbCommitArtifactPartResponse =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbLogMetricsResponse(
+        ModeldbCommitArtifactPartResponse(
           // TODO: handle required
         )
       }

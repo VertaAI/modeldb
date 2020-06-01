@@ -12,6 +12,8 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.UACServiceGrpc;
@@ -78,6 +80,7 @@ public class FindProjectEntitiesTest {
   private static ExperimentServiceBlockingStub experimentServiceStub;
   private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
   private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -125,6 +128,8 @@ public class FindProjectEntitiesTest {
 
     serverBuilder.build().start();
     ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
 
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
@@ -143,6 +148,8 @@ public class FindProjectEntitiesTest {
 
     // Remove all entities
     removeEntities();
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
 
     // shutdown test server
     serverBuilder.build().shutdownNow();

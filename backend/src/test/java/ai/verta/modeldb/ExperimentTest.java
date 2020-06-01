@@ -13,6 +13,8 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -60,6 +62,7 @@ public class ExperimentTest {
   private static InProcessChannelBuilder channelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static App app;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -95,10 +98,14 @@ public class ExperimentTest {
       AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(testPropMap);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -2892,6 +2899,9 @@ public class ExperimentTest {
         experimentServiceStub.deleteExperiments(deleteExperimentsRequest);
     LOGGER.info("DeleteExperiment Response : " + response.getStatus());
     assertTrue(response.getStatus());
+
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
 
     for (String experimentId : experimentIds) {
 

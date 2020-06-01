@@ -760,7 +760,7 @@ class _ModelDBEntity(object):
 
         self.__dict__.update(state)
 
-    def _get_url_for_artifact(self, key, method, artifact_type=0):
+    def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         """
         Obtains a URL to use for accessing stored artifacts.
 
@@ -773,6 +773,8 @@ class _ModelDBEntity(object):
         artifact_type : int, optional
             Variant of `_CommonService.ArtifactTypeEnum`. This informs the backend what slot to check
             for the artifact, if necessary.
+        part_num : int, optional
+            If using Multipart Upload, number of part to be uploaded.
 
         Returns
         -------
@@ -784,7 +786,12 @@ class _ModelDBEntity(object):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
         Message = _CommonService.GetUrlForArtifact
-        msg = Message(id=self.id, key=key, method=method.upper(), artifact_type=artifact_type)
+        msg = Message(
+            id=self.id, key=key,
+            method=method.upper(),
+            artifact_type=artifact_type,
+            part_number=part_num,
+        )
         data = _utils.proto_to_json(msg)
         response = _utils.make_request("POST",
                                        self._request_url.format("getUrlForArtifact"),
@@ -2038,16 +2045,79 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-        # upload artifact to artifact store
-        url = self._get_url_for_artifact(key, "PUT").url
-        artifact_stream.seek(0)  # reuse stream that was created for checksum
+        self._upload_artifact(key, artifact_stream)
+
+    def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
+        """
+        Uploads `artifact_stream` to ModelDB artifact store.
+
+        Parameters
+        ----------
+        key : str
+        artifact_stream : file-like
+        part_size : int, default 64 MB
+            If using multipart upload, number of bytes to upload per part.
+
+        """
+        artifact_stream.seek(0)
         if self._conf.debug:
-            print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), basename))
+            print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
 
-        response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
-        _utils.raise_for_http_error(response)
-        print("upload complete ({})".format(basename))
+        # check if multipart upload ok
+        url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
+
+        if url_for_artifact.multipart_upload_ok:
+            # TODO: parallelize this
+            file_parts = iter(lambda: artifact_stream.read(part_size), b'')
+            for part_num, file_part in enumerate(file_parts, start=1):
+                print("uploading part {}".format(part_num), end='\r')
+
+                # get presigned URL
+                url = self._get_url_for_artifact(key, "PUT", part_num=part_num).url
+
+                # wrap file part into bytestream to avoid OverflowError
+                #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
+                #     ``requests`` will overwhelm CPython's SSL lib when it tries to sign the
+                #     payload. But passing a buffered bytestream instead of the raw bytestring
+                #     indicates to ``requests`` that it should perform a streaming upload via
+                #     HTTP/1.1 chunked transfer encoding and avoid this issue.
+                #     https://github.com/psf/requests/issues/2717
+                part_stream = six.BytesIO(file_part)
+
+                # upload part
+                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+                response.raise_for_status()
+
+                # commit part
+                url = "{}://{}/api/v1/modeldb/experiment-run/commitArtifactPart".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                )
+                msg = _CommonService.CommitArtifactPart(id=self.id, key=key)
+                msg.artifact_part.part_number = part_num
+                msg.artifact_part.etag = response.headers['ETag']
+                data = _utils.proto_to_json(msg)
+                # TODO: increase retries
+                response = _utils.make_request("POST", url, self._conn, json=data)
+                _utils.raise_for_http_error(response)
+            print("upload complete")
+
+            # complete upload
+            url = "{}://{}/api/v1/modeldb/experiment-run/commitMultipartArtifact".format(
+                self._conn.scheme,
+                self._conn.socket,
+            )
+            msg = _CommonService.CommitMultipartArtifact(id=self.id, key=key)
+            data = _utils.proto_to_json(msg)
+            response = _utils.make_request("POST", url, self._conn, json=data)
+            _utils.raise_for_http_error(response)
+        else:
+            # upload full artifact
+            response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
+            _utils.raise_for_http_error(response)
+
+        print("upload complete ({})".format(key))
 
     def _log_artifact_path(self, key, artifact_path, artifact_type):
         """

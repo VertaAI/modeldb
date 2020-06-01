@@ -20,6 +20,8 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -94,6 +96,7 @@ public class ExperimentRunTest {
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
   private static App app;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -130,10 +133,14 @@ public class ExperimentRunTest {
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -1435,19 +1442,7 @@ public class ExperimentRunTest {
             .setName("ExperimentRun Name updated " + Calendar.getInstance().getTimeInMillis())
             .build();
 
-    UpdateExperimentRunName.Response response =
-        experimentRunServiceStub.updateExperimentRunName(request);
-    LOGGER.info("UpdateExperimentRunName Response : " + response.getExperimentRun());
-    assertEquals(
-        "ExperimentRun name not match with expected experimentRun name",
-        request.getName(),
-        response.getExperimentRun().getName());
-
-    assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
-        experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
+    experimentRunServiceStub.updateExperimentRunName(request);
 
     UpdateExperimentRunDescription request2 =
         UpdateExperimentRunDescription.newBuilder()
@@ -2429,9 +2424,12 @@ public class ExperimentRunTest {
             .setObservation(observation)
             .build();
 
-    LogObservation.Response response =
-        experimentRunServiceStub.logObservation(logObservationRequest);
+    experimentRunServiceStub.logObservation(logObservationRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogObservation Response : \n" + response.getExperimentRun());
     assertTrue(response.getExperimentRun().getObservationsList().contains(observation));
 
@@ -2633,8 +2631,11 @@ public class ExperimentRunTest {
             .addAllObservations(observations)
             .build();
 
-    LogObservations.Response response =
-        experimentRunServiceStub.logObservations(logObservationRequest);
+    experimentRunServiceStub.logObservations(logObservationRequest);
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
 
     LOGGER.info("LogObservation Response : \n" + response.getExperimentRun());
     assertTrue(
@@ -2653,8 +2654,10 @@ public class ExperimentRunTest {
             .addAllObservations(experimentRun.getObservationsList())
             .build();
 
-    response = experimentRunServiceStub.logObservations(logObservationRequest);
+    experimentRunServiceStub.logObservations(logObservationRequest);
 
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info(
         "Duplicate LogObservation Response : \n"
             + response.getExperimentRun().getObservationsList());
@@ -2976,8 +2979,12 @@ public class ExperimentRunTest {
     LogMetric logMetricRequest =
         LogMetric.newBuilder().setId(experimentRun.getId()).setMetric(keyValue).build();
 
-    LogMetric.Response response = experimentRunServiceStub.logMetric(logMetricRequest);
+    experimentRunServiceStub.logMetric(logMetricRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogMetric Response : \n" + response.getExperimentRun());
     assertTrue(
         "ExperimentRun metric not match with expected experimentRun metric",
@@ -3174,8 +3181,12 @@ public class ExperimentRunTest {
     LogMetrics logMetricRequest =
         LogMetrics.newBuilder().setId(experimentRun.getId()).addAllMetrics(keyValues).build();
 
-    LogMetrics.Response response = experimentRunServiceStub.logMetrics(logMetricRequest);
+    experimentRunServiceStub.logMetrics(logMetricRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogMetrics Response : \n" + response.getExperimentRun());
     assertTrue(
         "ExperimentRun metrics not match with expected experimentRun metrics",
@@ -3486,8 +3497,12 @@ public class ExperimentRunTest {
     LogDataset logDatasetRequest =
         LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
 
-    LogDataset.Response response = experimentRunServiceStub.logDataset(logDatasetRequest);
+    experimentRunServiceStub.logDataset(logDatasetRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
     assertTrue(
         "Experiment dataset not match with expected dataset",
@@ -3524,7 +3539,9 @@ public class ExperimentRunTest {
             .setDataset(artifact)
             .setOverwrite(true)
             .build();
-    response = experimentRunServiceStub.logDataset(logDatasetRequest);
+    experimentRunServiceStub.logDataset(logDatasetRequest);
+
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertTrue(
         "Experiment dataset not match with expected dataset",
         response.getExperimentRun().getDatasetsList().contains(artifact));
@@ -3656,8 +3673,12 @@ public class ExperimentRunTest {
     logDatasetRequest =
         LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
 
-    LogDataset.Response response = experimentRunServiceStub.logDataset(logDatasetRequest);
+    experimentRunServiceStub.logDataset(logDatasetRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
     assertTrue(
         "Experiment dataset not match with expected dataset",
@@ -3774,7 +3795,12 @@ public class ExperimentRunTest {
     LogDatasets logDatasetRequest =
         LogDatasets.newBuilder().setId(experimentRun.getId()).addAllDatasets(artifacts).build();
 
-    LogDatasets.Response response = experimentRunServiceStub.logDatasets(logDatasetRequest);
+    experimentRunServiceStub.logDatasets(logDatasetRequest);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
 
     for (Artifact datasetArtifact : response.getExperimentRun().getDatasetsList()) {
@@ -3818,7 +3844,9 @@ public class ExperimentRunTest {
             .addDatasets(artifact1)
             .addDatasets(artifact2)
             .build();
-    response = experimentRunServiceStub.logDatasets(logDatasetRequest);
+    experimentRunServiceStub.logDatasets(logDatasetRequest);
+
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
 
     for (Artifact datasetArtifact : response.getExperimentRun().getDatasetsList()) {
@@ -4119,7 +4147,12 @@ public class ExperimentRunTest {
     LogArtifact logArtifactRequest =
         LogArtifact.newBuilder().setId(experimentRun.getId()).setArtifact(artifact).build();
 
-    LogArtifact.Response response = experimentRunServiceStub.logArtifact(logArtifactRequest);
+    experimentRunServiceStub.logArtifact(logArtifactRequest);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogArtifact Response : " + response.getExperimentRun().getArtifactsCount());
     assertEquals(
         "Experiment artifact count not match with expected artifact count",
@@ -4309,8 +4342,12 @@ public class ExperimentRunTest {
     LogArtifacts logArtifactRequest =
         LogArtifacts.newBuilder().setId(experimentRun.getId()).addAllArtifacts(artifacts).build();
 
-    LogArtifacts.Response response = experimentRunServiceStub.logArtifacts(logArtifactRequest);
+    experimentRunServiceStub.logArtifacts(logArtifactRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogArtifact Response : \n" + response.getExperimentRun());
     assertEquals(
         "ExperimentRun artifacts not match with expected artifacts",
@@ -4604,9 +4641,12 @@ public class ExperimentRunTest {
             .setHyperparameter(hyperparameter)
             .build();
 
-    LogHyperparameter.Response response =
-        experimentRunServiceStub.logHyperparameter(logHyperparameterRequest);
+    experimentRunServiceStub.logHyperparameter(logHyperparameterRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogHyperparameter Response : \n" + response.getExperimentRun());
     assertTrue(
         "ExperimentRun hyperparameter not match with expected hyperparameter",
@@ -4806,9 +4846,12 @@ public class ExperimentRunTest {
             .addAllHyperparameters(hyperparameters)
             .build();
 
-    LogHyperparameters.Response response =
-        experimentRunServiceStub.logHyperparameters(logHyperparameterRequest);
+    experimentRunServiceStub.logHyperparameters(logHyperparameterRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogHyperparameters Response : \n" + response.getExperimentRun());
     assertTrue(
         "ExperimentRun hyperparameters not match with expected hyperparameters",
@@ -5114,8 +5157,12 @@ public class ExperimentRunTest {
     LogAttribute logAttributeRequest =
         LogAttribute.newBuilder().setId(experimentRun.getId()).setAttribute(attribute).build();
 
-    LogAttribute.Response response = experimentRunServiceStub.logAttribute(logAttributeRequest);
+    experimentRunServiceStub.logAttribute(logAttributeRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogAttribute Response : \n" + response.getExperimentRun());
     assertTrue(
         "ExperimentRun attribute not match with expected attribute",
@@ -5314,8 +5361,12 @@ public class ExperimentRunTest {
             .addAllAttributes(attributes)
             .build();
 
-    LogAttributes.Response response = experimentRunServiceStub.logAttributes(logAttributeRequest);
+    experimentRunServiceStub.logAttributes(logAttributeRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogAttributes Response : \n" + response.getExperimentRun());
     assertTrue(
         "ExperimentRun attributes not match with expected attributes",
@@ -5525,8 +5576,12 @@ public class ExperimentRunTest {
             .addAllAttributes(attributeList)
             .build();
 
-    AddExperimentRunAttributes.Response response =
-        experimentRunServiceStub.addExperimentRunAttributes(request);
+    experimentRunServiceStub.addExperimentRunAttributes(request);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("AddExperimentRunAttributes Response : \n" + response.getExperimentRun());
     assertTrue(
         "ExperimentRun attributes not match with expected attributes",
@@ -5774,8 +5829,12 @@ public class ExperimentRunTest {
             .addAllAttributeKeys(keys)
             .build();
 
-    DeleteExperimentRunAttributes.Response response =
-        experimentRunServiceStub.deleteExperimentRunAttributes(request);
+    experimentRunServiceStub.deleteExperimentRunAttributes(request);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info(
         "DeleteExperimentRunAttributes Response : \n"
             + response.getExperimentRun().getAttributesList());
@@ -5794,7 +5853,9 @@ public class ExperimentRunTest {
               .setDeleteAll(true)
               .build();
 
-      response = experimentRunServiceStub.deleteExperimentRunAttributes(request);
+      experimentRunServiceStub.deleteExperimentRunAttributes(request);
+
+      response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
       LOGGER.info(
           "DeleteExperimentRunAttributes Response : \n"
               + response.getExperimentRun().getAttributesList());
@@ -5881,8 +5942,12 @@ public class ExperimentRunTest {
             .setDeleteAll(true)
             .build();
 
-    DeleteExperimentRunAttributes.Response response =
-        experimentRunServiceStub.deleteExperimentRunAttributes(request);
+    experimentRunServiceStub.deleteExperimentRunAttributes(request);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info(
         "DeleteExperimentRunAttributes Response : \n"
             + response.getExperimentRun().getAttributesList());
@@ -6596,8 +6661,12 @@ public class ExperimentRunTest {
     LogJobId logJobIdRequest =
         LogJobId.newBuilder().setId(experimentRun.getId()).setJobId(jobId).build();
 
-    LogJobId.Response response = experimentRunServiceStub.logJobId(logJobIdRequest);
+    experimentRunServiceStub.logJobId(logJobIdRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogJobId Response : \n" + response.getExperimentRun());
     assertEquals(
         "Job Id not match with expected job Id", jobId, response.getExperimentRun().getJobId());
@@ -6700,12 +6769,17 @@ public class ExperimentRunTest {
     LogJobId logJobIdRequest =
         LogJobId.newBuilder().setId(experimentRun.getId()).setJobId(jobId).build();
 
-    LogJobId.Response logJobIdResponse = experimentRunServiceStub.logJobId(logJobIdRequest);
-    LOGGER.info("LogJobId Response : \n" + logJobIdResponse.getExperimentRun());
+    experimentRunServiceStub.logJobId(logJobIdRequest);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response getExpRunResponse =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    LOGGER.info("LogJobId Response : \n" + getExpRunResponse.getExperimentRun());
     assertEquals(
         "Job Id not match with expected job Id",
         jobId,
-        logJobIdResponse.getExperimentRun().getJobId());
+        getExpRunResponse.getExperimentRun().getJobId());
 
     GetJobId getJobIdRequest = GetJobId.newBuilder().setId(experimentRun.getId()).build();
 
@@ -7306,16 +7380,20 @@ public class ExperimentRunTest {
             .setExperimentRunId(childrenExperimentRun1.getId())
             .setParentId(experimentRun.getId())
             .build();
-    SetParentExperimentRunId.Response setParentExperimentRunIdResponse =
-        experimentRunServiceStub.setParentExperimentRunId(setParentExperimentRunIdRequest);
+    experimentRunServiceStub.setParentExperimentRunId(setParentExperimentRunIdRequest);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(childrenExperimentRun1.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertEquals(
         "ExperimentRun name not match with expected ExperimentRun name",
         childrenExperimentRun1.getName(),
-        setParentExperimentRunIdResponse.getExperimentRun().getName());
+        response.getExperimentRun().getName());
     assertEquals(
         "ExperimentRun parent ID not match with expected ExperimentRun parent ID",
         experimentRun.getId(),
-        setParentExperimentRunIdResponse.getExperimentRun().getParentId());
+        response.getExperimentRun().getParentId());
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -7388,10 +7466,13 @@ public class ExperimentRunTest {
                             .build())
                     .build())
             .build();
-    LogExperimentRunCodeVersion.Response logExperimentRunCodeVersionResponse =
-        experimentRunServiceStub.logExperimentRunCodeVersion(logExperimentRunCodeVersionRequest);
-    CodeVersion codeVersion =
-        logExperimentRunCodeVersionResponse.getExperimentRun().getCodeVersionSnapshot();
+    experimentRunServiceStub.logExperimentRunCodeVersion(logExperimentRunCodeVersionRequest);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    CodeVersion codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
     assertEquals(
         "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
@@ -7420,9 +7501,10 @@ public class ExperimentRunTest {
                     .build())
             .setOverwrite(true)
             .build();
-    logExperimentRunCodeVersionResponse =
-        experimentRunServiceStub.logExperimentRunCodeVersion(logExperimentRunCodeVersionRequest);
-    codeVersion = logExperimentRunCodeVersionResponse.getExperimentRun().getCodeVersionSnapshot();
+    experimentRunServiceStub.logExperimentRunCodeVersion(logExperimentRunCodeVersionRequest);
+
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
     assertEquals(
         "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
@@ -7443,9 +7525,10 @@ public class ExperimentRunTest {
                     .build())
             .setOverwrite(true)
             .build();
-    logExperimentRunCodeVersionResponse =
-        experimentRunServiceStub.logExperimentRunCodeVersion(logExperimentRunCodeVersionRequest);
-    codeVersion = logExperimentRunCodeVersionResponse.getExperimentRun().getCodeVersionSnapshot();
+    experimentRunServiceStub.logExperimentRunCodeVersion(logExperimentRunCodeVersionRequest);
+
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
     assertEquals(
         "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
@@ -7521,10 +7604,13 @@ public class ExperimentRunTest {
                             .build())
                     .build())
             .build();
-    LogExperimentRunCodeVersion.Response logExperimentRunCodeVersionResponse =
-        experimentRunServiceStub.logExperimentRunCodeVersion(logExperimentRunCodeVersionRequest);
-    CodeVersion codeVersion =
-        logExperimentRunCodeVersionResponse.getExperimentRun().getCodeVersionSnapshot();
+    experimentRunServiceStub.logExperimentRunCodeVersion(logExperimentRunCodeVersionRequest);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    CodeVersion codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
     assertEquals(
         "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
@@ -7608,7 +7694,12 @@ public class ExperimentRunTest {
             .setKey(artifacts.get(0).getKey())
             .build();
 
-    DeleteArtifact.Response response = experimentRunServiceStub.deleteArtifact(request);
+    experimentRunServiceStub.deleteArtifact(request);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info(
         "DeleteExperimentRunArtifacts Response : \n"
             + response.getExperimentRun().getArtifactsList());
@@ -8142,18 +8233,24 @@ public class ExperimentRunTest {
                     .putAllKeyLocationMap(locationMap)
                     .build())
             .build();
-    LogVersionedInput.Response logVersionedInputResponse =
-        experimentRunServiceStub.logVersionedInput(logVersionedInput);
-    assertEquals(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-        logVersionedInput.getVersionedInputs(),
-        logVersionedInputResponse.getExperimentRun().getVersionedInputs());
+    experimentRunServiceStub.logVersionedInput(logVersionedInput);
 
-    logVersionedInputResponse = experimentRunServiceStub.logVersionedInput(logVersionedInput);
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertEquals(
         "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         logVersionedInput.getVersionedInputs(),
-        logVersionedInputResponse.getExperimentRun().getVersionedInputs());
+        response.getExperimentRun().getVersionedInputs());
+
+    experimentRunServiceStub.logVersionedInput(logVersionedInput);
+
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    assertEquals(
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+        logVersionedInput.getVersionedInputs(),
+        response.getExperimentRun().getVersionedInputs());
 
     locationMap.put(
         "location-1", Location.newBuilder().addLocation("dataset_1").addLocation("train").build());
@@ -8167,11 +8264,13 @@ public class ExperimentRunTest {
                     .putAllKeyLocationMap(locationMap)
                     .build())
             .build();
-    logVersionedInputResponse = experimentRunServiceStub.logVersionedInput(logVersionedInput);
+    experimentRunServiceStub.logVersionedInput(logVersionedInput);
+
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertEquals(
         "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         logVersionedInput.getVersionedInputs(),
-        logVersionedInputResponse.getExperimentRun().getVersionedInputs());
+        response.getExperimentRun().getVersionedInputs());
 
     GetVersionedInput getVersionedInput =
         GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
@@ -8801,12 +8900,16 @@ public class ExperimentRunTest {
                     .setCommit(commitResponse.getCommit().getCommitSha())
                     .build())
             .build();
-    LogVersionedInput.Response logVersionedInputResponse =
-        experimentRunServiceStub.logVersionedInput(logVersionedInput);
+    experimentRunServiceStub.logVersionedInput(logVersionedInput);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertEquals(
         "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         logVersionedInput.getVersionedInputs(),
-        logVersionedInputResponse.getExperimentRun().getVersionedInputs());
+        response.getExperimentRun().getVersionedInputs());
 
     GetVersionedInput getVersionedInput =
         GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
