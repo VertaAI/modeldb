@@ -15,7 +15,7 @@ import scala.collection.mutable.HashSet
  *  TODO: handle the case where an invalid path is passed
  */
 case class S3(val paths: List[S3Location]) extends Dataset {
-  /* Auxiliary constructor to convert a versioning blob instance */
+  /** Auxiliary constructor to convert a versioning blob instance */
   def this(s3Blob: VersioningS3DatasetBlob) {
     this(List())
     components = s3Blob.components.get

@@ -1,7 +1,7 @@
 package example
 
 import ai.verta.client._
-import ai.verta._repository._
+import ai.verta.repository._
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
