@@ -5088,7 +5088,11 @@ public class HydratedServiceTest {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+      } else {
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      }
     }
 
     for (String datasetVersionId : datasetVersionIds) {
@@ -5505,7 +5509,12 @@ public class HydratedServiceTest {
     LogDatasets logDatasetRequest =
         LogDatasets.newBuilder().setId(experimentRun1.getId()).addAllDatasets(artifacts).build();
 
-    LogDatasets.Response response = experimentRunServiceStub.logDatasets(logDatasetRequest);
+    experimentRunServiceStub.logDatasets(logDatasetRequest);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun1.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
 
     for (Artifact datasetArtifact : response.getExperimentRun().getDatasetsList()) {

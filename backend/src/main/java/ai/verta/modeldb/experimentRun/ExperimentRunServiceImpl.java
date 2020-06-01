@@ -45,7 +45,6 @@ import ai.verta.modeldb.LogArtifacts;
 import ai.verta.modeldb.LogAttribute;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogDataset;
-import ai.verta.modeldb.LogDataset.Response;
 import ai.verta.modeldb.LogDatasets;
 import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.LogHyperparameter;
@@ -580,14 +579,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.updateExperimentRunName(
-              request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
+      experimentRunDAO.updateExperimentRunName(
+          request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
 
-      responseObserver.onNext(
-          UpdateExperimentRunName.Response.newBuilder()
-              .setExperimentRun(updatedExperimentRun)
-              .build());
+      responseObserver.onNext(UpdateExperimentRunName.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -852,12 +847,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.addExperimentRunAttributes(request.getId(), request.getAttributesList());
-      responseObserver.onNext(
-          AddExperimentRunAttributes.Response.newBuilder()
-              .setExperimentRun(updatedExperimentRun)
-              .build());
+      experimentRunDAO.addExperimentRunAttributes(request.getId(), request.getAttributesList());
+      responseObserver.onNext(AddExperimentRunAttributes.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -902,13 +893,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.deleteExperimentRunAttributes(
-              request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
-      responseObserver.onNext(
-          DeleteExperimentRunAttributes.Response.newBuilder()
-              .setExperimentRun(updatedExperimentRun)
-              .build());
+      experimentRunDAO.deleteExperimentRunAttributes(
+          request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
+      responseObserver.onNext(DeleteExperimentRunAttributes.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -951,11 +938,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logObservations(
-              request.getId(), Collections.singletonList(request.getObservation()));
-      responseObserver.onNext(
-          LogObservation.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logObservations(
+          request.getId(), Collections.singletonList(request.getObservation()));
+      responseObserver.onNext(LogObservation.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -994,10 +979,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logObservations(request.getId(), request.getObservationsList());
-      responseObserver.onNext(
-          LogObservations.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logObservations(request.getId(), request.getObservationsList());
+      responseObserver.onNext(LogObservations.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1079,11 +1062,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logMetrics(
-              request.getId(), Collections.singletonList(request.getMetric()));
-      responseObserver.onNext(
-          LogMetric.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logMetrics(request.getId(), Collections.singletonList(request.getMetric()));
+      responseObserver.onNext(LogMetric.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1121,10 +1101,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logMetrics(request.getId(), request.getMetricsList());
-      responseObserver.onNext(
-          LogMetrics.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logMetrics(request.getId(), request.getMetricsList());
+      responseObserver.onNext(LogMetrics.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1377,11 +1355,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
       Artifact artifact = artifacts.get(0);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logArtifacts(request.getId(), Collections.singletonList(artifact));
-      LogArtifact.Response.Builder responseBuilder =
-          LogArtifact.Response.newBuilder().setExperimentRun(updatedExperimentRun);
-      responseObserver.onNext(responseBuilder.build());
+      experimentRunDAO.logArtifacts(request.getId(), Collections.singletonList(artifact));
+      responseObserver.onNext(LogArtifact.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1423,11 +1398,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       List<Artifact> artifactList =
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logArtifacts(request.getId(), artifactList);
-      LogArtifacts.Response.Builder responseBuilder =
-          LogArtifacts.Response.newBuilder().setExperimentRun(updatedExperimentRun);
-      responseObserver.onNext(responseBuilder.build());
+      experimentRunDAO.logArtifacts(request.getId(), artifactList);
+      responseObserver.onNext(LogArtifacts.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1507,16 +1479,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceActions.UPDATE);
 
       /*UpdateCode version*/
-      ExperimentRun updatedExperimentRun;
       if (request.getOverwrite()) {
-        updatedExperimentRun =
-            experimentRunDAO.logExperimentRunCodeVersion(request.getId(), request.getCodeVersion());
+        experimentRunDAO.logExperimentRunCodeVersion(request.getId(), request.getCodeVersion());
       } else {
         if (!existingExperimentRun.getCodeVersionSnapshot().hasCodeArchive()
             && !existingExperimentRun.getCodeVersionSnapshot().hasGitSnapshot()) {
-          updatedExperimentRun =
-              experimentRunDAO.logExperimentRunCodeVersion(
-                  request.getId(), request.getCodeVersion());
+          experimentRunDAO.logExperimentRunCodeVersion(request.getId(), request.getCodeVersion());
         } else {
           errorMessage =
               "Code version already logged for experiment " + existingExperimentRun.getId();
@@ -1524,15 +1492,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               Status.newBuilder()
                   .setCode(Code.ALREADY_EXISTS_VALUE)
                   .setMessage(errorMessage)
-                  .addDetails(Any.pack(LogExperimentRunCodeVersion.Response.getDefaultInstance()))
+                  .addDetails(Any.pack(LogExperimentRunCodeVersion.getDefaultInstance()))
                   .build();
           throw StatusProto.toStatusRuntimeException(status);
         }
       }
-      /*Build response*/
-      LogExperimentRunCodeVersion.Response.Builder responseBuilder =
-          LogExperimentRunCodeVersion.Response.newBuilder().setExperimentRun(updatedExperimentRun);
-      responseObserver.onNext(responseBuilder.build());
+      responseObserver.onNext(LogExperimentRunCodeVersion.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1614,11 +1579,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logHyperparameters(
-              request.getId(), Collections.singletonList(request.getHyperparameter()));
-      responseObserver.onNext(
-          LogHyperparameter.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logHyperparameters(
+          request.getId(), Collections.singletonList(request.getHyperparameter()));
+      responseObserver.onNext(LogHyperparameter.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1659,10 +1622,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logHyperparameters(request.getId(), request.getHyperparametersList());
-      responseObserver.onNext(
-          LogHyperparameters.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logHyperparameters(request.getId(), request.getHyperparametersList());
+      responseObserver.onNext(LogHyperparameters.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1740,11 +1701,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logAttributes(
-              request.getId(), Collections.singletonList(request.getAttribute()));
-      responseObserver.onNext(
-          LogAttribute.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logAttributes(
+          request.getId(), Collections.singletonList(request.getAttribute()));
+      responseObserver.onNext(LogAttribute.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1783,10 +1742,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logAttributes(request.getId(), request.getAttributesList());
-      responseObserver.onNext(
-          LogAttributes.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logAttributes(request.getId(), request.getAttributesList());
+      responseObserver.onNext(LogAttributes.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1989,10 +1946,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logJobId(request.getId(), request.getJobId());
-      responseObserver.onNext(
-          LogJobId.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logJobId(request.getId(), request.getJobId());
+      responseObserver.onNext(LogJobId.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -2122,13 +2077,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           existingChildrenExperimentRunProjectId,
           ModelDBServiceActions.UPDATE);
 
-      ExperimentRun existingChildrenExperimentRun =
-          experimentRunDAO.setParentExperimentRunId(
-              request.getExperimentRunId(), request.getParentId());
-      responseObserver.onNext(
-          SetParentExperimentRunId.Response.newBuilder()
-              .setExperimentRun(existingChildrenExperimentRun)
-              .build());
+      experimentRunDAO.setParentExperimentRunId(
+          request.getExperimentRunId(), request.getParentId());
+      responseObserver.onNext(SetParentExperimentRunId.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -2138,7 +2089,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logDataset(LogDataset request, StreamObserver<Response> responseObserver) {
+  public void logDataset(LogDataset request, StreamObserver<LogDataset.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -2170,13 +2121,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       Artifact dataset = request.getDataset();
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logDatasets(
-              request.getId(), Collections.singletonList(dataset), request.getOverwrite());
+      experimentRunDAO.logDatasets(
+          request.getId(), Collections.singletonList(dataset), request.getOverwrite());
 
-      LogDataset.Response.Builder responseBuilder =
-          LogDataset.Response.newBuilder().setExperimentRun(updatedExperimentRun);
-      responseObserver.onNext(responseBuilder.build());
+      responseObserver.onNext(LogDataset.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -2212,12 +2160,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logDatasets(
-              request.getId(), request.getDatasetsList(), request.getOverwrite());
-      LogDatasets.Response.Builder responseBuilder =
-          LogDatasets.Response.newBuilder().setExperimentRun(updatedExperimentRun);
-      responseObserver.onNext(responseBuilder.build());
+      experimentRunDAO.logDatasets(
+          request.getId(), request.getDatasetsList(), request.getOverwrite());
+      responseObserver.onNext(LogDatasets.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -2267,10 +2212,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.deleteArtifacts(request.getId(), request.getKey());
-      responseObserver.onNext(
-          DeleteArtifact.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.deleteArtifacts(request.getId(), request.getKey());
+      responseObserver.onNext(DeleteArtifact.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -2331,8 +2274,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      LogVersionedInput.Response response = experimentRunDAO.logVersionedInput(request);
-      responseObserver.onNext(response);
+      experimentRunDAO.logVersionedInput(request);
+      responseObserver.onNext(LogVersionedInput.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
