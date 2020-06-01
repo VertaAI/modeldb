@@ -1220,7 +1220,11 @@ class Project(_ModelDBEntity):
                             " cannot set `desc`, `tags`, `attrs`, or `public_within_org`".format(proj_name)
                         )
                     proj = Project._get(conn, proj_name, workspace)
-                    print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
+                    if proj is not None:
+                        print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
+                    else:
+                        raise RuntimeError("unable to retrieve Project {};"
+                                           " please notify the Verta development team".format(proj_name))
                 else:
                     raise e
             else:
@@ -1287,9 +1291,15 @@ class Project(_ModelDBEntity):
                 response_msg = _utils.json_to_proto(response_json, Message.Response)
                 if workspace is None or response_json.get('project_by_user'):
                     # user's personal workspace
-                    return response_msg.project_by_user
+                    proj = response_msg.project_by_user
                 else:
-                    return response_msg.shared_projects[0]
+                    proj = response_msg.shared_projects[0]
+
+                if not proj.id:  # 200, but empty message
+                    raise RuntimeError("unable to retrieve Project {};"
+                                       " please notify the Verta development team".format(proj_name))
+
+                return proj
             else:
                 if ((response.status_code == 403 and response.json()['code'] == 7)
                         or (response.status_code == 404 and response.json()['code'] == 5)):
@@ -1373,7 +1383,11 @@ class Experiment(_ModelDBEntity):
                         warnings.warn("Experiment with name {} already exists;"
                                       " cannot initialize `desc`, `tags`, or `attrs`".format(expt_name))
                     expt = Experiment._get(conn, proj_id, expt_name)
-                    print("set existing Experiment: {}".format(expt.name))
+                    if expt is not None:
+                        print("set existing Experiment: {}".format(expt.name))
+                    else:
+                        raise RuntimeError("unable to retrieve Experiment {};"
+                                           " please notify the Verta development team".format(expt_name))
                 else:
                     raise e
             else:
@@ -1431,7 +1445,13 @@ class Experiment(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(response.json(), Message.Response)
-            return response_msg.experiment
+            expt = response_msg.experiment
+
+            if not expt.id:  # 200, but empty message
+                raise RuntimeError("unable to retrieve Experiment {};"
+                                   " please notify the Verta development team".format(expt_name))
+
+            return expt
         else:
             if ((response.status_code == 403 and response.json()['code'] == 7)
                     or (response.status_code == 404 and response.json()['code'] == 5)):
@@ -1805,7 +1825,7 @@ class ExperimentRun(_ModelDBEntity):
         if _expt_run_id is not None:
             expt_run = ExperimentRun._get(conn, _expt_run_id=_expt_run_id)
             if expt_run is not None:
-                pass
+                print("set existing ExperimentRun: {}".format(expt_run.name))
             else:
                 raise ValueError("ExperimentRun with ID {} not found".format(_expt_run_id))
         elif None not in (proj_id, expt_id):
@@ -1819,7 +1839,11 @@ class ExperimentRun(_ModelDBEntity):
                         warnings.warn("ExperimentRun with name {} already exists;"
                                       " cannot initialize `desc`, `tags`, or `attrs`".format(expt_run_name))
                     expt_run = ExperimentRun._get(conn, expt_id, expt_run_name)
-                    print("set existing ExperimentRun: {}".format(expt_run.name))
+                    if expt_run is not None:
+                        print("set existing ExperimentRun: {}".format(expt_run.name))
+                    else:
+                        raise RuntimeError("unable to retrieve ExperimentRun {};"
+                                           " please notify the Verta development team".format(expt_run_name))
                 else:
                     raise e
             else:
@@ -1939,7 +1963,13 @@ class ExperimentRun(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(response.json(), Message.Response)
-            return response_msg.experiment_run
+            expt_run = response_msg.experiment_run
+
+            if not expt_run.id:  # 200, but empty message
+                raise RuntimeError("unable to retrieve ExperimentRun {};"
+                                   " please notify the Verta development team".format(expt_run_name))
+
+            return expt_run
         else:
             if ((response.status_code == 403 and response.json()['code'] == 7)
                     or (response.status_code == 404 and response.json()['code'] == 5)):
