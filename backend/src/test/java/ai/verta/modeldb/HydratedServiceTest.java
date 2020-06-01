@@ -3539,8 +3539,7 @@ public class HydratedServiceTest {
             .setSortKey("name")
             .build();
 
-    // TODO: FIX ME
-    /*response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
+    response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
     assertEquals(
         "Total records count not matched with expected records count",
         3,
@@ -3552,7 +3551,7 @@ public class HydratedServiceTest {
     assertEquals(
         "HydratedProject Id not match with expected HydratedProject Id",
         project3.getId(),
-        response.getHydratedProjects(0).getProject().getId());*/
+        response.getHydratedProjects(0).getProject().getId());
 
     keyValueQuery =
         KeyValueQuery.newBuilder()
@@ -4302,8 +4301,7 @@ public class HydratedServiceTest {
             .setSortKey("name")
             .build();
 
-    // TODO: FIX ME
-    /*response = hydratedServiceBlockingStub.findHydratedDatasets(findDatasets);
+    response = hydratedServiceBlockingStub.findHydratedDatasets(findDatasets);
     assertEquals(
         "Total records count not matched with expected records count",
         3,
@@ -4315,7 +4313,7 @@ public class HydratedServiceTest {
     assertEquals(
         "HydratedDataset Id not match with expected HydratedDataset Id",
         dataset3.getId(),
-        response.getHydratedDatasets(0).getDataset().getId());*/
+        response.getHydratedDatasets(0).getDataset().getId());
 
     keyValueQuery =
         KeyValueQuery.newBuilder()
@@ -5088,11 +5086,7 @@ public class HydratedServiceTest {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-        assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
-      } else {
-        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-      }
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     for (String datasetVersionId : datasetVersionIds) {
