@@ -13,7 +13,6 @@ import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbLogMetricsResponse (
-  experiment_run: Option[ModeldbExperimentRun] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbLogMetricsResponse.toJson(this)
 }
@@ -22,7 +21,6 @@ object ModeldbLogMetricsResponse {
   def toJson(obj: ModeldbLogMetricsResponse): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.experiment_run.map(x => JField("experiment_run", ((x: ModeldbExperimentRun) => ModeldbExperimentRun.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -36,7 +34,6 @@ object ModeldbLogMetricsResponse {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbLogMetricsResponse(
           // TODO: handle required
-          experiment_run = fieldsMap.get("experiment_run").map(ModeldbExperimentRun.fromJson)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

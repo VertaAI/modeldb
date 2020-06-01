@@ -5,7 +5,6 @@ from __future__ import print_function
 import ast
 import copy
 import glob
-import hashlib
 import importlib
 import os
 import pprint
@@ -761,7 +760,7 @@ class _ModelDBEntity(object):
 
         self.__dict__.update(state)
 
-    def _get_url_for_artifact(self, key, method, artifact_type=0):
+    def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         """
         Obtains a URL to use for accessing stored artifacts.
 
@@ -774,18 +773,25 @@ class _ModelDBEntity(object):
         artifact_type : int, optional
             Variant of `_CommonService.ArtifactTypeEnum`. This informs the backend what slot to check
             for the artifact, if necessary.
+        part_num : int, optional
+            If using Multipart Upload, number of part to be uploaded.
 
         Returns
         -------
-        str
-            Generated URL.
+        response_msg : `_CommonService.GetUrlForArtifact.Response`
+            Backend response.
 
         """
         if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
         Message = _CommonService.GetUrlForArtifact
-        msg = Message(id=self.id, key=key, method=method.upper(), artifact_type=artifact_type)
+        msg = Message(
+            id=self.id, key=key,
+            method=method.upper(),
+            artifact_type=artifact_type,
+            part_number=part_num,
+        )
         data = _utils.proto_to_json(msg)
         response = _utils.make_request("POST",
                                        self._request_url.format("getUrlForArtifact"),
@@ -793,8 +799,8 @@ class _ModelDBEntity(object):
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(response.json(), Message.Response)
-        url = response_msg.url
 
+        url = response_msg.url
         # accommodate port-forwarded NFS store
         if 'https://localhost' in url[:20]:
             url = 'http' + url[5:]
@@ -802,8 +808,9 @@ class _ModelDBEntity(object):
             url = url.replace('localhost%3a', 'localhost:')
         if 'localhost%3A' in url[:20]:
             url = url.replace('localhost%3A', 'localhost:')
+        response_msg.url = url
 
-        return url
+        return response_msg
 
     def _cache(self, filename, contents):
         """
@@ -1064,7 +1071,7 @@ class _ModelDBEntity(object):
             key = 'code'
             extension = 'zip'
 
-            artifact_hash = hashlib.sha256(zipstream.read()).hexdigest()
+            artifact_hash = _artifact_utils.calc_sha256(zipstream)
             zipstream.seek(0)
             basename = key + os.extsep + extension
             artifact_path = os.path.join(artifact_hash, basename)
@@ -1088,7 +1095,7 @@ class _ModelDBEntity(object):
 
         if msg.code_version.WhichOneof("code") == 'code_archive':
             # upload artifact to artifact store
-            url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type)
+            url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type).url
 
             response = _utils.make_request("PUT", url, self._conn, data=zipstream)
             _utils.raise_for_http_error(response)
@@ -1143,7 +1150,7 @@ class _ModelDBEntity(object):
             return git_snapshot
         elif which_code == 'code_archive':
             # download artifact from artifact store
-            url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type)
+            url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type).url
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
@@ -1998,7 +2005,7 @@ class ExperimentRun(_ModelDBEntity):
             extension = _artifact_utils.ext_from_method(method)
 
         # calculate checksum
-        artifact_hash = hashlib.sha256(artifact_stream.read()).hexdigest()
+        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
         artifact_stream.seek(0)
 
         # determine basename
@@ -2038,16 +2045,78 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-        # upload artifact to artifact store
-        url = self._get_url_for_artifact(key, "PUT")
-        artifact_stream.seek(0)  # reuse stream that was created for checksum
+        self._upload_artifact(key, artifact_stream)
+
+    def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
+        """
+        Uploads `artifact_stream` to ModelDB artifact store.
+
+        Parameters
+        ----------
+        key : str
+        artifact_stream : file-like
+        part_size : int, default 64 MB
+            If using multipart upload, number of bytes to upload per part.
+
+        """
+        artifact_stream.seek(0)
         if self._conf.debug:
-            print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), basename))
+            print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
 
-        response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
-        _utils.raise_for_http_error(response)
-        print("upload complete ({})".format(basename))
+        # check if multipart upload ok
+        url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
+
+        if url_for_artifact.multipart_upload_ok:
+            # TODO: parallelize this
+            file_parts = iter(lambda: artifact_stream.read(part_size), b'')
+            for part_num, file_part in enumerate(file_parts, start=1):
+                # get presigned URL
+                url = self._get_url_for_artifact(key, "PUT", part_num=part_num).url
+
+                # wrap file part into bytestream to avoid OverflowError
+                #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
+                #     ``requests`` will overwhelm CPython's SSL lib when it tries to sign the
+                #     payload. But passing a buffered bytestream instead of the raw bytestring
+                #     indicates to ``requests`` that it should perform a streaming upload via
+                #     HTTP/1.1 chunked transfer encoding and avoid this issue.
+                #     https://github.com/psf/requests/issues/2717
+                part_stream = six.BytesIO(file_part)
+
+                # upload part
+                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+                response.raise_for_status()
+
+                # TODO: print progress
+
+                # commit part
+                url = "{}://{}/api/v1/modeldb/experiment-run/commitArtifactPart".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                )
+                msg = _CommonService.CommitArtifactPart(id=self.id, key=key)
+                msg.artifact_part.part_number = part_num
+                msg.artifact_part.etag = response.headers['ETag']
+                data = _utils.proto_to_json(msg)
+                # TODO: increase retries
+                response = _utils.make_request("POST", url, self._conn, json=data)
+                _utils.raise_for_http_error(response)
+
+            # complete upload
+            url = "{}://{}/api/v1/modeldb/experiment-run/commitMultipartArtifact".format(
+                self._conn.scheme,
+                self._conn.socket,
+            )
+            msg = _CommonService.CommitMultipartArtifact(id=self.id, key=key)
+            data = _utils.proto_to_json(msg)
+            response = _utils.make_request("POST", url, self._conn, json=data)
+            _utils.raise_for_http_error(response)
+        else:
+            # upload full artifact
+            response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
+            _utils.raise_for_http_error(response)
+
+        print("upload complete ({})".format(key))
 
     def _log_artifact_path(self, key, artifact_path, artifact_type):
         """
@@ -2117,7 +2186,7 @@ class ExperimentRun(_ModelDBEntity):
             return artifact.path, artifact.path_only
         else:
             # download artifact from artifact store
-            url = self._get_url_for_artifact(key, "GET")
+            url = self._get_url_for_artifact(key, "GET").url
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
