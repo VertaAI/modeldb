@@ -85,6 +85,21 @@ class TestRepository extends FunSuite {
     }
   }
 
+  test("get commit by branch") {
+    val f = fixture
+
+    try {
+      val commit = f.repo.getCommitByBranch().get
+      commit.newBranch("new-branch")
+
+      val commit2 = f.repo.getCommitByBranch("new-branch").get
+
+      assert(commit.commit.commit_sha.get == commit2.commit.commit_sha.get)
+    } finally {
+      cleanup(f)
+    }
+  }
+
 
   test("get commit by tag") {
     val f = fixture
