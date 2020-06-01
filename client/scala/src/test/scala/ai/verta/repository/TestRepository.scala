@@ -72,13 +72,13 @@ class TestRepository extends FunSuite {
     }
   }
 
-  test("get commit on master branch") {
+  test("get commit by branch without argument should get master branch") {
     val f = fixture
 
     try {
       assert(
         f.repo.getCommitByBranch()
-        .isInstanceOf[Success[Commit]]
+        .get.commit_branch.get.equals("master")
       )
     } finally {
       cleanup(f)
