@@ -109,6 +109,70 @@
         ]
       }
     },
+    "/experiment-run/commitArtifactPart": {
+      "post": {
+        "operationId": "commitArtifactPart",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitArtifactPartResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitArtifactPart"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/experiment-run/commitMultipartArtifact": {
+      "post": {
+        "operationId": "commitMultipartArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitMultipartArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitMultipartArtifact"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
     "/experiment-run/createExperimentRun": {
       "post": {
         "operationId": "createExperimentRun",
@@ -496,6 +560,42 @@
           },
           {
             "name": "sort_key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/experiment-run/getCommittedArtifactParts": {
+      "get": {
+        "operationId": "getCommittedArtifactParts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetCommittedArtifactPartsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1892,6 +1992,18 @@
         }
       }
     },
+    "modeldbArtifactPart": {
+      "type": "object",
+      "properties": {
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "etag": {
+          "type": "string"
+        }
+      }
+    },
     "modeldbCodeVersion": {
       "type": "object",
       "properties": {
@@ -1907,6 +2019,37 @@
         }
       },
       "title": "code version"
+    },
+    "modeldbCommitArtifactPart": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "artifact_part": {
+          "$ref": "#/definitions/modeldbArtifactPart"
+        }
+      }
+    },
+    "modeldbCommitArtifactPartResponse": {
+      "type": "object"
+    },
+    "modeldbCommitMultipartArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbCommitMultipartArtifactResponse": {
+      "type": "object"
     },
     "modeldbCreateExperimentRun": {
       "type": "object",
@@ -2344,6 +2487,17 @@
         }
       }
     },
+    "modeldbGetCommittedArtifactPartsResponse": {
+      "type": "object",
+      "properties": {
+        "artifact_parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbArtifactPart"
+          }
+        }
+      }
+    },
     "modeldbGetDatasetsResponse": {
       "type": "object",
       "properties": {
@@ -2490,6 +2644,10 @@
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
@@ -2504,6 +2662,10 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },

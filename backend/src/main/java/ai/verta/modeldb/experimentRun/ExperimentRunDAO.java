@@ -3,9 +3,13 @@ package ai.verta.modeldb.experimentRun;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitArtifactPart.Response;
+import ai.verta.modeldb.CommitMultipartArtifact;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
+import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBException;
@@ -24,6 +28,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.hibernate.Session;
 
 public interface ExperimentRunDAO {
@@ -38,14 +43,6 @@ public interface ExperimentRunDAO {
    */
   ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException;
-
-  /**
-   * Delete the ExperimentRun from database using experimentRunId.
-   *
-   * @param String experimentRunId
-   * @return Boolean updated status
-   */
-  Boolean deleteExperimentRun(String experimentRunId);
 
   /**
    * Delete the ExperimentRuns from database using experimentRunId list.
@@ -499,5 +496,19 @@ public interface ExperimentRunDAO {
       ListBlobExperimentRunsRequest request,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
+      String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  Response commitArtifactPart(CommitArtifactPart request)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  GetCommittedArtifactParts.Response getCommittedArtifactParts(GetCommittedArtifactParts request)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  CommitMultipartArtifact.Response commitMultipartArtifact(
+      CommitMultipartArtifact request, CommitMultipartFunction commitMultipart)
       throws ModelDBException, InvalidProtocolBufferException;
 }

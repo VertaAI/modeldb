@@ -185,6 +185,9 @@ public class ExperimentRunEntity {
   private List<HyperparameterElementMappingEntity> hyperparameter_element_mappings =
       new ArrayList<>();
 
+  @Column(name = "deleted")
+  private Boolean deleted = false;
+
   @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 
   @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
@@ -428,6 +431,14 @@ public class ExperimentRunEntity {
     this.hyperparameter_element_mappings = hyperparameter_element_mappings;
   }
 
+  public Boolean getDeleted() {
+    return deleted;
+  }
+
+  public void setDeleted(Boolean deleted) {
+    this.deleted = deleted;
+  }
+
   public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {
     LOGGER.trace("starting conversion");
     if (keyValueEntityMap.size() == 0) {
@@ -506,5 +517,12 @@ public class ExperimentRunEntity {
     }
     LOGGER.trace("Returning converted ExperimentRun");
     return experimentRunBuilder.build();
+  }
+
+  public Map<String, List<ArtifactEntity>> getArtifactEntityMap() {
+    if (artifactEntityMap.size() == 0) {
+      addArtifactInMap(artifactMapping);
+    }
+    return artifactEntityMap;
   }
 }

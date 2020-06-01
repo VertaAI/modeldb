@@ -35,6 +35,22 @@ class ExperimentRunServiceApi(client: HttpClient, val basePath: String = "/v1") 
 
   def addExperimentRunTags(body: ModeldbAddExperimentRunTags)(implicit ec: ExecutionContext): Try[ModeldbAddExperimentRunTagsResponse] = Await.result(addExperimentRunTagsAsync(body), Duration.Inf)
 
+  def commitArtifactPartAsync(body: ModeldbCommitArtifactPart)(implicit ec: ExecutionContext): Future[Try[ModeldbCommitArtifactPartResponse]] = {
+    var __query = new mutable.HashMap[String,String]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbCommitArtifactPart, ModeldbCommitArtifactPartResponse]("POST", basePath + s"/experiment-run/commitArtifactPart", __query.toMap, body, ModeldbCommitArtifactPartResponse.fromJson)
+  }
+
+  def commitArtifactPart(body: ModeldbCommitArtifactPart)(implicit ec: ExecutionContext): Try[ModeldbCommitArtifactPartResponse] = Await.result(commitArtifactPartAsync(body), Duration.Inf)
+
+  def commitMultipartArtifactAsync(body: ModeldbCommitMultipartArtifact)(implicit ec: ExecutionContext): Future[Try[ModeldbCommitMultipartArtifactResponse]] = {
+    var __query = new mutable.HashMap[String,String]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbCommitMultipartArtifact, ModeldbCommitMultipartArtifactResponse]("POST", basePath + s"/experiment-run/commitMultipartArtifact", __query.toMap, body, ModeldbCommitMultipartArtifactResponse.fromJson)
+  }
+
+  def commitMultipartArtifact(body: ModeldbCommitMultipartArtifact)(implicit ec: ExecutionContext): Try[ModeldbCommitMultipartArtifactResponse] = Await.result(commitMultipartArtifactAsync(body), Duration.Inf)
+
   def createExperimentRunAsync(body: ModeldbCreateExperimentRun)(implicit ec: ExecutionContext): Future[Try[ModeldbCreateExperimentRunResponse]] = {
     var __query = new mutable.HashMap[String,String]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
@@ -121,6 +137,16 @@ class ExperimentRunServiceApi(client: HttpClient, val basePath: String = "/v1") 
   }
 
   def getChildrenExperimentRuns(ascending: Option[Boolean]=None, experiment_run_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetChildrenExperimentRunsResponse] = Await.result(getChildrenExperimentRunsAsync(ascending, experiment_run_id, page_limit, page_number, sort_key), Duration.Inf)
+
+  def getCommittedArtifactPartsAsync(id: Option[String]=None, key: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetCommittedArtifactPartsResponse]] = {
+    var __query = new mutable.HashMap[String,String]
+    if (id.isDefined) __query.update("id", client.toQuery(id.get))
+    if (key.isDefined) __query.update("key", client.toQuery(key.get))
+    val body: String = null
+    return client.request[String, ModeldbGetCommittedArtifactPartsResponse]("GET", basePath + s"/experiment-run/getCommittedArtifactParts", __query.toMap, body, ModeldbGetCommittedArtifactPartsResponse.fromJson)
+  }
+
+  def getCommittedArtifactParts(id: Option[String]=None, key: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetCommittedArtifactPartsResponse] = Await.result(getCommittedArtifactPartsAsync(id, key), Duration.Inf)
 
   def getDatasetsAsync(id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetDatasetsResponse]] = {
     var __query = new mutable.HashMap[String,String]

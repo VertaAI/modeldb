@@ -5,10 +5,15 @@ import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.Artifact;
+import ai.verta.modeldb.ArtifactPart;
 import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitArtifactPart.Response;
+import ai.verta.modeldb.CommitMultipartArtifact;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
+import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.GitSnapshot;
 import ai.verta.modeldb.KeyValueQuery;
@@ -28,9 +33,9 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
+import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
@@ -63,9 +68,12 @@ import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum;
+import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
+import com.amazonaws.services.s3.model.PartETag;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -74,6 +82,8 @@ import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -82,6 +92,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -106,42 +119,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
-  private static final String UPDATE_PROJECT_HQL =
-      new StringBuilder("UPDATE ProjectEntity p SET p.")
-          .append(ModelDBConstants.DATE_UPDATED)
-          .append(" = :timestamp where p.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:ids) ")
-          .toString();
-  private static final String UPDATE_EXP_TIMESTAMP_HQL =
-      new StringBuilder()
-          .append("UPDATE ExperimentEntity exp SET exp.")
-          .append(ModelDBConstants.DATE_UPDATED)
-          .append(" = :timestamp")
-          .append(" where exp.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:ids) ")
-          .toString();
   private static final String CHECK_EXP_RUN_EXISTS_AT_INSERT_HQL =
       new StringBuilder("Select count(*) From ExperimentRunEntity ere where ")
           .append(" ere." + ModelDBConstants.NAME + " = :experimentRunName ")
           .append(" AND ere." + ModelDBConstants.PROJECT_ID + " = :projectId ")
           .append(" AND ere." + ModelDBConstants.EXPERIMENT_ID + " = :experimentId ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String CHECK_EXP_RUN_EXISTS_AT_UPDATE_HQL =
       new StringBuilder("Select count(*) From ExperimentRunEntity ere where ")
           .append(" ere." + ModelDBConstants.ID + " = :experimentRunId ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String GET_EXP_RUN_BY_IDS_HQL =
-      "From ExperimentRunEntity exr where exr.id IN (:ids)";
-  private static final String COMMENT_DELETE_HQL =
-      new StringBuilder()
-          .append("From CommentEntity ce where ce.")
-          .append(ModelDBConstants.ENTITY_ID)
-          .append(" IN (:entityIds) AND ce.")
-          .append(ModelDBConstants.ENTITY_NAME)
-          .append(" =:entityName")
-          .toString();
+      "From ExperimentRunEntity exr where exr.id IN (:ids) AND exr."
+          + ModelDBConstants.DELETED
+          + " = false ";
   private static final String DELETE_ALL_TAGS_HQL =
       new StringBuilder("delete from TagsMapping tm WHERE tm.experimentRunEntity.")
           .append(ModelDBConstants.ID)
@@ -197,6 +190,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append("From ExperimentRunEntity ere where ere.")
           .append(ModelDBConstants.EXPERIMENT_ID)
           .append(" IN (:experimentIds) ")
+          .toString();
+  private static final String DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING =
+      new StringBuilder("UPDATE ")
+          .append(ExperimentRunEntity.class.getSimpleName())
+          .append(" expr ")
+          .append("SET expr.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE expr.")
+          .append(ModelDBConstants.ID)
+          .append(" IN (:experimentRunIds)")
           .toString();
 
   public ExperimentRunDAORdbImpl(
@@ -374,47 +378,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public Boolean deleteExperimentRun(String experimentRunId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-
-      List<String> accessibleExperimentRunIds =
-          getAccessibleExperimentRunIDs(
-              Collections.singletonList(experimentRunId),
-              ModelDBActionEnum.ModelDBServiceActions.UPDATE);
-      if (accessibleExperimentRunIds.isEmpty()) {
-        Status statusMessage =
-            Status.newBuilder()
-                .setCode(Code.PERMISSION_DENIED_VALUE)
-                .setMessage(
-                    "Access is denied. User is unauthorized for given ExperimentRun entities : "
-                        + accessibleExperimentRunIds)
-                .build();
-        throw StatusProto.toStatusRuntimeException(statusMessage);
-      }
-
-      // Delete the ExperimentRun comments
-      removeEntityComments(
-          session,
-          Collections.singletonList(experimentRunId),
-          ExperimentRunEntity.class.getSimpleName());
-
-      // Delete the ExperimentEntity object
-      ExperimentRunEntity experimentRunObj =
-          session.load(ExperimentRunEntity.class, experimentRunId);
-      String projectId = experimentRunObj.getProject_id();
-      String experimentId = experimentRunObj.getExperiment_id();
-      session.delete(experimentRunObj);
-
-      transaction.commit();
-      LOGGER.debug("ExperimentRun deleted successfully");
-      return true;
-    }
-  }
-
-  @Override
   public Boolean deleteExperimentRuns(List<String> experimentRunIds) {
-    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
@@ -431,53 +395,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(statusMessage);
       }
-
-      // Delete the ExperimentRUn comments
-      if (!experimentRunIds.isEmpty()) {
-        removeEntityComments(session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
-      }
-
-      // Delete the ExperimentEntity object
-      Query query = session.createQuery(GET_EXP_RUN_BY_IDS_HQL);
-      query.setParameterList("ids", experimentRunIds);
-
-      List<String> projectIds = new ArrayList<>();
-      List<String> experimentIds = new ArrayList<>();
-      @SuppressWarnings("unchecked")
-      List<ExperimentRunEntity> experimentRunEntities = query.list();
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        projectIds.add(experimentRunEntity.getProject_id());
-        experimentIds.add(experimentRunEntity.getExperiment_id());
-        session.delete(experimentRunEntity);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-                experimentRunEntity.getId(),
-                experimentRunEntity.getOwner(),
-                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
+      Query query = session.createQuery(DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING);
+      query.setParameter("deleted", true);
+      query.setParameter("experimentRunIds", accessibleExperimentRunIds);
+      int updatedCount = query.executeUpdate();
+      LOGGER.debug(
+          "Mark ExperimentRun as deleted : {}, count : {}",
+          accessibleExperimentRunIds,
+          updatedCount);
       transaction.commit();
-
-      // Remove all role bindings
-      roleService.deleteRoleBindings(roleBindingNames);
-
       LOGGER.debug("ExperimentRun deleted successfully");
       return true;
-    }
-  }
-
-  private void removeEntityComments(Session session, List<String> entityIds, String entityName) {
-    Query commentDeleteQuery = session.createQuery(COMMENT_DELETE_HQL);
-    commentDeleteQuery.setParameterList("entityIds", entityIds);
-    commentDeleteQuery.setParameter("entityName", entityName);
-    LOGGER.debug("Comments delete query : {}", commentDeleteQuery.getQueryString());
-    List<CommentEntity> commentEntities = commentDeleteQuery.list();
-    for (CommentEntity commentEntity : commentEntities) {
-      session.delete(commentEntity);
     }
   }
 
@@ -591,9 +519,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public boolean isExperimentRunExists(Session session, String experimentRunId) {
-    ExperimentRunEntity experimentRunEntity =
-        session.get(ExperimentRunEntity.class, experimentRunId);
-    return experimentRunEntity != null;
+    Query query = session.createQuery(CHECK_EXP_RUN_EXISTS_AT_UPDATE_HQL);
+    query.setParameter("experimentRunId", experimentRunId);
+    Long count = (Long) query.uniqueResult();
+    return count > 0;
   }
 
   @Override
@@ -1370,6 +1299,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
+      finalPredicatesList.add(
+          builder.equal(experimentRunRoot.get(ModelDBConstants.DELETED), false));
+
       Order[] orderBy =
           RdbmsUtils.getOrderArrBasedOnSortKey(
               queryParameters.getSortKey(),
@@ -1809,7 +1741,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           stringQueryBuilder.append(" AND ");
         }
       }
-      Query query = session.createQuery(stringQueryBuilder.toString());
+      Query query =
+          session.createQuery(
+              stringQueryBuilder.toString() + " AND er." + ModelDBConstants.DELETED + " = false ");
       for (Map.Entry<String, Object> paramEntry : paramMap.entrySet()) {
         query.setParameter(paramEntry.getKey(), paramEntry.getValue());
       }
@@ -2115,5 +2049,175 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
           .build();
     }
+  }
+
+  private Optional<ArtifactEntity> getExperimentRunArtifact(
+      Session session,
+      String experimentRunId,
+      String key,
+      ModelDBServiceActions modelDBServiceActions)
+      throws InvalidProtocolBufferException {
+    ExperimentRunEntity experimentRunObj = session.get(ExperimentRunEntity.class, experimentRunId);
+    if (experimentRunObj == null) {
+      LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.NOT_FOUND_VALUE)
+              .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+
+    String projectId = experimentRunObj.getProject_id();
+
+    // Validate if current user has access to the entity or not
+    roleService.validateEntityUserWithUserInfo(
+        ModelDBServiceResourceTypes.PROJECT, projectId, modelDBServiceActions);
+    Map<String, List<ArtifactEntity>> artifactEntityMap = experimentRunObj.getArtifactEntityMap();
+
+    List<ArtifactEntity> result =
+        (artifactEntityMap != null && artifactEntityMap.containsKey(ModelDBConstants.ARTIFACTS))
+            ? artifactEntityMap.get(ModelDBConstants.ARTIFACTS)
+            : Collections.emptyList();
+    return result.stream()
+        .filter(artifactEntity -> artifactEntity.getKey().equals(key))
+        .findFirst();
+  }
+
+  @Override
+  public Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
+      String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
+      throws ModelDBException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      ArtifactEntity artifactEntity =
+          getArtifactEntity(session, experimentRunId, key, ModelDBServiceActions.UPDATE);
+      return getS3PathAndMultipartUploadId(
+          session, artifactEntity, partNumber != 0, initializeMultipart);
+    }
+  }
+
+  public ArtifactEntity getArtifactEntity(
+      Session session,
+      String experimentRunId,
+      String key,
+      ModelDBServiceActions modelDBServiceActions)
+      throws ModelDBException, InvalidProtocolBufferException {
+    Optional<ArtifactEntity> artifactEntityOptional =
+        getExperimentRunArtifact(session, experimentRunId, key, modelDBServiceActions);
+    return artifactEntityOptional.orElseThrow(
+        () -> new ModelDBException("Can't find specified artifact", io.grpc.Status.Code.NOT_FOUND));
+  }
+
+  private SimpleEntry<String, String> getS3PathAndMultipartUploadId(
+      Session session,
+      ArtifactEntity artifactEntity,
+      boolean partNumberSpecified,
+      S3KeyFunction initializeMultipart) {
+    String uploadId;
+    if (partNumberSpecified) {
+      uploadId = artifactEntity.getUploadId();
+      try {
+        String message = null;
+        if (uploadId == null) {
+          if (initializeMultipart == null) {
+            message = "Multipart wasn't initialized";
+          } else {
+            uploadId = initializeMultipart.apply(artifactEntity.getPath()).orElse(null);
+          }
+        }
+        if (message != null) {
+          LOGGER.info(message);
+          throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
+        }
+      } catch (ModelDBException e) {
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(e.getMessage())
+                .addDetails(Any.pack(CommitMultipartArtifact.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+      if (!Objects.equals(uploadId, artifactEntity.getUploadId())
+          || artifactEntity.isUploadCompleted()) {
+        session.beginTransaction();
+        artifactEntity.setUploadId(uploadId);
+        artifactEntity.setUploadCompleted(false);
+        session.getTransaction().commit();
+      }
+    } else {
+      uploadId = null;
+    }
+    return new AbstractMap.SimpleEntry<>(artifactEntity.getPath(), uploadId);
+  }
+
+  @Override
+  public Response commitArtifactPart(CommitArtifactPart request)
+      throws ModelDBException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      ArtifactEntity artifactEntity =
+          getArtifactEntity(
+              session, request.getId(), request.getKey(), ModelDBServiceActions.UPDATE);
+      ArtifactPart artifactPart = request.getArtifactPart();
+      ArtifactPartEntity artifactPartEntity =
+          new ArtifactPartEntity(
+              artifactEntity, artifactPart.getPartNumber(), artifactPart.getEtag());
+      session.beginTransaction();
+      session.saveOrUpdate(artifactPartEntity);
+      session.getTransaction().commit();
+      return Response.newBuilder().build();
+    }
+  }
+
+  @Override
+  public GetCommittedArtifactParts.Response getCommittedArtifactParts(
+      GetCommittedArtifactParts request) throws ModelDBException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Set<ArtifactPartEntity> artifactPartEntities =
+          getArtifactPartEntities(session, request.getId(), request.getKey());
+      GetCommittedArtifactParts.Response.Builder response =
+          GetCommittedArtifactParts.Response.newBuilder();
+      artifactPartEntities.forEach(
+          artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
+      return response.build();
+    }
+  }
+
+  private Set<ArtifactPartEntity> getArtifactPartEntities(
+      Session session, String experimentRunId, String key)
+      throws ModelDBException, InvalidProtocolBufferException {
+    ArtifactEntity artifactEntity =
+        getArtifactEntity(session, experimentRunId, key, ModelDBServiceActions.READ);
+    return artifactEntity.getArtifactPartEntities();
+  }
+
+  @Override
+  public CommitMultipartArtifact.Response commitMultipartArtifact(
+      CommitMultipartArtifact request, CommitMultipartFunction commitMultipartFunction)
+      throws ModelDBException, InvalidProtocolBufferException {
+    List<PartETag> partETags;
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      ArtifactEntity artifactEntity =
+          getArtifactEntity(
+              session, request.getId(), request.getKey(), ModelDBServiceActions.UPDATE);
+      if (artifactEntity.getUploadId() == null) {
+        String message = "Multipart wasn't initialized";
+        LOGGER.info(message);
+        throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
+      }
+      Set<ArtifactPartEntity> artifactPartEntities = artifactEntity.getArtifactPartEntities();
+      partETags =
+          artifactPartEntities.stream()
+              .map(ArtifactPartEntity::toPartETag)
+              .collect(Collectors.toList());
+      commitMultipartFunction.apply(
+          artifactEntity.getPath(), artifactEntity.getUploadId(), partETags);
+      session.beginTransaction();
+      artifactEntity.setUploadCompleted(true);
+      artifactPartEntities.forEach(session::delete);
+      artifactPartEntities.clear();
+      session.getTransaction().commit();
+    }
+    return CommitMultipartArtifact.Response.newBuilder().build();
   }
 }
