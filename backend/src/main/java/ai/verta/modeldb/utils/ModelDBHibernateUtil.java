@@ -104,8 +104,9 @@ public class ModelDBHibernateUtil {
   private static StandardServiceRegistry registry;
   private static SessionFactory sessionFactory;
   private static String databaseName;
-  public static String rDBDriver;
+  private static String rDBDriver;
   private static String rDBUrl;
+  public static String rDBDialect;
   private static String configUsername;
   private static String configPassword;
   private static Integer timeout = 4;
@@ -187,7 +188,7 @@ public class ModelDBHibernateUtil {
           rDBDriver = "io.opentracing.contrib.jdbc.TracingDriver";
         }
         rDBUrl = (String) rDBPropMap.get("RdbUrl");
-        String rDBDialect = (String) rDBPropMap.get("RdbDialect");
+        rDBDialect = (String) rDBPropMap.get("RdbDialect");
         configUsername = (String) rDBPropMap.get("RdbUsername");
         configPassword = (String) rDBPropMap.get("RdbPassword");
         if (databasePropMap.containsKey("timeout")) {

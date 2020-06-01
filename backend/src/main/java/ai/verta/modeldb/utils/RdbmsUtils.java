@@ -706,7 +706,7 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (ModelDBHibernateUtil.rDBDriver.equals(ModelDBConstants.POSTGRES_DB_DRIVER)) {
+        if (ModelDBHibernateUtil.rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
           return getOperatorPredicate(
               builder, valueExpression.as(Double.class), operator, value.getNumberValue());
         } else {
