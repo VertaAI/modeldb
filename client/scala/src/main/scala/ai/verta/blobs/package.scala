@@ -14,8 +14,6 @@ package object blobs {
     case VersioningBlob(_, _, Some(VersioningDatasetBlob(Some(path), _)), _) => new PathBlob(path)
 
     case VersioningBlob(_, _, Some(VersioningDatasetBlob(_, Some(s3))), _) => new S3(s3)
-
-    case _ => Git()
   }
 
 

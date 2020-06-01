@@ -10,7 +10,7 @@ case class Notebook(val path: String, val git: Option[Git] = None) extends Code 
 
   var versioningNotebookCodeBlob = VersioningNotebookCodeBlob(
     /* TODO: expanduser path (see python client's code) */
-    path = Some(VersioningPathDatasetComponentBlob(path = Some(path))),
+    path = Some(VersioningPathDatasetComponentBlob(path = Some(expanduser(path)))),
     git_repo = git.map(_.versioningGitCodeBlob)
   )
 

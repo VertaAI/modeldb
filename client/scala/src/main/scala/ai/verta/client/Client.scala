@@ -4,7 +4,7 @@ package ai.verta.client
 // TODO: write tests for getOrCreateRepository and getRepository
 
 import ai.verta.client.entities.{Experiment, ExperimentRun, GetOrCreateEntity, Project}
-import ai.verta._repository.Repository
+import ai.verta.repository.Repository
 import ai.verta.swagger._public.modeldb.model.ModeldbCreateProject
 import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.swagger.client.{ClientSet, HttpClient}

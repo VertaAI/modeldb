@@ -1,4 +1,4 @@
-package ai.verta._repository
+package ai.verta.repository
 
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningRepository

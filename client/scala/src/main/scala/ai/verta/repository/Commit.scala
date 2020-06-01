@@ -1,4 +1,4 @@
-package ai.verta._repository
+package ai.verta.repository
 
 import ai.verta.client.{getPersonalWorkspace, urlEncode}
 import ai.verta.blobs._
