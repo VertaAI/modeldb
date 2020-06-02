@@ -67,14 +67,13 @@ class Client(conn: ClientConnection) {
     GetOrCreateEntity.getOrCreate[Repository](
       get = () => {
         clientSet.versioningService.GetRepository(
-          id_named_id_workspace_name = if (workspace.isDefined) workspace.get else getPersonalWorkspace(),
+          id_named_id_workspace_name = workspace.getOrElse(getPersonalWorkspace()),
           id_named_id_name = urlEncode(name)
-        )
-        .map(r => new Repository(clientSet, r.repository.get))
+        ).map(r => new Repository(clientSet, r.repository.get))
       },
       create = () => {
         clientSet.versioningService.CreateRepository(
-          id_named_id_workspace_name = if (workspace.isDefined) workspace.get else getPersonalWorkspace(),
+          id_named_id_workspace_name = workspace.getOrElse(getPersonalWorkspace()),
           body = VersioningRepository(
             name = Some(name),
             workspace_id = workspace
