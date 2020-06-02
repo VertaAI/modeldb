@@ -190,7 +190,7 @@ def ensure_bytestream(obj):
         except TypeError:  # read() doesn't take an argument
             pass  # fall through to read & cast full stream
         else:
-            if isinstance(chunk, bytes):  # contents are already bytes
+            if isinstance(chunk, bytes):  # contents are indeed bytes
                 reset_stream(obj)
                 return obj, None
             else:
