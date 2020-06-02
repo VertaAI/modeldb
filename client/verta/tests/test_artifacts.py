@@ -2,11 +2,32 @@ import pytest
 
 import six
 
+import hashlib
 import os
-import sys
+import tempfile
 import zipfile
 
+from verta._internal_utils import _artifact_utils
+
 from . import utils
+
+
+class TestUtils:
+    def test_calc_sha256(self):
+        FILE_SIZE = 6*10**6  # 6 MB
+
+        with tempfile.NamedTemporaryFile(suffix='.txt') as tempf:
+            tempf.truncate(FILE_SIZE)  # zero-filled
+            tempf.flush()  # flush object buffer
+            os.fsync(tempf.fileno())  # flush OS buffer
+
+            tempf.seek(0)
+            piecewise_checksum = _artifact_utils.calc_sha256(tempf, FILE_SIZE//2)
+
+            tempf.seek(0)
+            whole_checksum = hashlib.sha256(tempf.read()).hexdigest()
+
+            assert piecewise_checksum == whole_checksum
 
 
 class TestArtifacts:
@@ -85,6 +106,16 @@ class TestArtifacts:
         for key, artifact in reversed(list(zip(strs, all_values))):
             with pytest.raises(ValueError):
                 experiment_run.log_artifact(key, artifact)
+
+    def test_blacklisted_key_error(self, experiment_run, all_values):
+        all_values = (value  # log_artifact treats str value as filepath to open
+                      for value in all_values if not isinstance(value, str))
+
+        for key, artifact in zip(_artifact_utils.BLACKLISTED_KEYS, all_values):
+            with pytest.raises(ValueError):
+                experiment_run.log_artifact(key, artifact)
+            with pytest.raises(ValueError):
+                experiment_run.log_artifact_path(key, artifact)
 
 
 class TestModels:
@@ -322,6 +353,26 @@ class TestImages:
             with pytest.raises(ValueError):
                 experiment_run.log_image(key, image)
 
+    def test_blacklisted_key_error(self, experiment_run, all_values):
+        all_values = (value  # log_artifact treats str value as filepath to open
+                      for value in all_values if not isinstance(value, str))
+
+        for key, artifact in zip(_artifact_utils.BLACKLISTED_KEYS, all_values):
+            with pytest.raises(ValueError):
+                experiment_run.log_image(key, artifact)
+            with pytest.raises(ValueError):
+                experiment_run.log_image_path(key, artifact)
+
+
+class TestDatasets:
+    def test_blacklisted_key_error(self, experiment_run, all_values):
+        all_values = (value  # log_artifact treats str value as filepath to open
+                      for value in all_values if not isinstance(value, str))
+
+        for key, artifact in zip(_artifact_utils.BLACKLISTED_KEYS, all_values):
+            with pytest.raises(ValueError):
+                experiment_run.log_dataset(key, artifact)
+
 
 class TestOverwrite:
     def test_artifact(self, experiment_run):
@@ -350,25 +401,6 @@ class TestOverwrite:
         experiment_run.log_requirements(new_requirements, overwrite=True)
 
         assert six.ensure_binary('\n'.join(new_requirements)) in experiment_run.get_artifact("requirements.txt").read()
-
-    def test_training_data(self, experiment_run):
-        pd = pytest.importorskip("pandas")
-
-        X = pd.DataFrame([[1, 1, 1],
-                          [1, 1, 1],
-                          [1, 1, 1]],
-                         columns=["1_1", "1_2", "1_3"])
-        y = pd.Series([1, 1, 1], name="1")
-        new_X = pd.DataFrame([[2, 2, 2],
-                              [2, 2, 2],
-                              [2, 2, 2]],
-                             columns=["2_1", "2_2", "2_3"])
-        new_y = pd.Series([2, 2, 2], name="2")
-
-        experiment_run.log_training_data(X, y)
-        experiment_run.log_training_data(new_X, new_y, overwrite=True)
-
-        assert pd.read_csv(experiment_run.get_artifact("train_data")).equals(new_X.join(new_y))
 
     def test_setup_script(self, experiment_run):
         setup_script = "import verta"

@@ -34,6 +34,7 @@ import ai.verta.uac.ListMyOrganizations;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Organization;
+import ai.verta.uac.RemoveResources;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;
 import ai.verta.uac.Role;
@@ -247,6 +248,7 @@ public class RoleServiceUtils implements RoleService {
 
       return getRoleByNameResponse.getRole();
     } catch (StatusRuntimeException ex) {
+      LOGGER.warn("role name : {} role scope : {}", roleName, roleScope);
       LOGGER.warn(ex.getMessage(), ex);
       if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
         Status status =
@@ -294,6 +296,8 @@ public class RoleServiceUtils implements RoleService {
         DeleteRoleBindings.newBuilder().addAllRoleBindingNames(roleBindingNames).build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+
+      // TODO: try using futur stub than blocking stub
       DeleteRoleBindings.Response deleteRoleBindingResponse =
           authServiceChannel
               .getRoleServiceBlockingStub()
@@ -630,108 +634,6 @@ public class RoleServiceUtils implements RoleService {
     } else {
       return ModelDBConstants.EMPTY_STRING;
     }
-  }
-
-  @Override
-  public List<String> getResourceRoleBindings(
-      String resourceId,
-      String resourceOwnerId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    List<String> roleBindingNames = new ArrayList<>();
-
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
-      CompletableFuture<Set<CollaboratorBase>> readOnlyCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.READ,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> readWriteCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.UPDATE,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> deployCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.DEPLOY,
-                      requestHeaders));
-
-      CompletableFuture<Void> collaboratorCombineFuture =
-          CompletableFuture.allOf(
-              deployCollaboratorsFuture, readOnlyCollaboratorsFuture, readWriteCollaboratorsFuture);
-
-      // Wait for all task complete
-      collaboratorCombineFuture.get();
-
-      Set<CollaboratorBase> readCollaborators = readOnlyCollaboratorsFuture.get();
-      Set<CollaboratorBase> readWriteCollaborators = readWriteCollaboratorsFuture.get();
-      Set<CollaboratorBase> deployCollaborators = deployCollaboratorsFuture.get();
-
-      Set<CollaboratorBase> finalCollaborators = new HashSet<>();
-      finalCollaborators.addAll(readCollaborators);
-      finalCollaborators.addAll(readWriteCollaborators);
-      if (finalCollaborators.size() > 0) {
-        for (CollaboratorBase collaborator : finalCollaborators) {
-
-          String readOnlyRoleBindingName =
-              buildReadOnlyRoleBindingName(resourceId, collaborator, modelDBServiceResourceTypes);
-          if (readOnlyRoleBindingName != null) {
-            roleBindingNames.add(readOnlyRoleBindingName);
-          }
-
-          String readWriteRoleBindingName =
-              buildReadWriteRoleBindingName(resourceId, collaborator, modelDBServiceResourceTypes);
-          if (readWriteRoleBindingName != null) {
-            roleBindingNames.add(readWriteRoleBindingName);
-          }
-
-          if (deployCollaborators.contains(collaborator)
-              && modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
-            String deployRoleBindingName =
-                buildProjectDeployRoleBindingName(
-                    resourceId, collaborator, modelDBServiceResourceTypes);
-            if (deployRoleBindingName != null) {
-              roleBindingNames.add(deployRoleBindingName);
-            }
-          }
-        }
-      }
-    } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
-    } catch (InterruptedException | ExecutionException ex) {
-      Status status =
-          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(ex.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
-    return roleBindingNames;
   }
 
   @Override
@@ -1160,7 +1062,6 @@ public class RoleServiceUtils implements RoleService {
       boolean orgScopedPublic,
       String globalSharing) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      Role admin = getRoleByName(roleAdminName, null);
       final CollaboratorUser collaboratorUser;
       switch (workspaceType) {
         case ORGANIZATION:
@@ -1186,6 +1087,7 @@ public class RoleServiceUtils implements RoleService {
         default:
           return;
       }
+      Role admin = getRoleByName(roleAdminName, null);
       createRoleBinding(admin, collaboratorUser, resourceId, resourceType);
     }
   }
@@ -1245,5 +1147,42 @@ public class RoleServiceUtils implements RoleService {
       }
     }
     return workspaceRoleBindingList;
+  }
+
+  @Override
+  public boolean deleteAllResources(
+      List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    RemoveResources removeAllCollaboratorsRequest =
+        RemoveResources.newBuilder()
+            .addAllResourceIds(resourceIds)
+            .setResourceType(
+                ResourceType.newBuilder()
+                    .setModeldbServiceResourceType(modelDBServiceResourceTypes)
+                    .build())
+            .build();
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+
+      RemoveResources.Response removeAllCollaboratorResponse =
+          authServiceChannel
+              .getRoleServiceBlockingStub()
+              .removeResources(removeAllCollaboratorsRequest);
+      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(
+          ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, removeAllCollaboratorResponse);
+
+      return removeAllCollaboratorResponse.getStatus();
+    } catch (StatusRuntimeException ex) {
+      LOGGER.warn(ex.getMessage(), "Exception deleting resourceId", resourceIds);
+      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.UNAVAILABLE_VALUE)
+                .setMessage("UAC Service unavailable : " + ex.getMessage())
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+      throw ex;
+    }
   }
 }

@@ -8,6 +8,8 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -95,6 +97,7 @@ public class MergeTest {
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
   private static App app;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   private static long time = Calendar.getInstance().getTimeInMillis();
 
@@ -133,6 +136,8 @@ public class MergeTest {
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   private final int blobType;
@@ -150,6 +155,8 @@ public class MergeTest {
 
   @AfterClass
   public static void removeServerAndService() {
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -395,6 +402,28 @@ public class MergeTest {
         .build();
   }
 
+  static Blob getDatasetBlobFromPathMultiple(String path, long size) {
+    return Blob.newBuilder()
+        .setDataset(
+            DatasetBlob.newBuilder()
+                .setPath(
+                    PathDatasetBlob.newBuilder()
+                        .addComponents(
+                            PathDatasetComponentBlob.newBuilder()
+                                .setPath(path)
+                                .setSize(size)
+                                .setLastModifiedAtSource(time)
+                                .build())
+                        .addComponents(
+                            PathDatasetComponentBlob.newBuilder()
+                                .setPath(path + "~")
+                                .setSize(size)
+                                .setLastModifiedAtSource(time)
+                                .build())
+                        .build())
+                .build())
+        .build();
+  }
   /**
    * blob 1 is original blob 2 is completely unrelated blob used for merge to go through blob 3 is
    * meant to modify blob 1 blob 4 is meant to modify blob 1
@@ -420,7 +449,7 @@ public class MergeTest {
 
         blobExpanded3 =
             BlobExpanded.newBuilder()
-                .setBlob(getDatasetBlobFromPath(path1, 3))
+                .setBlob(getDatasetBlobFromPathMultiple(path1, 3))
                 .addAllLocation(LOCATION1)
                 .build();
 
@@ -546,7 +575,7 @@ public class MergeTest {
                                 .setMinor(19)
                                 .setPatch(1)))
                 .setVersion(
-                    VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(4));
+                    VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(3));
         PythonEnvironmentBlob.Builder pythonBuilder3 =
             PythonEnvironmentBlob.newBuilder()
                 .addRequirements(
@@ -556,7 +585,7 @@ public class MergeTest {
                             VersionEnvironmentBlob.newBuilder()
                                 .setMajor(1)
                                 .setMinor(1)
-                                .setPatch(2)))
+                                .setPatch(1)))
                 .addRequirements(
                     PythonRequirementEnvironmentBlob.newBuilder()
                         .setLibrary("numpy")
@@ -564,10 +593,11 @@ public class MergeTest {
                         .setVersion(
                             VersionEnvironmentBlob.newBuilder()
                                 .setMajor(1)
-                                .setMinor(19)
+                                .setMinor(17)
                                 .setPatch(1)))
                 .setVersion(
-                    VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(4));
+                    VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(3));
+
         EnvironmentBlob.Builder builder =
             EnvironmentBlob.newBuilder()
                 .addAllCommandLine(Arrays.asList("ECHO 123", "ls ..", "make all"))
@@ -603,7 +633,7 @@ public class MergeTest {
 
         blobExpanded4 =
             BlobExpanded.newBuilder()
-                .setBlob(Blob.newBuilder().setEnvironment(builder.setPython(pythonBuilder2)))
+                .setBlob(Blob.newBuilder().setEnvironment(builder.setPython(pythonBuilder3)))
                 .addAllLocation(LOCATION1)
                 .build();
         break;

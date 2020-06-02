@@ -21,7 +21,7 @@ class Client(conn: ClientConnection) {
   def getOrCreateProject(name: String, workspace: String = "")(implicit ec: ExecutionContext) = {
     GetOrCreateEntity.getOrCreate[Project](
       get = () => {
-        clientSet.projectService.getProjectByName(name = name, workspace_name = workspace)
+        clientSet.projectService.getProjectByName(name = Some(name), workspace_name = Some(workspace))
           .map(r => if (r.project_by_user.isEmpty) null else new Project(clientSet, r.project_by_user.get))
       },
       create = () => {
@@ -31,12 +31,12 @@ class Client(conn: ClientConnection) {
   }
 
   def getProject(id: String)(implicit ec: ExecutionContext) = {
-    clientSet.projectService.getProjectById(id)
+    clientSet.projectService.getProjectById(Some(id))
       .map(r => if (r.project.isEmpty) null else new Project(clientSet, r.project.get))
   }
 
   def getExperiment(id: String)(implicit ec: ExecutionContext) = {
-    clientSet.experimentService.getExperimentById(id)
+    clientSet.experimentService.getExperimentById(Some(id))
       .flatMap(r => if (r.experiment.isEmpty) Success(null) else Try[Experiment]({
         getProject(r.experiment.get.project_id.get) match {
           case Success(proj) => new Experiment(clientSet, proj, r.experiment.get)
@@ -46,7 +46,7 @@ class Client(conn: ClientConnection) {
   }
 
   def getExperimentRun(id: String)(implicit ec: ExecutionContext) = {
-    clientSet.experimentRunService.getExperimentRunById(id)
+    clientSet.experimentRunService.getExperimentRunById(Some(id))
       .flatMap(r => if (r.experiment_run.isEmpty) Success(null) else Try[ExperimentRun]({
         getExperiment(r.experiment_run.get.experiment_id.get) match {
           case Success(expt) => new ExperimentRun(clientSet, expt, r.experiment_run.get)

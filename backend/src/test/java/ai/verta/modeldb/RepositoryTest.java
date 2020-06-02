@@ -1,8 +1,7 @@
 package ai.verta.modeldb;
 
 import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
@@ -11,14 +10,19 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.metadata.AddLabelsRequest;
 import ai.verta.modeldb.metadata.DeleteLabelsRequest;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.Blob;
+import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.FindRepositories;
+import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GetRepositoryRequest;
 import ai.verta.modeldb.versioning.ListRepositoriesRequest;
 import ai.verta.modeldb.versioning.Pagination;
@@ -27,8 +31,12 @@ import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.SetRepository.Response;
+import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
+import ai.verta.uac.GetUser;
+import ai.verta.uac.UACServiceGrpc;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -39,6 +47,7 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -83,6 +92,7 @@ public class RepositoryTest {
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
   private static App app;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -119,10 +129,14 @@ public class RepositoryTest {
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -682,5 +696,232 @@ public class RepositoryTest {
     }
 
     LOGGER.info("List repository test end................................");
+  }
+
+  @Test
+  public void findRepositoriesByFuzzyOwnerTest() {
+    LOGGER.info(
+        "FindRepositories by owner fuzzy search test start................................");
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      assertTrue(true);
+      return;
+    }
+    UACServiceGrpc.UACServiceBlockingStub uacServiceStub =
+        UACServiceGrpc.newBlockingStub(authServiceChannel);
+
+    GetUser getUserRequest =
+        GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+    // Get the user info by vertaId form the AuthService
+    UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
+    String testUser1UserName = testUser1.getVertaInfo().getUsername();
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long repoId1 = createRepository(versioningServiceBlockingStub, NAME);
+    long repoId2 = createRepository(versioningServiceBlockingStub, NAME_2);
+    long repoId3 = createRepository(versioningServiceBlockingStub, NAME_3);
+    Long[] repoIds = new Long[3];
+    repoIds[0] = repoId1;
+    repoIds[1] = repoId2;
+    repoIds[2] = repoId3;
+
+    try {
+      Value stringValue =
+          Value.newBuilder().setStringValue(testUser1UserName.substring(0, 2)).build();
+      KeyValueQuery keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("owner")
+              .setValue(stringValue)
+              .setOperator(OperatorEnum.Operator.CONTAIN)
+              .build();
+      FindRepositories findRepositoriesRequest =
+          FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
+      FindRepositories.Response findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
+      assertEquals(
+          "Project count not match with expected project count",
+          3,
+          findRepositoriesResponse.getRepositoriesCount());
+
+      assertEquals(
+          "Total records count not matched with expected records count",
+          3,
+          findRepositoriesResponse.getTotalRecords());
+
+      keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("owner")
+              .setValue(stringValue)
+              .setOperator(OperatorEnum.Operator.NOT_CONTAIN)
+              .build();
+      findRepositoriesRequest = FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
+      findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
+      assertEquals(
+          "Project count not match with expected project count",
+          0,
+          findRepositoriesResponse.getRepositoriesCount());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          0,
+          findRepositoriesResponse.getTotalRecords());
+
+      stringValue = Value.newBuilder().setStringValue("asdasdasd").build();
+      keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("owner")
+              .setValue(stringValue)
+              .setOperator(OperatorEnum.Operator.CONTAIN)
+              .build();
+
+      findRepositoriesRequest = FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
+      findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
+      assertEquals(
+          "Project count not match with expected project count",
+          0,
+          findRepositoriesResponse.getRepositoriesCount());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          0,
+          findRepositoriesResponse.getTotalRecords());
+
+    } finally {
+      for (long repoId : repoIds) {
+        DeleteRepositoryRequest deleteRepository =
+            DeleteRepositoryRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+                .build();
+        DeleteRepositoryRequest.Response deleteResult =
+            versioningServiceBlockingStub.deleteRepository(deleteRepository);
+        Assert.assertTrue(deleteResult.getStatus());
+      }
+    }
+
+    LOGGER.info(
+        "FindRepositories by owner fuzzy search test stop ................................");
+  }
+
+  @Test
+  public void findRepositoriesByOwnerArrWithInOperatorTest() {
+    LOGGER.info(
+        "FindRepositories by owner fuzzy search test start................................");
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      assertTrue(true);
+      return;
+    }
+    UACServiceGrpc.UACServiceBlockingStub uacServiceStub =
+        UACServiceGrpc.newBlockingStub(authServiceChannel);
+
+    GetUser getUserRequest =
+        GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+    // Get the user info by vertaId form the AuthService
+    UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
+
+    getUserRequest = GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
+    // Get the user info by vertaId form the AuthService
+    UserInfo testUser2 = uacServiceStub.getUser(getUserRequest);
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long repoId1 = createRepository(versioningServiceBlockingStub, NAME);
+    long repoId2 = createRepository(versioningServiceBlockingStub, NAME_2);
+    long repoId3 = createRepository(versioningServiceBlockingStub, NAME_3);
+    Long[] repoIds = new Long[3];
+    repoIds[0] = repoId1;
+    repoIds[1] = repoId2;
+    repoIds[2] = repoId3;
+
+    try {
+      String[] ownerArr = {
+        testUser1.getVertaInfo().getUserId(), testUser2.getVertaInfo().getUserId()
+      };
+      Value stringValue = Value.newBuilder().setStringValue(String.join(",", ownerArr)).build();
+      KeyValueQuery keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("owner")
+              .setValue(stringValue)
+              .setOperator(OperatorEnum.Operator.IN)
+              .build();
+      FindRepositories findRepositoriesRequest =
+          FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
+      FindRepositories.Response findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
+      assertEquals(
+          "Project count not match with expected project count",
+          3,
+          findRepositoriesResponse.getRepositoriesCount());
+
+      assertEquals(
+          "Total records count not matched with expected records count",
+          3,
+          findRepositoriesResponse.getTotalRecords());
+
+    } finally {
+      for (long repoId : repoIds) {
+        DeleteRepositoryRequest deleteRepository =
+            DeleteRepositoryRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+                .build();
+        DeleteRepositoryRequest.Response deleteResult =
+            versioningServiceBlockingStub.deleteRepository(deleteRepository);
+        Assert.assertTrue(deleteResult.getStatus());
+      }
+    }
+
+    LOGGER.info(
+        "FindRepositories by owner fuzzy search test stop ................................");
+  }
+
+  @Test
+  public void deleteRepositoryWithCommitTagsTest()
+      throws NoSuchAlgorithmException, ModelDBException {
+    LOGGER.info(
+        "Delete Repository contains commit with tags test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    CreateCommitRequest createCommitRequest =
+        CommitTest.getCreateCommitRequest(
+            id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+
+    String tag = "v1.0";
+    SetTagRequest setTagRequest =
+        SetTagRequest.newBuilder()
+            .setTag(tag)
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .build();
+    versioningServiceBlockingStub.setTag(setTagRequest);
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+    LOGGER.info(
+        "Delete Repository contains commit with tags test end................................");
   }
 }

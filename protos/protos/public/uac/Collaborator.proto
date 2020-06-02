@@ -88,7 +88,7 @@ service CollaboratorService {
             get: "/v1/collaborator/getProjectCollaborators"
         };
     };
-    
+
     rpc addOrUpdateDatasetCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
         option (google.api.http) = {
             post: "/v1/collaborator/addOrUpdateDatasetCollaborator"
@@ -107,7 +107,7 @@ service CollaboratorService {
             get: "/v1/collaborator/getDatasetCollaborators"
         };
     };
-    
+
     rpc addOrUpdateRepositoryCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
         option (google.api.http) = {
             post: "/v1/collaborator/addOrUpdateRepositoryCollaborator"

@@ -8,6 +8,7 @@ import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
@@ -88,8 +89,6 @@ public class CommitDAORdbImpl implements CommitDAO {
             internalCommit,
             rootSha);
     session.saveOrUpdate(commitEntity);
-    repositoryEntity.setDate_updated(commitEntity.getDate_created());
-    session.update(repositoryEntity);
     return commitEntity;
   }
 
@@ -195,10 +194,8 @@ public class CommitDAORdbImpl implements CommitDAO {
   public Commit getCommit(String commitHash, RepositoryFunction getRepository)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       CommitEntity commitEntity = getCommitEntity(session, commitHash, getRepository);
 
-      session.getTransaction().commit();
       return commitEntity.toCommitProto();
     }
   }
@@ -233,13 +230,13 @@ public class CommitDAORdbImpl implements CommitDAO {
             "Commit_hash and repository_id mapping not found", Code.NOT_FOUND);
       }
 
-      Query deleteQuery =
+      Query getCommitQuery =
           session.createQuery(
               "From "
                   + CommitEntity.class.getSimpleName()
                   + " c WHERE c.commit_hash = :commitHash");
-      deleteQuery.setParameter("commitHash", request.getCommitSha());
-      CommitEntity commitEntity = (CommitEntity) deleteQuery.uniqueResult();
+      getCommitQuery.setParameter("commitHash", request.getCommitSha());
+      CommitEntity commitEntity = (CommitEntity) getCommitQuery.uniqueResult();
 
       if (!commitEntity.getChild_commits().isEmpty()) {
         throw new ModelDBException(
@@ -284,8 +281,28 @@ public class CommitDAORdbImpl implements CommitDAO {
         throw new ModelDBException("Commit is associated with Label", Code.FAILED_PRECONDITION);
       }
 
+      String getTagsHql =
+          new StringBuilder("From TagsEntity te where te.id.")
+              .append(ModelDBConstants.REPOSITORY_ID)
+              .append(" = :repoId ")
+              .append(" AND te.commit_hash")
+              .append(" = :commitHash")
+              .toString();
+      Query getTagsQuery = session.createQuery(getTagsHql);
+      getTagsQuery.setParameter("repoId", repositoryEntity.getId());
+      getTagsQuery.setParameter("commitHash", commitEntity.getCommit_hash());
+      List<TagsEntity> tagsEntities = getTagsQuery.list();
+      if (tagsEntities.size() > 0) {
+        throw new ModelDBException(
+            "Commit is associated with Tags : "
+                + tagsEntities.stream()
+                    .map(tagsEntity -> tagsEntity.getId().getTag())
+                    .collect(Collectors.joining(",")),
+            Code.FAILED_PRECONDITION);
+      }
+
       // delete associated branch
-      repositoryDAO.deleteBranchByCommit(repositoryEntity.getId(), request.getCommitSha());
+      repositoryDAO.deleteBranchByCommit(session, repositoryEntity.getId(), request.getCommitSha());
 
       if (commitEntity.getRepository().size() == 1) {
         session.delete(commitEntity);
@@ -293,8 +310,6 @@ public class CommitDAORdbImpl implements CommitDAO {
         commitEntity.getRepository().remove(repositoryEntity);
         session.update(commitEntity);
       }
-      repositoryEntity.setDate_updated(new Date().getTime());
-      session.update(repositoryEntity);
       session.getTransaction().commit();
       return DeleteCommitRequest.Response.newBuilder().build();
     }

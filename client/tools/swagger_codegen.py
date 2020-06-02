@@ -8,7 +8,7 @@ import collections
 import pystache
 import click
 
-FieldType = collections.namedtuple('FieldType', ['safe_name', 'name', 'type'])
+FieldType = collections.namedtuple('FieldType', ['safe_name', 'name', 'type', 'required'])
 
 @click.command()
 @click.option('--output-dir')
@@ -68,7 +68,8 @@ def create_api(result_dir, result_package, api_name, content, templates, file_su
             for param_def in op_content.get('parameters', []):
                 name = param_def['name']
                 safe_name = to_language_case(name.replace('.', '_'), case)
-                parameters.append(FieldType(safe_name, name, dict(resolve_type(param_def), var_name=safe_name)))
+                param = FieldType(safe_name, name, dict(resolve_type(param_def), var_name=safe_name), param_def.get('required', False))
+                parameters.append(param)
 
                 if param_def.get('required', False):
                     required.append(parameters[-1])
@@ -77,13 +78,14 @@ def create_api(result_dir, result_package, api_name, content, templates, file_su
                     got_body_parameter = True
                     body_type = dict(resolve_type(param_def), var_name=safe_name)
                 elif param_def['in'] == 'query':
-                    query.append(FieldType(safe_name, name, dict(resolve_type(param_def), var_name=safe_name)))
+                    query.append(param)
                 elif param_def['in'] == 'path':
                     path = path.replace('{%s}' % name, "$%s" % safe_name)
                 else:
                     # print(path)
                     raise ValueError(param_def['in'])
 
+            parameters = sorted(parameters, key=lambda x: (not x.required, x.safe_name))
 
             # TODO
             success_response = None
@@ -101,6 +103,7 @@ def create_api(result_dir, result_package, api_name, content, templates, file_su
                     'name': q.name,
                     'safe_name': q.safe_name,
                     'type': q.type,
+                    'required': q.required,
                     'last': i == len(query)-1
                 } for i, q in enumerate(query)],
                 'body_present': got_body_parameter,
@@ -109,9 +112,10 @@ def create_api(result_dir, result_package, api_name, content, templates, file_su
                     'name': p.name,
                     'safe_name': p.safe_name,
                     'type': p.type,
+                    'required': p.required,
                     'last': i == len(parameters)-1
                 } for i, p in enumerate(parameters)],
-                'required': [{
+                'required_parameters': [{
                     'name': q.name,
                     'safe_name': q.safe_name,
                     'type': q.type,
@@ -159,6 +163,8 @@ def create_models(result_dir, result_package, content, templates, file_suffix, c
     for k, v in content['definitions'].items():
         if 'enum' in v:
             enums.append(capitalize_first(k))
+
+    enums = sorted(enums)
     for k, v in content['definitions'].items():
         create_model(result_dir, result_package, k, v, enums, templates, file_suffix, case, model)
     if len(content['definitions']) == 0:

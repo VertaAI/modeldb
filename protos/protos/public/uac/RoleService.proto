@@ -5,6 +5,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
+
 // List of possible services and actions
 // Let's only use enum if we can update this list without changing UAC code
 // I prefer enums instead of strings so that 1) we avoid bugs due to typos, 2) we have a comprehensive list somewhere
@@ -16,6 +17,7 @@ message ServiceEnum {
         MODELDB_SERVICE = 4;
     }
 };
+
 
 message ModelDBActionEnum {
     enum ModelDBServiceActions {
@@ -29,6 +31,7 @@ message ModelDBActionEnum {
         PUBLIC_READ =7;
     }
 };
+
 
 // An action describes a specific operation that can be performed on a service
 message Action {
@@ -205,6 +208,15 @@ message DeleteRoleBindings {
     };
 };
 
+message RemoveResources {
+    repeated string resource_ids = 1; // project.id, experiment.id etc.
+    ResourceType resource_type = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
 service RoleService {
     rpc getRoleById (GetRoleById) returns (GetRoleById.Response) {
         option (google.api.http) = {
@@ -264,6 +276,12 @@ service RoleService {
         option (google.api.http) = {
             post : "/v1/role/deleteRoleBindings"
             body : "*"
+        };
+    };
+
+    rpc removeResources (RemoveResources) returns (RemoveResources.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeResources"
         };
     };
 };

@@ -69,7 +69,11 @@ class Dataset(object):
                             " cannot set `desc`, `tags`, `attrs`, or `public_within_org`".format(name)
                         )
                     dataset = Dataset._get(conn, name, workspace)
-                    print("set existing Dataset: {} from {}".format(dataset.name, WORKSPACE_PRINT_MSG))
+                    if dataset is not None:
+                        print("set existing Dataset: {} from {}".format(dataset.name, WORKSPACE_PRINT_MSG))
+                    else:
+                        raise RuntimeError("unable to retrieve Dataset {};"
+                                           " please notify the Verta development team".format(name))
                 else:
                     raise e
             else:
@@ -127,9 +131,15 @@ class Dataset(object):
                 response_msg = _utils.json_to_proto(response_json, Message.Response)
                 if workspace is None or response_json.get('dataset_by_user'):
                     # user's personal workspace
-                    return response_msg.dataset_by_user
+                    dataset = response_msg.dataset_by_user
                 else:
-                    return response_msg.shared_datasets[0]
+                    dataset = response_msg.shared_datasets[0]
+
+                if not dataset.id:  # 200, but empty message
+                    raise RuntimeError("unable to retrieve Dataset {};"
+                                       " please notify the Verta development team".format(dataset_name))
+
+                return dataset
             else:
                 if response.status_code == 404 and response.json()['code'] == 5:
                     return None
@@ -538,6 +548,11 @@ class DatasetVersion(object):
             )
             if response.ok:
                 dataset_version = _utils.json_to_proto(response.json(), Message.Response).dataset_version
+
+                if not dataset_version.id:  # 200, but empty message
+                    raise RuntimeError("unable to retrieve DatasetVersion {};"
+                                       " please notify the Verta development team".format(_dataset_version_id))
+
                 return dataset_version
             else:
                 if response.status_code == 404 and response.json()['code'] == 5:

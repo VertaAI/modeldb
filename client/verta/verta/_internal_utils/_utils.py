@@ -28,7 +28,12 @@ from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 try:
     import pandas as pd
 except ImportError:  # pandas not installed
-    pass
+    pd = None
+
+try:
+    import tensorflow as tf
+except ImportError:  # TensorFlow not installed
+    tf = None
 
 try:
     import ipykernel
@@ -49,6 +54,14 @@ else:
     except ImportError:  # abnormally nonstandard installation of Jupyter
         pass
 
+
+try:
+    import numpy as np
+except ImportError:  # NumPy not installed
+    np = None
+    BOOL_TYPES = (bool,)
+else:
+    BOOL_TYPES = (bool, np.bool_)
 
 _GRPC_PREFIX = "Grpc-Metadata-"
 
@@ -419,6 +432,10 @@ def to_builtin(obj):
     obj_class = getattr(cls_, '__name__', None)
     obj_module = getattr(cls_, '__module__', None)
 
+    # booleans
+    if isinstance(obj, BOOL_TYPES):
+        return True if obj else False
+
     # NumPy scalars
     if obj_module == "numpy" and obj_class.startswith(('int', 'uint', 'float', 'str')):
         return obj.item()
@@ -432,6 +449,11 @@ def to_builtin(obj):
         return obj.values.tolist()
     if obj_class == "Tensor" and obj_module == "torch":
         return obj.detach().numpy().tolist()
+    if tf is not None and isinstance(obj, tf.Tensor):  # if TensorFlow
+        try:
+            return obj.numpy().tolist()
+        except:  # TF 1.X or not-eager execution
+            pass
 
     # strings
     if isinstance(obj, six.string_types):  # prevent infinite loop with iter

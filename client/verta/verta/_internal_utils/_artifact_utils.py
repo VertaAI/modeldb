@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import hashlib
 import os
 import tempfile
 
@@ -16,9 +17,51 @@ except ImportError:  # joblib not installed
     pass
 
 try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
+    TF_MAJOR_VERSION_STR = None
+else:
+    # TODO: use in TF integration module
+    TF_MAJOR_VERSION_STR = tf.__version__.split('.')[0]  # don't cast to int at module scope; breaks autodoc
+
+# TODO: use the newly-added tf = None above for this module's install checks
+try:
     from tensorflow import keras
 except ImportError:  # TensorFlow not installed
     pass
+
+
+# NOTE: keep up-to-date with Deployment API
+BLACKLISTED_KEYS = {
+    'model_api.json',
+    'model.pkl',
+    'requirements.txt',
+    'train_data',
+    'tf_saved_model',
+    'custom_modules',
+    'setup_script',
+}
+
+
+def validate_key(key):
+    """
+    Validates user-specified artifact key.
+
+    Parameters
+    ----------
+    key : str
+        Name of artifact.
+
+    Raises
+    ------
+    ValueError
+        If `key` is blacklisted.
+
+    """
+    if key in BLACKLISTED_KEYS:
+        msg = "\"{}\" is reserved for internal use; please use a different key".format(key)
+        raise ValueError(msg)
 
 
 def get_file_ext(file):
@@ -229,7 +272,11 @@ def serialize_model(model):
         elif module_name.startswith("tensorflow.python.keras"):
             model_type = "tensorflow"
             tempf = tempfile.NamedTemporaryFile()
-            model.save(tempf.name)  # Keras provides this fn
+            if (TF_MAJOR_VERSION_STR is not None
+                    and TF_MAJOR_VERSION_STR == '2'):  # save_format param may not exist in TF 1.X
+                model.save(tempf.name, save_format='h5')  # TF 2.X uses SavedModel by default
+            else:
+                model.save(tempf.name)
             tempf.seek(0)
             bytestream = tempf
             method = "keras"
@@ -281,3 +328,37 @@ def deserialize_model(bytestring):
         bytestream.seek(0)
 
     return bytestream
+
+
+def calc_sha256(bytestream, chunk_size=5*10**6):
+    """
+    Calculates the SHA-256 checksum of a bytestream.
+
+    Parameters
+    ----------
+    bytestream : file-like opened in binary mode
+        Bytestream.
+    chunk_size : int, default 5 MB
+        Number of bytes to read into memory at a time.
+
+    Returns
+    -------
+    checksum : str
+        SHA-256 hash of `bytestream`'s contents.
+
+    Raises
+    ------
+    TypeError
+        If `bytestream` is opened in text mode instead of binary mode.
+
+    """
+    checksum = hashlib.sha256()
+
+    try:
+        parts = iter(lambda: bytestream.read(chunk_size), b'')
+        for part in parts:
+            checksum.update(part)
+    finally:
+        reset_stream(bytestream)  # reset cursor to beginning as a courtesy
+
+    return checksum.hexdigest()

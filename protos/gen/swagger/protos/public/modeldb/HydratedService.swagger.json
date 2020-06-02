@@ -1561,6 +1561,9 @@
         },
         "sort_key": {
           "type": "string"
+        },
+        "workspace_name": {
+          "type": "string"
         }
       }
     },
@@ -2332,6 +2335,12 @@
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_repo_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "default_endpoint_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         }
       }

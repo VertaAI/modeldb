@@ -1,12 +1,19 @@
 package ai.verta.modeldb.experimentRun;
 
+import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
+
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.Artifact;
+import ai.verta.modeldb.ArtifactPart;
 import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitArtifactPart.Response;
+import ai.verta.modeldb.CommitMultipartArtifact;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
+import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.GitSnapshot;
 import ai.verta.modeldb.KeyValueQuery;
@@ -26,9 +33,9 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
+import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
@@ -37,6 +44,7 @@ import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
+import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -60,9 +68,12 @@ import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum;
+import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
+import com.amazonaws.services.s3.model.PartETag;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -70,7 +81,8 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -79,6 +91,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -103,42 +118,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
-  private static final String UPDATE_PROJECT_HQL =
-      new StringBuilder("UPDATE ProjectEntity p SET p.")
-          .append(ModelDBConstants.DATE_UPDATED)
-          .append(" = :timestamp where p.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:ids) ")
-          .toString();
-  private static final String UPDATE_EXP_TIMESTAMP_HQL =
-      new StringBuilder()
-          .append("UPDATE ExperimentEntity exp SET exp.")
-          .append(ModelDBConstants.DATE_UPDATED)
-          .append(" = :timestamp")
-          .append(" where exp.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:ids) ")
-          .toString();
   private static final String CHECK_EXP_RUN_EXISTS_AT_INSERT_HQL =
       new StringBuilder("Select count(*) From ExperimentRunEntity ere where ")
           .append(" ere." + ModelDBConstants.NAME + " = :experimentRunName ")
           .append(" AND ere." + ModelDBConstants.PROJECT_ID + " = :projectId ")
           .append(" AND ere." + ModelDBConstants.EXPERIMENT_ID + " = :experimentId ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String CHECK_EXP_RUN_EXISTS_AT_UPDATE_HQL =
       new StringBuilder("Select count(*) From ExperimentRunEntity ere where ")
           .append(" ere." + ModelDBConstants.ID + " = :experimentRunId ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String GET_EXP_RUN_BY_IDS_HQL =
-      "From ExperimentRunEntity exr where exr.id IN (:ids)";
-  private static final String COMMENT_DELETE_HQL =
-      new StringBuilder()
-          .append("From CommentEntity ce where ce.")
-          .append(ModelDBConstants.ENTITY_ID)
-          .append(" IN (:entityIds) AND ce.")
-          .append(ModelDBConstants.ENTITY_NAME)
-          .append(" =:entityName")
-          .toString();
+      "From ExperimentRunEntity exr where exr.id IN (:ids) AND exr."
+          + ModelDBConstants.DELETED
+          + " = false ";
   private static final String DELETE_ALL_TAGS_HQL =
       new StringBuilder("delete from TagsMapping tm WHERE tm.experimentRunEntity.")
           .append(ModelDBConstants.ID)
@@ -195,6 +190,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append(ModelDBConstants.EXPERIMENT_ID)
           .append(" IN (:experimentIds) ")
           .toString();
+  private static final String DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING =
+      new StringBuilder("UPDATE ")
+          .append(ExperimentRunEntity.class.getSimpleName())
+          .append(" expr ")
+          .append("SET expr.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE expr.")
+          .append(ModelDBConstants.ID)
+          .append(" IN (:experimentRunIds)")
+          .toString();
 
   public ExperimentRunDAORdbImpl(
       AuthService authService,
@@ -207,22 +213,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
-  }
-
-  private void updateParentEntitiesTimestamp(
-      Session session, List<String> projectIds, List<String> experimentIds, long currentTimestamp) {
-    if (projectIds != null && !projectIds.isEmpty()) {
-      Query query = session.createQuery(UPDATE_PROJECT_HQL);
-      query.setParameter("timestamp", currentTimestamp);
-      query.setParameterList("ids", projectIds);
-      query.executeUpdate();
-    }
-    if (experimentIds != null && !experimentIds.isEmpty()) {
-      Query query = session.createQuery(UPDATE_EXP_TIMESTAMP_HQL);
-      query.setParameter("timestamp", currentTimestamp);
-      query.setParameterList("ids", experimentIds);
-      query.executeUpdate();
-    }
   }
 
   private void checkIfEntityAlreadyExists(ExperimentRun experimentRun, Boolean isInsert) {
@@ -318,6 +308,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
+    createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experimentRun, true);
       Transaction transaction = session.beginTransaction();
@@ -332,76 +323,61 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 locationBlobWithHashMap,
                 experimentRunObj);
         experimentRunObj.setVersioned_inputs(versioningModeldbEntityMappings);
+        Set<HyperparameterElementMappingEntity> hyrParamMappings =
+            prepareHyperparameterElemMappings(experimentRunObj, versioningModeldbEntityMappings);
+
+        if (!hyrParamMappings.isEmpty()) {
+          experimentRunObj.setHyperparameter_element_mappings(new ArrayList<>(hyrParamMappings));
+        }
       }
       session.saveOrUpdate(experimentRunObj);
-
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          experimentRun.getId(),
-          ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRun.getProjectId()),
-          Collections.singletonList(experimentRun.getExperimentId()),
-          Calendar.getInstance().getTimeInMillis());
       transaction.commit();
       LOGGER.debug("ExperimentRun created successfully");
       return experimentRun;
     }
   }
 
-  @Override
-  public Boolean deleteExperimentRun(String experimentRunId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+  private void createRoleBindingsForExperimentRun(ExperimentRun experimentRun, UserInfo userInfo) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        experimentRun.getId(),
+        ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
+  }
 
-      List<String> accessibleExperimentRunIds =
-          getAccessibleExperimentRunIDs(
-              Collections.singletonList(experimentRunId),
-              ModelDBActionEnum.ModelDBServiceActions.UPDATE);
-      if (accessibleExperimentRunIds.isEmpty()) {
-        Status statusMessage =
-            Status.newBuilder()
-                .setCode(Code.PERMISSION_DENIED_VALUE)
-                .setMessage(
-                    "Access is denied. User is unauthorized for given ExperimentRun entities : "
-                        + accessibleExperimentRunIds)
-                .build();
-        throw StatusProto.toStatusRuntimeException(statusMessage);
-      }
-
-      // Delete the ExperimentRun comments
-      removeEntityComments(
-          session,
-          Collections.singletonList(experimentRunId),
-          ExperimentRunEntity.class.getSimpleName());
-
-      // Delete the ExperimentEntity object
-      ExperimentRunEntity experimentRunObj =
-          session.load(ExperimentRunEntity.class, experimentRunId);
-      String projectId = experimentRunObj.getProject_id();
-      String experimentId = experimentRunObj.getExperiment_id();
-      session.delete(experimentRunObj);
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(projectId),
-          Collections.singletonList(experimentId),
-          Calendar.getInstance().getTimeInMillis());
-      transaction.commit();
-      LOGGER.debug("ExperimentRun deleted successfully");
-      return true;
-    }
+  private Set<HyperparameterElementMappingEntity> prepareHyperparameterElemMappings(
+      ExperimentRunEntity experimentRunObj,
+      List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings) {
+    Set<HyperparameterElementMappingEntity> hyrParamMappings = new HashSet<>();
+    versioningModeldbEntityMappings.forEach(
+        versioningModeldbEntityMapping ->
+            versioningModeldbEntityMapping
+                .getConfig_blob_entities()
+                .forEach(
+                    configBlobEntity -> {
+                      if (configBlobEntity.getHyperparameter_type().equals(HYPERPARAMETER)) {
+                        HyperparameterElementConfigBlobEntity hyperparamElemConfBlobEntity =
+                            configBlobEntity.getHyperparameterElementConfigBlobEntity();
+                        try {
+                          HyperparameterElementMappingEntity hyrParamMapping =
+                              new HyperparameterElementMappingEntity(
+                                  experimentRunObj,
+                                  hyperparamElemConfBlobEntity.getName(),
+                                  hyperparamElemConfBlobEntity.toProto());
+                          hyrParamMappings.add(hyrParamMapping);
+                        } catch (ModelDBException e) {
+                          // This is never call because if something is wrong at this point then
+                          // error will throw before this running 'for' loop
+                          LOGGER.warn(e.getMessage());
+                        }
+                      }
+                    }));
+    return hyrParamMappings;
   }
 
   @Override
   public Boolean deleteExperimentRuns(List<String> experimentRunIds) {
-    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
@@ -418,57 +394,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(statusMessage);
       }
-
-      // Delete the ExperimentRUn comments
-      if (!experimentRunIds.isEmpty()) {
-        removeEntityComments(session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
-      }
-
-      // Delete the ExperimentEntity object
-      Query query = session.createQuery(GET_EXP_RUN_BY_IDS_HQL);
-      query.setParameterList("ids", experimentRunIds);
-
-      List<String> projectIds = new ArrayList<>();
-      List<String> experimentIds = new ArrayList<>();
-      @SuppressWarnings("unchecked")
-      List<ExperimentRunEntity> experimentRunEntities = query.list();
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        projectIds.add(experimentRunEntity.getProject_id());
-        experimentIds.add(experimentRunEntity.getExperiment_id());
-        session.delete(experimentRunEntity);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-                experimentRunEntity.getId(),
-                experimentRunEntity.getOwner(),
-                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-          roleBindingNames.add(ownerRoleBindingName);
-        }
-      }
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session, projectIds, experimentIds, Calendar.getInstance().getTimeInMillis());
+      Query query = session.createQuery(DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING);
+      query.setParameter("deleted", true);
+      query.setParameter("experimentRunIds", accessibleExperimentRunIds);
+      int updatedCount = query.executeUpdate();
+      LOGGER.debug(
+          "Mark ExperimentRun as deleted : {}, count : {}",
+          accessibleExperimentRunIds,
+          updatedCount);
       transaction.commit();
-
-      // Remove all role bindings
-      roleService.deleteRoleBindings(roleBindingNames);
-
       LOGGER.debug("ExperimentRun deleted successfully");
       return true;
-    }
-  }
-
-  private void removeEntityComments(Session session, List<String> entityIds, String entityName) {
-    Query commentDeleteQuery = session.createQuery(COMMENT_DELETE_HQL);
-    commentDeleteQuery.setParameterList("entityIds", entityIds);
-    commentDeleteQuery.setParameter("entityName", entityName);
-    LOGGER.debug("Comments delete query : {}", commentDeleteQuery.getQueryString());
-    List<CommentEntity> commentEntities = commentDeleteQuery.list();
-    for (CommentEntity commentEntity : commentEntities) {
-      session.delete(commentEntity);
     }
   }
 
@@ -592,10 +528,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     LOGGER.debug("Got ExperimentRun successfully");
     return experimentRunEntity;
   }
+  
+  @Override
+  public boolean isExperimentRunExists(Session session, String experimentRunId) {
+    Query query = session.createQuery(CHECK_EXP_RUN_EXISTS_AT_UPDATE_HQL);
+    query.setParameter("experimentRunId", experimentRunId);
+    Long count = (Long) query.uniqueResult();
+    return count > 0;
+  }
 
   @Override
-  public ExperimentRun updateExperimentRunName(String experimentRunId, String experimentRunName)
-      throws InvalidProtocolBufferException {
+  public void updateExperimentRunName(String experimentRunId, String experimentRunName) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntity =
@@ -605,14 +548,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntity.setDate_updated(currentTimestamp);
       session.update(experimentRunEntity);
       LOGGER.debug("ExperimentRun name updated successfully");
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntity.getProject_id()),
-          Collections.singletonList(experimentRunEntity.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
-      return experimentRunEntity.getProtoObject();
     }
   }
 
@@ -629,20 +565,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntity.setDate_updated(currentTimestamp);
       session.update(experimentRunEntity);
       LOGGER.debug("ExperimentRun description updated successfully");
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntity.getProject_id()),
-          Collections.singletonList(experimentRunEntity.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       return experimentRunEntity.getProtoObject();
     }
   }
 
   @Override
-  public ExperimentRun logExperimentRunCodeVersion(
-      String experimentRunId, CodeVersion updatedCodeVersion)
+  public void logExperimentRunCodeVersion(String experimentRunId, CodeVersion updatedCodeVersion)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
@@ -664,21 +593,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntity.setDate_updated(currentTimestamp);
       session.update(experimentRunEntity);
       LOGGER.debug("ExperimentRun code version snapshot updated successfully");
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntity.getProject_id()),
-          Collections.singletonList(experimentRunEntity.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
-      return experimentRunEntity.getProtoObject();
     }
   }
 
   @Override
-  public ExperimentRun setParentExperimentRunId(
-      String experimentRunId, String parentExperimentRunId) throws InvalidProtocolBufferException {
+  public void setParentExperimentRunId(String experimentRunId, String parentExperimentRunId) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntity =
@@ -688,14 +608,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntity.setDate_updated(currentTimestamp);
       session.update(experimentRunEntity);
       LOGGER.debug("ExperimentRun parentId updated successfully");
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntity.getProject_id()),
-          Collections.singletonList(experimentRunEntity.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
-      return experimentRunEntity.getProtoObject();
     }
   }
 
@@ -730,12 +643,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         experimentRunObj.setDate_updated(currentTimestamp);
         session.saveOrUpdate(experimentRunObj);
       }
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunObj.getProject_id()),
-          Collections.singletonList(experimentRunObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       LOGGER.debug("ExperimentRun tags added successfully");
       return experimentRunObj.getProtoObject();
@@ -763,12 +670,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunObj.setDate_updated(currentTimestamp);
       session.update(experimentRunObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunObj.getProject_id()),
-          Collections.singletonList(experimentRunObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       LOGGER.debug("ExperimentRun tags deleted successfully");
       return experimentRunObj.getProtoObject();
@@ -776,7 +677,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun logObservations(String experimentRunId, List<Observation> observations)
+  public void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
@@ -798,14 +699,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
-      return experimentRunEntityObj.getProtoObject();
     }
   }
 
@@ -839,7 +733,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun logMetrics(String experimentRunId, List<KeyValue> newMetrics)
+  public void logMetrics(String experimentRunId, List<KeyValue> newMetrics)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
@@ -878,14 +772,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
-      return experimentRunEntityObj.getProtoObject();
     }
   }
 
@@ -930,8 +817,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun logDatasets(
-      String experimentRunId, List<Artifact> newDatasets, boolean overwrite)
+  public void logDatasets(String experimentRunId, List<Artifact> newDatasets, boolean overwrite)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
@@ -980,19 +866,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
     }
-    return getExperimentRun(experimentRunId);
   }
 
   @Override
-  public ExperimentRun logArtifacts(String experimentRunId, List<Artifact> newArtifacts)
+  public void logArtifacts(String experimentRunId, List<Artifact> newArtifacts)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
@@ -1031,14 +910,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
-      return experimentRunEntityObj.getProtoObject();
     }
   }
 
@@ -1081,8 +953,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun deleteArtifacts(String experimentRunId, String artifactKey)
-      throws InvalidProtocolBufferException {
+  public void deleteArtifacts(String experimentRunId, String artifactKey) {
     Transaction transaction = null;
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
@@ -1103,15 +974,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           session.get(ExperimentRunEntity.class, experimentRunId);
       experimentRunObj.setDate_updated(currentTimestamp);
       session.update(experimentRunObj);
-
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunObj.getProject_id()),
-          Collections.singletonList(experimentRunObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
-      return experimentRunObj.getProtoObject();
     } catch (StatusRuntimeException ex) {
       if (transaction != null) {
         transaction.rollback();
@@ -1121,7 +984,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun logHyperparameters(String experimentRunId, List<KeyValue> newHyperparameters)
+  public void logHyperparameters(String experimentRunId, List<KeyValue> newHyperparameters)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
@@ -1161,14 +1024,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
-      return experimentRunEntityObj.getProtoObject();
     }
   }
 
@@ -1193,7 +1049,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun logAttributes(String experimentRunId, List<KeyValue> newAttributes)
+  public void logAttributes(String experimentRunId, List<KeyValue> newAttributes)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
@@ -1233,14 +1089,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
-      return experimentRunEntityObj.getProtoObject();
     }
   }
 
@@ -1364,7 +1213,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   ModelDBActionEnum.ModelDBServiceActions.READ);
           accessibleExperimentRunIds.addAll(accessibleExperimentRunId);
           // Validate if current user has access to the entity or not where predicate key has an id
-          RdbmsUtils.validateEntityIdInPredicates(
+          RdbmsUtils.validatePredicates(
               ModelDBConstants.EXPERIMENT_RUNS, accessibleExperimentRunIds, predicate, roleService);
         }
       }
@@ -1380,7 +1229,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       List<String> projectIds = new ArrayList<>();
       if (!queryParameters.getProjectId().isEmpty()) {
         projectIds.add(queryParameters.getProjectId());
-      } else if (accessibleExperimentRunIds.isEmpty()) {
+      } else if (accessibleExperimentRunIds.isEmpty()
+          && queryParameters.getExperimentId().isEmpty()) {
         List<String> workspaceProjectIDs =
             projectDAO.getWorkspaceProjectIDs(
                 queryParameters.getWorkspaceName(), currentLoginUserInfo);
@@ -1396,7 +1246,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         projectIds.addAll(workspaceProjectIDs);
       }
 
-      if (accessibleExperimentRunIds.isEmpty() && projectIds.isEmpty()) {
+      if (accessibleExperimentRunIds.isEmpty()
+          && projectIds.isEmpty()
+          && queryParameters.getExperimentId().isEmpty()) {
         String errorMessage =
             "Access is denied. Accessible projects not found for given ExperimentRun IDs : "
                 + accessibleExperimentRunIds;
@@ -1426,12 +1278,26 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       LOGGER.trace("Added entity predicates");
       String entityName = "experimentRunEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, experimentRunRoot, authService);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, experimentRunRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
+          LOGGER.warn(ex.getMessage());
+          ExperimentRunPaginationDTO experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
+          experimentRunPaginationDTO.setExperimentRuns(Collections.emptyList());
+          experimentRunPaginationDTO.setTotalRecords(0L);
+          return experimentRunPaginationDTO;
+        }
       }
+
+      finalPredicatesList.add(
+          builder.equal(experimentRunRoot.get(ModelDBConstants.DELETED), false));
 
       Order[] orderBy =
           RdbmsUtils.getOrderArrBasedOnSortKey(
@@ -1533,7 +1399,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     String queryBuilder =
         "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds)";
     Query query = session.createQuery(queryBuilder);
-    query.setParameter("hyperparameterType", ConfigBlobEntity.HYPERPARAMETER);
+    query.setParameter("hyperparameterType", HYPERPARAMETER);
     query.setParameterList("expRunIds", expRunIds);
     LOGGER.debug(
         "Final experimentRuns hyperparameter config blob final query : {}", query.getQueryString());
@@ -1546,7 +1412,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           objects -> {
             String expRunId = (String) objects[0];
             ConfigBlobEntity configBlobEntity = (ConfigBlobEntity) objects[1];
-            if (configBlobEntity.getHyperparameter_type() == ConfigBlobEntity.HYPERPARAMETER) {
+            if (configBlobEntity.getHyperparameter_type() == HYPERPARAMETER) {
               HyperparameterElementConfigBlobEntity hyperElementConfigBlobEntity =
                   configBlobEntity.getHyperparameterElementConfigBlobEntity();
               HyperparameterValuesConfigBlob valuesConfigBlob =
@@ -1711,8 +1577,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun addExperimentRunAttributes(
-      String experimentRunId, List<KeyValue> attributesList) throws InvalidProtocolBufferException {
+  public void addExperimentRunAttributes(String experimentRunId, List<KeyValue> attributesList)
+      throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
@@ -1724,21 +1590,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
-      return experimentRunEntityObj.getProtoObject();
     }
   }
 
   @Override
-  public ExperimentRun deleteExperimentRunAttributes(
-      String experimentRunId, List<String> attributeKeyList, Boolean deleteAll)
-      throws InvalidProtocolBufferException {
+  public void deleteExperimentRunAttributes(
+      String experimentRunId, List<String> attributeKeyList, Boolean deleteAll) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       if (deleteAll) {
@@ -1758,21 +1616,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunObj.setDate_updated(currentTimestamp);
       session.update(experimentRunObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunObj.getProject_id()),
-          Collections.singletonList(experimentRunObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       LOGGER.debug("ExperimentRun Attributes deleted successfully");
-      return experimentRunObj.getProtoObject();
     }
   }
 
   @Override
-  public ExperimentRun logJobId(String experimentRunId, String jobId)
-      throws InvalidProtocolBufferException {
+  public void logJobId(String experimentRunId, String jobId) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
@@ -1781,15 +1631,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(experimentRunEntityObj.getProject_id()),
-          Collections.singletonList(experimentRunEntityObj.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       LOGGER.debug("ExperimentRun JobID added successfully");
-      return experimentRunEntityObj.getProtoObject();
     }
   }
 
@@ -1890,7 +1733,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           stringQueryBuilder.append(" AND ");
         }
       }
-      Query query = session.createQuery(stringQueryBuilder.toString());
+      Query query =
+          session.createQuery(
+              stringQueryBuilder.toString() + " AND er." + ModelDBConstants.DELETED + " = false ");
       for (Map.Entry<String, Object> paramEntry : paramMap.entrySet()) {
         query.setParameter(paramEntry.getKey(), paramEntry.getValue());
       }
@@ -1995,8 +1840,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public LogVersionedInput.Response logVersionedInput(LogVersionedInput request)
-      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
+  public void logVersionedInput(LogVersionedInput request)
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       VersioningEntry versioningEntry = request.getVersionedInputs();
@@ -2027,28 +1872,24 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
 
         if (finalVersionList.isEmpty()) {
-          return LogVersionedInput.Response.newBuilder()
-              .setExperimentRun(runEntity.getProtoObject())
-              .build();
+          return;
         }
         existingMappings.addAll(finalVersionList);
       }
       runEntity.setVersioned_inputs(existingMappings);
 
+      Set<HyperparameterElementMappingEntity> hyrParamMappings =
+          prepareHyperparameterElemMappings(runEntity, versioningModeldbEntityMappings);
+
+      if (!hyrParamMappings.isEmpty()) {
+        runEntity.setHyperparameter_element_mappings(new ArrayList<>(hyrParamMappings));
+      }
+
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
       session.saveOrUpdate(runEntity);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(runEntity.getProject_id()),
-          Collections.singletonList(runEntity.getExperiment_id()),
-          currentTimestamp);
       transaction.commit();
       LOGGER.debug("ExperimentRun versioning added successfully");
-      return LogVersionedInput.Response.newBuilder()
-          .setExperimentRun(runEntity.getProtoObject())
-          .build();
     }
   }
 
@@ -2195,5 +2036,175 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
           .build();
     }
+  }
+
+  private Optional<ArtifactEntity> getExperimentRunArtifact(
+      Session session,
+      String experimentRunId,
+      String key,
+      ModelDBServiceActions modelDBServiceActions)
+      throws InvalidProtocolBufferException {
+    ExperimentRunEntity experimentRunObj = session.get(ExperimentRunEntity.class, experimentRunId);
+    if (experimentRunObj == null) {
+      LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.NOT_FOUND_VALUE)
+              .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+
+    String projectId = experimentRunObj.getProject_id();
+
+    // Validate if current user has access to the entity or not
+    roleService.validateEntityUserWithUserInfo(
+        ModelDBServiceResourceTypes.PROJECT, projectId, modelDBServiceActions);
+    Map<String, List<ArtifactEntity>> artifactEntityMap = experimentRunObj.getArtifactEntityMap();
+
+    List<ArtifactEntity> result =
+        (artifactEntityMap != null && artifactEntityMap.containsKey(ModelDBConstants.ARTIFACTS))
+            ? artifactEntityMap.get(ModelDBConstants.ARTIFACTS)
+            : Collections.emptyList();
+    return result.stream()
+        .filter(artifactEntity -> artifactEntity.getKey().equals(key))
+        .findFirst();
+  }
+
+  @Override
+  public Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
+      String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
+      throws ModelDBException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      ArtifactEntity artifactEntity =
+          getArtifactEntity(session, experimentRunId, key, ModelDBServiceActions.UPDATE);
+      return getS3PathAndMultipartUploadId(
+          session, artifactEntity, partNumber != 0, initializeMultipart);
+    }
+  }
+
+  public ArtifactEntity getArtifactEntity(
+      Session session,
+      String experimentRunId,
+      String key,
+      ModelDBServiceActions modelDBServiceActions)
+      throws ModelDBException, InvalidProtocolBufferException {
+    Optional<ArtifactEntity> artifactEntityOptional =
+        getExperimentRunArtifact(session, experimentRunId, key, modelDBServiceActions);
+    return artifactEntityOptional.orElseThrow(
+        () -> new ModelDBException("Can't find specified artifact", io.grpc.Status.Code.NOT_FOUND));
+  }
+
+  private SimpleEntry<String, String> getS3PathAndMultipartUploadId(
+      Session session,
+      ArtifactEntity artifactEntity,
+      boolean partNumberSpecified,
+      S3KeyFunction initializeMultipart) {
+    String uploadId;
+    if (partNumberSpecified) {
+      uploadId = artifactEntity.getUploadId();
+      try {
+        String message = null;
+        if (uploadId == null) {
+          if (initializeMultipart == null) {
+            message = "Multipart wasn't initialized";
+          } else {
+            uploadId = initializeMultipart.apply(artifactEntity.getPath()).orElse(null);
+          }
+        }
+        if (message != null) {
+          LOGGER.info(message);
+          throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
+        }
+      } catch (ModelDBException e) {
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(e.getMessage())
+                .addDetails(Any.pack(CommitMultipartArtifact.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+      if (!Objects.equals(uploadId, artifactEntity.getUploadId())
+          || artifactEntity.isUploadCompleted()) {
+        session.beginTransaction();
+        artifactEntity.setUploadId(uploadId);
+        artifactEntity.setUploadCompleted(false);
+        session.getTransaction().commit();
+      }
+    } else {
+      uploadId = null;
+    }
+    return new AbstractMap.SimpleEntry<>(artifactEntity.getPath(), uploadId);
+  }
+
+  @Override
+  public Response commitArtifactPart(CommitArtifactPart request)
+      throws ModelDBException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      ArtifactEntity artifactEntity =
+          getArtifactEntity(
+              session, request.getId(), request.getKey(), ModelDBServiceActions.UPDATE);
+      ArtifactPart artifactPart = request.getArtifactPart();
+      ArtifactPartEntity artifactPartEntity =
+          new ArtifactPartEntity(
+              artifactEntity, artifactPart.getPartNumber(), artifactPart.getEtag());
+      session.beginTransaction();
+      session.saveOrUpdate(artifactPartEntity);
+      session.getTransaction().commit();
+      return Response.newBuilder().build();
+    }
+  }
+
+  @Override
+  public GetCommittedArtifactParts.Response getCommittedArtifactParts(
+      GetCommittedArtifactParts request) throws ModelDBException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Set<ArtifactPartEntity> artifactPartEntities =
+          getArtifactPartEntities(session, request.getId(), request.getKey());
+      GetCommittedArtifactParts.Response.Builder response =
+          GetCommittedArtifactParts.Response.newBuilder();
+      artifactPartEntities.forEach(
+          artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
+      return response.build();
+    }
+  }
+
+  private Set<ArtifactPartEntity> getArtifactPartEntities(
+      Session session, String experimentRunId, String key)
+      throws ModelDBException, InvalidProtocolBufferException {
+    ArtifactEntity artifactEntity =
+        getArtifactEntity(session, experimentRunId, key, ModelDBServiceActions.READ);
+    return artifactEntity.getArtifactPartEntities();
+  }
+
+  @Override
+  public CommitMultipartArtifact.Response commitMultipartArtifact(
+      CommitMultipartArtifact request, CommitMultipartFunction commitMultipartFunction)
+      throws ModelDBException, InvalidProtocolBufferException {
+    List<PartETag> partETags;
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      ArtifactEntity artifactEntity =
+          getArtifactEntity(
+              session, request.getId(), request.getKey(), ModelDBServiceActions.UPDATE);
+      if (artifactEntity.getUploadId() == null) {
+        String message = "Multipart wasn't initialized";
+        LOGGER.info(message);
+        throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
+      }
+      Set<ArtifactPartEntity> artifactPartEntities = artifactEntity.getArtifactPartEntities();
+      partETags =
+          artifactPartEntities.stream()
+              .map(ArtifactPartEntity::toPartETag)
+              .collect(Collectors.toList());
+      commitMultipartFunction.apply(
+          artifactEntity.getPath(), artifactEntity.getUploadId(), partETags);
+      session.beginTransaction();
+      artifactEntity.setUploadCompleted(true);
+      artifactPartEntities.forEach(session::delete);
+      artifactPartEntities.clear();
+      session.getTransaction().commit();
+    }
+    return CommitMultipartArtifact.Response.newBuilder().build();
   }
 }

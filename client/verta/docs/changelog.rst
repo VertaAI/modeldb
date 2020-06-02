@@ -32,6 +32,61 @@ Release Notes
      <>`__
 
 
+v0.14.6 (2020-05-29)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `enable multipart artifact uploads
+  <https://github.com/VertaAI/modeldb/pull/643>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix Notebook Blob repr
+  <https://github.com/VertaAI/modeldb/pull/629>`__
+- `support NumPy bool_ and pandas 1.X in ModelAPI
+  <https://github.com/VertaAI/modeldb/pull/630>`__
+- `ignore folders in S3 versioning Blobs
+  <https://github.com/VertaAI/modeldb/pull/631>`__
+- `inject verta and cloudpickle into Python environment Blobs
+  <https://github.com/VertaAI/modeldb/pull/644>`__
+- `blacklist deployment artifact keys
+  <https://github.com/VertaAI/modeldb/pull/648>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `remove logic duplication for fixing NFS URLs
+  <https://github.com/VertaAI/modeldb/pull/659>`__
+- `calculate SHA-256 checksums for artifacts in chunks
+  <https://github.com/VertaAI/modeldb/pull/670>`__
+
+
+v0.14.5 (2020-05-13)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `support logging Keras models in TensorFlow 2.X
+  <https://github.com/VertaAI/modeldb/pull/621>`__
+- `support eagerly-executed TensorFlow Tensors in ModelAPI
+  <https://github.com/VertaAI/modeldb/pull/626>`__
+
+Bug Fixes
+^^^^^^^^^
+- `filter out spaCy models when versioning pip requirements files
+  <https://github.com/VertaAI/modeldb/pull/627>`__
+
+
+v0.14.4 (2020-05-04)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `run.log_training_data() no longer uploads a "train_data" artifact, and instead directly
+  generates a histogram for deployment data monitoring
+  <https://github.com/VertaAI/modeldb/pull/576>`__
+
+
 v0.14.3 (2020-04-20)
 --------------------
 
