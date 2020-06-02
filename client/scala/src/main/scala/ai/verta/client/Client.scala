@@ -78,8 +78,7 @@ class Client(conn: ClientConnection) {
             name = Some(name),
             workspace_id = workspace
           )
-        ).map(r => new Repository(clientSet, r.repository.get)
-        )
+        ).map(r => new Repository(clientSet, r.repository.get))
       }
     )
   }
