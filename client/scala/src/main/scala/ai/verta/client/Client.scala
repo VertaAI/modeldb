@@ -1,7 +1,9 @@
 package ai.verta.client
 
 import ai.verta.client.entities.{Experiment, ExperimentRun, GetOrCreateEntity, Project}
+import ai.verta.repository.Repository
 import ai.verta.swagger._public.modeldb.model.ModeldbCreateProject
+import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.swagger.client.{ClientSet, HttpClient}
 
 import scala.concurrent.ExecutionContext
@@ -53,5 +55,52 @@ class Client(conn: ClientConnection) {
           case Failure(x) => throw x
         }
       }))
+  }
+
+  /** Get the repository by name (and workspace). If not exist, create new repository
+   * @param name Name of the Repository
+   * @param workspace Workspace under which the Repository with name name exists. If not provided, the current user’s personal workspace will be used.
+   */
+  def getOrCreateRepository(name: String, workspace: String = null)(implicit ec: ExecutionContext) = {
+    GetOrCreateEntity.getOrCreate[Repository](
+      get = () => {
+        clientSet.versioningService.GetRepository(
+          id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
+          id_named_id_name = urlEncode(name)
+        )
+        .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+      },
+      create = () => {
+        clientSet.versioningService.CreateRepository(
+          id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
+          body = VersioningRepository(
+            name = Some(name),
+            workspace_id = Some(workspace) // call getPersonalWorkspace for this?
+          )
+        )
+        .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+      }
+    )
+  }
+
+  /** Get repository based on id
+   *  @param id id of the repository
+   *  @return the repository
+   */
+  def getRepository(id: String)(implicit ec: ExecutionContext): Try[Repository] = {
+    clientSet.versioningService.GetRepository2(
+      id_repo_id = BigInt(id)
+    )
+    .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+  }
+
+
+  /** Get repository based on id
+   *  @param id id of the repository
+   */
+  def deleteRepository(id: String)(implicit ec: ExecutionContext): Try[VersioningDeleteRepositoryRequestResponse] = {
+    clientSet.versioningService.DeleteRepository2(
+      repository_id_repo_id = BigInt(id)
+    )
   }
 }
