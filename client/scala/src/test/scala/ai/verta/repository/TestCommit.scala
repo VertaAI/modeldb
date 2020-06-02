@@ -36,10 +36,36 @@ class TestCommit extends FunSuite {
     val f = fixture
 
     try {
-        assert(
-          f.commit.log()
-          .isInstanceOf[Success[List[Commit]]]
-        )
+      // parent1 - parent2 - parent3---desc
+      //         - parent4  ----------/
+
+      val commit = f.commit
+      val parent1 = f.commit.commit.commit_sha.get
+      commit.update("abc/def", Git(hash = Some("abc"), repo = Some("abc")))
+      commit.save("first commit")
+      val parent2 = f.commit.commit.commit_sha.get
+
+
+      commit.update("ghi/jkl", Git(hash = Some("abc"), repo = Some("abc")))
+      commit.save("second message")
+      val parent3 = commit.commit.commit_sha.get
+
+      val commit2 = f.repo.getCommitById(parent1).get
+      commit2.newBranch("new-branch")
+      commit2.update("uvw/wer",  Git(hash = Some("abc"), repo = Some("abc")))
+      commit2.save("third message")
+      val parent4 = commit2.commit.commit_sha.get
+
+      commit.merge(commit2, Some("merge commit"))
+      val desc = commit.commit.commit_sha.get
+
+      val logId = commit.log().get.map(_.commit.commit_sha.get)
+      assert(logId.length == 5)
+      assert(logId(0).equals(desc))
+      assert(logId(1).equals(parent4))
+      assert(logId(2).equals(parent3))
+      assert(logId(3).equals(parent2))
+      assert(logId(4).equals(parent1))
     } finally {
       cleanup(f)
     }
