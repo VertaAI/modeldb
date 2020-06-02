@@ -56,10 +56,7 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
       clientSet.versioningService.DeleteTag2(
           repository_id_repo_id = repo.id.get,
           tag = urlEncode(tag)
-      ) match {
-        case Success(_) => Success(())
-        case Failure(e) => Failure(e)
-      }
+      ).map(_ => ())
     }
 
     private def urlEncode(input: String): String = URLEncoder.encode(input, "UTF-8").replaceAll("\\+", "%20")

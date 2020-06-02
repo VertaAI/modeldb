@@ -100,10 +100,7 @@ class Client(conn: ClientConnection) {
   def deleteRepository(id: String)(implicit ec: ExecutionContext): Try[Unit] = {
     clientSet.versioningService.DeleteRepository2(
       repository_id_repo_id = BigInt(id)
-    ) match {
-      case Success(_) => Success(())
-      case Failure(e) => Failure(e)
-    }
+    ).map(_ => ())
   }
 
   /** Get the user's personal workspace. Currently, only returns "personal"
