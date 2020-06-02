@@ -76,10 +76,7 @@ class TestRepository extends FunSuite {
     val f = fixture
 
     try {
-      assert(
-        f.repo.getCommitByBranch()
-        .get.commitBranch.get.equals("master")
-      )
+      assert(f.repo.getCommitByBranch().get.commitBranch.get.equals("master"))
     } finally {
       cleanup(f)
     }
