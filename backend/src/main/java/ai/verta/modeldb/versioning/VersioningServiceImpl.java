@@ -2,6 +2,7 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.experiment.ExperimentDAO;
@@ -23,6 +24,7 @@ import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,6 +42,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   private final ModelDBAuthInterceptor modelDBAuthInterceptor;
   private final FileHasher fileHasher;
   private final Validator validator = new Validator();
+  private final ArtifactStoreDAO artifactStoreDAO;
 
   public VersioningServiceImpl(
       AuthService authService,
@@ -51,7 +54,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ExperimentDAO experimentDAO,
       ExperimentRunDAO experimentRunDAO,
       ModelDBAuthInterceptor modelDBAuthInterceptor,
-      FileHasher fileHasher) {
+      FileHasher fileHasher,
+      ArtifactStoreDAO artifactStoreDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.repositoryDAO = repositoryDAO;
@@ -62,6 +66,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     this.experimentRunDAO = experimentRunDAO;
     this.modelDBAuthInterceptor = modelDBAuthInterceptor;
     this.fileHasher = fileHasher;
+    this.artifactStoreDAO = artifactStoreDAO;
   }
 
   @Override
@@ -662,5 +667,115 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ModelDBUtils.observeError(
           responseObserver, e, FindRepositoriesBlobs.Response.getDefaultInstance());
     }
+  }
+
+  @Override
+  public void getUrlForVersionedBlob(
+      GetUrlForVersionedBlob request,
+      StreamObserver<GetUrlForVersionedBlob.Response> responseObserver) {
+    QPSCountResource.inc();
+    try {
+      try (RequestLatencyResource latencyResource =
+          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+
+        // Validate request parameters
+        validateGetUrlForVersionedBlobRequest(request);
+
+        GetCommitComponentRequest.Response commitComponent =
+            blobDAO.getCommitComponent(
+                (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+                request.getCommitSha(),
+                request.getLocationList());
+
+        String presignedUrl = getPresignedUrl(request, commitComponent);
+        GetUrlForVersionedBlob.Response.Builder responseBuilder =
+            GetUrlForVersionedBlob.Response.newBuilder();
+        if (presignedUrl != null && !presignedUrl.isEmpty()) {
+          responseBuilder.setUrl(presignedUrl);
+        }
+        responseObserver.onNext(responseBuilder.build());
+        responseObserver.onCompleted();
+      }
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetUrlForVersionedBlob.Response.getDefaultInstance());
+    }
+  }
+
+  private void validateGetUrlForVersionedBlobRequest(GetUrlForVersionedBlob request)
+      throws ModelDBException {
+    String errorMessage = null;
+    if (request.getCommitSha().isEmpty()
+        && request.getLocationList().isEmpty()
+        && request.getMethod().isEmpty()
+        && request.getPathDatasetComponentBlobPath().isEmpty()) {
+      errorMessage =
+          "Commit hash and Blob location and Method type AND Blob path not found in GetUrlForVersionedBlob request";
+    } else if (request.getCommitSha().isEmpty()) {
+      errorMessage = "Commit hash not found in GetUrlForVersionedBlob request";
+    } else if (request.getLocationList().isEmpty()) {
+      errorMessage = "Blob location not found in GetUrlForVersionedBlob request";
+    } else if (request.getPathDatasetComponentBlobPath().isEmpty()) {
+      errorMessage = "Blob path not found in GetUrlForVersionedBlob request";
+    } else if (request.getMethod().isEmpty()) {
+      errorMessage = "Method is not found in GetUrlForVersionedBlob request";
+    }
+    if (errorMessage != null) {
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+    }
+  }
+
+  public String getPresignedUrl(
+      GetUrlForVersionedBlob request, GetCommitComponentRequest.Response commitComponent)
+      throws ModelDBException {
+    switch (commitComponent.getComponentCase()) {
+      case BLOB:
+        Blob blob = commitComponent.getBlob();
+        if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
+          DatasetBlob datasetBlob = blob.getDataset();
+          switch (datasetBlob.getContentCase()) {
+            case PATH:
+              Optional<PathDatasetComponentBlob> pathComponentBlob =
+                  datasetBlob.getPath().getComponentsList().stream()
+                      .filter(
+                          componentBlob ->
+                              componentBlob
+                                  .getPath()
+                                  .equals(request.getPathDatasetComponentBlobPath()))
+                      .findFirst();
+              if (pathComponentBlob.isPresent()
+                  && !pathComponentBlob.get().getInternalVersionedPath().isEmpty()) {
+                return artifactStoreDAO.getPresignedUrlForVersionedBlob(
+                    pathComponentBlob.get().getInternalVersionedPath(), request.getMethod());
+              }
+              break;
+            case S3:
+              Optional<S3DatasetComponentBlob> s3PathComponentBlob =
+                  datasetBlob.getS3().getComponentsList().stream()
+                      .filter(
+                          componentBlob ->
+                              componentBlob
+                                  .getPath()
+                                  .getPath()
+                                  .equals(request.getPathDatasetComponentBlobPath()))
+                      .findFirst();
+              if (s3PathComponentBlob.isPresent()
+                  && !s3PathComponentBlob.get().getPath().getInternalVersionedPath().isEmpty()) {
+                return artifactStoreDAO.getPresignedUrlForVersionedBlob(
+                    s3PathComponentBlob.get().getPath().getInternalVersionedPath(),
+                    request.getMethod());
+              }
+              break;
+          }
+        }
+        break;
+      case FOLDER:
+      case COMPONENT_NOT_SET:
+      default:
+        throw new ModelDBException(
+            "Blob location is invalid OR it is a folder location", Code.INVALID_ARGUMENT);
+    }
+    return null;
   }
 }

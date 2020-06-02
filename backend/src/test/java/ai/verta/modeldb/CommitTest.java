@@ -32,6 +32,7 @@ import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GetCommitComponentRequest;
 import ai.verta.modeldb.versioning.GetCommitRequest;
+import ai.verta.modeldb.versioning.GetUrlForVersionedBlob;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.HyperparameterConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
@@ -2313,5 +2314,95 @@ public class CommitTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Delete commit with tags test end................................");
+  }
+
+  @Test
+  public void getURLForVersionedBlob() {
+    LOGGER.info("Get Url for VersionedBlob test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    String path = "xyz.txt";
+    String internalPath = "internalBlobPaths/blobs/xyz.txt";
+    List<String> location = new ArrayList<>();
+    location.add("modeldb.json");
+
+    Blob blob =
+        Blob.newBuilder()
+            .setDataset(
+                DatasetBlob.newBuilder()
+                    .setPath(
+                        PathDatasetBlob.newBuilder()
+                            .addComponents(
+                                PathDatasetComponentBlob.newBuilder()
+                                    .setPath(path)
+                                    .setSize(2)
+                                    .setLastModifiedAtSource(time)
+                                    .setInternalVersionedPath(internalPath)
+                                    .build())
+                            .build())
+                    .build())
+            .build();
+    BlobExpanded blobExpanded =
+        BlobExpanded.newBuilder().setBlob(blob).addAllLocation(location).build();
+
+    Commit.Builder commitBuilder =
+        Commit.newBuilder()
+            .setMessage("this is the test commit message")
+            .setDateCreated(Calendar.getInstance().getTimeInMillis())
+            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
+    }
+    CreateCommitRequest createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommit(commitBuilder.build())
+            .addBlobs(blobExpanded)
+            .build();
+
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+
+    GetUrlForVersionedBlob getUrlForVersionedBlob =
+        GetUrlForVersionedBlob.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .addAllLocation(location)
+            .setPathDatasetComponentBlobPath(path)
+            .setMethod(ModelDBConstants.PUT)
+            .build();
+    GetUrlForVersionedBlob.Response getUrlForVersionedBlobResponse =
+        versioningServiceBlockingStub.getUrlForVersionedBlob(getUrlForVersionedBlob);
+    String presignedUrl = getUrlForVersionedBlobResponse.getUrl();
+    assertNotNull("Presigned url not match with expected presigned url", presignedUrl);
+
+    DeleteCommitRequest deleteCommitRequest =
+        DeleteCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .build();
+    versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    LOGGER.info("Get Url for VersionedBlob test stop................................");
   }
 }

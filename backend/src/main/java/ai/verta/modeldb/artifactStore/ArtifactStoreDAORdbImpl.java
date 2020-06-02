@@ -63,4 +63,17 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
       throws ModelDBException {
     artifactStoreService.commitMultipart(s3Path, uploadId, partETags);
   }
+
+  @Override
+  public String getPresignedUrlForVersionedBlob(String internalPath, String method)
+      throws ModelDBException {
+    try {
+      return artifactStoreService.generatePresignedUrl(internalPath, method, 0, null);
+    } catch (SdkClientException e) {
+      // Amazon S3 couldn't be contacted for a response, or the client
+      // couldn't parse the response from Amazon S3.
+      String errorMessage = e.getMessage();
+      throw new ModelDBException(errorMessage, io.grpc.Status.Code.INTERNAL);
+    }
+  }
 }
