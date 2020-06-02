@@ -47,6 +47,8 @@ public interface ModelDBConstants {
   Integer NAME_LENGTH = 256;
   String PATH_DELIMITER = "/";
   Integer TAG_LENGTH = 40;
+  int INITIAL_CRON_DELAY = 300; // 300second = 5min : timeout in second
+  String INITIAL_DELAY = "initial_delay";
 
   // String Constants
   String STRING_COLON = ":";

@@ -407,10 +407,11 @@ public class ModelDBUtils {
     return workspaceQueries;
   }
 
-  public static void scheduleTask(TimerTask task, int frequency, TimeUnit timeUnit) {
+  public static void scheduleTask(
+      TimerTask task, long initialDelay, long frequency, TimeUnit timeUnit) {
     // scheduling the timer instance
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    executor.scheduleAtFixedRate(task, frequency, frequency, timeUnit);
+    executor.scheduleAtFixedRate(task, initialDelay, frequency, timeUnit);
   }
 
   public static Throwable findRootCause(Throwable throwable) {
