@@ -9,6 +9,8 @@ import ai.verta.swagger.client.{ClientSet, HttpClient}
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
+import java.net.URLEncoder
+
 class Client(conn: ClientConnection) {
   val httpClient = new HttpClient(conn.host, Map(
     "Grpc-Metadata-email" -> conn.auth.email,
@@ -24,22 +26,22 @@ class Client(conn: ClientConnection) {
     GetOrCreateEntity.getOrCreate[Project](
       get = () => {
         clientSet.projectService.getProjectByName(name = Some(name), workspace_name = Some(workspace))
-          .map(r => if (r.project_by_user.isEmpty) null else new Project(clientSet, r.project_by_user.get))
+          .map(r => new Project(clientSet, r.project_by_user.get))
       },
       create = () => {
         clientSet.projectService.createProject(ModeldbCreateProject(name = Some(name), workspace_name = Some(workspace)))
-          .map(r => if (r.project.isEmpty) null else new Project(clientSet, r.project.get))
+          .map(r => new Project(clientSet, r.project.get))
       })
   }
 
   def getProject(id: String)(implicit ec: ExecutionContext) = {
     clientSet.projectService.getProjectById(Some(id))
-      .map(r => if (r.project.isEmpty) null else new Project(clientSet, r.project.get))
+      .map(r => new Project(clientSet, r.project.get))
   }
 
   def getExperiment(id: String)(implicit ec: ExecutionContext) = {
     clientSet.experimentService.getExperimentById(Some(id))
-      .flatMap(r => if (r.experiment.isEmpty) Success(null) else Try[Experiment]({
+      .flatMap(r => Try[Experiment]({
         getProject(r.experiment.get.project_id.get) match {
           case Success(proj) => new Experiment(clientSet, proj, r.experiment.get)
           case Failure(x) => throw x
@@ -49,7 +51,7 @@ class Client(conn: ClientConnection) {
 
   def getExperimentRun(id: String)(implicit ec: ExecutionContext) = {
     clientSet.experimentRunService.getExperimentRunById(Some(id))
-      .flatMap(r => if (r.experiment_run.isEmpty) Success(null) else Try[ExperimentRun]({
+      .flatMap(r => Try[ExperimentRun]({
         getExperiment(r.experiment_run.get.experiment_id.get) match {
           case Success(expt) => new ExperimentRun(clientSet, expt, r.experiment_run.get)
           case Failure(x) => throw x
@@ -61,24 +63,24 @@ class Client(conn: ClientConnection) {
    * @param name Name of the Repository
    * @param workspace Workspace under which the Repository with name name exists. If not provided, the current user’s personal workspace will be used.
    */
-  def getOrCreateRepository(name: String, workspace: String = null)(implicit ec: ExecutionContext) = {
+  def getOrCreateRepository(name: String, workspace: Option[String] = None)(implicit ec: ExecutionContext) = {
     GetOrCreateEntity.getOrCreate[Repository](
       get = () => {
         clientSet.versioningService.GetRepository(
-          id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
+          id_named_id_workspace_name = if (workspace.isDefined) workspace.get else getPersonalWorkspace(),
           id_named_id_name = urlEncode(name)
         )
-        .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+        .map(r => new Repository(clientSet, r.repository.get))
       },
       create = () => {
         clientSet.versioningService.CreateRepository(
-          id_named_id_workspace_name = if (workspace != null) workspace else getPersonalWorkspace(),
+          id_named_id_workspace_name = if (workspace.isDefined) workspace.get else getPersonalWorkspace(),
           body = VersioningRepository(
             name = Some(name),
-            workspace_id = Some(workspace) // call getPersonalWorkspace for this?
+            workspace_id = workspace
           )
+        ).map(r => new Repository(clientSet, r.repository.get)
         )
-        .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
       }
     )
   }
@@ -90,8 +92,7 @@ class Client(conn: ClientConnection) {
   def getRepository(id: String)(implicit ec: ExecutionContext): Try[Repository] = {
     clientSet.versioningService.GetRepository2(
       id_repo_id = BigInt(id)
-    )
-    .map(r => if (r.repository.isEmpty) null else new Repository(clientSet, r.repository.get))
+    ).map(r => new Repository(clientSet, r.repository.get))
   }
 
 
@@ -103,4 +104,12 @@ class Client(conn: ClientConnection) {
       repository_id_repo_id = BigInt(id)
     )
   }
+
+  /** Get the user's personal workspace. Currently, only returns "personal"
+   */
+  private def getPersonalWorkspace()(implicit ec: ExecutionContext): String = {
+    "personal"
+  }
+
+  private def urlEncode(input: String): String = URLEncoder.encode(input, "UTF-8").replaceAll("\\+", "%20")
 }

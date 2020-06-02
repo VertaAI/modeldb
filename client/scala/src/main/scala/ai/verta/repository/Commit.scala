@@ -1,6 +1,5 @@
 package ai.verta.repository
 
-import ai.verta.client.{getPersonalWorkspace, urlEncode}
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model._
 

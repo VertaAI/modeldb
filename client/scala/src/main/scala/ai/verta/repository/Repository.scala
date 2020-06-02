@@ -2,11 +2,12 @@ package ai.verta.repository
 
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningRepository
-import ai.verta.client.{getPersonalWorkspace, urlEncode}
+import java.net.URLEncoder
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
+import java.net.URLEncoder
 
 /** ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Client's getOrCreateRepository
@@ -21,7 +22,7 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
       repository_id_repo_id = repo.id.get,
       commit_sha = id
     )
-    .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get))
+    .map(r => new Commit(clientSet, repo, r.commit.get))
   }
 
   /** Get commit by specified branch
@@ -33,7 +34,7 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
        branch = branch,
        repository_id_repo_id = repo.id.get
      )
-     .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get, Some(branch)))
+     .map(r => new Commit(clientSet, repo, r.commit.get, Some(branch)))
    }
 
    /** Get commit by specified tag
@@ -57,4 +58,6 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
           tag = urlEncode(tag)
       )
     }
+
+    private def urlEncode(input: String): String = URLEncoder.encode(input, "UTF-8").replaceAll("\\+", "%20")
 }
