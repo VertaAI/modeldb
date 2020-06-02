@@ -523,6 +523,17 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add-internal_path-s3dcb" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="s3_dataset_component_blob" columnName="internal_versioned_path"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="s3_dataset_component_blob">
+            <column name="internal_versioned_path" type="text"/>
+        </addColumn>
+    </changeSet>
+
     <!-- keep the line below at the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 </databaseChangeLog>

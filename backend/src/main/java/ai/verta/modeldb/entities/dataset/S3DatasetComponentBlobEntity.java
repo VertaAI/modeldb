@@ -26,12 +26,16 @@ public class S3DatasetComponentBlobEntity {
     this.sha256 = pathDatasetComponentBlob.getSha256();
     this.md5 = pathDatasetComponentBlob.getMd5();
     this.s3_version_id = s3DatasetComponentBlob.getS3VersionId();
+    this.internal_versioned_path = pathDatasetComponentBlob.getInternalVersionedPath();
   }
 
   @EmbeddedId private S3DatasetComponentBlobId id;
 
   @Column(name = "path", columnDefinition = "TEXT")
   private String path;
+
+  @Column(name = "internal_versioned_path", columnDefinition = "TEXT")
+  private String internal_versioned_path;
 
   @Column(name = "size")
   private Long size;
@@ -69,16 +73,19 @@ public class S3DatasetComponentBlobEntity {
   }
 
   public S3DatasetComponentBlob toProto() {
+    PathDatasetComponentBlob.Builder pathDatasetComponentBlob =
+        PathDatasetComponentBlob.newBuilder()
+            .setPath(this.path)
+            .setSize(this.size)
+            .setLastModifiedAtSource(this.last_modified_at_source)
+            .setSha256(this.sha256)
+            .setMd5(this.md5);
+    if (this.internal_versioned_path != null) {
+      pathDatasetComponentBlob.setInternalVersionedPath(this.internal_versioned_path);
+    }
     return S3DatasetComponentBlob.newBuilder()
         .setS3VersionId(this.s3_version_id)
-        .setPath(
-            PathDatasetComponentBlob.newBuilder()
-                .setPath(this.path)
-                .setSize(this.size)
-                .setLastModifiedAtSource(this.last_modified_at_source)
-                .setSha256(this.sha256)
-                .setMd5(this.md5)
-                .build())
+        .setPath(pathDatasetComponentBlob)
         .build();
   }
 }
