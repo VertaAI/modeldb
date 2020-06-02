@@ -183,6 +183,21 @@ def ensure_bytestream(obj):
     """
     if hasattr(obj, 'read'):  # if `obj` is file-like
         reset_stream(obj)  # reset cursor to beginning in case user forgot
+
+        # read first element to check if bytes
+        try:
+            chunk = obj.read(1)
+        except TypeError:  # read() doesn't take an argument
+            pass  # fall through to read & cast full stream
+        else:
+            if isinstance(chunk, bytes):  # contents are already bytes
+                reset_stream(obj)
+                return obj, None
+            else:
+                pass  # fall through to read & cast full stream
+
+        # read full stream and cast to bytes
+        reset_stream(obj)
         contents = obj.read()  # read to cast into binary
         reset_stream(obj)  # reset cursor to beginning as a courtesy
         if not len(contents):
