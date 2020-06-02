@@ -172,6 +172,7 @@ public interface ModelDBConstants {
   String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
   String POSTGRES_DB_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
+  String EXPERIMENT_RUN_NOT_FOUND = "Experiment run not found";
 
   enum UserIdentifier {
     VERTA_ID,

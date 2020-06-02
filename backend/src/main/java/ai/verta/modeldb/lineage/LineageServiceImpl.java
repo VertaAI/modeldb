@@ -13,6 +13,7 @@ import ai.verta.modeldb.LineageEntryBatchResponse;
 import ai.verta.modeldb.LineageEntryBatchResponseSingle;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.VersioningLineageEntry;
 import ai.verta.modeldb.authservice.RoleService;
@@ -52,7 +53,6 @@ import org.hibernate.Session;
 public class LineageServiceImpl extends LineageServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(LineageServiceImpl.class);
-  private static final String EXPERIMENT_RUN_NOT_FOUND = "Experiment run not found";
   private final ExperimentRunDAO experimentRunDAO;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
@@ -358,7 +358,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
         experimentRunDAO.getExperimentRunEntitiesBatch(session, experimentRunIdsList);
     for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
       if (experimentRunEntity == null) {
-        LOGGER.warn(EXPERIMENT_RUN_NOT_FOUND);
+        LOGGER.warn(ModelDBConstants.EXPERIMENT_RUN_NOT_FOUND);
       } else {
         try {
           roleService.validateEntityUserWithUserInfo(
@@ -393,8 +393,8 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     }
     for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
       if (experimentRunEntity == null) {
-        LOGGER.warn(EXPERIMENT_RUN_NOT_FOUND);
-        throw new ModelDBException(EXPERIMENT_RUN_NOT_FOUND, Code.NOT_FOUND);
+        LOGGER.warn(ModelDBConstants.EXPERIMENT_RUN_NOT_FOUND);
+        throw new ModelDBException(ModelDBConstants.EXPERIMENT_RUN_NOT_FOUND, Code.NOT_FOUND);
       }
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
