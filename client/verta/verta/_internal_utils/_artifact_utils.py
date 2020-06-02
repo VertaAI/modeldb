@@ -32,6 +32,10 @@ except ImportError:  # TensorFlow not installed
     pass
 
 
+# default for chunked utils
+CHUNK_SIZE = 5*10**6
+
+
 # NOTE: keep up-to-date with Deployment API
 BLACKLISTED_KEYS = {
     'model_api.json',
@@ -330,7 +334,7 @@ def deserialize_model(bytestring):
     return bytestream
 
 
-def get_bytestream_length(bytestream, chunk_size=5*10**6):
+def get_bytestream_length(bytestream, chunk_size=CHUNK_SIZE):
     """
     Get the length of the contents of a bytestream.
 
@@ -369,7 +373,7 @@ def get_bytestream_length(bytestream, chunk_size=5*10**6):
     return length
 
 
-def calc_sha256(bytestream, chunk_size=5*10**6):
+def calc_sha256(bytestream, chunk_size=CHUNK_SIZE):
     """
     Calculates the SHA-256 checksum of a bytestream.
 
