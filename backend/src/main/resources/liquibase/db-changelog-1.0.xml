@@ -511,6 +511,12 @@
             <column name="deleted" type="boolean" defaultValue="false"/>
         </addColumn>
     </changeSet>
+    <changeSet id="SetNullS3VersionEmpty-2" author="ravi">
+        <update tableName="s3_dataset_component_blob">
+            <column name="s3_version_id" value="" />
+            <where>s3_version_id is null</where>
+        </update>
+    </changeSet>
 
     <!-- keep the line below at the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
