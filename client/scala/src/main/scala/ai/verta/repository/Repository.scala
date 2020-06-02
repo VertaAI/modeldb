@@ -52,11 +52,14 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
    /** Delete a tag from this repository
     *  @param tag tag
     */
-    def deleteTag(tag: String)(implicit ec: ExecutionContext) = {
+    def deleteTag(tag: String)(implicit ec: ExecutionContext): Try[Unit] = {
       clientSet.versioningService.DeleteTag2(
           repository_id_repo_id = repo.id.get,
           tag = urlEncode(tag)
-      )
+      ) match {
+        case Success(_) => Success(())
+        case Failure(e) => Failure(e)
+      }
     }
 
     private def urlEncode(input: String): String = URLEncoder.encode(input, "UTF-8").replaceAll("\\+", "%20")
