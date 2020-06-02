@@ -150,19 +150,19 @@ class TestCommit:
 
     def test_merge_conflict(self, repository):
         branch_a = repository.get_commit(branch="master").new_branch("a")
-        branch_a.update("env", verta.environment.Python(["verta==1"]))
+        branch_a.update("env", verta.environment.Python(["pytest==1"]))
         branch_a.save("a")
 
         branch_b = repository.get_commit(branch="master").new_branch("b")
-        branch_b.update("env", verta.environment.Python(["verta==2"]))
+        branch_b.update("env", verta.environment.Python(["pytest==2"]))
         branch_b.save("b")
 
         with pytest.raises(RuntimeError):
             branch_b.merge(branch_a)
 
     def test_revert(self, repository):
-        blob1 = verta.environment.Python(["verta==1"])
-        blob2 = verta.environment.Python(["verta==2"])
+        blob1 = verta.environment.Python(["pytest==1"])
+        blob2 = verta.environment.Python(["pytest==2"])
         loc1 = "loc1"
         loc2 = "loc2"
 

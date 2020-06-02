@@ -6,19 +6,20 @@ import scala.util.Try
 import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
+import ai.verta.swagger._public.modeldb.model.ModeldbProjectVisibility._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
+import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.model.WorkspaceTypeEnumWorkspaceType._
-import ai.verta.swagger._public.modeldb.model.ModeldbProjectVisibility._
-import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbGetUrlForArtifact (
   artifact_type: Option[ArtifactTypeEnumArtifactType] = None,
   id: Option[String] = None,
   key: Option[String] = None,
-  method: Option[String] = None
+  method: Option[String] = None,
+  part_number: Option[BigInt] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbGetUrlForArtifact.toJson(this)
 }
@@ -30,7 +31,8 @@ object ModeldbGetUrlForArtifact {
         obj.artifact_type.map(x => JField("artifact_type", ((x: ArtifactTypeEnumArtifactType) => ArtifactTypeEnumArtifactType.toJson(x))(x))),
         obj.id.map(x => JField("id", JString(x))),
         obj.key.map(x => JField("key", JString(x))),
-        obj.method.map(x => JField("method", JString(x)))
+        obj.method.map(x => JField("method", JString(x))),
+        obj.part_number.map(x => JField("part_number", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -47,7 +49,8 @@ object ModeldbGetUrlForArtifact {
           artifact_type = fieldsMap.get("artifact_type").map(ArtifactTypeEnumArtifactType.fromJson),
           id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
           key = fieldsMap.get("key").map(JsonConverter.fromJsonString),
-          method = fieldsMap.get("method").map(JsonConverter.fromJsonString)
+          method = fieldsMap.get("method").map(JsonConverter.fromJsonString),
+          part_number = fieldsMap.get("part_number").map(JsonConverter.fromJsonInteger)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

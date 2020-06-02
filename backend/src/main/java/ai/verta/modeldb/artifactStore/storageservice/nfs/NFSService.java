@@ -5,6 +5,7 @@ import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import com.amazonaws.services.s3.model.PartETag;
 import com.google.api.client.util.IOUtils;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -19,7 +20,9 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -226,8 +229,7 @@ public class NFSService implements ArtifactStoreService {
     return getUrl(artifactPath, app.getStoreArtifactEndpoint(), scheme);
   }
 
-  @Override
-  public String generatePresignedUrl(String artifactPath, String method) {
+  private String generatePresignedUrl(String artifactPath, String method) {
     LOGGER.trace("NFSService - generatePresignedUrl called");
     if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
       LOGGER.trace("NFSService - generatePresignedUrl - put url returned");
@@ -242,5 +244,22 @@ public class NFSService implements ArtifactStoreService {
       LOGGER.warn(errorMessage);
       throw StatusProto.toStatusRuntimeException(status);
     }
+  }
+
+  @Override
+  public Optional<String> initiateMultipart(String s3Key) {
+    return Optional.empty();
+  }
+
+  @Override
+  public String generatePresignedUrl(
+      String artifactPath, String method, long partNumber, String uploadId) {
+    return generatePresignedUrl(artifactPath, method);
+  }
+
+  @Override
+  public void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
+      throws ModelDBException {
+    throw new ModelDBException("Not supported by NFS", io.grpc.Status.Code.FAILED_PRECONDITION);
   }
 }

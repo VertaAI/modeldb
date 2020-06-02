@@ -9,7 +9,6 @@ import six
 
 from google.protobuf import json_format
 
-import verta
 import verta.environment
 from verta._internal_utils import _pip_requirements_utils
 
@@ -166,7 +165,7 @@ class TestPython:
     def test_repr(self):
         """Tests that __repr__() executes without error"""
         env_ver = verta.environment.Python(
-            requirements=['verta=={}'.format(verta.__version__)],
+            requirements=['pytest=={}'.format(pytest.__version__)],
             constraints=['six=={}'.format(six.__version__)],
             env_vars=['HOME'],
         )

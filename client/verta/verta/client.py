@@ -5,7 +5,6 @@ from __future__ import print_function
 import ast
 import copy
 import glob
-import hashlib
 import importlib
 import os
 import pprint
@@ -761,7 +760,7 @@ class _ModelDBEntity(object):
 
         self.__dict__.update(state)
 
-    def _get_url_for_artifact(self, key, method, artifact_type=0):
+    def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         """
         Obtains a URL to use for accessing stored artifacts.
 
@@ -774,18 +773,25 @@ class _ModelDBEntity(object):
         artifact_type : int, optional
             Variant of `_CommonService.ArtifactTypeEnum`. This informs the backend what slot to check
             for the artifact, if necessary.
+        part_num : int, optional
+            If using Multipart Upload, number of part to be uploaded.
 
         Returns
         -------
-        str
-            Generated URL.
+        response_msg : `_CommonService.GetUrlForArtifact.Response`
+            Backend response.
 
         """
         if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
         Message = _CommonService.GetUrlForArtifact
-        msg = Message(id=self.id, key=key, method=method.upper(), artifact_type=artifact_type)
+        msg = Message(
+            id=self.id, key=key,
+            method=method.upper(),
+            artifact_type=artifact_type,
+            part_number=part_num,
+        )
         data = _utils.proto_to_json(msg)
         response = _utils.make_request("POST",
                                        self._request_url.format("getUrlForArtifact"),
@@ -793,7 +799,18 @@ class _ModelDBEntity(object):
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(response.json(), Message.Response)
-        return response_msg.url
+
+        url = response_msg.url
+        # accommodate port-forwarded NFS store
+        if 'https://localhost' in url[:20]:
+            url = 'http' + url[5:]
+        if 'localhost%3a' in url[:20]:
+            url = url.replace('localhost%3a', 'localhost:')
+        if 'localhost%3A' in url[:20]:
+            url = url.replace('localhost%3A', 'localhost:')
+        response_msg.url = url
+
+        return response_msg
 
     def _cache(self, filename, contents):
         """
@@ -1054,7 +1071,7 @@ class _ModelDBEntity(object):
             key = 'code'
             extension = 'zip'
 
-            artifact_hash = hashlib.sha256(zipstream.read()).hexdigest()
+            artifact_hash = _artifact_utils.calc_sha256(zipstream)
             zipstream.seek(0)
             basename = key + os.extsep + extension
             artifact_path = os.path.join(artifact_hash, basename)
@@ -1078,15 +1095,7 @@ class _ModelDBEntity(object):
 
         if msg.code_version.WhichOneof("code") == 'code_archive':
             # upload artifact to artifact store
-            url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type)
-
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
+            url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type).url
 
             response = _utils.make_request("PUT", url, self._conn, data=zipstream)
             _utils.raise_for_http_error(response)
@@ -1141,15 +1150,7 @@ class _ModelDBEntity(object):
             return git_snapshot
         elif which_code == 'code_archive':
             # download artifact from artifact store
-            url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type)
-
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
+            url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type).url
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
@@ -1219,7 +1220,11 @@ class Project(_ModelDBEntity):
                             " cannot set `desc`, `tags`, `attrs`, or `public_within_org`".format(proj_name)
                         )
                     proj = Project._get(conn, proj_name, workspace)
-                    print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
+                    if proj is not None:
+                        print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
+                    else:
+                        raise RuntimeError("unable to retrieve Project {};"
+                                           " please notify the Verta development team".format(proj_name))
                 else:
                     raise e
             else:
@@ -1286,9 +1291,15 @@ class Project(_ModelDBEntity):
                 response_msg = _utils.json_to_proto(response_json, Message.Response)
                 if workspace is None or response_json.get('project_by_user'):
                     # user's personal workspace
-                    return response_msg.project_by_user
+                    proj = response_msg.project_by_user
                 else:
-                    return response_msg.shared_projects[0]
+                    proj = response_msg.shared_projects[0]
+
+                if not proj.id:  # 200, but empty message
+                    raise RuntimeError("unable to retrieve Project {};"
+                                       " please notify the Verta development team".format(proj_name))
+
+                return proj
             else:
                 if ((response.status_code == 403 and response.json()['code'] == 7)
                         or (response.status_code == 404 and response.json()['code'] == 5)):
@@ -1372,7 +1383,11 @@ class Experiment(_ModelDBEntity):
                         warnings.warn("Experiment with name {} already exists;"
                                       " cannot initialize `desc`, `tags`, or `attrs`".format(expt_name))
                     expt = Experiment._get(conn, proj_id, expt_name)
-                    print("set existing Experiment: {}".format(expt.name))
+                    if expt is not None:
+                        print("set existing Experiment: {}".format(expt.name))
+                    else:
+                        raise RuntimeError("unable to retrieve Experiment {};"
+                                           " please notify the Verta development team".format(expt_name))
                 else:
                     raise e
             else:
@@ -1430,7 +1445,13 @@ class Experiment(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(response.json(), Message.Response)
-            return response_msg.experiment
+            expt = response_msg.experiment
+
+            if not expt.id:  # 200, but empty message
+                raise RuntimeError("unable to retrieve Experiment {};"
+                                   " please notify the Verta development team".format(expt_name))
+
+            return expt
         else:
             if ((response.status_code == 403 and response.json()['code'] == 7)
                     or (response.status_code == 404 and response.json()['code'] == 5)):
@@ -1804,7 +1825,7 @@ class ExperimentRun(_ModelDBEntity):
         if _expt_run_id is not None:
             expt_run = ExperimentRun._get(conn, _expt_run_id=_expt_run_id)
             if expt_run is not None:
-                pass
+                print("set existing ExperimentRun: {}".format(expt_run.name))
             else:
                 raise ValueError("ExperimentRun with ID {} not found".format(_expt_run_id))
         elif None not in (proj_id, expt_id):
@@ -1818,7 +1839,11 @@ class ExperimentRun(_ModelDBEntity):
                         warnings.warn("ExperimentRun with name {} already exists;"
                                       " cannot initialize `desc`, `tags`, or `attrs`".format(expt_run_name))
                     expt_run = ExperimentRun._get(conn, expt_id, expt_run_name)
-                    print("set existing ExperimentRun: {}".format(expt_run.name))
+                    if expt_run is not None:
+                        print("set existing ExperimentRun: {}".format(expt_run.name))
+                    else:
+                        raise RuntimeError("unable to retrieve ExperimentRun {};"
+                                           " please notify the Verta development team".format(expt_run_name))
                 else:
                     raise e
             else:
@@ -1938,7 +1963,13 @@ class ExperimentRun(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(response.json(), Message.Response)
-            return response_msg.experiment_run
+            expt_run = response_msg.experiment_run
+
+            if not expt_run.id:  # 200, but empty message
+                raise RuntimeError("unable to retrieve ExperimentRun {};"
+                                   " please notify the Verta development team".format(expt_run_name))
+
+            return expt_run
         else:
             if ((response.status_code == 403 and response.json()['code'] == 7)
                     or (response.status_code == 404 and response.json()['code'] == 5)):
@@ -2004,7 +2035,7 @@ class ExperimentRun(_ModelDBEntity):
             extension = _artifact_utils.ext_from_method(method)
 
         # calculate checksum
-        artifact_hash = hashlib.sha256(artifact_stream.read()).hexdigest()
+        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
         artifact_stream.seek(0)
 
         # determine basename
@@ -2044,24 +2075,79 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-        # upload artifact to artifact store
-        url = self._get_url_for_artifact(key, "PUT")
-        artifact_stream.seek(0)  # reuse stream that was created for checksum
+        self._upload_artifact(key, artifact_stream)
+
+    def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
+        """
+        Uploads `artifact_stream` to ModelDB artifact store.
+
+        Parameters
+        ----------
+        key : str
+        artifact_stream : file-like
+        part_size : int, default 64 MB
+            If using multipart upload, number of bytes to upload per part.
+
+        """
+        artifact_stream.seek(0)
         if self._conf.debug:
-            print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), basename))
+            print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
             artifact_stream.seek(0)
 
-        # accommodate port-forwarded NFS store
-        if 'https://localhost' in url[:20]:
-            url = 'http' + url[5:]
-        if 'localhost%3a' in url[:20]:
-            url = url.replace('localhost%3a', 'localhost:')
-        if 'localhost%3A' in url[:20]:
-            url = url.replace('localhost%3A', 'localhost:')
+        # check if multipart upload ok
+        url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
 
-        response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
-        _utils.raise_for_http_error(response)
-        print("upload complete ({})".format(basename))
+        if url_for_artifact.multipart_upload_ok:
+            # TODO: parallelize this
+            file_parts = iter(lambda: artifact_stream.read(part_size), b'')
+            for part_num, file_part in enumerate(file_parts, start=1):
+                print("uploading part {}".format(part_num), end='\r')
+
+                # get presigned URL
+                url = self._get_url_for_artifact(key, "PUT", part_num=part_num).url
+
+                # wrap file part into bytestream to avoid OverflowError
+                #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
+                #     ``requests`` will overwhelm CPython's SSL lib when it tries to sign the
+                #     payload. But passing a buffered bytestream instead of the raw bytestring
+                #     indicates to ``requests`` that it should perform a streaming upload via
+                #     HTTP/1.1 chunked transfer encoding and avoid this issue.
+                #     https://github.com/psf/requests/issues/2717
+                part_stream = six.BytesIO(file_part)
+
+                # upload part
+                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+                response.raise_for_status()
+
+                # commit part
+                url = "{}://{}/api/v1/modeldb/experiment-run/commitArtifactPart".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                )
+                msg = _CommonService.CommitArtifactPart(id=self.id, key=key)
+                msg.artifact_part.part_number = part_num
+                msg.artifact_part.etag = response.headers['ETag']
+                data = _utils.proto_to_json(msg)
+                # TODO: increase retries
+                response = _utils.make_request("POST", url, self._conn, json=data)
+                _utils.raise_for_http_error(response)
+            print("upload complete")
+
+            # complete upload
+            url = "{}://{}/api/v1/modeldb/experiment-run/commitMultipartArtifact".format(
+                self._conn.scheme,
+                self._conn.socket,
+            )
+            msg = _CommonService.CommitMultipartArtifact(id=self.id, key=key)
+            data = _utils.proto_to_json(msg)
+            response = _utils.make_request("POST", url, self._conn, json=data)
+            _utils.raise_for_http_error(response)
+        else:
+            # upload full artifact
+            response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
+            _utils.raise_for_http_error(response)
+
+        print("upload complete ({})".format(key))
 
     def _log_artifact_path(self, key, artifact_path, artifact_type):
         """
@@ -2131,15 +2217,7 @@ class ExperimentRun(_ModelDBEntity):
             return artifact.path, artifact.path_only
         else:
             # download artifact from artifact store
-            url = self._get_url_for_artifact(key, "GET")
-
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
+            url = self._get_url_for_artifact(key, "GET").url
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
@@ -2684,6 +2762,7 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing dataset with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         if isinstance(dataset, _dataset.Dataset):
@@ -3066,6 +3145,7 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing image with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         # convert pyplot, Figure or Image to bytestream
@@ -3107,6 +3187,7 @@ class ExperimentRun(_ModelDBEntity):
             Filesystem path of the image.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         self._log_artifact_path(key, image_path, _CommonService.ArtifactTypeEnum.IMAGE)
@@ -3159,6 +3240,7 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         try:
@@ -3197,6 +3279,7 @@ class ExperimentRun(_ModelDBEntity):
             Filesystem path of the artifact.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         self._log_artifact_path(key, artifact_path, _CommonService.ArtifactTypeEnum.BLOB)
