@@ -46,7 +46,7 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
        tag = urlEncode(tag),
        repository_id_repo_id = repo.id.get
      )
-     .map(r => if (r.commit.isEmpty) null else new Commit(clientSet, repo, r.commit.get))
+     .map(r => new Commit(clientSet, repo, r.commit.get))
    }
 
    /** Delete a tag from this repository
