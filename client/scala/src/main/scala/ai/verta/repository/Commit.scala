@@ -83,7 +83,6 @@ class Commit(
 
   /** Saves this commit to ModelDB
    *  @param message description of this commit
-   *  TODO: write tests for this method
    */
   def save(message: String)(implicit ec: ExecutionContext) = {
     if (saved)

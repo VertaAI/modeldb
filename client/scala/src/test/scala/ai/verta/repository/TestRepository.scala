@@ -101,13 +101,14 @@ class TestRepository extends FunSuite {
   }
 
 
-  test("get commit by tag") {
+  test("get commit by tag and remove tag") {
     val f = fixture
 
     try {
       f.repo.getCommitByBranch().flatMap(_.tag("Some tag"))
       assert(f.repo.getCommitByTag("Some tag").isSuccess)
       f.repo.deleteTag("Some tag")
+      assert(f.repo.getCommitByTag("Some tag").isFailure)
     } finally {
       cleanup(f)
     }
