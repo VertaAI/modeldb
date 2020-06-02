@@ -330,6 +330,45 @@ def deserialize_model(bytestring):
     return bytestream
 
 
+def get_bytestream_length(bytestream, chunk_size=5*10**6):
+    """
+    Get the length of the contents of a bytestream.
+
+    Parameters
+    ----------
+    bytestream : file-like opened in binary mode
+        Bytestream.
+    chunk_size : int, default 5 MB
+        Number of bytes to read into memory at a time.
+
+    Returns
+    -------
+    length : int
+        Length of `bytestream` in bytes
+
+    """
+    # TODO: validate stream is bytes
+
+    # if it's file handle, get file size without reading stream
+    filename = getattr(bytestream, 'name', None)
+    if filename is not None:
+        try:
+            return os.path.getsize(filename)
+        except OSError:  # can't access file
+            pass
+
+    # read stream in chunks to get length
+    length = 0
+    try:
+        parts = iter(lambda: bytestream.read(chunk_size), b'')
+        for part in parts:
+            length += len(part)
+    finally:
+        reset_stream(bytestream)  # reset cursor to beginning as a courtesy
+
+    return length
+
+
 def calc_sha256(bytestream, chunk_size=5*10**6):
     """
     Calculates the SHA-256 checksum of a bytestream.
