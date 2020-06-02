@@ -1,8 +1,5 @@
 package ai.verta.client
 
-// TODO: add Scaladoc on top of methods
-// TODO: write tests for getOrCreateRepository and getRepository
-
 import ai.verta.client.entities.{Experiment, ExperimentRun, GetOrCreateEntity, Project}
 import ai.verta.repository.Repository
 import ai.verta.swagger._public.modeldb.model.ModeldbCreateProject

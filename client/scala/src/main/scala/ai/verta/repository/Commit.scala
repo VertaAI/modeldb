@@ -11,8 +11,6 @@ import scala.collection.mutable.HashMap
 
 /** Commit within a ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
- *  TODO: clean up blobs retrieval
- *  TODO: improve createCommit
  */
 class Commit(
   val clientSet: ClientSet, val repo: VersioningRepository,
