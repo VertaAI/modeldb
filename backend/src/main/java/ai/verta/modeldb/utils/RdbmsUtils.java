@@ -1384,6 +1384,7 @@ public class RdbmsUtils {
         }
         Subquery<String> subquery = criteriaQuery.subquery(String.class);
 
+        Expression<String> parentPathFromChild;
         switch (names[0]) {
           case ModelDBConstants.ARTIFACTS:
             LOGGER.debug("switch case : Artifacts");
@@ -1397,7 +1398,10 @@ public class RdbmsUtils {
                     names[names.length - 1],
                     predicate);
 
-            subquery.select(artifactEntityRoot.get(entityName).get(ModelDBConstants.ID));
+            parentPathFromChild = artifactEntityRoot.get(entityName).get(ModelDBConstants.ID);
+            subquery.select(parentPathFromChild);
+            artifactValuePredicates.add(builder.isNotNull(parentPathFromChild));
+
             Predicate[] artifactPredicatesOne = new Predicate[artifactValuePredicates.size()];
             for (int indexJ = 0; indexJ < artifactValuePredicates.size(); indexJ++) {
               artifactPredicatesOne[indexJ] = artifactValuePredicates.get(indexJ);
@@ -1418,7 +1422,10 @@ public class RdbmsUtils {
                     names[names.length - 1],
                     predicate);
 
-            subquery.select(datasetEntityRoot.get(entityName).get(ModelDBConstants.ID));
+            parentPathFromChild = datasetEntityRoot.get(entityName).get(ModelDBConstants.ID);
+            subquery.select(parentPathFromChild);
+            datasetValuePredicates.add(builder.isNotNull(parentPathFromChild));
+
             Predicate[] datasetPredicatesOne = new Predicate[datasetValuePredicates.size()];
             for (int indexJ = 0; indexJ < datasetValuePredicates.size(); indexJ++) {
               datasetPredicatesOne[indexJ] = datasetValuePredicates.get(indexJ);
@@ -1439,7 +1446,10 @@ public class RdbmsUtils {
                     names[names.length - 1],
                     predicate);
 
-            subquery.select(attributeEntityRoot.get(entityName).get(ModelDBConstants.ID));
+            parentPathFromChild = attributeEntityRoot.get(entityName).get(ModelDBConstants.ID);
+            subquery.select(parentPathFromChild);
+            attributeValuePredicates.add(builder.isNotNull(parentPathFromChild));
+
             Predicate[] attributePredicatesOne = new Predicate[attributeValuePredicates.size()];
             for (int indexJ = 0; indexJ < attributeValuePredicates.size(); indexJ++) {
               attributePredicatesOne[indexJ] = attributeValuePredicates.get(indexJ);
@@ -1461,7 +1471,10 @@ public class RdbmsUtils {
                     ModelDBConstants.HYPERPARAMETERS,
                     names[names.length - 1],
                     predicate);
-            subqueryMDB.select(hyperparameterEntityRoot.get(entityName).get(ModelDBConstants.ID));
+            parentPathFromChild = hyperparameterEntityRoot.get(entityName).get(ModelDBConstants.ID);
+            subqueryMDB.select(parentPathFromChild);
+            hyperparameterValuePredicates.add(builder.isNotNull(parentPathFromChild));
+
             Predicate[] hyperparameterPredicatesOne =
                 new Predicate[hyperparameterValuePredicates.size()];
             for (int indexJ = 0; indexJ < hyperparameterValuePredicates.size(); indexJ++) {
@@ -1500,7 +1513,10 @@ public class RdbmsUtils {
                     names[names.length - 1],
                     predicate);
 
-            subquery.select(metricsEntityRoot.get(entityName).get(ModelDBConstants.ID));
+            parentPathFromChild = metricsEntityRoot.get(entityName).get(ModelDBConstants.ID);
+            subquery.select(parentPathFromChild);
+            metricsValuePredicates.add(builder.isNotNull(parentPathFromChild));
+
             Predicate[] metricsPredicatesOne = new Predicate[metricsValuePredicates.size()];
             for (int indexJ = 0; indexJ < metricsValuePredicates.size(); indexJ++) {
               metricsPredicatesOne[indexJ] = metricsValuePredicates.get(indexJ);
@@ -1530,7 +1546,10 @@ public class RdbmsUtils {
                           names[names.length - 1],
                           predicate);
 
-                  subquery.select(obrAttrEntityRoot.get(entityName).get(ModelDBConstants.ID));
+                  parentPathFromChild = obrAttrEntityRoot.get(entityName).get(ModelDBConstants.ID);
+                  subquery.select(parentPathFromChild);
+                  obrAttrValuePredicates.add(builder.isNotNull(parentPathFromChild));
+
                   Predicate[] obrAttrPredicatesOne = new Predicate[obrAttrValuePredicates.size()];
                   for (int indexJ = 0; indexJ < obrAttrValuePredicates.size(); indexJ++) {
                     obrAttrPredicatesOne[indexJ] = obrAttrValuePredicates.get(indexJ);
@@ -1552,7 +1571,9 @@ public class RdbmsUtils {
                           names[names.length - 1],
                           predicate);
 
-                  subquery.select(obrArtEntityRoot.get(entityName).get(ModelDBConstants.ID));
+                  parentPathFromChild = obrArtEntityRoot.get(entityName).get(ModelDBConstants.ID);
+                  subquery.select(parentPathFromChild);
+                  obrArtValuePredicates.add(builder.isNotNull(parentPathFromChild));
                   Predicate[] obrArtPredicatesOne = new Predicate[obrArtValuePredicates.size()];
                   for (int indexJ = 0; indexJ < obrArtValuePredicates.size(); indexJ++) {
                     obrArtPredicatesOne[indexJ] = obrArtValuePredicates.get(indexJ);
@@ -1577,9 +1598,11 @@ public class RdbmsUtils {
                       observationEntityRootEntityRoot.get(names[1]),
                       predicate);
 
-              subquery.select(
-                  observationEntityRootEntityRoot.get(entityName).get(ModelDBConstants.ID));
-              subquery.where(observationValuePredicate);
+              parentPathFromChild =
+                  observationEntityRootEntityRoot.get(entityName).get(ModelDBConstants.ID);
+              subquery.select(parentPathFromChild);
+              subquery.where(
+                  builder.and(observationValuePredicate, builder.isNotNull(parentPathFromChild)));
               keyValuePredicates.add(
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             }
@@ -1595,8 +1618,10 @@ public class RdbmsUtils {
                     featureEntityRoot.get(names[names.length - 1]),
                     predicate);
 
-            subquery.select(featureEntityRoot.get(entityName).get(ModelDBConstants.ID));
-            subquery.where(featureValuePredicate);
+            parentPathFromChild = featureEntityRoot.get(entityName).get(ModelDBConstants.ID);
+            subquery.select(parentPathFromChild);
+            subquery.where(
+                builder.and(featureValuePredicate, builder.isNotNull(parentPathFromChild)));
             keyValuePredicates.add(
                 getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             break;
@@ -1611,8 +1636,9 @@ public class RdbmsUtils {
                     tagsMappingRoot.get(ModelDBConstants.TAGS),
                     predicate);
 
-            subquery.select(tagsMappingRoot.get(entityName).get(ModelDBConstants.ID));
-            subquery.where(tagValuePredicate);
+            parentPathFromChild = tagsMappingRoot.get(entityName).get(ModelDBConstants.ID);
+            subquery.select(parentPathFromChild);
+            subquery.where(builder.and(tagValuePredicate, builder.isNotNull(parentPathFromChild)));
             keyValuePredicates.add(
                 getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             break;
@@ -1628,7 +1654,10 @@ public class RdbmsUtils {
             List<Predicate> versioningValuePredicates = new ArrayList<>();
             versioningValuePredicates.add(keyValuePredicate);
 
-            subquery.select(versioningEntityRoot.get(entityName).get(ModelDBConstants.ID));
+            parentPathFromChild = versioningEntityRoot.get(entityName).get(ModelDBConstants.ID);
+            subquery.select(parentPathFromChild);
+
+            versioningValuePredicates.add(builder.isNotNull(parentPathFromChild));
             Predicate[] versioningPredicatesOne = new Predicate[versioningValuePredicates.size()];
             for (int indexJ = 0; indexJ < versioningValuePredicates.size(); indexJ++) {
               versioningPredicatesOne[indexJ] = versioningValuePredicates.get(indexJ);
@@ -1752,12 +1781,16 @@ public class RdbmsUtils {
     configBlobEntityRootPredicates.add(
         builder.or(intValuePredicate, floatValuePredicate, stringValuePredicate));
 
+    Expression<String> parentPathFromChild =
+        elementMappingEntityRoot.get(entityName).get(ModelDBConstants.ID);
+    configBlobEntityRootPredicates.add(builder.isNotNull(parentPathFromChild));
+
     Predicate[] hyprElemmappingRootPredicatesOne =
         new Predicate[configBlobEntityRootPredicates.size()];
     for (int indexJ = 0; indexJ < configBlobEntityRootPredicates.size(); indexJ++) {
       hyprElemmappingRootPredicatesOne[indexJ] = configBlobEntityRootPredicates.get(indexJ);
     }
-    subquery.select(elementMappingEntityRoot.get(entityName).get(ModelDBConstants.ID));
+    subquery.select(parentPathFromChild);
     subquery.where(builder.and(hyprElemmappingRootPredicatesOne));
 
     return getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
