@@ -24,7 +24,7 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
   private def urlEncodeUTF8(q: Map[String, List[String]]): String = {
     if (q.isEmpty) "" else
       q
-        .map(entry => urlEncodeUTF8(entry._1) + "=" + entry._2.map(urlEncodeUTF8 _).mkString("&" + urlEncodeUTF8(entry._1) + "="))
+        .flatMap(entry => entry._2.map(x => urlEncodeUTF8(entry._1) + "=" + urlEncodeUTF8(x)))
         .reduce((p1, p2) => p1 + "&" + p2)
   }
 
