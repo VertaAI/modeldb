@@ -23,7 +23,7 @@ class TestRepository extends FunSuite {
     f.client.close()
   }
 
-  test("get/create by name") {
+  test("get/create by name should return a repository with correct name") {
     val f = fixture
 
     try {
@@ -46,7 +46,7 @@ class TestRepository extends FunSuite {
     }
   }
 
-  test("get repo by id") {
+  test("get repo by id should return a repository with correct id") {
     val f = fixture
 
     try {
@@ -58,7 +58,7 @@ class TestRepository extends FunSuite {
     }
   }
 
-  test("get commit by id") {
+  test("get commit by id should return a commit with correct id (commit sha))") {
     val f = fixture
 
     try {
