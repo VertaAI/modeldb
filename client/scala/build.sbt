@@ -28,6 +28,7 @@ scalacOptions := Seq(
 )
 
 publishArtifact in(Compile, packageDoc) := false
+parallelExecution in Test := false
 
 assemblyMergeStrategy in assembly := {
  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
