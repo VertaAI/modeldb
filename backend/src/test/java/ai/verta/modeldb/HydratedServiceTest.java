@@ -3642,8 +3642,11 @@ public class HydratedServiceTest {
     LOGGER.info("FindHydratedDatasets test start................................");
 
     DatasetTest datasetTest = new DatasetTest();
+    DatasetVersionTest datasetVersionTest = new DatasetVersionTest();
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
+        DatasetVersionServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -3769,6 +3772,18 @@ public class HydratedServiceTest {
         "Dataset name not match with expected Dataset name",
         createDatasetRequest.getName(),
         dataset4.getName());
+
+    CreateDatasetVersion createDatasetVersionRequest =
+        datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+    createDatasetVersionRequest = createDatasetVersionRequest.toBuilder().addTags("Tag_8").build();
+    CreateDatasetVersion.Response createDatasetVersionResponse =
+        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
+    DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
+    LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion1);
+    assertEquals(
+        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
+        dataset1.getId(),
+        datasetVersion1.getDatasetId());
 
     // Validate check for predicate value not empty
     List<KeyValueQuery> predicates = new ArrayList<>();
