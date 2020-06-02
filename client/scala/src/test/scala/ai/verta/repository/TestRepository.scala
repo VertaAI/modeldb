@@ -76,7 +76,13 @@ class TestRepository extends FunSuite {
     val f = fixture
 
     try {
-      assert(f.repo.getCommitByBranch().get.commitBranch.get.equals("master"))
+      val commitNoInput = f.repo.getCommitByBranch().get
+      val commitMaster = f.repo.getCommitByBranch("master").get
+
+      val commitNoInputSHA = commitNoInput.commit.commit_sha.get
+      val commitMasterSHA = commitMaster.commit.commit_sha.get
+
+      assert(commitNoInputSHA.equals(commitMasterSHA))
     } finally {
       cleanup(f)
     }
