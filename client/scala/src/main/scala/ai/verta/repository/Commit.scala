@@ -11,6 +11,6 @@ import scala.util.{Failure, Success, Try}
  */
 class Commit(
   val clientSet: ClientSet, val repo: VersioningRepository,
-  var commit: VersioningCommit, var commit_branch: Option[String] = None
+  var commit: VersioningCommit, val commitBranch: Option[String] = None
 ) {
 }

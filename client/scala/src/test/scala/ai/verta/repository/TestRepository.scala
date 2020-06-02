@@ -27,7 +27,7 @@ class TestRepository extends FunSuite {
     val f = fixture
 
     try {
-      assert(f.client.getOrCreateRepository("My Repo").isInstanceOf[Success[Repository]])
+      assert(f.client.getOrCreateRepository("My Repo").get.repo.name.get.equals("My Repo"))
     } finally {
       cleanup(f)
     }
@@ -62,11 +62,7 @@ class TestRepository extends FunSuite {
       .getCommitByBranch()
       .map(_.commit).get.commit_sha.get
 
-      assert(
-        f.repo
-        .getCommitById(id)
-        .isInstanceOf[Success[Commit]]
-      )
+      assert(f.repo.getCommitById(id).isSuccess)
     } finally {
       cleanup(f)
     }
@@ -78,7 +74,7 @@ class TestRepository extends FunSuite {
     try {
       assert(
         f.repo.getCommitByBranch()
-        .get.commit_branch.get.equals("master")
+        .get.commitBranch.get.equals("master")
       )
     } finally {
       cleanup(f)
