@@ -31,7 +31,7 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
    */
    def getCommitByBranch(branch: String = "master")(implicit ec: ExecutionContext): Try[Commit] = {
      clientSet.versioningService.GetBranch2(
-       branch = branch,
+       branch = urlEncode(branch),
        repository_id_repo_id = repo.id.get
      )
      .map(r => new Commit(clientSet, repo, r.commit.get, Some(branch)))
