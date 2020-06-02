@@ -250,7 +250,11 @@ public class LineageServiceImpl extends LineageServiceImplBase {
         .map(
             lineageEntryBatchResponse ->
                 filterLineageEntryBatchResponse(
-                    session, unfilteredExperimentRunIds, repositories, lineageEntryBatchResponse, filteredExperimentRunIds))
+                    session,
+                    unfilteredExperimentRunIds,
+                    repositories,
+                    lineageEntryBatchResponse,
+                    filteredExperimentRunIds))
         .collect(Collectors.toList());
   }
 
@@ -259,15 +263,19 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       Set<String> unfilteredExperimentRunIds,
       Map<Long, RepositoryContainer> repositories,
       LineageEntryBatchResponse lineageEntryBatchResponse,
-    Set<String> filteredExperimentRunIds) {
-      List<LineageEntryBatchResponseSingle> lineageEntryBatchResponseItemsList =
+      Set<String> filteredExperimentRunIds) {
+    List<LineageEntryBatchResponseSingle> lineageEntryBatchResponseItemsList =
         lineageEntryBatchResponse.getItemsList();
     List<LineageEntryBatchResponseSingle> result =
         lineageEntryBatchResponseItemsList.stream()
             .flatMap(
                 lineageEntryBatchResponseSingle ->
                     filterLineageEntryBatchResponseSingle(
-                        session, unfilteredExperimentRunIds, repositories, lineageEntryBatchResponseSingle, filteredExperimentRunIds))
+                        session,
+                        unfilteredExperimentRunIds,
+                        repositories,
+                        lineageEntryBatchResponseSingle,
+                        filteredExperimentRunIds))
             .collect(Collectors.toList());
     return LineageEntryBatchResponse.newBuilder().addAllItems(result).build();
   }
@@ -277,14 +285,20 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       Set<String> unfilteredExperimentRunIds,
       Map<Long, RepositoryContainer> repositories,
       LineageEntryBatchResponseSingle lineageEntryBatchResponseSingle,
-    Set<String> filteredExperimentRunIds) {
+      Set<String> filteredExperimentRunIds) {
     List<LineageEntryBatchResponseSingle> newLineageEntryBatchResponseSingleList =
         new LinkedList<>();
     List<LineageEntry> itemList = lineageEntryBatchResponseSingle.getItemsList();
     List<LineageEntry> filterResult =
         itemList.stream()
             .filter(
-                lineageEntry -> filterLineageEntry(session, unfilteredExperimentRunIds, repositories, lineageEntry, filteredExperimentRunIds))
+                lineageEntry ->
+                    filterLineageEntry(
+                        session,
+                        unfilteredExperimentRunIds,
+                        repositories,
+                        lineageEntry,
+                        filteredExperimentRunIds))
             .collect(Collectors.toList());
     if (filterResult.size() != 0) {
       newLineageEntryBatchResponseSingleList.add(
@@ -301,10 +315,12 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       Set<String> unfilteredExperimentRunIds,
       Map<Long, RepositoryContainer> repositories,
       LineageEntry lineageEntry,
-      Set<String> filteredExperimentRunIds
-      ) {
+      Set<String> filteredExperimentRunIds) {
     try {
-      validate(session, unfilteredExperimentRunIds, repositories,
+      validate(
+          session,
+          unfilteredExperimentRunIds,
+          repositories,
           lineageEntry,
           filteredExperimentRunIds);
       return true;

@@ -99,7 +99,6 @@ public class LineageTest {
   private ProjectServiceBlockingStub projectServiceStub;
   private ExperimentServiceBlockingStub experimentServiceStub;
   private ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private DatasetServiceBlockingStub datasetServiceStub;
   private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")

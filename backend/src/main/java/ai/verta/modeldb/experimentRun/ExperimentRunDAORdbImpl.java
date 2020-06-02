@@ -528,14 +528,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     LOGGER.debug("Got ExperimentRun successfully");
     return experimentRunEntity;
   }
-  
-  @Override
-  public boolean isExperimentRunExists(Session session, String experimentRunId) {
-    Query query = session.createQuery(CHECK_EXP_RUN_EXISTS_AT_UPDATE_HQL);
-    query.setParameter("experimentRunId", experimentRunId);
-    Long count = (Long) query.uniqueResult();
-    return count > 0;
-  }
 
   @Override
   public void updateExperimentRunName(String experimentRunId, String experimentRunName) {
