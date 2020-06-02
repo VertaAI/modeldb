@@ -468,6 +468,18 @@ message FindRepositoriesBlobs {
     }
 }
 
+message GetUrlForVersionedBlob {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+    string method = 5; //This is either GET or PUT
+
+    message Response {
+        string url = 1;
+    }
+}
+
 service VersioningService {
     // CRUD for repositories
     rpc ListRepositories(ListRepositoriesRequest) returns (ListRepositoriesRequest.Response) {
@@ -731,6 +743,17 @@ service VersioningService {
         option (google.api.http) = {
             post: "/v1/versioning/workspaces/{workspace_name}/findRepositoriesBlobs"
             body: "*"
+        };
+    };
+
+    rpc getUrlForVersionedBlob (GetUrlForVersionedBlob) returns (GetUrlForVersionedBlob.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/getUrlForVersionedBlob"
+            body: "*"
+            additional_bindings {
+                post: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForVersionedBlob"
+            	body: "*"
+            }
         };
     };
 }
