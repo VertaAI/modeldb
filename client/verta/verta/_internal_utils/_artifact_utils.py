@@ -350,27 +350,25 @@ def deserialize_model(bytestring):
     return bytestream
 
 
-def get_bytestream_length(bytestream, chunk_size=CHUNK_SIZE):
+def get_stream_length(stream, chunk_size=CHUNK_SIZE):
     """
-    Get the length of the contents of a bytestream.
+    Get the length of the contents of a stream.
 
     Parameters
     ----------
-    bytestream : file-like opened in binary mode
-        Bytestream.
+    stream : file-like
+        Stream.
     chunk_size : int, default 5 MB
-        Number of bytes to read into memory at a time.
+        Number of bytes (or whatever `stream` contains) to read into memory at a time.
 
     Returns
     -------
     length : int
-        Length of `bytestream` in bytes
+        Length of `stream`.
 
     """
-    # TODO: validate stream is bytes
-
     # if it's file handle, get file size without reading stream
-    filename = getattr(bytestream, 'name', None)
+    filename = getattr(stream, 'name', None)
     if filename is not None:
         try:
             return os.path.getsize(filename)
@@ -380,11 +378,11 @@ def get_bytestream_length(bytestream, chunk_size=CHUNK_SIZE):
     # read stream in chunks to get length
     length = 0
     try:
-        parts = iter(lambda: bytestream.read(chunk_size), b'')
-        for part in parts:
-            length += len(part)
+        part_lengths = iter(lambda: len(stream.read(chunk_size)), 0)
+        for part_length in part_lengths:  # could be sum() but not sure GC runs during builtin one-liner
+            length += part_length
     finally:
-        reset_stream(bytestream)  # reset cursor to beginning as a courtesy
+        reset_stream(stream)  # reset cursor to beginning as a courtesy
 
     return length
 
