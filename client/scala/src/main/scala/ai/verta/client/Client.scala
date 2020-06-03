@@ -94,7 +94,7 @@ class Client(conn: ClientConnection) {
   }
 
 
-  /** Get repository based on id
+  /** Delete repository based on id
    *  @param id id of the repository
    */
   def deleteRepository(id: String)(implicit ec: ExecutionContext): Try[Unit] = {
