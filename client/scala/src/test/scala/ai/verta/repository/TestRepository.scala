@@ -107,10 +107,10 @@ class TestRepository extends FunSuite {
 
     try {
       val commit = f.repo.getCommitByBranch().get
-      commit.newBranch("new-branch")
-
-      val commitNewBranch = f.repo.getCommitByBranch("new-branch").get
-      assert(commit equals commitNewBranch)
+      val commitNewBranch = commit.newBranch("new-branch").get
+      val commitGetByBranch = f.repo.getCommitByBranch("new-branch").get
+      
+      assert(commitGetByBranch equals commitNewBranch)
     } finally {
       cleanup(f)
     }

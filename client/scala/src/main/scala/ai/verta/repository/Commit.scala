@@ -11,8 +11,8 @@ import scala.util.{Failure, Success, Try}
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
  */
 class Commit(
-  private val clientSet: ClientSet, private val repo: VersioningRepository,
-  private val commit: VersioningCommit, private var commitBranch: Option[String] = None
+  private val clientSet: ClientSet, private val repo: Repository,
+  private val commit: VersioningCommit, private val commitBranch: Option[String] = None
 ) {
   private var saved = true // whether the commit instance is saved to database, or is currently being modified.
 
@@ -32,7 +32,7 @@ class Commit(
   def newBranch(branch: String)(implicit ec: ExecutionContext) = {
     if (!saved)
       Failure(new IllegalStateException("Commit must be saved before it can be attached to a branch"))
-    else setBranch(branch)
+    else setBranch(branch).flatMap(_ => repo.getCommitByBranch(branch))
   }
 
   /** Assigns a tag to this Commit
@@ -43,7 +43,7 @@ class Commit(
       Failure(new IllegalStateException("Commit must be saved before it can be tagged"))
     else clientSet.versioningService.SetTag2(
         body = "\"" + commit.commit_sha.get + "\"",
-        repository_id_repo_id = repo.id.get,
+        repository_id_repo_id = repo.id,
         tag = URLUtils.urlEncode(tag)
     ).map(_ => ())
   }
@@ -55,13 +55,7 @@ class Commit(
     clientSet.versioningService.SetBranch2(
       body = "\"" + commit.commit_sha.get + "\"",
       branch = branch,
-      repository_id_repo_id = repo.id.get
-    ) match {
-      case Success(_) => {
-        commitBranch = Some(branch)
-        Success(())
-      }
-      case Failure(e) => Failure(e)
-    }
+      repository_id_repo_id = repo.id
+    ).map(_ => ())
   }
 }
