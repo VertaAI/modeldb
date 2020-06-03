@@ -8,7 +8,7 @@ import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspac
 
 import { withAct } from 'core/shared/utils/tests/react/helpers';
 import DatasetDetailPages from '../DatasetPages/DatasetDetailPages/DatasetDetailPages';
-import DatasetsPage from '../DatasetPages/DatasetsPage';
+import DatasetsPage from '../DatasetPages/DatasetsPage/DatasetsPage';
 import Pages from '../index';
 import NotFoundPage from '../NotFoundPage/NotFoundPage';
 import ProjectDetailsPage from '../ProjectsPages/ProjectDetailsPages/ProjectDetailsPage';

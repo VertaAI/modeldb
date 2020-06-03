@@ -23,7 +23,7 @@ import ProjectDetailsPage from './ProjectsPages/ProjectDetailsPages/ProjectDetai
 import ProjectsPage from './ProjectsPages/ProjectsPage/ProjectsPage';
 
 import DatasetDetailPages from './DatasetPages/DatasetDetailPages/DatasetDetailPages';
-import DatasetsPage from './DatasetPages/DatasetsPage';
+import DatasetsPage from './DatasetPages/DatasetsPage/DatasetsPage';
 
 import { IRouteWithWorkspace } from 'routes/routeWithWorkspace';
 import DatasetCreationPage from './DatasetPages/DatasetCreationPage/DatasetCreationPage';
