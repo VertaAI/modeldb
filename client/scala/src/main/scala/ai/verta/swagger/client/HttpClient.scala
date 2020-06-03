@@ -4,7 +4,6 @@ import java.io.InputStream
 import java.net.{URI, URLEncoder}
 
 import ai.verta.swagger.client.objects.BaseSwagger
-import ai.verta.client.FormatUtils
 import net.liftweb.json.{DefaultFormats, JValue, compactRender, parse}
 import sttp.client._
 import sttp.client.asynchttpclient.future.AsyncHttpClientFutureBackend
@@ -13,6 +12,9 @@ import sttp.model._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+
+import net.liftweb.json._
+import net.liftweb.json.Serialization.write
 
 class HttpClient(val host: String, val headers: Map[String, String]) {
   implicit val formats = DefaultFormats
@@ -35,7 +37,7 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
     else
       body match {
         case b: BaseSwagger => requestInternal(method, path, query, compactRender(b.toJson()), parser)
-        case b: String => requestInternal(method, path, query, FormatUtils.jsonFormat(b), parser)
+        case b: String => requestInternal(method, path, query, jsonFormat(b), parser)
       }
   }
 
@@ -97,4 +99,12 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
   }
 
   def close(): Unit = Await.result(sttpBackend.close(), Duration.Inf)
+
+  /** Utility method to format the string for JSON parsing
+   *  @param input input
+   */
+  private def jsonFormat(input: String) = {
+    implicit val formats = DefaultFormats
+    write(input)
+  }
 }
