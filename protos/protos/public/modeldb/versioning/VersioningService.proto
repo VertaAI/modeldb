@@ -481,6 +481,38 @@ message GetUrlForVersionedBlob {
     }
 }
 
+message CommitVersionedBlobArtifactPart {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+    ArtifactPart artifact_part = 5;
+
+    message Response{
+    }
+}
+
+message GetCommittedVersionedBlobArtifactParts {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+
+    message Response {
+        repeated ArtifactPart artifact_parts = 1;
+    }
+}
+
+message CommitMultipartVersionedBlobArtifact {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+
+    message Response {
+    }
+}
+
 service VersioningService {
     // CRUD for repositories
     rpc ListRepositories(ListRepositoriesRequest) returns (ListRepositoriesRequest.Response) {
@@ -755,6 +787,26 @@ service VersioningService {
                 post: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForVersionedBlob"
             	body: "*"
             }
+        };
+    };
+
+    rpc commitVersionedBlobArtifactPart(CommitVersionedBlobArtifactPart) returns (CommitVersionedBlobArtifactPart.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/commitVersionedBlobArtifactPart"
+            body: "*"
+        };
+    };
+
+    rpc getCommittedVersionedBlobArtifactParts(GetCommittedVersionedBlobArtifactParts) returns (GetCommittedVersionedBlobArtifactParts.Response) {
+        option (google.api.http) = {
+            get: "/v1/versioning/getCommittedVersionedBlobArtifactParts"
+        };
+    };
+
+    rpc commitMultipartVersionedBlobArtifact(CommitMultipartVersionedBlobArtifact) returns (CommitMultipartVersionedBlobArtifact.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/commitMultipartVersionedBlobArtifact"
+            body: "*"
         };
     };
 }
