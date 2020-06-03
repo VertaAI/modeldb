@@ -17,7 +17,6 @@ class Commit(
 ) {
   private var saved = true // whether the commit instance is saved to database
 
-
   /** Return the id of the commit */
   def getId() = commit.commit_sha.get
 
