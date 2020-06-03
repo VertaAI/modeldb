@@ -282,14 +282,15 @@ public class ModelDBHibernateUtil {
 
   private static SessionFactory loopBack(SessionFactory sessionFactory) {
     try {
-      boolean dbConnectionLive = ping();
+      boolean dbConnectionLive =
+          checkDBConnection(
+              rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
       if (dbConnectionLive) {
         return sessionFactory;
       }
       // Check DB connection based on the periodic time logic
       checkDBConnectionInLoop(false);
-      ModelDBHibernateUtil.sessionFactory = null;
-      sessionFactory = createOrGetSessionFactory();
+      sessionFactory = resetSessionFactory();
       LOGGER.debug("ModelDBHibernateUtil getSessionFactory() DB connection got successfully");
       return sessionFactory;
     } catch (Exception ex) {
@@ -298,6 +299,11 @@ public class ModelDBHibernateUtil {
           Status.newBuilder().setCode(Code.UNAVAILABLE_VALUE).setMessage(ex.getMessage()).build();
       throw StatusProto.toStatusRuntimeException(status);
     }
+  }
+
+  public static SessionFactory resetSessionFactory() {
+    ModelDBHibernateUtil.sessionFactory = null;
+    return getSessionFactory();
   }
 
   private static void checkDBConnectionInLoop(boolean isStartUpTime) throws InterruptedException {
@@ -446,6 +452,11 @@ public class ModelDBHibernateUtil {
     }
   }
 
+  public static boolean checkDBConnection() {
+    return checkDBConnection(
+        rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
+  }
+
   private static boolean checkDBConnection(
       String rDBDriver,
       String rDBUrl,
@@ -475,7 +486,7 @@ public class ModelDBHibernateUtil {
     }
   }
 
-  private static boolean ping() {
+  public static boolean ping() {
     try (Session session = sessionFactory.openSession()) {
       final boolean[] valid = {false};
       session.doWork(
