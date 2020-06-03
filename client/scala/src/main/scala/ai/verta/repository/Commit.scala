@@ -18,7 +18,7 @@ class Commit(
   private var saved = true // whether the commit instance is saved to database
 
   /** Return the id of the commit */
-  def getId() = commit.commit_sha.get
+  def id = commit.commit_sha.get
 
   override def equals(other: Any) = other match {
     case other: Commit => commit.commit_sha.get == other.commit.commit_sha.get

@@ -2091,7 +2091,7 @@ class ExperimentRun(_ModelDBEntity):
         """
         artifact_stream.seek(0)
         if self._conf.debug:
-            print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
+            print("[DEBUG] uploading {} bytes ({})".format(_artifact_utils.get_stream_length(artifact_stream), key))
             artifact_stream.seek(0)
 
         # check if multipart upload ok
@@ -2131,7 +2131,7 @@ class ExperimentRun(_ModelDBEntity):
                 # TODO: increase retries
                 response = _utils.make_request("POST", url, self._conn, json=data)
                 _utils.raise_for_http_error(response)
-            print("upload complete")
+            print()
 
             # complete upload
             url = "{}://{}/api/v1/modeldb/experiment-run/commitMultipartArtifact".format(

@@ -3,6 +3,7 @@ package ai.verta.modeldb.metadata;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -73,6 +74,12 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       }
       transaction.commit();
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addLabels(id, labels);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -86,6 +93,12 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       return labelsMappingEntities.stream()
           .map(labelsMappingEntity -> labelsMappingEntity.getId().getLabel())
           .collect(Collectors.toList());
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getLabels(id);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -111,6 +124,12 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       }
       transaction.commit();
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteLabels(id, labels);
+      } else {
+        throw ex;
+      }
     }
   }
 }

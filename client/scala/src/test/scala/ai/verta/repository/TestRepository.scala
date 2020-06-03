@@ -19,7 +19,7 @@ class TestRepository extends FunSuite {
     }
 
   def cleanup(f: AnyRef{val client: Client; val repo: Repository}) = {
-    f.client.deleteRepository(f.repo.getId().toString)
+    f.client.deleteRepository(f.repo.id)
     f.client.close()
   }
 
@@ -27,7 +27,7 @@ class TestRepository extends FunSuite {
     val f = fixture
 
     try {
-      assert(f.client.getOrCreateRepository("My Repo").get.getName().equals("My Repo"))
+      assert(f.client.getOrCreateRepository("My Repo").get.name.equals("My Repo"))
     } finally {
       cleanup(f)
     }
@@ -37,7 +37,7 @@ class TestRepository extends FunSuite {
     val f = fixture
 
     try {
-      val getRepoAttempt = f.client.getRepository("124112413")
+      val getRepoAttempt = f.client.getRepository(BigInt("124112413"))
 
       assert(getRepoAttempt.isFailure)
       // check if the correct error is returned:
@@ -51,7 +51,7 @@ class TestRepository extends FunSuite {
     val f = fixture
 
     try {
-      val getRepoAttempt = f.client.getRepository(f.repo.getId().toString)
+      val getRepoAttempt = f.client.getRepository(f.repo.id)
 
       assert(getRepoAttempt.isSuccess)
       assert(getRepoAttempt.get equals f.repo)
@@ -65,7 +65,7 @@ class TestRepository extends FunSuite {
 
     try {
       val originalCommit = f.repo.getCommitByBranch().get
-      val getCommitAttempt = f.repo.getCommitById(originalCommit.getId())
+      val getCommitAttempt = f.repo.getCommitById(originalCommit.id)
 
       assert(getCommitAttempt.isSuccess)
       assert(getCommitAttempt.get equals originalCommit)

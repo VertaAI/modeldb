@@ -2,6 +2,7 @@ package ai.verta.modeldb.utils;
 
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.common.ValueTypeEnum;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
@@ -34,6 +35,7 @@ import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
@@ -480,6 +482,32 @@ public class ModelDBUtils {
     responseObserver.onError(statusRuntimeException);
   }
 
+  public static boolean needToRetry(Exception ex) {
+    Throwable communicationsException = findCommunicationsFailedCause(ex);
+    if ((communicationsException.getCause() instanceof CommunicationsException)
+        || (communicationsException.getCause() instanceof SocketException)) {
+      LOGGER.warn(communicationsException.getMessage());
+      if (ModelDBHibernateUtil.checkDBConnection()) {
+        ModelDBHibernateUtil.resetSessionFactory();
+      }
+      return true;
+    }
+    return false;
+  }
+
+  public static Throwable findCommunicationsFailedCause(Throwable throwable) {
+    if (throwable == null) {
+      return null;
+    }
+    Throwable rootCause = throwable;
+    while (rootCause.getCause() != null
+        && !(rootCause.getCause() instanceof CommunicationsException
+            || rootCause.getCause() instanceof SocketException)) {
+      rootCause = rootCause.getCause();
+    }
+    return rootCause;
+  }
+
   /**
    * If so throws an error if the workspace type is USER and the workspaceId and userID do not
    * match. Is a NO-OP if userinfo is null.
@@ -507,5 +535,37 @@ public class ModelDBUtils {
 
   public static String getLocationWithSlashOperator(List<String> locations) {
     return String.join("/", locations);
+  }
+
+  public interface RetryCallInterface<T> {
+    T retryCall(boolean retry);
+  }
+
+  public static Object retryOrThrowException(
+      StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
+    String errorMessage = "UAC Service unavailable : " + ex.getMessage();
+    LOGGER.warn(errorMessage, ex);
+    if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
+      if (retry && retryCallInterface != null) {
+        try {
+          App app = App.getInstance();
+          Thread.sleep(app.getRequestTimeout() * 1000);
+          retry = false;
+        } catch (InterruptedException e) {
+          Status status =
+              Status.newBuilder()
+                  .setCode(Code.INTERNAL_VALUE)
+                  .setMessage("Thread interrupted while UAC retrying call")
+                  .build();
+          throw StatusProto.toStatusRuntimeException(status);
+        }
+        return retryCallInterface.retryCall(retry);
+      }
+
+      Status status =
+          Status.newBuilder().setCode(Code.UNAVAILABLE_VALUE).setMessage(errorMessage).build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+    throw ex;
   }
 }
