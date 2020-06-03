@@ -2,12 +2,10 @@ package ai.verta.repository
 
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningRepository
-import java.net.URLEncoder
+import ai.verta.utils.URLUtils
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
-
-import java.net.URLEncoder
 
 /** ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Client's getOrCreateRepository
@@ -30,7 +28,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
    */
    def getCommitByBranch(branch: String = "master")(implicit ec: ExecutionContext): Try[Commit] = {
      clientSet.versioningService.GetBranch2(
-       branch = urlEncode(branch),
+       branch = URLUtils.urlEncode(branch),
        repository_id_repo_id = repo.id.get
      ).map(r => new Commit(clientSet, repo, r.commit.get, Some(branch)))
    }
@@ -41,7 +39,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
     */
    def getCommitByTag(tag: String)(implicit ec: ExecutionContext): Try[Commit] = {
      clientSet.versioningService.GetTag2(
-       tag = urlEncode(tag),
+       tag = URLUtils.urlEncode(tag),
        repository_id_repo_id = repo.id.get
      ).map(r => new Commit(clientSet, repo, r.commit.get))
    }
@@ -52,11 +50,10 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
     def deleteTag(tag: String)(implicit ec: ExecutionContext): Try[Unit] = {
       clientSet.versioningService.DeleteTag2(
           repository_id_repo_id = repo.id.get,
-          tag = urlEncode(tag)
+          tag = URLUtils.urlEncode(tag)
       ).map(_ => ())
     }
 
-    private def urlEncode(input: String): String = URLEncoder.encode(input, "UTF-8").replaceAll("\\+", "%20")
 
     override def equals(other: Any) = other match {
       case other: Repository => repo.id.get == other.repo.id.get

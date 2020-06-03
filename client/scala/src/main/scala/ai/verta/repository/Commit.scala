@@ -2,6 +2,7 @@ package ai.verta.repository
 
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model._
+import ai.verta.utils.URLUtils
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
@@ -45,7 +46,7 @@ def newBranch(branch: String)(implicit ec: ExecutionContext) = {
     else clientSet.versioningService.SetTag2(
         body = "\"" + commit.commit_sha.get + "\"",
         repository_id_repo_id = repo.id.get,
-        tag = urlEncode(tag)
+        tag = URLUtils.urlEncode(tag)
     ).map(_ => ())
   }
 
@@ -65,6 +66,4 @@ def newBranch(branch: String)(implicit ec: ExecutionContext) = {
       case Failure(e) => Failure(e)
     }
   }
-
-  private def urlEncode(input: String): String = URLEncoder.encode(input, "UTF-8").replaceAll("\\+", "%20")
 }

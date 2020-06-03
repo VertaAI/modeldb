@@ -5,11 +5,10 @@ import ai.verta.repository.Repository
 import ai.verta.swagger._public.modeldb.model.ModeldbCreateProject
 import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.swagger.client.{ClientSet, HttpClient}
+import ai.verta.utils.URLUtils
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
-
-import java.net.URLEncoder
 
 class Client(conn: ClientConnection) {
   val httpClient = new HttpClient(conn.host, Map(
@@ -68,7 +67,7 @@ class Client(conn: ClientConnection) {
       get = () => {
         clientSet.versioningService.GetRepository(
           id_named_id_workspace_name = workspace.getOrElse(getPersonalWorkspace()),
-          id_named_id_name = urlEncode(name)
+          id_named_id_name = URLUtils.urlEncode(name)
         ).map(r => new Repository(clientSet, r.repository.get))
       },
       create = () => {
@@ -108,6 +107,4 @@ class Client(conn: ClientConnection) {
   private def getPersonalWorkspace()(implicit ec: ExecutionContext): String = {
     "personal"
   }
-
-  private def urlEncode(input: String): String = URLEncoder.encode(input, "UTF-8").replaceAll("\\+", "%20")
 }
