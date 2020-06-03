@@ -1,151 +1,119 @@
 import * as R from 'ramda';
 import * as React from 'react';
 
-import { shortenSHA } from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
-import { IGitCodeDiff } from 'core/shared/models/Versioning/Blob/CodeBlob';
 import {
-  DiffType,
-  ComparedCommitType,
-  getABData,
-} from 'core/shared/models/Versioning/Blob/Diff';
+  IGitCodeDiff,
+  IGitCodeBlob,
+} from 'core/shared/models/Versioning/Blob/CodeBlob';
+import { getABData } from 'core/shared/models/Versioning/Blob/Diff';
 import { getObjsPropsDiff } from 'core/shared/utils/collection';
 import HashProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/HashProp/HashProp';
 import BranchProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/BranchProp/BranchProp';
 import TagProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/TagProp/TagProp';
 import RepoProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/RepoProp/RepoProp';
+import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
-import { IComparedCommitsInfo } from '../../../types';
-import { diffColors } from '../../shared/styles';
-import CompareTable from './CompareTable/CompareTable';
-import styles from './GitDiffView.module.css';
+import { IComparedCommitsInfo } from '../../../model';
+import makeComparePropertiesTable, {
+  makeHighlightCellBackground,
+} from '../../shared/ComparePropertiesTable/ComparePropertiesTable';
 
 interface ILocalProps {
   diff: IGitCodeDiff['data'];
   comparedCommitsInfo: IComparedCommitsInfo;
 }
 
+const tableComponents = makeComparePropertiesTable<IGitCodeBlob['data']>();
+const highlightCellBackground = makeHighlightCellBackground<
+  IGitCodeBlob['data']
+>();
+
 const GitDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
   const { A, B } = getABData(diff);
 
+  const diffBlobProperties = getObjsPropsDiff(
+    A ? A.data : ({} as any),
+    B ? B.data : ({} as any)
+  );
+
   return (
-    <div className={styles.root}>
-      <CompareTable
-        A={A}
-        B={B}
-        diffInfo={getObjsPropsDiff(
-          A ? A.data : ({} as any),
-          B ? B.data : ({} as any)
-        )}
-        columns={{
-          property: {
-            title: 'Properties',
-            width: 190,
-          },
-          A: {
-            title: `From Commit SHA: ${shortenSHA(
-              comparedCommitsInfo.commitA.sha
-            )}`,
-          },
-          B: {
-            title: `To Commit SHA: ${shortenSHA(
-              comparedCommitsInfo.commitB.sha
-            )}`,
-          },
-        }}
+    <BlobDataBox title="Git">
+      <tableComponents.Table
+        comparedCommitsInfo={comparedCommitsInfo}
+        A={A && A.data}
+        B={B && B.data}
       >
-        <CompareTable.PropDefinition
+        <tableComponents.PropDefinition
           title="Hash"
-          render={({ blobData, diffBlobProperties, type }) => {
-            return blobData && blobData.commitHash ? (
+          type="hash"
+          getCellStyle={highlightCellBackground(({ data }) =>
+            Boolean(data.commitHash && diffBlobProperties.commitHash)
+          )}
+          render={({ data }) => {
+            return data && data.commitHash ? (
               <HashProp
-                commitHash={blobData.commitHash}
-                remoteRepoUrl={blobData.remoteRepoUrl}
-                rootStyles={
-                  diffBlobProperties.commitHash
-                    ? { backgroundColor: getDiffStyles(diff.diffType, type) }
-                    : {}
-                }
+                commitHash={data.commitHash}
+                remoteRepoUrl={data.remoteRepoUrl}
               />
             ) : null;
           }}
         />
-        <CompareTable.PropDefinition
+        <tableComponents.PropDefinition
           title="Dirty"
-          render={({ blobData, diffBlobProperties, type }) => {
-            return blobData && !R.isNil(blobData.isDirty) ? (
-              <span
-                data-test="git-dirty"
-                style={
-                  diffBlobProperties.isDirty
-                    ? { backgroundColor: getDiffStyles(diff.diffType, type) }
-                    : {}
-                }
-              >
-                {blobData.isDirty ? 'TRUE' : 'FALSE'}
+          type="dirty"
+          getCellStyle={highlightCellBackground(
+            ({ data }) => !R.isNil(data.isDirty) && diffBlobProperties.isDirty
+          )}
+          render={({ data }) => {
+            return data && !R.isNil(data.isDirty) ? (
+              <span data-test="git-dirty">
+                {data.isDirty ? 'TRUE' : 'FALSE'}
               </span>
             ) : null;
           }}
         />
-        <CompareTable.PropDefinition
+        <tableComponents.PropDefinition
           title="Branch"
-          render={({ blobData, diffBlobProperties, type }) => {
-            return blobData && blobData.branch ? (
+          type="branch"
+          getCellStyle={highlightCellBackground(({ data }) =>
+            Boolean(data.branch && diffBlobProperties.branch)
+          )}
+          render={({ data }) => {
+            return data && data.branch ? (
               <BranchProp
-                branch={blobData.branch}
-                remoteRepoUrl={blobData.remoteRepoUrl}
-                rootStyles={
-                  diffBlobProperties.branch
-                    ? { backgroundColor: getDiffStyles(diff.diffType, type) }
-                    : {}
-                }
+                branch={data.branch}
+                remoteRepoUrl={data.remoteRepoUrl}
               />
             ) : null;
           }}
         />
-        <CompareTable.PropDefinition
+        <tableComponents.PropDefinition
           title="Tag"
-          render={({ blobData, diffBlobProperties, type }) => {
-            return blobData && blobData.tag ? (
-              <TagProp
-                remoteRepoUrl={blobData.remoteRepoUrl}
-                tag={blobData.tag}
-                rootStyles={
-                  diffBlobProperties.tag
-                    ? { backgroundColor: getDiffStyles(diff.diffType, type) }
-                    : {}
-                }
-              />
+          type="tag"
+          getCellStyle={highlightCellBackground(({ data }) =>
+            Boolean(data.tag && diffBlobProperties.tag)
+          )}
+          render={({ data }) => {
+            return data && data.tag ? (
+              <TagProp remoteRepoUrl={data.remoteRepoUrl} tag={data.tag} />
             ) : null;
           }}
         />
-        <CompareTable.PropDefinition
+        <tableComponents.PropDefinition
           title="Repo"
-          render={({ blobData, diffBlobProperties, type }) => {
-            return blobData && blobData.remoteRepoUrl ? (
-              <RepoProp
-                remoteRepoUrl={blobData.remoteRepoUrl}
-                rootStyles={
-                  diffBlobProperties.remoteRepoUrl
-                    ? { backgroundColor: getDiffStyles(diff.diffType, type) }
-                    : {}
-                }
-              />
+          type="repo"
+          getCellStyle={highlightCellBackground(({ data }) =>
+            Boolean(data.remoteRepoUrl && diffBlobProperties.remoteRepoUrl)
+          )}
+          render={({ data }) => {
+            return data && data.remoteRepoUrl ? (
+              <RepoProp remoteRepoUrl={data.remoteRepoUrl} />
             ) : null;
           }}
         />
-      </CompareTable>
-    </div>
+      </tableComponents.Table>
+    </BlobDataBox>
   );
-};
-
-const getDiffStyles = (diffType: DiffType, type: ComparedCommitType) => {
-  if (diffType === 'deleted') {
-    return diffColors.red;
-  }
-  if (diffType === 'added') {
-    return diffColors.green;
-  }
-  return type === 'A' ? diffColors.red : diffColors.green;
 };
 
 export default GitDiffView;

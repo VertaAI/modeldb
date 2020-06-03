@@ -291,12 +291,22 @@
 		</createTable>
 	</changeSet>
 	<changeSet author="anandJ" id="addUniqueConstraint-versioning_modeldb_entity_mapping">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<indexExists indexName="ck_versioning_modeldb_entity_mapping"/>
+			</not>
+		</preConditions>
 		<addUniqueConstraint
 				columnNames="repository_id, commit, versioning_key, experiment_run_id, entity_type"
 				constraintName="ck_versioning_modeldb_entity_mapping"
 				tableName="versioning_modeldb_entity_mapping"/>
 	</changeSet>
 	<changeSet id="createTempTableWithNewKeysOfFolderElement" author="lezhevg">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="folder_element_temp"/>
+			</not>
+		</preConditions>
 		<createTable tableName="folder_element_temp">
 			<column name="folder_hash" type="varchar(64)">
 				<constraints primaryKey="true" nullable="false"/>
@@ -308,9 +318,10 @@
 			<column name="element_type" type="varchar(50)"/>
 		</createTable>
 	</changeSet>
+
 	<changeSet id="copyDataToANewTable" author="lezhevg">
 		<sql>
-			INSERT INTO folder_element_temp SELECT * FROM folder_element;
+			INSERT INTO folder_element_temp SELECT folder_hash, element_sha, element_name, element_type  FROM folder_element;
 		</sql>
 	</changeSet>
 	<changeSet id="replaceOldFolderElement" author="lezhevg">
@@ -329,5 +340,15 @@
 			INSERT INTO folder_element SELECT * FROM folder_element_temp;
 		</sql>
 		<dropTable tableName="folder_element_temp"/>
+	</changeSet>
+	<changeSet id="add-visibility-column-to-repository" author="lezhevg">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="repository" columnName="repository_visibility"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="repository">
+			<column name="repository_visibility" type="int4"/>
+		</addColumn>
 	</changeSet>
 </databaseChangeLog>

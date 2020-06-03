@@ -7,13 +7,13 @@ import {
   selectors,
   actions,
 } from 'core/features/versioning/repositoryData/store';
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { CommitPointer } from 'core/shared/models/Versioning/RepositoryData';
 import BranchesAndTagsList from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
+import routes from 'routes';
 import { IApplicationState } from 'store/store';
-
-import * as routeHelpers from '../../routeHelpers';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
 interface ILocalProps {
   repository: IRepository;
@@ -23,7 +23,7 @@ const mapStateToProps = (state: IApplicationState) => {
   return {
     tags: selectors.selectTags(state)!,
     branches: selectors.selectBranches(state)!,
-
+    currentWorkspaceName: selectCurrentWorkspaceName(state),
     commitPointer: selectors.selectCommitPointer(state),
   };
 };
@@ -47,15 +47,17 @@ const BranchesAndTagsListContainer = ({
   commitPointer,
   repository,
   changeCommitPointer,
+  currentWorkspaceName,
 }: AllProps) => {
   const history = useHistory();
 
   const onChangeCommitPointer = (newCommitPointer: CommitPointer) => {
     changeCommitPointer(newCommitPointer);
     history.push(
-      routeHelpers.getRedirectPath({
+      routes.repositoryDataWithLocation.getRedirectPath({
+        workspaceName: currentWorkspaceName,
         commitPointer: newCommitPointer,
-        location: DataLocation.makeRoot(),
+        location: CommitComponentLocation.makeRoot(),
         repositoryName: repository.name,
         type: 'folder',
       })
@@ -67,6 +69,7 @@ const BranchesAndTagsListContainer = ({
       branches={branches}
       tags={tags}
       commitPointer={commitPointer}
+      dataTest="branches-and-tags"
       onChangeCommitPointer={onChangeCommitPointer}
     />
   );

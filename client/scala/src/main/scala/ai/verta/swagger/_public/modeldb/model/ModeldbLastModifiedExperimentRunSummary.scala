@@ -6,16 +6,16 @@ import scala.util.Try
 import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
+import ai.verta.swagger._public.modeldb.model.ModeldbProjectVisibility._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
+import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.model.WorkspaceTypeEnumWorkspaceType._
-import ai.verta.swagger._public.modeldb.model.ModeldbProjectVisibility._
-import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbLastModifiedExperimentRunSummary (
-  last_updated_time: Option[] = None,
+  last_updated_time: Option[BigInt] = None,
   name: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbLastModifiedExperimentRunSummary.toJson(this)
@@ -25,7 +25,7 @@ object ModeldbLastModifiedExperimentRunSummary {
   def toJson(obj: ModeldbLastModifiedExperimentRunSummary): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.last_updated_time.map(x => JField("last_updated_time", (x))),
+        obj.last_updated_time.map(x => JField("last_updated_time", JInt(x))),
         obj.name.map(x => JField("name", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -40,7 +40,7 @@ object ModeldbLastModifiedExperimentRunSummary {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbLastModifiedExperimentRunSummary(
           // TODO: handle required
-          last_updated_time = fieldsMap.get("last_updated_time").map(),
+          last_updated_time = fieldsMap.get("last_updated_time").map(JsonConverter.fromJsonInteger),
           name = fieldsMap.get("name").map(JsonConverter.fromJsonString)
         )
       }

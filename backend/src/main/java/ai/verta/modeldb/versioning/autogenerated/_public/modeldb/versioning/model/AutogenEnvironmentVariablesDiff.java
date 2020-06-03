@@ -8,17 +8,23 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenEnvironmentVariablesDiff implements ProtoType {
   private AutogenEnvironmentVariablesBlob A;
   private AutogenEnvironmentVariablesBlob B;
+  private AutogenEnvironmentVariablesBlob C;
   private AutogenDiffStatusEnumDiffStatus Status;
 
   public AutogenEnvironmentVariablesDiff() {
     this.A = null;
     this.B = null;
+    this.C = null;
     this.Status = null;
   }
 
@@ -27,6 +33,9 @@ public class AutogenEnvironmentVariablesDiff implements ProtoType {
       return false;
     }
     if (this.B != null && !this.B.equals(null)) {
+      return false;
+    }
+    if (this.C != null && !this.C.equals(null)) {
       return false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -50,6 +59,11 @@ public class AutogenEnvironmentVariablesDiff implements ProtoType {
       sb.append("\"B\": " + B);
       first = false;
     }
+    if (this.C != null && !this.C.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"C\": " + C);
+      first = false;
+    }
     if (this.Status != null && !this.Status.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"Status\": " + Status);
@@ -60,20 +74,15 @@ public class AutogenEnvironmentVariablesDiff implements ProtoType {
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenEnvironmentVariablesDiff");
-    if (this.A != null && !this.A.equals(null)) {
-      sb.append("::A::").append(A);
-    }
-    if (this.B != null && !this.B.equals(null)) {
-      sb.append("::B::").append(B);
-    }
-    if (this.Status != null && !this.Status.equals(null)) {
-      sb.append("::Status::").append(Status);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -103,6 +112,15 @@ public class AutogenEnvironmentVariablesDiff implements ProtoType {
       }
     }
     {
+      Function3<AutogenEnvironmentVariablesBlob, AutogenEnvironmentVariablesBlob, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.C != null || other.C != null) {
+        if (this.C == null && other.C != null) return false;
+        if (this.C != null && other.C == null) return false;
+        if (!f.apply(this.C, other.C)) return false;
+      }
+    }
+    {
       Function3<AutogenDiffStatusEnumDiffStatus, AutogenDiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Status != null || other.Status != null) {
@@ -112,11 +130,6 @@ public class AutogenEnvironmentVariablesDiff implements ProtoType {
       }
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.A, this.B, this.Status);
   }
 
   public AutogenEnvironmentVariablesDiff setA(AutogenEnvironmentVariablesBlob value) {
@@ -135,6 +148,15 @@ public class AutogenEnvironmentVariablesDiff implements ProtoType {
 
   public AutogenEnvironmentVariablesBlob getB() {
     return this.B;
+  }
+
+  public AutogenEnvironmentVariablesDiff setC(AutogenEnvironmentVariablesBlob value) {
+    this.C = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public AutogenEnvironmentVariablesBlob getC() {
+    return this.C;
   }
 
   public AutogenEnvironmentVariablesDiff setStatus(AutogenDiffStatusEnumDiffStatus value) {
@@ -164,6 +186,12 @@ public class AutogenEnvironmentVariablesDiff implements ProtoType {
               ai.verta.modeldb.versioning.EnvironmentVariablesDiff, AutogenEnvironmentVariablesBlob>
           f = x -> AutogenEnvironmentVariablesBlob.fromProto(blob.getB());
       obj.setB(f.apply(blob));
+    }
+    {
+      Function<
+              ai.verta.modeldb.versioning.EnvironmentVariablesDiff, AutogenEnvironmentVariablesBlob>
+          f = x -> AutogenEnvironmentVariablesBlob.fromProto(blob.getC());
+      obj.setC(f.apply(blob));
     }
     {
       Function<
@@ -198,6 +226,16 @@ public class AutogenEnvironmentVariablesDiff implements ProtoType {
       }
     }
     {
+      if (this.C != null && !this.C.equals(null)) {
+        Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder, Void> f =
+            x -> {
+              builder.setC(this.C.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
       if (this.Status != null && !this.Status.equals(null)) {
         Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder, Void> f =
             x -> {
@@ -218,6 +256,7 @@ public class AutogenEnvironmentVariablesDiff implements ProtoType {
     this.preVisitShallow(visitor);
     visitor.preVisitDeepAutogenEnvironmentVariablesBlob(this.A);
     visitor.preVisitDeepAutogenEnvironmentVariablesBlob(this.B);
+    visitor.preVisitDeepAutogenEnvironmentVariablesBlob(this.C);
     visitor.preVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status);
   }
 
@@ -228,6 +267,7 @@ public class AutogenEnvironmentVariablesDiff implements ProtoType {
   public AutogenEnvironmentVariablesDiff postVisitDeep(Visitor visitor) throws ModelDBException {
     this.setA(visitor.postVisitDeepAutogenEnvironmentVariablesBlob(this.A));
     this.setB(visitor.postVisitDeepAutogenEnvironmentVariablesBlob(this.B));
+    this.setC(visitor.postVisitDeepAutogenEnvironmentVariablesBlob(this.C));
     this.setStatus(visitor.postVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }

@@ -50,6 +50,7 @@ import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
+import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
@@ -76,6 +77,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private RoleService roleService;
   private DatasetDAO datasetDAO;
   private DatasetVersionDAO datasetVersionDAO;
+  private ProjectDAO projectDAO;
   private ExperimentDAO experimentDAO;
   private ExperimentRunDAO experimentRunDAO;
 
@@ -84,12 +86,14 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       RoleService roleService,
       DatasetDAO datasetDAO,
       DatasetVersionDAO datasetVersionDAO,
+      ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
       ExperimentRunDAO experimentRunDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.datasetDAO = datasetDAO;
     this.datasetVersionDAO = datasetVersionDAO;
+    this.projectDAO = projectDAO;
     this.experimentDAO = experimentDAO;
     this.experimentRunDAO = experimentRunDAO;
   }
@@ -855,7 +859,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.findDatasetVersions(findDatasetVersions, userInfo);
+          datasetVersionDAO.findDatasetVersions(datasetDAO, findDatasetVersions, userInfo);
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
       if (datasetVersionDTO != null
@@ -879,7 +883,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         FindExperimentRuns findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         ExperimentRunPaginationDTO experimentRunPaginationDTO =
-            experimentRunDAO.findExperimentRuns(findExperimentRuns);
+            experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
         if (experimentRunPaginationDTO != null
             && experimentRunPaginationDTO.getExperimentRuns() != null
             && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
@@ -897,7 +901,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                   .setAscending(false)
                   .build();
           ExperimentPaginationDTO experimentPaginationDTO =
-              experimentDAO.findExperiments(findExperiments);
+              experimentDAO.findExperiments(projectDAO, userInfo, findExperiments);
           if (experimentPaginationDTO.getExperiments() != null
               && !experimentPaginationDTO.getExperiments().isEmpty()) {
             lastUpdatedExperiment = experimentPaginationDTO.getExperiments().get(0);
@@ -948,7 +952,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.findDatasetVersions(findDatasetVersions, userInfo);
+          datasetVersionDAO.findDatasetVersions(datasetDAO, findDatasetVersions, userInfo);
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
       if (datasetVersionDTO != null
@@ -972,7 +976,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         FindExperimentRuns findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         ExperimentRunPaginationDTO experimentRunPaginationDTO =
-            experimentRunDAO.findExperimentRuns(findExperimentRuns);
+            experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
         if (experimentRunPaginationDTO != null
             && experimentRunPaginationDTO.getExperimentRuns() != null
             && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {

@@ -1,11 +1,22 @@
-import { Table } from '@devexpress/dx-react-grid-material-ui';
+import * as React from 'react';
 
-import withProps from 'core/shared/utils/react/withProps';
+import { Table, TableProps } from '@devexpress/dx-react-grid-material-ui';
 
 import TableCell from '../Templates/Cell/Cell';
 import Row from '../Templates/Row/Row';
 
-export default withProps(Table)({
-  cellComponent: TableCell,
-  rowComponent: Row,
-});
+const Table_ = ({
+  cellComponent = TableCell,
+  rowComponent = Row,
+  ...restProps
+}: TableProps) => {
+  return (
+    <Table
+      {...restProps}
+      cellComponent={cellComponent}
+      rowComponent={rowComponent}
+    />
+  );
+};
+
+export default Table_;

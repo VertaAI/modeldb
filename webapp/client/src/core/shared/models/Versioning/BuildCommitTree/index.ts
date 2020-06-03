@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import { IBlob } from 'core/shared/models/Versioning/Blob/Blob';
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import {
   IFolder,
   ISubFolderElement,
@@ -16,7 +16,7 @@ interface IOutputBlob<Name extends string> {
   asDataElement: IBlob;
 
   name: Name;
-  location: DataLocation.DataLocation;
+  location: CommitComponentLocation.CommitComponentLocation;
 }
 interface IOutputFolder<
   Name extends string,
@@ -30,7 +30,7 @@ interface IOutputFolder<
   asDataElement: IFolder;
 
   name: Name;
-  location: DataLocation.DataLocation;
+  location: CommitComponentLocation.CommitComponentLocation;
 }
 interface IRoot<Records extends Record<any, ArrayOutputData<any>>> {
   elements: Records;
@@ -64,7 +64,7 @@ export const folder = <Name extends string, T extends ArrayOutputData<any>>(
   Name,
   { [K in T[number]['name']]: Extract<T[number], { name: K }> }
 > => {
-  const location = DataLocation.makeFromNames([name as any]);
+  const location = CommitComponentLocation.makeFromNames([name as any]);
 
   return {
     type: 'folder',
@@ -96,10 +96,13 @@ export const folder = <Name extends string, T extends ArrayOutputData<any>>(
 };
 
 const nestFolderLocation = (
-  newParentLocation: DataLocation.DataLocation,
+  newParentLocation: CommitComponentLocation.CommitComponentLocation,
   element: IOutputData
 ): IOutputData => {
-  const newLocation = DataLocation.add(element.name, newParentLocation);
+  const newLocation = CommitComponentLocation.add(
+    element.name,
+    newParentLocation
+  );
   if (element.type === 'blob') {
     return {
       ...element,
@@ -121,7 +124,7 @@ export const blob = <Name extends string>(
   { createdByCommitSha }: { createdByCommitSha: string },
   data: IBlob['data']
 ): IOutputBlob<Name> => {
-  const location = DataLocation.makeFromNames([name as any]);
+  const location = CommitComponentLocation.makeFromNames([name as any]);
   return {
     name: name as any,
     asDataElement: { data, type: 'blob' },

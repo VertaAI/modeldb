@@ -32,6 +32,123 @@ Release Notes
      <>`__
 
 
+v0.14.6 (2020-05-29)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `enable multipart artifact uploads
+  <https://github.com/VertaAI/modeldb/pull/643>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix Notebook Blob repr
+  <https://github.com/VertaAI/modeldb/pull/629>`__
+- `support NumPy bool_ and pandas 1.X in ModelAPI
+  <https://github.com/VertaAI/modeldb/pull/630>`__
+- `ignore folders in S3 versioning Blobs
+  <https://github.com/VertaAI/modeldb/pull/631>`__
+- `inject verta and cloudpickle into Python environment Blobs
+  <https://github.com/VertaAI/modeldb/pull/644>`__
+- `blacklist deployment artifact keys
+  <https://github.com/VertaAI/modeldb/pull/648>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `remove logic duplication for fixing NFS URLs
+  <https://github.com/VertaAI/modeldb/pull/659>`__
+- `calculate SHA-256 checksums for artifacts in chunks
+  <https://github.com/VertaAI/modeldb/pull/670>`__
+
+
+v0.14.5 (2020-05-13)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `support logging Keras models in TensorFlow 2.X
+  <https://github.com/VertaAI/modeldb/pull/621>`__
+- `support eagerly-executed TensorFlow Tensors in ModelAPI
+  <https://github.com/VertaAI/modeldb/pull/626>`__
+
+Bug Fixes
+^^^^^^^^^
+- `filter out spaCy models when versioning pip requirements files
+  <https://github.com/VertaAI/modeldb/pull/627>`__
+
+
+v0.14.4 (2020-05-04)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `run.log_training_data() no longer uploads a "train_data" artifact, and instead directly
+  generates a histogram for deployment data monitoring
+  <https://github.com/VertaAI/modeldb/pull/576>`__
+
+
+v0.14.3 (2020-04-20)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `replace commit.branch() with commit.new_branch()
+  <https://github.com/VertaAI/modeldb/pull/494>`__
+
+New Features
+^^^^^^^^^^^^
+- `enable passing in ~ as part of filepaths
+  <https://github.com/VertaAI/modeldb/pull/493>`__
+- `enable setting host from $VERTA_HOST
+  <https://github.com/VertaAI/modeldb/pull/537>`__
+- `capture versioning information from S3
+  <https://github.com/VertaAI/modeldb/pull/526>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `add click as a dependency in preparation for CLI development
+  <https://github.com/VertaAI/modeldb/pull/482>`__
+- `use back end for commit merges
+  <https://github.com/VertaAI/modeldb/pull/485>`__
+- `use back end for commit reverts
+  <https://github.com/VertaAI/modeldb/pull/510>`__
+
+
+v0.14.2 (2020-04-01)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `use friendly default messages for merges and reverts
+  <https://github.com/VertaAI/modeldb/pull/355>`__
+- `implement __repr__ for Blobs
+  <https://github.com/VertaAI/modeldb/pull/434>`__
+
+Bug Fixes
+^^^^^^^^^
+- `filter out spaCy models from pip freeze
+  <https://github.com/VertaAI/modeldb/pull/367>`__
+- `make dataset.dataset_type friendlier
+  <https://github.com/VertaAI/modeldb/pull/419>`__
+- `enable e.g. Notebook Blobs to be retrieved from a Commit outside of Notebooks
+  <https://github.com/VertaAI/modeldb/pull/424>`__
+- `enable set_repository() without Verta authentication credentials
+  <https://github.com/VertaAI/modeldb/pull/451>`__
+- `validate Client config file against protobuf spec
+  <https://github.com/VertaAI/modeldb/pull/420>`__
+- `add more helpful typechecks on Commit methods
+  <https://github.com/VertaAI/modeldb/pull/415>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `update protobufs for diffapi changes
+  <https://github.com/VertaAI/modeldb/pull/431>`__
+- `fix race condition when running parallel tests
+  <https://github.com/VertaAI/modeldb/pull/401>`__
+- `update tests to delete children Commits first
+  <https://github.com/VertaAI/modeldb/pull/421>`__
+
+
 v0.14.1 (2020-03-17)
 --------------------
 

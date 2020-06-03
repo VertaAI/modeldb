@@ -10,6 +10,7 @@ import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.Project;
@@ -24,23 +25,18 @@ import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.CommentEntity;
-import ai.verta.modeldb.entities.ExperimentEntity;
-import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Organization;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -115,27 +111,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.ID)
           .append(" = :projectId")
           .toString();
-  private static final String FIND_EXPERIMENT_BY_PROJECT_IDS_HQL =
-      new StringBuilder("From ExperimentEntity ee where ee.")
-          .append(ModelDBConstants.PROJECT_ID)
-          .append(" IN (:")
-          .append(ModelDBConstants.PROJECT_IDS)
-          .append(") ")
-          .toString();
-  private static final String FIND_EXPERIMENT_RUN_BY_PROJECT_IDS_HQL =
-      new StringBuilder("From ExperimentRunEntity ee where ee.")
-          .append(ModelDBConstants.PROJECT_ID)
-          .append(" IN (:")
-          .append(ModelDBConstants.PROJECT_IDS)
-          .append(") ")
-          .toString();
-  private static final String FIND_COMMENTS_HQL =
-      new StringBuilder("From CommentEntity ce where ce.")
-          .append(ModelDBConstants.ENTITY_ID)
-          .append(" IN (:entityIds) AND ce.")
-          .append(ModelDBConstants.ENTITY_NAME)
-          .append(" =:entityName")
-          .toString();
   private static final String GET_PROJECT_EXPERIMENTS_COUNT_HQL =
       new StringBuilder("SELECT COUNT(*) FROM ExperimentEntity ee WHERE ee.")
           .append(ModelDBConstants.PROJECT_ID)
@@ -150,8 +125,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.PROJECT_IDS)
           .append(")")
           .toString();
-  private static final String GET_PROJECT_BY_ID_HQL = "From ProjectEntity p where p.id = :id";
-  private static final String GET_PROJECT_BY_IDS_HQL = "From ProjectEntity p where p.id IN (:ids)";
+  private static final String GET_PROJECT_BY_ID_HQL =
+      "From ProjectEntity p where p.id = :id AND p." + ModelDBConstants.DELETED + " = false";
+  private static final String GET_PROJECT_BY_IDS_HQL =
+      "From ProjectEntity p where p.id IN (:ids) AND p." + ModelDBConstants.DELETED + " = false";
   private static final String GET_PROJECT_BY_SHORT_NAME_AND_OWNER_HQL =
       new StringBuilder("From ProjectEntity p where p.")
           .append(ModelDBConstants.SHORT_NAME)
@@ -170,6 +147,17 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(" in (:keys) AND ar.projectEntity.")
           .append(ModelDBConstants.ID)
           .append(" = :projectId")
+          .toString();
+  private static final String DELETED_STATUS_PROJECT_QUERY_STRING =
+      new StringBuilder("UPDATE ")
+          .append(ProjectEntity.class.getSimpleName())
+          .append(" pr ")
+          .append("SET pr.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
+          .append(" WHERE pr.")
+          .append(ModelDBConstants.ID)
+          .append(" IN (:projectIds)")
           .toString();
 
   public ProjectDAORdbImpl(
@@ -203,39 +191,42 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project insertProject(Project project, UserInfo userInfo)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       checkIfEntityAlreadyExists(session, project);
+      createRoleBindingsForProject(project, userInfo);
+
+      Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);
       session.save(projectEntity);
-
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          project.getId(),
-          ModelDBServiceResourceTypes.PROJECT);
-      if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
-        Role publicReadRole =
-            roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_PUBLIC_READ, null);
-        UserInfo unsignedUser = authService.getUnsignedUser();
-        roleService.createRoleBinding(
-            publicReadRole,
-            new CollaboratorUser(authService, unsignedUser),
-            project.getId(),
-            ModelDBServiceResourceTypes.PROJECT);
-      }
-
-      createWorkspaceRoleBinding(
-          project.getWorkspaceId(),
-          project.getWorkspaceType(),
-          project.getId(),
-          project.getProjectVisibility());
-
       transaction.commit();
       LOGGER.debug("Project created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
       return projectEntity.getProtoObject();
     }
+  }
+
+  private void createRoleBindingsForProject(Project project, UserInfo userInfo) {
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_OWNER, null);
+    roleService.createRoleBinding(
+        ownerRole,
+        new CollaboratorUser(authService, userInfo),
+        project.getId(),
+        ModelDBServiceResourceTypes.PROJECT);
+    if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
+      Role publicReadRole =
+          roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_PUBLIC_READ, null);
+      UserInfo unsignedUser = authService.getUnsignedUser();
+      roleService.createRoleBinding(
+          publicReadRole,
+          new CollaboratorUser(authService, unsignedUser),
+          project.getId(),
+          ModelDBServiceResourceTypes.PROJECT);
+    }
+
+    createWorkspaceRoleBinding(
+        project.getWorkspaceId(),
+        project.getWorkspaceType(),
+        project.getId(),
+        project.getProjectVisibility());
   }
 
   private void createWorkspaceRoleBinding(
@@ -244,52 +235,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       String projectId,
       ProjectVisibility projectVisibility) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      Role projAdmin = roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_ADMIN, null);
-      Role projRead = roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_READ_ONLY, null);
-      switch (workspaceType) {
-        case ORGANIZATION:
-          Organization org = (Organization) roleService.getOrgById(workspaceId);
-          roleService.createRoleBinding(
-              projAdmin,
-              new CollaboratorUser(authService, org.getOwnerId()),
-              projectId,
-              ModelDBServiceResourceTypes.PROJECT);
-          if (projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC)) {
-            String globalSharingRoleName =
-                new StringBuilder()
-                    .append("O_")
-                    .append(workspaceId)
-                    .append("_GLOBAL_SHARING")
-                    .toString();
-            try {
-              Role globalSharingRole =
-                  roleService.getRoleByName(
-                      globalSharingRoleName, RoleScope.newBuilder().setOrgId(workspaceId).build());
-              roleService.createRoleBinding(
-                  globalSharingRole,
-                  new CollaboratorOrg(workspaceId),
-                  projectId,
-                  ModelDBServiceResourceTypes.PROJECT);
-            } catch (StatusRuntimeException ex) {
-              if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
-                // DO NOTHING if the role does not exist
-                LOGGER.warn(ex.getMessage());
-              } else {
-                throw ex;
-              }
-            }
-          }
-          break;
-        case USER:
-          roleService.createRoleBinding(
-              projAdmin,
-              new CollaboratorUser(authService, workspaceId),
-              projectId,
-              ModelDBServiceResourceTypes.PROJECT);
-          break;
-        default:
-          break;
-      }
+      roleService.createWorkspaceRoleBinding(
+          workspaceId,
+          workspaceType,
+          projectId,
+          ModelDBConstants.ROLE_PROJECT_ADMIN,
+          ModelDBServiceResourceTypes.PROJECT,
+          projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
+          "_GLOBAL_SHARING");
     }
   }
 
@@ -680,183 +633,23 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return newProject;
   }
 
-  private void deleteExperimentsWithPagination(Session session, List<String> projectIds) {
-    int lowerBound = 0;
-    final int pagesize = 100;
-    Long count = getExperimentCount(projectIds);
-    LOGGER.debug("Total experimentEntities {}", count);
-
-    while (lowerBound < count) {
-      Transaction transaction = session.beginTransaction();
-      // Delete the ExperimentEntity object
-      Query experimentDeleteQuery = session.createQuery(FIND_EXPERIMENT_BY_PROJECT_IDS_HQL);
-      experimentDeleteQuery.setParameterList(ModelDBConstants.PROJECT_IDS, projectIds);
-      experimentDeleteQuery.setFirstResult(lowerBound);
-      experimentDeleteQuery.setMaxResults(pagesize);
-      List<ExperimentEntity> experimentEntities = experimentDeleteQuery.list();
-      for (ExperimentEntity experimentEntity : experimentEntities) {
-        session.delete(experimentEntity);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_OWNER,
-                experimentEntity.getId(),
-                experimentEntity.getOwner(),
-                ModelDBServiceResourceTypes.EXPERIMENT.name());
-        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(roleBinding.getId());
-        }
-      }
-      transaction.commit();
-      lowerBound += pagesize;
-    }
-  }
-
-  private void deleteExperimentRunsWithPagination(Session session, List<String> projectIds) {
-    int lowerBound = 0;
-    final int pagesize = 100;
-    Long count = getExperimentRunCount(projectIds);
-    LOGGER.debug("Total experimentRunEntities {}", count);
-
-    while (lowerBound < count) {
-      Transaction transaction = session.beginTransaction();
-
-      Query experimentRunDeleteQuery = session.createQuery(FIND_EXPERIMENT_RUN_BY_PROJECT_IDS_HQL);
-      experimentRunDeleteQuery.setParameterList(ModelDBConstants.PROJECT_IDS, projectIds);
-      experimentRunDeleteQuery.setFirstResult(lowerBound);
-      experimentRunDeleteQuery.setMaxResults(pagesize);
-      List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
-      List<String> experimentRunIds = new ArrayList<>();
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        experimentRunIds.add(experimentRunEntity.getId());
-        session.delete(experimentRunEntity);
-
-        String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-                experimentRunEntity.getId(),
-                experimentRunEntity.getOwner(),
-                ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(roleBinding.getId());
-        }
-      }
-      // Delete the ExperimentRUn comments
-      if (!experimentRunIds.isEmpty()) {
-        removeEntityComments(session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
-      }
-
-      transaction.commit();
-      lowerBound += pagesize;
-    }
-  }
-
-  private void deleteRoleBindingsOfAccessibleProjects(List<ProjectEntity> allowedProjects)
-      throws InvalidProtocolBufferException {
-    UserInfo unsignedUser = authService.getUnsignedUser();
-    for (ProjectEntity project : allowedProjects) {
-      String projectId = project.getId();
-      String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_PROJECT_OWNER,
-              projectId,
-              project.getOwner(),
-              ModelDBServiceResourceTypes.PROJECT.name());
-      RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-      if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-        roleService.deleteRoleBinding(roleBinding.getId());
-      }
-
-      if (project.getProject_visibility() == ProjectVisibility.PUBLIC.getNumber()) {
-        String publicReadRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_PROJECT_PUBLIC_READ,
-                projectId,
-                authService.getVertaIdFromUserInfo(unsignedUser),
-                ModelDBServiceResourceTypes.PROJECT.name());
-        RoleBinding publicReadRoleBinding =
-            roleService.getRoleBindingByName(publicReadRoleBindingName);
-        if (publicReadRoleBinding != null && !publicReadRoleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(publicReadRoleBinding.getId());
-        }
-      }
-
-      // Remove all project collaborators
-      roleService.removeResourceRoleBindings(
-          projectId, project.getOwner(), ModelDBServiceResourceTypes.PROJECT);
-
-      // Delete workspace based roleBindings
-      deleteWorkspaceRoleBindings(
-          project.getWorkspace(),
-          WorkspaceType.forNumber(project.getWorkspace_type()),
-          project.getId(),
-          ProjectVisibility.forNumber(project.getProject_visibility()));
-    }
-  }
-
-  private void deleteWorkspaceRoleBindings(
+  private List<String> getWorkspaceRoleBindings(
       String workspaceId,
       WorkspaceType workspaceType,
       String projectId,
       ProjectVisibility projectVisibility) {
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      switch (workspaceType) {
-        case ORGANIZATION:
-          Organization org = (Organization) roleService.getOrgById(workspaceId);
-          String projectAdminRoleBindingName =
-              roleService.buildRoleBindingName(
-                  ModelDBConstants.ROLE_PROJECT_ADMIN,
-                  projectId,
-                  new CollaboratorUser(authService, org.getOwnerId()),
-                  ModelDBServiceResourceTypes.PROJECT.name());
-          RoleBinding projectAdminRoleBinding =
-              roleService.getRoleBindingByName(projectAdminRoleBindingName);
-          if (projectAdminRoleBinding != null && !projectAdminRoleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(projectAdminRoleBinding.getId());
-          }
-          if (projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC)) {
-            String globalSharingRoleName =
-                new StringBuilder()
-                    .append("O_")
-                    .append(workspaceId)
-                    .append("_GLOBAL_SHARING")
-                    .toString();
-
-            String globalSharingRoleBindingName =
-                roleService.buildRoleBindingName(
-                    globalSharingRoleName,
-                    projectId,
-                    new CollaboratorOrg(workspaceId),
-                    ModelDBServiceResourceTypes.PROJECT.name());
-            RoleBinding globalSharingRoleBinding =
-                roleService.getRoleBindingByName(globalSharingRoleBindingName);
-            if (globalSharingRoleBinding != null && !globalSharingRoleBinding.getId().isEmpty()) {
-              roleService.deleteRoleBinding(globalSharingRoleBinding.getId());
-            }
-          }
-          break;
-        case USER:
-          String projectRoleBindingName =
-              roleService.buildRoleBindingName(
-                  ModelDBConstants.ROLE_PROJECT_ADMIN,
-                  projectId,
-                  new CollaboratorUser(authService, workspaceId),
-                  ModelDBServiceResourceTypes.PROJECT.name());
-          RoleBinding projectRoleBinding = roleService.getRoleBindingByName(projectRoleBindingName);
-          if (projectRoleBinding != null && !projectRoleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(projectRoleBinding.getId());
-          }
-          break;
-        default:
-          break;
-      }
-    }
+    return roleService.getWorkspaceRoleBindings(
+        workspaceId,
+        workspaceType,
+        projectId,
+        ModelDBConstants.ROLE_PROJECT_ADMIN,
+        ModelDBServiceResourceTypes.PROJECT,
+        projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
+        "_GLOBAL_SHARING");
   }
 
   @Override
-  public Boolean deleteProjects(List<String> projectIds) throws InvalidProtocolBufferException {
+  public Boolean deleteProjects(List<String> projectIds) {
 
     // Get self allowed resources id where user has delete permission
     List<String> allowedProjectIds =
@@ -872,35 +665,15 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      List<ProjectEntity> projectEntities = getProjectEntityByBatchIds(session, projectIds);
-
-      deleteExperimentsWithPagination(session, allowedProjectIds);
-
-      // Delete the ExperimentRunEntity object
-      deleteExperimentRunsWithPagination(session, allowedProjectIds);
-
       Transaction transaction = session.beginTransaction();
-      for (String projectId : allowedProjectIds) {
-        ProjectEntity projectObj = session.load(ProjectEntity.class, projectId);
-        session.delete(projectObj);
-      }
-
-      // Remove roleBindings by accessible projects
-      deleteRoleBindingsOfAccessibleProjects(projectEntities);
+      Query deletedProjectQuery = session.createQuery(DELETED_STATUS_PROJECT_QUERY_STRING);
+      deletedProjectQuery.setParameter("deleted", true);
+      deletedProjectQuery.setParameter("projectIds", allowedProjectIds);
+      int updatedCount = deletedProjectQuery.executeUpdate();
+      LOGGER.debug("Mark Projects as deleted : {}, count : {}", allowedProjectIds, updatedCount);
       transaction.commit();
       LOGGER.debug("Project deleted successfully");
       return true;
-    }
-  }
-
-  private void removeEntityComments(Session session, List<String> entityIds, String entityName) {
-    Query commentDeleteQuery = session.createQuery(FIND_COMMENTS_HQL);
-    commentDeleteQuery.setParameterList("entityIds", entityIds);
-    commentDeleteQuery.setParameter("entityName", entityName);
-    LOGGER.debug("Comments delete query : {}", commentDeleteQuery.getQueryString());
-    List<CommentEntity> commentEntities = commentDeleteQuery.list();
-    for (CommentEntity commentEntity : commentEntities) {
-      session.delete(commentEntity);
     }
   }
 
@@ -1156,39 +929,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       List<KeyValueQuery> predicates = new ArrayList<>(queryParameters.getPredicatesList());
       for (KeyValueQuery predicate : predicates) {
         // Validate if current user has access to the entity or not where predicate key has an id
-        if (predicate.getKey().equals(ModelDBConstants.ID)) {
-          if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
-            Status statusMessage =
-                Status.newBuilder()
-                    .setCode(Code.INVALID_ARGUMENT_VALUE)
-                    .setMessage(ModelDBConstants.NON_EQ_ID_PRED_ERROR_MESSAGE)
-                    .build();
-            throw StatusProto.toStatusRuntimeException(statusMessage);
-          }
-          String projectId = predicate.getValue().getStringValue();
-          if ((accessibleProjectIds.isEmpty() || !accessibleProjectIds.contains(projectId))
-              && roleService.IsImplemented()) {
-            Status statusMessage =
-                Status.newBuilder()
-                    .setCode(Code.PERMISSION_DENIED_VALUE)
-                    .setMessage(
-                        "Access is denied. User is unauthorized for given Project entity ID : "
-                            + projectId)
-                    .build();
-            throw StatusProto.toStatusRuntimeException(statusMessage);
-          }
-        }
-
-        if (predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE)
-            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_NAME)
-            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_TYPE)) {
-          Status statusMessage =
-              Status.newBuilder()
-                  .setCode(Code.INVALID_ARGUMENT_VALUE)
-                  .setMessage("Workspace name OR type not supported as predicate")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(statusMessage);
-        }
+        RdbmsUtils.validatePredicates(
+            ModelDBConstants.PROJECTS, accessibleProjectIds, predicate, roleService);
       }
 
       String workspaceName = queryParameters.getWorkspaceName();
@@ -1224,28 +966,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         }
       } else {
         if (projectVisibility.equals(ProjectVisibility.PRIVATE)) {
-          UserInfo userInfo =
-              host != null && host.isUser()
-                  ? (UserInfo) host.getCollaboratorMessage()
-                  : currentLoginUserInfo;
-          if (userInfo != null) {
-            List<KeyValueQuery> workspacePredicates =
-                ModelDBUtils.getKeyValueQueriesByWorkspace(roleService, userInfo, workspaceName);
-            if (workspacePredicates.size() > 0) {
-              Predicate privateWorkspacePredicate =
-                  builder.equal(
-                      projectRoot.get(ModelDBConstants.WORKSPACE),
-                      workspacePredicates.get(0).getValue().getStringValue());
-              Predicate privateWorkspaceTypePredicate =
-                  builder.equal(
-                      projectRoot.get(ModelDBConstants.WORKSPACE_TYPE),
-                      workspacePredicates.get(1).getValue().getNumberValue());
-              Predicate privatePredicate =
-                  builder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
-
-              finalPredicatesList.add(privatePredicate);
-            }
-          }
+          RdbmsUtils.getWorkspacePredicates(
+              host,
+              currentLoginUserInfo,
+              builder,
+              projectRoot,
+              finalPredicatesList,
+              workspaceName,
+              roleService);
         }
       }
 
@@ -1256,12 +984,25 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
 
       String entityName = "projectEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, projectRoot);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, projectRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (ModelDBException ex) {
+        if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
+          LOGGER.warn(ex.getMessage());
+          ProjectPaginationDTO projectPaginationDTO = new ProjectPaginationDTO();
+          projectPaginationDTO.setProjects(Collections.emptyList());
+          projectPaginationDTO.setTotalRecords(0L);
+          return projectPaginationDTO;
+        }
       }
+
+      finalPredicatesList.add(builder.equal(projectRoot.get(ModelDBConstants.DELETED), false));
 
       Order orderBy =
           RdbmsUtils.getOrderBasedOnSortKey(
@@ -1445,11 +1186,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
-      deleteWorkspaceRoleBindings(
-          projectEntity.getWorkspace(),
-          WorkspaceType.forNumber(projectEntity.getWorkspace_type()),
-          projectId,
-          ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
+      List<String> roleBindingNames =
+          getWorkspaceRoleBindings(
+              projectEntity.getWorkspace(),
+              WorkspaceType.forNumber(projectEntity.getWorkspace_type()),
+              projectId,
+              ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
+      roleService.deleteRoleBindings(roleBindingNames);
       createWorkspaceRoleBinding(
           workspaceDTO.getWorkspaceId(),
           workspaceDTO.getWorkspaceType(),
@@ -1463,5 +1206,17 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       transaction.commit();
       return projectEntity.getProtoObject();
     }
+  }
+
+  @Override
+  public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
+      throws InvalidProtocolBufferException {
+    FindProjects findProjects =
+        FindProjects.newBuilder().setWorkspaceName(workspaceName).setIdsOnly(true).build();
+    ProjectPaginationDTO projectPaginationDTO =
+        findProjects(findProjects, null, currentLoginUserInfo, ProjectVisibility.PRIVATE);
+    return projectPaginationDTO.getProjects().stream()
+        .map(Project::getId)
+        .collect(Collectors.toList());
   }
 }

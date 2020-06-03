@@ -152,6 +152,21 @@ class Commit(object):
         self._parent_ids = [self.id]
         self._commit_json['commit_sha'] = ""
 
+    def _become_saved_child(self, child_id):
+        """
+        This method is for when a child commit is created in the back end from `self`, and `self`
+        and its branch need to be updated to become that newly-created commit.
+
+        """
+        if self.branch_name is not None:
+            # update branch to child commit
+            set_branch(self._conn, self._repo.id, child_id, self.branch_name)
+            new_commit = self._repo.get_commit(branch=self.branch_name)
+        else:
+            new_commit = self._repo.get_commit(id=child_id)
+
+        self.__dict__ = new_commit.__dict__
+
     def _to_create_msg(self, commit_message):
         self._lazy_load_blobs()
 
@@ -332,16 +347,11 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-
         response_msg = _utils.json_to_proto(response.json(), proto_message.Response)
-        new_commit = self._repo.get_commit(id=response_msg.commit.commit_sha)
 
-        if self.branch_name is not None:
-            # update branch to child commit
-            new_commit.branch(self.branch_name)
+        self._become_saved_child(response_msg.commit.commit_sha)
 
-        self.__dict__ = new_commit.__dict__
-
+    # TODO: Add ways to retrieve and delete tag
     def tag(self, tag):
         """
         Assigns a tag to this Commit.
@@ -398,35 +408,41 @@ class Commit(object):
         for c in commits:
             yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == self.id else None)
 
-    def branch(self, branch):
+    def new_branch(self, branch):
         """
-        Assigns a branch to this Commit.
+        Creates a branch at this Commit and returns the checked-out branch.
+
+        If `branch` already exists, it will be moved to this Commit.
 
         Parameters
         ----------
         branch : str
             Branch name.
 
+        Returns
+        -------
+        commit : :class:`Commit`
+            This Commit as the head of `branch`.
+
         Raises
         ------
         RuntimeError
             If this Commit has not yet been saved.
 
+        Examples
+        --------
+        .. code-block:: python
+
+            master = repo.get_commit(branch="master")
+            dev = master.new_branch("development")
+
         """
         if self.id is None:
             raise RuntimeError("Commit must be saved before it can be attached to a branch")
 
-        data = self.id
-        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/branches/{}".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self._repo.id,
-            branch,
-        )
-        response = _utils.make_request("PUT", endpoint, self._conn, json=data)
-        _utils.raise_for_http_error(response)
+        set_branch(self._conn, self._repo.id, self.id, branch)
 
-        self.branch_name = branch
+        return self._repo.get_commit(branch=branch)
 
     def diff_from(self, reference=None):
         """
@@ -540,10 +556,24 @@ class Commit(object):
         elif self._repo.id != other._repo.id:
             raise ValueError("Commit and `other` must belong to the same Repository")
 
-        if message is None:
-            message = "Revert {}".format(other.id[:7])
+        msg = _VersioningService.RevertRepositoryCommitsRequest()
+        msg.base_commit_sha = self.id
+        msg.commit_to_revert_sha = other.id
+        if message is not None:
+            msg.content.message = message
 
-        self.apply_diff(other.get_revert_diff(), message)
+        data = _utils.proto_to_json(msg)
+        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/revert".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._repo.id,
+            msg.commit_to_revert_sha,
+        )
+        response = _utils.make_request("POST", endpoint, self._conn, json=data)
+        _utils.raise_for_http_error(response)
+        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+
+        self._become_saved_child(response_msg.commit.commit_sha)
 
     def _to_heap_element(self):
         date_created = int(self._commit_json['date_created'])  # protobuf uint64 is str, so cast to int
@@ -624,13 +654,38 @@ class Commit(object):
         elif self._repo.id != other._repo.id:
             raise ValueError("Commit and `other` must belong to the same Repository")
 
-        if message is None:
-            message = "Merge {} into {}".format(
-                other.branch_name or other.id[:7],
-                self.branch_name or self.id[:7],
-            )
+        msg = _VersioningService.MergeRepositoryCommitsRequest()
+        if self.branch_name is not None:
+            msg.branch_b = self.branch_name
+        else:
+            msg.commit_sha_b = self.id
+        if other.branch_name is not None:
+            msg.branch_a = other.branch_name
+        else:
+            msg.commit_sha_a = other.id
+        if message is not None:
+            msg.content.message = message
 
-        self.apply_diff(other.diff_from(self.get_common_parent(other)), message=message, other_parents=[other.id])
+        data = _utils.proto_to_json(msg)
+        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/merge".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._repo.id,
+        )
+        response = _utils.make_request("POST", endpoint, self._conn, json=data)
+        _utils.raise_for_http_error(response)
+        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+
+        # raise for conflict
+        if response_msg.conflicts:
+            raise RuntimeError('\n    '.join([
+                "merge conflict",
+                "resolution is not currently supported through the Client",
+                "please create a new Commit with the updated blobs",
+                "see https://docs.verta.ai/en/master/examples/tutorials/merge.html for instructions",
+            ]))
+
+        self._become_saved_child(response_msg.commit.commit_sha)
 
 
 def blob_msg_to_object(blob_msg):
@@ -679,5 +734,19 @@ def path_to_location(path):
 
     return path.split('/')
 
+
 def location_to_path(location):
     return '/'.join(location)
+
+
+def set_branch(conn, repo_id, commit_id, branch):
+    """Sets `branch` to Commit `commit_id`."""
+    data = commit_id
+    endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/branches/{}".format(
+        conn.scheme,
+        conn.socket,
+        repo_id,
+        branch,
+    )
+    response = _utils.make_request("PUT", endpoint, conn, json=data)
+    _utils.raise_for_http_error(response)

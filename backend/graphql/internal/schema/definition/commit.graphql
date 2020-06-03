@@ -1,0 +1,46 @@
+type Commit {
+  id: String!
+  message: String!
+  date: Date!
+  author: User!
+
+  getLocation(location: [String!]!): CommitElement
+  asDiff: CommitAsDiff
+
+  runs(query: ExperimentRunsQuery): ExperimentRuns!
+
+  setTag(name: String!): Repository!
+  setBranch(name: String!): Repository!
+}
+
+type Commits {
+  # TODO: pagination
+  commits: [Commit!]!
+}
+
+type CommitAsDiff {
+  parent: String!
+  diff: [String!]
+}
+
+union CommitElement = CommitFolder | CommitBlob
+
+type NamedCommitFolder {
+  name: String!
+  content: CommitFolder!
+}
+
+type NamedCommitBlob {
+  name: String!
+  content: CommitBlob!
+}
+
+type CommitFolder {
+  subfolders: [NamedCommitFolder!]!
+  blobs: [NamedCommitBlob!]!
+}
+
+type CommitBlob {
+  content: String!
+  runs(query: ExperimentRunsQuery): ExperimentRuns!
+}

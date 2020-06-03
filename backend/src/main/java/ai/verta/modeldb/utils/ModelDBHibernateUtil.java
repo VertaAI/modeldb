@@ -1,13 +1,16 @@
 package ai.verta.modeldb.utils;
 
-import static ai.verta.modeldb.authservice.AuthServiceChannel.isMigrationUtilsCall;
+import static ai.verta.modeldb.authservice.AuthServiceChannel.isBackgroundUtilsCall;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.entities.ArtifactEntity;
+import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.ArtifactStoreMapping;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -34,6 +37,7 @@ import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
+import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.config.HyperparameterSetConfigBlobEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.S3DatasetComponentBlobEntity;
@@ -102,6 +106,7 @@ public class ModelDBHibernateUtil {
   private static String databaseName;
   private static String rDBDriver;
   private static String rDBUrl;
+  public static String rDBDialect;
   private static String configUsername;
   private static String configPassword;
   private static Integer timeout = 4;
@@ -113,6 +118,7 @@ public class ModelDBHibernateUtil {
     ExperimentRunEntity.class,
     KeyValueEntity.class,
     ArtifactEntity.class,
+    ArtifactPartEntity.class,
     FeatureEntity.class,
     TagsMapping.class,
     ObservationEntity.class,
@@ -151,7 +157,8 @@ public class ModelDBHibernateUtil {
     GitCodeBlobEntity.class,
     NotebookCodeBlobEntity.class,
     BranchEntity.class,
-    VersioningModeldbEntityMapping.class
+    VersioningModeldbEntityMapping.class,
+    HyperparameterElementMappingEntity.class
   };
 
   private ModelDBHibernateUtil() {}
@@ -164,7 +171,7 @@ public class ModelDBHibernateUtil {
         .getConnection();
   }
 
-  public static SessionFactory getSessionFactory() {
+  public static SessionFactory createOrGetSessionFactory() throws ModelDBException {
     if (sessionFactory == null) {
       LOGGER.info("Fetching sessionFactory");
       try {
@@ -175,9 +182,13 @@ public class ModelDBHibernateUtil {
             (Map<String, Object>) databasePropMap.get("RdbConfiguration");
 
         databaseName = (String) rDBPropMap.get("RdbDatabaseName");
-        rDBDriver = (String) rDBPropMap.get("RdbDriver");
+        if (!app.getTraceEnabled()) {
+          rDBDriver = (String) rDBPropMap.get("RdbDriver");
+        } else {
+          rDBDriver = "io.opentracing.contrib.jdbc.TracingDriver";
+        }
         rDBUrl = (String) rDBPropMap.get("RdbUrl");
-        String rDBDialect = (String) rDBPropMap.get("RdbDialect");
+        rDBDialect = (String) rDBPropMap.get("RdbDialect");
         configUsername = (String) rDBPropMap.get("RdbUsername");
         configPassword = (String) rDBPropMap.get("RdbPassword");
         if (databasePropMap.containsKey("timeout")) {
@@ -240,25 +251,32 @@ public class ModelDBHibernateUtil {
           exportSchema(metaDataSrc.buildMetadata());
         }
 
-        // Check if any migration need to be run or not and based on the migration status will
-        // decide a READY state of the modelDB backend
+        // Check if any migration need to be run or not and based on the migration status flag
         runMigration();
 
         LOGGER.info(ModelDBMessages.READY_STATUS, isReady);
+        isReady = true;
         return sessionFactory;
       } catch (Exception e) {
-        e.printStackTrace();
         LOGGER.warn(
             "ModelDBHibernateUtil getSessionFactory() getting error : {}", e.getMessage(), e);
         if (registry != null) {
           StandardServiceRegistryBuilder.destroy(registry);
         }
-        Status status =
-            Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new ModelDBException(e.getMessage());
       }
     } else {
       return loopBack(sessionFactory);
+    }
+  }
+
+  public static SessionFactory getSessionFactory() {
+    try {
+      return createOrGetSessionFactory();
+    } catch (Exception e) {
+      Status status =
+          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
+      throw StatusProto.toStatusRuntimeException(status);
     }
   }
 
@@ -271,7 +289,7 @@ public class ModelDBHibernateUtil {
       // Check DB connection based on the periodic time logic
       checkDBConnectionInLoop(false);
       ModelDBHibernateUtil.sessionFactory = null;
-      sessionFactory = getSessionFactory();
+      sessionFactory = createOrGetSessionFactory();
       LOGGER.debug("ModelDBHibernateUtil getSessionFactory() DB connection got successfully");
       return sessionFactory;
     } catch (Exception ex) {
@@ -545,6 +563,12 @@ public class ModelDBHibernateUtil {
       boolean shouldSetName,
       List<String> ordering) {
     StringBuilder stringQueryBuilder = new StringBuilder(command);
+    stringQueryBuilder
+        .append(" AND ")
+        .append(shortName)
+        .append(".")
+        .append(ModelDBConstants.DELETED)
+        .append(" = false ");
     if (workspaceId != null && !workspaceId.isEmpty()) {
       if (shouldSetName) {
         stringQueryBuilder.append(" AND ");
@@ -580,9 +604,8 @@ public class ModelDBHibernateUtil {
   }
 
   /**
-   * Don't change anything in this function because based on the function backend READY status will
-   * define. If you want to define new migration then add new if check for your migration in `if
-   * (migration) {` condition.
+   * If you want to define new migration then add new if check for your migration in `if (migration)
+   * {` condition.
    */
   @SuppressWarnings("unchecked")
   private static void runMigration() {
@@ -592,7 +615,7 @@ public class ModelDBHibernateUtil {
     if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
       new Thread(
               () -> {
-                isMigrationUtilsCall = true;
+                isBackgroundUtilsCall = true;
                 int index = 0;
                 try {
                   CompletableFuture<Boolean>[] completableFutures =
@@ -613,6 +636,18 @@ public class ModelDBHibernateUtil {
                                 });
                         completableFutures[index] = futureTask;
                         index = index + 1;
+                      }
+                      if (migrationName.equals(
+                          ModelDBConstants.SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION)) {
+                        // Manual migration for populate RoleBinding of repository
+                        CompletableFuture<Boolean> futureTask =
+                            CompletableFuture.supplyAsync(
+                                () -> {
+                                  OwnerRoleBindingRepositoryUtils.execute();
+                                  return true;
+                                });
+                        completableFutures[index] = futureTask;
+                        index = index + 1;
                       } // add else if here for the new migration type
                     }
                   }
@@ -626,14 +661,9 @@ public class ModelDBHibernateUtil {
                   LOGGER.warn(
                       "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
                 }
-                isMigrationUtilsCall = false;
-                LOGGER.info(ModelDBMessages.READY_STATUS, isReady);
-                isReady = true;
+                isBackgroundUtilsCall = false;
               })
           .start();
-    } else {
-      LOGGER.info(ModelDBMessages.READY_STATUS, isReady);
-      isReady = true;
     }
   }
 }

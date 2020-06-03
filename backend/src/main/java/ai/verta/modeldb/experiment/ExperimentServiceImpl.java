@@ -59,10 +59,8 @@ import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -210,6 +208,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       ExperimentPaginationDTO experimentPaginationDTO =
           experimentDAO.getExperimentsInProject(
+              projectDAO,
               request.getProjectId(),
               request.getPageNumber(),
               request.getPageLimit(),
@@ -949,7 +948,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean deleteStatus = deleteExperiments(Collections.singletonList(request.getId()));
+      boolean deleteStatus =
+          experimentDAO.deleteExperiments(Collections.singletonList(request.getId()));
       responseObserver.onNext(
           DeleteExperiment.Response.newBuilder().setStatus(deleteStatus).build());
       responseObserver.onCompleted();
@@ -1068,81 +1068,12 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     }
   }
 
-  /**
-   * For getting experiments that user has access to (either as owner or a collaborator), fetch all
-   * experiments of the requested experimentIds then iterate that list and check if experiment is
-   * accessible or not. The list of accessible experimentIDs is built and returned by this method.
-   *
-   * @param requestedExperimentIds : experiment Ids
-   * @return List<String> : list of accessible Experiment Id
-   */
-  public List<String> getAccessibleExperimentIDs(
-      List<String> requestedExperimentIds, ModelDBServiceActions modelDBServiceActions) {
-    Map<String, String> projectIdExperimentIdMap =
-        experimentDAO.getProjectIdsByExperimentIds(requestedExperimentIds);
-    Set<String> projectIdSet = new HashSet<>(projectIdExperimentIdMap.values());
-
-    List<String> accessibleExperimentIds = new ArrayList<>();
-    List<String> allowedProjectIds;
-    // Validate if current user has access to the entity or not
-    if (projectIdSet.size() == 1) {
-      roleService.isSelfAllowed(
-          ModelDBServiceResourceTypes.PROJECT,
-          modelDBServiceActions,
-          new ArrayList<>(projectIdSet).get(0));
-      accessibleExperimentIds.addAll(requestedExperimentIds);
-    } else {
-      allowedProjectIds =
-          roleService.getSelfAllowedResources(
-              ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
-      // Validate if current user has access to the entity or not
-      allowedProjectIds.retainAll(projectIdSet);
-      for (Map.Entry<String, String> entry : projectIdExperimentIdMap.entrySet()) {
-        if (allowedProjectIds.contains(entry.getValue())) {
-          accessibleExperimentIds.add(entry.getKey());
-        }
-      }
-    }
-    return accessibleExperimentIds;
-  }
-
-  public List<String> getAccessibleExperimentIDsByAction(
-      List<String> requestedExperimentIds, ModelDBServiceActions modelDBServiceActions) {
-    // Validate if current user has access to the entity or not
-    if (requestedExperimentIds.size() == 1) {
-      roleService.isSelfAllowed(
-          ModelDBServiceResourceTypes.EXPERIMENT,
-          modelDBServiceActions,
-          requestedExperimentIds.get(0));
-      return requestedExperimentIds;
-    } else {
-      List<String> allowedExperimentRunIds =
-          roleService.getSelfAllowedResources(
-              ModelDBServiceResourceTypes.EXPERIMENT, modelDBServiceActions);
-      // Validate if current user has access to the entity or not
-      allowedExperimentRunIds.retainAll(requestedExperimentIds);
-      return allowedExperimentRunIds;
-    }
-  }
-
   @Override
   public void findExperiments(
       FindExperiments request, StreamObserver<FindExperiments.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
-      if (request.getProjectId().isEmpty() && request.getExperimentIdsList().isEmpty()) {
-        String errorMessage = "Project ID and Experiment Id's not found in FindExperiments request";
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(FindExperiments.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
 
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
@@ -1152,27 +1083,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             ModelDBServiceActions.READ);
       }
 
-      if (!request.getExperimentIdsList().isEmpty()) {
-        List<String> accessibleExperimentIds =
-            getAccessibleExperimentIDs(request.getExperimentIdsList(), ModelDBServiceActions.READ);
-        if (accessibleExperimentIds.isEmpty()) {
-          String errorMessage =
-              "Access is denied. User is unauthorized for given Experiment IDs : "
-                  + accessibleExperimentIds;
-          ModelDBUtils.logAndThrowError(
-              errorMessage,
-              Code.PERMISSION_DENIED_VALUE,
-              Any.pack(FindExperiments.getDefaultInstance()));
-        }
-        request =
-            request
-                .toBuilder()
-                .clearExperimentIds()
-                .addAllExperimentIds(accessibleExperimentIds)
-                .build();
-      }
-
-      ExperimentPaginationDTO experimentPaginationDTO = experimentDAO.findExperiments(request);
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      ExperimentPaginationDTO experimentPaginationDTO =
+          experimentDAO.findExperiments(projectDAO, userInfo, request);
       responseObserver.onNext(
           FindExperiments.Response.newBuilder()
               .addAllExperiments(experimentPaginationDTO.getExperiments())
@@ -1432,7 +1345,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             Any.pack(DeleteExperiment.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus = deleteExperiments(request.getIdsList());
+      boolean deleteStatus = experimentDAO.deleteExperiments(request.getIdsList());
       responseObserver.onNext(
           DeleteExperiments.Response.newBuilder().setStatus(deleteStatus).build());
       responseObserver.onCompleted();
@@ -1441,38 +1354,5 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteExperiments.Response.getDefaultInstance());
     }
-  }
-
-  private boolean deleteExperiments(List<String> experimentIds)
-      throws InvalidProtocolBufferException {
-
-    Set<String> finalAccessibleExperimentSet = new HashSet<>();
-    try {
-      List<String> accessibleExperimentRunIdsByProject =
-          getAccessibleExperimentIDs(experimentIds, ModelDBServiceActions.DELETE);
-      finalAccessibleExperimentSet.addAll(accessibleExperimentRunIdsByProject);
-    } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() != Code.PERMISSION_DENIED_VALUE) {
-        throw ex;
-      }
-    }
-
-    if (!finalAccessibleExperimentSet.containsAll(experimentIds)) {
-      List<String> accessibleExperimentRunIDsByAction =
-          getAccessibleExperimentIDsByAction(experimentIds, ModelDBServiceActions.DELETE);
-      finalAccessibleExperimentSet.addAll(accessibleExperimentRunIDsByAction);
-    }
-
-    if (finalAccessibleExperimentSet.isEmpty()) {
-      String errorMessage =
-          "Access is denied. User is unauthorized for given Experiment IDs : " + experimentIds;
-      ModelDBUtils.logAndThrowError(
-          errorMessage,
-          Code.PERMISSION_DENIED_VALUE,
-          Any.pack(DeleteExperiments.getDefaultInstance()));
-    }
-
-    return experimentDAO.deleteExperiments(new ArrayList<>(finalAccessibleExperimentSet));
   }
 }

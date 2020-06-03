@@ -8,10 +8,14 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenS3DatasetBlob implements ProtoType {
   private List<AutogenS3DatasetComponentBlob> Components;
@@ -42,14 +46,15 @@ public class AutogenS3DatasetBlob implements ProtoType {
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenS3DatasetBlob");
-    if (this.Components != null && !this.Components.equals(null) && !this.Components.isEmpty()) {
-      sb.append("::Components::").append(Components);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -84,11 +89,6 @@ public class AutogenS3DatasetBlob implements ProtoType {
       }
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.Components);
   }
 
   public AutogenS3DatasetBlob setComponents(List<AutogenS3DatasetComponentBlob> value) {

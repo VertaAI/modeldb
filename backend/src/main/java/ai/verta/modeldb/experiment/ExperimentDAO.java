@@ -7,6 +7,7 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
+import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
@@ -73,7 +74,12 @@ public interface ExperimentDAO {
    * @throws InvalidProtocolBufferException
    */
   ExperimentPaginationDTO getExperimentsInProject(
-      String projectId, Integer pageNumber, Integer pageLimit, Boolean order, String sortKey)
+      ProjectDAO projectDAO,
+      String projectId,
+      Integer pageNumber,
+      Integer pageLimit,
+      Boolean order,
+      String sortKey)
       throws InvalidProtocolBufferException;
 
   /**
@@ -146,22 +152,10 @@ public interface ExperimentDAO {
       throws InvalidProtocolBufferException;
 
   /**
-   * Delete the Experiment from database using experimentId.
-   *
-   * <p>TODO : Add logic of Deleting ExperimentRun associated with Experiment.
-   *
-   * @param String experimentId
-   * @return Boolean updated status
-   * @throws InvalidProtocolBufferException
-   */
-  Boolean deleteExperiment(String experimentId) throws InvalidProtocolBufferException;
-
-  /**
    * Delete the Experiments from database using experimentIds list.
    *
    * @param experimentIds : list of experimentRunId
    * @return {@link Boolean} : Boolean updated status
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   Boolean deleteExperiments(List<String> experimentIds) throws InvalidProtocolBufferException;
 
@@ -219,7 +213,8 @@ public interface ExperimentDAO {
    *     based on filter queryParameters & total_pages count
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  ExperimentPaginationDTO findExperiments(FindExperiments queryParameters)
+  ExperimentPaginationDTO findExperiments(
+      ProjectDAO projectDAO, UserInfo userInfo, FindExperiments queryParameters)
       throws InvalidProtocolBufferException;
 
   /**

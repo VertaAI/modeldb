@@ -4,7 +4,6 @@
   grid-template-columns: 30% 70%;
   grid-gap: 5px;
   white-space: pre-wrap;
-  padding: 5px;
   border-radius: 5px;
   font-size: 14px;
 }

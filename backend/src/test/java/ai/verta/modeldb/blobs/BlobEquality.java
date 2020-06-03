@@ -11,202 +11,207 @@ import org.junit.runner.RunWith;
 @RunWith(JUnitQuickcheck.class)
 public class BlobEquality {
   @Property
-  public void equality(AutogenBlob b) {
+  public void equalityAutogenBlob(AutogenBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenBlobDiff b) {
+  public void equalityAutogenBlobDiff(AutogenBlobDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenCodeBlob b) {
+  public void equalityAutogenCodeBlob(AutogenCodeBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenCodeDiff b) {
+  public void equalityAutogenCodeDiff(AutogenCodeDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenCommandLineEnvironmentDiff b) {
+  public void equalityAutogenCommandLineEnvironmentDiff(AutogenCommandLineEnvironmentDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenConfigBlob b) {
+  public void equalityAutogenConfigBlob(AutogenConfigBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenConfigDiff b) {
+  public void equalityAutogenConfigDiff(AutogenConfigDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenContinuousHyperparameterSetConfigBlob b) {
+  public void equalityAutogenContinuousHyperparameterSetConfigBlob(
+      AutogenContinuousHyperparameterSetConfigBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenDatasetBlob b) {
+  public void equalityAutogenDatasetBlob(AutogenDatasetBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenDatasetDiff b) {
+  public void equalityAutogenDatasetDiff(AutogenDatasetDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenDiscreteHyperparameterSetConfigBlob b) {
+  public void equalityAutogenDiscreteHyperparameterSetConfigBlob(
+      AutogenDiscreteHyperparameterSetConfigBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenDockerEnvironmentBlob b) {
+  public void equalityAutogenDockerEnvironmentBlob(AutogenDockerEnvironmentBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenDockerEnvironmentDiff b) {
+  public void equalityAutogenDockerEnvironmentDiff(AutogenDockerEnvironmentDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenEnvironmentBlob b) {
+  public void equalityAutogenEnvironmentBlob(AutogenEnvironmentBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenEnvironmentDiff b) {
+  public void equalityAutogenEnvironmentDiff(AutogenEnvironmentDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenEnvironmentVariablesBlob b) {
+  public void equalityAutogenEnvironmentVariablesBlob(AutogenEnvironmentVariablesBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenEnvironmentVariablesDiff b) {
+  public void equalityAutogenEnvironmentVariablesDiff(AutogenEnvironmentVariablesDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenGitCodeBlob b) {
+  public void equalityAutogenGitCodeBlob(AutogenGitCodeBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenGitCodeDiff b) {
+  public void equalityAutogenGitCodeDiff(AutogenGitCodeDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenHyperparameterConfigBlob b) {
+  public void equalityAutogenHyperparameterConfigBlob(AutogenHyperparameterConfigBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenHyperparameterConfigDiff b) {
+  public void equalityAutogenHyperparameterConfigDiff(AutogenHyperparameterConfigDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenHyperparameterSetConfigBlob b) {
+  public void equalityAutogenHyperparameterSetConfigBlob(AutogenHyperparameterSetConfigBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenHyperparameterSetConfigDiff b) {
+  public void equalityAutogenHyperparameterSetConfigDiff(AutogenHyperparameterSetConfigDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenHyperparameterValuesConfigBlob b) {
+  public void equalityAutogenHyperparameterValuesConfigBlob(
+      AutogenHyperparameterValuesConfigBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenNotebookCodeBlob b) {
+  public void equalityAutogenNotebookCodeBlob(AutogenNotebookCodeBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenNotebookCodeDiff b) {
+  public void equalityAutogenNotebookCodeDiff(AutogenNotebookCodeDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenPathDatasetBlob b) {
+  public void equalityAutogenPathDatasetBlob(AutogenPathDatasetBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenPathDatasetComponentBlob b) {
+  public void equalityAutogenPathDatasetComponentBlob(AutogenPathDatasetComponentBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenPathDatasetComponentDiff b) {
+  public void equalityAutogenPathDatasetComponentDiff(AutogenPathDatasetComponentDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenPathDatasetDiff b) {
+  public void equalityAutogenPathDatasetDiff(AutogenPathDatasetDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenPythonEnvironmentBlob b) {
+  public void equalityAutogenPythonEnvironmentBlob(AutogenPythonEnvironmentBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenPythonEnvironmentDiff b) {
+  public void equalityAutogenPythonEnvironmentDiff(AutogenPythonEnvironmentDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenPythonRequirementEnvironmentBlob b) {
+  public void equalityAutogenPythonRequirementEnvironmentBlob(
+      AutogenPythonRequirementEnvironmentBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenPythonRequirementEnvironmentDiff b) {
+  public void equalityAutogenPythonRequirementEnvironmentDiff(
+      AutogenPythonRequirementEnvironmentDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenS3DatasetBlob b) {
+  public void equalityAutogenS3DatasetBlob(AutogenS3DatasetBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenS3DatasetComponentBlob b) {
+  public void equalityAutogenS3DatasetComponentBlob(AutogenS3DatasetComponentBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenS3DatasetComponentDiff b) {
+  public void equalityAutogenS3DatasetComponentDiff(AutogenS3DatasetComponentDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenS3DatasetDiff b) {
+  public void equalityAutogenS3DatasetDiff(AutogenS3DatasetDiff b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenVersionEnvironmentBlob b) {
+  public void equalityAutogenVersionEnvironmentBlob(AutogenVersionEnvironmentBlob b) {
     assertTrue(b.equals(b));
   }
 
   @Property
-  public void equality(AutogenVersionEnvironmentDiff b) {
+  public void equalityAutogenVersionEnvironmentDiff(AutogenVersionEnvironmentDiff b) {
     assertTrue(b.equals(b));
   }
 }

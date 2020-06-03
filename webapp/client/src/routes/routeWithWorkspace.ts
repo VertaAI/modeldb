@@ -2,10 +2,8 @@ import { matchPath } from 'react-router-dom';
 
 import { IWorkspace } from 'models/Workspace';
 
-import makeRoute, {
-  IRoute,
-  IRouteSettings,
-} from 'core/shared/routes/makeRoute';
+import makeRoute, { IRoute } from 'core/shared/routes/makeRoute';
+import * as P from 'core/shared/routes/pathBuilder';
 
 const workspacePath = '/:workspaceName';
 
@@ -23,16 +21,25 @@ export type IRouteWithWorkspace<T, B = undefined> = IRoute<
   withWorkspace: true;
 };
 
-type IMakeRouteWithWorkspaceSettings<T, B = undefined> = Omit<
-  IRouteSettings<T & IRecordWithWorkspaceName, B>,
-  'allowedUserType'
->;
+export const parseCurrentWorkspaceName = () => {
+  const match = matchPath<IRecordWithWorkspaceName>(window.location.pathname, {
+    path: workspacePath,
+    exact: false,
+  });
 
-export const makeRouteWithWorkspace = <Params, QueryParams = undefined>(
-  settings: IMakeRouteWithWorkspaceSettings<Params, QueryParams>
-): IRouteWithWorkspace<Params, QueryParams> => {
+  return match ? match.params.workspaceName : null;
+};
+
+export const makeRouteWithWorkspace = <T extends P.IPath<any, any>>({
+  getPath,
+}: {
+  getPath: () => T;
+}): IRouteWithWorkspace<P.GetParams<T>, P.GetQueryParams<T>> => {
+  type Params = P.GetParams<T>;
+  type QueryParams = P.GetQueryParams<T>;
   const route = makeRoute<IRecordWithWorkspaceName & Params, QueryParams>({
-    getPath: () => `${workspacePath}${settings.getPath()}`,
+    getPath: () => `${workspacePath}${getPath().value}`,
+    allowedUserType: 'authorized',
   });
 
   const resRoute: IRouteWithWorkspace<Params, QueryParams> = {
@@ -41,17 +48,11 @@ export const makeRouteWithWorkspace = <Params, QueryParams = undefined>(
     getRedirectPathWithCurrentWorkspace: (
       paramsWithoutCurrentWorkspaceName: Omit<Params, 'workspaceName'>
     ) => {
-      const match = matchPath<IRecordWithWorkspaceName>(
-        window.location.pathname,
-        {
-          path: workspacePath,
-          exact: false,
-        }
-      );
+      const currentWorkspaceName = parseCurrentWorkspaceName();
       return route.getRedirectPath({
         ...paramsWithoutCurrentWorkspaceName,
-        ...(match && match.params
-          ? ({ workspaceName: match.params.workspaceName } as any)
+        ...(currentWorkspaceName
+          ? ({ workspaceName: currentWorkspaceName } as any)
           : {}),
       });
     },

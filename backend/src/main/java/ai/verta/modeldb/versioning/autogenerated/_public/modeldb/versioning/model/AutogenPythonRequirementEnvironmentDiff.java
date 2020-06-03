@@ -8,17 +8,23 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
   private AutogenPythonRequirementEnvironmentBlob A;
   private AutogenPythonRequirementEnvironmentBlob B;
+  private AutogenPythonRequirementEnvironmentBlob C;
   private AutogenDiffStatusEnumDiffStatus Status;
 
   public AutogenPythonRequirementEnvironmentDiff() {
     this.A = null;
     this.B = null;
+    this.C = null;
     this.Status = null;
   }
 
@@ -27,6 +33,9 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
       return false;
     }
     if (this.B != null && !this.B.equals(null)) {
+      return false;
+    }
+    if (this.C != null && !this.C.equals(null)) {
       return false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -50,6 +59,11 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
       sb.append("\"B\": " + B);
       first = false;
     }
+    if (this.C != null && !this.C.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"C\": " + C);
+      first = false;
+    }
     if (this.Status != null && !this.Status.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"Status\": " + Status);
@@ -60,20 +74,15 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenPythonRequirementEnvironmentDiff");
-    if (this.A != null && !this.A.equals(null)) {
-      sb.append("::A::").append(A);
-    }
-    if (this.B != null && !this.B.equals(null)) {
-      sb.append("::B::").append(B);
-    }
-    if (this.Status != null && !this.Status.equals(null)) {
-      sb.append("::Status::").append(Status);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -109,6 +118,18 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
       }
     }
     {
+      Function3<
+              AutogenPythonRequirementEnvironmentBlob,
+              AutogenPythonRequirementEnvironmentBlob,
+              Boolean>
+          f = (x, y) -> x.equals(y);
+      if (this.C != null || other.C != null) {
+        if (this.C == null && other.C != null) return false;
+        if (this.C != null && other.C == null) return false;
+        if (!f.apply(this.C, other.C)) return false;
+      }
+    }
+    {
       Function3<AutogenDiffStatusEnumDiffStatus, AutogenDiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Status != null || other.Status != null) {
@@ -118,11 +139,6 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
       }
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.A, this.B, this.Status);
   }
 
   public AutogenPythonRequirementEnvironmentDiff setA(
@@ -143,6 +159,16 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
 
   public AutogenPythonRequirementEnvironmentBlob getB() {
     return this.B;
+  }
+
+  public AutogenPythonRequirementEnvironmentDiff setC(
+      AutogenPythonRequirementEnvironmentBlob value) {
+    this.C = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public AutogenPythonRequirementEnvironmentBlob getC() {
+    return this.C;
   }
 
   public AutogenPythonRequirementEnvironmentDiff setStatus(AutogenDiffStatusEnumDiffStatus value) {
@@ -178,6 +204,13 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
     {
       Function<
               ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff,
+              AutogenPythonRequirementEnvironmentBlob>
+          f = x -> AutogenPythonRequirementEnvironmentBlob.fromProto(blob.getC());
+      obj.setC(f.apply(blob));
+    }
+    {
+      Function<
+              ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff,
               AutogenDiffStatusEnumDiffStatus>
           f = x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
       obj.setStatus(f.apply(blob));
@@ -209,6 +242,16 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
       }
     }
     {
+      if (this.C != null && !this.C.equals(null)) {
+        Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff.Builder, Void> f =
+            x -> {
+              builder.setC(this.C.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
       if (this.Status != null && !this.Status.equals(null)) {
         Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff.Builder, Void> f =
             x -> {
@@ -229,6 +272,7 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
     this.preVisitShallow(visitor);
     visitor.preVisitDeepAutogenPythonRequirementEnvironmentBlob(this.A);
     visitor.preVisitDeepAutogenPythonRequirementEnvironmentBlob(this.B);
+    visitor.preVisitDeepAutogenPythonRequirementEnvironmentBlob(this.C);
     visitor.preVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status);
   }
 
@@ -241,6 +285,7 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
       throws ModelDBException {
     this.setA(visitor.postVisitDeepAutogenPythonRequirementEnvironmentBlob(this.A));
     this.setB(visitor.postVisitDeepAutogenPythonRequirementEnvironmentBlob(this.B));
+    this.setC(visitor.postVisitDeepAutogenPythonRequirementEnvironmentBlob(this.C));
     this.setStatus(visitor.postVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }

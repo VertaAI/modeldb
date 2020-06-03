@@ -39,7 +39,7 @@
 
 .theme_tertiary {
   border-color: #9a9a9a;
-  color: #888888;
+  color: var(--main-text-color3);
 }
 .theme_tertiary:hover {
   color: #ffffff;

@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/modeldb/versioning/Enums.proto",
+    "title": "modeldb/versioning/Enums.proto",
     "version": "version not set"
   },
   "consumes": [

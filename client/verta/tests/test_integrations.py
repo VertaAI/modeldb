@@ -7,6 +7,8 @@ import shutil
 import tempfile
 import time
 
+from verta._internal_utils._artifact_utils import TF_MAJOR_VERSION_STR
+
 
 class TestKeras:
     def test_sequential_api(self, experiment_run):
@@ -46,11 +48,13 @@ class TestKeras:
                   callbacks=[verta_integrations_keras.VertaCallback(experiment_run)])
 
         logged_hyperparams = experiment_run.get_hyperparameters()
-        assert logged_hyperparams['batch_size'] == batch_size
+        if TF_MAJOR_VERSION_STR is not None and TF_MAJOR_VERSION_STR == '1':
+            # not exposed in TF 2.X
+            assert logged_hyperparams['batch_size'] == batch_size
+            assert logged_hyperparams['samples'] == samples
         assert logged_hyperparams['epochs'] == epochs
         assert logged_hyperparams['loss'] == loss
         assert logged_hyperparams['optimizer'] == optimizer
-        assert logged_hyperparams['samples'] == samples
         assert "dense" in logged_hyperparams['layer_0_name']
         assert logged_hyperparams['layer_0_size'] == num_hidden
         assert logged_hyperparams['layer_0_activation'] == fc_activation
@@ -107,11 +111,13 @@ class TestKeras:
                   callbacks=[verta_integrations_keras.VertaCallback(experiment_run)])
 
         logged_hyperparams = experiment_run.get_hyperparameters()
-        assert logged_hyperparams['batch_size'] == batch_size
+        if TF_MAJOR_VERSION_STR is not None and TF_MAJOR_VERSION_STR == '1':
+            # not exposed in TF 2.X
+            assert logged_hyperparams['batch_size'] == batch_size
+            assert logged_hyperparams['samples'] == samples
         assert logged_hyperparams['epochs'] == epochs
         assert logged_hyperparams['loss'] == loss
         assert logged_hyperparams['optimizer'] == optimizer
-        assert logged_hyperparams['samples'] == samples
         assert "input" in logged_hyperparams['layer_0_name']
         assert "dense" in logged_hyperparams['layer_1_name']
         assert logged_hyperparams['layer_1_size'] == num_hidden

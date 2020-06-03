@@ -329,4 +329,7 @@ public interface ProjectDAO {
    */
   Project setProjectWorkspace(String projectId, WorkspaceDTO workspaceDTO)
       throws InvalidProtocolBufferException;
+
+  public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
+      throws InvalidProtocolBufferException;
 }

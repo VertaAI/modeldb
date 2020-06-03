@@ -9,6 +9,7 @@ import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
 import {
   IRepository,
   IRepositoryNamedIdentification,
+  RepositoryVisibility,
 } from 'core/shared/models/Versioning/Repository';
 import { IWorkspace } from 'models/Workspace';
 import { convertClientPaginationToNamespacedServerPagination } from 'core/services/serverModel/Pagination/converters';
@@ -18,7 +19,8 @@ import { addHandlingEntityAlrearyExistsErrorToRequestConfig } from 'core/service
 import { MetaDataService } from '../metaData';
 import * as UnavailableEntityApiError from '../../shared/UnavailableEntityApiError';
 import UsersService from 'core/services/users/UsersService';
-import User, { unknownUser } from 'models/User';
+import { unknownUser } from 'models/User';
+import matchType from 'core/shared/utils/matchType';
 
 type ILoadRepositoriesRequest = IAdditionalServerPaginationInRequest;
 
@@ -38,13 +40,17 @@ export default class RepositoriesDataService extends BaseDataService {
     repositorySettings,
     workspaceName,
   }: {
-    repositorySettings: { name: IRepository['name'] };
+    repositorySettings: {
+      name: IRepository['name'];
+    };
     workspaceName: IWorkspace['name'];
   }): Promise<IRepository> {
     const response = await this.post<IServerRepository>(
       addHandlingEntityAlrearyExistsErrorToRequestConfig({
         url: `/v1/modeldb/versioning/workspaces/${workspaceName}/repositories`,
-        data: repositorySettings,
+        data: {
+          name: repositorySettings.name,
+        },
       })
     );
 
@@ -144,25 +150,37 @@ export default class RepositoriesDataService extends BaseDataService {
 
   @bind
   public async loadRepositoryById(id: IRepository['id']) {
-    const response = await this.get({
+    const response = await this.get<{ repository: IServerRepository }>({
       url: `/v1/modeldb/versioning/repositories/${id}`,
     });
+    const serverRepository = response.data.repository;
 
     const metaDataService = new MetaDataService();
     const usersService = new UsersService();
 
     const labels = await metaDataService.loadRepositoryLabel(
-      response.data.repository.id
+      serverRepository.id
     );
-    const owner = response.data.repository.owner
-      ? await usersService.loadUser(response.data.repository.owner)
+    const owner = serverRepository.owner
+      ? await usersService.loadUser(serverRepository.owner)
       : unknownUser;
 
     return convertServerRepositoryToClient({
-      serverRepository: response.data.repository,
+      serverRepository: serverRepository,
       labels,
       owner,
     });
+  }
+
+  @bind
+  public async loadRepositoryName(
+    id: IRepository['id']
+  ): Promise<IRepository['name']> {
+    const response = await this.get<{ repository: IServerRepository }>({
+      url: `/v1/modeldb/versioning/repositories/${id}`,
+    });
+    const serverRepository = response.data.repository;
+    return serverRepository.name;
   }
 
   @bind

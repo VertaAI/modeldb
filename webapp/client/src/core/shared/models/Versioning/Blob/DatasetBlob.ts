@@ -6,13 +6,17 @@ export type IDatasetBlob = IPathDatasetBlob | IS3DatasetBlob;
 export interface IPathDatasetBlob {
   type: 'path';
   category: 'dataset';
-  components: IPathDatasetComponentBlob[];
+  data: {
+    components: IPathDatasetComponentBlob[];
+  };
 }
 
 export interface IS3DatasetBlob {
   category: 'dataset';
   type: 's3';
-  components: IS3DatasetComponentBlob[];
+  data: {
+    components: IS3DatasetComponentBlob[];
+  };
 }
 export interface IS3DatasetComponentBlob {
   path: IPathDatasetComponentBlob;
@@ -48,7 +52,7 @@ export type IPathDatasetBlobDiffData = {
 };
 
 export type IS3DatasetBlobDiff = IBlobDiff<
-IS3DatasetBlobDiffData,
+  IS3DatasetBlobDiffData,
   IS3DatasetBlob['category'],
   IS3DatasetBlob['type']
 >;
@@ -60,7 +64,11 @@ export type IS3DatasetBlobDiffData = {
   }>;
 };
 
-export type IPathDatasetComponentBlobDiff = IElementDiff<IPathDatasetComponentBlob>;
+export type IPathDatasetComponentBlobDiff = IElementDiff<
+  IPathDatasetComponentBlob
+>;
 
 export type IDatasetBlobDiff = IPathDatasetBlobDiff | IS3DatasetBlobDiff;
-export type IDatasetBlobDiffData = IPathDatasetBlobDiffData | IS3DatasetBlobDiffData;
+export type IDatasetBlobDiffData =
+  | IPathDatasetBlobDiffData
+  | IS3DatasetBlobDiffData;

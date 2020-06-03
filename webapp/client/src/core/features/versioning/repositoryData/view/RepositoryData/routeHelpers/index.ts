@@ -1,77 +1,51 @@
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
-import * as R from 'ramda';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
-  IFullDataLocationComponents,
+  IFullCommitComponentLocationComponents,
   IFolderElement,
-  IRepositoryData,
+  ICommitComponent,
   CommitTag,
   CommitPointerHelpers,
   Branch,
   defaultCommitPointer,
 } from 'core/shared/models/Versioning/RepositoryData';
+import { IWorkspace } from 'models/Workspace';
 import routes, { GetRouteParams } from 'routes';
+import { IRepositoryDataWithLocationParams } from 'routes/repositoryDataWithLocation';
 
-export type Options = Omit<IFullDataLocationComponents, 'type'> & {
+export type Options = Omit<IFullCommitComponentLocationComponents, 'type'> & {
   repositoryName: IRepository['name'];
-  type: IFullDataLocationComponents['type'] | null;
+  type: IFullCommitComponentLocationComponents['type'] | null;
+  workspaceName: IWorkspace['name'];
 };
-export function getRedirectPath({
-  commitPointer,
-  location,
-  type,
-  repositoryName,
-}: Options) {
-  if (!R.equals(commitPointer, defaultCommitPointer) && location.length === 0) {
-    return routes.repositoryDataWithLocation.getRedirectPathWithCurrentWorkspace(
-      {
-        repositoryName,
-        dataType: 'folder',
-        locationPathname: '',
-        commitPointerValue: commitPointer.value,
-      }
-    );
-  }
 
-  if (location.length === 0 || !type) {
-    return routes.repositoryData.getRedirectPathWithCurrentWorkspace({
-      repositoryName,
-    });
-  }
-
-  return routes.repositoryDataWithLocation.getRedirectPathWithCurrentWorkspace({
-    repositoryName,
-    dataType: type,
-    locationPathname: DataLocation.toPathname(location),
-    commitPointerValue: commitPointer.value,
-  });
-}
 export function addName(
   name: IFolderElement['name'],
-  type: IRepositoryData['type'],
+  type: ICommitComponent['type'],
   currentLocationOptions: Options
 ) {
-  return getRedirectPath({
+  return routes.repositoryDataWithLocation.getRedirectPath({
     ...currentLocationOptions,
     type,
-    location: DataLocation.add(name, currentLocationOptions.location),
+    location: CommitComponentLocation.add(
+      name,
+      currentLocationOptions.location
+    ),
   });
 }
 export function goBack(currentLocationOptions: Options) {
-  return getRedirectPath({
+  return routes.repositoryDataWithLocation.getRedirectPath({
     ...currentLocationOptions,
     type: 'folder',
     location: currentLocationOptions.location.slice(0, -1),
   });
 }
 
-export type RepositoryDataParams = Partial<
-  GetRouteParams<typeof routes.repositoryDataWithLocation>
-> &
+export type RepositoryDataParams = Partial<IRepositoryDataWithLocationParams> &
   GetRouteParams<typeof routes.repositoryData>;
 
-export const parseFullDataLocationComponentsFromPathname = ({
+export const parseFullCommitComponentLocationComponentsFromPathname = ({
   pathname,
   tags,
   branches,
@@ -79,7 +53,7 @@ export const parseFullDataLocationComponentsFromPathname = ({
   pathname: string;
   tags: CommitTag[];
   branches: Branch[];
-}): IFullDataLocationComponents => {
+}): IFullCommitComponentLocationComponents => {
   const match = (routes.repositoryDataWithLocation.getMatch(pathname) ||
     routes.repositoryData.getMatch(pathname)) as RepositoryDataParams | null;
 
@@ -87,7 +61,9 @@ export const parseFullDataLocationComponentsFromPathname = ({
     throw new Error('match is not defined!');
   }
 
-  const location = DataLocation.makeFromPathname(match.locationPathname || '');
+  const location = CommitComponentLocation.makeFromPathname(
+    match.locationPathname || ''
+  );
   return {
     location,
     type: match.dataType || 'folder',

@@ -8,7 +8,7 @@ import {
   selectors,
 } from 'core/features/versioning/compareCommits/store';
 import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
-import * as DataLocationHelpers from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocationHelpers from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { SHA } from 'core/shared/models/Versioning/RepositoryData';
 import { PageCard } from 'core/shared/view/elements/PageComponents';
@@ -17,6 +17,8 @@ import { IApplicationState } from 'store/store';
 
 import styles from './CompareCommits.module.css';
 import DiffView from './DiffView/DiffView';
+import { getComparedCommitName } from './DiffView/shared/comparedCommitsNames';
+import { diffColors } from './DiffView/shared/styles';
 
 const mapStateToProps = (state: IApplicationState) => ({
   loadingCommitsDiff: selectors.selectCommunications(state).loadingCommitsDiff,
@@ -69,49 +71,91 @@ const CompareCommits: React.FC<AllProps> = ({
   }, []);
 
   return (
-    <PageCard>
-      <div className={styles.root}>
-        {commitASha ? (
-          <>
+    <div className={styles.root}>
+      {commitASha ? (
+        <>
+          <div className={styles.header}>
             <div className={styles.commitsInfo}>
               <div className={styles.commit}>
-                <span className={styles.commitTitle}>From Commit SHA: </span>
-                <ShortenedSHA sha={commitASha} />
+                {getComparedCommitName(
+                  (fromCommitSha, commitSha) => (
+                    <>
+                      <span className={styles.commitTitle}>
+                        {fromCommitSha}{' '}
+                      </span>
+                      <ShortenedSHA
+                        sha={commitSha}
+                        additionalClassName={styles.commitSha}
+                      />
+                    </>
+                  ),
+                  'A',
+                  commitASha
+                )}
               </div>
               <div className={styles.commit}>
-                <span className={styles.commitTitle}>To Commit SHA: </span>
-                <ShortenedSHA sha={commitBSha} />
+                {getComparedCommitName(
+                  (toCommitSha, commitSha) => (
+                    <>
+                      <span className={styles.commitTitle}>{toCommitSha} </span>
+                      <ShortenedSHA
+                        sha={commitSha}
+                        additionalClassName={styles.commitSha}
+                      />
+                    </>
+                  ),
+                  'B',
+                  commitBSha
+                )}
               </div>
             </div>
-            <div className={styles.diff}>
-              <DefaultMatchRemoteData
-                communication={loadingCommitsDiff}
-                data={diffs}
-              >
-                {loadedDiffs =>
-                  loadedDiffs.length > 0 ? (
-                    loadedDiffs.map(d => (
-                      <DiffView
-                        key={DataLocationHelpers.toPathname(d.location)}
-                        diff={d}
-                        comparedCommitsInfo={{
-                          commitA: { sha: commitASha },
-                          commitB: { sha: commitBSha },
-                        }}
-                      />
-                    ))
-                  ) : (
-                    <Placeholder>Nothing to compare</Placeholder>
-                  )
-                }
-              </DefaultMatchRemoteData>
+            <div className={styles.diffColorKeys}>
+              <div className={styles.diffColorKey}>
+                <div className={styles.diffColorKey__name}>Before</div>
+                <div
+                  className={styles.diffColorKey__value}
+                  style={{ backgroundColor: diffColors.red }}
+                />
+              </div>
+              <div className={styles.diffColorKey}>
+                <div className={styles.diffColorKey__name}>After</div>
+                <div
+                  className={styles.diffColorKey__value}
+                  style={{ backgroundColor: diffColors.green }}
+                />
+              </div>
             </div>
-          </>
-        ) : (
-          <Placeholder>Nothing to compare</Placeholder>
-        )}
-      </div>
-    </PageCard>
+          </div>
+          <div className={styles.diff}>
+            <DefaultMatchRemoteData
+              communication={loadingCommitsDiff}
+              data={diffs}
+            >
+              {loadedDiffs =>
+                loadedDiffs.length > 0 ? (
+                  loadedDiffs.map(d => (
+                    <DiffView
+                      key={CommitComponentLocationHelpers.toPathname(
+                        d.location
+                      )}
+                      diff={d}
+                      comparedCommitsInfo={{
+                        commitA: { sha: commitASha },
+                        commitB: { sha: commitBSha },
+                      }}
+                    />
+                  ))
+                ) : (
+                  <Placeholder>Nothing to compare</Placeholder>
+                )
+              }
+            </DefaultMatchRemoteData>
+          </div>
+        </>
+      ) : (
+        <Placeholder>Nothing to compare</Placeholder>
+      )}
+    </div>
   );
 };
 

@@ -2,8 +2,8 @@ import { IApplicationState } from 'store/store';
 
 const selectFeatureState = (state: IApplicationState) => state.repositoryData;
 
-export const selectCommitWithData = (state: IApplicationState) =>
-  selectFeatureState(state).data.commitWithData;
+export const selectCommitWithComponent = (state: IApplicationState) =>
+  selectFeatureState(state).data.commitWithComponent;
 
 export const selectCommunications = (state: IApplicationState) =>
   selectFeatureState(state).communications;

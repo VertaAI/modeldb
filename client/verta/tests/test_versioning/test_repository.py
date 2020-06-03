@@ -84,12 +84,9 @@ class TestCommit:
         commit = repository.get_commit()
         commit.update(path, blob)
         commit.save(message="banana")
-        try:
-            commit.tag("banana")
+        commit.tag("banana")
 
-            assert commit.id == repository.get_commit(tag="banana").id
-        finally:
-            utils.delete_commit(repository.id, commit.id, repository._conn)
+        assert commit.id == repository.get_commit(tag="banana").id
 
     def test_get_commit_by_id(self, repository):
         blob = verta.environment.Python(["a==1"])
@@ -98,10 +95,8 @@ class TestCommit:
         commit = repository.get_commit()
         commit.update(path, blob)
         commit.save(message="banana")
-        try:
-            assert commit.id == repository.get_commit(id=commit.id).id
-        finally:
-            utils.delete_commit(repository.id, commit.id, repository._conn)
+
+        assert commit.id == repository.get_commit(id=commit.id).id
 
     def test_become_child(self, commit):
         blob1 = verta.environment.Python(["a==1"])
@@ -112,19 +107,15 @@ class TestCommit:
         commit.update(path1, blob1)
         commit.save(message="banana")
         original_id = commit.id
-        try:
-            commit.update(path2, blob2)
-            assert commit.id is None
-            assert original_id in commit._parent_ids
-            assert commit.get(path1)
+        commit.update(path2, blob2)
 
-            commit.save(message="banana")
-            try:
-                assert commit.id != original_id
-            finally:
-                utils.delete_commit(commit._repo.id, commit.id, commit._conn)
-        finally:
-            utils.delete_commit(commit._repo.id, original_id, commit._conn)
+        assert commit.id is None
+        assert original_id in commit._parent_ids
+        assert commit.get(path1)
+
+        commit.save(message="banana")
+
+        assert commit.id != original_id
 
     def test_log(self, repository):
         r"""
@@ -140,26 +131,58 @@ class TestCommit:
         master = repository.get_commit(branch="master")
 
         commit_ids = [master.id]
-        try:
-            branch = repository.get_commit(branch="master")
-            branch.branch("branch")
 
-            master.update("a", verta.environment.Python(["a==1"]))
-            master.save("a")
-            commit_ids.append(master.id)
+        branch = repository.get_commit(branch="master").new_branch("branch")
 
-            branch.update("b", verta.environment.Python(["b==2"]))
-            branch.save("b")
-            commit_ids.append(branch.id)
+        master.update("a", verta.environment.Python(["a==1"]))
+        master.save("a")
+        commit_ids.append(master.id)
 
-            master.merge(branch)
-            commit_ids.append(master.id)
+        branch.update("b", verta.environment.Python(["b==2"]))
+        branch.save("b")
+        commit_ids.append(branch.id)
 
-            for commit in master.log():
-                assert commit.id == commit_ids.pop()
-        finally:
-            for commit_id in commit_ids:
-                utils.delete_commit(master._repo.id, commit_id, master._conn)
+        master.merge(branch)
+        commit_ids.append(master.id)
+
+        for commit in master.log():
+            assert commit.id == commit_ids.pop()
+
+    def test_merge_conflict(self, repository):
+        branch_a = repository.get_commit(branch="master").new_branch("a")
+        branch_a.update("env", verta.environment.Python(["pytest==1"]))
+        branch_a.save("a")
+
+        branch_b = repository.get_commit(branch="master").new_branch("b")
+        branch_b.update("env", verta.environment.Python(["pytest==2"]))
+        branch_b.save("b")
+
+        with pytest.raises(RuntimeError):
+            branch_b.merge(branch_a)
+
+    def test_revert(self, repository):
+        blob1 = verta.environment.Python(["pytest==1"])
+        blob2 = verta.environment.Python(["pytest==2"])
+        loc1 = "loc1"
+        loc2 = "loc2"
+
+        commit = repository.get_commit(branch="master")
+
+        commit.update(loc1, blob1)
+        commit.save("1")
+        commit_to_revert_id = commit.id
+
+        commit.update(loc2, blob2)
+        commit.save("2")
+
+        commit_to_revert = repository.get_commit(id=commit_to_revert_id)
+        commit.revert(commit_to_revert)
+
+        # blob1 removed
+        with pytest.raises(LookupError):
+            commit.get(loc1)
+        # blob2 still present
+        assert commit.get(loc2)
 
     def test_log_to_run(self, experiment_run, commit):
         blob1 = verta.dataset.Path(__file__)
@@ -188,11 +211,9 @@ class TestBranch:
         commit = repository.get_commit()
         commit.update(path, blob)
         commit.save(message="banana")
-        try:
-            commit.branch(branch)
-            assert repository.get_commit(branch=branch).id == commit.id
-        finally:
-            utils.delete_commit(repository.id, commit.id, repository._conn)
+        commit = commit.new_branch(branch)
+
+        assert repository.get_commit(branch=branch).id == commit.id
 
     def test_change(self, repository):
         branch = "banana"
@@ -206,19 +227,15 @@ class TestBranch:
         root_id = commit1.id
         commit1.update(path1, blob1)
         commit1.save(message="banana")
-        try:
-            commit2 = repository.get_commit(id=root_id)
-            commit2.update(path2, blob2)
-            commit2.save(message="banana")
-            try:
-                commit1.branch(branch)
 
-                commit2.branch(branch)
-                assert repository.get_commit(branch=branch).id == commit2.id
-            finally:
-                utils.delete_commit(repository.id, commit2.id, repository._conn)
-        finally:
-            utils.delete_commit(repository.id, commit1.id, repository._conn)
+        commit2 = repository.get_commit(id=root_id)
+        commit2.update(path2, blob2)
+        commit2.save(message="banana")
+
+        commit1 = commit1.new_branch(branch)
+        commit2 = commit2.new_branch(branch)
+
+        assert repository.get_commit(branch=branch).id == commit2.id
 
     def test_update(self, repository):
         branch = "banana"
@@ -232,15 +249,11 @@ class TestBranch:
         commit.update(path1, blob1)
         commit.save(message="banana")
         original_id = commit.id
-        try:
-            commit.branch(branch)
 
-            commit.update(path2, blob2)
-            commit.save(message="banana")
-            try:
-                assert commit.id != original_id
-                assert repository.get_commit(branch=branch).id == commit.id
-            finally:
-                utils.delete_commit(commit._repo.id, commit.id, commit._conn)
-        finally:
-            utils.delete_commit(commit._repo.id, original_id, commit._conn)
+        commit = commit.new_branch(branch)
+
+        commit.update(path2, blob2)
+        commit.save(message="banana")
+
+        assert commit.id != original_id
+        assert repository.get_commit(branch=branch).id == commit.id

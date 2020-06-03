@@ -1,69 +1,89 @@
 import * as React from 'react';
 
-import { shortenSHA } from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
-import { IConfigBlobDiff } from 'core/shared/models/Versioning/Blob/ConfigBlob';
+import {
+  IConfigBlobDiff,
+  IConfigHyperparameterDiff,
+  IConfigHyperparameterSetItemDiff,
+} from 'core/shared/models/Versioning/Blob/ConfigBlob';
 import {
   DiffType,
   ComparedCommitType,
   getCommitDataFromNullableDiffs,
+  DataWithDiffTypeFromDiffs,
+  IArrayDiff,
 } from 'core/shared/models/Versioning/Blob/Diff';
 import HyperparameterItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
 import HyperparameterSetItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
+import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
-import { IComparedCommitsInfo } from '../../types';
-import { diffColors } from '../shared/styles';
-import CompareTable, { IRow } from './CompareTable/CompareTable';
+import { IComparedCommitsInfo, getCssDiffColorByCommitType } from '../../model';
 import sortArrayByAnotherArrayKeys from '../shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
+import makeComparePropertiesTable, { makeHighlightCellBackground } from '../shared/ComparePropertiesTable/ComparePropertiesTable';
 
 interface ILocalProps {
   diff: IConfigBlobDiff;
   comparedCommitsInfo: IComparedCommitsInfo;
 }
 
+type IRow = {
+  hyperparameters?: Array<DataWithDiffTypeFromDiffs<IConfigHyperparameterDiff>>;
+  hyperparameterSet?: Array<
+    DataWithDiffTypeFromDiffs<IConfigHyperparameterSetItemDiff>
+  >;
+};
+
+const tableComponents = makeComparePropertiesTable<IRow>();
+
+const highlightCellBackground = makeHighlightCellBackground<IRow>();
+
 const ConfigDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
   const A: IRow = {
-    hyperparameters: getCommitDataFromNullableDiffs('A', diff.data.hyperparameters),
-    hyperparameterSet: getCommitDataFromNullableDiffs('A', diff.data.hyperparameterSet),
+    hyperparameters: getCommitDataFromNullableDiffs(
+      'A',
+      diff.data.hyperparameters
+    ),
+    hyperparameterSet: getCommitDataFromNullableDiffs(
+      'A',
+      diff.data.hyperparameterSet
+    ),
   };
   const B: IRow = {
-    hyperparameters: getCommitDataFromNullableDiffs('B', diff.data.hyperparameters),
-    hyperparameterSet: getCommitDataFromNullableDiffs('B', diff.data.hyperparameterSet),
+    hyperparameters: getCommitDataFromNullableDiffs(
+      'B',
+      diff.data.hyperparameters
+    ),
+    hyperparameterSet: getCommitDataFromNullableDiffs(
+      'B',
+      diff.data.hyperparameterSet
+    ),
   };
 
   return (
-    <div>
-      <CompareTable
+    <BlobDataBox title="Config">
+      <tableComponents.Table
+        comparedCommitsInfo={comparedCommitsInfo}
         A={A}
         B={B}
-        columns={{
-          property: {
-            title: 'Properties',
-            width: 190,
-          },
-          A: {
-            title: `From Commit SHA: ${shortenSHA(
-              comparedCommitsInfo.commitA.sha
-            )}`,
-          },
-          B: {
-            title: `To Commit SHA: ${shortenSHA(
-              comparedCommitsInfo.commitB.sha
-            )}`,
-          },
-        }}
       >
-        <CompareTable.PropDefinition
+        <tableComponents.PropDefinition
           title="Hyperparameters"
+          type="hyperparameters"
           isHidden={Boolean(!A.hyperparameters && !B.hyperparameters)}
-          render={({ currentData, anotherData, type }) => {
-            return currentData.hyperparameters
+          getCellStyle={highlightCellBackground(({ data }) => {
+            if (data.hyperparameters && data.hyperparameters.length > 0) {
+              return data.hyperparameters.every(({ diffType }) => diffType === 'added') || data.hyperparameters.every(({ diffType }) => diffType === 'deleted');
+            }
+            return false;
+          })}
+          render={({ data, anotherData, comparedCommitType: type }) => {
+            return data && data.hyperparameters
               ? sortArrayByAnotherArrayKeys(
                   ({ data: { name } }) => name,
-                  currentData.hyperparameters,
-                  anotherData.hyperparameters || [],
+                  data.hyperparameters,
+                  (anotherData && anotherData.hyperparameters) || []
                 ).map(h => (
                   <HyperparameterItem
-                    {...getHyperparameterDiffStyles(h.diffType, type)}
+                    {...getHyperparameterDiffStyles(diff.diffType, h.diffType, type)}
                     hyperparameter={h.data}
                     key={h.data.name}
                   />
@@ -71,18 +91,25 @@ const ConfigDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
               : null;
           }}
         />
-        <CompareTable.PropDefinition
+        <tableComponents.PropDefinition
           title="Hyperparameters set"
+          type="hyperparametersSet"
           isHidden={Boolean(!A.hyperparameterSet && !B.hyperparameterSet)}
-          render={({ currentData, anotherData, type }) => {
-            return currentData.hyperparameterSet
+          getCellStyle={highlightCellBackground(({ data }) => {
+            if (data.hyperparameterSet && data.hyperparameterSet.length > 0) {
+              return data.hyperparameterSet.every(({ diffType }) => diffType === 'added') || data.hyperparameterSet.every(({ diffType }) => diffType === 'deleted');
+            }
+            return false;
+          })}
+          render={({ data, anotherData, comparedCommitType: type }) => {
+            return data && data.hyperparameterSet
               ? sortArrayByAnotherArrayKeys(
                   ({ data: { name } }) => name,
-                  currentData.hyperparameterSet,
-                  anotherData.hyperparameterSet || []
+                  data.hyperparameterSet,
+                  (anotherData && anotherData.hyperparameterSet) || []
                 ).map(h => (
                   <HyperparameterSetItem
-                    {...getHyperparameterDiffStyles(diff.diffType, type)}
+                    {...getHyperparameterDiffStyles(diff.diffType, h.diffType, type)}
                     hyperparameterSetItem={h.data}
                     key={h.data.name}
                   />
@@ -90,28 +117,25 @@ const ConfigDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
               : null;
           }}
         />
-      </CompareTable>
-    </div>
+      </tableComponents.Table>
+    </BlobDataBox>
   );
 };
 
 const getHyperparameterDiffStyles = (
   diffType: DiffType,
+  hyperparameterDiffType: DiffType,
   type: ComparedCommitType
 ): { rootStyles?: React.CSSProperties; valueStyles?: React.CSSProperties } => {
-  return { rootStyles: getDiffStyles(diffType, type) };
-};
-
-const getDiffStyles = (diffType: DiffType, type: ComparedCommitType) => {
-  if (diffType === 'deleted') {
-    return { backgroundColor: diffColors.red };
+  if (diffType === 'added' || diffType === 'deleted') {
+    return {};
   }
-  if (diffType === 'added') {
-    return { backgroundColor: diffColors.green };
-  }
-  return type === 'A'
-    ? { backgroundColor: diffColors.red }
-    : { backgroundColor: diffColors.green };
+  const diffColor = getCssDiffColorByCommitType(type);
+  return hyperparameterDiffType === 'modified'
+    ? { valueStyles: { backgroundColor: diffColor } }
+    : {
+        rootStyles: { backgroundColor: diffColor },
+      };
 };
 
 export default ConfigDiffView;

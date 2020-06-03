@@ -1,7 +1,7 @@
 version: "3.5"
 services:
     modeldb-backend:
-        image: vertaaiofficial/modeldb-backend:latest
+        image: vertaaiofficial/modeldb-backend:2.0.5.1
         container_name: "modeldb-backend"
         expose:
             - "8085"
@@ -18,7 +18,7 @@ services:
             - ./artifact-store:/artifact-store/
 
     modeldb-proxy:
-        image: vertaaiofficial/modeldb-proxy:latest
+        image: vertaaiofficial/modeldb-proxy:2.0.5.1
         container_name: "modeldb-proxy"
         environment:
             MDB_ADDRESS: "modeldb-backend:8085"
@@ -32,8 +32,24 @@ services:
         networks:
             - modeldb_network
 
+    modeldb-graphql:
+        image: vertaaiofficial/modeldb-graphql:2.0.5.1
+        container_name: "modeldb-graphql"
+        environment:
+            MDB_ADDRESS: "modeldb-backend:8085"
+            SERVER_HTTP_PORT: "4000"
+            QUERY_PATH: "/api/v1/graphql/query"
+        expose:
+            - "4000"
+        ports:
+            - "4000:4000"
+        depends_on:
+            - modeldb-backend
+        networks:
+            - modeldb_network
+
     modeldb-frontend:
-        image: vertaaiofficial/modeldb-frontend:latest
+        image: vertaaiofficial/modeldb-frontend:2.0.5.1
         container_name: "modeldb-frontend"
         expose:
             - "3000"
@@ -41,12 +57,14 @@ services:
             - "3000:3000"
         depends_on:
             - modeldb-proxy
+            - modeldb-graphql
         environment:
             DEPLOYED: "yes"
             BACKEND_API_PROTOCOL: "http"
             BACKEND_API_DOMAIN: "modeldb-proxy:8080"
             MDB_ADDRESS: http://modeldb-proxy:8080
             ARTIFACTORY_ADDRESS: http://modeldb-backend:8086
+            GQL_ADDRESS: http://modeldb-graphql:4000
         networks:
             - modeldb_network
 

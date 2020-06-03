@@ -11,6 +11,8 @@ import routes from 'routes';
 
 import DatasetBulkDeletion from './DatasetBulkDeletion/DatasetBulkDeletion';
 import styles from './DatasetWidget.module.css';
+import { unknownUser } from 'models/User';
+import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 
 interface ILocalProps {
   dataset: Dataset;
@@ -59,6 +61,17 @@ class DatasetWidget extends React.PureComponent<AllProps> {
                     tags={dataset.tags}
                     isDraggableTags={true}
                     onClick={this.onTagsManagerClick}
+                  />
+                </div>
+                <div className={styles.owner_block}>
+                  <div className={styles.owner_username}>
+                    {unknownUser.username}
+                    <div className={styles.owner_status}>Owner</div>
+                  </div>
+                  <Avatar
+                    username={unknownUser.username}
+                    sizeInPx={36}
+                    picture={unknownUser.picture}
                   />
                 </div>
                 <div className={styles.type}>

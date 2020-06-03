@@ -16,12 +16,21 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
+import ai.verta.uac.DeleteOrganization;
 import ai.verta.uac.GetCollaborator;
+import ai.verta.uac.GetRoleByName;
 import ai.verta.uac.GetUser;
+import ai.verta.uac.Organization;
+import ai.verta.uac.OrganizationServiceGrpc;
+import ai.verta.uac.RoleScope;
+import ai.verta.uac.RoleServiceGrpc;
+import ai.verta.uac.SetOrganization;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.ListValue;
@@ -50,6 +59,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -73,7 +83,8 @@ public class ProjectTest {
 
   private ManagedChannel channel = null;
   private ManagedChannel client2Channel = null;
-  private ManagedChannel authServiceChannel = null;
+  private ManagedChannel authServiceChannelClient1 = null;
+  private ManagedChannel authServiceChannelClient2 = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
@@ -83,6 +94,7 @@ public class ProjectTest {
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
   private static App app;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -119,10 +131,14 @@ public class ProjectTest {
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -137,8 +153,11 @@ public class ProjectTest {
     }
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      if (!authServiceChannel.isShutdown()) {
-        authServiceChannel.shutdownNow();
+      if (!authServiceChannelClient1.isShutdown()) {
+        authServiceChannelClient1.shutdownNow();
+      }
+      if (!authServiceChannelClient2.isShutdown()) {
+        authServiceChannelClient2.shutdownNow();
       }
     }
   }
@@ -150,10 +169,15 @@ public class ProjectTest {
     client2Channel =
         grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      authServiceChannel =
+      authServiceChannelClient1 =
           ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
+              .build();
+      authServiceChannelClient2 =
+          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+              .usePlaintext()
+              .intercept(authClientInterceptor.getClient2AuthInterceptor())
               .build();
     }
   }
@@ -1667,7 +1691,7 @@ public class ProjectTest {
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(client2Channel);
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
       AddCollaboratorRequest addCollaboratorRequest =
           CollaboratorTest.addCollaboratorRequestProject(
               project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -1749,7 +1773,7 @@ public class ProjectTest {
         ProjectServiceGrpc.newBlockingStub(client2Channel);
 
     UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
-        UACServiceGrpc.newBlockingStub(authServiceChannel);
+        UACServiceGrpc.newBlockingStub(authServiceChannelClient1);
     GetUser getUserRequest =
         GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
     // Get the user info by vertaId form the AuthService
@@ -1774,7 +1798,7 @@ public class ProjectTest {
         project.getName());
 
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(client2Channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
     AddCollaboratorRequest addCollaboratorRequest =
         CollaboratorTest.addCollaboratorRequestProject(
             project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -2792,8 +2816,6 @@ public class ProjectTest {
           ExperimentRunServiceGrpc.newBlockingStub(channel);
       CommentServiceBlockingStub commentServiceBlockingStub =
           CommentServiceGrpc.newBlockingStub(channel);
-      CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(channel);
 
       // Create project
       CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt");
@@ -2865,6 +2887,8 @@ public class ProjectTest {
       // Create two collaborator for above project
       // For Collaborator1
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        CollaboratorServiceBlockingStub collaboratorServiceStub =
+            CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorTest.addCollaboratorRequestProjectInterceptor(
                 project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -2879,6 +2903,9 @@ public class ProjectTest {
       LOGGER.info("Project deleted successfully");
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
+
+      // Delete entities by cron job
+      deleteEntitiesCron.run();
 
       // Start cross-checking of deleted the project all data from DB from here.
       try {
@@ -2934,6 +2961,8 @@ public class ProjectTest {
 
       // Start cross-checking for project collaborator
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        CollaboratorServiceBlockingStub collaboratorServiceStub =
+            CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
         GetCollaborator getCollaboratorRequest =
             GetCollaborator.newBuilder().setEntityId(project.getId()).build();
         try {
@@ -3019,6 +3048,8 @@ public class ProjectTest {
         // Create two collaborator for above project
         // For Collaborator1
         if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          CollaboratorServiceBlockingStub collaboratorServiceStub =
+              CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
           AddCollaboratorRequest addCollaboratorRequest =
               CollaboratorTest.addCollaboratorRequestProjectInterceptor(
                   project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -3034,6 +3065,9 @@ public class ProjectTest {
       LOGGER.info("Project deleted successfully");
       LOGGER.info(deleteProjectsResponse.toString());
       assertTrue(deleteProjectsResponse.getStatus());
+
+      // Delete entities by cron job
+      deleteEntitiesCron.run();
 
       for (String projectId : projectIds) {
         // Start cross-checking of deleted the project all data from DB from here.
@@ -3094,6 +3128,8 @@ public class ProjectTest {
           GetCollaborator getCollaboratorRequest =
               GetCollaborator.newBuilder().setEntityId(project.getId()).build();
           try {
+            CollaboratorServiceBlockingStub collaboratorServiceStub =
+                CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
             GetCollaborator.Response getCollaboratorResponse =
                 collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
             LOGGER.info(
@@ -3609,5 +3645,77 @@ public class ProjectTest {
     assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Delete Project Artifacts test stop................................");
+  }
+
+  @Test
+  public void createProjectWithGlobalSharingOrganization() {
+    LOGGER.info("Global organization Project test start................................");
+
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      Assert.assertTrue(true);
+      return;
+    }
+
+    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub =
+        OrganizationServiceGrpc.newBlockingStub(authServiceChannelClient1);
+    RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub =
+        RoleServiceGrpc.newBlockingStub(authServiceChannelClient1);
+
+    String orgName = "Org-test-verta";
+    SetOrganization setOrganization =
+        SetOrganization.newBuilder()
+            .setOrganization(
+                Organization.newBuilder()
+                    .setName(orgName)
+                    .setDescription("This is the verta test organization")
+                    .build())
+            .build();
+    SetOrganization.Response orgResponse =
+        organizationServiceBlockingStub.setOrganization(setOrganization);
+    Organization organization = orgResponse.getOrganization();
+    assertEquals(
+        "Organization name not matched with expected organization name",
+        orgName,
+        organization.getName());
+
+    String orgRoleName = "O_" + organization.getId() + "_GLOBAL_SHARING";
+    GetRoleByName getRoleByName =
+        GetRoleByName.newBuilder()
+            .setName(orgRoleName)
+            .setScope(RoleScope.newBuilder().setOrgId(organization.getId()).build())
+            .build();
+    GetRoleByName.Response getRoleByNameResponse =
+        roleServiceBlockingStub.getRoleByName(getRoleByName);
+    assertEquals(
+        "Expected role name not found in DB",
+        orgRoleName,
+        getRoleByNameResponse.getRole().getName());
+
+    // Create project
+    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    createProjectRequest =
+        createProjectRequest
+            .toBuilder()
+            .setWorkspaceName(organization.getName())
+            .setProjectVisibility(ProjectVisibility.ORG_SCOPED_PUBLIC)
+            .build();
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project = createProjectResponse.getProject();
+    LOGGER.info("Project created successfully");
+
+    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project deleted successfully");
+    LOGGER.info(deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+
+    DeleteOrganization.Response deleteOrganization =
+        organizationServiceBlockingStub.deleteOrganization(
+            DeleteOrganization.newBuilder().setOrgId(organization.getId()).build());
+    assertTrue(deleteOrganization.getStatus());
+
+    LOGGER.info("Global organization Project test stop................................");
   }
 }

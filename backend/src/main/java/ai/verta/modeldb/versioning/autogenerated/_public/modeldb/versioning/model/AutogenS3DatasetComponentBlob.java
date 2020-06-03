@@ -8,18 +8,27 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenS3DatasetComponentBlob implements ProtoType {
   private AutogenPathDatasetComponentBlob Path;
+  private String S3VersionId;
 
   public AutogenS3DatasetComponentBlob() {
     this.Path = null;
+    this.S3VersionId = "";
   }
 
   public Boolean isEmpty() {
     if (this.Path != null && !this.Path.equals(null)) {
+      return false;
+    }
+    if (this.S3VersionId != null && !this.S3VersionId.equals("")) {
       return false;
     }
     return true;
@@ -35,19 +44,25 @@ public class AutogenS3DatasetComponentBlob implements ProtoType {
       sb.append("\"Path\": " + Path);
       first = false;
     }
+    if (this.S3VersionId != null && !this.S3VersionId.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"S3VersionId\": " + "\"" + S3VersionId + "\"");
+      first = false;
+    }
     sb.append("}}");
     return sb.toString();
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenS3DatasetComponentBlob");
-    if (this.Path != null && !this.Path.equals(null)) {
-      sb.append("::Path::").append(Path);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -67,12 +82,15 @@ public class AutogenS3DatasetComponentBlob implements ProtoType {
         if (!f.apply(this.Path, other.Path)) return false;
       }
     }
+    {
+      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
+      if (this.S3VersionId != null || other.S3VersionId != null) {
+        if (this.S3VersionId == null && other.S3VersionId != null) return false;
+        if (this.S3VersionId != null && other.S3VersionId == null) return false;
+        if (!f.apply(this.S3VersionId, other.S3VersionId)) return false;
+      }
+    }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.Path);
   }
 
   public AutogenS3DatasetComponentBlob setPath(AutogenPathDatasetComponentBlob value) {
@@ -82,6 +100,15 @@ public class AutogenS3DatasetComponentBlob implements ProtoType {
 
   public AutogenPathDatasetComponentBlob getPath() {
     return this.Path;
+  }
+
+  public AutogenS3DatasetComponentBlob setS3VersionId(String value) {
+    this.S3VersionId = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public String getS3VersionId() {
+    return this.S3VersionId;
   }
 
   public static AutogenS3DatasetComponentBlob fromProto(
@@ -95,6 +122,11 @@ public class AutogenS3DatasetComponentBlob implements ProtoType {
       Function<ai.verta.modeldb.versioning.S3DatasetComponentBlob, AutogenPathDatasetComponentBlob>
           f = x -> AutogenPathDatasetComponentBlob.fromProto(blob.getPath());
       obj.setPath(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.S3DatasetComponentBlob, String> f =
+          x -> (blob.getS3VersionId());
+      obj.setS3VersionId(f.apply(blob));
     }
     return obj;
   }
@@ -112,6 +144,16 @@ public class AutogenS3DatasetComponentBlob implements ProtoType {
         f.apply(builder);
       }
     }
+    {
+      if (this.S3VersionId != null && !this.S3VersionId.equals("")) {
+        Function<ai.verta.modeldb.versioning.S3DatasetComponentBlob.Builder, Void> f =
+            x -> {
+              builder.setS3VersionId(this.S3VersionId);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -122,6 +164,7 @@ public class AutogenS3DatasetComponentBlob implements ProtoType {
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
     visitor.preVisitDeepAutogenPathDatasetComponentBlob(this.Path);
+    visitor.preVisitDeepString(this.S3VersionId);
   }
 
   public AutogenS3DatasetComponentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -130,6 +173,7 @@ public class AutogenS3DatasetComponentBlob implements ProtoType {
 
   public AutogenS3DatasetComponentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
     this.setPath(visitor.postVisitDeepAutogenPathDatasetComponentBlob(this.Path));
+    this.setS3VersionId(visitor.postVisitDeepString(this.S3VersionId));
     return this.postVisitShallow(visitor);
   }
 }

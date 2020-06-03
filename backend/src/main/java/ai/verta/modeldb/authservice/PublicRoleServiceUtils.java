@@ -1,5 +1,6 @@
 package ai.verta.modeldb.authservice;
 
+import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -96,6 +97,11 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
+  public boolean deleteRoleBindings(List<String> roleBindingNames) {
+    return true;
+  }
+
+  @Override
   public List<GetCollaboratorResponse> getResourceCollaborators(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
@@ -149,12 +155,6 @@ public class PublicRoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return null;
   }
-
-  @Override
-  public void removeResourceRoleBindings(
-      String resourceId,
-      String resourceOwnerId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
 
   @Override
   public RoleBinding getRoleBindingByName(String roleBindingName) {
@@ -235,10 +235,30 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public String buildAdminRoleBindingName(
-      String resourceId,
-      CollaboratorBase shareWithCollaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return null;
+  public void createWorkspaceRoleBinding(
+      String workspace_id,
+      WorkspaceType forNumber,
+      String valueOf,
+      String roleRepositoryAdmin,
+      ModelDBServiceResourceTypes repository,
+      boolean orgScopedPublic,
+      String globalSharing) {}
+
+  @Override
+  public List<String> getWorkspaceRoleBindings(
+      String workspace_id,
+      WorkspaceType forNumber,
+      String valueOf,
+      String roleRepositoryAdmin,
+      ModelDBServiceResourceTypes repository,
+      boolean orgScopedPublic,
+      String globalSharing) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public boolean deleteAllResources(
+      List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return true;
   }
 }

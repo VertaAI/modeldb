@@ -14,11 +14,12 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -61,9 +62,9 @@ public class IntegrationTest {
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
   private static RoleTestService roleTestService = new RoleTestService();
-  private ManagedChannel authServiceChannel = null;
   private static String authHost;
   private static Integer authPort;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -101,10 +102,14 @@ public class IntegrationTest {
       authClientInterceptor = new AuthClientInterceptor(testPropMap);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -113,21 +118,12 @@ public class IntegrationTest {
     if (!channel.isShutdown()) {
       channel.shutdownNow();
     }
-
-    if (!authServiceChannel.isShutdown()) {
-      authServiceChannel.shutdownNow();
-    }
   }
 
   @Before
   public void initializeChannel() throws IOException {
     grpcCleanup.register(serverBuilder.build().start());
     channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
-    authServiceChannel =
-        ManagedChannelBuilder.forTarget(authHost + ":" + authPort)
-            .usePlaintext()
-            .intercept(authClientInterceptor.getClient1AuthInterceptor())
-            .build();
   }
 
   private CreateProject createProjectRequest() {

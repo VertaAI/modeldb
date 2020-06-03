@@ -18,14 +18,15 @@
   display: flex;
   align-items: center;
   position: relative;
-  padding: 10px;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  background-color: #fafbfc;
-  border: 1px solid #e1e4e8;
-  border-radius: 3px;
+  padding-bottom: 24px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--main-text-color3);
   color: var(--main-text-color1);
 }
 
 .commitPointer {
+}
+
+.merge {
+  margin-left: auto;
 }

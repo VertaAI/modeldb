@@ -11,8 +11,10 @@ import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.uac.ModelResourceEnum;
+import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import java.util.HashSet;
@@ -55,6 +57,8 @@ public class OwnerRoleBindingUtils {
     LOGGER.info("ExperimentRuns done migration");
     migrateDatasetVersions();
     LOGGER.info("DatasetVersions done migration");
+    migrateRepositories();
+    LOGGER.info("Repositories done migration");
 
     LOGGER.info("Migration End");
   }
@@ -64,7 +68,7 @@ public class OwnerRoleBindingUtils {
     Long count = getEntityCount(ExperimentEntity.class);
 
     int lowerBound = 0;
-    final int pagesize = 200;
+    final int pagesize = 5000;
     LOGGER.debug("Total experiments {}", count);
 
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
@@ -144,7 +148,7 @@ public class OwnerRoleBindingUtils {
     Long count = getEntityCount(ExperimentRunEntity.class);
 
     int lowerBound = 0;
-    final int pagesize = 200;
+    final int pagesize = 5000;
     LOGGER.debug("Total experimentruns {}", count);
 
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
@@ -219,7 +223,7 @@ public class OwnerRoleBindingUtils {
     Long count = getEntityCount(DatasetVersionEntity.class);
 
     int lowerBound = 0;
-    final int pagesize = 200;
+    final int pagesize = 5000;
     LOGGER.debug("Total datasetVersions {}", count);
 
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
@@ -293,6 +297,86 @@ public class OwnerRoleBindingUtils {
     }
 
     LOGGER.debug("DatasetVersions migration finished");
+  }
+
+  private static void migrateRepositories() {
+    LOGGER.debug("Repositories migration started");
+    Long count = getEntityCount(RepositoryEntity.class);
+
+    int lowerBound = 0;
+    final int pagesize = 5000;
+    LOGGER.debug("Total repositories {}", count);
+
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
+    while (lowerBound < count) {
+
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        Transaction transaction = session.beginTransaction();
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+
+        CriteriaQuery<RepositoryEntity> criteriaQuery =
+            criteriaBuilder.createQuery(RepositoryEntity.class);
+        Root<RepositoryEntity> root = criteriaQuery.from(RepositoryEntity.class);
+
+        CriteriaQuery<RepositoryEntity> selectQuery =
+            criteriaQuery.select(root).orderBy(criteriaBuilder.asc(root.get("id")));
+
+        TypedQuery<RepositoryEntity> typedQuery = session.createQuery(selectQuery);
+
+        typedQuery.setFirstResult(lowerBound);
+        typedQuery.setMaxResults(pagesize);
+        List<RepositoryEntity> repositoryEntities = typedQuery.getResultList();
+
+        if (repositoryEntities.size() > 0) {
+          Set<String> userIds = new HashSet<>();
+          for (RepositoryEntity repositoryEntity : repositoryEntities) {
+            userIds.add(repositoryEntity.getOwner());
+          }
+          LOGGER.debug("Repositories userId list : " + userIds);
+          if (userIds.size() == 0) {
+            LOGGER.warn("userIds not found for Repositories on page lower boundary {}", lowerBound);
+            lowerBound += pagesize;
+            continue;
+          }
+          // Fetch the Repository owners userInfo
+          Map<String, UserInfo> userInfoMap =
+              authService.getUserInfoFromAuthServer(userIds, null, null);
+          for (RepositoryEntity repositoryEntity : repositoryEntities) {
+            UserInfo userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
+            if (userInfoValue != null) {
+              try {
+                roleService.createRoleBinding(
+                    ownerRole,
+                    new CollaboratorUser(authService, userInfoValue),
+                    String.valueOf(repositoryEntity.getId()),
+                    ModelDBServiceResourceTypes.REPOSITORY);
+              } catch (Exception e) {
+                e.printStackTrace();
+                LOGGER.error(e.getMessage());
+              }
+            } else {
+              LOGGER.error(
+                  "Repository owner not found from UAC response list : RepositoryId - {} & userId - {}",
+                  repositoryEntity.getId(),
+                  repositoryEntity.getOwner());
+              new ModelDBException(
+                      "Repository owner not found from UAC response list : RepositoryId - "
+                          + repositoryEntity.getId()
+                          + " & userId - "
+                          + repositoryEntity.getOwner())
+                  .printStackTrace();
+            }
+          }
+        } else {
+          LOGGER.debug("Repositories total count 0");
+        }
+
+        transaction.commit();
+        lowerBound += pagesize;
+      }
+    }
+
+    LOGGER.debug("Repositories migration finished");
   }
 
   private static Long getEntityCount(Class<?> klass) {

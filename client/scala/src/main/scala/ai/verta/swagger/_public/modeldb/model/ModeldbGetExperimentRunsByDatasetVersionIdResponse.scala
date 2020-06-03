@@ -7,14 +7,14 @@ import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
+import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
-import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbGetExperimentRunsByDatasetVersionIdResponse (
   experiment_runs: Option[List[ModeldbExperimentRun]] = None,
-  total_records: Option[] = None
+  total_records: Option[BigInt] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbGetExperimentRunsByDatasetVersionIdResponse.toJson(this)
 }
@@ -24,7 +24,7 @@ object ModeldbGetExperimentRunsByDatasetVersionIdResponse {
     new JObject(
       List[Option[JField]](
         obj.experiment_runs.map(x => JField("experiment_runs", ((x: List[ModeldbExperimentRun]) => JArray(x.map(((x: ModeldbExperimentRun) => ModeldbExperimentRun.toJson(x)))))(x))),
-        obj.total_records.map(x => JField("total_records", (x)))
+        obj.total_records.map(x => JField("total_records", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -39,7 +39,7 @@ object ModeldbGetExperimentRunsByDatasetVersionIdResponse {
         ModeldbGetExperimentRunsByDatasetVersionIdResponse(
           // TODO: handle required
           experiment_runs = fieldsMap.get("experiment_runs").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbExperimentRun.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          total_records = fieldsMap.get("total_records").map()
+          total_records = fieldsMap.get("total_records").map(JsonConverter.fromJsonInteger)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

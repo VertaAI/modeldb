@@ -53,12 +53,6 @@ def get_pip_freeze():
 
     req_specs = clean_reqs_file_lines(req_specs)
 
-    # remove non-PyPI-installable SpaCy models:
-    req_specs = [
-        req_spec for req_spec in req_specs
-        if not SPACY_MODEL_REGEX.match(req_spec)
-    ]
-
     return req_specs
 
 
@@ -169,8 +163,6 @@ def process_requirements(requirements):
     set_version_pins(requirements)
 
     add_verta_and_cloudpickle(requirements)
-
-    return requirements
 
 
 def strip_inexact_specifiers(requirements):
@@ -321,13 +313,26 @@ def clean_reqs_file_lines(requirements):
     requirements = [req for req in requirements if not req.startswith('#')]  # comment line
 
     # remove unsupported options
-    #     https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format
-    requirements = [req for req in requirements if not req.startswith('--')]
-    requirements = [req for req in requirements if not req.startswith(('-c ', '-f ', '-i '))]
-    #     https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
-    #     TODO: upgrade protos and Client to handle VCS-installed packages
-    requirements = [req for req in requirements if not req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+'))]
-    #     TODO: follow references to other requirements files
-    requirements = [req for req in requirements if not req.startswith('-r ')]
+    supported_requirements = []
+    for req in requirements:
+        # https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format
+        if req.startswith(('--', '-c ', '-f ', '-i ')):
+            print("skipping unsupported option \"{}\"".format(req))
+            continue
+        # https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
+        # TODO: upgrade protos and Client to handle VCS-installed packages
+        if req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+')):
+            print("skipping unsupported VCS-installed package \"{}\"".format(req))
+            continue
+        # TODO: follow references to other requirements files
+        if req.startswith('-r '):
+            print("skipping unsupported file reference \"{}\"".format(req))
+            continue
+        # non-PyPI-installable spaCy models
+        if SPACY_MODEL_REGEX.match(req):
+            print("skipping non-PyPI-installable spaCy model \"{}\"".format(req))
+            continue
 
-    return requirements
+        supported_requirements.append(req)
+
+    return supported_requirements

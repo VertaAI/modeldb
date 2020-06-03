@@ -27,11 +27,14 @@ public class AuthServiceChannel implements AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(AuthServiceChannel.class);
   private ManagedChannel authServiceChannel;
   private RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub;
+  private RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub;
   private AuthzServiceGrpc.AuthzServiceBlockingStub authzServiceBlockingStub;
   private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStub;
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
-  public static boolean isMigrationUtilsCall = false;
+  public static boolean isBackgroundUtilsCall = false;
+  private String serviceUserEmail;
+  private String serviceUserDevKey;
 
   public AuthServiceChannel() {
     App app = App.getInstance();
@@ -43,6 +46,9 @@ public class AuthServiceChannel implements AutoCloseable {
           ManagedChannelBuilder.forTarget(host + ModelDBConstants.STRING_COLON + port)
               .usePlaintext()
               .build();
+
+      this.serviceUserEmail = app.getServiceUserEmail();
+      this.serviceUserDevKey = app.getServiceUserDevKey();
     } else {
       Status status =
           Status.newBuilder()
@@ -55,9 +61,15 @@ public class AuthServiceChannel implements AutoCloseable {
 
   private Metadata getMetadataHeaders() {
     Metadata requestHeaders;
-    if (isMigrationUtilsCall && ModelDBAuthInterceptor.METADATA_INFO.get() == null) {
-      Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+    if (isBackgroundUtilsCall && ModelDBAuthInterceptor.METADATA_INFO.get() == null) {
       requestHeaders = new Metadata();
+      Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key<String> dev_key =
+          Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+
+      requestHeaders.put(email_key, this.serviceUserEmail);
+      requestHeaders.put(dev_key, this.serviceUserDevKey);
       requestHeaders.put(source_key, "PythonClient");
     } else {
       requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
@@ -95,6 +107,22 @@ public class AuthServiceChannel implements AutoCloseable {
       initRoleServiceStubChannel();
     }
     return roleServiceBlockingStub;
+  }
+
+  private void initRoleServiceFutureStubChannel() {
+    Metadata requestHeaders = getMetadataHeaders();
+    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
+    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
+    roleServiceFutureStub =
+        RoleServiceGrpc.newFutureStub(authServiceChannel).withInterceptors(clientInterceptor);
+    LOGGER.trace("Header attached with stub");
+  }
+
+  public RoleServiceGrpc.RoleServiceFutureStub getRoleServiceFutureStub() {
+    if (roleServiceFutureStub == null) {
+      initRoleServiceFutureStubChannel();
+    }
+    return roleServiceFutureStub;
   }
 
   private void initAuthzServiceStubChannel(Metadata requestHeaders) {

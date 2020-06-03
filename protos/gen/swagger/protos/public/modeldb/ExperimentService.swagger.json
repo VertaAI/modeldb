@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/modeldb/ExperimentService.proto",
+    "title": "modeldb/ExperimentService.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -1303,6 +1303,9 @@
         },
         "sort_key": {
           "type": "string"
+        },
+        "workspace_name": {
+          "type": "string"
         }
       }
     },
@@ -1407,6 +1410,10 @@
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
@@ -1421,6 +1428,10 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },

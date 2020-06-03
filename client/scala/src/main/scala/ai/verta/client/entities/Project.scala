@@ -11,7 +11,7 @@ class Project(val clientSet: ClientSet, val proj: ModeldbProject) extends Taggab
   def getOrCreateExperiment(name: String)(implicit ec: ExecutionContext) = {
     GetOrCreateEntity.getOrCreate[Experiment](
       get = () => {
-        clientSet.experimentService.getExperimentByName(name, proj.id.get)
+        clientSet.experimentService.getExperimentByName(Some(name), proj.id)
           .map(r => if (r.experiment.isEmpty) null else new Experiment(clientSet, this, r.experiment.get))
       },
       create = () => {
@@ -27,7 +27,7 @@ class Project(val clientSet: ClientSet, val proj: ModeldbProject) extends Taggab
   def tags()(implicit ec: ExecutionContext) = new Tags(clientSet, ec, this)
 
   override def getTags()(implicit ec: ExecutionContext): Try[List[String]] = {
-    clientSet.projectService.getProjectTags(proj.id.get)
+    clientSet.projectService.getProjectTags(proj.id)
       .map(r => r.tags.getOrElse(Nil))
   }
 

@@ -1,11 +1,10 @@
 import { ActionType, createReducer } from 'typesafe-actions';
 
+import { updateById } from 'core/shared/utils/collection';
 import { substractPaginationTotalCount } from 'core/shared/models/Pagination';
 
 import * as actions from '../actions';
 import { IRepositoriesState } from '../types';
-import update from 'ramda/es/update';
-import { updateById } from 'core/shared/utils/collection';
 
 const initial: IRepositoriesState['data'] = {
   repositories: null,
@@ -69,6 +68,14 @@ export default createReducer<
         labels: repo.labels.filter(l => l !== action.payload.label),
       }),
       action.payload.repositoryId,
+      state.repositories || []
+    ),
+  }))
+  .handleAction(actions.updateRepository, (state, action) => ({
+    ...state,
+    repositories: updateById(
+      _ => action.payload,
+      action.payload.id,
       state.repositories || []
     ),
   }));

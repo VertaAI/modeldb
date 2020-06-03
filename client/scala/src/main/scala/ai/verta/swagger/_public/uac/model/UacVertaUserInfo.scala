@@ -11,9 +11,9 @@ import ai.verta.swagger.client.objects._
 
 case class UacVertaUserInfo (
   individual_user: Option[Boolean] = None,
-  last_login_timestamp: Option[] = None,
+  last_login_timestamp: Option[BigInt] = None,
   publicProfile: Option[UacFlagEnum] = None,
-  refresh_timestamp: Option[] = None,
+  refresh_timestamp: Option[BigInt] = None,
   user_id: Option[String] = None,
   username: Option[String] = None
 ) extends BaseSwagger {
@@ -25,9 +25,9 @@ object UacVertaUserInfo {
     new JObject(
       List[Option[JField]](
         obj.individual_user.map(x => JField("individual_user", JBool(x))),
-        obj.last_login_timestamp.map(x => JField("last_login_timestamp", (x))),
+        obj.last_login_timestamp.map(x => JField("last_login_timestamp", JInt(x))),
         obj.publicProfile.map(x => JField("publicProfile", ((x: UacFlagEnum) => UacFlagEnum.toJson(x))(x))),
-        obj.refresh_timestamp.map(x => JField("refresh_timestamp", (x))),
+        obj.refresh_timestamp.map(x => JField("refresh_timestamp", JInt(x))),
         obj.user_id.map(x => JField("user_id", JString(x))),
         obj.username.map(x => JField("username", JString(x)))
       ).flatMap(x => x match {
@@ -44,9 +44,9 @@ object UacVertaUserInfo {
         UacVertaUserInfo(
           // TODO: handle required
           individual_user = fieldsMap.get("individual_user").map(JsonConverter.fromJsonBoolean),
-          last_login_timestamp = fieldsMap.get("last_login_timestamp").map(),
+          last_login_timestamp = fieldsMap.get("last_login_timestamp").map(JsonConverter.fromJsonInteger),
           publicProfile = fieldsMap.get("publicProfile").map(UacFlagEnum.fromJson),
-          refresh_timestamp = fieldsMap.get("refresh_timestamp").map(),
+          refresh_timestamp = fieldsMap.get("refresh_timestamp").map(JsonConverter.fromJsonInteger),
           user_id = fieldsMap.get("user_id").map(JsonConverter.fromJsonString),
           username = fieldsMap.get("username").map(JsonConverter.fromJsonString)
         )

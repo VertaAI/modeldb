@@ -5,7 +5,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
-import "protos/public/common/CommonService.proto";
+import "common/CommonService.proto";
 
 message Organization {
     string id = 1;
@@ -19,6 +19,9 @@ message Organization {
 
     common.CollaboratorTypeEnum.CollaboratorType global_collaborator_type = 8;
     common.TernaryEnum.Ternary global_can_deploy = 9;
+    common.CollaboratorTypeEnum.CollaboratorType default_repo_collaborator_type = 10;
+    common.CollaboratorTypeEnum.CollaboratorType default_endpoint_collaborator_type = 11;
+    common.CollaboratorTypeEnum.CollaboratorType default_dataset_collaborator_type = 12;
 }
 
 message GetOrganizationById {

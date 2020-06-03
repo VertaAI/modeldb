@@ -15,6 +15,7 @@ import zipfile
 import requests
 
 import verta
+from verta._internal_utils import _histogram_utils
 from verta._internal_utils import _utils
 
 
@@ -79,16 +80,6 @@ class TestLogModelForDeployment:
 
         with open(requirements_file, 'r') as f:
             assert set(f.read().split()) <= set(retrieved_requirements.split())
-
-    def test_with_data(self, experiment_run, model_for_deployment):
-        """`train_features` and `train_targets` are joined into a single CSV"""
-        experiment_run.log_model_for_deployment(**model_for_deployment)
-
-        data_csv = experiment_run.get_artifact("train_data").read()
-
-        X_train = model_for_deployment['train_features']
-        y_train = model_for_deployment['train_targets']
-        assert X_train.join(y_train).to_csv(index=False) == six.ensure_str(data_csv)
 
 
 @pytest.mark.not_oss
@@ -562,10 +553,8 @@ class TestLogTrainingData:
         X_train = model_for_deployment['train_features']
         y_train = model_for_deployment['train_targets']
 
+        # no errors
         experiment_run.log_training_data(X_train, y_train)
-
-        data_csv = experiment_run.get_artifact("train_data").read()
-        assert X_train.join(y_train).to_csv(index=False) == six.ensure_str(data_csv)
 
     def test_dataframe(self, experiment_run, model_for_deployment):
         X_train = model_for_deployment['train_features']
@@ -573,10 +562,198 @@ class TestLogTrainingData:
 
         y_train = y_train.to_frame()
 
+        # no errors
         experiment_run.log_training_data(X_train, y_train)
 
-        data_csv = experiment_run.get_artifact("train_data").read()
-        assert X_train.join(y_train).to_csv(index=False) == six.ensure_str(data_csv)
+
+@pytest.mark.not_oss
+class TestHistogram:
+    @staticmethod
+    def assert_histograms_match_dataframe(histograms, df):
+        """Common assertions for this test suite."""
+        np = pytest.importorskip("numpy")
+
+        # features match
+        assert set(histograms['features'].keys()) == set(df.columns)
+        # all rows counted
+        assert histograms['total_count'] == len(df.index)
+
+        for feature_name, histogram in histograms['features'].items():
+            series = df[feature_name]
+            histogram_type = histogram['type']
+            histogram_data = histogram['histogram'][histogram_type]
+
+            # all data points counted
+            counts = histogram_data['count']
+            assert sum(counts) == len(series)
+
+            if histogram_type == "binary":
+                num_false = sum(~series)
+                num_true = sum(series)
+
+                assert counts == [num_false, num_true]
+            elif histogram_type == "discrete":
+                buckets = histogram_data['bucket_values']
+
+                # buckets in ascending order
+                assert buckets == list(sorted(buckets))
+
+                # data within buckets
+                assert all(buckets[0] <= series)
+                assert all(series <= buckets[-1])
+
+                # appropriate leftmost and rightmost buckets
+                assert buckets[0] == series.min()
+                assert buckets[-1] == series.max()
+
+                # all buckets have data
+                # NOTE: this might not be behavior that we want in the future
+                assert all(counts)
+
+                # counts correct
+                for value, count in zip(buckets, counts):
+                    assert sum(series == value) == count
+            elif histogram_type == "float":
+                limits = histogram_data['bucket_limits']
+
+                # limits in ascending order
+                assert limits == list(sorted(limits))
+
+                # data within limits
+                assert all(limits[0] <= series)
+                assert all(series <= limits[-1])
+
+                # appropriate leftmost and rightmost limits
+                assert np.isclose(limits[0], series.min())
+                assert np.isclose(limits[-1], series.max())
+
+                # buckets equal in width
+                bucket_widths = np.diff(limits)
+                assert np.allclose(bucket_widths, bucket_widths[0])
+
+                # correct number of buckets
+                assert len(limits) == 11
+
+                # counts correct
+                bin_windows = list(zip(limits[:-1], limits[1:]))
+                for i, (l, r) in enumerate(bin_windows[:-1]):
+                    assert sum((l <= series) & (series < r)) == counts[i]
+                assert sum(limits[-2] <= series) == counts[-1]
+
+    def test_binary(self):
+        np = pytest.importorskip("numpy")
+        pd = pytest.importorskip("pandas")
+        num_rows = 90
+
+        df = pd.concat(
+            objs=[
+                pd.Series(np.random.random(size=num_rows).round().astype(bool), name="A"),
+                pd.Series(np.random.random(size=num_rows).round().astype(bool), name="B"),
+                pd.Series(np.random.random(size=num_rows).round().astype(bool), name="C"),
+            ],
+            axis='columns',
+        )
+        histograms = _histogram_utils.calculate_histograms(df)
+
+        assert all(
+            histogram['type'] == "binary"
+            for histogram
+            in histograms['features'].values()
+        )
+        self.assert_histograms_match_dataframe(histograms, df)
+
+    def test_discrete(self):
+        np = pytest.importorskip("numpy")
+        pd = pytest.importorskip("pandas")
+        num_rows = 90
+
+        df = pd.concat(
+            objs=[
+                pd.Series(np.random.randint(6, 12, size=num_rows), name="A"),
+                pd.Series(np.random.randint(-12, -6, size=num_rows), name="B"),
+                pd.Series(np.random.randint(-3, 3, size=num_rows), name="C"),
+            ],
+            axis='columns',
+        )
+        histograms = _histogram_utils.calculate_histograms(df)
+
+        assert all(
+            histogram['type'] == "discrete"
+            for histogram
+            in histograms['features'].values()
+        )
+        self.assert_histograms_match_dataframe(histograms, df)
+
+    def test_float(self):
+        np = pytest.importorskip("numpy")
+        pd = pytest.importorskip("pandas")
+        num_rows = 90
+
+        df = pd.concat(
+            objs=[
+                pd.Series(np.random.normal(loc=9, size=num_rows), name="A"),
+                pd.Series(np.random.normal(scale=12, size=num_rows), name="B"),
+                pd.Series(np.random.normal(loc=-3, scale=6, size=num_rows), name="C"),
+            ],
+            axis='columns',
+        )
+        histograms = _histogram_utils.calculate_histograms(df)
+
+        assert all(
+            histogram['type'] == "float"
+            for histogram
+            in histograms['features'].values()
+        )
+        self.assert_histograms_match_dataframe(histograms, df)
+
+    def test_integration(self, experiment_run):
+        np = pytest.importorskip("numpy")
+        pd = pytest.importorskip("pandas")
+
+        binary_col_name = 'binary col'
+        discrete_col_name = 'discrete col'
+        float_col_name = 'float col'
+        df = pd.concat(
+            objs=[
+                pd.Series([True]*10 + [False]*20, name=binary_col_name),
+                pd.Series([0]*5 + [1]*10 + [2]*15, name=discrete_col_name),
+                pd.Series(range(30), name=float_col_name),
+            ],
+            axis='columns',
+        )
+        histograms = _histogram_utils.calculate_histograms(df)
+
+        experiment_run.log_training_data(df[[binary_col_name, discrete_col_name]], df[float_col_name])
+        endpoint = "{}://{}/api/v1/monitoring/data/references/{}".format(
+            experiment_run._conn.scheme,
+            experiment_run._conn.socket,
+            experiment_run.id,
+        )
+        response = _utils.make_request("GET", endpoint, experiment_run._conn)
+        _utils.raise_for_http_error(response)
+        retrieved_histograms = response.json()
+
+        # features match
+        features = histograms['features']
+        retrieved_features = retrieved_histograms['features']
+        assert set(features.keys()) == set(retrieved_features.keys())
+
+        # binary matches
+        binary_hist = histograms['features'][binary_col_name]['histogram']['binary']
+        retrieved_binary_hist = retrieved_histograms['features'][binary_col_name]['histogram']['binary']
+        assert binary_hist['count'] == retrieved_binary_hist['count']
+
+        # discrete matches
+        discrete_hist = histograms['features'][discrete_col_name]['histogram']['discrete']
+        retrieved_discrete_hist = retrieved_histograms['features'][discrete_col_name]['histogram']['discrete']
+        assert discrete_hist['bucket_values'] == retrieved_discrete_hist['bucket_values']
+        assert discrete_hist['count'] == retrieved_discrete_hist['count']
+
+        # float matches
+        float_hist = histograms['features'][float_col_name]['histogram']['float']
+        retrieved_float_hist = retrieved_histograms['features'][float_col_name]['histogram']['float']
+        assert all(np.isclose(float_hist['bucket_limits'], retrieved_float_hist['bucket_limits']))
+        assert float_hist['count'] == retrieved_float_hist['count']
 
 
 @pytest.mark.not_oss
@@ -585,17 +762,16 @@ class TestDeploy:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        try:
-            status = experiment_run.deploy()
+        status = experiment_run.deploy()
 
-            assert 'url' in status
-            assert 'token' in status
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        assert 'url' in status
+        assert 'token' in status
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_auto_path_given_token_deploy(self, experiment_run, model_for_deployment):
         token = "coconut"
@@ -603,33 +779,31 @@ class TestDeploy:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        try:
-            status = experiment_run.deploy(token=token)
+        status = experiment_run.deploy(token=token)
 
-            assert 'url' in status
-            assert status['token'] == token
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        assert 'url' in status
+        assert status['token'] == token
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_auto_path_no_token_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        try:
-            status = experiment_run.deploy(no_token=True)
+        status = experiment_run.deploy(no_token=True)
 
-            assert 'url' in status
-            assert status['token'] is None
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        assert 'url' in status
+        assert status['token'] is None
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_given_path_auto_token_deploy(self, experiment_run, model_for_deployment):
         path = "banana"
@@ -637,17 +811,16 @@ class TestDeploy:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        try:
-            status = experiment_run.deploy(path=path)
+        status = experiment_run.deploy(path=path)
 
-            assert status['url'].endswith(path)
-            assert 'token' in status
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        assert status['url'].endswith(path)
+        assert 'token' in status
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_given_path_given_token_deploy(self, experiment_run, model_for_deployment):
         path, token = "banana", "coconut"
@@ -655,17 +828,16 @@ class TestDeploy:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        try:
-            status = experiment_run.deploy(path=path, token=token)
+        status = experiment_run.deploy(path=path, token=token)
 
-            assert status['url'].endswith(path)
-            assert status['token'] == token
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        assert status['url'].endswith(path)
+        assert status['token'] == token
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_given_path_no_token_deploy(self, experiment_run, model_for_deployment):
         path = "banana"
@@ -673,50 +845,47 @@ class TestDeploy:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        try:
-            status = experiment_run.deploy(path=path, no_token=True)
+        status = experiment_run.deploy(path=path, no_token=True)
 
-            assert status['url'].endswith(path)
-            assert status['token'] is None
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        assert status['url'].endswith(path)
+        assert status['token'] is None
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_wait_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        try:
-            status = experiment_run.deploy(wait=True)
+        status = experiment_run.deploy(wait=True)
 
-            assert 'url' in status
-            assert 'token' in status
-            assert status['status'] == "deployed"
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        assert 'url' in status
+        assert 'token' in status
+        assert status['status'] == "deployed"
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_already_deployed_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        try:
-            experiment_run.deploy()
+        experiment_run.deploy()
 
-            # should not raise error
-            experiment_run.deploy()
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        # should not raise error
+        experiment_run.deploy()
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_no_model_deploy_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -729,16 +898,16 @@ class TestDeploy:
                                                               experiment_run._conn.socket),
             experiment_run._conn, json={'id': experiment_run.id, 'key': "model.pkl"}
         ).raise_for_status()
-        try:
-            with pytest.raises(RuntimeError) as excinfo:
-                experiment_run.deploy()
-            assert str(excinfo.value).strip() == "unable to deploy due to missing artifact model.pkl"
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+
+        with pytest.raises(RuntimeError) as excinfo:
+            experiment_run.deploy()
+        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact model.pkl"
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_no_api_deploy_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -751,46 +920,45 @@ class TestDeploy:
                                                               experiment_run._conn.socket),
             experiment_run._conn, json={'id': experiment_run.id, 'key': "model_api.json"}
         ).raise_for_status()
-        try:
-            with pytest.raises(RuntimeError) as excinfo:
-                experiment_run.deploy()
-            assert str(excinfo.value).strip() == "unable to deploy due to missing artifact model_api.json"
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+
+        with pytest.raises(RuntimeError) as excinfo:
+            experiment_run.deploy()
+        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact model_api.json"
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_no_reqs_deploy_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        try:
-            with pytest.raises(RuntimeError) as excinfo:
-                experiment_run.deploy()
-            assert str(excinfo.value).strip() == "unable to deploy due to missing artifact requirements.txt"
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+
+        with pytest.raises(RuntimeError) as excinfo:
+            experiment_run.deploy()
+        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact requirements.txt"
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_deployment_failure_deploy_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements([])
 
-        try:
-            with pytest.raises(RuntimeError) as excinfo:
-                experiment_run.deploy(wait=True)
-            err_msg = str(excinfo.value).strip()
-            assert err_msg.startswith("model deployment is failing;")
-            assert "no error message available" not in err_msg
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        with pytest.raises(RuntimeError) as excinfo:
+            experiment_run.deploy(wait=True)
+        err_msg = str(excinfo.value).strip()
+        assert err_msg.startswith("model deployment is failing;")
+        assert "no error message available" not in err_msg
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
 
 @pytest.mark.not_oss
@@ -799,18 +967,17 @@ class TestUndeploy:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        try:
-            experiment_run.deploy(wait=True)
+        experiment_run.deploy(wait=True)
 
-            status = experiment_run.undeploy(wait=True)
+        status = experiment_run.undeploy(wait=True)
 
-            assert status['status'] == "not deployed"
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        assert status['status'] == "not deployed"
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_already_undeployed_undeploy(self, experiment_run):
         # should not raise error
@@ -828,17 +995,16 @@ class TestGetDeployedModel:
         experiment_run.log_model(model, custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        try:
-            experiment_run.deploy(wait=True)
+        experiment_run.deploy(wait=True)
 
-            x = model_for_deployment['train_features'].iloc[1].values
-            experiment_run.get_deployed_model().predict([x])
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        x = model_for_deployment['train_features'].iloc[1].values
+        experiment_run.get_deployed_model().predict([x])
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )
 
     def test_not_deployed_get_error(self, experiment_run, model_for_deployment):
         with pytest.raises(RuntimeError):
@@ -848,15 +1014,14 @@ class TestGetDeployedModel:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        try:
-            experiment_run.deploy(wait=True)
-            experiment_run.undeploy(wait=True)
+        experiment_run.deploy(wait=True)
+        experiment_run.undeploy(wait=True)
 
-            with pytest.raises(RuntimeError):
-                experiment_run.get_deployed_model()
-        finally:
-            conn = experiment_run._conn
-            requests.delete(
-                "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-                headers=conn.auth,
-            )
+        with pytest.raises(RuntimeError):
+            experiment_run.get_deployed_model()
+
+        conn = experiment_run._conn
+        requests.delete(
+            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
+            headers=conn.auth,
+        )

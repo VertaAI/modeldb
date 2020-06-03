@@ -1,10 +1,10 @@
 package ai.verta.modeldb.collaborator;
 
+import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.uac.AddCollaboratorRequest.Response.Builder;
 import ai.verta.uac.Entities;
-import ai.verta.uac.EntitiesEnum.EntitiesTypes;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.VertaUserInfo;
 import com.google.protobuf.GeneratedMessageV3;
@@ -45,6 +45,7 @@ public class CollaboratorUser extends CollaboratorBase {
     return Entities.newBuilder().addUserIds(getVertaId()).build();
   }
 
+  /** Returns the vertaId for user */
   @Override
   public String getId() {
     return getVertaId();

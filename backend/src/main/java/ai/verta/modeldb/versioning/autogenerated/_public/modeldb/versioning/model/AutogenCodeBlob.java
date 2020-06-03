@@ -8,8 +8,12 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenCodeBlob implements ProtoType {
   private AutogenGitCodeBlob Git;
@@ -50,17 +54,15 @@ public class AutogenCodeBlob implements ProtoType {
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenCodeBlob");
-    if (this.Git != null && !this.Git.equals(null)) {
-      sb.append("::Git::").append(Git);
-    }
-    if (this.Notebook != null && !this.Notebook.equals(null)) {
-      sb.append("::Notebook::").append(Notebook);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -89,11 +91,6 @@ public class AutogenCodeBlob implements ProtoType {
       }
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.Git, this.Notebook);
   }
 
   public AutogenCodeBlob setGit(AutogenGitCodeBlob value) {

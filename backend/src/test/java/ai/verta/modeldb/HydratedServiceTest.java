@@ -17,6 +17,8 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
 import ai.verta.uac.AddCollaboratorRequest;
@@ -81,6 +83,7 @@ public class HydratedServiceTest {
   private static AuthClientInterceptor authClientInterceptor;
   private static AuthService authService;
   private static App app;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -117,10 +120,15 @@ public class HydratedServiceTest {
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
   public static void removeServerAndService() {
+
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -169,8 +177,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -260,6 +266,8 @@ public class HydratedServiceTest {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       // For Collaborator1
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
@@ -320,8 +328,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -402,6 +408,8 @@ public class HydratedServiceTest {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
           UACServiceGrpc.newBlockingStub(authServiceChannel);
       GetUser getUserRequest =
@@ -489,8 +497,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -667,6 +673,8 @@ public class HydratedServiceTest {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       // Create two collaborator for above project
       // For Collaborator1
       AddCollaboratorRequest addCollaboratorRequest =
@@ -781,8 +789,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -861,6 +867,8 @@ public class HydratedServiceTest {
     // Create two collaborator for above project
     // For Collaborator1
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
               project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -1835,7 +1843,7 @@ public class HydratedServiceTest {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
     }
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
@@ -2695,7 +2703,9 @@ public class HydratedServiceTest {
 
     try {
       hydratedServiceBlockingStub.findHydratedExperiments(findExperiments);
-      fail();
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        fail();
+      }
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -2717,7 +2727,9 @@ public class HydratedServiceTest {
 
     try {
       hydratedServiceBlockingStub.findHydratedExperiments(findExperiments);
-      fail();
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        fail();
+      }
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -3630,8 +3642,11 @@ public class HydratedServiceTest {
     LOGGER.info("FindHydratedDatasets test start................................");
 
     DatasetTest datasetTest = new DatasetTest();
+    DatasetVersionTest datasetVersionTest = new DatasetVersionTest();
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
+        DatasetVersionServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -3757,6 +3772,18 @@ public class HydratedServiceTest {
         "Dataset name not match with expected Dataset name",
         createDatasetRequest.getName(),
         dataset4.getName());
+
+    CreateDatasetVersion createDatasetVersionRequest =
+        datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+    createDatasetVersionRequest = createDatasetVersionRequest.toBuilder().addTags("Tag_8").build();
+    CreateDatasetVersion.Response createDatasetVersionResponse =
+        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
+    DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
+    LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion1);
+    assertEquals(
+        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
+        dataset1.getId(),
+        datasetVersion1.getDatasetId());
 
     // Validate check for predicate value not empty
     List<KeyValueQuery> predicates = new ArrayList<>();
@@ -4313,7 +4340,9 @@ public class HydratedServiceTest {
 
     try {
       hydratedServiceBlockingStub.findHydratedDatasets(findDatasets);
-      fail();
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        fail();
+      }
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -5489,7 +5518,12 @@ public class HydratedServiceTest {
     LogDatasets logDatasetRequest =
         LogDatasets.newBuilder().setId(experimentRun1.getId()).addAllDatasets(artifacts).build();
 
-    LogDatasets.Response response = experimentRunServiceStub.logDatasets(logDatasetRequest);
+    experimentRunServiceStub.logDatasets(logDatasetRequest);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun1.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
 
     for (Artifact datasetArtifact : response.getExperimentRun().getDatasetsList()) {
@@ -5853,7 +5887,7 @@ public class HydratedServiceTest {
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingClient2Stub =
         HydratedServiceGrpc.newBlockingStub(client2Channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     // Create project
     ProjectTest projectTest = new ProjectTest();

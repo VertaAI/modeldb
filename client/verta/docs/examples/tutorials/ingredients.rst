@@ -99,7 +99,7 @@ commits up to the current:
     #     Initial commit
     #
 
-We can also check the contents of the repository and its history using the web interface:
+We can also check the contents of the repository and its history using the Web App:
 
 .. image:: /_static/gifs/tutorial-ingredients-1.gif
 
@@ -117,8 +117,7 @@ as the base for a new branch to build on:
 
 .. code-block:: python
 
-    env = repo.get_commit(branch="master")
-    env.branch("environment")
+    env = repo.get_commit(branch="master").new_branch("environment")
     print(env)
     # Commit 643d8873e74f7fc3a73ce4404e4a80b56df43ad24365a6e0819d17ffab57e620 (Branch: environment)
     # Date: 2020-03-19 18:15:15
@@ -148,7 +147,7 @@ This new commit now has the information about the local Python setup. It lists `
 requirements and adds constraints for all the other libraries, so that we can recreate the environment
 with the correct versions.
 
-If we check the web interface, we can easily compare the two branches and see that the environment was
+If we check the Web App, we can easily compare the two branches and see that the environment was
 added in the new branch.
 
 .. image:: /_static/gifs/tutorial-ingredients-2.gif

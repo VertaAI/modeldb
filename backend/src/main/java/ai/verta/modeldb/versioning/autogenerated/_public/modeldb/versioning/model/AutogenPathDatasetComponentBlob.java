@@ -8,8 +8,12 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenPathDatasetComponentBlob implements ProtoType {
   private Long LastModifiedAtSource;
@@ -80,26 +84,15 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenPathDatasetComponentBlob");
-    if (this.LastModifiedAtSource != null && !this.LastModifiedAtSource.equals(0l)) {
-      sb.append("::LastModifiedAtSource::").append(LastModifiedAtSource);
-    }
-    if (this.Md5 != null && !this.Md5.equals("")) {
-      sb.append("::Md5::").append(Md5);
-    }
-    if (this.Path != null && !this.Path.equals("")) {
-      sb.append("::Path::").append(Path);
-    }
-    if (this.Sha256 != null && !this.Sha256.equals("")) {
-      sb.append("::Sha256::").append(Sha256);
-    }
-    if (this.Size != null && !this.Size.equals(0l)) {
-      sb.append("::Size::").append(Size);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -151,11 +144,6 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
       }
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.LastModifiedAtSource, this.Md5, this.Path, this.Sha256, this.Size);
   }
 
   public AutogenPathDatasetComponentBlob setLastModifiedAtSource(Long value) {

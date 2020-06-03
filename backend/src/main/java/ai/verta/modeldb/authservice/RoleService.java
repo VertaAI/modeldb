@@ -1,5 +1,6 @@
 package ai.verta.modeldb.authservice;
 
+import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.Actions;
@@ -46,6 +47,8 @@ public interface RoleService {
 
   boolean deleteRoleBinding(String roleBindingId);
 
+  boolean deleteRoleBindings(List<String> roleBindingNames);
+
   List<GetCollaboratorResponse> getResourceCollaborators(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
@@ -78,16 +81,6 @@ public interface RoleService {
   String buildProjectDeployRoleBindingName(
       String resourceId,
       CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  String buildAdminRoleBindingName(
-      String resourceId,
-      CollaboratorBase shareWithCollaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  void removeResourceRoleBindings(
-      String resourceId,
-      String resourceOwnerId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   RoleBinding getRoleBindingByName(String roleBindingName);
@@ -136,4 +129,25 @@ public interface RoleService {
   WorkspaceDTO getWorkspaceDTOByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
 
   List<Organization> listMyOrganizations();
+
+  void createWorkspaceRoleBinding(
+      String workspace_id,
+      WorkspaceType forNumber,
+      String valueOf,
+      String roleRepositoryAdmin,
+      ModelDBServiceResourceTypes repository,
+      boolean orgScopedPublic,
+      String globalSharing);
+
+  List<String> getWorkspaceRoleBindings(
+      String workspace_id,
+      WorkspaceType workspaceType,
+      String resourceId,
+      String adminRole,
+      ModelDBServiceResourceTypes resourceType,
+      boolean orgScopedPublic,
+      String globalSharing);
+
+  boolean deleteAllResources(
+      List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 }
