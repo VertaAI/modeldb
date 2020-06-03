@@ -79,7 +79,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
@@ -254,6 +253,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        checkIfEntityAlreadyExists(experimentRun, isInsert);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -311,7 +316,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experimentRun, true);
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
         Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
@@ -330,10 +334,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           experimentRunObj.setHyperparameter_element_mappings(new ArrayList<>(hyrParamMappings));
         }
       }
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun created successfully");
       return experimentRun;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return insertExperimentRun(experimentRun, userInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -379,7 +390,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public Boolean deleteExperimentRuns(List<String> experimentRunIds) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
 
       List<String> accessibleExperimentRunIds =
           getAccessibleExperimentRunIDs(
@@ -394,6 +404,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(statusMessage);
       }
+      Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING);
       query.setParameter("deleted", true);
       query.setParameter("experimentRunIds", accessibleExperimentRunIds);
@@ -405,6 +416,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun deleted successfully");
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteExperimentRuns(experimentRunIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -479,6 +496,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("ExperimentRuns size is {}", experimentRuns.size());
       return experimentRuns;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRuns(key, value, userInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -493,6 +516,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       List<ExperimentRunEntity> experimentRunEntities = query.list();
       LOGGER.debug("Got ExperimentRun by Ids");
       return RdbmsUtils.convertExperimentRunsFromExperimentRunEntityList(experimentRunEntities);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunsByBatchIds(experimentRunIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -513,6 +542,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("Got ExperimentRun successfully");
       return experimentRunEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRun(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -527,15 +562,21 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void updateExperimentRunName(String experimentRunId, String experimentRunName) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId);
       experimentRunEntity.setName(experimentRunName);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.update(experimentRunEntity);
-      LOGGER.debug("ExperimentRun name updated successfully");
       transaction.commit();
+      LOGGER.debug("ExperimentRun name updated successfully");
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        updateExperimentRunName(experimentRunId, experimentRunName);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -544,16 +585,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       String experimentRunId, String experimentRunDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId);
       experimentRunEntity.setDescription(experimentRunDescription);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.update(experimentRunEntity);
-      LOGGER.debug("ExperimentRun description updated successfully");
       transaction.commit();
+      LOGGER.debug("ExperimentRun description updated successfully");
       return experimentRunEntity.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateExperimentRunDescription(experimentRunId, experimentRunDescription);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -561,7 +608,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logExperimentRunCodeVersion(String experimentRunId, CodeVersion updatedCodeVersion)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntity =
           session.get(ExperimentRunEntity.class, experimentRunId);
 
@@ -578,24 +624,37 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.update(experimentRunEntity);
-      LOGGER.debug("ExperimentRun code version snapshot updated successfully");
       transaction.commit();
+      LOGGER.debug("ExperimentRun code version snapshot updated successfully");
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        logExperimentRunCodeVersion(experimentRunId, updatedCodeVersion);
+      } else {
+        throw ex;
+      }
     }
   }
 
   @Override
   public void setParentExperimentRunId(String experimentRunId, String parentExperimentRunId) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId);
       experimentRunEntity.setParent_id(parentExperimentRunId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.update(experimentRunEntity);
-      LOGGER.debug("ExperimentRun parentId updated successfully");
       transaction.commit();
+      LOGGER.debug("ExperimentRun parentId updated successfully");
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        setParentExperimentRunId(experimentRunId, parentExperimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -603,7 +662,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public ExperimentRun addExperimentRunTags(String experimentRunId, List<String> tagsList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
@@ -628,11 +686,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             RdbmsUtils.convertTagListFromTagMappingList(experimentRunObj, newTags);
         experimentRunObj.getTags().addAll(newTagMappings);
         experimentRunObj.setDate_updated(currentTimestamp);
+        Transaction transaction = session.beginTransaction();
         session.saveOrUpdate(experimentRunObj);
+        transaction.commit();
       }
-      transaction.commit();
       LOGGER.debug("ExperimentRun tags added successfully");
       return experimentRunObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addExperimentRunTags(experimentRunId, tagsList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -660,6 +725,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun tags deleted successfully");
       return experimentRunObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteExperimentRunTags(experimentRunId, experimentRunTagList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -667,7 +738,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntityObj == null) {
@@ -685,8 +755,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setObservationMapping(newObservationList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        logObservations(experimentRunId, observations);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -716,6 +793,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
       return observationEntities;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getObservationByKey(experimentRunId, observationKey);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -723,7 +806,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logMetrics(String experimentRunId, List<KeyValue> newMetrics)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntityObj == null) {
@@ -758,8 +840,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setKeyValueMapping(newMetricList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        logMetrics(experimentRunId, newMetrics);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -780,6 +869,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("Got ExperimentRun Metrics");
       return experimentRunObj.getProtoObject().getMetricsList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunMetrics(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -800,6 +895,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("Got ExperimentRun Datasets");
       return experimentRunObj.getProtoObject().getDatasetsList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunDatasets(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -807,7 +908,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logDatasets(String experimentRunId, List<Artifact> newDatasets, boolean overwrite)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntityObj == null) {
@@ -821,6 +921,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       ExperimentRun experimentRun = experimentRunEntityObj.getProtoObject();
 
+      Transaction transaction = session.beginTransaction();
       if (overwrite) {
         List<String> datasetKeys = new ArrayList<>();
         for (Artifact dataset : newDatasets) {
@@ -854,6 +955,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        logDatasets(experimentRunId, newDatasets, overwrite);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -861,7 +968,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logArtifacts(String experimentRunId, List<Artifact> newArtifacts)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntityObj == null) {
@@ -896,8 +1002,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setArtifactMapping(newArtifactList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        logArtifacts(experimentRunId, newArtifacts);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -926,6 +1039,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunArtifacts(experimentRunId);
+      } else {
+        throw ex;
       }
     }
   }
@@ -962,11 +1081,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunObj.setDate_updated(currentTimestamp);
       session.update(experimentRunObj);
       transaction.commit();
-    } catch (StatusRuntimeException ex) {
-      if (transaction != null) {
-        transaction.rollback();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        deleteArtifacts(experimentRunId, artifactKey);
+      } else {
+        throw ex;
       }
-      throw ex;
     }
   }
 
@@ -974,7 +1094,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logHyperparameters(String experimentRunId, List<KeyValue> newHyperparameters)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntityObj == null) {
@@ -1010,8 +1129,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setKeyValueMapping(newHyperparameterList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        logHyperparameters(experimentRunId, newHyperparameters);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1032,6 +1158,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("Got ExperimentRun Hyperparameters");
       return experimentRunObj.getProtoObject().getHyperparametersList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunHyperparameters(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1039,7 +1171,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logAttributes(String experimentRunId, List<KeyValue> newAttributes)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntityObj == null) {
@@ -1075,8 +1206,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setAttributeMapping(newAttributeList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        logAttributes(experimentRunId, newAttributes);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1104,6 +1242,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         query.setParameter(ModelDBConstants.FIELD_TYPE_STR, ModelDBConstants.ATTRIBUTES);
         List<AttributeEntity> attributeEntities = query.list();
         return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunAttributes(experimentRunId, attributeKeyList, getAll);
+      } else {
+        throw ex;
       }
     }
   }
@@ -1377,6 +1521,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunPaginationDTO.setExperimentRuns(experimentRuns);
       experimentRunPaginationDTO.setTotalRecords(totalRecords);
       return experimentRunPaginationDTO;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return findExperimentRuns(projectDAO, currentLoginUserInfo, queryParameters);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1560,6 +1710,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           session.get(ExperimentRunEntity.class, experimentRunId);
       LOGGER.debug("Got ExperimentRun Tags");
       return experimentRunObj.getProtoObject().getTagsList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunTags(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1567,7 +1723,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void addExperimentRunAttributes(String experimentRunId, List<KeyValue> attributesList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       List<AttributeEntity> newAttributeList =
@@ -1576,8 +1731,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setAttributeMapping(newAttributeList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        addExperimentRunAttributes(experimentRunId, attributesList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1605,21 +1767,33 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.update(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun Attributes deleted successfully");
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        deleteExperimentRunAttributes(experimentRunId, attributeKeyList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
   @Override
   public void logJobId(String experimentRunId, String jobId) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       experimentRunEntityObj.setJob_id(jobId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun JobID added successfully");
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        logJobId(experimentRunId, jobId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1630,6 +1804,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           session.get(ExperimentRunEntity.class, experimentRunId);
       LOGGER.debug("Got ExperimentRun JobID");
       return experimentRunEntityObj.getJob_id();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getJobId(experimentRunId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1675,13 +1855,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         copyExperimentRunAndUpdateDetails(srcExperimentRun, newExperiment, newProject, newOwner);
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunObj =
           RdbmsUtils.generateExperimentRunEntity(copyExperimentRun);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun copied successfully");
       return experimentRunObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deepCopyExperimentRunForUser(srcExperimentRun, newExperiment, newProject, newOwner);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1728,6 +1914,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       List<ExperimentRunEntity> experimentRunObjList = query.list();
       return RdbmsUtils.convertExperimentRunsFromExperimentRunEntityList(experimentRunObjList);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRuns(keyValues);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1745,6 +1937,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getProjectIdByExperimentRunId(experimentRunId);
+      } else {
+        throw ex;
       }
     }
   }
@@ -1764,6 +1962,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             experimentRunEntity.getId(), experimentRunEntity.getProject_id());
       }
       return experimentRunIdToProjectIdMap;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getProjectIdsFromExperimentRunIds(experimentRunIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1791,6 +1995,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Query experimentRunQuery = session.createQuery(queryBuilder.toString());
       experimentRunQuery.setParameterList("ids", experimentRunIds);
       return experimentRunQuery.list();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getSelectedFieldsByExperimentRunIds(experimentRunIds, selectedFields);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1807,6 +2017,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         experimentRunIds.add(experimentRunEntity.getId());
       }
       return experimentRunIds;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunIdsByProjectIds(projectIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1823,6 +2039,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         experimentRunIds.add(experimentRunEntity.getId());
       }
       return experimentRunIds;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getExperimentRunIdsByExperimentIds(experimentIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1830,7 +2052,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logVersionedInput(LogVersionedInput request)
       throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       VersioningEntry versioningEntry = request.getVersionedInputs();
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
           validateVersioningEntity(session, versioningEntry);
@@ -1874,9 +2095,16 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(runEntity);
       transaction.commit();
       LOGGER.debug("ExperimentRun versioning added successfully");
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        logVersionedInput(request);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -1919,6 +2147,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getVersionedInputs(request);
+      } else {
+        throw ex;
       }
     }
   }
@@ -1964,6 +2198,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
           .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return listCommitExperimentRuns(projectDAO, request, repositoryFunction, commitFunction);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -2022,6 +2262,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
           .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return listBlobExperimentRuns(projectDAO, request, repositoryFunction, commitFunction);
+      } else {
+        throw ex;
+      }
     }
   }
 

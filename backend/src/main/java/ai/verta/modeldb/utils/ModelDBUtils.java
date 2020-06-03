@@ -34,6 +34,7 @@ import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
@@ -478,6 +479,32 @@ public class ModelDBUtils {
     }
     ErrorCountResource.inc(statusRuntimeException);
     responseObserver.onError(statusRuntimeException);
+  }
+
+  public static boolean needToRetry(Exception ex) {
+    Throwable communicationsException = findCommunicationsFailedCause(ex);
+    if ((communicationsException.getCause() instanceof CommunicationsException)
+        || (communicationsException.getCause() instanceof SocketException)) {
+      LOGGER.warn(communicationsException.getMessage());
+      if (ModelDBHibernateUtil.checkDBConnection()) {
+        ModelDBHibernateUtil.resetSessionFactory();
+      }
+      return true;
+    }
+    return false;
+  }
+
+  public static Throwable findCommunicationsFailedCause(Throwable throwable) {
+    if (throwable == null) {
+      return null;
+    }
+    Throwable rootCause = throwable;
+    while (rootCause.getCause() != null
+        && !(rootCause.getCause() instanceof CommunicationsException
+            || rootCause.getCause() instanceof SocketException)) {
+      rootCause = rootCause.getCause();
+    }
+    return rootCause;
   }
 
   /**
