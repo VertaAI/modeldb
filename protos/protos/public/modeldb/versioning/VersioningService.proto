@@ -474,6 +474,7 @@ message GetUrlForVersionedBlob {
     repeated string location = 3;
     string path_dataset_component_blob_path = 4;
     string method = 5; //This is either GET or PUT
+    uint64 part_number = 6; // if 0, don’t do multipart
 
     message Response {
         string url = 1;
