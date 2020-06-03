@@ -54,7 +54,7 @@ class TestRepository extends FunSuite {
       val getRepoAttempt = f.client.getRepository(f.repo.getId().toString)
 
       assert(getRepoAttempt.isSuccess)
-      assert(getRepoAttempt.get.getId().equals(f.repo.getId()))
+      assert(getRepoAttempt.get equals f.repo)
     } finally {
       cleanup(f)
     }
@@ -64,11 +64,26 @@ class TestRepository extends FunSuite {
     val f = fixture
 
     try {
-      val id = f.repo.getCommitByBranch().get.getId()
-      val getCommitAttempt = f.repo.getCommitById(id)
+      val originalCommit = f.repo.getCommitByBranch().get
+      val getCommitAttempt = f.repo.getCommitById(originalCommit.getId())
 
       assert(getCommitAttempt.isSuccess)
-      assert(getCommitAttempt.get.getId().equals(id))
+      assert(getCommitAttempt.get equals originalCommit)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("get commit by id (not exist) should return a failure") {
+    val f = fixture
+
+    try {
+      val getCommitAttempt = f.repo.getCommitById("1234123")
+
+      assert(getCommitAttempt.isFailure)
+      assert(getCommitAttempt match {
+        case Failure(e) => e.getMessage contains "Commit_hash and repository_id mapping not found"
+      })
     } finally {
       cleanup(f)
     }
@@ -87,7 +102,6 @@ class TestRepository extends FunSuite {
     }
   }
 
-
   test("create new branch and get commit by that branch's name") {
     val f = fixture
 
@@ -102,6 +116,20 @@ class TestRepository extends FunSuite {
     }
   }
 
+  test("get commit by branch (not exist) should return a failure")  {
+    val f = fixture
+
+    try {
+      val getCommitAttempt = f.repo.getCommitByBranch("not-exist")
+
+      assert(getCommitAttempt.isFailure)
+      assert(getCommitAttempt match {
+        case Failure(e) => e.getMessage contains "Branch not found"
+      })
+    } finally {
+      cleanup(f)
+    }
+  }
 
   test("add/remove tag and get commit by tag") {
     val f = fixture
