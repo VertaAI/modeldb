@@ -74,7 +74,7 @@ class RepositoryDetailsPagesLayout extends React.Component<AllProps> {
           routes.repositoryNetworkGraph,
         ],
         redirectTo: routes.repositoryData,
-        getName: ({ repositoryName }: any) => repositoryName,
+        getName: ({ repositoryName }) => repositoryName,
       });
   }
 }

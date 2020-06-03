@@ -45,9 +45,10 @@ type AllProps = ReturnType<typeof mapStateToProps> &
 
 class DatasetCreationPage extends React.PureComponent<AllProps> {
   private breadcrumbsBuilder = BreadcrumbsBuilder()
-    .then({ routes: [routes.datasets], getName: () => 'Datasets' })
+    .then({ type: 'single', route: routes.datasets, getName: () => 'Datasets' })
     .then({
-      routes: [routes.datasetCreation],
+      type: 'single',
+      route: routes.datasetCreation,
       getName: () => 'Dataset creation',
     });
 

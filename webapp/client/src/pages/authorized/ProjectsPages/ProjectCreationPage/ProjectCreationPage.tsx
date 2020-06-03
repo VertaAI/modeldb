@@ -50,9 +50,10 @@ type AllProps = ReturnType<typeof mapStateToProps> &
 
 class ProjectCreationPage extends React.PureComponent<AllProps> {
   private breadcrumbsBuilder = BreadcrumbsBuilder()
-    .then({ routes: [routes.projects], getName: () => 'Projects' })
+    .then({ type: 'single', route: routes.projects, getName: () => 'Projects' })
     .then({
-      routes: [routes.projectCreation],
+      type: 'single',
+      route: routes.projectCreation,
       getName: () => 'Project creation',
     });
 

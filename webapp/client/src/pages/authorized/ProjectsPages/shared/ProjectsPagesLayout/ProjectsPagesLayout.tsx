@@ -40,39 +40,46 @@ class ProjectsPagesLayout extends React.Component<AllProps> {
 
     return BreadcrumbsBuilder()
       .then({
-        routes: [routes.projects],
+        type: 'single',
+        route: routes.projects,
         getName: () => 'Projects',
       })
       .then({
+        type: 'multiple',
         routes: [
           routes.projectSummary,
           routes.experimentRuns,
           routes.charts,
           routes.experiments,
+          routes.projectSettings,
         ],
-        checkLoaded: (params: any) =>
+        checkLoaded: params =>
           Boolean(
             projects &&
               projects.some(project => project.id === params.projectId)
           ),
-        getName: (params: any) => {
+        getName: params => {
           const targetProject = (projects || []).find(
             project => project.id === params.projectId
           )!;
           return targetProject ? targetProject.name : '';
         },
+        redirectTo: routes.projectSummary,
       })
       .thenOr([
         {
-          routes: [routes.experimentCreation],
+          type: 'single',
+          route: routes.experimentCreation,
           getName: () => 'Experiment creation',
         },
         {
-          routes: [routes.compareModels],
+          type: 'single',
+          route: routes.compareModels,
           getName: () => 'Compare models',
         },
         {
-          routes: [routes.modelRecord],
+          type: 'single',
+          route: routes.modelRecord,
           checkLoaded: ({ modelRecordId }) => {
             const experimentRun = (experimentRuns || []).find(
               exprRun => exprRun.id === modelRecordId
