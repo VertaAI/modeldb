@@ -45,26 +45,35 @@ class DatasetsPagesLayout extends React.PureComponent<AllProps> {
     const { datasets, datasetVersions } = this.props;
     return BreadcrumbsBuilder()
       .then({
-        routes: [routes.datasets],
+        type: 'single',
+        route: routes.datasets,
         getName: () => 'Datasets',
       })
       .then({
-        routes: [routes.datasetSummary, routes.datasetVersions],
+        type: 'multiple',
+        routes: [
+          routes.datasetSummary,
+          routes.datasetVersions,
+          routes.datasetSettings,
+        ],
         checkLoaded: () => Boolean(datasets),
-        getName: (params: any) => {
+        getName: params => {
           const targetDataset = (datasets || []).find(
             dataset => dataset.id === params.datasetId
           );
           return targetDataset ? targetDataset.name : '';
         },
+        redirectTo: routes.datasetSummary,
       })
       .thenOr([
         {
-          routes: [routes.compareDatasetVersions],
+          type: 'single',
+          route: routes.compareDatasetVersions,
           getName: () => 'Compare versions',
         },
         {
-          routes: [routes.datasetVersion],
+          type: 'single',
+          route: routes.datasetVersion,
           checkLoaded: params =>
             Boolean(
               datasetVersions &&
