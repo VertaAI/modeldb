@@ -141,6 +141,7 @@ public interface ModelDBConstants {
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
   String DELETED = "deleted";
   String DEV_KEY = "devKey";
+  String REQUEST_TIMEOUT = "requestTimeout";
 
   // Set to true to export the liquibase schema as sql statements
   Boolean EXPORT_SCHEMA = false;
