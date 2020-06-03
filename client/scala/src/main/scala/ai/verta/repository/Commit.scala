@@ -15,7 +15,7 @@ class Commit(
   private val clientSet: ClientSet, private val repo: VersioningRepository,
   private val commit: VersioningCommit, private var commitBranch: Option[String] = None
 ) {
-  private var saved = true // whether the commit instance is saved to database
+  private var saved = true // whether the commit instance is saved to database, or is currently being modified.
 
   /** Return the id of the commit */
   def id = commit.commit_sha.get
