@@ -6,7 +6,6 @@ import { RouteComponentProps, withRouter } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import CodeVersion from 'core/shared/view/domain/CodeVersion/CodeVersion';
-import SummaryInfo from 'components/SummaryViewComponents/SummaryInfo/SummaryInfo';
 import ProjectEntityTagsManager from 'core/shared/view/domain/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import { Markdown } from 'core/shared/utils/types';
 import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
@@ -27,6 +26,7 @@ import ProjectPageTabs from '../shared/ProjectPageTabs/ProjectPageTabs';
 import MarkdownManager from './MarkdownManager/MarkdownManager';
 import styles from './ProjectSummaryPage.module.css';
 import ProjectEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
+import SummaryInfo from 'core/shared/view/elements/SummaryViewComponents/SummaryInfo/SummaryInfo';
 
 const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
   const projectId = localProps.match.params.projectId;
