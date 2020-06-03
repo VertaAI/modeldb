@@ -12,7 +12,7 @@ import java.net.URLEncoder
 /** ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Client's getOrCreateRepository
  */
-class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
+class Repository(private val clientSet: ClientSet, private val repo: VersioningRepository) {
   /** Get commit by its SHA id
    * @param id SHA ID of the commit
    * @return specified commit
@@ -60,4 +60,15 @@ class Repository(val clientSet: ClientSet, val repo: VersioningRepository) {
     }
 
     private def urlEncode(input: String): String = URLEncoder.encode(input, "UTF-8").replaceAll("\\+", "%20")
+
+    override def equals(other: Any) = other match {
+      case other: Repository => repo.id.get == other.repo.id.get
+      case _ => false
+    }
+
+    /** Return the name of the repository */
+    def getName() = repo.name.get
+
+    /** Return the id of the repository */
+    def getId() = repo.id.get
 }

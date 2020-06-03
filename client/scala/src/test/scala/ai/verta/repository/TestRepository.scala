@@ -19,7 +19,7 @@ class TestRepository extends FunSuite {
     }
 
   def cleanup(f: AnyRef{val client: Client; val repo: Repository}) = {
-    f.client.deleteRepository(f.repo.repo.id.get.toString)
+    f.client.deleteRepository(f.repo.getId().toString)
     f.client.close()
   }
 
@@ -27,7 +27,7 @@ class TestRepository extends FunSuite {
     val f = fixture
 
     try {
-      assert(f.client.getOrCreateRepository("My Repo").get.repo.name.get.equals("My Repo"))
+      assert(f.client.getOrCreateRepository("My Repo").get.getName().equals("My Repo"))
     } finally {
       cleanup(f)
     }
@@ -50,9 +50,9 @@ class TestRepository extends FunSuite {
     val f = fixture
 
     try {
-      val getRepoAttempt = f.client.getRepository(f.repo.repo.id.get.toString)
+      val getRepoAttempt = f.client.getRepository(f.repo.getId().toString)
       assert(getRepoAttempt.isSuccess)
-      assert(getRepoAttempt.get.repo.id.get.equals(f.repo.repo.id.get))
+      assert(getRepoAttempt.get.getId().equals(f.repo.getId()))
     } finally {
       cleanup(f)
     }
@@ -62,11 +62,11 @@ class TestRepository extends FunSuite {
     val f = fixture
 
     try {
-      val id = f.repo.getCommitByBranch().map(_.commit).get.commit_sha.get
+      val id = f.repo.getCommitByBranch().get.getId()
 
       val getCommitAttempt = f.repo.getCommitById(id)
       assert(getCommitAttempt.isSuccess)
-      assert(getCommitAttempt.get.commit.commit_sha.get.equals(id))
+      assert(getCommitAttempt.get.getId().equals(id))
     } finally {
       cleanup(f)
     }
@@ -79,10 +79,8 @@ class TestRepository extends FunSuite {
       val commitNoInput = f.repo.getCommitByBranch().get
       val commitMaster = f.repo.getCommitByBranch("master").get
 
-      val commitNoInputSHA = commitNoInput.commit.commit_sha.get
-      val commitMasterSHA = commitMaster.commit.commit_sha.get
 
-      assert(commitNoInputSHA.equals(commitMasterSHA))
+      assert(commitNoInput equals commitMaster)
     } finally {
       cleanup(f)
     }
