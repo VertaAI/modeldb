@@ -143,7 +143,7 @@ export const loadDatasetVersionExperimentRuns = (
   );
 
   await ServiceFactory.getExperimentRunsService()
-    .loadExperimentRunsByDatasetVersionId(datasetVersionId)
+    .loadExperimentRunsByDatasetVersionId(workspaceName, datasetVersionId)
     .then(res => {
       dispatch(
         action(loadDatasetVersionExperimentRunsActionTypes.SUCCESS, {
