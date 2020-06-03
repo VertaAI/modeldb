@@ -1,10 +1,10 @@
 import * as React from 'react';
-
-import ExperimentRuns from 'components/ExperimentRuns/ExperimentRuns';
 import { RouteComponentProps, withRouter } from 'react-router';
+
 import routes, { GetRouteParams } from 'routes';
 
 import LayoutWithExprRunsFilter from '../shared/LayoutWithExprRunsFilter/LayoutWithExprRunsFilter';
+import ExperimentRuns from './ExperimentRuns/ExperimentRuns';
 import styles from './ExperimentRunsPage.module.css';
 
 type AllProps = RouteComponentProps<

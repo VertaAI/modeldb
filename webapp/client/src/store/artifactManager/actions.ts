@@ -148,7 +148,10 @@ export const downloadArtifact = (
 ) => {
   try {
     dispatch(
-      action(downloadArtifactActionTypes.REQUEST, { key: artifact.key })
+      action(downloadArtifactActionTypes.REQUEST, {
+        entityId,
+        key: artifact.key,
+      })
     );
 
     const artifactUrl = await loadArtifactUrlOrReturnLoaded(
@@ -159,11 +162,18 @@ export const downloadArtifact = (
     await downloadFromUrl(artifactUrl);
 
     dispatch(
-      action(downloadArtifactActionTypes.SUCCESS, { key: artifact.key })
+      action(downloadArtifactActionTypes.SUCCESS, {
+        entityId,
+        key: artifact.key,
+      })
     );
   } catch (error) {
     dispatch(
-      action(downloadArtifactActionTypes.FAILURE, normalizeError(error))
+      action(downloadArtifactActionTypes.FAILURE, {
+        entityId,
+        key: artifact.key,
+        error: normalizeError(error),
+      })
     );
   }
 };
@@ -224,6 +234,7 @@ export const loadArtifactPreview = (
 };
 
 export const loadDatasetVersion = (
+  workspaceName: IWorkspace['name'],
   datasetVersionId: string,
   datasetId?: string
 ): ActionResult<void, ILoadDatasetVersionActions> => async (
@@ -234,7 +245,7 @@ export const loadDatasetVersion = (
   dispatch(action(loadDatasetVersionActionTypes.REQUEST, { datasetVersionId }));
 
   await ServiceFactory.getDatasetVersionsService()
-    .loadDatasetVersion(datasetVersionId, datasetId)
+    .loadDatasetVersion(workspaceName, datasetVersionId, datasetId)
     .then(datasetVersion => {
       dispatch(
         action(loadDatasetVersionActionTypes.SUCCESS, {

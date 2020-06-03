@@ -18,7 +18,7 @@ export interface IArtifactManagerState {
   };
   communications: {
     loadingArtifactUrl: ICommunication;
-    downloadingArtifact: ICommunication;
+    downloadingArtifact: ICommunicationById;
     loadingArtifactPreview: ICommunication;
     loadingDatasetVersions: ICommunicationById;
     deletingArtifact: ICommunicationById;
@@ -27,7 +27,7 @@ export interface IArtifactManagerState {
 
 export type EntityType = Extract<
   Common.EntityType,
-  'project' | 'experiment' | 'experimentRun'
+  'project' | 'experiment' | 'experimentRun' | 'release'
 >;
 
 export const ArtifactPreviewFileExtensions: Pick<
@@ -63,8 +63,19 @@ export const downloadArtifactActionTypes = makeCommunicationActionTypes({
 });
 export type IDownloadArtifactActions = MakeCommunicationActions<
   typeof downloadArtifactActionTypes,
-  { request: { key: string }; success: { key: string } }
+  {
+    request: { key: string; entityId: string };
+    success: { key: string; entityId: string };
+    failure: { key: string; entityId: string; error: AppError };
+  }
 >;
+export const getDownloadArtifactsKey = ({
+  key,
+  entityId,
+}: {
+  key: string;
+  entityId: string;
+}) => `${entityId}-${key}`;
 
 export enum resetActionType {
   RESET = '@@artifactManager/RESET',

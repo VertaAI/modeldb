@@ -4,8 +4,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import ProjectEntityDescriptionManager from 'components/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
-import ProjectEntityTagsManager from 'components/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
+import ProjectEntityTagsManager from 'core/shared/view/domain/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import CopyToClipboard from 'core/shared/view/elements/CopyToClipboard/CopyToClipboard';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import { Project } from 'models/Project';
@@ -16,6 +15,7 @@ import ProjectBulkDeletion from './ProjectBulkDeletion/ProjectBulkDeletion';
 import styles from './ProjectWidget.module.css';
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import { unknownUser } from 'models/User';
+import ProjectEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
 
 interface ILocalProps {
   project: Project;

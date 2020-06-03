@@ -1,10 +1,15 @@
 import { combineReducers } from 'redux';
 
-import { IArtifactManagerState } from '../types';
+import makeResetReducer from 'core/shared/utils/redux/makeResetReducer';
+
+import { IArtifactManagerState, resetActionType } from '../types';
 import communications from './communications';
 import data from './data';
 
-export default combineReducers<IArtifactManagerState>({
-  data,
-  communications,
-});
+export default makeResetReducer(
+  resetActionType.RESET,
+  combineReducers<IArtifactManagerState>({
+    data,
+    communications,
+  })
+);

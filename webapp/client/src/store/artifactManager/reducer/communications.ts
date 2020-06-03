@@ -11,6 +11,7 @@ import composeReducers from 'core/shared/utils/redux/composeReducers';
 import {
   IArtifactManagerState,
   loadArtifactUrlActionTypes,
+  IDownloadArtifactActions,
   downloadArtifactActionTypes,
   loadArtifactPreviewActionTypes,
   loadDatasetVersionActionTypes,
@@ -18,6 +19,7 @@ import {
   resetActionType,
   IDeleteArtifactActions,
   deleteArtifactActionTypes,
+  getDownloadArtifactsKey,
 } from '../types';
 
 export default combineReducers<IArtifactManagerState['communications']>({
@@ -25,10 +27,17 @@ export default combineReducers<IArtifactManagerState['communications']>({
     makeCommunicationReducerFromEnum(loadArtifactUrlActionTypes),
     makeResetCommunicationReducer(resetActionType.RESET),
   ]),
-  downloadingArtifact: composeReducers([
-    makeCommunicationReducerFromEnum(downloadArtifactActionTypes),
-    makeResetCommunicationReducer(resetActionType.RESET),
-  ]),
+  downloadingArtifact: makeCommunicationReducerByIdFromEnum<
+    CommunicationActionsToObj<
+      IDownloadArtifactActions,
+      typeof downloadArtifactActionTypes
+    >,
+    string
+  >(downloadArtifactActionTypes, {
+    request: getDownloadArtifactsKey,
+    success: getDownloadArtifactsKey,
+    failure: getDownloadArtifactsKey,
+  }),
   loadingArtifactPreview: composeReducers([
     makeCommunicationReducerFromEnum(loadArtifactPreviewActionTypes),
     makeResetCommunicationReducer(resetActionType.RESET),

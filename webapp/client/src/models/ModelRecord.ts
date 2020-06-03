@@ -16,11 +16,19 @@ import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitCom
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { ICommit } from 'core/shared/models/Versioning/RepositoryData';
 
-import { ShortExperiment } from './Experiment';
+import * as EntitiesActions from './EntitiesActions';
+import Experiment, { ShortExperiment } from './Experiment';
+import User from './User';
 import { Project } from './Project';
 
+export type BlobLocation = string;
+export type ICodeVersionsFromBlob = Record<BlobLocation, ICodeVersion>;
+
 @JsonObject('modelRecord')
-export default class ModelRecord implements Common.IEntityWithLogging {
+export default class ModelRecord
+  implements
+    Common.IEntityWithLogging,
+    EntitiesActions.IEntityWithAllowedActions {
   @JsonProperty('id', String, true)
   public id: string = '';
   @JsonProperty('project_id', String, true)
@@ -32,14 +40,20 @@ export default class ModelRecord implements Common.IEntityWithLogging {
   @JsonProperty('name', String, true)
   public name: string = '';
   public codeVersion?: ICodeVersion = undefined;
+  public codeVersionsFromBlob?: ICodeVersionsFromBlob = undefined;
   @JsonProperty('description', String, true)
   public description: string = '';
+  @JsonProperty('owner', String, true)
+  public ownerId: string = '';
+  public owner: User = new User({ id: '', email: '', username: '' });
   public dateCreated: Date = new Date();
   public dateUpdated: Date = new Date();
   @JsonProperty('start_time', StringToDateConverter, true)
   public startTime: Date = new Date();
   @JsonProperty('end_time', StringToDateConverter, true)
   public endTime: Date = new Date();
+
+  public allowedActions: EntitiesActions.IEntityWithAllowedActions['allowedActions'] = [];
 
   @JsonProperty('tags', [String], true)
   public tags: string[] = [];
@@ -72,7 +86,7 @@ export interface IVersionedInputs {
 
 export type LoadExperimentRunErrorType = Common.EntityErrorType;
 
-export interface IExperimentRunInfo {
-  experimentRun: ModelRecord;
-  project: Project;
-}
+export type IExperimentRunInfo = Pick<ModelRecord, 'name' | 'id'> & {
+  experiment: Pick<Experiment, 'name' | 'id'>;
+  project: Pick<Project, 'name' | 'id'>;
+};

@@ -50,12 +50,12 @@ class ProjectsPagesLayout extends React.Component<AllProps> {
           routes.charts,
           routes.experiments,
         ],
-        checkLoaded: params =>
+        checkLoaded: (params: any) =>
           Boolean(
             projects &&
               projects.some(project => project.id === params.projectId)
           ),
-        getName: params => {
+        getName: (params: any) => {
           const targetProject = (projects || []).find(
             project => project.id === params.projectId
           )!;

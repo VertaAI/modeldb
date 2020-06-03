@@ -51,7 +51,7 @@ class DatasetsPagesLayout extends React.PureComponent<AllProps> {
       .then({
         routes: [routes.datasetSummary, routes.datasetVersions],
         checkLoaded: () => Boolean(datasets),
-        getName: params => {
+        getName: (params: any) => {
           const targetDataset = (datasets || []).find(
             dataset => dataset.id === params.datasetId
           );

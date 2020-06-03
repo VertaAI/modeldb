@@ -57,7 +57,10 @@ class SplitButton extends React.PureComponent<ILocalProps, ILocalState> {
     } = this.props;
     const { isShowOtherActions } = this.state;
     return (
-      <div className={styles.root} ref={this.rootRefObject}>
+      <div
+        className={cn(styles.root, { [styles.loading]: isLoading })}
+        ref={this.rootRefObject}
+      >
         <div className={styles.primaryAction}>
           <Button
             theme={theme === 'blue' ? 'primary' : theme}
@@ -73,7 +76,7 @@ class SplitButton extends React.PureComponent<ILocalProps, ILocalState> {
         <div className={styles.toggler}>
           <Button
             theme={theme === 'blue' ? 'primary' : theme}
-            disabled={disabled || isLoading}
+            disabled={disabled}
             dataTest={this.props.dataTest || 'split-button'}
             fullWidth={true}
             onClick={this.toggleOtherActions}
@@ -119,7 +122,6 @@ class SplitButton extends React.PureComponent<ILocalProps, ILocalState> {
 
   @bind
   private toggleOtherActions() {
-    console.log('toggle');
     if (this.state.isShowOtherActions) {
       this.closeOtherActions();
     } else {
@@ -132,7 +134,6 @@ class SplitButton extends React.PureComponent<ILocalProps, ILocalState> {
   }
   @bind
   private closeOtherActions() {
-    console.log('close');
     this.setState({ isShowOtherActions: false });
   }
 }

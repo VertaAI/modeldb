@@ -1,3 +1,4 @@
+import { Brand } from 'core/shared/utils/Brand';
 import generateId from 'core/shared/utils/generateId';
 
 export enum PropertyType {
@@ -166,3 +167,18 @@ export const defaultQuickFilters: Record<
     caption: 'tags',
   },
 };
+
+//
+
+declare const URLFiltersSymbol: unique symbol;
+export type URLFilters = Brand<string, 'URLFilters', typeof URLFiltersSymbol>;
+export const makeURLFilters = (filters: IFilterData[]): URLFilters => {
+  return encodeURIComponent(JSON.stringify(filters)) as URLFilters;
+};
+export const convertURLFilters = (urlFilters: URLFilters): IFilterData =>
+  JSON.parse(decodeURIComponent(urlFilters));
+
+export const URLFiltersParam: keyof IURLWithFilters = 'filters';
+export interface IURLWithFilters {
+  filters: URLFilters;
+}

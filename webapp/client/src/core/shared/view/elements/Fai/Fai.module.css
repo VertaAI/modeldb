@@ -19,7 +19,7 @@
   cursor: default !important;
   pointer-events: none;
 }
-.fai:focus {
+.fai:active {
   box-shadow: 0 2px 2px 0 rgba(57, 55, 128, 0.5);
 }
 

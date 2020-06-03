@@ -6,16 +6,20 @@ import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import CompareClickAction from 'components/CompareEntities/CompareClickAction/CompareClickAction';
-import ComparedEntitesManager from 'components/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
-import Attributes from 'components/ModelRecordProps/Attributes/Attributes/Attributes';
-import DatasetEntityTagsManager from 'components/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
-import { defaultQuickFilters, IFilterData } from 'core/features/filter/Model';
+import Attributes from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
+import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
+import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import {
+  IFilterContext,
+  selectCurrentContextFilters,
+} from 'core/features/filter';
+import { IFilterData } from 'core/features/filter/Model';
 import { IPagination } from 'core/shared/models/Pagination';
 import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
 import { formatBytes } from 'core/shared/utils/mapperConverters/DataSizeConverted';
 import withProps from 'core/shared/utils/react/withProps';
 import { ICommunication } from 'core/shared/utils/redux/communication';
+import Table from 'core/shared/view/elements/Table/Table';
 import DeleteFAIWithLabel from 'core/shared/view/elements/DeleteFaiWithLabel/DeleteFaiWithLabel';
 import Draggable from 'core/shared/view/elements/Draggable/Draggable';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
@@ -24,6 +28,11 @@ import GroupFai from 'core/shared/view/elements/GroupFai/GroupFai';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import IdView from 'core/shared/view/elements/IdView/IdView';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
+import { TableWrapper } from 'core/shared/view/elements/Table/Plugins';
+import TablePagingPanel from 'core/shared/view/elements/Table/Plugins/PagingPanel/TablePagingPanel';
+import {
+  defaultQuickFilters,
+} from 'features/filter/Model';
 import { IDatasetVersion } from 'models/DatasetVersion';
 import routes, { GetRouteParams } from 'routes';
 import {
@@ -36,16 +45,15 @@ import {
   selectDatasetVersions,
   selectDatasetVersionsPagination,
 } from 'store/datasetVersions';
-import {
-  IFilterContext,
-  selectCurrentContextFilters,
-} from 'core/features/filter';
 import { IApplicationState } from 'store/store';
 
 import DatasetDetailsLayout from '../shared/DatasetDetailsLayout/DatasetDetailsLayout';
 import styles from './DatasetVersionsPage.module.css';
-import DatasetVersionsTable from './DatasetVersionsTable/DatasetVersionsTable';
-import { unknownUser } from 'models/User';
+import DeletingDatasetVersionsManager from './DatasetVersionsTable/BulkDeletion/Manager/Manager';
+import ToggleAllDatasetVersionsForBulkDeletion from './DatasetVersionsTable/BulkDeletion/ToggleAllRows/ToggleAllRows';
+import ToggleDatasetVersionForBulkDeletion from './DatasetVersionsTable/BulkDeletion/ToggleRow/ToggleRow';
+import ComparedEntitesManager from 'core/features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
+import CompareClickAction from 'core/features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
 
 interface IPropsFromState {
   datasetVersions: IDatasetVersion[] | null;
@@ -116,7 +124,7 @@ class DatasetVersionsPage extends React.PureComponent<AllProps, ILocalState> {
       <DatasetDetailsLayout
         filterBarSettings={{
           context: this.filterContext,
-          placeholderText: 'Drag and drop tags here',
+          placeholderText: 'Filter Versions',
         }}
       >
         <div className={styles.root}>
@@ -137,310 +145,376 @@ class DatasetVersionsPage extends React.PureComponent<AllProps, ILocalState> {
               );
             }
             return (
-              <>
-                <div className={styles.dashboard_actions}>
-                  <div className={styles.compared_models_manager}>
-                    <ComparedEntitesManager
-                      containerId={datasetId}
-                      getCompareUrl={([datasetVersionId1, datasetVersionId2]) =>
-                        routes.compareDatasetVersions.getRedirectPathWithCurrentWorkspace(
-                          {
-                            datasetId,
-                            datasetVersionId1,
-                            datasetVersionId2,
-                          }
-                        )
-                      }
-                    />
-                  </div>
-                  {datasetVersions.length > 0 && (
-                    <div className={styles.action_container}>
-                      <div className={styles.dashboard_action_label}>
-                        Bulk actions:
-                      </div>
-                      <Fai
-                        theme="primary"
-                        variant="outlined"
-                        icon={<Icon type="list" />}
-                        onClick={this.toggleShowingBulkDeletionMenu}
-                      />
-                    </div>
-                  )}
-                </div>
-                <div className={styles.table}>
-                  <DatasetVersionsTable
-                    datasetId={datasetId}
-                    data={datasetVersions}
-                    pagination={pagination}
-                    withBulkDeletion={datasetVersions.length > 0}
-                    isShowBulkDeletionMenu={isShowBulkDeletionMenu}
-                    onCurrentPageChange={this.onPaginationCurrentPageChange}
-                    resetShowingBulkDeletionMenu={
-                      this.resetShowingBulkDeletionMenu
-                    }
-                  >
-                    <DatasetVersionsTable.Column
-                      type="actions"
-                      title="Actions"
-                      width={100}
-                      render={datasetVersion => {
-                        return (
-                          <div data-test="dataset-version">
-                            <GroupFai
-                              groupFai={[
-                                requiredProps => (
-                                  <DeleteFAIWithLabel
-                                    theme="blue"
-                                    confirmText="Are you sure?"
-                                    dataTest="delete-dataset-version-button"
-                                    onDelete={this.makeDeleteDatasetVersion(
-                                      datasetVersion.id
-                                    )}
-                                    {...requiredProps}
-                                  />
-                                ),
-                                requiredProps => (
-                                  <CompareClickAction
-                                    containerId={datasetId}
-                                    enitityId={datasetVersion.id}
-                                    {...requiredProps}
-                                  />
-                                ),
-                              ]}
-                            />
-                          </div>
-                        );
-                      }}
-                    />
-                    <DatasetVersionsTable.Column
-                      type="summary"
-                      title="Summary"
-                      render={datasetVersion => {
-                        return (
-                          <div className={styles.column_ids}>
-                            <Parameter
-                              label={'id'}
-                              value={
-                                <Link
-                                  className={styles.dataset_id}
-                                  to={routes.datasetVersion.getRedirectPathWithCurrentWorkspace(
-                                    {
-                                      datasetId: datasetVersion.datasetId,
-                                      datasetVersionId: datasetVersion.id,
-                                    }
-                                  )}
-                                >
-                                  <IdView
-                                    value={datasetVersion.id}
-                                    dataTest={`dataset-version-id-${
-                                      datasetVersion.id
-                                    }`}
-                                  />
-                                </Link>
-                              }
-                            />
-                            <Parameter
-                              label={'version'}
-                              value={
-                                datasetVersion.version
-                                  ? `Version ${datasetVersion.version}`
-                                  : 'Version 1'
-                              }
-                              dataTest="dataset-version-name"
-                            />
-                            <Parameter
-                              label={'owner'}
-                              value={unknownUser.username}
-                            />
-                            <Parameter
-                              label={'type'}
-                              value={
-                                <span className={styles.dataversion_type}>
-                                  {datasetVersion.type}
-                                </span>
-                              }
-                            />
-                            <div className={styles.tags}>
-                              <DatasetEntityTagsManager
-                                id={datasetVersion.id}
-                                datasetId={datasetVersion.datasetId}
-                                entityType="datasetVersion"
-                                tags={datasetVersion.tags}
-                                isDraggableTags={true}
-                              />
-                            </div>
-                          </div>
-                        );
-                      }}
-                    />
-                    <DatasetVersionsTable.Column
-                      type="info"
-                      title="Info"
-                      render={datasetVersion => {
-                        return (
-                          <div className={styles.column_info}>
-                            {datasetVersion.type === 'path' && (
-                              <>
-                                <ParameterMonospace
-                                  label={'base path'}
-                                  value={
-                                    datasetVersion.info.locationType ===
-                                    's3FileSystem'
-                                      ? safeMap(
-                                          datasetVersion.info.basePath,
-                                          v => 's3://' + v
-                                        )
-                                      : safeMap(
-                                          datasetVersion.info.basePath,
-                                          v => v
-                                        )
-                                  }
-                                />
-                                <Parameter
-                                  label={'size'}
-                                  value={safeMap(
-                                    datasetVersion.info.size,
-                                    formatBytes
-                                  )}
-                                />
-                                <Parameter
-                                  label={'Date Logged'}
-                                  value={
-                                    datasetVersion.dateLogged ? (
-                                      <span>
-                                        {getFormattedDateTime(
-                                          datasetVersion.dateLogged
-                                        )}
-                                      </span>
-                                    ) : (
-                                      '-'
-                                    )
-                                  }
-                                />
-                                <Parameter
-                                  label={'Date Updated'}
-                                  value={
-                                    datasetVersion.dateUpdated ? (
-                                      <span>
-                                        {getFormattedDateTime(
-                                          datasetVersion.dateUpdated
-                                        )}
-                                      </span>
-                                    ) : (
-                                      '-'
-                                    )
-                                  }
-                                />
-                              </>
-                            )}
-                            {datasetVersion.type === 'raw' && (
-                              <>
-                                <Parameter
-                                  label={'record count'}
-                                  value={datasetVersion.info.numRecords}
-                                />
-                                <Parameter
-                                  label={'size'}
-                                  value={safeMap(
-                                    datasetVersion.info.size,
-                                    formatBytes
-                                  )}
-                                />
-                                <Parameter
-                                  label={'Date Logged'}
-                                  value={
-                                    datasetVersion.dateLogged ? (
-                                      <span>
-                                        {getFormattedDateTime(
-                                          datasetVersion.dateLogged
-                                        )}
-                                      </span>
-                                    ) : (
-                                      '-'
-                                    )
-                                  }
-                                />
-                                <Parameter
-                                  label={'Date Updated'}
-                                  value={
-                                    datasetVersion.dateUpdated ? (
-                                      <span>
-                                        {getFormattedDateTime(
-                                          datasetVersion.dateUpdated
-                                        )}
-                                      </span>
-                                    ) : (
-                                      '-'
-                                    )
-                                  }
-                                />
-                              </>
-                            )}
-                            {datasetVersion.type === 'query' && (
-                              <>
-                                <Parameter
-                                  label={'Date Logged'}
-                                  value={
-                                    datasetVersion.dateLogged ? (
-                                      <span>
-                                        {getFormattedDateTime(
-                                          datasetVersion.dateLogged
-                                        )}
-                                      </span>
-                                    ) : (
-                                      '-'
-                                    )
-                                  }
-                                />
-                                <Parameter
-                                  label={'Date Updated'}
-                                  value={
-                                    datasetVersion.dateUpdated ? (
-                                      <span>
-                                        {getFormattedDateTime(
-                                          datasetVersion.dateUpdated
-                                        )}
-                                      </span>
-                                    ) : (
-                                      '-'
-                                    )
-                                  }
-                                />
-                              </>
-                            )}
-                          </div>
-                        );
-                      }}
-                    />
-                    <DatasetVersionsTable.Column
-                      type="attributes"
-                      title="Attributes"
-                      width={175}
-                      render={datasetVersion => {
-                        return (
-                          <Parameter
-                            label={'attributes'}
-                            value={
-                              datasetVersion.attributes.length !== 0 ? (
-                                <Attributes
-                                  attributes={datasetVersion.attributes}
-                                />
-                              ) : (
-                                '-'
+              <WithCurrentUserActionsAccesses
+                entityType={
+                  datasetVersions.length > 0 ? 'datasetVersion' : 'dataset'
+                }
+                entityId={
+                  datasetVersions.length > 0 ? datasetVersions[0].id : datasetId
+                }
+                actions={['delete']}
+              >
+                {({ actionsAccesses }) => {
+                  const withBulkDeletion =
+                    actionsAccesses.delete && datasetVersions.length > 0;
+
+                  return (
+                    <>
+                      <div className={styles.dashboard_actions}>
+                        <div className={styles.compared_models_manager}>
+                          <ComparedEntitesManager
+                            containerId={datasetId}
+                            getCompareUrl={([
+                              datasetVersionId1,
+                              datasetVersionId2,
+                            ]) =>
+                              routes.compareDatasetVersions.getRedirectPathWithCurrentWorkspace(
+                                {
+                                  datasetId,
+                                  datasetVersionId1,
+                                  datasetVersionId2,
+                                }
                               )
                             }
                           />
-                        );
-                      }}
-                    />
-                  </DatasetVersionsTable>
-                </div>
-              </>
+                        </div>
+                        {actionsAccesses.delete && datasetVersions.length > 0 && (
+                          <div className={styles.action_container}>
+                            <div className={styles.dashboard_action_label}>
+                              Bulk actions:
+                            </div>
+                            <Fai
+                              theme="primary"
+                              variant="outlined"
+                              icon={<Icon type="list" />}
+                              onClick={this.toggleShowingBulkDeletionMenu}
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <div className={styles.table}>
+                        <TableWrapper>
+                          <Table
+                            dataRows={datasetVersions}
+                            getRowKey={this.getRowKey}
+                            selection={{
+                              headerCellComponent: () => (
+                                <ToggleAllDatasetVersionsForBulkDeletion />
+                              ),
+                              cellComponent: row => {
+                                return (
+                                  <ToggleDatasetVersionForBulkDeletion
+                                    id={row.id}
+                                  />
+                                );
+                              },
+                              showSelectAll:
+                                withBulkDeletion && isShowBulkDeletionMenu,
+                              showSelectionColumn:
+                                withBulkDeletion && isShowBulkDeletionMenu,
+                            }}
+                            columnDefinitions={[
+                              {
+                                type: 'actions',
+                                title: 'Actions',
+                                width: '10%',
+                                render: datasetVersion => {
+                                  return (
+                                    <div data-test="dataset-version">
+                                      <GroupFai
+                                        groupFai={[
+                                          requiredProps => (
+                                            <DeleteFAIWithLabel
+                                              theme="blue"
+                                              confirmText="Are you sure?"
+                                              dataTest="delete-dataset-version-button"
+                                              onDelete={this.makeDeleteDatasetVersion(
+                                                datasetVersion.id
+                                              )}
+                                              {...requiredProps}
+                                            />
+                                          ),
+                                          requiredProps => (
+                                            <CompareClickAction
+                                              containerId={datasetId}
+                                              enitityId={datasetVersion.id}
+                                              {...requiredProps}
+                                            />
+                                          ),
+                                        ]}
+                                      />
+                                    </div>
+                                  );
+                                },
+                              },
+                              {
+                                type: 'summary',
+                                title: 'Summary',
+                                width: '30%',
+                                render: datasetVersion => {
+                                  return (
+                                    <div className={styles.column_ids}>
+                                      <Parameter
+                                        label={'id'}
+                                        value={
+                                          <Link
+                                            className={styles.dataset_id}
+                                            to={routes.datasetVersion.getRedirectPathWithCurrentWorkspace(
+                                              {
+                                                datasetId:
+                                                  datasetVersion.datasetId,
+                                                datasetVersionId:
+                                                  datasetVersion.id,
+                                              }
+                                            )}
+                                          >
+                                            <IdView
+                                              value={datasetVersion.id}
+                                              dataTest={`dataset-version-id-${
+                                                datasetVersion.id
+                                              }`}
+                                            />
+                                          </Link>
+                                        }
+                                      />
+                                      <Parameter
+                                        label={'version'}
+                                        value={
+                                          datasetVersion.version
+                                            ? `Version ${
+                                                datasetVersion.version
+                                              }`
+                                            : 'Version 1'
+                                        }
+                                        dataTest="dataset-version-name"
+                                      />
+                                      <Parameter
+                                        label={'type'}
+                                        value={
+                                          <span
+                                            className={styles.dataversion_type}
+                                          >
+                                            {datasetVersion.type}
+                                          </span>
+                                        }
+                                      />
+                                      <div className={styles.tags}>
+                                        <DatasetEntityTagsManager
+                                          id={datasetVersion.id}
+                                          datasetId={datasetVersion.datasetId}
+                                          entityType="datasetVersion"
+                                          tags={datasetVersion.tags}
+                                          isDraggableTags={true}
+                                        />
+                                      </div>
+                                    </div>
+                                  );
+                                },
+                              },
+                              {
+                                type: 'info',
+                                title: 'Info',
+                                width: '30%',
+                                render: datasetVersion => {
+                                  return (
+                                    <div className={styles.column_info}>
+                                      {datasetVersion.type === 'path' && (
+                                        <>
+                                          <ParameterMonospace
+                                            label={'base path'}
+                                            value={
+                                              datasetVersion.info
+                                                .locationType === 's3FileSystem'
+                                                ? safeMap(
+                                                    datasetVersion.info
+                                                      .basePath,
+                                                    v => 's3://' + v
+                                                  )
+                                                : safeMap(
+                                                    datasetVersion.info
+                                                      .basePath,
+                                                    v => v
+                                                  )
+                                            }
+                                          />
+                                          <Parameter
+                                            label={'size'}
+                                            value={safeMap(
+                                              datasetVersion.info.size,
+                                              formatBytes
+                                            )}
+                                          />
+                                          <Parameter
+                                            label={'Date Logged'}
+                                            value={
+                                              datasetVersion.dateLogged ? (
+                                                <span>
+                                                  {getFormattedDateTime(
+                                                    datasetVersion.dateLogged
+                                                  )}
+                                                </span>
+                                              ) : (
+                                                '-'
+                                              )
+                                            }
+                                          />
+                                          <Parameter
+                                            label={'Date Updated'}
+                                            value={
+                                              datasetVersion.dateUpdated ? (
+                                                <span>
+                                                  {getFormattedDateTime(
+                                                    datasetVersion.dateUpdated
+                                                  )}
+                                                </span>
+                                              ) : (
+                                                '-'
+                                              )
+                                            }
+                                          />
+                                        </>
+                                      )}
+                                      {datasetVersion.type === 'raw' && (
+                                        <>
+                                          <Parameter
+                                            label={'record count'}
+                                            value={
+                                              datasetVersion.info.numRecords
+                                            }
+                                          />
+                                          <Parameter
+                                            label={'size'}
+                                            value={safeMap(
+                                              datasetVersion.info.size,
+                                              formatBytes
+                                            )}
+                                          />
+                                          <Parameter
+                                            label={'Date Logged'}
+                                            value={
+                                              datasetVersion.dateLogged ? (
+                                                <span>
+                                                  {getFormattedDateTime(
+                                                    datasetVersion.dateLogged
+                                                  )}
+                                                </span>
+                                              ) : (
+                                                '-'
+                                              )
+                                            }
+                                          />
+                                          <Parameter
+                                            label={'Date Updated'}
+                                            value={
+                                              datasetVersion.dateUpdated ? (
+                                                <span>
+                                                  {getFormattedDateTime(
+                                                    datasetVersion.dateUpdated
+                                                  )}
+                                                </span>
+                                              ) : (
+                                                '-'
+                                              )
+                                            }
+                                          />
+                                        </>
+                                      )}
+                                      {datasetVersion.type === 'query' && (
+                                        <>
+                                          <Parameter
+                                            label={'Date Logged'}
+                                            value={
+                                              datasetVersion.dateLogged ? (
+                                                <span>
+                                                  {getFormattedDateTime(
+                                                    datasetVersion.dateLogged
+                                                  )}
+                                                </span>
+                                              ) : (
+                                                '-'
+                                              )
+                                            }
+                                          />
+                                          <Parameter
+                                            label={'Date Updated'}
+                                            value={
+                                              datasetVersion.dateUpdated ? (
+                                                <span>
+                                                  {getFormattedDateTime(
+                                                    datasetVersion.dateUpdated
+                                                  )}
+                                                </span>
+                                              ) : (
+                                                '-'
+                                              )
+                                            }
+                                          />
+                                        </>
+                                      )}
+                                    </div>
+                                  );
+                                },
+                              },
+                              {
+                                type: 'attributes',
+                                title: 'Attributes',
+                                width: '30%',
+                                render: datasetVersion => {
+                                  return (
+                                    <Parameter
+                                      label={'attributes'}
+                                      value={
+                                        datasetVersion.attributes.length !==
+                                        0 ? (
+                                          <Attributes
+                                            attributes={
+                                              datasetVersion.attributes
+                                            }
+                                          />
+                                        ) : (
+                                          '-'
+                                        )
+                                      }
+                                    />
+                                  );
+                                },
+                              },
+                            ]}
+                          />
+
+                          <div className={styles.footer}>
+                            {withBulkDeletion && isShowBulkDeletionMenu && (
+                              <div>
+                                <DeletingDatasetVersionsManager
+                                  datasetId={datasetId}
+                                />
+                              </div>
+                            )}
+                            <div className={styles.footer__pagination}>
+                              <TablePagingPanel
+                                pagination={pagination}
+                                onCurrentPageChange={
+                                  this.onPaginationCurrentPageChange
+                                }
+                              />
+                            </div>
+                          </div>
+                        </TableWrapper>
+                      </div>
+                    </>
+                  );
+                }}
+              </WithCurrentUserActionsAccesses>
             );
           })()}
         </div>
       </DatasetDetailsLayout>
     );
+  }
+
+  @bind
+  private getRowKey(row: IDatasetVersion) {
+    return row.id;
   }
 
   @bind

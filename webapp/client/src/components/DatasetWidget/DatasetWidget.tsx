@@ -4,15 +4,15 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import DatasetEntityDescriptionManager from 'components/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
-import DatasetEntityTagsManager from 'components/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
 import { Dataset, DatasetType } from 'models/Dataset';
 import routes from 'routes';
+import Avatar from 'core/shared/view/elements/Avatar/Avatar';
+import DatasetEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
+import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
 
 import DatasetBulkDeletion from './DatasetBulkDeletion/DatasetBulkDeletion';
 import styles from './DatasetWidget.module.css';
 import { unknownUser } from 'models/User';
-import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 
 interface ILocalProps {
   dataset: Dataset;

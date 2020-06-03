@@ -1,7 +1,8 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { AppError, isHttpError } from 'core/shared/models/Error';
+import { ICommunication } from 'core/shared/utils/redux/communication';
 
 import { communicationErrorToString } from '../Errors/InlineCommunicationError/InlineCommunicationError';
 
@@ -14,8 +15,15 @@ export const toastSuccess = (
   });
 };
 
-export const toastError = (content: React.ReactNode) => {
-  toast(<span>{content}</span>, { type: 'error', autoClose: false });
+export const toastError = (
+  content: React.ReactNode,
+  options?: { toastId?: string }
+) => {
+  toast(<span>{content}</span>, {
+    type: 'error',
+    autoClose: false,
+    ...(options || {}),
+  });
 };
 
 export function toastCommunicationError<
@@ -24,7 +32,8 @@ export function toastCommunicationError<
 >(
   communicationError: T,
   options?: {
-    customErrorMessageByType: T extends AppError<infer ErrorType>
+    toastId?: string;
+    customErrorMessageByType?: T extends AppError<infer ErrorType>
       ? ErrorType extends B
         ? Record<B, string>
         : never
@@ -38,5 +47,13 @@ export function toastCommunicationError<
       ? (options.customErrorMessageByType as any)[communicationError.type] ||
         communicationErrorToString(communicationError)
       : communicationErrorToString(communicationError);
-  return toastError(errorMessage);
+  return toastError(errorMessage, options);
 }
+
+export const useToastCommunicationError = (communication: ICommunication) => {
+  useEffect(() => {
+    if (communication.error) {
+      toastCommunicationError(communication.error);
+    }
+  }, [communication.error]);
+};

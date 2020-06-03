@@ -1,0 +1,26 @@
+.root {
+}
+
+.block {
+  margin-top: 20px;
+}
+
+.item {
+  margin-top: 10px;
+  font-size: 13px;
+}
+.item:first-child {
+  margin-top: 0;
+}
+.item_label {
+  color: rgba(0, 0, 0, 0.5);
+}
+.item_value {
+  margin-top: 3px;
+  color: black;
+}
+
+.additional_block {
+  padding-top: 20px;
+  margin-top: auto;
+}

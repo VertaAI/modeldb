@@ -5,10 +5,9 @@ import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import CodeVersion from 'components/CodeVersion/CodeVersion';
-import ProjectEntityDescriptionManager from 'components/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
+import CodeVersion from 'core/shared/view/domain/CodeVersion/CodeVersion';
 import SummaryInfo from 'components/SummaryViewComponents/SummaryInfo/SummaryInfo';
-import ProjectEntityTagsManager from 'components/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
+import ProjectEntityTagsManager from 'core/shared/view/domain/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import { Markdown } from 'core/shared/utils/types';
 import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
@@ -27,6 +26,7 @@ import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesL
 import ProjectPageTabs from '../shared/ProjectPageTabs/ProjectPageTabs';
 import MarkdownManager from './MarkdownManager/MarkdownManager';
 import styles from './ProjectSummaryPage.module.css';
+import ProjectEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
 
 const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
   const projectId = localProps.match.params.projectId;
@@ -109,7 +109,6 @@ class ProjectSummaryPage extends React.PureComponent<AllProps> {
                         descriptionManagerElement: (
                           <ProjectEntityDescriptionManager
                             entityId={project.id}
-                            // projectId={project.id}
                             description={project.description}
                             entityType={'project'}
                           />

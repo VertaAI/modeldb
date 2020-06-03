@@ -3,18 +3,18 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import CodeVersion from 'components/CodeVersion/CodeVersion';
-import ProjectEntityDescriptionManager from 'components/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
-import ProjectEntityTagsManager from 'components/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import { ICommunication } from 'core/shared/utils/redux/communication';
 import Experiment from 'models/Experiment';
 import { selectDeletingExperiment } from 'store/experiments';
 import { IConnectedReduxProps, IApplicationState } from 'store/store';
+import ProjectEntityTagsManager from 'core/shared/view/domain/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
+import Avatar from 'core/shared/view/elements/Avatar/Avatar';
+import CodeVersion from 'core/shared/view/domain/CodeVersion/CodeVersion';
+import ProjectEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
+import { unknownUser } from 'models/User';
 
 import ExperimentBulkDeletion from './ExperimentBulkDeletion/ExperimentBulkDeletion';
 import styles from './ExperimentWidget.module.css';
-import { unknownUser } from 'models/User';
-import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 
 interface ILocalProps {
   projectId: string;
