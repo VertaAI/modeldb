@@ -190,7 +190,7 @@ def ensure_bytestream(obj):
         except TypeError:  # read() doesn't take an argument
             pass  # fall through to read & cast full stream
         else:
-            if isinstance(chunk, bytes):  # contents are indeed bytes
+            if chunk and isinstance(chunk, bytes):  # contents are indeed bytes
                 reset_stream(obj)
                 return obj, None
             else:
@@ -201,6 +201,7 @@ def ensure_bytestream(obj):
         contents = obj.read()  # read to cast into binary
         reset_stream(obj)  # reset cursor to beginning as a courtesy
         if not len(contents):
+            # S3 raises unhelpful error on empty upload, so catch here
             raise ValueError("object contains no data")
         bytestring = six.ensure_binary(contents)
         bytestream = six.BytesIO(bytestring)
