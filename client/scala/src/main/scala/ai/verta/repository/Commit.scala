@@ -2,7 +2,7 @@ package ai.verta.repository
 
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model._
-import ai.verta.client.URLUtils
+import ai.verta.client.FormatUtils
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
@@ -42,9 +42,9 @@ class Commit(
     if (!saved)
       Failure(new IllegalStateException("Commit must be saved before it can be tagged"))
     else clientSet.versioningService.SetTag2(
-        body = "\"" + commit.commit_sha.get + "\"",
+        body = FormatUtils.jsonFormat(commit.commit_sha.get),
         repository_id_repo_id = repo.id,
-        tag = URLUtils.urlEncode(tag)
+        tag = FormatUtils.urlEncode(tag)
     ).map(_ => ())
   }
 
@@ -53,9 +53,10 @@ class Commit(
    */
   private def setBranch(branch: String)(implicit ec: ExecutionContext) = {
     clientSet.versioningService.SetBranch2(
-      body = "\"" + commit.commit_sha.get + "\"",
+      body = FormatUtils.jsonFormat(commit.commit_sha.get),
       branch = branch,
       repository_id_repo_id = repo.id
     ).map(_ => ())
   }
+
 }

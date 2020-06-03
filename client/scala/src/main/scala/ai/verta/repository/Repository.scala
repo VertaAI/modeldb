@@ -2,7 +2,7 @@ package ai.verta.repository
 
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningRepository
-import ai.verta.client.URLUtils
+import ai.verta.client.FormatUtils
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
@@ -28,7 +28,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
    */
    def getCommitByBranch(branch: String = "master")(implicit ec: ExecutionContext): Try[Commit] = {
      clientSet.versioningService.GetBranch2(
-       branch = URLUtils.urlEncode(branch),
+       branch = FormatUtils.urlEncode(branch),
        repository_id_repo_id = repo.id.get
      ).map(r => new Commit(clientSet, this, r.commit.get, Some(branch)))
    }
@@ -39,7 +39,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
     */
    def getCommitByTag(tag: String)(implicit ec: ExecutionContext): Try[Commit] = {
      clientSet.versioningService.GetTag2(
-       tag = URLUtils.urlEncode(tag),
+       tag = FormatUtils.urlEncode(tag),
        repository_id_repo_id = repo.id.get
      ).map(r => new Commit(clientSet, this, r.commit.get))
    }
@@ -50,7 +50,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
     def deleteTag(tag: String)(implicit ec: ExecutionContext): Try[Unit] = {
       clientSet.versioningService.DeleteTag2(
           repository_id_repo_id = repo.id.get,
-          tag = URLUtils.urlEncode(tag)
+          tag = FormatUtils.urlEncode(tag)
       ).map(_ => ())
     }
 
