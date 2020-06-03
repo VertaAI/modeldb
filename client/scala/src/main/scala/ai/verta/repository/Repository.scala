@@ -32,8 +32,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
      clientSet.versioningService.GetBranch2(
        branch = urlEncode(branch),
        repository_id_repo_id = repo.id.get
-     )
-     .map(r => new Commit(clientSet, repo, r.commit.get, Some(branch)))
+     ).map(r => new Commit(clientSet, repo, r.commit.get, Some(branch)))
    }
 
    /** Get commit by specified tag
@@ -44,8 +43,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
      clientSet.versioningService.GetTag2(
        tag = urlEncode(tag),
        repository_id_repo_id = repo.id.get
-     )
-     .map(r => new Commit(clientSet, repo, r.commit.get))
+     ).map(r => new Commit(clientSet, repo, r.commit.get))
    }
 
    /** Delete a tag from this repository
