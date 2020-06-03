@@ -5,7 +5,6 @@ import ai.verta.repository.Repository
 import ai.verta.swagger._public.modeldb.model.ModeldbCreateProject
 import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.swagger.client.{ClientSet, HttpClient}
-import ai.verta.utils.URLUtils
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}

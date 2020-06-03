@@ -1,4 +1,4 @@
-package ai.verta.utils
+package ai.verta.client
 
 import java.net.URLEncoder
 

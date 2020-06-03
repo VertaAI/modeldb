@@ -2,7 +2,7 @@ package ai.verta.repository
 
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model._
-import ai.verta.utils.URLUtils
+import ai.verta.client.URLUtils
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
