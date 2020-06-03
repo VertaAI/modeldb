@@ -2091,7 +2091,7 @@ class ExperimentRun(_ModelDBEntity):
         """
         artifact_stream.seek(0)
         if self._conf.debug:
-            print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), key))
+            print("[DEBUG] uploading {} bytes ({})".format(_artifact_utils.get_stream_length(artifact_stream), key))
             artifact_stream.seek(0)
 
         # check if multipart upload ok

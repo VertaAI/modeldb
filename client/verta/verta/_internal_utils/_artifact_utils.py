@@ -32,6 +32,10 @@ except ImportError:  # TensorFlow not installed
     pass
 
 
+# default for chunked utils
+CHUNK_SIZE = 5*10**6
+
+
 # NOTE: keep up-to-date with Deployment API
 BLACKLISTED_KEYS = {
     'model_api.json',
@@ -179,9 +183,25 @@ def ensure_bytestream(obj):
     """
     if hasattr(obj, 'read'):  # if `obj` is file-like
         reset_stream(obj)  # reset cursor to beginning in case user forgot
+
+        # read first element to check if bytes
+        try:
+            chunk = obj.read(1)
+        except TypeError:  # read() doesn't take an argument
+            pass  # fall through to read & cast full stream
+        else:
+            if chunk and isinstance(chunk, bytes):  # contents are indeed bytes
+                reset_stream(obj)
+                return obj, None
+            else:
+                pass  # fall through to read & cast full stream
+
+        # read full stream and cast to bytes
+        reset_stream(obj)
         contents = obj.read()  # read to cast into binary
         reset_stream(obj)  # reset cursor to beginning as a courtesy
         if not len(contents):
+            # S3 raises unhelpful error on empty upload, so catch here
             raise ValueError("object contains no data")
         bytestring = six.ensure_binary(contents)
         bytestream = six.BytesIO(bytestring)
@@ -330,7 +350,44 @@ def deserialize_model(bytestring):
     return bytestream
 
 
-def calc_sha256(bytestream, chunk_size=5*10**6):
+def get_stream_length(stream, chunk_size=CHUNK_SIZE):
+    """
+    Get the length of the contents of a stream.
+
+    Parameters
+    ----------
+    stream : file-like
+        Stream.
+    chunk_size : int, default 5 MB
+        Number of bytes (or whatever `stream` contains) to read into memory at a time.
+
+    Returns
+    -------
+    length : int
+        Length of `stream`.
+
+    """
+    # if it's file handle, get file size without reading stream
+    filename = getattr(stream, 'name', None)
+    if filename is not None:
+        try:
+            return os.path.getsize(filename)
+        except OSError:  # can't access file
+            pass
+
+    # read stream in chunks to get length
+    length = 0
+    try:
+        part_lengths = iter(lambda: len(stream.read(chunk_size)), 0)
+        for part_length in part_lengths:  # could be sum() but not sure GC runs during builtin one-liner
+            length += part_length
+    finally:
+        reset_stream(stream)  # reset cursor to beginning as a courtesy
+
+    return length
+
+
+def calc_sha256(bytestream, chunk_size=CHUNK_SIZE):
     """
     Calculates the SHA-256 checksum of a bytestream.
 
