@@ -26,16 +26,16 @@ class Commit(
     case _ => false
   }
 
-/** Creates a branch at this Commit and returns the checked-out branch
- *  If the branch already exists, it will be moved to this commit.
- *  @param branch branch name
- *  @return if not saved, a failure; otherwise, this commit as the head of `branch`
- */
-def newBranch(branch: String)(implicit ec: ExecutionContext) = {
-  if (!saved)
-    Failure(new IllegalStateException("Commit must be saved before it can be attached to a branch"))
-  else setBranch(branch)
-}
+  /** Creates a branch at this Commit and returns the checked-out branch
+   *  If the branch already exists, it will be moved to this commit.
+   *  @param branch branch name
+   *  @return if not saved, a failure; otherwise, this commit as the head of `branch`
+   */
+  def newBranch(branch: String)(implicit ec: ExecutionContext) = {
+    if (!saved)
+      Failure(new IllegalStateException("Commit must be saved before it can be attached to a branch"))
+    else setBranch(branch)
+  }
 
   /** Assigns a tag to this Commit
    *  @param tag tag
