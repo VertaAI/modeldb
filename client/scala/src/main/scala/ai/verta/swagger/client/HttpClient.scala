@@ -4,6 +4,7 @@ import java.io.InputStream
 import java.net.{URI, URLEncoder}
 
 import ai.verta.swagger.client.objects.BaseSwagger
+import ai.verta.client.FormatUtils
 import net.liftweb.json.{DefaultFormats, JValue, compactRender, parse}
 import sttp.client._
 import sttp.client.asynchttpclient.future.AsyncHttpClientFutureBackend
@@ -34,7 +35,7 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
     else
       body match {
         case b: BaseSwagger => requestInternal(method, path, query, compactRender(b.toJson()), parser)
-        case b: String => requestInternal(method, path, query, b, parser)
+        case b: String => requestInternal(method, path, query, FormatUtils.jsonFormat(b), parser)
       }
   }
 

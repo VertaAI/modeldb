@@ -42,7 +42,7 @@ class Commit(
     if (!saved)
       Failure(new IllegalStateException("Commit must be saved before it can be tagged"))
     else clientSet.versioningService.SetTag2(
-        body = FormatUtils.jsonFormat(commit.commit_sha.get),
+        body = commit.commit_sha.get,
         repository_id_repo_id = repo.id,
         tag = FormatUtils.urlEncode(tag)
     ).map(_ => ())
@@ -53,7 +53,7 @@ class Commit(
    */
   private def setBranch(branch: String)(implicit ec: ExecutionContext) = {
     clientSet.versioningService.SetBranch2(
-      body = FormatUtils.jsonFormat(commit.commit_sha.get),
+      body = commit.commit_sha.get,
       branch = branch,
       repository_id_repo_id = repo.id
     ).map(_ => ())
