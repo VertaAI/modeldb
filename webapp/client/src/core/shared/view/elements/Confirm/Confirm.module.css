@@ -1,0 +1,25 @@
+.root {
+  padding: 0 24px 24px;
+}
+
+.message {
+  margin-bottom: 10px;
+  color: var(--main-text-color1);
+  font-size: 15px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 42px;
+  margin-right: 24px;
+}
+
+.action:first-child {
+  margin-right: 12px;
+}
+
+.warning {
+  border-top: 2px solid #bf2a2a;
+}

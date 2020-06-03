@@ -10,15 +10,15 @@ import {
   ComparedCommitType,
   getCommitDataFromNullableDiffs,
   DataWithDiffTypeFromDiffs,
-  IArrayDiff,
 } from 'core/shared/models/Versioning/Blob/Diff';
+import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 import HyperparameterItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
 import HyperparameterSetItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import { IComparedCommitsInfo, getCssDiffColorByCommitType } from '../../model';
+import { makeHighlightCellBackground } from '../shared/makeHighlightCellBackground';
+import ComparePropertiesTable from '../shared/ComparePropertiesTable/ComparePropertiesTable';
 import sortArrayByAnotherArrayKeys from '../shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
-import makeComparePropertiesTable, { makeHighlightCellBackground } from '../shared/ComparePropertiesTable/ComparePropertiesTable';
 
 interface ILocalProps {
   diff: IConfigBlobDiff;
@@ -31,8 +31,6 @@ type IRow = {
     DataWithDiffTypeFromDiffs<IConfigHyperparameterSetItemDiff>
   >;
 };
-
-const tableComponents = makeComparePropertiesTable<IRow>();
 
 const highlightCellBackground = makeHighlightCellBackground<IRow>();
 
@@ -57,67 +55,105 @@ const ConfigDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
       diff.data.hyperparameterSet
     ),
   };
+  const C: IRow = {
+    hyperparameters: getCommitDataFromNullableDiffs(
+      'C',
+      diff.data.hyperparameters
+    ),
+    hyperparameterSet: getCommitDataFromNullableDiffs(
+      'C',
+      diff.data.hyperparameterSet
+    ),
+  };
 
   return (
     <BlobDataBox title="Config">
-      <tableComponents.Table
+      <ComparePropertiesTable
         comparedCommitsInfo={comparedCommitsInfo}
         A={A}
         B={B}
-      >
-        <tableComponents.PropDefinition
-          title="Hyperparameters"
-          type="hyperparameters"
-          isHidden={Boolean(!A.hyperparameters && !B.hyperparameters)}
-          getCellStyle={highlightCellBackground(({ data }) => {
-            if (data.hyperparameters && data.hyperparameters.length > 0) {
-              return data.hyperparameters.every(({ diffType }) => diffType === 'added') || data.hyperparameters.every(({ diffType }) => diffType === 'deleted');
-            }
-            return false;
-          })}
-          render={({ data, anotherData, comparedCommitType: type }) => {
-            return data && data.hyperparameters
-              ? sortArrayByAnotherArrayKeys(
-                  ({ data: { name } }) => name,
-                  data.hyperparameters,
-                  (anotherData && anotherData.hyperparameters) || []
-                ).map(h => (
-                  <HyperparameterItem
-                    {...getHyperparameterDiffStyles(diff.diffType, h.diffType, type)}
-                    hyperparameter={h.data}
-                    key={h.data.name}
-                  />
-                ))
-              : null;
-          }}
-        />
-        <tableComponents.PropDefinition
-          title="Hyperparameters set"
-          type="hyperparametersSet"
-          isHidden={Boolean(!A.hyperparameterSet && !B.hyperparameterSet)}
-          getCellStyle={highlightCellBackground(({ data }) => {
-            if (data.hyperparameterSet && data.hyperparameterSet.length > 0) {
-              return data.hyperparameterSet.every(({ diffType }) => diffType === 'added') || data.hyperparameterSet.every(({ diffType }) => diffType === 'deleted');
-            }
-            return false;
-          })}
-          render={({ data, anotherData, comparedCommitType: type }) => {
-            return data && data.hyperparameterSet
-              ? sortArrayByAnotherArrayKeys(
-                  ({ data: { name } }) => name,
-                  data.hyperparameterSet,
-                  (anotherData && anotherData.hyperparameterSet) || []
-                ).map(h => (
-                  <HyperparameterSetItem
-                    {...getHyperparameterDiffStyles(diff.diffType, h.diffType, type)}
-                    hyperparameterSetItem={h.data}
-                    key={h.data.name}
-                  />
-                ))
-              : null;
-          }}
-        />
-      </tableComponents.Table>
+        C={diff.diffType === 'conflicted' ? C : undefined}
+        propDefinitions={[
+          {
+            title: 'Hyperparameters',
+            type: 'hyperparameters',
+            isHidden: Boolean(!A.hyperparameters && !B.hyperparameters),
+            getPropCellStyle: highlightCellBackground(({ data }) => {
+              if (
+                data &&
+                data.hyperparameters &&
+                data.hyperparameters.length > 0
+              ) {
+                return (
+                  data.hyperparameters.every(
+                    ({ diffType }) => diffType === 'added'
+                  ) ||
+                  data.hyperparameters.every(
+                    ({ diffType }) => diffType === 'deleted'
+                  )
+                );
+              }
+              return false;
+            }),
+            render: ({ data, anotherData, comparedCommitType: type }) => {
+              return data && data.hyperparameters
+                ? sortArrayByAnotherArrayKeys(
+                    ({ data: { name } }) => name,
+                    data.hyperparameters,
+                    (anotherData && anotherData.hyperparameters) || []
+                  ).map(h => (
+                    <HyperparameterItem
+                      {...getHyperparameterDiffStyles(
+                        diff.diffType,
+                        h.diffType,
+                        type
+                      )}
+                      hyperparameter={h.data}
+                      key={h.data.name}
+                    />
+                  ))
+                : null;
+            },
+          },
+          {
+            title: 'Hyperparameters set',
+            type: 'hyperparametersSet',
+            isHidden: Boolean(!A.hyperparameterSet && !B.hyperparameterSet),
+            getPropCellStyle: highlightCellBackground(({ data }) => {
+              if (data.hyperparameterSet && data.hyperparameterSet.length > 0) {
+                return (
+                  data.hyperparameterSet.every(
+                    ({ diffType }) => diffType === 'added'
+                  ) ||
+                  data.hyperparameterSet.every(
+                    ({ diffType }) => diffType === 'deleted'
+                  )
+                );
+              }
+              return false;
+            }),
+            render: ({ data, anotherData, comparedCommitType: type }) => {
+              return data && data.hyperparameterSet
+                ? sortArrayByAnotherArrayKeys(
+                    ({ data: { name } }) => name,
+                    data.hyperparameterSet,
+                    (anotherData && anotherData.hyperparameterSet) || []
+                  ).map(h => (
+                    <HyperparameterSetItem
+                      {...getHyperparameterDiffStyles(
+                        diff.diffType,
+                        h.diffType,
+                        type
+                      )}
+                      hyperparameterSetItem={h.data}
+                      key={h.data.name}
+                    />
+                  ))
+                : null;
+            },
+          },
+        ]}
+      />
     </BlobDataBox>
   );
 };

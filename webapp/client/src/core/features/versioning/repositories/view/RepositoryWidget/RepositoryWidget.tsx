@@ -4,32 +4,40 @@ import { NavLink } from 'react-router-dom';
 
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
+import Tooltip from 'core/shared/view/elements/Tooltip/Tooltip';
+import ActionIcon from 'core/shared/view/elements/ActionIcon/ActionIcon';
 import routes from 'routes';
 
 import RepositoryLabelsManager from './RepositoryLabelsManager/RepositoryLabelsManager';
 import styles from './RepositoryWidget.module.css';
-import useDeleteRepository from '../useDeleteRepository';
+import { useDeleteRepositoryMutation } from '../../store/deleteRepository/deleteRepository';
+import { hasAccessToAction } from 'models/EntitiesActions';
 
 interface ILocalProps {
+  onDeleted: (repositoryId: IRepository['id']) => void;
   repository: IRepository;
 }
 
 type AllProps = ILocalProps;
 
-const RepositoryWidget: React.FC<AllProps> = ({ repository }) => {
+const RepositoryWidget: React.FC<AllProps> = ({ repository, onDeleted }) => {
   const preventRedirect = useCallback(
     (e: React.MouseEvent) => e.preventDefault(),
     []
   );
 
-  const { deleteRepositoryButton, isDeletingRepository } = useDeleteRepository({
+  const {
+    deleteRepositoryButton,
+    deletingRepository,
+  } = useDeleteRepositoryMutation({
     repository,
+    onDeleted: () => onDeleted(repository.id),
   });
 
   return (
     <NavLink
       className={cn(styles.root, {
-        [styles.deleting]: isDeletingRepository,
+        [styles.deleting]: deletingRepository.isRequesting,
       })}
       to={routes.repositoryData.getRedirectPathWithCurrentWorkspace({
         repositoryName: repository.name,
@@ -37,8 +45,18 @@ const RepositoryWidget: React.FC<AllProps> = ({ repository }) => {
     >
       <div className={styles.info}>
         <div className={styles.left}>
-          <span className={styles.name}>{repository.name}</span>
-          <div onClick={preventRedirect}>
+          <div>
+            <span className={styles.name}>{repository.name}</span>
+            &nbsp;
+            {!hasAccessToAction('update', repository) && (
+              <Tooltip content={'Read Only Repository'}>
+                <span className={styles.desc_readonly}>
+                  <ActionIcon iconType="eye" />
+                </span>
+              </Tooltip>
+            )}
+          </div>
+          <div className={styles.labels} onClick={preventRedirect}>
             <RepositoryLabelsManager repository={repository} />
           </div>
         </div>
@@ -63,16 +81,18 @@ const RepositoryWidget: React.FC<AllProps> = ({ repository }) => {
         </div>
       </div>
       <div className={styles.actions}>
-        {deleteRepositoryButton && (
+        {
           <>
-            <div
-              className={cn(styles.action, { [styles.action_delete]: true })}
-              onClick={preventRedirect}
-            >
-              {deleteRepositoryButton}
-            </div>
+            {deleteRepositoryButton && (
+              <div
+                className={cn(styles.action, { [styles.action_delete]: true })}
+                onClick={preventRedirect}
+              >
+                {deleteRepositoryButton}
+              </div>
+            )}
           </>
-        )}
+        }
       </div>
     </NavLink>
   );

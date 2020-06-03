@@ -2,7 +2,6 @@ import { bind } from 'decko';
 import * as React from 'react';
 
 import { EntityWithDescription } from 'core/shared/models/Description';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import Tooltip from 'core/shared/view/elements/Tooltip/Tooltip';
 
 import AddEditDescModal from './AddEditDescModal/AddEditDescModal';

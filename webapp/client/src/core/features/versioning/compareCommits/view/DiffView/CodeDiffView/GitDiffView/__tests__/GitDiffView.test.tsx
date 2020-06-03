@@ -1,13 +1,13 @@
-import * as React from 'react';
 import { mount, ReactWrapper } from 'enzyme';
+import * as React from 'react';
 
 import {
   ComparedCommitType,
   elementDiffMakers,
 } from 'core/shared/models/Versioning/Blob/Diff';
 
-import GitDiffView from '../GitDiffView';
 import { getCommitColumnInfo } from '../../../shared/ComparePropertiesTable/__tests__/helpers';
+import GitDiffView from '../GitDiffView';
 
 const comparedCommitsInfo: React.ComponentProps<
   typeof GitDiffView
@@ -33,12 +33,17 @@ const getDisplayedProperties = (
   component: ReactWrapper
 ) => {
   return {
-    hash: getCommitColumnInfo(type, 'hash', (column) => column.text() || undefined, component),
+    hash: getCommitColumnInfo(
+      type,
+      'hash',
+      column => column.text() || undefined,
+      component
+    ),
   };
 };
 
 describe('(compareCommits feature) GitDiffView', () => {
-  it('should display git properties with green highlithing in the B column when diff status is added', () => {
+  it('should display git properties with bDiff highlithing in the B column when diff status is added', () => {
     const addedDiff: Diff = elementDiffMakers.added({
       type: 'git',
       data: {
@@ -55,7 +60,7 @@ describe('(compareCommits feature) GitDiffView', () => {
       hash: { content: undefined, diffColor: undefined },
     });
     expect(getDisplayedProperties('B', component)).toMatchObject({
-      hash: { content: '#', diffColor: 'green' },
+      hash: { content: '#', diffColor: 'bDiff' },
     });
   });
 
@@ -73,7 +78,7 @@ describe('(compareCommits feature) GitDiffView', () => {
     const component = makeComponent({ diff: deletedDiff });
 
     expect(getDisplayedProperties('A', component)).toMatchObject({
-      hash: { content: '#', diffColor: 'red' },
+      hash: { content: '#', diffColor: 'aDiff' },
     });
     expect(getDisplayedProperties('B', component)).toMatchObject({
       hash: { content: undefined, diffColor: undefined },
@@ -106,10 +111,10 @@ describe('(compareCommits feature) GitDiffView', () => {
     const component = makeComponent({ diff: modifiedDiff });
 
     expect(getDisplayedProperties('A', component)).toMatchObject({
-      hash: { content: '#', diffColor: 'red' },
+      hash: { content: '#', diffColor: 'aDiff' },
     });
     expect(getDisplayedProperties('B', component)).toMatchObject({
-      hash: { content: '######', diffColor: 'green' },
+      hash: { content: '######', diffColor: 'bDiff' },
     });
   });
 });

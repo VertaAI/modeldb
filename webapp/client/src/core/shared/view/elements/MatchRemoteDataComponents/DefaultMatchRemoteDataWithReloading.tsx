@@ -17,7 +17,7 @@ interface ILocalProps<
   communication: Communication;
   data: Data;
   children: (
-    success: Exclude<Data, null | undefined>,
+    data: Exclude<Data, null | undefined>,
     reloadingCommunication: ICommunication
   ) => any;
 }

@@ -1,7 +1,15 @@
 .root {
-  display: flex;
-  padding: var(--common-padding);
-  border-top: 1px solid var(--border-color1);
+  position: relative;
+  padding: 16px var(--common-padding) 16px;
+}
+.root:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--common-padding);
+  right: var(--common-padding);
+  height: 1px;
+  background-color: #cccccc;
 }
 
 .preloader {
@@ -16,19 +24,7 @@
   width: 100%;
   text-align: center;
 }
-.input_error {
-  margin-top: 4px;
-  color: var(--error-color1);
-}
-
-.leftContent {
-  margin-right: 16px;
-}
-
-.rightContent {
-  flex-grow: 1;
-}
 
 .addButton {
-  margin-top: 5px;
+  margin-top: 16px;
 }

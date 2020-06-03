@@ -1,11 +1,14 @@
 .root {
   background-color: white;
-  --border-radius: 6px;
-  border-radius: var(--border-radius);
+  border-radius: 2px;
+}
+
+.root :global .MuiInputAdornment-positionEnd {
+  margin-left: 2px !important;
 }
 
 .root :global .MuiOutlinedInput-root {
-  border-radius: var(--border-radius) !important;
+  border-radius: 2px !important;
 }
 
 .root :global .MuiOutlinedInput-input {
@@ -34,6 +37,8 @@
 }
 
 .root :global .MuiInputBase-root {
+  padding: 0;
+  padding-right: 14px;
   color: #555555;
 }
 :global .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
@@ -53,4 +58,17 @@
 
 .root :global .MuiOutlinedInput-multiline {
   padding: 0 !important;
+}
+
+.resetValueControl {
+  color: var(--main-text-color3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.root :global input::placeholder {
+  font-size: 15px;
 }

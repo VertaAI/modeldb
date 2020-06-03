@@ -1,6 +1,8 @@
 import User, { CurrentUser } from 'models/User';
 import * as Workspace from 'models/Workspace';
 
+import { RepositoryBranches, CommitTag } from './RepositoryData';
+
 export interface IRepository
   extends Workspace.IEntityWithShortWorkspace {
   id: string;
@@ -9,8 +11,14 @@ export interface IRepository
   dateUpdated: Date;
   labels: Label[];
   owner: User;
-  visibility: RepositoryVisibility;
 }
+
+export interface IBranchesAndTags {
+  branches: RepositoryBranches;
+  tags: CommitTag[];
+}
+
+export type IRepositoryWithTagsAndBranches = IRepository & IBranchesAndTags;
 
 export type RepositoryVisibility = 'private' | 'public' | 'organizationPublic';
 

@@ -1,0 +1,93 @@
+.root {
+  position: fixed;
+  display: flex;
+  height: 62px;
+  padding-left: calc(300px + 8px);
+  padding-right: 40px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  align-items: center;
+  border-top: 1px solid var(--border-color1);
+  background-color: white;
+  transition: opacity 0.3s;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.visible {
+  pointer-events: all;
+  opacity: 1;
+}
+
+.controler_meta {
+  display: flex;
+  align-items: center;
+  color: var(--grey-dark-text);
+  font-size: 13px;
+  margin-left: 20px;
+}
+
+.control {
+  margin-left: 20px;
+  padding: 6px 10px;
+  background-color: var(--grey-lightest-highlight);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.control:hover {
+  background-color: var(--grey-lighter);
+}
+
+.control__container {
+  display: flex;
+  align-items: center;
+}
+
+.control__elem {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.control_blue .control__elem {
+  background-color: var(--main-color2);
+}
+.control_red .control__elem {
+  background-color: #ff787f;
+}
+
+.control__elemIcon {
+  font-size: 12px;
+  color: white;
+}
+
+.control__text {
+  margin-left: 13px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.7);
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.deselectAllByKeyHint {
+  display: flex;
+  margin-left: 20px;
+  align-items: center;
+}
+.deselectAllByKeyHint__key {
+  padding: 3px;
+  border: 1px solid #dddddd;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.7);
+  font-weight: 500;
+  border-radius: 4px;
+}
+.deselectAllByKeyHint__text {
+  margin-left: 5px;
+  font-size: 13px;
+  color: var(--grey-dark-text);
+}

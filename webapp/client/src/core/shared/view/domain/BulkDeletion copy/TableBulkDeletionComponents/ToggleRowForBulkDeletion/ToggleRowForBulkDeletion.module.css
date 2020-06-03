@@ -1,0 +1,12 @@
+.root {
+  background-color: var(--main-color3);
+  border-right: 1px solid #e2e2e2;
+  text-align: center;
+  padding-top: 18px;
+  width: 58px;
+  height: 100%;
+}
+
+.selected_row_view {
+  background-color: var(--delete-color1) !important;
+}

@@ -22,7 +22,8 @@ export const convertServerDatasetS3Component = (
   serverDatasetComponent: any
 ): IS3DatasetComponentBlob => {
   return {
-    path: convertServerDatasetPathComponent(serverDatasetComponent.path),
+    s3VersionId: serverDatasetComponent.s3_version_id,
+    ...convertServerDatasetPathComponent(serverDatasetComponent.path),
   };
 };
 

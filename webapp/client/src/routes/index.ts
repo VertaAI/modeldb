@@ -10,6 +10,7 @@ import {
   IRoute as _IRoute,
 } from 'core/shared/routes/makeRoute';
 import * as P from 'core/shared/routes/pathBuilder';
+import { IURLWithFilters } from 'core/features/filter/Model';
 
 import {
   isRouteWithWorkspace,
@@ -86,7 +87,10 @@ const routes = {
     getPath: () => P.makePath('projects', P.param('projectId')(), 'settings')(),
   }),
   experimentRuns: makeRouteWithWorkspace({
-    getPath: () => P.makePath('projects', P.param('projectId')(), 'exp-runs')(),
+    getPath: () =>
+      P.makePath('projects', P.param('projectId')(), 'exp-runs')<
+        IURLWithFilters
+      >(),
   }),
   charts: makeRouteWithWorkspace({
     getPath: () => P.makePath('projects', P.param('projectId')(), 'charts')(),
@@ -121,7 +125,7 @@ const routes = {
   }),
 
   repositories: makeRouteWithWorkspace({
-    getPath: () => P.makePath('repositories')<{ page: string }>(),
+    getPath: () => P.makePath('repositories')<any>(),
   }),
   createRepository: makeRouteWithWorkspace({
     getPath: () => P.makePath('repositories', 'new')(),
@@ -180,6 +184,25 @@ const routes = {
         P.param('repositoryName')<IRepository['name']>(),
         'data',
         'compare',
+        P.param('commitPointerAValue')<CommitPointer['value']>(),
+        P.param('commitPointerBValue')<CommitPointer['value']>()
+      )(),
+  }),
+  repositoryNetworkGraph: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath(
+        'repositories',
+        P.param('repositoryName')<IRepository['name']>(),
+        'network'
+      )(),
+  }),
+  repositoryMergeConflicts: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath(
+        'repositories',
+        P.param('repositoryName')<IRepository['name']>(),
+        'data',
+        'conflicts',
         P.param('commitPointerAValue')<CommitPointer['value']>(),
         P.param('commitPointerBValue')<CommitPointer['value']>()
       )(),

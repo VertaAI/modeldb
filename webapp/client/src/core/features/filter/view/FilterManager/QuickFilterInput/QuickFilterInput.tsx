@@ -84,7 +84,6 @@ class QuickFilterInput extends React.PureComponent<ILocalProps, ILocalState> {
               )
             }
             size="medium"
-            theme="dark"
             icon={iconType}
             dataTest="quick-filter-input"
             onKeyUp={this.onTextInputKeyUp}

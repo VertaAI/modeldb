@@ -38,6 +38,7 @@ import {
   ILoadDatasetVersionExperimentRunsActions,
   loadDatasetVersionExperimentRunsActionTypes,
 } from './types';
+import { WorkspaceName } from 'models/Workspace';
 
 export const loadDatasetVersions = (
   datasetId: string,
@@ -103,6 +104,7 @@ export const deleteDatasetVersion = (
 };
 
 export const loadDatasetVersion = (
+  workspaceName: any,
   id: string,
   datasetId: string
 ): ActionResult<void, ILoadDatasetVersionActions> => async (
@@ -127,6 +129,7 @@ export const loadDatasetVersion = (
 };
 
 export const loadDatasetVersionExperimentRuns = (
+  workspaceName: any,
   datasetVersionId: string
 ): ActionResult<void, ILoadDatasetVersionExperimentRunsActions> => async (
   dispatch,
@@ -274,6 +277,7 @@ interface IOption {
 }
 
 export const loadComparedDatasetVersions = (
+  workspaceName: any,
   datasetId: string,
   datasetVersionId1: string,
   datasetVersionId2: string

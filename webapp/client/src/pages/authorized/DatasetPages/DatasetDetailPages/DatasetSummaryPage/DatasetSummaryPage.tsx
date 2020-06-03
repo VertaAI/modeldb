@@ -5,10 +5,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import DatasetEntityDescriptionManager from 'components/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
-import Attributes from 'components/ModelRecordProps/Attributes/Attributes/Attributes';
 import SummaryInfo from 'components/SummaryViewComponents/SummaryInfo/SummaryInfo';
-import DatasetEntityTagsManager from 'components/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
 import { initialCommunication } from 'core/shared/utils/redux/communication';
 import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
@@ -21,9 +18,12 @@ import {
   selectLoadingDataset,
 } from 'store/datasets';
 import { IApplicationState } from 'store/store';
+import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
 
 import DatasetDetailsLayout from '../shared/DatasetDetailsLayout/DatasetDetailsLayout';
 import styles from './DatasetSummaryPage.module.css';
+import Attributes from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
+import DatasetEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return bindActionCreators({ deleteDataset }, dispatch);

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import cn from 'classnames';
 
 import { makeDefaultTagFilter } from 'core/features/filter/Model';
 
@@ -15,7 +16,7 @@ export default class TagBlock extends React.Component<ILocalProps> {
     const { tags, isDraggable } = this.props;
     return (
       <ul className={styles.tags}>
-        {tags.map((tag: string, i: number) => {
+        {tags.map((tag, i) => {
           return (
             <li key={i}>
               {isDraggable ? (
@@ -25,7 +26,7 @@ export default class TagBlock extends React.Component<ILocalProps> {
                   additionalClassName={styles.projectTags}
                 >
                   <span
-                    className={styles.tag_draggable}
+                    className={cn(styles.tag, { [styles.draggable]: true })}
                     draggable={true}
                     title={tag}
                   >
@@ -33,7 +34,7 @@ export default class TagBlock extends React.Component<ILocalProps> {
                   </span>
                 </Draggable>
               ) : (
-                <span className={styles.tag_static}>{tag}</span>
+                <span className={styles.tag}>{tag}</span>
               )}
             </li>
           );

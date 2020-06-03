@@ -1,16 +1,17 @@
 import * as R from 'ramda';
 
-import { ICommit } from 'core/shared/models/Versioning/RepositoryData';
-import { mapObj, mapObjWithKey } from 'core/shared/utils/collection';
 import {
   ComparedCommitType,
   IElementDiff,
   DiffType,
-  getABData,
+  getABCData,
   getAData,
   getBData,
   GetElementData,
+  getCData,
 } from 'core/shared/models/Versioning/Blob/Diff';
+import { ICommit } from 'core/shared/models/Versioning/RepositoryData';
+import { mapObj, mapObjWithKey } from 'core/shared/utils/collection';
 import matchType from 'core/shared/utils/matchType';
 
 import sortArrayByAnotherArrayKeys from './DiffView/shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
@@ -19,9 +20,10 @@ import { diffColors } from './DiffView/shared/styles';
 export interface IComparedCommitsInfo {
   commitA: Pick<ICommit, 'sha'>;
   commitB: Pick<ICommit, 'sha'>;
+  commonBaseCommit?: Pick<ICommit, 'sha'> | null;
 }
 
-export type DiffColor = 'green' | 'red' | 'nothing';
+export type DiffColor = 'bDiff' | 'aDiff' | 'cDiff' | 'nothing';
 
 export type IObjectToObjectWithDiffColor<T> = {
   [K in keyof T]: { value: T[K]; diffColor: DiffColor }
@@ -43,19 +45,25 @@ export function highlightModifiedProperties<T>(
   highlightedObj: T,
   comparedObj: T
 ): IObjectToObjectWithDiffColor<T> {
-  return mapObjWithKey(
-    (key, value) => {
-      return ({
-        value,
-        diffColor: !R.equals(value, comparedObj[key]) ? getDiffColor(commitType) : 'nothing',
-      });
-    },
-    highlightedObj
-  ) as IObjectToObjectWithDiffColor<T>;
+  return mapObjWithKey((key, value) => {
+    return {
+      value,
+      diffColor: !R.equals(value, comparedObj[key])
+        ? getDiffColor(commitType)
+        : 'nothing',
+    };
+  }, highlightedObj) as IObjectToObjectWithDiffColor<T>;
 }
 
 export const getDiffColor = (type: ComparedCommitType): DiffColor => {
-  return type === 'A' ? 'red' : 'green';
+  return matchType(
+    {
+      A: () => 'aDiff',
+      B: () => 'bDiff',
+      C: () => 'cDiff',
+    },
+    type
+  );
 };
 
 export const getCssDiffColorByCommitType = (type: ComparedCommitType) => {
@@ -65,8 +73,9 @@ export const getCssDiffColorByCommitType = (type: ComparedCommitType) => {
 export const getCssDiffColor = (diffColor: DiffColor) => {
   return matchType(
     {
-      green: () => diffColors.green,
-      red: () => diffColors.red,
+      aDiff: () => diffColors.aDiff,
+      bDiff: () => diffColors.bDiff,
+      cDiff: () => diffColors.cDiff,
       nothing: () => undefined,
     },
     diffColor
@@ -83,6 +92,7 @@ export interface IArrayDiffViewModel<T> {
   isHidden: boolean;
   A?: Array<IArrayElementDiffViewModel<T>>;
   B?: Array<IArrayElementDiffViewModel<T>>;
+  C?: Array<IArrayElementDiffViewModel<T>>;
 }
 
 export interface IElementDiffDataViewModel<T> {
@@ -95,6 +105,7 @@ export interface IElementDiffViewModel<T> {
   isHidden: boolean;
   A?: IElementDiffDataViewModel<T>;
   B?: IElementDiffDataViewModel<T>;
+  C?: IElementDiffDataViewModel<T>;
 }
 
 const getDiffsByCommitType = <T extends IElementDiff<B>, B>(
@@ -102,7 +113,7 @@ const getDiffsByCommitType = <T extends IElementDiff<B>, B>(
   diffs: T[] | undefined
 ) => {
   const diffsByType = (diffs || []).filter(variableDiff =>
-    Boolean(getABData(variableDiff)[type])
+    Boolean(getABCData(variableDiff)[type])
   );
   return diffsByType.length === 0 ? undefined : diffsByType;
 };
@@ -114,7 +125,7 @@ const mapNullableDiffsByCommitType = <T extends IElementDiff<B>, B, R>(
 ): R[] | undefined => {
   const diffsByType = getDiffsByCommitType(type, diffs);
   return diffsByType
-    ? diffsByType.map(diff => f(getABData(diff)[type]!, diff.diffType, diff))
+    ? diffsByType.map(diff => f(getABCData(diff)[type]!, diff.diffType, diff))
     : undefined;
 };
 
@@ -126,9 +137,9 @@ export const getArrayDiffViewModel = <T>(
     ? {
         isHidden: false,
         ...R.pipe(
-          (diffs: IElementDiff<T>[]) => highlightDiffs(diffs),
+          (diffs: Array<IElementDiff<T>>) => highlightDiffs(diffs),
           highlightedDiffs =>
-            highlightedDiffs.A && highlightedDiffs.B
+            highlightedDiffs.A && highlightedDiffs.B && !highlightedDiffs.C
               ? putModifiedItemsSideBySide(
                   ({ data }) => getKey(data),
                   highlightedDiffs as Required<typeof highlightedDiffs>
@@ -140,6 +151,7 @@ export const getArrayDiffViewModel = <T>(
         isHidden: true,
         A: undefined,
         B: undefined,
+        C: undefined,
       };
 };
 
@@ -148,6 +160,7 @@ const highlightDiffs = <T extends IElementDiff<any>>(
 ): {
   A?: Array<IArrayElementDiffViewModel<GetElementData<T>>>;
   B?: Array<IArrayElementDiffViewModel<GetElementData<T>>>;
+  C?: Array<IArrayElementDiffViewModel<GetElementData<T>>>;
 } => {
   const A = mapNullableDiffsByCommitType(
     (data, diffType) => ({
@@ -169,7 +182,16 @@ const highlightDiffs = <T extends IElementDiff<any>>(
     'B',
     diff
   );
-  return { A, B };
+  const C = mapNullableDiffsByCommitType(
+    (data, diffType) => ({
+      data: data as GetElementData<T>,
+      diffColor: getDiffColor('C'),
+      hightlightedPart: 'full' as const,
+    }),
+    'C',
+    diff
+  );
+  return { A, B, C };
 };
 
 const putModifiedItemsSideBySide = <T extends IArrayElementDiffViewModel<any>>(
@@ -190,18 +212,25 @@ export const getElementDiffViewModel = <T extends IElementDiff<any>>(
         isHidden: false,
         A: getAData(diff)
           ? {
-              diffColor: 'red' as const,
+              diffColor: 'aDiff' as const,
               hightlightedPart: 'full' as const,
               data: (getAData(diff)! as any) as GetElementData<T>,
             }
           : undefined,
         B: getBData(diff)
           ? {
-              diffColor: 'green' as const,
+              diffColor: 'bDiff' as const,
               hightlightedPart: 'full' as const,
               data: (getBData(diff)! as any) as GetElementData<T>,
             }
           : undefined,
+        C: getCData(diff)
+          ? {
+              diffColor: 'cDiff' as const,
+              hightlightedPart: 'full' as const,
+              data: (getCData(diff)! as any) as GetElementData<T>,
+            }
+          : undefined,
       }
-    : { isHidden: true, A: undefined, B: undefined };
+    : { isHidden: true, A: undefined, B: undefined, C: undefined };
 };

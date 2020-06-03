@@ -6,9 +6,10 @@ import { RouteComponentProps } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import DataSourceUri from 'core/shared/view/domain/DatasetVersionProps/QueryDatasetVersionProps/DataSourceUri/DataSourceUri';
-import DatasetEntityDescriptionManager from 'components/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
-import Attributes from 'components/ModelRecordProps/Attributes/Attributes/Attributes';
-import DatasetEntityTagsManager from 'components/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
+import DatasetEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
+import Attributes from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
+import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
+import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import { handleCustomErrorWithFallback } from 'core/shared/models/Error';
 import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
 import { formatBytes } from 'core/shared/utils/mapperConverters/DataSizeConverted';
@@ -103,10 +104,12 @@ type AllProps = ILocalProps &
 class DatasetVersionPage extends React.PureComponent<AllProps> {
   public componentDidMount() {
     this.props.loadDatasetVersion(
+      this.props.workspaceName,
       this.props.match.params.datasetVersionId,
       this.props.match.params.datasetId
     );
     this.props.loadDatasetVersionExperimentRuns(
+      this.props.match.params.workspaceName,
       this.props.match.params.datasetVersionId
     );
   }
@@ -264,13 +267,23 @@ class DatasetVersionPage extends React.PureComponent<AllProps> {
                         )}
                       </div>
                     </this.SummaryMetaRecord>
-                    <this.SummaryMetaRecord label="Delete">
-                      <DeleteFAI
-                        faiDataTest="delete-dataset-version-button"
-                        onDelete={this.deleteDatasetVersion}
-                        confirmText={<>Are you sure?</>}
-                      />
-                    </this.SummaryMetaRecord>
+                    <WithCurrentUserActionsAccesses
+                      entityType="datasetVersion"
+                      entityId={datasetVersion.id}
+                      actions={['delete']}
+                    >
+                      {({ actionsAccesses }) =>
+                        actionsAccesses.delete && (
+                          <this.SummaryMetaRecord label="Delete">
+                            <DeleteFAI
+                              faiDataTest="delete-dataset-version-button"
+                              onDelete={this.deleteDatasetVersion}
+                              confirmText={<>Are you sure?</>}
+                            />
+                          </this.SummaryMetaRecord>
+                        )
+                      }
+                    </WithCurrentUserActionsAccesses>
                   </div>
                 </div>
                 <this.Record label="Attributes">

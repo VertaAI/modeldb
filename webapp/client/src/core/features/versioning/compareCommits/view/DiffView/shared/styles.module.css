@@ -1,7 +1,9 @@
-@value redDiff: #F7E8D2;
-@value greenDiff: #E5EFFF;
+@value ADiff: #F7E8D2;
+@value BDiff: #E5EFFF;
+@value CDiff: #FFFFFF;
 
 :export {
-  redDiff: redDiff;
-  greenDiff: greenDiff;
+  ADiff: ADiff;
+  BDiff: BDiff;
+  CDiff: CDiff;
 }

@@ -72,7 +72,10 @@
     "pretty": "prettier --config ../.prettierrc.json --write \"src/**/*.{ts*,css,js*}\"",
     "analyze": "source-map-explorer build/static/js/main.*",
     "lint-fix": "tslint -p . --fix",
-    "check-types": "node_modules/.bin/tsc -p . --noEmit"
+    "check-types": "node_modules/.bin/tsc -p . --noEmit",
+    "graphql:download-schema": "cd graphqlScripts && sh download_graphql_schema.sh",
+    "graphql:validate-queries": "cd graphqlScripts && sh validate_graphql_queries.sh",
+    "graphql:update-types": "cd graphqlScripts && sh update_graphql_types.sh"
   },
   "eslintConfig": {
     "extends": "react-app"

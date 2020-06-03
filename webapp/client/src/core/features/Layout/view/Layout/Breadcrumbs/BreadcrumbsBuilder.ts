@@ -20,12 +20,7 @@ export interface IBreadcrumbsBuilder {
   build: (url: string) => IBreadcrumbs;
 }
 
-type IThenBreadcrumItemSetting<T> =
-  | Omit<ICommonBreadcrumItemSetting<T>, 'routes'> & {
-      route: IRoute<T>;
-      isAlwaysDisplayed: true;
-    }
-  | ICommonBreadcrumItemSetting<T> & { isAlwaysDisplayed?: false };
+type IThenBreadcrumItemSetting<T> = any;
 
 type IThenOrBreadcrumItemSetting<T> = ICommonBreadcrumItemSetting<T>;
 
@@ -61,7 +56,7 @@ export default function BreadcrumbsBuilder(
               }
               return {
                 itemSetting: item.value,
-                appropriateRoute: item.value.routes.find(({ getMatch }) =>
+                appropriateRoute: item.value.routes.find(({ getMatch }: any) =>
                   Boolean(getMatch(pathname, false))
                 )!,
               };

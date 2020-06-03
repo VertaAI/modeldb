@@ -1,78 +1,121 @@
-import * as React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useCallback, useEffect } from 'react';
+import { useHistory } from 'react-router';
 
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { selectors as compareCommitsSelectors } from 'core/features/versioning/compareCommits';
+import { CommitPointer } from 'core/shared/models/Versioning/RepositoryData';
 import Button from 'core/shared/view/elements/Button/Button';
 import {
-  CommitPointer,
-  isMergeCommitsError,
-} from 'core/shared/models/Versioning/RepositoryData';
-import {
-  toastCommunicationError,
   toastError,
+  useToastCommunicationError,
 } from 'core/shared/view/elements/Notification/Notification';
+import { IWorkspace } from 'models/Workspace';
+import routes from 'routes';
 
+import { useMergeCommitsMutation } from '../../../store/mergeCommits/useMergeCommits';
 import { ICommitPointersCommits } from '../../../store/types';
-import { selectors } from '../../../store';
-import { mergeCommits } from '../../../store/actions';
 
-const useMergeCommitsButton = () => {
-  const diffs = useSelector(compareCommitsSelectors.selectDiff);
-  const mergingCommits = useSelector(selectors.selectCommunications)
-    .mergingCommits;
+const MergeCommitsButton = ({
+  initialCommitPointerA,
+  initialCommitPointerB,
+  repository,
+  base,
+  commitPointersCommits,
+  workspaceName,
+  isMergeConflict,
+}: {
+  initialCommitPointerA: CommitPointer;
+  initialCommitPointerB: CommitPointer;
+  repository: IRepository;
+  base: CommitPointer;
+  commitPointersCommits: ICommitPointersCommits;
+  workspaceName: IWorkspace['name'];
+  isMergeConflict: boolean;
+}) => {
+  const history = useHistory();
 
-  const dispatch = useDispatch();
+  const { mergeCommits, communicationWithData } = useMergeCommitsMutation();
+  useToastCommunicationError(communicationWithData.communication);
 
-  const MergeCommitsButton = ({
-    children,
-    repository,
-    base,
-    commitPointersCommits,
-  }: {
-    children: (button: any) => any;
-    repository: IRepository;
-    base: CommitPointer;
-    commitPointersCommits: ICommitPointersCommits;
-  }) =>
-    diffs && diffs.length > 0
-      ? children(
-          <Button
-            theme="secondary"
-            size="small"
-            onClick={() => {
-              dispatch(
-                mergeCommits({
-                  base,
-                  repositoryId: repository.id,
-                  repositoryName: repository.name,
-                  commitASha: commitPointersCommits.commitPointerA.sha,
-                  commitBSha: commitPointersCommits.commitPointerB.sha,
-                })
-              );
-            }}
-          >
-            Merge
-          </Button>
-        )
-      : children(null);
-
-  React.useEffect(() => {
-    if (mergingCommits.error) {
-      if (isMergeCommitsError(mergingCommits.error)) {
-        toastError('Merge not possible!');
-      } else {
-        toastCommunicationError(mergingCommits.error.appError);
-      }
+  useEffect(() => {
+    if (
+      communicationWithData.data &&
+      communicationWithData.data.isMergeConflict
+    ) {
+      redirectToMergeConflicts();
+      toastError('Merge not possible!');
     }
-  }, [mergingCommits.error]);
-  React.useEffect(() => {
-    return () => {
-      dispatch(mergeCommits.reset());
-    };
-  }, []);
+  }, [communicationWithData.data]);
 
-  return { MergeCommitsButton, mergingCommits };
+  const redirectToMergeConflicts = useCallback(
+    () =>
+      history.push(
+        routes.repositoryMergeConflicts.getRedirectPath({
+          commitPointerAValue: initialCommitPointerA.value,
+          commitPointerBValue: initialCommitPointerB.value,
+          repositoryName: repository.name,
+          workspaceName,
+        })
+      ),
+    [
+      initialCommitPointerA.value,
+      initialCommitPointerB.value,
+      repository.name,
+      workspaceName,
+    ]
+  );
+
+  const redirectToBase = useCallback(
+    () =>
+      history.push(
+        routes.repositoryDataWithLocation.getRedirectPath({
+          workspaceName,
+          commitPointer: base,
+          location: CommitComponentLocation.makeRoot(),
+          repositoryName: repository.name,
+          type: 'folder',
+        })
+      ),
+    [base, workspaceName, repository.name]
+  );
+
+  const onMergeCommitClick = useCallback(
+    () =>
+      mergeCommits(
+        {
+          repositoryId: repository.id,
+          base,
+          commitASha: commitPointersCommits.commitPointerA.sha,
+          commitBSha: commitPointersCommits.commitPointerB.sha,
+        },
+        redirectToBase
+      ),
+    [redirectToBase, repository.id, commitPointersCommits]
+  );
+
+  return isMergeConflict ? (
+    <LocalButton onClick={redirectToMergeConflicts}>
+      See merge conflicts
+    </LocalButton>
+  ) : (
+    <LocalButton onClick={onMergeCommitClick} dataTest="merge-commits-button">
+      Merge
+    </LocalButton>
+  );
 };
 
-export { useMergeCommitsButton };
+const LocalButton = ({
+  children,
+  onClick,
+  dataTest,
+}: {
+  children: React.ReactChild;
+  onClick: () => void;
+  dataTest?: string;
+}) => (
+  <Button theme="secondary" size="small" dataTest={dataTest} onClick={onClick}>
+    {children}
+  </Button>
+);
+
+export default MergeCommitsButton;
