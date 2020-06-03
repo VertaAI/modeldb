@@ -88,7 +88,7 @@ class TestRepository extends FunSuite {
   }
 
 
-  test("get commit by branch") {
+  test("create new branch and get commit by that branch's name") {
     val f = fixture
 
     try {
@@ -103,7 +103,7 @@ class TestRepository extends FunSuite {
   }
 
 
-  test("get commit by tag and remove tag") {
+  test("add/remove tag and get commit by tag") {
     val f = fixture
 
     try {
@@ -111,7 +111,7 @@ class TestRepository extends FunSuite {
       commit.tag("Some tag")
 
       val getCommitAttempt = f.repo.getCommitByTag("Some tag")
-      assert (getCommitAttempt.isSuccess)
+      assert(getCommitAttempt.isSuccess)
       assert(getCommitAttempt.get equals commit)
 
       f.repo.deleteTag("Some tag")
