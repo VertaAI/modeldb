@@ -434,15 +434,16 @@
             </not>
         </preConditions>
         <createTable tableName="artifact_part">
-            <column name="artifact_id" type="int8">
-                <constraints primaryKey="true" nullable="false"
-                  foreignKeyName="artifact_id" referencedTableName="artifact"
-                  referencedColumnNames="id"/>
+            <column name="artifact_id" type="varchar(64)">
+                <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="part_number" type="int8">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="etag" type="varchar(255)"/>
+            <column name="artifact_type" type="int4">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
   
@@ -532,6 +533,24 @@
         <addColumn tableName="s3_dataset_component_blob">
             <column name="internal_versioned_path" type="text"/>
         </addColumn>
+    </changeSet>
+
+    <changeSet id="upload_status_table_create" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="upload_status"/>
+            </not>
+        </preConditions>
+        <createTable tableName="upload_status">
+            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="path_dataset_component_blob_id" type="varchar(64)"/>
+            <column name="s3_dataset_component_blob_id" type="varchar(64)"/>
+            <column name="component_blob_type" type="int4"/>
+            <column name="upload_id" type="varchar(255)" defaultValue="null" />
+            <column name="upload_completed" type="boolean" defaultValue="true" />
+        </createTable>
     </changeSet>
 
     <!-- keep the line below at the end of this file -->

@@ -5,7 +5,6 @@ import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.Artifact;
-import ai.verta.modeldb.ArtifactPart;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
 import ai.verta.modeldb.CommitArtifactPart.Response;
@@ -67,6 +66,7 @@ import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.VersioningUtils;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum;
@@ -2132,13 +2132,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ArtifactEntity artifactEntity =
           getArtifactEntity(
               session, request.getId(), request.getKey(), ModelDBServiceActions.UPDATE);
-      ArtifactPart artifactPart = request.getArtifactPart();
-      ArtifactPartEntity artifactPartEntity =
-          new ArtifactPartEntity(
-              artifactEntity, artifactPart.getPartNumber(), artifactPart.getEtag());
-      session.beginTransaction();
-      session.saveOrUpdate(artifactPartEntity);
-      session.getTransaction().commit();
+      VersioningUtils.saveOrUpdateArtifactPartEntity(
+          request.getArtifactPart(),
+          session,
+          String.valueOf(artifactEntity.getId()),
+          ArtifactPartEntity.EXP_RUN_ARTIFACT);
       return Response.newBuilder().build();
     }
   }
@@ -2162,7 +2160,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws ModelDBException, InvalidProtocolBufferException {
     ArtifactEntity artifactEntity =
         getArtifactEntity(session, experimentRunId, key, ModelDBServiceActions.READ);
-    return artifactEntity.getArtifactPartEntities();
+    return VersioningUtils.getArtifactPartEntities(
+        session, String.valueOf(artifactEntity.getId()), ArtifactPartEntity.EXP_RUN_ARTIFACT);
   }
 
   @Override
@@ -2179,7 +2178,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         LOGGER.info(message);
         throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
       }
-      Set<ArtifactPartEntity> artifactPartEntities = artifactEntity.getArtifactPartEntities();
+      Set<ArtifactPartEntity> artifactPartEntities =
+          VersioningUtils.getArtifactPartEntities(
+              session, String.valueOf(artifactEntity.getId()), ArtifactPartEntity.EXP_RUN_ARTIFACT);
       partETags =
           artifactPartEntities.stream()
               .map(ArtifactPartEntity::toPartETag)

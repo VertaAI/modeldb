@@ -24,7 +24,6 @@ import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -681,19 +680,14 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         // Validate request parameters
         validateGetUrlForVersionedBlobRequest(request);
 
-        GetCommitComponentRequest.Response commitComponent =
-            blobDAO.getCommitComponent(
+        GetUrlForVersionedBlob.Response response =
+            blobDAO.getUrlForVersionedBlob(
+                artifactStoreDAO,
                 (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
-                request.getCommitSha(),
-                request.getLocationList());
-
-        String presignedUrl = getPresignedUrl(request, commitComponent);
-        GetUrlForVersionedBlob.Response.Builder responseBuilder =
-            GetUrlForVersionedBlob.Response.newBuilder();
-        if (presignedUrl != null && !presignedUrl.isEmpty()) {
-          responseBuilder.setUrl(presignedUrl);
-        }
-        responseObserver.onNext(responseBuilder.build());
+                (session, repository) ->
+                    commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
+                request);
+        responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
     } catch (Exception e) {
@@ -726,56 +720,122 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     }
   }
 
-  public String getPresignedUrl(
-      GetUrlForVersionedBlob request, GetCommitComponentRequest.Response commitComponent)
-      throws ModelDBException {
-    switch (commitComponent.getComponentCase()) {
-      case BLOB:
-        Blob blob = commitComponent.getBlob();
-        if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
-          DatasetBlob datasetBlob = blob.getDataset();
-          switch (datasetBlob.getContentCase()) {
-            case PATH:
-              Optional<PathDatasetComponentBlob> pathComponentBlob =
-                  datasetBlob.getPath().getComponentsList().stream()
-                      .filter(
-                          componentBlob ->
-                              componentBlob
-                                  .getPath()
-                                  .equals(request.getPathDatasetComponentBlobPath()))
-                      .findFirst();
-              if (pathComponentBlob.isPresent()
-                  && !pathComponentBlob.get().getInternalVersionedPath().isEmpty()) {
-                return artifactStoreDAO.getPresignedUrlForVersionedBlob(
-                    pathComponentBlob.get().getInternalVersionedPath(), request.getMethod());
-              }
-              break;
-            case S3:
-              Optional<S3DatasetComponentBlob> s3PathComponentBlob =
-                  datasetBlob.getS3().getComponentsList().stream()
-                      .filter(
-                          componentBlob ->
-                              componentBlob
-                                  .getPath()
-                                  .getPath()
-                                  .equals(request.getPathDatasetComponentBlobPath()))
-                      .findFirst();
-              if (s3PathComponentBlob.isPresent()
-                  && !s3PathComponentBlob.get().getPath().getInternalVersionedPath().isEmpty()) {
-                return artifactStoreDAO.getPresignedUrlForVersionedBlob(
-                    s3PathComponentBlob.get().getPath().getInternalVersionedPath(),
-                    request.getMethod());
-              }
-              break;
-          }
-        }
-        break;
-      case FOLDER:
-      case COMPONENT_NOT_SET:
-      default:
-        throw new ModelDBException(
-            "Blob location is invalid OR it is a folder location", Code.INVALID_ARGUMENT);
+  @Override
+  public void commitVersionedBlobArtifactPart(
+      CommitVersionedBlobArtifactPart request,
+      StreamObserver<CommitVersionedBlobArtifactPart.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getCommitSha().isEmpty()
+          && request.getLocationList().isEmpty()
+          && !request.hasArtifactPart()) {
+        errorMessage =
+            "Commit hash and Location and Artifact Part not found in CommitVersionedBlobArtifactPart request";
+      } else if (request.getCommitSha().isEmpty()) {
+        errorMessage = "Commit hash not found in CommitVersionedBlobArtifactPart request";
+      } else if (request.getLocationList().isEmpty()) {
+        errorMessage = "Location not found in CommitVersionedBlobArtifactPart request";
+      } else if (!request.hasArtifactPart()) {
+        errorMessage = "Artifact Part not found in CommitVersionedBlobArtifactPart request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.warn(errorMessage);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      }
+
+      CommitVersionedBlobArtifactPart.Response response =
+          blobDAO.commitVersionedBlobArtifactPart(
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
+              request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, CommitVersionedBlobArtifactPart.Response.getDefaultInstance());
     }
-    return null;
+  }
+
+  @Override
+  public void getCommittedVersionedBlobArtifactParts(
+      GetCommittedVersionedBlobArtifactParts request,
+      StreamObserver<GetCommittedVersionedBlobArtifactParts.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getCommitSha().isEmpty() && request.getLocationList().isEmpty()) {
+        errorMessage =
+            "Commit hash and Location not found in GetCommittedVersionedBlobArtifactParts request";
+      } else if (request.getCommitSha().isEmpty()) {
+        errorMessage = "Commit hash not found in GetCommittedVersionedBlobArtifactParts request";
+      } else if (request.getLocationList().isEmpty()) {
+        errorMessage = "Location not found in GetCommittedVersionedBlobArtifactParts request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.warn(errorMessage);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      }
+
+      GetCommittedVersionedBlobArtifactParts.Response response =
+          blobDAO.getCommittedVersionedBlobArtifactParts(
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
+              request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver,
+          e,
+          GetCommittedVersionedBlobArtifactParts.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void commitMultipartVersionedBlobArtifact(
+      CommitMultipartVersionedBlobArtifact request,
+      StreamObserver<CommitMultipartVersionedBlobArtifact.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getCommitSha().isEmpty()
+          && request.getLocationList().isEmpty()
+          && request.getPathDatasetComponentBlobPath().isEmpty()) {
+        errorMessage =
+            "Commit hash and Location and path not found in CommitMultipartVersionedBlobArtifact request";
+      } else if (request.getCommitSha().isEmpty()) {
+        errorMessage = "Commit hash not found in CommitMultipartVersionedBlobArtifact request";
+      } else if (request.getLocationList().isEmpty()) {
+        errorMessage = "Location not found in CommitMultipartVersionedBlobArtifact request";
+      } else if (request.getPathDatasetComponentBlobPath().isEmpty()) {
+        errorMessage = "Path not found in CommitMultipartVersionedBlobArtifact request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.warn(errorMessage);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      }
+
+      CommitMultipartVersionedBlobArtifact.Response response =
+          blobDAO.commitMultipartVersionedBlobArtifact(
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
+              request,
+              artifactStoreDAO::commitMultipart);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, CommitMultipartVersionedBlobArtifact.Response.getDefaultInstance());
+    }
   }
 }

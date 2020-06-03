@@ -32,6 +32,7 @@ import ai.verta.modeldb.entities.QueryDatasetVersionInfoEntity;
 import ai.verta.modeldb.entities.QueryParameterEntity;
 import ai.verta.modeldb.entities.RawDatasetVersionInfoEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.entities.UploadStatusEntity;
 import ai.verta.modeldb.entities.UserCommentEntity;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
@@ -158,7 +159,8 @@ public class ModelDBHibernateUtil {
     NotebookCodeBlobEntity.class,
     BranchEntity.class,
     VersioningModeldbEntityMapping.class,
-    HyperparameterElementMappingEntity.class
+    HyperparameterElementMappingEntity.class,
+    UploadStatusEntity.class
   };
 
   private ModelDBHibernateUtil() {}
