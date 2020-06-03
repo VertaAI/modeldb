@@ -87,9 +87,9 @@ class Client(conn: ClientConnection) {
    *  @param id id of the repository
    *  @return the repository
    */
-  def getRepository(id: String)(implicit ec: ExecutionContext): Try[Repository] = {
+  def getRepository(id: BigInt)(implicit ec: ExecutionContext): Try[Repository] = {
     clientSet.versioningService.GetRepository2(
-      id_repo_id = BigInt(id)
+      id_repo_id = id
     ).map(r => new Repository(clientSet, r.repository.get))
   }
 
@@ -97,9 +97,9 @@ class Client(conn: ClientConnection) {
   /** Delete repository based on id
    *  @param id id of the repository
    */
-  def deleteRepository(id: String)(implicit ec: ExecutionContext): Try[Unit] = {
+  def deleteRepository(id: BigInt)(implicit ec: ExecutionContext): Try[Unit] = {
     clientSet.versioningService.DeleteRepository2(
-      repository_id_repo_id = BigInt(id)
+      repository_id_repo_id = id
     ).map(_ => ())
   }
 

@@ -64,8 +64,8 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
     }
 
     /** Return the name of the repository */
-    def getName() = repo.name.get
+    def name = repo.name.get
 
     /** Return the id of the repository */
-    def getId() = repo.id.get
+    def id = repo.id.get
 }
