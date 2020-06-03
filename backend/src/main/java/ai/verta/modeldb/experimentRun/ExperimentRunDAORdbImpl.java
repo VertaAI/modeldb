@@ -1880,7 +1880,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-  @Override
   public void deleteLogVersionedInputs(Session session, Long repoId, String commitHash) {
     StringBuilder fetchAllExpRunLogVersionedInputsHqlBuilder =
         new StringBuilder(
@@ -1897,6 +1896,21 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     if (commitHash != null && !commitHash.isEmpty()) {
       query.setParameter("commitHash", commitHash);
     }
+    query.executeUpdate();
+    LOGGER.debug("ExperimentRun versioning deleted successfully");
+  }
+
+  @Override
+  public void deleteLogVersionedInputs(Session session, List<Long> repoIds) {
+    StringBuilder fetchAllExpRunLogVersionedInputsHqlBuilder =
+        new StringBuilder(
+            "DELETE FROM VersioningModeldbEntityMapping vm WHERE vm.repository_id IN (:repoIds) ");
+    fetchAllExpRunLogVersionedInputsHqlBuilder
+        .append(" AND vm.entity_type = '")
+        .append(ExperimentRunEntity.class.getSimpleName())
+        .append("'");
+    Query query = session.createQuery(fetchAllExpRunLogVersionedInputsHqlBuilder.toString());
+    query.setParameter("repoIds", repoIds);
     query.executeUpdate();
     LOGGER.debug("ExperimentRun versioning deleted successfully");
   }
