@@ -38,7 +38,7 @@ class TestRepository extends FunSuite {
 
     try {
       val getRepoAttempt = f.client.getRepository("124112413")
-      
+
       assert(getRepoAttempt.isFailure)
       // check if the correct error is returned:
       assert(getRepoAttempt match {case Failure(e) => e.getMessage contains "Couldn't find repository by id"})
@@ -60,7 +60,7 @@ class TestRepository extends FunSuite {
     }
   }
 
-  test("get commit by id should return a commit with correct id (commit sha))") {
+  test("get commit by id should return a commit with correct id (commit sha)") {
     val f = fixture
 
     try {
