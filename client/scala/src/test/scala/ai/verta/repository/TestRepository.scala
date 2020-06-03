@@ -38,6 +38,7 @@ class TestRepository extends FunSuite {
 
     try {
       val getRepoAttempt = f.client.getRepository("124112413")
+      
       assert(getRepoAttempt.isFailure)
       // check if the correct error is returned:
       assert(getRepoAttempt match {case Failure(e) => e.getMessage contains "Couldn't find repository by id"})
@@ -51,6 +52,7 @@ class TestRepository extends FunSuite {
 
     try {
       val getRepoAttempt = f.client.getRepository(f.repo.getId().toString)
+
       assert(getRepoAttempt.isSuccess)
       assert(getRepoAttempt.get.getId().equals(f.repo.getId()))
     } finally {
@@ -63,8 +65,8 @@ class TestRepository extends FunSuite {
 
     try {
       val id = f.repo.getCommitByBranch().get.getId()
-
       val getCommitAttempt = f.repo.getCommitById(id)
+
       assert(getCommitAttempt.isSuccess)
       assert(getCommitAttempt.get.getId().equals(id))
     } finally {
@@ -78,7 +80,6 @@ class TestRepository extends FunSuite {
     try {
       val commitNoInput = f.repo.getCommitByBranch().get
       val commitMaster = f.repo.getCommitByBranch("master").get
-
 
       assert(commitNoInput equals commitMaster)
     } finally {
