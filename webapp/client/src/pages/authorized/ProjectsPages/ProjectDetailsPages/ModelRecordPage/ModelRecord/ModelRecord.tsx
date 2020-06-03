@@ -46,12 +46,12 @@ const mapStateToProps = (state: IApplicationState, localProps: ILocalProps) => {
     data: modelRecord,
     loading:
       ExperimentRunsStore.selectCommunications(state).loadingExperimentRun[
-        localProps.id
+      localProps.id
       ] || initialCommunication,
     project: ProjectsStore.selectProject(state, localProps.projectId),
     deleting:
       ExperimentRunsStore.selectCommunications(state).deletingExperimentRun[
-        localProps.id
+      localProps.id
       ] || initialCommunication,
   };
 };
@@ -85,7 +85,7 @@ class ModelRecordView extends React.PureComponent<AllProps> {
           entityNotFound: () =>
             this.props.onShowNotFoundPage(this.props.loading.error),
         },
-        () => {}
+        () => { }
       );
     }
 
@@ -135,35 +135,20 @@ class ModelRecordView extends React.PureComponent<AllProps> {
           {versionedInputs && (
             <VersionedInputsSection versionedInputs={versionedInputs} />
           )}
-          <Section iconType="datasets" title="Datasets">
-            {data.datasets.length > 0 ? (
-              <Artifacts
-                allowedActions={data.allowedActions}
-                artifacts={data.datasets}
-                modelRecordId={data.id}
-              />
-            ) : (
-              <ClientSuggestion
-                fieldName={'dataset'}
-                clientMethod={'log_dataset_version()'}
-                link={vertaDocLinks.log_dataset}
-              />
-            )}
-            <HyperparametersSection hyperparameters={data.hyperparameters} />
-            <MetricsSection metrics={data.metrics} />
-            <AttributesSection attributes={data.attributes} />
-            <ArtifactsSection
-              allowedActions={data.allowedActions}
-              artifacts={data.artifacts}
-              modelRecordId={data.id}
-            />
-            <CodeVersionSection
-              id={data.id}
-              codeVersion={data.codeVersion}
-              codeVersionsFromBlob={data.codeVersionsFromBlob}
-              versionedInputs={data.versionedInputs}
-            />
-          </Section>
+          <HyperparametersSection hyperparameters={data.hyperparameters} />
+          <MetricsSection metrics={data.metrics} />
+          <AttributesSection attributes={data.attributes} />
+          <ArtifactsSection
+            allowedActions={data.allowedActions}
+            artifacts={data.artifacts}
+            modelRecordId={data.id}
+          />
+          <CodeVersionSection
+            id={data.id}
+            codeVersion={data.codeVersion}
+            codeVersionsFromBlob={data.codeVersionsFromBlob}
+            versionedInputs={data.versionedInputs}
+          />
           <Section iconType="observations" title="Observations">
             <ObservationsModelPage
               observations={data.observations}
@@ -174,16 +159,16 @@ class ModelRecordView extends React.PureComponent<AllProps> {
             {data.datasets.length > 0 ? (
               <Artifacts
                 allowedActions={data.allowedActions}
-                artifacts={data.artifacts}
+                artifacts={data.datasets}
                 modelRecordId={data.id}
               />
             ) : (
-              <ClientSuggestion
-                fieldName={'dataset'}
-                clientMethod={'log_dataset_version()'}
-                link={vertaDocLinks.log_dataset}
-              />
-            )}
+                <ClientSuggestion
+                  fieldName={'dataset'}
+                  clientMethod={'log_dataset_version()'}
+                  link={vertaDocLinks.log_dataset}
+                />
+              )}
           </Section>
         </PageCard>
       </Reloading>
