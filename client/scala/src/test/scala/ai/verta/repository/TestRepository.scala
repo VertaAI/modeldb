@@ -86,4 +86,41 @@ class TestRepository extends FunSuite {
       cleanup(f)
     }
   }
+
+
+  test("get commit by branch") {
+    val f = fixture
+
+    try {
+      val commit = f.repo.getCommitByBranch().get
+      commit.newBranch("new-branch")
+
+      val commitNewBranch = f.repo.getCommitByBranch("new-branch").get
+      assert(commit equals commitNewBranch)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+
+  test("get commit by tag and remove tag") {
+    val f = fixture
+
+    try {
+      val commit = f.repo.getCommitByBranch().get
+      commit.tag("Some tag")
+
+      val getCommitAttempt = f.repo.getCommitByTag("Some tag")
+      assert (getCommitAttempt.isSuccess)
+      assert(getCommitAttempt.get equals commit)
+
+      f.repo.deleteTag("Some tag")
+
+      val getCommitAttemptAfterDel = f.repo.getCommitByTag("Some tag")
+      assert(getCommitAttemptAfterDel.isFailure)
+      assert(getCommitAttemptAfterDel match {case Failure(e) => e.getMessage contains "Tag not found"})
+    } finally {
+      cleanup(f)
+    }
+  }
 }
