@@ -5,6 +5,7 @@ import { ThunkAction } from 'redux-thunk';
 
 import ServiceFactory from 'services/ServiceFactory';
 
+import * as CompareEntities from 'core/features/compareEntities';
 import * as RepositoryNavigation from 'core/features/versioning/repositoryNavigation';
 import * as ExperimentRunsTableConfig from 'core/features/experimentRunsTableConfig';
 import * as Filter from 'core/features/filter';
@@ -16,7 +17,6 @@ import {
   IArtifactManagerState,
   artifactManagerReducer,
 } from './artifactManager';
-import { compareModelsReducer, ICompareEntitiesState } from './compareEntities';
 import { IDatasetsState, datasetsReducer } from './datasets';
 import {
   IDatasetVersionsState,
@@ -42,7 +42,7 @@ export interface IApplicationState
     ExperimentRunsTableConfig.IExperimentRunsTableConfigRootState,
     Layout.ILayoutRootState {
   experiments: IExperimentsState;
-  compareEntities: ICompareEntitiesState;
+  compareEntities: CompareEntities.ICompareEntitiesState;
   experimentRuns: IExperimentRunsState;
   projectCreation: IProjectCreationState;
   projects: IProjectsState;
@@ -67,7 +67,7 @@ export const createRootReducer = (history: History) =>
     layout: Layout.layoutReducer,
     experiments: experimentsReducer,
     comments: Comment.commentsReducer,
-    compareEntities: compareModelsReducer,
+    compareEntities: CompareEntities.compareModelsReducer,
     experimentRunsTableConfig:
       ExperimentRunsTableConfig.experimentRunsTableConfigReducer,
     experimentRuns: experimentRunsReducer,

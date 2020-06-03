@@ -9,8 +9,8 @@ import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import ShareLink from 'core/shared/view/elements/ShareLink/ShareLink';
 import routes from 'routes';
 import { resetExperimentRunsSettings } from 'store/experimentRuns';
-import { ComparedEntityIds } from 'store/compareEntities';
 import ComparedEntitesManager from 'core/features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
+import { ComparedEntityIds } from 'core/features/compareEntities';
 
 import styles from './DashboardActions.module.css';
 
