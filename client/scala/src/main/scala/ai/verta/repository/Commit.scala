@@ -30,10 +30,11 @@ class Commit(
  *  @param branch branch name
  *  @return if not saved, a failure; otherwise, this commit as the head of `branch`
  */
-def newBranch(branch: String)(implicit ec: ExecutionContext) =
+def newBranch(branch: String)(implicit ec: ExecutionContext) = {
   if (!saved)
     Failure(new IllegalStateException("Commit must be saved before it can be attached to a branch"))
   else setBranch(branch)
+}
 
   /** Assigns a tag to this Commit
    *  @param tag tag
