@@ -16,6 +16,10 @@ public interface RepositoryDAO {
   RepositoryEntity getRepositoryById(
       Session session, RepositoryIdentification id, boolean checkWrite) throws ModelDBException;
 
+  RepositoryEntity getRepositoryById(
+      Session session, RepositoryIdentification id, boolean checkWrite, boolean checkProtected)
+      throws ModelDBException;
+
   RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
       throws ModelDBException;
 
