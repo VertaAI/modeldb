@@ -3,7 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 
-import ProjectWidget from 'components/ProjectWidget/ProjectWidget';
+import ProjectWidget from 'pages/authorized/ProjectsPages/ProjectsPage/ProjectWidget/ProjectWidget';
 import {
   IFilterContext,
   selectCurrentContextFilters,

@@ -5,7 +5,7 @@ import { RouteComponentProps, withRouter } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 import routes, { GetRouteParams } from 'routes';
 
-import ExperimentWidget from 'components/ExperimentWidget/ExperimentWidget';
+import ExperimentWidget from 'pages/authorized/ProjectsPages/ProjectDetailsPages/ExperimentsPage/ExperimentWidget/ExperimentWidget';
 import {
   IFilterContext,
   selectCurrentContextAppliedFilters,

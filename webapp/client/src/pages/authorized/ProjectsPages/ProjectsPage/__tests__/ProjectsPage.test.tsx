@@ -1,7 +1,7 @@
 import { shallow } from 'enzyme';
 import * as React from 'react';
 
-import ProjectWidget from 'components/ProjectWidget/ProjectWidget';
+import ProjectWidget from 'pages/authorized/ProjectsPages/ProjectsPage/ProjectWidget/ProjectWidget';
 import { createCodeError } from 'core/shared/models/Error';
 import { makeDefaultStringFilter } from 'core/features/filter/Model';
 import { initialCommunication } from 'core/shared/utils/redux/communication';

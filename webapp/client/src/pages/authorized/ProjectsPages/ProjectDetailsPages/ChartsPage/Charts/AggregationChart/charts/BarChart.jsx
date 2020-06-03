@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
 
-import { errorMessage } from 'components/Charts/shared/errorMessages';
+import { errorMessage } from 'pages/authorized/ProjectsPages/ProjectDetailsPages/ChartsPage/Charts/shared/errorMessages';
 import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
 
 const width = 680;

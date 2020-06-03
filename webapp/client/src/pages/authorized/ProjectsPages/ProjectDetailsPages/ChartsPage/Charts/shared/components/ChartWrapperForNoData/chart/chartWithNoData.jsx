@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { errorMessageOnLayer } from 'components/Charts/shared/errorMessages';
+import { errorMessageOnLayer } from 'pages/authorized/ProjectsPages/ProjectDetailsPages/ChartsPage/Charts/shared/errorMessages';
 
 const width = 680;
 const height = 360;

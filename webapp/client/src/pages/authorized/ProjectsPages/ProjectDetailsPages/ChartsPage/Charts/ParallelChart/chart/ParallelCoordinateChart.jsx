@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 
 import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
 import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
-import { errorMessageOnLayer } from 'components/Charts/shared/errorMessages';
+import { errorMessageOnLayer } from 'pages/authorized/ProjectsPages/ProjectDetailsPages/ChartsPage/Charts/shared/errorMessages';
 import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
 import { cssTheme } from 'core/shared/styles/theme';
 

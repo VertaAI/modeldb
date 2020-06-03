@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import DatasetWidget from 'components/DatasetWidget/DatasetWidget';
+import DatasetWidget from 'pages/authorized/DatasetPages/DatasetsPage/DatasetWidget/DatasetWidget';
 import {
   IFilterContext,
   selectCurrentContextFilters,
@@ -29,8 +29,8 @@ import {
 import { IApplicationState } from 'store/store';
 
 import styles from './DatasetsPage.module.css';
-import DeletingDatasetsManager from './DeletingDatasetsManager/DeletingDatasetsManager';
-import DatasetsPagesLayout from './shared/DatasetsPagesLayout/DatasetsPagesLayout';
+import DeletingDatasetsManager from '../DeletingDatasetsManager/DeletingDatasetsManager';
+import DatasetsPagesLayout from '../shared/DatasetsPagesLayout/DatasetsPagesLayout';
 
 const mapStateToProps = (state: IApplicationState) => {
   return {

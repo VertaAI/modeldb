@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
 
-import { errorMessageOnLayer } from 'components/Charts/shared/errorMessages';
+import { errorMessageOnLayer } from 'pages/authorized/ProjectsPages/ProjectDetailsPages/ChartsPage/Charts/shared/errorMessages';
 
 import styles from '../GroupedChartManager.module.css';
 

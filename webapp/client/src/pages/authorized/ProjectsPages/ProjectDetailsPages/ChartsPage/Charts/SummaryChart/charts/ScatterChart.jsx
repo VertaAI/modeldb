@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
 
-import { errorMessage } from 'components/Charts/shared/errorMessages';
+import { errorMessage } from 'pages/authorized/ProjectsPages/ProjectDetailsPages/ChartsPage/Charts/shared/errorMessages';
 import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
 import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
 import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
