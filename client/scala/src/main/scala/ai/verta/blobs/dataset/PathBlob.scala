@@ -16,9 +16,10 @@ import scala.util.{Failure, Success, Try}
   paths.map(expanduser _).map((path: String) => processPath(new File(path)))
 
   override def equals(other: Any) = other match {
-    case other: PathBlob => contents.equals(other.contents)
+    case other: PathBlob => getAllMetadata equals other.getAllMetadata
     case _ => false
   }
+
 
   /** Hash the file's content
    *  From https://stackoverflow.com/questions/41642595/scala-file-hashing
@@ -64,26 +65,21 @@ import scala.util.{Failure, Success, Try}
    }
 
   /** Extract the metadata of the file
-   *  If the file has already been processed, or if the path is invalid, the file is skipped
+   *  If the file has already been processed, it is skipped.
+   *  If an invalid is path, the exception is captured
    *  @param file file
-   *  @return the metadata of the file, wrapped in (some) VersioningPathDatasetComponentBlob
+   *  @return the metadata of the file, wrapped in a FileMetadata object (if success)
    */
    private def processFile(file: File) = {
     if (!contents.contains(file.getPath())) {
-      Try {
+      contents.put(file.getPath(), Try {
         new FileMetadata(
           BigInt(file.lastModified()),
           hash(file),
           file.getPath(),
           BigInt(file.length)
         )
-      } match {
-        case Success(metadata) => {
-          contents.put(file.getPath(), metadata)
-          Success(())
-        }
-        case Failure(e) => Failure(e)
-      }
+      })
     }
    }
 
@@ -105,7 +101,7 @@ object PathBlob {
     var pathBlob = new PathBlob(List())
 
     pathVersioningBlob.components.get.map(
-      comp => pathBlob.contents.put(comp.path.get, pathBlob.toMetadata(comp))
+      comp => pathBlob.contents.put(comp.path.get, Success(pathBlob.toMetadata(comp)))
     )
     pathBlob
   }

@@ -3,9 +3,10 @@ package ai.verta.blobs.dataset
 import ai.verta.swagger._public.modeldb.versioning.model._
 
 import scala.collection.mutable.HashMap
+import scala.util.{Failure, Success, Try}
 
 trait Dataset extends Blob {
-  protected var contents = new HashMap[String, FileMetadata]() // for deduplication and comparing
+  protected var contents = new HashMap[String, Try[FileMetadata]]() // for deduplication and comparing
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
@@ -29,10 +30,16 @@ trait Dataset extends Blob {
    *  @param path path to the file
    *  @return None if path is not in dataset blob, or some file metadata.
    */
-  def getMetadata(path: String): Option[FileMetadata] = contents.get(path)
+  def getMetadata(path: String): Try[FileMetadata] = contents.get(path) match {
+    case Some(v) => v
+    case None => Failure(new IllegalArgumentException("Path is not stored, or is a directory."))
+  }
 
-  /** Get all the files' metadata managed by the Dataset blob */
-  protected def components = contents.values.map(toComponent _).toList
+  /** Get all the Dataset blob's corresponding list of components */
+  protected def components = getAllMetadata.map(toComponent _).toList
+
+  /** Get the set of all the files' metadata managed by the Dataset blob  */
+  def getAllMetadata = contents.values.filter(_.isSuccess).map(_.get)
 }
 
 /** Represent a file's metadata stored in Dataset Blob
