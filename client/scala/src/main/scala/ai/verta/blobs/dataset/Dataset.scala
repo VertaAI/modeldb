@@ -36,7 +36,7 @@ trait Dataset extends Blob {
   }
 
   /** Get all the Dataset blob's corresponding list of components */
-  protected def components = getAllMetadata.map(toComponent _).toList
+  protected def components = getAllMetadata.map(toComponent).toList
 
   /** Get the set of all the files' metadata managed by the Dataset blob  */
   def getAllMetadata = contents.values.filter(_.isSuccess).map(_.get)

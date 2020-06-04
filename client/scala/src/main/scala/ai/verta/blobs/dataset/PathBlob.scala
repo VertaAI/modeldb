@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
  */
  case class PathBlob(private val paths: List[String]) extends Dataset {
   private val BufferSize = 8192
-  paths.map(expanduser _).map((path: String) => processPath(new File(path)))
+  paths.map(expanduser).map((path: String) => processPath(new File(path)))
 
   override def equals(other: Any) = other match {
     case other: PathBlob => getAllMetadata.equals(other.getAllMetadata)
