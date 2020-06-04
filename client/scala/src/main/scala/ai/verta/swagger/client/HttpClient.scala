@@ -32,7 +32,7 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
   }
 
   def request[T1, T2](method: String, path: String, query: Map[String, List[String]], body: T1, parser: JValue => T2)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
-    val safePath = path.split("/").map(urlEncodeUTF8 _).mkString("/")
+    val safePath = path.split("/").map(urlEncodeUTF8).mkString("/")
 
     if (body == null)
       requestInternal(method, safePath, query, null, parser)
