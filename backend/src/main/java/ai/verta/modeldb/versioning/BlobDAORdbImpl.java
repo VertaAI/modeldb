@@ -1303,11 +1303,11 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   @Override
-  public GetUrlForVersionedBlob.Response getUrlForVersionedBlob(
+  public GetUrlForBlobVersioned.Response getUrlForVersionedBlob(
       ArtifactStoreDAO artifactStoreDAO,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction,
-      GetUrlForVersionedBlob request)
+      GetUrlForBlobVersioned request)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
@@ -1321,8 +1321,8 @@ public class BlobDAORdbImpl implements BlobDAO {
               Collections.singletonList(BlobType.DATASET_BLOB));
       String presignedUrl =
           getPresignedUrl(artifactStoreDAO, session, request, locationBlobWithHashMap);
-      GetUrlForVersionedBlob.Response.Builder responseBuilder =
-          GetUrlForVersionedBlob.Response.newBuilder();
+      GetUrlForBlobVersioned.Response.Builder responseBuilder =
+          GetUrlForBlobVersioned.Response.newBuilder();
       if (presignedUrl != null && !presignedUrl.isEmpty()) {
         responseBuilder.setUrl(presignedUrl);
       }
@@ -1333,7 +1333,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   private String getPresignedUrl(
       ArtifactStoreDAO artifactStoreDAO,
       Session session,
-      GetUrlForVersionedBlob request,
+      GetUrlForBlobVersioned request,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap)
       throws ModelDBException {
     String locationKey = String.join("#", request.getLocationList());
@@ -1436,10 +1436,12 @@ public class BlobDAORdbImpl implements BlobDAO {
                   .apply(pathDatasetComponentBlob.getInternalVersionedPath())
                   .orElse(null);
           uploadStatusEntity = new UploadStatusEntity();
+          uploadStatusEntity.setDataset_component_blob_id(datasetComponentPathId);
           if (contentCase.equals(DatasetBlob.ContentCase.PATH)) {
-            uploadStatusEntity.setPath_dataset_component_blob_id(datasetComponentPathId);
+            uploadStatusEntity.setComponent_blob_type(
+                UploadStatusEntity.PATH_DATASET_COMPONENT_BLOB);
           } else {
-            uploadStatusEntity.setS3_dataset_component_blob_id(datasetComponentPathId);
+            uploadStatusEntity.setComponent_blob_type(UploadStatusEntity.S3_DATASET_COMPONENT_BLOB);
           }
         }
       }
@@ -1453,6 +1455,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         session.beginTransaction();
         uploadStatusEntity.setUploadId(uploadId);
         uploadStatusEntity.setUploadCompleted(false);
+        session.saveOrUpdate(uploadStatusEntity);
         session.getTransaction().commit();
       }
     } else {
@@ -1467,12 +1470,11 @@ public class BlobDAORdbImpl implements BlobDAO {
       throws ModelDBException {
     StringBuilder getUploadStatusQuery =
         new StringBuilder("From " + UploadStatusEntity.class.getSimpleName() + " us WHERE ");
+    getUploadStatusQuery.append(" us.dataset_component_blob_id = :pathId ");
     if (contentCase.equals(DatasetBlob.ContentCase.PATH)) {
-      getUploadStatusQuery.append(" us.path_dataset_component_blob_id = :pathId ");
       getUploadStatusQuery.append(
           " AND us.component_blob_type = " + UploadStatusEntity.PATH_DATASET_COMPONENT_BLOB);
     } else if (contentCase.equals(DatasetBlob.ContentCase.S3)) {
-      getUploadStatusQuery.append(" us.s3_dataset_component_blob_id = :pathId ");
       getUploadStatusQuery.append(
           " AND us.component_blob_type = " + UploadStatusEntity.S3_DATASET_COMPONENT_BLOB);
     } else {
@@ -1613,6 +1615,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       uploadStatusEntity.setUploadCompleted(true);
       artifactPartEntities.forEach(session::delete);
       artifactPartEntities.clear();
+      session.saveOrUpdate(uploadStatusEntity);
       session.getTransaction().commit();
     }
     return CommitMultipartVersionedBlobArtifact.Response.newBuilder().build();

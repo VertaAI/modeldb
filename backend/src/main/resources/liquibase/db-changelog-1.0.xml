@@ -551,8 +551,7 @@
             <column name="id" type="int8" autoIncrement="true" incrementBy="1">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="path_dataset_component_blob_id" type="varchar(64)"/>
-            <column name="s3_dataset_component_blob_id" type="varchar(64)"/>
+            <column name="dataset_component_blob_id" type="varchar(64)"/>
             <column name="component_blob_type" type="int4"/>
             <column name="upload_id" type="varchar(255)" defaultValue="null" />
             <column name="upload_completed" type="boolean" defaultValue="true" />

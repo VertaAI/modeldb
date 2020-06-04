@@ -669,9 +669,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   }
 
   @Override
-  public void getUrlForVersionedBlob(
-      GetUrlForVersionedBlob request,
-      StreamObserver<GetUrlForVersionedBlob.Response> responseObserver) {
+  public void getUrlForBlobVersioned(
+      GetUrlForBlobVersioned request,
+      StreamObserver<GetUrlForBlobVersioned.Response> responseObserver) {
     QPSCountResource.inc();
     try {
       try (RequestLatencyResource latencyResource =
@@ -680,7 +680,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         // Validate request parameters
         validateGetUrlForVersionedBlobRequest(request);
 
-        GetUrlForVersionedBlob.Response response =
+        GetUrlForBlobVersioned.Response response =
             blobDAO.getUrlForVersionedBlob(
                 artifactStoreDAO,
                 (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
@@ -692,11 +692,11 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       }
     } catch (Exception e) {
       ModelDBUtils.observeError(
-          responseObserver, e, GetUrlForVersionedBlob.Response.getDefaultInstance());
+          responseObserver, e, GetUrlForBlobVersioned.Response.getDefaultInstance());
     }
   }
 
-  private void validateGetUrlForVersionedBlobRequest(GetUrlForVersionedBlob request)
+  private void validateGetUrlForVersionedBlobRequest(GetUrlForBlobVersioned request)
       throws ModelDBException {
     String errorMessage = null;
     if (request.getCommitSha().isEmpty()
@@ -704,15 +704,15 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         && request.getMethod().isEmpty()
         && request.getPathDatasetComponentBlobPath().isEmpty()) {
       errorMessage =
-          "Commit hash and Blob location and Method type AND Blob path not found in GetUrlForVersionedBlob request";
+          "Commit hash and Blob location and Method type AND Blob path not found in GetUrlForBlobVersioned request";
     } else if (request.getCommitSha().isEmpty()) {
-      errorMessage = "Commit hash not found in GetUrlForVersionedBlob request";
+      errorMessage = "Commit hash not found in GetUrlForBlobVersioned request";
     } else if (request.getLocationList().isEmpty()) {
-      errorMessage = "Blob location not found in GetUrlForVersionedBlob request";
+      errorMessage = "Blob location not found in GetUrlForBlobVersioned request";
     } else if (request.getPathDatasetComponentBlobPath().isEmpty()) {
-      errorMessage = "Blob path not found in GetUrlForVersionedBlob request";
+      errorMessage = "Blob path not found in GetUrlForBlobVersioned request";
     } else if (request.getMethod().isEmpty()) {
-      errorMessage = "Method is not found in GetUrlForVersionedBlob request";
+      errorMessage = "Method is not found in GetUrlForBlobVersioned request";
     }
     if (errorMessage != null) {
       LOGGER.warn(errorMessage);

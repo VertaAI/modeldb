@@ -20,11 +20,8 @@ public class UploadStatusEntity {
   @Column(name = "id", updatable = false, nullable = false)
   private Long id;
 
-  @Column(name = "path_dataset_component_blob_id", updatable = false)
-  private String path_dataset_component_blob_id;
-
-  @Column(name = "s3_dataset_component_blob_id", updatable = false)
-  private String s3_dataset_component_blob_id;
+  @Column(name = "dataset_component_blob_id", updatable = false)
+  private String dataset_component_blob_id;
 
   @Column(name = "component_blob_type")
   private Integer component_blob_type;
@@ -35,22 +32,12 @@ public class UploadStatusEntity {
   @Column(name = "upload_completed")
   private boolean uploadCompleted;
 
-  public String getPath_dataset_component_blob_id() {
-    return path_dataset_component_blob_id;
+  public String getDataset_component_blob_id() {
+    return dataset_component_blob_id;
   }
 
-  public void setPath_dataset_component_blob_id(String path_dataset_component_blob_id) {
-    this.path_dataset_component_blob_id = path_dataset_component_blob_id;
-    this.component_blob_type = PATH_DATASET_COMPONENT_BLOB;
-  }
-
-  public String getS3_dataset_component_blob_id() {
-    return s3_dataset_component_blob_id;
-  }
-
-  public void setS3_dataset_component_blob_id(String s3_dataset_component_blob_id) {
-    this.s3_dataset_component_blob_id = s3_dataset_component_blob_id;
-    this.component_blob_type = S3_DATASET_COMPONENT_BLOB;
+  public void setDataset_component_blob_id(String dataset_component_blob_id) {
+    this.dataset_component_blob_id = dataset_component_blob_id;
   }
 
   public Integer getComponent_blob_type() {

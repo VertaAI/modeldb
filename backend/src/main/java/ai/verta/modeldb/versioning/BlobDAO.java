@@ -51,11 +51,11 @@ public interface BlobDAO {
   FindRepositoriesBlobs.Response findRepositoriesBlobs(FindRepositoriesBlobs request)
       throws ModelDBException;
 
-  GetUrlForVersionedBlob.Response getUrlForVersionedBlob(
+  GetUrlForBlobVersioned.Response getUrlForVersionedBlob(
       ArtifactStoreDAO artifactStoreDAO,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction,
-      GetUrlForVersionedBlob request)
+      GetUrlForBlobVersioned request)
       throws ModelDBException;
 
   CommitVersionedBlobArtifactPart.Response commitVersionedBlobArtifactPart(
