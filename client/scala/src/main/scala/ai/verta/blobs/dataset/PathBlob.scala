@@ -64,7 +64,7 @@ import scala.util.{Failure, Success, Try}
    }
 
   /** Extract the metadata of the file
-   *  If the file has already been processed, or if the path is invalid, return None
+   *  If the file has already been processed, or if the path is invalid, the file is skipped
    *  @param file file
    *  @return the metadata of the file, wrapped in (some) VersioningPathDatasetComponentBlob
    */
