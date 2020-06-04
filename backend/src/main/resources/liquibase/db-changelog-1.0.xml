@@ -353,7 +353,7 @@
             <column name="blob_hash" type="varchar(255)"/>
         </addColumn>
     </changeSet>
-    
+
 	<changeSet id="SetNullS3VersionEmpty" author="ravi">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -434,6 +434,57 @@
             </not>
         </preConditions>
         <createTable tableName="artifact_part">
+            <column name="artifact_id" type="int8">
+                <constraints primaryKey="true" nullable="false"
+                  foreignKeyName="artifact_id" referencedTableName="artifact"
+                  referencedColumnNames="id"/>
+            </column>
+            <column name="part_number" type="int8">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="etag" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="createTempTableWithNewKeysOfArtifact_part" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artifact_part_temp"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artifact_part_temp">
+            <column name="artifact_id" type="int8">
+                <constraints primaryKey="true" nullable="false"
+                             foreignKeyName="artifact_id" referencedTableName="artifact"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="part_number" type="int8">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="etag" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="copyDataToATempTableArtifact_part_temp" author="anandJ">
+        <sql>
+            INSERT INTO artifact_part_temp SELECT artifact_id, part_number, etag  FROM artifact_part;
+        </sql>
+    </changeSet>
+
+    <changeSet id="dropOldArtifactPartTable" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="artifact_part"/>
+        </preConditions>
+        <dropTable tableName="artifact_part"/>
+    </changeSet>
+
+    <changeSet id="createNewArtifactPartTable" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artifact_part"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artifact_part">
             <column name="artifact_id" type="varchar(64)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -441,12 +492,22 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="etag" type="varchar(255)"/>
-            <column name="artifact_type" type="int4">
+            <column name="artifact_type" type="int4" defaultValue="0"><!-- defaultValue="0" = EXP_RUN_ARTIFACT-->
                 <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>
     </changeSet>
-  
+
+    <changeSet id="copy_temp_to_new_artifact_part_table" author="anandJ">
+        <sql>
+            INSERT INTO artifact_part SELECT CAST(artifact_id AS CHAR) artifact_id, part_number, etag,"0"  FROM artifact_part_temp;
+        </sql>
+    </changeSet>
+
+    <changeSet id="drop_temp_artifact_part_table" author="anandJ">
+        <dropTable tableName="artifact_part_temp"/>
+    </changeSet>
+
     <changeSet id="add-project-deleted-column" author="anandJ">
         <preConditions onFail="MARK_RAN">
             <not>
