@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities.versioning;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
+import ai.verta.modeldb.versioning.RepositoryAccessModifierEnum.RepositoryAccessModifier;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.modeldb.versioning.SetRepository;
 import java.util.Date;
@@ -27,12 +28,16 @@ public class RepositoryEntity {
       String name,
       WorkspaceDTO workspaceDTO,
       String owner,
-      RepositoryVisibility repositoryVisibility) {
+      RepositoryVisibility repositoryVisibility,
+      RepositoryAccessModifier repositoryAccessModifier) {
     this.name = name;
     this.date_created = new Date().getTime();
     this.date_updated = new Date().getTime();
     if (repositoryVisibility != null) {
       this.repository_visibility = repositoryVisibility.getNumber();
+    }
+    if (repositoryAccessModifier != null) {
+      this.repositoryAccessModifier = repositoryAccessModifier.getNumber();
     }
     if (workspaceDTO.getWorkspaceId() != null) {
       this.workspace_id = workspaceDTO.getWorkspaceId();
@@ -74,6 +79,9 @@ public class RepositoryEntity {
 
   @Column(name = "repository_visibility")
   private Integer repository_visibility = null;
+
+  @Column(name = "repository_access_modifier")
+  private Integer repositoryAccessModifier = null;
 
   @Column(name = "deleted")
   private Boolean deleted = false;
@@ -130,6 +138,9 @@ public class RepositoryEntity {
     if (repository_visibility != null) {
       builder.setRepositoryVisibilityValue(repository_visibility);
     }
+    if (repositoryAccessModifier != null) {
+      builder.setRepositoryAccessModifierValue(repositoryAccessModifier);
+    }
     if (owner != null) {
       builder.setOwner(owner);
     }
@@ -137,9 +148,11 @@ public class RepositoryEntity {
   }
 
   public void update(SetRepository request) {
-    this.name = request.getRepository().getName();
+    final Repository repository = request.getRepository();
+    this.name = repository.getName();
     this.date_updated = new Date().getTime();
-    this.repository_visibility = request.getRepository().getRepositoryVisibilityValue();
+    this.repository_visibility = repository.getRepositoryVisibilityValue();
+    repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
   }
 
   public String getOwner() {
@@ -148,5 +161,9 @@ public class RepositoryEntity {
 
   public Integer getRepository_visibility() {
     return repository_visibility;
+  }
+
+  public Integer getRepositoryAccessModifier() {
+    return repositoryAccessModifier;
   }
 }

@@ -277,7 +277,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       CommitDAO commitDAO, SetRepository request, UserInfo userInfo, boolean create)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repository;
+      RepositoryEntity repositoryEntity;
+      final Repository repository = request.getRepository();
       if (create) {
         WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(request.getId(), false, true);
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -286,35 +287,36 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
             "Repository",
             "repositoryName",
-            request.getRepository().getName(),
+            repository.getName(),
             ModelDBConstants.WORKSPACE_ID,
             workspaceDTO.getWorkspaceId(),
             workspaceDTO.getWorkspaceType(),
             LOGGER);
-        repository =
+        repositoryEntity =
             new RepositoryEntity(
-                request.getRepository().getName(),
+                repository.getName(),
                 workspaceDTO,
-                request.getRepository().getOwner(),
-                request.getRepository().getRepositoryVisibility());
-        repository.setDeleted(true);
+                repository.getOwner(),
+                repository.getRepositoryVisibility(),
+                repository.getRepositoryAccessModifier());
+        repositoryEntity.setDeleted(true);
       } else {
-        repository = getRepositoryById(session, request.getId(), true);
+        repositoryEntity = getRepositoryById(session, request.getId(), true);
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
             session,
             SHORT_NAME,
             GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
             "Repository",
             "repositoryName",
-            request.getRepository().getName(),
+            repository.getName(),
             ModelDBConstants.WORKSPACE_ID,
-            repository.getWorkspace_id(),
-            WorkspaceType.forNumber(repository.getWorkspace_type()),
+            repositoryEntity.getWorkspace_id(),
+            WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
             LOGGER);
-        repository.update(request);
+        repositoryEntity.update(request);
       }
       session.beginTransaction();
-      session.saveOrUpdate(repository);
+      session.saveOrUpdate(repositoryEntity);
       if (create) {
         Commit initCommit =
             Commit.newBuilder().setMessage(ModelDBConstants.INITIAL_COMMIT_MESSAGE).build();
@@ -324,22 +326,25 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 initCommit,
                 FileHasher.getSha(new String()),
                 authService.getVertaIdFromUserInfo(userInfo),
-                repository);
+                repositoryEntity);
 
         saveBranch(
-            session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repository);
+            session,
+            commitEntity.getCommit_hash(),
+            ModelDBConstants.MASTER_BRANCH,
+            repositoryEntity);
       }
       session.getTransaction().commit();
       if (create) {
-        createRoleBindingsForRepository(request, userInfo, repository);
+        createRoleBindingsForRepository(request, userInfo, repositoryEntity);
 
         // Update repository deleted status to false after roleBindings created successfully
         session.beginTransaction();
-        repository.setDeleted(false);
-        session.update(repository);
+        repositoryEntity.setDeleted(false);
+        session.update(repositoryEntity);
         session.getTransaction().commit();
       }
-      return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
+      return SetRepository.Response.newBuilder().setRepository(repositoryEntity.toProto()).build();
     }
   }
 

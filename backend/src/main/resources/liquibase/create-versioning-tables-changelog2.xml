@@ -351,4 +351,14 @@
 			<column name="repository_visibility" type="int4"/>
 		</addColumn>
 	</changeSet>
+	<changeSet id="add-access-modifier-column-to-repository" author="lezhevg">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="repository" columnName="repository_access_modifier"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="repository">
+			<column name="repository_access_modifier" type="int4" defaultValue="1"/>
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>
