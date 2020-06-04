@@ -1716,38 +1716,36 @@ public class RdbmsUtils {
     configBlobEntityRootPredicates.add(keyPredicate);
 
     List<Predicate> orPredicates = new ArrayList<>();
-    try{
-      Predicate intValuePredicate = getValuePredicate(
+    try {
+      Predicate intValuePredicate =
+          getValuePredicate(
               builder,
               ModelDBConstants.HYPERPARAMETERS,
               elementMappingEntityRoot.get("int_value"),
               predicate);
       orPredicates.add(intValuePredicate);
-    }
-    catch(Exception e) {
+    } catch (Exception e) {
       LOGGER.debug("Value could not be cast to int");
     }
-    try{
+    try {
       Predicate floatValuePredicate =
-              getValuePredicate(
-                      builder,
-                      ModelDBConstants.HYPERPARAMETERS,
-                      elementMappingEntityRoot.get("float_value"),
-                      predicate);
+          getValuePredicate(
+              builder,
+              ModelDBConstants.HYPERPARAMETERS,
+              elementMappingEntityRoot.get("float_value"),
+              predicate);
       orPredicates.add(floatValuePredicate);
-    }
-    catch(Exception e) {
+    } catch (Exception e) {
       LOGGER.debug("Value could not be cast to float");
     }
     Predicate stringValuePredicate =
-            getValuePredicate(
-                    builder,
-                    ModelDBConstants.HYPERPARAMETERS,
-                    elementMappingEntityRoot.get("string_value"),
-                    predicate);
+        getValuePredicate(
+            builder,
+            ModelDBConstants.HYPERPARAMETERS,
+            elementMappingEntityRoot.get("string_value"),
+            predicate);
     orPredicates.add(stringValuePredicate);
-    configBlobEntityRootPredicates.add(
-            builder.or(orPredicates.toArray(new Predicate[0])));
+    configBlobEntityRootPredicates.add(builder.or(orPredicates.toArray(new Predicate[0])));
 
     Predicate[] hyprElemmappingRootPredicatesOne =
         new Predicate[configBlobEntityRootPredicates.size()];
