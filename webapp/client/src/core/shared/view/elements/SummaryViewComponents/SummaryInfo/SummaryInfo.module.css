@@ -1,8 +1,5 @@
 .root {
-  grid-template-columns: minmax(350px, auto) minmax(290px, auto) minmax(
-      250px,
-      auto
-    );
+  grid-template-columns: auto auto;
   column-gap: 20px;
   display: grid;
 }

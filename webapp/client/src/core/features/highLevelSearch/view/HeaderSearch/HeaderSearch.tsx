@@ -24,23 +24,14 @@ const HeaderSearch = ({ currentWorkspaceName }: AllProps) => {
   const [value, changeValue] = React.useState<string>('');
   const history = useHistory();
 
-  const currentQueryParams =
-    routes.highLevelSearch.parseQueryParams(history.location.search) || {};
-  const queryParams = {
-    q: value,
-    type: currentQueryParams.type || defaultFilter,
-  };
+  const currentQueryParams = routes.highLevelSearch.parseQueryParams(history.location.search) || {};
+  const queryParams = { ...currentQueryParams, q: value, type: currentQueryParams.type || defaultFilter };
 
   const redirectToHighLevelSearchWithValue = () => {
     history.push(
       routes.highLevelSearch.getRedirectPathWithQueryParams({
         params: { workspaceName: currentWorkspaceName },
-        queryParams: {
-          q: value,
-          type: defaultFilter,
-          'sorting.direction': defaultResultsSorting.direction,
-          'sorting.field': defaultResultsSorting.field,
-        },
+        queryParams,
       })
     );
   };
