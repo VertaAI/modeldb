@@ -32,6 +32,7 @@ import ExperimentCreationPage from './ProjectsPages/ProjectDetailsPages/Experime
 import RepositoriesPage from './VersioningPages/RepositoriesPage/RepositoriesPage';
 import RepositoryCreationPage from './VersioningPages/RepositoryCreationPage/RepositoryCreationPage';
 import RepositoryDetailsPages from './VersioningPages/RepositoryDetailsPages/RepositoryDetailsPages';
+import HighLevelSearchPage from './HighLevelSearchPage/HighLevelSearchPage';
 
 interface IRouteDescription<T extends IRoute<any, any>> {
   route: T | T[];
@@ -80,6 +81,10 @@ class Pages extends React.Component<AllProps> {
 
         {this.renderRoutesWithWorkspaces(
           [
+            {
+              route: routes.highLevelSearch,
+              Component: HighLevelSearchPage,
+            },
             {
               route: routes.projects,
               Component: ProjectsPage,

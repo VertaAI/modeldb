@@ -2,9 +2,11 @@ import { connectRouter, RouterState } from 'connected-react-router';
 import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
+import { ApolloClient } from 'apollo-boost';
 
 import ServiceFactory from 'services/ServiceFactory';
 
+import * as HighLevelSearch from 'core/features/highLevelSearch';
 import * as CompareEntities from 'core/features/compareEntities';
 import * as RepositoryNavigation from 'core/features/versioning/repositoryNavigation';
 import * as ExperimentRunsTableConfig from 'core/features/experimentRunsTableConfig';
@@ -55,6 +57,7 @@ export interface IApplicationState
   datasetVersions: IDatasetVersionsState;
   workspaces: Workspaces.IWorkspaces;
   repositoryNavigation: RepositoryNavigation.types.IRepositoryNavigationState;
+  highLevelSearch: HighLevelSearch.types.IHighLevelSearchState;
 }
 
 // Additional props for connected React components. This prop is passed by default with `connect()`
@@ -83,6 +86,7 @@ export const createRootReducer = (history: History) =>
     datasetVersions: datasetVersionsReducer,
     workspaces: Workspaces.workspacesReducer,
     repositoryNavigation: RepositoryNavigation.reducer,
+    highLevelSearch: HighLevelSearch.reducer,
   });
 
 export interface IThunkActionDependencies
@@ -93,6 +97,7 @@ export interface IThunkActionDependencies
     > {
   ServiceFactory: typeof ServiceFactory;
   history: History;
+  apolloClient: ApolloClient<any>;
 }
 
 export type ActionResult<R = void, A extends Action = AnyAction> = ThunkAction<

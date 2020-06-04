@@ -22,7 +22,7 @@ export const selectWorkspaces = (
 };
 
 export const selectCurrentWorkspaceName = (state: IApplicationState) => {
-  return selectCurrentWorkspace(state).name;
+  return selectCurrentWorkspace(state).name as Workspace.WorkspaceName;
 };
 
 export const selectCurrentWorkspace = (state: IApplicationState) => {

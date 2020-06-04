@@ -23,10 +23,12 @@ import * as DatasetsStore from 'store/datasets';
 import { IApplicationState } from 'store/store';
 
 import styles from './DatasetCreationPage.module.css';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
     creatingDataset: DatasetsStore.selectCommunications(state).creatingDataset,
+    workspaceName: selectCurrentWorkspaceName(state),
   };
 };
 
@@ -58,6 +60,7 @@ class DatasetCreationPage extends React.PureComponent<AllProps> {
     tags: [],
     type: 'path',
     visibility: 'private',
+    workspaceName: this.props.workspaceName,
   };
 
   public UNSAFE_componentWillMount() {

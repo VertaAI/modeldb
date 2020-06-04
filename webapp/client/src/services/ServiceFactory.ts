@@ -1,4 +1,7 @@
 import axios, { AxiosError } from 'axios';
+import { ApolloClient } from 'apollo-boost';
+
+import HighLevelSearchService from 'core/services/highLevelSearch/HighLevelSearchService';
 
 import { RepositoriesDataService } from '../core/services/versioning/repositories';
 import { DatasetsDataService } from './datasets';
@@ -51,5 +54,9 @@ export default class ServiceFactory {
 
   public static getRepositoriesService() {
     return new RepositoriesDataService();
+  }
+
+  public static getHighLevelSearchService(apolloClient: ApolloClient<any>) {
+    return new HighLevelSearchService(apolloClient);
   }
 }

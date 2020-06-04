@@ -76,9 +76,9 @@ export const loadExperiments = (
   dispatch(action(loadExperimentsActionTypes.REQUEST, { projectId }));
   await ServiceFactory.getExperimentsService()
     .loadExperiments(projectId, filters, pagination)
-    .then(({ experiments, totalCount }) => {
+    .then(({ data, totalCount }) => {
       dispatch(
-        action(loadExperimentsActionTypes.SUCCESS, { experiments, totalCount })
+        action(loadExperimentsActionTypes.SUCCESS, { experiments: data, totalCount })
       );
     })
     .catch(error => {

@@ -104,7 +104,7 @@ export type IEntitiesResults = RecordFromUnion<
 export type EntityResultCommonData = Pick<
   Project,
   'name' | 'id' | 'dateCreated' | 'tags' | 'dateUpdated'
-> & { owner: Pick<User, 'username'> };
+>;
 
 export type ExperimentResult = EntityResultCommonData & {
   project: Pick<Project, 'name' | 'id'>;
@@ -123,11 +123,10 @@ export type DatasetResult = EntityResultCommonData & { entityType: 'dataset' };
 
 export type RepositoryResult = Omit<
   EntityResultCommonData,
-  'tags' | 'owner'
+  'tags'
 > & {
   labels: IRepository['labels'];
   entityType: 'repository';
-  owner: Pick<User, 'username'>;
 };
 
 export type IResult =
