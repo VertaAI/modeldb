@@ -21,7 +21,7 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
   implicit val sttpBackend = AsyncHttpClientFutureBackend()
 
   private def urlEncodeUTF8(s: String) = {
-    URLEncoder.encode(s, "UTF-8")
+    URLEncoder.encode(s, "UTF-8").replaceAll("\\+", "%20")
   }
 
   private def urlEncodeUTF8(q: Map[String, List[String]]): String = {
@@ -32,12 +32,14 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
   }
 
   def request[T1, T2](method: String, path: String, query: Map[String, List[String]], body: T1, parser: JValue => T2)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
+    val safePath = path.split("/").map(urlEncodeUTF8 _).mkString("/")
+
     if (body == null)
-      requestInternal(method, path, query, null, parser)
+      requestInternal(method, safePath, query, null, parser)
     else
       body match {
-        case b: BaseSwagger => requestInternal(method, path, query, compactRender(b.toJson()), parser)
-        case b: String => requestInternal(method, path, query, jsonFormat(b), parser)
+        case b: BaseSwagger => requestInternal(method, safePath, query, compactRender(b.toJson()), parser)
+        case b: String => requestInternal(method, safePath, query, jsonFormat(b), parser)
       }
   }
 

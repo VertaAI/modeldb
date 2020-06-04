@@ -2,7 +2,6 @@ package ai.verta.repository
 
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model._
-import ai.verta.client.FormatUtils
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
@@ -44,7 +43,7 @@ class Commit(
     else clientSet.versioningService.SetTag2(
         body = commit.commit_sha.get,
         repository_id_repo_id = repo.id,
-        tag = FormatUtils.urlEncode(tag)
+        tag = tag
     ).map(_ => ())
   }
 

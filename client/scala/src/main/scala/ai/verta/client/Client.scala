@@ -66,7 +66,7 @@ class Client(conn: ClientConnection) {
       get = () => {
         clientSet.versioningService.GetRepository(
           id_named_id_workspace_name = workspace.getOrElse(getPersonalWorkspace()),
-          id_named_id_name = FormatUtils.urlEncode(name)
+          id_named_id_name = name
         ).map(r => new Repository(clientSet, r.repository.get))
       },
       create = () => {
