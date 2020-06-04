@@ -18,6 +18,7 @@ import {
   selectDeletingProject,
   updateProjectReadme,
   deleteProject,
+  loadProject,
 } from 'store/projects';
 import { IApplicationState } from 'store/store';
 
@@ -27,6 +28,7 @@ import MarkdownManager from './MarkdownManager/MarkdownManager';
 import styles from './ProjectSummaryPage.module.css';
 import ProjectEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
 import SummaryInfo from 'core/shared/view/elements/SummaryViewComponents/SummaryInfo/SummaryInfo';
+import Reloading from 'core/shared/view/elements/Reloading/Reloading';
 
 const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
   const projectId = localProps.match.params.projectId;
@@ -38,7 +40,7 @@ const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) =>
-  bindActionCreators({ updateProjectReadme, deleteProject }, dispatch);
+  bindActionCreators({ updateProjectReadme, loadProject, deleteProject }, dispatch);
 
 type RouteProps = RouteComponentProps<
   GetRouteParams<typeof routes.projectSummary>
@@ -48,6 +50,9 @@ type AllProps = ReturnType<typeof mapStateToProps> &
   RouteProps;
 
 class ProjectSummaryPage extends React.PureComponent<AllProps> {
+  public componentDidMount() {
+    this.loadProject();
+  }
   public render() {
     const {
       project,
@@ -59,7 +64,7 @@ class ProjectSummaryPage extends React.PureComponent<AllProps> {
     } = this.props;
     return (
       <ProjectsPagesLayout>
-        <>
+                    <Reloading onReload={this.loadProject}>
           <ProjectPageTabs
             projectId={projectId}
             isDisabled={deletingCommunication.isRequesting}
@@ -153,9 +158,15 @@ class ProjectSummaryPage extends React.PureComponent<AllProps> {
               );
             })()}
           </div>
-        </>
+        </Reloading>
       </ProjectsPagesLayout>
     );
+  }
+
+  @bind
+  private loadProject() {
+    const projectId = this.props.match.params.projectId;
+    this.props.loadProject(projectId);
   }
 
   @bind

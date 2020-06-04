@@ -40,6 +40,7 @@ import makeExprRunsFilterContextName from '../shared/makeExprRunsFilterContextNa
 import ProjectPageTabs from '../shared/ProjectPageTabs/ProjectPageTabs';
 import DeletingExperimentsManager from './DeletingExperimentsManager/DeletingExperimentsManager';
 import styles from './ExperimentsPage.module.css';
+import Reloading from 'core/shared/view/elements/Reloading/Reloading';
 
 const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
   return {
@@ -122,6 +123,7 @@ class ExperimentsPage extends React.PureComponent<AllProps, ILocalState> {
           placeholderText: 'Drag and drop tags here',
         }}
       >
+        <Reloading onReload={this.loadProject}>
         <div className={styles.root}>
           <ProjectPageTabs
             projectId={projectId}
@@ -183,8 +185,15 @@ class ExperimentsPage extends React.PureComponent<AllProps, ILocalState> {
             }
           })()}
         </div>
+        </Reloading>
       </ProjectsPagesLayout>
     );
+  }
+
+  @bind
+  private loadProject() {
+    const projectId = this.props.match.params.projectId;
+    this.props.loadExperiments(projectId, []);
   }
 
   @bind

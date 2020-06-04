@@ -17,6 +17,7 @@ import {
   loadProject,
   selectLoadingProject,
   selectProject,
+  selectLoadingProjectWithMemo,
 } from 'store/projects';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'store/workspaces';
@@ -40,7 +41,7 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
 
 const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
   return {
-    loadingProject: selectLoadingProject(
+    loadingProject: selectLoadingProjectWithMemo(
       state,
       localProps.match.params.projectId
     ),

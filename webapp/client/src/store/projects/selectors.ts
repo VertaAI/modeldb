@@ -61,6 +61,13 @@ export const selectLoadingProjectDatasets = (
   initialCommunication;
 
 export const selectLoadingProject = (state: IApplicationState, id: string) => {
+  return selectCommunications(state).loadingProject[id] || initialCommunication;
+};
+
+export const selectLoadingProjectWithMemo = (
+  state: IApplicationState,
+  id: string
+) => {
   if (selectProject(state, id)) {
     return { error: undefined, isRequesting: false, isSuccess: true };
   }
