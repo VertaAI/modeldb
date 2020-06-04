@@ -16,7 +16,7 @@ import scala.util.{Failure, Success, Try}
   paths.map(expanduser _).map((path: String) => processPath(new File(path)))
 
   override def equals(other: Any) = other match {
-    case other: PathBlob => getAllMetadata equals other.getAllMetadata
+    case other: PathBlob => getAllMetadata.equals(other.getAllMetadata)
     case _ => false
   }
 
