@@ -1,13 +1,8 @@
 package ai.verta.blobs.dataset
 
-import ai.verta.client._
 import ai.verta.blobs._
-import ai.verta.swagger.client.HttpException
-import ai.verta.swagger._public.modeldb.versioning.model.VersioningSetTagRequestResponse
 
-import scala.concurrent.ExecutionContext
 import scala.language.reflectiveCalls
-import scala.util.{Try, Success, Failure}
 
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
