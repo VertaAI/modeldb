@@ -13,6 +13,7 @@ import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelResourceEnum;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
@@ -137,6 +138,12 @@ public class OwnerRoleBindingUtils {
         }
         transaction.commit();
         lowerBound += pagesize;
+      } catch (Exception ex) {
+        if (ModelDBUtils.needToRetry(ex)) {
+          migrateExperiments();
+        } else {
+          throw ex;
+        }
       }
     }
 
@@ -213,6 +220,12 @@ public class OwnerRoleBindingUtils {
         LOGGER.debug("finished processing page lower boundary {}", lowerBound);
         transaction.commit();
         lowerBound += pagesize;
+      } catch (Exception ex) {
+        if (ModelDBUtils.needToRetry(ex)) {
+          migrateExperimentRuns();
+        } else {
+          throw ex;
+        }
       }
     }
     LOGGER.debug("ExperimentRuns migration finished");
@@ -293,6 +306,12 @@ public class OwnerRoleBindingUtils {
 
         transaction.commit();
         lowerBound += pagesize;
+      } catch (Exception ex) {
+        if (ModelDBUtils.needToRetry(ex)) {
+          migrateDatasetVersions();
+        } else {
+          throw ex;
+        }
       }
     }
 
@@ -373,6 +392,12 @@ public class OwnerRoleBindingUtils {
 
         transaction.commit();
         lowerBound += pagesize;
+      } catch (Exception ex) {
+        if (ModelDBUtils.needToRetry(ex)) {
+          migrateRepositories();
+        } else {
+          throw ex;
+        }
       }
     }
 
@@ -385,6 +410,12 @@ public class OwnerRoleBindingUtils {
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
       countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
       return session.createQuery(countQuery).getSingleResult();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getEntityCount(klass);
+      } else {
+        throw ex;
+      }
     }
   }
 }

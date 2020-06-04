@@ -13,7 +13,7 @@ import ai.verta.swagger.{{package}}.model._
 class {{api_name}}Api(client: HttpClient, val basePath: String = "{{base_path}}") {
 {{#operations}}
   def {{operation_id}}Async({{#parameters}}{{safe_name}}: {{^required}}Option[{{/required}}{{#type}}{{> type}}{{/type}}{{^required}}]=None{{/required}}{{^last}}, {{/last}}{{/parameters}})(implicit ec: ExecutionContext): Future[Try[{{#success_type}}{{> type}}{{/success_type}}]] = {
-    var __query = new mutable.HashMap[String,String]
+    var __query = new mutable.HashMap[String,List[String]]
     {{#query}}
     {{^required}}
     if ({{safe_name}}.isDefined) __query.update("{{name}}", client.toQuery({{safe_name}}.get))

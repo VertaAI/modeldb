@@ -21,14 +21,14 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
     URLEncoder.encode(s, "UTF-8")
   }
 
-  private def urlEncodeUTF8(q: Map[String, String]): String = {
+  private def urlEncodeUTF8(q: Map[String, List[String]]): String = {
     if (q.isEmpty) "" else
       q
-        .map(entry => urlEncodeUTF8(entry._1) + "=" + urlEncodeUTF8(entry._2))
+        .flatMap(entry => entry._2.map(x => urlEncodeUTF8(entry._1) + "=" + urlEncodeUTF8(x)))
         .reduce((p1, p2) => p1 + "&" + p2)
   }
 
-  def request[T1, T2](method: String, path: String, query: Map[String, String], body: T1, parser: JValue => T2)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
+  def request[T1, T2](method: String, path: String, query: Map[String, List[String]], body: T1, parser: JValue => T2)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
     if (body == null)
       requestInternal(method, path, query, null, parser)
     else
@@ -38,7 +38,7 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
       }
   }
 
-  def requestInternal[T2](method: String, path: String, query: Map[String, String], body: String, parser: JValue => T2)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
+  def requestInternal[T2](method: String, path: String, query: Map[String, List[String]], body: String, parser: JValue => T2)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
     val request = if (body != null) basicRequest.body(body) else basicRequest
 
     val queryString = urlEncodeUTF8(query)
@@ -66,7 +66,7 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
     })
   }
 
-  def requestRaw(method: String, url: String, query: Map[String, String], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
+  def requestRaw(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
     val request = (if (body != null) basicRequest.body(body) else basicRequest).response(asByteArray)
     val uriPath = Uri(new URI(url))
     val request2 = method match {
@@ -89,7 +89,11 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
     })
   }
 
-  def toQuery[T](value: T): String = value.toString
+  def toQuery[T](value: T): List[String] = value match {
+    case Nil => List()
+    case head :: rest => (head :: rest).map(_.toString)
+    case _ => List(value.toString)
+  }
 
   def close(): Unit = Await.result(sttpBackend.close(), Duration.Inf)
 }
