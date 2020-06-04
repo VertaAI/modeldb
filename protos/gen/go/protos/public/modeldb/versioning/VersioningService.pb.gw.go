@@ -4960,8 +4960,8 @@ func local_request_VersioningService_FindRepositoriesBlobs_0(ctx context.Context
 
 }
 
-func request_VersioningService_GetUrlForVersionedBlob_0(ctx context.Context, marshaler runtime.Marshaler, client VersioningServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetUrlForVersionedBlob
+func request_VersioningService_GetUrlForBlobVersioned_0(ctx context.Context, marshaler runtime.Marshaler, client VersioningServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetUrlForBlobVersioned
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -5012,13 +5012,13 @@ func request_VersioningService_GetUrlForVersionedBlob_0(ctx context.Context, mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "commit_sha", err)
 	}
 
-	msg, err := client.GetUrlForVersionedBlob(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetUrlForBlobVersioned(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_VersioningService_GetUrlForVersionedBlob_0(ctx context.Context, marshaler runtime.Marshaler, server VersioningServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetUrlForVersionedBlob
+func local_request_VersioningService_GetUrlForBlobVersioned_0(ctx context.Context, marshaler runtime.Marshaler, server VersioningServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetUrlForBlobVersioned
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -5069,13 +5069,13 @@ func local_request_VersioningService_GetUrlForVersionedBlob_0(ctx context.Contex
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "commit_sha", err)
 	}
 
-	msg, err := server.GetUrlForVersionedBlob(ctx, &protoReq)
+	msg, err := server.GetUrlForBlobVersioned(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_VersioningService_GetUrlForVersionedBlob_1(ctx context.Context, marshaler runtime.Marshaler, client VersioningServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetUrlForVersionedBlob
+func request_VersioningService_GetUrlForBlobVersioned_1(ctx context.Context, marshaler runtime.Marshaler, client VersioningServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetUrlForBlobVersioned
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -5115,13 +5115,13 @@ func request_VersioningService_GetUrlForVersionedBlob_1(ctx context.Context, mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "commit_sha", err)
 	}
 
-	msg, err := client.GetUrlForVersionedBlob(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetUrlForBlobVersioned(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_VersioningService_GetUrlForVersionedBlob_1(ctx context.Context, marshaler runtime.Marshaler, server VersioningServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetUrlForVersionedBlob
+func local_request_VersioningService_GetUrlForBlobVersioned_1(ctx context.Context, marshaler runtime.Marshaler, server VersioningServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetUrlForBlobVersioned
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -5161,7 +5161,7 @@ func local_request_VersioningService_GetUrlForVersionedBlob_1(ctx context.Contex
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "commit_sha", err)
 	}
 
-	msg, err := server.GetUrlForVersionedBlob(ctx, &protoReq)
+	msg, err := server.GetUrlForBlobVersioned(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -6332,7 +6332,7 @@ func RegisterVersioningServiceHandlerServer(ctx context.Context, mux *runtime.Se
 
 	})
 
-	mux.Handle("POST", pattern_VersioningService_GetUrlForVersionedBlob_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_VersioningService_GetUrlForBlobVersioned_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -6341,18 +6341,18 @@ func RegisterVersioningServiceHandlerServer(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_VersioningService_GetUrlForVersionedBlob_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_VersioningService_GetUrlForBlobVersioned_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_VersioningService_GetUrlForVersionedBlob_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_VersioningService_GetUrlForBlobVersioned_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_VersioningService_GetUrlForVersionedBlob_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_VersioningService_GetUrlForBlobVersioned_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -6361,14 +6361,14 @@ func RegisterVersioningServiceHandlerServer(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_VersioningService_GetUrlForVersionedBlob_1(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_VersioningService_GetUrlForBlobVersioned_1(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_VersioningService_GetUrlForVersionedBlob_1(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_VersioningService_GetUrlForBlobVersioned_1(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -7533,7 +7533,7 @@ func RegisterVersioningServiceHandlerClient(ctx context.Context, mux *runtime.Se
 
 	})
 
-	mux.Handle("POST", pattern_VersioningService_GetUrlForVersionedBlob_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_VersioningService_GetUrlForBlobVersioned_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -7542,18 +7542,18 @@ func RegisterVersioningServiceHandlerClient(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_VersioningService_GetUrlForVersionedBlob_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_VersioningService_GetUrlForBlobVersioned_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_VersioningService_GetUrlForVersionedBlob_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_VersioningService_GetUrlForBlobVersioned_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_VersioningService_GetUrlForVersionedBlob_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_VersioningService_GetUrlForBlobVersioned_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -7562,14 +7562,14 @@ func RegisterVersioningServiceHandlerClient(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_VersioningService_GetUrlForVersionedBlob_1(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_VersioningService_GetUrlForBlobVersioned_1(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_VersioningService_GetUrlForVersionedBlob_1(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_VersioningService_GetUrlForBlobVersioned_1(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -7743,9 +7743,9 @@ var (
 
 	pattern_VersioningService_FindRepositoriesBlobs_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "versioning", "workspaces", "workspace_name", "findRepositoriesBlobs"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_VersioningService_GetUrlForVersionedBlob_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "commits", "commit_sha", "getUrlForVersionedBlob"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_VersioningService_GetUrlForBlobVersioned_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "commits", "commit_sha", "getUrlForBlobVersioned"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_VersioningService_GetUrlForVersionedBlob_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "commits", "commit_sha", "getUrlForVersionedBlob"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_VersioningService_GetUrlForBlobVersioned_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "commits", "commit_sha", "getUrlForBlobVersioned"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_VersioningService_CommitVersionedBlobArtifactPart_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "versioning", "commitVersionedBlobArtifactPart"}, "", runtime.AssumeColonVerbOpt(true)))
 
@@ -7861,9 +7861,9 @@ var (
 
 	forward_VersioningService_FindRepositoriesBlobs_0 = runtime.ForwardResponseMessage
 
-	forward_VersioningService_GetUrlForVersionedBlob_0 = runtime.ForwardResponseMessage
+	forward_VersioningService_GetUrlForBlobVersioned_0 = runtime.ForwardResponseMessage
 
-	forward_VersioningService_GetUrlForVersionedBlob_1 = runtime.ForwardResponseMessage
+	forward_VersioningService_GetUrlForBlobVersioned_1 = runtime.ForwardResponseMessage
 
 	forward_VersioningService_CommitVersionedBlobArtifactPart_0 = runtime.ForwardResponseMessage
 
