@@ -618,6 +618,22 @@ class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def UpdateRepository2(body: VersioningRepository, id_repo_id: BigInt)(implicit ec: ExecutionContext): Try[VersioningSetRepositoryResponse] = Await.result(UpdateRepository2Async(body, id_repo_id), Duration.Inf)
 
+  def commitMultipartVersionedBlobArtifactAsync(body: VersioningCommitMultipartVersionedBlobArtifact)(implicit ec: ExecutionContext): Future[Try[VersioningCommitMultipartVersionedBlobArtifactResponse]] = {
+    var __query = new mutable.HashMap[String,String]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[VersioningCommitMultipartVersionedBlobArtifact, VersioningCommitMultipartVersionedBlobArtifactResponse]("POST", basePath + s"/versioning/commitMultipartVersionedBlobArtifact", __query.toMap, body, VersioningCommitMultipartVersionedBlobArtifactResponse.fromJson)
+  }
+
+  def commitMultipartVersionedBlobArtifact(body: VersioningCommitMultipartVersionedBlobArtifact)(implicit ec: ExecutionContext): Try[VersioningCommitMultipartVersionedBlobArtifactResponse] = Await.result(commitMultipartVersionedBlobArtifactAsync(body), Duration.Inf)
+
+  def commitVersionedBlobArtifactPartAsync(body: VersioningCommitVersionedBlobArtifactPart)(implicit ec: ExecutionContext): Future[Try[VersioningCommitVersionedBlobArtifactPartResponse]] = {
+    var __query = new mutable.HashMap[String,String]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[VersioningCommitVersionedBlobArtifactPart, VersioningCommitVersionedBlobArtifactPartResponse]("POST", basePath + s"/versioning/commitVersionedBlobArtifactPart", __query.toMap, body, VersioningCommitVersionedBlobArtifactPartResponse.fromJson)
+  }
+
+  def commitVersionedBlobArtifactPart(body: VersioningCommitVersionedBlobArtifactPart)(implicit ec: ExecutionContext): Try[VersioningCommitVersionedBlobArtifactPartResponse] = Await.result(commitVersionedBlobArtifactPartAsync(body), Duration.Inf)
+
   def findRepositoriesAsync(body: VersioningFindRepositories, workspace_name: String)(implicit ec: ExecutionContext): Future[Try[VersioningFindRepositoriesResponse]] = {
     var __query = new mutable.HashMap[String,String]
     if (workspace_name == null) throw new Exception("Missing required parameter \"workspace_name\"")
@@ -635,5 +651,40 @@ class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
   }
 
   def findRepositoriesBlobs(body: VersioningFindRepositoriesBlobs, workspace_name: String)(implicit ec: ExecutionContext): Try[VersioningFindRepositoriesBlobsResponse] = Await.result(findRepositoriesBlobsAsync(body, workspace_name), Duration.Inf)
+
+  def getCommittedVersionedBlobArtifactPartsAsync(commit_sha: Option[String]=None, location: Option[List[String]]=None, path_dataset_component_blob_path: Option[String]=None, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Future[Try[VersioningGetCommittedVersionedBlobArtifactPartsResponse]] = {
+    var __query = new mutable.HashMap[String,String]
+    if (repository_id_named_id_name.isDefined) __query.update("repository_id.named_id.name", client.toQuery(repository_id_named_id_name.get))
+    if (repository_id_named_id_workspace_name.isDefined) __query.update("repository_id.named_id.workspace_name", client.toQuery(repository_id_named_id_workspace_name.get))
+    if (repository_id_repo_id.isDefined) __query.update("repository_id.repo_id", client.toQuery(repository_id_repo_id.get))
+    if (commit_sha.isDefined) __query.update("commit_sha", client.toQuery(commit_sha.get))
+    if (location.isDefined) __query.update("location", client.toQuery(location.get))
+    if (path_dataset_component_blob_path.isDefined) __query.update("path_dataset_component_blob_path", client.toQuery(path_dataset_component_blob_path.get))
+    val body: String = null
+    return client.request[String, VersioningGetCommittedVersionedBlobArtifactPartsResponse]("GET", basePath + s"/versioning/getCommittedVersionedBlobArtifactParts", __query.toMap, body, VersioningGetCommittedVersionedBlobArtifactPartsResponse.fromJson)
+  }
+
+  def getCommittedVersionedBlobArtifactParts(commit_sha: Option[String]=None, location: Option[List[String]]=None, path_dataset_component_blob_path: Option[String]=None, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Try[VersioningGetCommittedVersionedBlobArtifactPartsResponse] = Await.result(getCommittedVersionedBlobArtifactPartsAsync(commit_sha, location, path_dataset_component_blob_path, repository_id_named_id_name, repository_id_named_id_workspace_name, repository_id_repo_id), Duration.Inf)
+
+  def getUrlForVersionedBlobAsync(body: VersioningGetUrlForVersionedBlob, commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Future[Try[VersioningGetUrlForVersionedBlobResponse]] = {
+    var __query = new mutable.HashMap[String,String]
+    if (repository_id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_workspace_name\"")
+    if (repository_id_named_id_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_name\"")
+    if (commit_sha == null) throw new Exception("Missing required parameter \"commit_sha\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[VersioningGetUrlForVersionedBlob, VersioningGetUrlForVersionedBlobResponse]("POST", basePath + s"/versioning/workspaces/$repository_id_named_id_workspace_name/repositories/$repository_id_named_id_name/commits/$commit_sha/getUrlForVersionedBlob", __query.toMap, body, VersioningGetUrlForVersionedBlobResponse.fromJson)
+  }
+
+  def getUrlForVersionedBlob(body: VersioningGetUrlForVersionedBlob, commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Try[VersioningGetUrlForVersionedBlobResponse] = Await.result(getUrlForVersionedBlobAsync(body, commit_sha, repository_id_named_id_name, repository_id_named_id_workspace_name), Duration.Inf)
+
+  def getUrlForVersionedBlob2Async(body: VersioningGetUrlForVersionedBlob, commit_sha: String, repository_id_repo_id: BigInt)(implicit ec: ExecutionContext): Future[Try[VersioningGetUrlForVersionedBlobResponse]] = {
+    var __query = new mutable.HashMap[String,String]
+    if (repository_id_repo_id == null) throw new Exception("Missing required parameter \"repository_id_repo_id\"")
+    if (commit_sha == null) throw new Exception("Missing required parameter \"commit_sha\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[VersioningGetUrlForVersionedBlob, VersioningGetUrlForVersionedBlobResponse]("POST", basePath + s"/versioning/repositories/$repository_id_repo_id/commits/$commit_sha/getUrlForVersionedBlob", __query.toMap, body, VersioningGetUrlForVersionedBlobResponse.fromJson)
+  }
+
+  def getUrlForVersionedBlob2(body: VersioningGetUrlForVersionedBlob, commit_sha: String, repository_id_repo_id: BigInt)(implicit ec: ExecutionContext): Try[VersioningGetUrlForVersionedBlobResponse] = Await.result(getUrlForVersionedBlob2Async(body, commit_sha, repository_id_repo_id), Duration.Inf)
 
 }
