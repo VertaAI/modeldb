@@ -4,12 +4,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import DatasetWidget from 'pages/authorized/DatasetPages/DatasetsPage/DatasetWidget/DatasetWidget';
-import {
-  IFilterContext,
-  selectCurrentContextFilters,
-} from 'core/features/filter';
-import { defaultQuickFilters } from 'features/filter/Model';
+import { isHttpNotFoundError } from 'core/shared/models/Error';
 import Button from 'core/shared/view/elements/Button/Button';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import NoEntitiesStub from 'core/shared/view/elements/NoEntitiesStub/NoEntitiesStub';
@@ -27,15 +22,16 @@ import {
   selectDatasetsPagination,
 } from 'store/datasets';
 import { IApplicationState } from 'store/store';
-
-import styles from './DatasetsPage.module.css';
-import DeletingDatasetsManager from '../DeletingDatasetsManager/DeletingDatasetsManager';
-import DatasetsPagesLayout from '../shared/DatasetsPagesLayout/DatasetsPagesLayout';
 import Reloading from 'core/shared/view/elements/Reloading/Reloading';
+
+import NotFoundPage from '../../NotFoundPage/NotFoundPage';
+import styles from './DatasetsPage.module.css';
+import DatasetWidget from './DatasetWidget/DatasetWidget';
+import DatasetsPagesLayout from '../shared/DatasetsPagesLayout/DatasetsPagesLayout';
+import DeletingDatasetsManager from '../DeletingDatasetsManager/DeletingDatasetsManager';
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
-    filters: selectCurrentContextFilters(state),
     datasets: selectDatasets(state),
     loadingDatasets: selectCommunications(state).loadingDatasets,
     pagination: selectDatasetsPagination(state),
@@ -63,50 +59,19 @@ interface ILocalState {
 }
 
 class DatasetsPage extends React.PureComponent<AllProps, ILocalState> {
-  public state: ILocalState = {
-    isNeedResetPagination: false,
-  };
-
-  private filterContext: IFilterContext;
-
-  constructor(props: AllProps) {
-    super(props);
-    const contextName = `datasets`;
-    this.filterContext = {
-      quickFilters: [
-        defaultQuickFilters.name,
-        defaultQuickFilters.description,
-        defaultQuickFilters.tag,
-      ],
-      name: contextName,
-      onApplyFilters: filters => {
-        if (this.state.isNeedResetPagination) {
-          this.props.resetDatasetsPagination();
-        }
-        this.props.loadDatasets(filters, props.match.params.workspaceName);
-        if (!this.state.isNeedResetPagination) {
-          this.setState({ isNeedResetPagination: true });
-        }
-      },
-    };
-    this.props.getDefaultDatasetsOptions();
+  public componentDidMount() {
+    this.loadDatasets();
   }
 
   public render() {
-    const {
-      datasets,
-      loadingDatasets,
-      filters,
-      pagination,
-      match,
-    } = this.props;
+    const { datasets, loadingDatasets, pagination, match } = this.props;
+
+    if (isHttpNotFoundError(loadingDatasets.error)) {
+      return <NotFoundPage />;
+    }
+
     return (
-      <DatasetsPagesLayout
-        filterBarSettings={{
-          context: this.filterContext,
-          placeholderText: 'Drag and drop tags here',
-        }}
-      >
+      <DatasetsPagesLayout>
         <Reloading onReload={this.loadDatasets}>
           <div className={styles.root}>
             <div className={styles.actions}>
@@ -117,7 +82,7 @@ class DatasetsPage extends React.PureComponent<AllProps, ILocalState> {
                   )}
                 >
                   Create
-              </Button>
+                </Button>
               </div>
             </div>
             <div className={styles.root} data-type="datasets-page">
@@ -134,11 +99,11 @@ class DatasetsPage extends React.PureComponent<AllProps, ILocalState> {
                   );
                 }
                 if (datasets.length === 0) {
-                  return filters.length > 0 || pagination.currentPage !== 0 ? (
+                  return pagination.currentPage !== 0 ? (
                     <NoResultsStub />
                   ) : (
-                      <NoEntitiesStub entitiesText="datasets" />
-                    );
+                    <NoEntitiesStub entitiesText="datasets" />
+                  );
                 }
                 return (
                   <div className={styles.content}>
@@ -157,7 +122,9 @@ class DatasetsPage extends React.PureComponent<AllProps, ILocalState> {
                     {datasets.length > 0 && (
                       <div className={styles.pagination}>
                         <Pagination
-                          onCurrentPageChange={this.onPaginationCurrentPageChange}
+                          onCurrentPageChange={
+                            this.onPaginationCurrentPageChange
+                          }
                           pagination={pagination}
                         />
                       </div>
@@ -181,7 +148,7 @@ class DatasetsPage extends React.PureComponent<AllProps, ILocalState> {
   private onPaginationCurrentPageChange(currentPage: number) {
     this.props.changeDatasetsPaginationWithLoading(
       currentPage,
-      this.props.filters,
+      [],
       this.props.match.params.workspaceName
     );
   }

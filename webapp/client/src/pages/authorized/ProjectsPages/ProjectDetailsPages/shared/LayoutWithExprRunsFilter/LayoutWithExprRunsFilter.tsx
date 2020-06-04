@@ -13,7 +13,7 @@ import {
   lazyLoadChartData,
   selectSequentialChartData,
 } from 'store/experimentRuns';
-import { IConnectedReduxProps, IApplicationState } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import ProjectsPagesLayout from '../../../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 import makeExprRunsFilterContextName from '../makeExprRunsFilterContextName';
@@ -53,7 +53,10 @@ class ProjectDetailsPage extends React.Component<AllProps, ILocalState> {
     super(props);
     const projectId = props.match.params.projectId;
     this.filterContext = {
-      quickFilters: [defaultQuickFilters.name, defaultQuickFilters.tag],
+      quickFilters: [
+        defaultQuickFilters.name,
+        defaultQuickFilters.tag,
+      ],
       name: makeExprRunsFilterContextName(projectId),
       onApplyFilters: (filters, dispatch) => {
         const isChartsPage = Boolean(
@@ -67,13 +70,7 @@ class ProjectDetailsPage extends React.Component<AllProps, ILocalState> {
         }
 
         if (isChartsPage) {
-          if (this.props.sequentialChartData) {
-            if (this.props.sequentialChartData.length === 0) {
-              dispatch(lazyLoadChartData(projectId, filters));
-            }
-          } else {
-            dispatch(lazyLoadChartData(projectId, filters));
-          }
+          dispatch(lazyLoadChartData(projectId, filters));
         } else {
           dispatch(loadExperimentRuns(projectId, filters));
         }
@@ -90,9 +87,8 @@ class ProjectDetailsPage extends React.Component<AllProps, ILocalState> {
     return (
       <ProjectsPagesLayout
         filterBarSettings={{
-          placeholderText: 'Drag and drop parameters and tags here',
           context: this.filterContext,
-          withFilterIdsSection: true,
+          title: 'Filter Runs',
         }}
       >
         <div className={styles.root}>

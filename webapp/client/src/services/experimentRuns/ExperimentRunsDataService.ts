@@ -7,7 +7,7 @@ import { IArtifact } from 'core/shared/models/Artifact';
 import {
   IFilterData,
   PropertyType,
-  ComparisonType,
+  OperatorType,
 } from 'core/features/filter/Model';
 import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
 import { ISorting } from 'core/shared/models/Sorting';
@@ -25,6 +25,7 @@ import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/
 
 import { convertServerUser } from '../../core/services/serverModel/User/converters';
 import makeLoadExperimentRunsRequest, {
+  makeLoadExperimentRunsByWorkspaceRequest,
 } from './responseRequest/makeLoadExperimentRunsRequest';
 import {
   ILoadExperimentRunsResult,
@@ -65,6 +66,34 @@ export default class ExperimentRunsDataService extends BaseDataService {
 
     const res: ILoadExperimentRunsResult = {
       data,
+      totalCount: Number(response.data.total_records || 0),
+    };
+    return res;
+  }
+
+  public async loadExperimentRunsByWorkspace(
+    workspaceName: IWorkspace['name'],
+    filters: IFilterData[] = [],
+    pagination: IPagination,
+    sorting: ISorting | undefined,
+    withLoadingVersionedInputs: boolean
+  ): Promise<DataWithPagination<ModelRecord>> {
+    const request = await makeLoadExperimentRunsByWorkspaceRequest(
+      workspaceName,
+      filters,
+      pagination,
+      sorting || null
+    );
+    const response = await this.post({
+      url: '/v1/modeldb/hydratedData/findHydratedExperimentRuns',
+      data: request,
+    });
+    const data = await this.convertExperimentRuns(
+      response.data,
+      withLoadingVersionedInputs
+    );
+    const res = {
+      data: data.map(v => v.experimentRun),
       totalCount: Number(response.data.total_records || 0),
     };
     return res;
@@ -205,9 +234,10 @@ export default class ExperimentRunsDataService extends BaseDataService {
             {
               type: PropertyType.METRIC,
               id: '-1',
-              comparisonType: ComparisonType.EQUALS,
+              operator: OperatorType.EQUALS,
               name: 'datasets.linked_artifact_id',
               value: datasetVersionId as any,
+              isActive: true,
             },
           ],
           { currentPage: 0, pageSize: 1000, totalCount: 0 },

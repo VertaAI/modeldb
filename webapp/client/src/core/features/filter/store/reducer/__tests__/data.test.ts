@@ -3,7 +3,7 @@ import {
   IFilterState,
   manageFiltersTypes,
 } from 'core/features/filter';
-import { ComparisonType, PropertyType } from 'core/features/filter/Model';
+import { OperatorType, PropertyType } from 'core/features/filter/Model';
 
 import dataReducer, { initial } from '../data';
 
@@ -26,7 +26,8 @@ const mockFilterPayload: IFilterPayload = {
     type: PropertyType.METRIC,
     name: 'metric',
     value: 5000,
-    comparisonType: ComparisonType.EQUALS,
+    operator: OperatorType.EQUALS,
+    isActive: true,
   },
 };
 
@@ -88,7 +89,7 @@ describe('(store/filter/reducer/data)', () => {
         ...mockFilterPayload,
         filter: {
           ...mockFilterPayload.filter,
-          comparisonType: ComparisonType.MORE,
+          operator: OperatorType.MORE,
         },
       } as IFilterPayload,
     };
