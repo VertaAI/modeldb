@@ -85,7 +85,6 @@ import scala.util.{Failure, Success, Try}
         case Failure(e) => Failure(e)
       }
     }
-    else Failure(new IllegalArgumentException("File has already been added."))
    }
 
   /** Analogous to Python's os.path.expanduser
