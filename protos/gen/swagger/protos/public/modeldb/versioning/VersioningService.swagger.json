@@ -813,14 +813,14 @@
         ]
       }
     },
-    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForVersionedBlob": {
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForBlobVersioned": {
       "post": {
-        "operationId": "getUrlForVersionedBlob2",
+        "operationId": "getUrlForBlobVersioned2",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/versioningGetUrlForVersionedBlobResponse"
+              "$ref": "#/definitions/versioningGetUrlForBlobVersionedResponse"
             }
           },
           "default": {
@@ -849,7 +849,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningGetUrlForVersionedBlob"
+              "$ref": "#/definitions/versioningGetUrlForBlobVersioned"
             }
           }
         ],
@@ -2138,14 +2138,14 @@
         ]
       }
     },
-    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/getUrlForVersionedBlob": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/getUrlForBlobVersioned": {
       "post": {
-        "operationId": "getUrlForVersionedBlob",
+        "operationId": "getUrlForBlobVersioned",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/versioningGetUrlForVersionedBlobResponse"
+              "$ref": "#/definitions/versioningGetUrlForBlobVersionedResponse"
             }
           },
           "default": {
@@ -2179,7 +2179,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningGetUrlForVersionedBlob"
+              "$ref": "#/definitions/versioningGetUrlForBlobVersioned"
             }
           }
         ],
@@ -3928,7 +3928,7 @@
         }
       }
     },
-    "versioningGetUrlForVersionedBlob": {
+    "versioningGetUrlForBlobVersioned": {
       "type": "object",
       "properties": {
         "repository_id": {
@@ -3955,7 +3955,7 @@
         }
       }
     },
-    "versioningGetUrlForVersionedBlobResponse": {
+    "versioningGetUrlForBlobVersionedResponse": {
       "type": "object",
       "properties": {
         "url": {
