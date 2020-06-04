@@ -16,14 +16,14 @@ import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
-case class VersioningGetUrlForVersionedBlobResponse (
+case class VersioningGetUrlForBlobVersionedResponse (
   url: Option[String] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = VersioningGetUrlForVersionedBlobResponse.toJson(this)
+  def toJson(): JValue = VersioningGetUrlForBlobVersionedResponse.toJson(this)
 }
 
-object VersioningGetUrlForVersionedBlobResponse {
-  def toJson(obj: VersioningGetUrlForVersionedBlobResponse): JObject = {
+object VersioningGetUrlForBlobVersionedResponse {
+  def toJson(obj: VersioningGetUrlForBlobVersionedResponse): JObject = {
     new JObject(
       List[Option[JField]](
         obj.url.map(x => JField("url", JString(x)))
@@ -34,11 +34,11 @@ object VersioningGetUrlForVersionedBlobResponse {
     )
   }
 
-  def fromJson(value: JValue): VersioningGetUrlForVersionedBlobResponse =
+  def fromJson(value: JValue): VersioningGetUrlForBlobVersionedResponse =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        VersioningGetUrlForVersionedBlobResponse(
+        VersioningGetUrlForBlobVersionedResponse(
           // TODO: handle required
           url = fieldsMap.get("url").map(JsonConverter.fromJsonString)
         )

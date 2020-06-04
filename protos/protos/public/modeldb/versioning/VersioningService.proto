@@ -468,7 +468,7 @@ message FindRepositoriesBlobs {
     }
 }
 
-message GetUrlForVersionedBlob {
+message GetUrlForBlobVersioned {
     RepositoryIdentification repository_id = 1;
     string commit_sha = 2;
     repeated string location = 3;
@@ -779,12 +779,12 @@ service VersioningService {
         };
     };
 
-    rpc getUrlForVersionedBlob (GetUrlForVersionedBlob) returns (GetUrlForVersionedBlob.Response) {
+    rpc getUrlForBlobVersioned (GetUrlForBlobVersioned) returns (GetUrlForBlobVersioned.Response) {
         option (google.api.http) = {
-            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/getUrlForVersionedBlob"
+            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/getUrlForBlobVersioned"
             body: "*"
             additional_bindings {
-                post: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForVersionedBlob"
+                post: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForBlobVersioned"
             	body: "*"
             }
         };

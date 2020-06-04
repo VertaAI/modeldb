@@ -16,7 +16,7 @@ import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
-case class VersioningGetUrlForVersionedBlob (
+case class VersioningGetUrlForBlobVersioned (
   commit_sha: Option[String] = None,
   location: Option[List[String]] = None,
   method: Option[String] = None,
@@ -24,11 +24,11 @@ case class VersioningGetUrlForVersionedBlob (
   path_dataset_component_blob_path: Option[String] = None,
   repository_id: Option[VersioningRepositoryIdentification] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = VersioningGetUrlForVersionedBlob.toJson(this)
+  def toJson(): JValue = VersioningGetUrlForBlobVersioned.toJson(this)
 }
 
-object VersioningGetUrlForVersionedBlob {
-  def toJson(obj: VersioningGetUrlForVersionedBlob): JObject = {
+object VersioningGetUrlForBlobVersioned {
+  def toJson(obj: VersioningGetUrlForBlobVersioned): JObject = {
     new JObject(
       List[Option[JField]](
         obj.commit_sha.map(x => JField("commit_sha", JString(x))),
@@ -44,11 +44,11 @@ object VersioningGetUrlForVersionedBlob {
     )
   }
 
-  def fromJson(value: JValue): VersioningGetUrlForVersionedBlob =
+  def fromJson(value: JValue): VersioningGetUrlForBlobVersioned =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        VersioningGetUrlForVersionedBlob(
+        VersioningGetUrlForBlobVersioned(
           // TODO: handle required
           commit_sha = fieldsMap.get("commit_sha").map(JsonConverter.fromJsonString),
           location = fieldsMap.get("location").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
