@@ -7,53 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Visitor {
-  public void preVisitListOfAutogenBlob(List<AutogenBlob> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (AutogenBlob val : lst) {
-      preVisitAutogenBlob(val);
-    }
-  }
-
-  public void preVisitDeepListOfAutogenBlob(List<AutogenBlob> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (AutogenBlob val : lst) {
-      preVisitDeepAutogenBlob(val);
-    }
-  }
-
-  public List<AutogenBlob> postVisitListOfAutogenBlob(List<AutogenBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return null;
-    final List<AutogenBlob> collect = new ArrayList<>(lst.size());
-    for (AutogenBlob val : lst) {
-      collect.add(postVisitAutogenBlob(val));
-    }
-    return collect;
-  }
-
-  public List<AutogenBlob> postVisitDeepListOfAutogenBlob(List<AutogenBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return null;
-    final List<AutogenBlob> collect = new ArrayList<>(lst.size());
-    for (AutogenBlob val : lst) {
-      collect.add(postVisitDeepAutogenBlob(val));
-    }
-    return collect;
-  }
-
-  public void preVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {}
-
-  public void preVisitDeepAutogenBlob(AutogenBlob blob) throws ModelDBException {}
-
-  public AutogenBlob postVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {
-    return blob;
-  }
-
-  public AutogenBlob postVisitDeepAutogenBlob(AutogenBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
   public void preVisitListOfAutogenBlobDiff(List<AutogenBlobDiff> lst) throws ModelDBException {
     if (lst == null) return;
     for (AutogenBlobDiff val : lst) {
@@ -98,6 +51,53 @@ public class Visitor {
 
   public AutogenBlobDiff postVisitDeepAutogenBlobDiff(AutogenBlobDiff blob)
       throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenBlob(List<AutogenBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenBlob val : lst) {
+      preVisitAutogenBlob(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenBlob(List<AutogenBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenBlob val : lst) {
+      preVisitDeepAutogenBlob(val);
+    }
+  }
+
+  public List<AutogenBlob> postVisitListOfAutogenBlob(List<AutogenBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenBlob val : lst) {
+      collect.add(postVisitAutogenBlob(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenBlob> postVisitDeepListOfAutogenBlob(List<AutogenBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenBlob val : lst) {
+      collect.add(postVisitDeepAutogenBlob(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {}
+
+  public void preVisitDeepAutogenBlob(AutogenBlob blob) throws ModelDBException {}
+
+  public AutogenBlob postVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenBlob postVisitDeepAutogenBlob(AutogenBlob blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
@@ -880,6 +880,59 @@ public class Visitor {
 
   public AutogenEnvironmentVariablesDiff postVisitDeepAutogenEnvironmentVariablesDiff(
       AutogenEnvironmentVariablesDiff blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenGetUrlForVersionedBlob(List<AutogenGetUrlForVersionedBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenGetUrlForVersionedBlob val : lst) {
+      preVisitAutogenGetUrlForVersionedBlob(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenGetUrlForVersionedBlob(
+      List<AutogenGetUrlForVersionedBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenGetUrlForVersionedBlob val : lst) {
+      preVisitDeepAutogenGetUrlForVersionedBlob(val);
+    }
+  }
+
+  public List<AutogenGetUrlForVersionedBlob> postVisitListOfAutogenGetUrlForVersionedBlob(
+      List<AutogenGetUrlForVersionedBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenGetUrlForVersionedBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenGetUrlForVersionedBlob val : lst) {
+      collect.add(postVisitAutogenGetUrlForVersionedBlob(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenGetUrlForVersionedBlob> postVisitDeepListOfAutogenGetUrlForVersionedBlob(
+      List<AutogenGetUrlForVersionedBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenGetUrlForVersionedBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenGetUrlForVersionedBlob val : lst) {
+      collect.add(postVisitDeepAutogenGetUrlForVersionedBlob(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenGetUrlForVersionedBlob(AutogenGetUrlForVersionedBlob blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenGetUrlForVersionedBlob(AutogenGetUrlForVersionedBlob blob)
+      throws ModelDBException {}
+
+  public AutogenGetUrlForVersionedBlob postVisitAutogenGetUrlForVersionedBlob(
+      AutogenGetUrlForVersionedBlob blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenGetUrlForVersionedBlob postVisitDeepAutogenGetUrlForVersionedBlob(
+      AutogenGetUrlForVersionedBlob blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
@@ -2420,11 +2473,11 @@ public class Visitor {
   }
 
   public <T> T genericPostVisitDeep(T b) throws ModelDBException {
-    if (b instanceof AutogenBlob) {
-      return Utils.removeEmpty((T) postVisitDeepAutogenBlob((AutogenBlob) b));
-    }
     if (b instanceof AutogenBlobDiff) {
       return Utils.removeEmpty((T) postVisitDeepAutogenBlobDiff((AutogenBlobDiff) b));
+    }
+    if (b instanceof AutogenBlob) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenBlob((AutogenBlob) b));
     }
     if (b instanceof AutogenCodeBlob) {
       return Utils.removeEmpty((T) postVisitDeepAutogenCodeBlob((AutogenCodeBlob) b));
@@ -2483,6 +2536,10 @@ public class Visitor {
     if (b instanceof AutogenEnvironmentVariablesDiff) {
       return Utils.removeEmpty(
           (T) postVisitDeepAutogenEnvironmentVariablesDiff((AutogenEnvironmentVariablesDiff) b));
+    }
+    if (b instanceof AutogenGetUrlForVersionedBlob) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenGetUrlForVersionedBlob((AutogenGetUrlForVersionedBlob) b));
     }
     if (b instanceof AutogenGitCodeBlob) {
       return Utils.removeEmpty((T) postVisitDeepAutogenGitCodeBlob((AutogenGitCodeBlob) b));

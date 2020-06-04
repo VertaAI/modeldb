@@ -129,6 +129,26 @@ public class DiffAndMerge {
   }
 
   @Property
+  public void diffAndMergeAutogenGetUrlForVersioned(
+      AutogenGetUrlForVersionedBlob a, AutogenGetUrlForVersionedBlob b) throws ModelDBException {
+    AutogenGetUrlForVersionedBlob newA = enforceOneof(a);
+    AutogenGetUrlForVersionedBlob newB = enforceOneof(b);
+    AutogenGetUrlForVersionedDiff d = DiffComputer.computeGetUrlForVersionedDiff(newA, newB);
+
+    // Applying the diff on top of the original A should get original B
+    AutogenGetUrlForVersionedBlob diffedB =
+        DiffMerger.mergeGetUrlForVersioned(newA, d, new HashSet<String>());
+    assertEquals(newB, diffedB);
+
+    HashSet<String> conflictSet = new HashSet<String>();
+    // Reapplying the diff should not change the result
+    diffedB = DiffMerger.mergeGetUrlForVersioned(diffedB, d, conflictSet);
+    if (conflictSet.isEmpty()) {
+      assertEquals(newB, diffedB);
+    }
+  }
+
+  @Property
   public void diffAndMergeAutogenGitCode(AutogenGitCodeBlob a, AutogenGitCodeBlob b)
       throws ModelDBException {
     AutogenGitCodeBlob newA = enforceOneof(a);
