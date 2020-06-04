@@ -457,6 +457,8 @@ public interface ExperimentRunDAO {
   void logVersionedInput(LogVersionedInput request)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException;
 
+  void deleteLogVersionedInputs(Session session, Long repoId, String commitHash);
+
   void deleteLogVersionedInputs(Session session, List<Long> repoIds);
 
   GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)

@@ -1880,6 +1880,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
+  @Override
   public void deleteLogVersionedInputs(Session session, Long repoId, String commitHash) {
     StringBuilder fetchAllExpRunLogVersionedInputsHqlBuilder =
         new StringBuilder(
