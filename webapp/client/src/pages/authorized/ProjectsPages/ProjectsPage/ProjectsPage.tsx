@@ -14,17 +14,13 @@ import NoEntitiesStub from 'core/shared/view/elements/NoEntitiesStub/NoEntitiesS
 import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub';
 import Pagination from 'core/shared/view/elements/Pagination/Pagination';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { defaultQuickFilters } from 'features/filter/Model';
 import routes, { GetRouteParams } from 'routes';
-import { cleanChartData } from 'store/experimentRuns';
 import {
   loadProjects,
   selectCommunications,
   selectProjects,
-  resetProjectsPagination,
   selectProjectsPagination,
   changeProjectsPaginationWithLoading,
-  getDefaultProjectsOptions,
 } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
@@ -57,29 +53,8 @@ class ProjectsPage extends React.PureComponent<AllProps, ILocalState> {
     isNeedResetPagination: false,
   };
 
-  private filterContext: IFilterContext;
-
-  constructor(props: AllProps) {
-    super(props);
-    this.filterContext = {
-      quickFilters: [
-        defaultQuickFilters.name,
-        defaultQuickFilters.description,
-        defaultQuickFilters.tag,
-      ],
-      name: 'Projects',
-      onApplyFilters: (filters, dispatch) => {
-        if (this.state.isNeedResetPagination) {
-          dispatch(resetProjectsPagination());
-        }
-        dispatch(loadProjects(filters, props.match.params.workspaceName));
-        if (!this.state.isNeedResetPagination) {
-          this.setState({ isNeedResetPagination: true });
-        }
-      },
-    };
-    this.props.dispatch(getDefaultProjectsOptions());
-    this.props.dispatch(cleanChartData());
+  public componentDidMount() {
+    this.loadProjects();
   }
 
   public render() {
@@ -92,12 +67,7 @@ class ProjectsPage extends React.PureComponent<AllProps, ILocalState> {
     } = this.props;
 
     return (
-      <ProjectsPagesLayout
-        filterBarSettings={{
-          placeholderText: 'Drag and drop tags here',
-          context: this.filterContext,
-        }}
-      >
+      <ProjectsPagesLayout>
         <Reloading onReload={this.loadProjects}>
           <div className={styles.root}>
             <div className={styles.actions}>

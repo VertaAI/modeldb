@@ -6,8 +6,9 @@ import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
+import CompareClickAction from 'core/features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
+import ComparedEntitesManager from 'core/features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
 import Attributes from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
-import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
 import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import {
   IFilterContext,
@@ -52,8 +53,7 @@ import styles from './DatasetVersionsPage.module.css';
 import DeletingDatasetVersionsManager from './DatasetVersionsTable/BulkDeletion/Manager/Manager';
 import ToggleAllDatasetVersionsForBulkDeletion from './DatasetVersionsTable/BulkDeletion/ToggleAllRows/ToggleAllRows';
 import ToggleDatasetVersionForBulkDeletion from './DatasetVersionsTable/BulkDeletion/ToggleRow/ToggleRow';
-import ComparedEntitesManager from 'core/features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
-import CompareClickAction from 'core/features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
+import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
 
 interface IPropsFromState {
   datasetVersions: IDatasetVersion[] | null;
@@ -124,7 +124,7 @@ class DatasetVersionsPage extends React.PureComponent<AllProps, ILocalState> {
       <DatasetDetailsLayout
         filterBarSettings={{
           context: this.filterContext,
-          placeholderText: 'Filter Versions',
+          title: 'Filter Versions',
         }}
       >
         <div className={styles.root}>

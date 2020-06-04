@@ -21,7 +21,9 @@ export const makeFilterConverter = <
   filterConverter: IFilterConverter<R, T>
 ) => filterConverter;
 
-const defaultFilterConverter = makeFilterConverter<IServerFiltersInRequest>({
+export const defaultFilterConverter = makeFilterConverter<
+  IServerFiltersInRequest
+>({
   predicate: (_): _ is IFilterData => true,
   convert: (filter, request) => {
     return Promise.resolve({

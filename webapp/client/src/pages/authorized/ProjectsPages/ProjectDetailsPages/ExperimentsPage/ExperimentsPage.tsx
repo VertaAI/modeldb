@@ -5,9 +5,8 @@ import { RouteComponentProps, withRouter } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 import routes, { GetRouteParams } from 'routes';
 
-import ExperimentWidget from 'pages/authorized/ProjectsPages/ProjectDetailsPages/ExperimentsPage/ExperimentWidget/ExperimentWidget';
+import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import {
-  IFilterContext,
   selectCurrentContextAppliedFilters,
   updateContextFilters,
 } from 'core/features/filter';
@@ -17,11 +16,11 @@ import {
 } from 'core/features/filter/Model';
 import Button from 'core/shared/view/elements/Button/Button';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import NoEntitiesStub from 'core/shared/view/elements/NoEntitiesStub/NoEntitiesStub';
+import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub';
 import Pagination from 'core/shared/view/elements/Pagination/Pagination';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import Experiment from 'models/Experiment';
-import NoEntitiesStub from 'core/shared/view/elements/NoEntitiesStub/NoEntitiesStub';
-import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub';
 import {
   changeExperimentsPaginationWithLoading,
   getDefaultExperimentsOptions,
@@ -31,7 +30,6 @@ import {
   selectExperimentsPagination,
   selectLoadingExperiments,
 } from 'store/experiments';
-import { defaultQuickFilters } from 'features/filter/Model';
 import { selectProject } from 'store/projects';
 import { IApplicationState } from 'store/store';
 
@@ -40,6 +38,7 @@ import makeExprRunsFilterContextName from '../shared/makeExprRunsFilterContextNa
 import ProjectPageTabs from '../shared/ProjectPageTabs/ProjectPageTabs';
 import DeletingExperimentsManager from './DeletingExperimentsManager/DeletingExperimentsManager';
 import styles from './ExperimentsPage.module.css';
+import ExperimentWidget from './ExperimentWidget/ExperimentWidget';
 import Reloading from 'core/shared/view/elements/Reloading/Reloading';
 
 const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
@@ -80,30 +79,14 @@ class ExperimentsPage extends React.PureComponent<AllProps, ILocalState> {
     isNeedResetPagination: false,
   };
 
-  private filterContext: IFilterContext;
-
   constructor(props: AllProps) {
     super(props);
     const projectId = this.props.match.params.projectId;
-    const contextName = `Experiments-${projectId}`;
-    this.filterContext = {
-      quickFilters: [
-        defaultQuickFilters.name,
-        defaultQuickFilters.description,
-        defaultQuickFilters.tag,
-      ],
-      name: contextName,
-      onApplyFilters: filters => {
-        if (this.state.isNeedResetPagination) {
-          this.props.resetExperimentsPagination(projectId);
-        }
-        this.props.loadExperiments(projectId, filters);
-        if (!this.state.isNeedResetPagination) {
-          this.setState({ isNeedResetPagination: true });
-        }
-      },
-    };
     this.props.getDefaultExperimentsOptions(projectId);
+  }
+
+  public componentDidMount() {
+    this.loadProject();
   }
 
   public render() {
@@ -117,74 +100,81 @@ class ExperimentsPage extends React.PureComponent<AllProps, ILocalState> {
       filters,
     } = this.props;
     return (
-      <ProjectsPagesLayout
-        filterBarSettings={{
-          context: this.filterContext,
-          placeholderText: 'Drag and drop tags here',
-        }}
-      >
+      <ProjectsPagesLayout>
         <Reloading onReload={this.loadProject}>
-        <div className={styles.root}>
-          <ProjectPageTabs
-            projectId={projectId}
-            rightContent={
-              <Button
-                to={routes.experimentCreation.getRedirectPathWithCurrentWorkspace(
-                  { projectId }
-                )}
-              >
-                Create Experiment
-              </Button>
-            }
-          />
-          {(() => {
-            if (loadingExperimentsCommunication.error) {
-              return (
-                <PageCommunicationError
-                  error={loadingExperimentsCommunication.error}
+          <div className={styles.root}>
+            <WithCurrentUserActionsAccesses
+              entityType="project"
+              entityId={projectId}
+              actions={['update']}
+            >
+              {({ actionsAccesses }) => (
+                <ProjectPageTabs
+                  projectId={projectId}
+                  rightContent={
+                    actionsAccesses.update ? (
+                      <Button
+                        to={routes.experimentCreation.getRedirectPathWithCurrentWorkspace(
+                          { projectId }
+                        )}
+                      >
+                        Create Experiment
+                      </Button>
+                    ) : null
+                  }
                 />
-              );
-            }
-            if (loadingExperimentsCommunication.isRequesting) {
-              return (
-                <div className={styles.preload}>
-                  <Preloader variant="dots" />
-                </div>
-              );
-            }
-            if (experiments && experiments.length !== 0) {
-              return (
-                <>
-                  <DeletingExperimentsManager projectId={projectId} />
-                  <div className={styles.experiments}>
-                    {experiments.map(experiment => (
-                      <div className={styles.experiment} key={experiment.id}>
-                        <ExperimentWidget
-                          onViewExprRuns={this.makeOnViewExprRuns(experiment)}
-                          projectId={projectId}
-                          experiment={experiment}
+              )}
+            </WithCurrentUserActionsAccesses>
+            {(() => {
+              if (loadingExperimentsCommunication.error) {
+                return (
+                  <PageCommunicationError
+                    error={loadingExperimentsCommunication.error}
+                  />
+                );
+              }
+              if (loadingExperimentsCommunication.isRequesting) {
+                return (
+                  <div className={styles.preload}>
+                    <Preloader variant="dots" />
+                  </div>
+                );
+              }
+              if (experiments && experiments.length !== 0) {
+                return (
+                  <>
+                    <DeletingExperimentsManager projectId={projectId} />
+                    <div className={styles.experiments}>
+                      {experiments.map(experiment => (
+                        <div className={styles.experiment} key={experiment.id}>
+                          <ExperimentWidget
+                            onViewExprRuns={this.makeOnViewExprRuns(experiment)}
+                            projectId={projectId}
+                            experiment={experiment}
+                          />
+                        </div>
+                      ))}
+                      <div className={styles.pagination}>
+                        <Pagination
+                          onCurrentPageChange={
+                            this.onPaginationCurrentPageChange
+                          }
+                          pagination={pagination}
                         />
                       </div>
-                    ))}
-                    <div className={styles.pagination}>
-                      <Pagination
-                        onCurrentPageChange={this.onPaginationCurrentPageChange}
-                        pagination={pagination}
-                      />
                     </div>
-                  </div>
-                </>
-              );
-            }
-            if (experiments && experiments.length === 0) {
-              return filters.length > 0 || pagination.currentPage !== 0 ? (
-                <NoResultsStub />
-              ) : (
-                <NoEntitiesStub entitiesText="experiments" />
-              );
-            }
-          })()}
-        </div>
+                  </>
+                );
+              }
+              if (experiments && experiments.length === 0) {
+                return filters.length > 0 || pagination.currentPage !== 0 ? (
+                  <NoResultsStub />
+                ) : (
+                  <NoEntitiesStub entitiesText="experiments" />
+                );
+              }
+            })()}
+          </div>
         </Reloading>
       </ProjectsPagesLayout>
     );
