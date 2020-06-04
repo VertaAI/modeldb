@@ -307,7 +307,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         return experimentObj.getProtoObject();
       } else {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
