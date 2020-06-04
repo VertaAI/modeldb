@@ -327,8 +327,6 @@ const convertServerExperimentRun = async (
     modelRecord.versionedInputs = versionedInputs;
   }
 
-  modelRecord.allowedActions = [];
-
   const dates = convertServerEntityWithLoggedDates(
     hydrated_experiment_run.experiment_run
   );

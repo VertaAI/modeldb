@@ -2,6 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
+import { HeaderSearch } from 'core/features/highLevelSearch';
 import { IApplicationState } from 'store/store';
 
 import logo from './images/Verta_logo.svg';
@@ -28,9 +29,9 @@ class LayoutHeader extends React.PureComponent<AllProps> {
             <img src={logo} />
           </Link>
         </div>
-        {/* <div className={styles.highLevelSearch}>
+        <div className={styles.highLevelSearch}>
           <HeaderSearch />
-        </div> */}
+        </div>
         {rightContent && (
           <div className={styles.rightContent}>{rightContent}</div>
         )}

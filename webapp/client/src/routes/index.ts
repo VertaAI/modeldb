@@ -11,6 +11,7 @@ import {
 } from 'core/shared/routes/makeRoute';
 import * as P from 'core/shared/routes/pathBuilder';
 import { IURLWithFilters } from 'core/features/filter/Model';
+import { IURLWithResultsSorting } from 'core/features/highLevelSearch/url';
 
 import {
   isRouteWithWorkspace,
@@ -23,7 +24,8 @@ export type IRoute<T, B = undefined> = _IRoute<T, B>;
 export type RoutesWithWorkspaces =
   | 'projects'
   | 'datasets'
-  | 'repositories';
+  | 'repositories'
+  | 'highLevelSearch';
 
 const routes = {
   index: makeRouteFromPath({
@@ -33,6 +35,13 @@ const routes = {
 
   workspace: makeRouteWithWorkspace({
     getPath: () => P.makePath()(),
+  }),
+
+  highLevelSearch: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath('search')<
+        { q?: string; type?: string; page?: string } & IURLWithResultsSorting
+      >(),
   }),
 
   datasets: makeRouteWithWorkspace({
