@@ -31,6 +31,7 @@ import { IApplicationState } from 'store/store';
 import styles from './DatasetsPage.module.css';
 import DeletingDatasetsManager from '../DeletingDatasetsManager/DeletingDatasetsManager';
 import DatasetsPagesLayout from '../shared/DatasetsPagesLayout/DatasetsPagesLayout';
+import Reloading from 'core/shared/view/elements/Reloading/Reloading';
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
@@ -106,67 +107,74 @@ class DatasetsPage extends React.PureComponent<AllProps, ILocalState> {
           placeholderText: 'Drag and drop tags here',
         }}
       >
-        <div className={styles.root}>
-          <div className={styles.actions}>
-            <div className={styles.action}>
-              <Button
-                to={routes.datasetCreation.getRedirectPathWithCurrentWorkspace(
-                  {}
-                )}
-              >
-                Create
+        <Reloading onReload={this.loadDatasets}>
+          <div className={styles.root}>
+            <div className={styles.actions}>
+              <div className={styles.action}>
+                <Button
+                  to={routes.datasetCreation.getRedirectPathWithCurrentWorkspace(
+                    {}
+                  )}
+                >
+                  Create
               </Button>
+              </div>
             </div>
-          </div>
-          <div className={styles.root} data-type="datasets-page">
-            {(() => {
-              if (loadingDatasets.isRequesting) {
-                return <Preloader variant="dots" />;
-              }
-              if (loadingDatasets.error || !datasets) {
-                return (
-                  <PageCommunicationError
-                    error={loadingDatasets.error}
-                    isNillEntity={!datasets}
-                  />
-                );
-              }
-              if (datasets.length === 0) {
-                return filters.length > 0 || pagination.currentPage !== 0 ? (
-                  <NoResultsStub />
-                ) : (
-                  <NoEntitiesStub entitiesText="datasets" />
-                );
-              }
-              return (
-                <div className={styles.content}>
-                  <div className={styles.deleting_datasets_manager}>
-                    <DeletingDatasetsManager
-                      workspaceName={match.params.workspaceName}
+            <div className={styles.root} data-type="datasets-page">
+              {(() => {
+                if (loadingDatasets.isRequesting) {
+                  return <Preloader variant="dots" />;
+                }
+                if (loadingDatasets.error || !datasets) {
+                  return (
+                    <PageCommunicationError
+                      error={loadingDatasets.error}
+                      isNillEntity={!datasets}
                     />
-                  </div>
-                  <div className={styles.datasets} data-test="datasets">
-                    {datasets.map(dataset => (
-                      <div className={styles.dataset} key={dataset.id}>
-                        <DatasetWidget dataset={dataset} />
-                      </div>
-                    ))}
-                  </div>
-                  {datasets.length > 0 && (
-                    <div className={styles.pagination}>
-                      <Pagination
-                        onCurrentPageChange={this.onPaginationCurrentPageChange}
-                        pagination={pagination}
+                  );
+                }
+                if (datasets.length === 0) {
+                  return filters.length > 0 || pagination.currentPage !== 0 ? (
+                    <NoResultsStub />
+                  ) : (
+                      <NoEntitiesStub entitiesText="datasets" />
+                    );
+                }
+                return (
+                  <div className={styles.content}>
+                    <div className={styles.deleting_datasets_manager}>
+                      <DeletingDatasetsManager
+                        workspaceName={match.params.workspaceName}
                       />
                     </div>
-                  )}
-                </div>
-              );
-            })()}
+                    <div className={styles.datasets} data-test="datasets">
+                      {datasets.map(dataset => (
+                        <div className={styles.dataset} key={dataset.id}>
+                          <DatasetWidget dataset={dataset} />
+                        </div>
+                      ))}
+                    </div>
+                    {datasets.length > 0 && (
+                      <div className={styles.pagination}>
+                        <Pagination
+                          onCurrentPageChange={this.onPaginationCurrentPageChange}
+                          pagination={pagination}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
           </div>
-        </div>
+        </Reloading>
       </DatasetsPagesLayout>
     );
+  }
+
+  @bind
+  private loadDatasets() {
+    this.props.loadDatasets([], this.props.match.params.workspaceName);
   }
 
   @bind

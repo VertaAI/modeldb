@@ -31,12 +31,15 @@ import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import ProjectsPagesLayout from '../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 import DeletingProjectsManager from './DeletingProjectsManager/DeletingProjectsManager';
 import styles from './ProjectsPage.module.css';
+import Reloading from 'core/shared/view/elements/Reloading/Reloading';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
 const mapStateToProps = (state: IApplicationState) => ({
   projects: selectProjects(state),
   loadingProjects: selectCommunications(state).loadingProjects,
   filters: selectCurrentContextFilters(state),
   pagination: selectProjectsPagination(state),
+  workspaceName: selectCurrentWorkspaceName(state),
 });
 
 export type CurrentRoute = typeof routes.projects;
@@ -47,6 +50,7 @@ type AllProps = ReturnType<typeof mapStateToProps> &
 interface ILocalState {
   isNeedResetPagination: boolean;
 }
+
 
 class ProjectsPage extends React.PureComponent<AllProps, ILocalState> {
   public state: ILocalState = {
@@ -94,62 +98,69 @@ class ProjectsPage extends React.PureComponent<AllProps, ILocalState> {
           context: this.filterContext,
         }}
       >
-        <div className={styles.root}>
-          <div className={styles.actions}>
-            <div className={styles.action}>
-              <Button
-                to={routes.projectCreation.getRedirectPath({
-                  workspaceName: match.params.workspaceName,
-                })}
-              >
-                Create
+        <Reloading onReload={this.loadProjects}>
+          <div className={styles.root}>
+            <div className={styles.actions}>
+              <div className={styles.action}>
+                <Button
+                  to={routes.projectCreation.getRedirectPath({
+                    workspaceName: match.params.workspaceName,
+                  })}
+                >
+                  Create
               </Button>
+              </div>
             </div>
-          </div>
-          {(() => {
-            if (loadingProjects.isRequesting) {
-              return (
-                <div className={styles.preloader} data-test="preloader">
-                  <Preloader variant="dots" />
-                </div>
-              );
-            }
-            if (loadingProjects.error) {
-              return (
-                <PageCommunicationError
-                  error={loadingProjects.error}
-                  dataTest="error"
-                />
-              );
-            }
-            if (projects && projects.length > 0) {
-              return (
-                <>
-                  <DeletingProjectsManager
-                    workspaceName={match.params.workspaceName}
-                  />
-                  <div className={styles.projects} data-test="projects">
-                    {projects.map((project, i) => (
-                      <ProjectWidget project={project} key={i} />
-                    ))}
-                    <div className={styles.pagination}>
-                      <Pagination
-                        onCurrentPageChange={this.onPaginationCurrentPageChange}
-                        pagination={pagination}
-                      />
-                    </div>
+            {(() => {
+              if (loadingProjects.isRequesting) {
+                return (
+                  <div className={styles.preloader} data-test="preloader">
+                    <Preloader variant="dots" />
                   </div>
-                </>
-              );
-            }
-            if (filters.length > 0 || pagination.currentPage !== 0) {
-              return <NoResultsStub />;
-            }
-            return <NoEntitiesStub entitiesText="projects" />;
-          })()}
-        </div>
+                );
+              }
+              if (loadingProjects.error) {
+                return (
+                  <PageCommunicationError
+                    error={loadingProjects.error}
+                    dataTest="error"
+                  />
+                );
+              }
+              if (projects && projects.length > 0) {
+                return (
+                  <>
+                    <DeletingProjectsManager
+                      workspaceName={match.params.workspaceName}
+                    />
+                    <div className={styles.projects} data-test="projects">
+                      {projects.map((project, i) => (
+                        <ProjectWidget project={project} key={i} />
+                      ))}
+                      <div className={styles.pagination}>
+                        <Pagination
+                          onCurrentPageChange={this.onPaginationCurrentPageChange}
+                          pagination={pagination}
+                        />
+                      </div>
+                    </div>
+                  </>
+                );
+              }
+              if (filters.length > 0 || pagination.currentPage !== 0) {
+                return <NoResultsStub />;
+              }
+              return <NoEntitiesStub entitiesText="projects" />;
+            })()}
+          </div>
+        </Reloading>
       </ProjectsPagesLayout>
     );
+  }
+
+  @bind
+  private loadProjects() {
+    this.props.dispatch(loadProjects([], this.props.workspaceName));
   }
 
   @bind

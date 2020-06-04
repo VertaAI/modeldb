@@ -6,9 +6,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import DataSourceUri from 'core/shared/view/domain/DatasetVersionProps/QueryDatasetVersionProps/DataSourceUri/DataSourceUri';
-import DatasetEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
 import Attributes from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
-import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
 import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import { handleCustomErrorWithFallback } from 'core/shared/models/Error';
 import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
@@ -50,6 +48,8 @@ import { pathLocationLabels } from '../shared/constants';
 import DatasetPathInfoTable from '../shared/DatasetPathInfoTable/DatasetPathInfoTable';
 import DatasetVersionExperimentRuns from './DatasetVersionExperimentRuns/DatasetVersionExperimentRuns';
 import styles from './DatasetVersionPage.module.css';
+import DatasetEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
+import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
 
 interface ILocalProps {
   onShowNotFoundPage(): void; // todo check
