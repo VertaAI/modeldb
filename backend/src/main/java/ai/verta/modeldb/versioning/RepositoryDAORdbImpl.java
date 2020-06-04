@@ -8,6 +8,7 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -396,6 +397,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       transaction.commit();
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     }
+  }
+
+  void createRepository(CommitDAO commitDAO, DatasetEntity datasetEntity) {
+    //setRepository(commitDAO, SetRepository.newBuilder().setRepository(Repository.newBuilder()).build())
   }
 
   @Override
