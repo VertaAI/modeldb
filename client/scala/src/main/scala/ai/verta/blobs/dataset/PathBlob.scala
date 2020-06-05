@@ -18,8 +18,8 @@ case class PathBlob(private val paths: List[String]) extends Dataset {
   private val BufferSize = 8192
 
   private val metadataList = paths.map(expanduser)
-  .flatMap((path: String) => processPath(new File(path)))
-  .map(metadata => metadata.path -> metadata)
+    .flatMap((path: String) => processPath(new File(path)))
+    .map(metadata => metadata.path -> metadata)
 
   protected var contents = HashMap(metadataList: _*)
 
