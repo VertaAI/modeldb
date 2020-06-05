@@ -6,7 +6,7 @@ import { RouteComponentProps, withRouter } from 'react-router';
 import { Dataset } from 'models/Dataset';
 import { IDatasetVersion } from 'models/DatasetVersion';
 import routes, { GetRouteParams } from 'routes';
-import { selectDatasets } from 'store/datasets';
+import { selectDatasets } from 'features/datasets/store';
 import { selectDatasetVersions } from 'features/datasetVersions/store';
 import { IApplicationState } from 'store/store';
 

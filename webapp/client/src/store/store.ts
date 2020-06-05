@@ -19,7 +19,7 @@ import {
   IArtifactManagerState,
   artifactManagerReducer,
 } from '../features/artifactManager/store';
-import { IDatasetsState, datasetsReducer } from './datasets';
+import { IDatasetsState, datasetsReducer } from '../features/datasets/store';
 import {
   IDatasetVersionsState,
   datasetVersionsReducer,

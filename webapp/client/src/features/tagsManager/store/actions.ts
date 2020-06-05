@@ -3,7 +3,7 @@ import { action } from 'typesafe-actions';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import normalizeError from 'core/shared/utils/normalizeError';
 import { ThunkDispatch } from 'redux-thunk';
-import { updateDatasetTags } from 'store/datasets';
+import { updateDatasetTags } from 'features/datasets/store';
 import { updateDatasetVersionTags } from 'features/datasetVersions/store';
 import { updateExpRunTags } from 'store/experimentRuns';
 import { updateExperimentTags } from 'store/experiments';

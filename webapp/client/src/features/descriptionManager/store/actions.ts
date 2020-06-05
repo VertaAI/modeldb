@@ -2,7 +2,7 @@ import { action } from 'typesafe-actions';
 
 import { EntityWithDescription } from 'core/shared/models/Description';
 import normalizeError from 'core/shared/utils/normalizeError';
-import { updateDatasetDesc } from 'store/datasets';
+import { updateDatasetDesc } from 'features/datasets/store';
 import { updateDatasetVersionDesc } from 'features/datasetVersions/store';
 import { updateExpRunDesc } from 'store/experimentRuns';
 import { updateExperimentDescription } from 'store/experiments';

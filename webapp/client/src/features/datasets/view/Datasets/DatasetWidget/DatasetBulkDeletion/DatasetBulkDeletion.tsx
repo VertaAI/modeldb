@@ -9,7 +9,7 @@ import {
   selectDatasetForDeleting,
   unselectDatasetForDeleting,
   selectDeletingDataset,
-} from 'store/datasets';
+} from 'features/datasets/store';
 import { IApplicationState } from 'store/store';
 
 interface ILocalProps {

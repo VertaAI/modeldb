@@ -20,7 +20,7 @@ import {
   IDatasetsState,
   datasetsReducer,
   loadDatasetActionTypes,
-} from 'store/datasets';
+} from 'features/datasets/store';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
 import setUserWorkspacesInStore from 'utils/tests/integrations/storeUpdaters/setWorkspaces';
 import { makeDataset } from 'utils/tests/mocks/models/datasetMocks';

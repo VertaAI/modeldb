@@ -10,14 +10,13 @@ import {
   withAct,
   submitAsyncForm,
 } from 'core/shared/utils/tests/react/helpers';
-import { makeTagsManagerHelpers } from 'core/shared/view/domain/TagsManager/__tests__/helpers';
+import { makeTagsManagerHelpers } from 'core/shared/view/domain/BaseTagsManager/__tests__/helpers';
 import { Dataset, IDatasetCreationSettings } from 'models/Dataset';
 import routes from 'routes';
 import DatasetsDataService from 'services/datasets/DatasetsDataService';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 
-import DatasetCreationPage from '../DatasetCreationPage';
+import DatasetCreation from '../DatasetCreation';
 
 // need for testing portals
 jest.mock('react-dom', () => {
@@ -32,7 +31,7 @@ jest.mock('react-dom', () => {
 const makeComponent = async () => {
   return await withAct(async () => {
     const data = await makeMountComponentWithPredefinedData({
-      Component: DatasetCreationPage,
+      Component: DatasetCreation,
     });
     await flushAllPromisesFor(data.component);
     return data;
@@ -47,7 +46,7 @@ const nameFieldHelpers = makeAsyncInputHelpersByName('name');
 const descriptionFieldHelpers = makeAsyncInputHelpersByName('description');
 const tagsFieldHelpers = makeTagsManagerHelpers();
 
-describe('(Pages) DatasetCreationPage', () => {
+describe('(feature) DatasetCreation', () => {
   it('should disable the "create" button when there are atleast a error', async () => {
     const { component } = await makeComponent();
 
@@ -121,12 +120,13 @@ describe('(Pages) DatasetCreationPage', () => {
       tags: expectedDataset.tags,
       visibility: 'private',
       type: 'path',
+      workspaceName: predefinedData.userWorkspaces.user.name,
     };
     expect(createDatasetSpy).toBeCalledWith(expectedDatasetSettings);
     expect(history.location.pathname).toBe(
       routes.datasetSummary.getRedirectPath({
         datasetId: expectedDataset.id,
-        workspaceName: userWorkspacesWithCurrentUser.user.name,
+        workspaceName: predefinedData.userWorkspaces.user.name,
       })
     );
   });

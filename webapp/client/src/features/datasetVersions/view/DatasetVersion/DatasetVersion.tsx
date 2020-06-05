@@ -44,7 +44,7 @@ import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import DatasetPathInfoTable from './DatasetPathInfoTable/DatasetPathInfoTable';
 import styles from './DatasetVersion.module.css';
 import DatasetVersionExperimentRuns from './DatasetVersionExperimentRuns/DatasetVersionExperimentRuns';
-import { selectDataset } from 'store/datasets';
+import { selectDataset } from 'features/datasets/store';
 import { pathLocationLabels } from '../shared/constants';
 
 const mapStateToProps = (state: IApplicationState, localProps: ILocalProps) => {

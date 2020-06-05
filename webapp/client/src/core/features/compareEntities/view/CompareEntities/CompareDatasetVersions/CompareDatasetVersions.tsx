@@ -33,7 +33,7 @@ import {
   IPathDatasetVersionDifferentProps,
   EntityType,
 } from 'core/features/compareEntities/store';
-import { selectDataset } from 'store/datasets';
+import { selectDataset } from 'features/datasets/store';
 import {
   loadComparedDatasetVersions,
   selectCommunications,
