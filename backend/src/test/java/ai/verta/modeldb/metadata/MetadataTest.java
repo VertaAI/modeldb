@@ -22,6 +22,7 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -214,5 +215,40 @@ public class MetadataTest {
     assertTrue(deleteLabelsResponse.getStatus());
 
     LOGGER.info("Get labels test stop................................");
+  }
+
+  @Test
+  public void addDeleteLabelsWithComboRepoCommitBlobTest() {
+    LOGGER.info(
+        "Add & Delete labels for combo of repo, commit, blob test start................................");
+
+    MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
+
+    int repoId = 1;
+    String commitHash = UUID.randomUUID().toString();
+    String blobHash = UUID.randomUUID().toString();
+    String comboId = repoId + "::" + commitHash + "::" + blobHash;
+    IdentificationType id1 =
+        IdentificationType.newBuilder()
+            .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+            .setStringId(comboId)
+            .build();
+    AddLabelsRequest addLabelsRequest2 =
+        AddLabelsRequest.newBuilder().setId(id1).addLabels("Backend").addLabels("Frontend").build();
+    AddLabelsRequest.Response addLabelsResponse2 = serviceBlockingStub.addLabels(addLabelsRequest2);
+    assertTrue("Labels not persist successfully", addLabelsResponse2.getStatus());
+
+    DeleteLabelsRequest deleteLabelsRequest =
+        DeleteLabelsRequest.newBuilder()
+            .setId(id1)
+            .addLabels("Backend")
+            .addLabels("Frontend")
+            .build();
+    DeleteLabelsRequest.Response deleteLabelsResponse =
+        serviceBlockingStub.deleteLabels(deleteLabelsRequest);
+    assertTrue(deleteLabelsResponse.getStatus());
+
+    LOGGER.info(
+        "Add & Delete labels for combo of repo, commit, blob  test stop................................");
   }
 }
