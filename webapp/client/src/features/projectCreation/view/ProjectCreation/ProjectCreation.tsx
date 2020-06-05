@@ -83,13 +83,6 @@ class ProjectCreation extends React.PureComponent<AllProps> {
                     isRequired={true}
                   />
                   <TextInputFieldWithTopLabel
-                    name="workspaceName"
-                    label="Workspace"
-                    size="medium"
-                    dataTest="workspace"
-                    isDisabled={true}
-                  />
-                  <TextInputFieldWithTopLabel
                     name="description"
                     validate={validateDescription}
                     label="Description"

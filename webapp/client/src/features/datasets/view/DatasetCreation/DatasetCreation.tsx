@@ -107,13 +107,6 @@ class DatasetCreation extends React.PureComponent<AllProps> {
                     />
                   </FieldWithTopLabel>
                   <TextInputFieldWithTopLabel
-                    name="workspaceName"
-                    label="Workspace"
-                    size="medium"
-                    dataTest="workspace"
-                    isDisabled={true}
-                  />
-                  <TextInputFieldWithTopLabel
                     name="description"
                     dataTest="description"
                     label="Description"

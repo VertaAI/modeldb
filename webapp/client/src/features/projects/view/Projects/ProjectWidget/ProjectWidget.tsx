@@ -17,6 +17,7 @@ import { IConnectedReduxProps } from 'store/store';
 
 import ProjectBulkDeletion from './ProjectBulkDeletion/ProjectBulkDeletion';
 import styles from './ProjectWidget.module.css';
+import { unknownUser } from 'models/User';
 
 interface ILocalProps {
   project: Project;
@@ -90,6 +91,17 @@ class ProjectWidget extends React.Component<AllProps> {
                         entityType="project"
                         isDraggableTags={true}
                         onClick={this.onTagsManagerClick}
+                      />
+                    </div>
+                    <div className={styles.owner_block}>
+                      <div className={styles.owner_username}>
+                        <div>{unknownUser.username}</div>
+                        <div className={styles.owner_status}>Owner</div>
+                      </div>
+                      <Avatar
+                        username={unknownUser.username}
+                        sizeInPx={36}
+                        picture={unknownUser.picture}
                       />
                     </div>
                     <div className={styles.dates_block}>

@@ -16,6 +16,7 @@ import { IConnectedReduxProps, IApplicationState } from 'store/store';
 
 import ExperimentBulkDeletion from './ExperimentBulkDeletion/ExperimentBulkDeletion';
 import styles from './ExperimentWidget.module.css';
+import { unknownUser } from 'models/User';
 
 interface ILocalProps {
   projectId: string;
@@ -91,6 +92,17 @@ class ExperimentWidget extends React.PureComponent<AllProps> {
                       </div>
                     </div>
                   )}
+                  <div className={styles.owner_block}>
+                    <div className={styles.owner_username}>
+                      <div>{unknownUser.username}</div>
+                      <div className={styles.owner_status}>Owner</div>
+                    </div>
+                    <Avatar
+                      username={unknownUser.username}
+                      sizeInPx={36}
+                      picture={unknownUser.picture}
+                    />
+                  </div>
                   <div className={styles.created_date_block}>
                     <div className={styles.created_date}>
                       Created: {experiment.dateCreated.toLocaleDateString()}
