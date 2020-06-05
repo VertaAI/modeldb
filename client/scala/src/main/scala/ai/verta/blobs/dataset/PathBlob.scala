@@ -39,7 +39,6 @@ object PathBlob {
            .map((path: String) => processPath(new File(path)))
            .map(_.get)
     )
-      // .map(metadata => metadata.path -> metadata)
 
     metadataLists match {
       case Failure(e) => Failure(e)
