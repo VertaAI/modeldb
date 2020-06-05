@@ -18,8 +18,6 @@ case class S3(private val metadataList: List[Tuple2[String, FileMetadata]], priv
   protected var contents = HashMap(metadataList: _*)
   private var versionMap = HashMap(versionList: _*)
 
-  // var bugFixingContents = metadataList
-
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"
    *  @return the version id of the file
@@ -124,7 +122,7 @@ object S3 {
       case Failure(e) => Failure(e)
       case Success(batch) =>
         if (versionListing.isTruncated()) handleVersionListing(s3.listNextBatchOfVersions(versionListing), batch ::: acc)
-        else Success(acc)
+        else Success(batch ::: acc)
     }
   }
 

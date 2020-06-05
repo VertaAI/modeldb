@@ -42,7 +42,7 @@ class TestS3 extends FunSuite {
       val testdirPath = "s3://verta-scala-test/testdir/"
       val testdirLoc = new S3Location(testdirPath)
 
-      val testsubdirPath = "s3://verta-scala-test/testdir/testsubdir"
+      val testsubdirPath = "s3://verta-scala-test/testdir/testsubdir/"
       val testsubdirLoc = new S3Location(testsubdirPath)
 
       val bucketLoc = new S3Location("s3://verta-scala-test")
@@ -74,8 +74,6 @@ class TestS3 extends FunSuite {
   test("S3 blob should retrieve the entire bucket correctly") {
     val f = fixture
     val s3Blob = S3(List(f.bucketLoc)).get
-
-    // println(s3Blob.bugFixingContents)
 
     assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
     assertMetadata(s3Blob.getMetadata(f.testfilePath2).get, f.testfilePath2)
@@ -133,6 +131,6 @@ class TestS3 extends FunSuite {
     val s3Blob = S3(List(s3LocInvalid, f.testfileLoc))
 
     assert(s3Blob.isFailure)
-    println(s3Blob)
+    assert(s3Blob match {case Failure(e) => e.getMessage contains "Not Found"})
   }
 }
