@@ -13,8 +13,15 @@ import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 
 /** Captures metadata about S3 objects
+ *  To create a new instance, use the constructor taking a list of paths (each is a string):
+ *  {{{
+ *  val s3Blob: Try[S3] = S3(List(new S3Loc("some-path-1"), new S3Loc("some-path-2")))
+ *  }}}
  */
-case class S3(private val metadataList: List[Tuple2[String, FileMetadata]], private val versionList: List[Tuple2[String, String]]) extends Dataset {
+case class S3(
+  private val metadataList: List[Tuple2[String, FileMetadata]],
+  private val versionList: List[Tuple2[String, String]]
+) extends Dataset {
   protected var contents = HashMap(metadataList: _*)
   private var versionMap = HashMap(versionList: _*)
 
@@ -123,7 +130,8 @@ object S3 {
     batchAttempt match {
       case Failure(e) => Failure(e)
       case Success(batch) =>
-        if (versionListing.isTruncated()) handleVersionListing(s3.listNextBatchOfVersions(versionListing), batch ::: acc)
+        if (versionListing.isTruncated())
+          handleVersionListing(s3.listNextBatchOfVersions(versionListing), batch ::: acc)
         else Success(batch ::: acc)
     }
   }
