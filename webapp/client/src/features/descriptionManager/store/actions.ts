@@ -6,7 +6,7 @@ import { updateDatasetDesc } from 'features/datasets/store';
 import { updateDatasetVersionDesc } from 'features/datasetVersions/store';
 import { updateExpRunDesc } from 'store/experimentRuns';
 import { updateExperimentDescription } from 'store/experiments';
-import { updateProjectDesc } from 'store/projects';
+import { updateProjectDesc } from 'features/projects/store';
 import { ActionResult } from 'store/store';
 
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';

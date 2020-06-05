@@ -18,7 +18,7 @@ import {
   selectLoadingProject,
   selectProject,
   selectLoadingProjectWithMemo,
-} from 'store/projects';
+} from 'features/projects/store';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

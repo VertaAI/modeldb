@@ -30,7 +30,7 @@ import {
   selectExperimentsPagination,
   selectLoadingExperiments,
 } from 'store/experiments';
-import { selectProject } from 'store/projects';
+import { selectProject } from 'features/projects/store';
 import { IApplicationState } from 'store/store';
 
 import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesLayout';

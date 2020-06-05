@@ -80,17 +80,6 @@
   margin-bottom: 8px;
 }
 
-.actions {
-  grid-area: actions;
-  display: flex;
-  align-items: center;
-  margin-top: 15px;
-}
-
-.action_delete {
-  margin-right: auto;
-}
-
 .owner_status {
   color: var(--text-color3);
 }
@@ -116,4 +105,19 @@
   max-width: 132px;
   word-break: break-all;
   word-wrap: break-word;
+}
+
+.actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.action_delete {
+  margin-right: auto;
+}
+
+.action_collaborators {
+  margin-left: auto;
 }

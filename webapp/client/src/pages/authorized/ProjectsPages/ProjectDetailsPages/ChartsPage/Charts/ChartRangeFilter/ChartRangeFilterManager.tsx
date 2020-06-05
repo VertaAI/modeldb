@@ -10,7 +10,7 @@ import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import ShareLink from 'core/shared/view/elements/ShareLink/ShareLink';
 import { Project } from 'models/Project';
 import { chartsPageSettings } from 'store/experimentRuns';
-import { selectProject } from 'store/projects';
+import { selectProject } from 'features/projects/store';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import styles from './ChartRangeFilter.module.css';

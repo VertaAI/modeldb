@@ -11,7 +11,7 @@ import {
   unselectProjectForDeleting,
   selectProjectIdsForDeleting,
   selectDeletingProject,
-} from 'store/projects';
+} from 'features/projects/store';
 
 interface ILocalProps {
   id: string;

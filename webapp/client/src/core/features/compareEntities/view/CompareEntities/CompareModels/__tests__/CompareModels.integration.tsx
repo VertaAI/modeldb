@@ -24,7 +24,7 @@ import {
   IProjectsState,
   projectsReducer,
   loadProjectActionTypes,
-} from 'store/projects';
+} from 'features/projects/store';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
 import diffHighlightStyles from '../../shared/DiffHighlight/DiffHighlight.module.css';
 

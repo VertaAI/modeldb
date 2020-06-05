@@ -30,7 +30,7 @@ import {
   IProjectCreationState,
   projectCreationReducer,
 } from '../features/projectCreation/store';
-import { IProjectsState, projectsReducer } from './projects';
+import { IProjectsState, projectsReducer } from '../features/projects/store';
 import * as TagsManagers from 'features/tagsManager';
 import * as DescriptionManager from 'features/descriptionManager';
 

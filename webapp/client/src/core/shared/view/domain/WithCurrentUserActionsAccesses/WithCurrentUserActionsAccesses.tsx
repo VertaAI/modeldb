@@ -11,7 +11,7 @@ import * as DatasetsStore from 'features/datasets/store';
 import * as DatasetVersionsStore from 'features/datasetVersions/store';
 import * as ExperimentRunsStore from 'store/experimentRuns';
 import * as ExperimentsStore from 'store/experiments';
-import * as ProjectsStore from 'store/projects';
+import * as ProjectsStore from 'features/projects/store';
 
 export interface ILocalProps<T extends EntitiesActions.UserEntityAction[]> {
   entityType: Exclude<Common.EntityType, 'endpoint'>;

@@ -12,7 +12,7 @@ import {
   deleteProjects,
   selectCommunications,
   resetProjectsForDeleting,
-} from 'store/projects';
+} from 'features/projects/store';
 import { IApplicationState } from 'store/store';
 
 interface ILocalProps {

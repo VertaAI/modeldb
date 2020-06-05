@@ -7,7 +7,7 @@ import { updateDatasetTags } from 'features/datasets/store';
 import { updateDatasetVersionTags } from 'features/datasetVersions/store';
 import { updateExpRunTags } from 'store/experimentRuns';
 import { updateExperimentTags } from 'store/experiments';
-import { updateProjectTags } from 'store/projects';
+import { updateProjectTags } from 'features/projects/store';
 import { ActionResult } from 'store/store';
 
 import { addTagActionTypes, removeTagActionTypes } from './types';

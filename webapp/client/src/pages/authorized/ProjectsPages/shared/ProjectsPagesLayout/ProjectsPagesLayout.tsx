@@ -9,7 +9,7 @@ import {
 } from 'pages/authorized/shared/AuthorizedLayout';
 import routes from 'routes';
 import { selectExperimentRuns } from 'store/experimentRuns';
-import { selectProjects } from 'store/projects';
+import { selectProjects } from 'features/projects/store';
 import { IApplicationState } from 'store/store';
 
 type ILocalProps = IAuthorizedLayoutLocalProps;

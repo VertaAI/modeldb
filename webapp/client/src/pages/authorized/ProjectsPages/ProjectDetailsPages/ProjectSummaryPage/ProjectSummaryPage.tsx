@@ -19,7 +19,7 @@ import {
   updateProjectReadme,
   deleteProject,
   loadProject,
-} from 'store/projects';
+} from 'features/projects/store';
 import { IApplicationState } from 'store/store';
 
 import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesLayout';

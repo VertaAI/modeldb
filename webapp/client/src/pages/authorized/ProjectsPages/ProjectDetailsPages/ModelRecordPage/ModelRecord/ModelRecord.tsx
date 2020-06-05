@@ -13,7 +13,7 @@ import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommuni
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import * as ExperimentRunsStore from 'store/experimentRuns';
-import * as ProjectsStore from 'store/projects';
+import * as ProjectsStore from 'features/projects/store';
 import { IApplicationState } from 'store/store';
 import { hasAccessToAction } from 'models/EntitiesActions';
 import ClientSuggestion from 'core/shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
