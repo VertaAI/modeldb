@@ -14,8 +14,11 @@ import scala.util.{Failure, Success, Try}
 
 /** Captures metadata about S3 objects
  */
-case class S3(private val metadataList: List[Tuple2[String, Metadata]], private val versionList: List[Tuple2[String, String]]) extends Dataset {
+case class S3(private val metadataList: List[Tuple2[String, FileMetadata]], private val versionList: List[Tuple2[String, String]]) extends Dataset {
+  protected var contents = HashMap(metadataList: _*)
+  private var versionMap = HashMap(versionList: _*)
 
+  // var bugFixingContents = metadataList
 
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"
@@ -31,24 +34,29 @@ case class S3(private val metadataList: List[Tuple2[String, Metadata]], private 
 
 /** Companion object to handle interaction with versioning blob */
 object S3 {
+  private val s3: AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build()
+
   /** Constructor that user should use:
    */
   def apply(paths: List[S3Location]): Try[S3] = {
-    paths.map(getS3LocMetadata) match {
+    val queryAttempt = Try(
+      paths.map(getS3LocMetadata).map(_.get)
+    ).map(_.flatten)
+
+    queryAttempt match {
       case Failure(e) => Failure(e)
-      case Success(list) => Success(new S3(list))
+      case Success(list) => Success(new S3(
+        list.map(pair => pair._1.path -> pair._1),
+        list.filter(_._2.isDefined).map(pair => pair._1.path -> pair._2.get)
+      ))
     }
   }
-
-  private val s3: AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build()
-  private var versionMap = new HashMap[String, String]() // keep track of the version of each object
-  paths.map(getS3LocMetadata _)
 
   /** Factory method to convert a versioning blob instance
    *  @param s3VersioningBlob the versioning blob to convert
    */
   def apply(s3VersioningBlob: VersioningS3DatasetBlob) {
-    var s3 = new S3(List())
+    var s3 = new S3(List(), List())
 
     s3VersioningBlob.components.get.map(
       comp => {
@@ -102,7 +110,10 @@ object S3 {
 
   /** Helper function to deal with VersionListing when key is not provided
    */
-  private def handleVersionListing(versionListing: VersionListing, acc: List[Tuple2[FileMetadata, String]]) = {
+  private def handleVersionListing(
+    versionListing: VersionListing,
+    acc: List[Tuple2[FileMetadata, Option[String]]]
+  ): Try[List[Tuple2[FileMetadata, Option[String]]]] = {
     val batchAttempt = Try(versionListing.getVersionSummaries().asScala.toList
     .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
     .filter(_.isLatest())
@@ -129,14 +140,14 @@ object S3 {
     )
 
     if (obj.getVersionId() != null)
-      Tuple2(metadata, Some(obj.getVersionId()))
+      new Tuple2(metadata, Some(obj.getVersionId()))
     else
-      Tuple2(metadata, None)
+      new Tuple2(metadata, None)
   }
 
   /** Helper function to extract metadata from a version summary
    */
-  private def getVersionMetadata(version: S3VersionSummary): Try {
+  private def getVersionMetadata(version: S3VersionSummary) = Try {
     val versionPath = getPath(version.getBucketName(), version.getKey())
     val metadata = new FileMetadata(
       BigInt(version.getLastModified().getTime()),
@@ -146,9 +157,9 @@ object S3 {
     )
 
     if (version.getVersionId() != null)
-      Tuple2(metadata, Some(version.getVersionId()))
+      new Tuple2(metadata, Some(version.getVersionId()))
     else
-      Tuple2(metadata, None)
+      new Tuple2(metadata, None)
   }
 
   /** Helper function to construct path from bucket name and key */

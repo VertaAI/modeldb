@@ -65,7 +65,7 @@ class TestS3 extends FunSuite {
 
   test("S3 blob should retrieve the file (i.e with key) correctly") {
     val f = fixture
-    val s3Blob = S3(List(f.testfileLoc))
+    val s3Blob = S3(List(f.testfileLoc)).get
 
     val s3File = s3Blob.getMetadata(f.testfilePath).get
     assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
@@ -73,7 +73,9 @@ class TestS3 extends FunSuite {
 
   test("S3 blob should retrieve the entire bucket correctly") {
     val f = fixture
-    val s3Blob = S3(List(f.bucketLoc))
+    val s3Blob = S3(List(f.bucketLoc)).get
+
+    // println(s3Blob.bugFixingContents)
 
     assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
     assertMetadata(s3Blob.getMetadata(f.testfilePath2).get, f.testfilePath2)
@@ -91,8 +93,8 @@ class TestS3 extends FunSuite {
     .filter(_.isLatest()).head.getVersionId()
 
     // default should be the latest version
-    val s3BlobDefault = S3(List(f.testfileLoc))
-    var s3BlobLatest = S3(List(new S3Location(f.testfilePath, Some(newVersionId))))
+    val s3BlobDefault = S3(List(f.testfileLoc)).get
+    var s3BlobLatest = S3(List(new S3Location(f.testfilePath, Some(newVersionId)))).get
 
     assert(s3BlobDefault equals s3BlobLatest)
     assert(s3BlobLatest.getVersionId(f.testfilePath).get equals newVersionId)
@@ -101,7 +103,7 @@ class TestS3 extends FunSuite {
     val oldVersionId = versionListing.getVersionSummaries().asScala.toList
     .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
     .filter(!_.isLatest()).head.getVersionId()
-    val s3BlobOld = S3(List(new S3Location(f.testfilePath, Some(oldVersionId))))
+    val s3BlobOld = S3(List(new S3Location(f.testfilePath, Some(oldVersionId)))).get
 
     assert(!s3BlobDefault.equals(s3BlobOld))
     assert(s3BlobOld.getVersionId(f.testfilePath).get equals oldVersionId)
@@ -109,7 +111,7 @@ class TestS3 extends FunSuite {
 
   test("S3 should retrieve multiple keys correctly") {
     val f = fixture
-    val s3Blob = S3(List(f.testfileLoc, f.testfileLoc2))
+    val s3Blob = S3(List(f.testfileLoc, f.testfileLoc2)).get
 
     assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
     assertMetadata(s3Blob.getMetadata(f.testfilePath2).get, f.testfilePath2)
@@ -117,20 +119,20 @@ class TestS3 extends FunSuite {
 
   test("S3 should not have duplicate paths") {
     val f = fixture
-    val s3Blob1 = S3(List(f.testfileLoc, f.testfileLoc, f.testdirLoc, f.testsubdirLoc, f.testfileLoc2))
+    val s3Blob1 = S3(List(f.testfileLoc, f.testfileLoc, f.testdirLoc, f.testsubdirLoc, f.testfileLoc2)).get
 
-    val s3Blob2 = S3(List(f.testfileLoc, f.testfileLoc2))
+    val s3Blob2 = S3(List(f.testfileLoc, f.testfileLoc2)).get
     assert(s3Blob1 equals s3Blob2)
   }
 
-  test("S3 blob should discard invalid paths, but still process valid paths") {
+  test("S3 blob construction should fail when an invalid path is passed") {
     val f = fixture
     val invalidPath = "s3://verta-scala-test/testdir/no-such-file"
     val s3LocInvalid = new S3Location(invalidPath)
 
     val s3Blob = S3(List(s3LocInvalid, f.testfileLoc))
 
-    assert(s3Blob.getMetadata(f.testfilePath).isDefined)
-    assert(s3Blob.getMetadata(invalidPath).isEmpty)
+    assert(s3Blob.isFailure)
+    println(s3Blob)
   }
 }
