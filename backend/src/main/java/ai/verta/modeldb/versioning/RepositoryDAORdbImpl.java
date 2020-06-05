@@ -222,6 +222,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public RepositoryEntity getRepositoryById(
       Session session, RepositoryIdentification id, boolean checkWrite) throws ModelDBException {
+    return getRepositoryById(session, id, checkWrite, true);
+  }
+
+  @Override
+  public RepositoryEntity getRepositoryById(
+      Session session, RepositoryIdentification id, boolean checkWrite, boolean checkProtected)
+      throws ModelDBException {
     RepositoryEntity repository;
     if (id.hasNamedId()) {
       WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(id, true);
@@ -241,6 +248,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                           "Couldn't find repository by id " + id.getRepoId(), Code.NOT_FOUND));
     }
     try {
+      if (checkProtected && repository.isProtected()) {
+        throw new ModelDBException(
+            "Can't access repository because it's protected", Code.PERMISSION_DENIED);
+      }
       if (checkWrite) {
         roleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.REPOSITORY,
@@ -404,17 +415,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             Code.PERMISSION_DENIED);
       }
 
-      Query deletedRepositoriesQuery = session.createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING);
-      deletedRepositoriesQuery.setParameter("deleted", true);
-      deletedRepositoriesQuery.setParameter(
-          "repoIds", allowedRepositoryIds.stream().map(Long::valueOf).collect(Collectors.toList()));
-      Transaction transaction = session.beginTransaction();
-      int updatedCount = deletedRepositoriesQuery.executeUpdate();
-      LOGGER.debug(
-          "Mark Repositories as deleted : {}, count : {}", allowedRepositoryIds, updatedCount);
-      // Delete all VersionedInputs for repository ID
-      experimentRunDAO.deleteLogVersionedInputs(session, repository.getId(), null);
-      transaction.commit();
+      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -423,6 +424,41 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         throw ex;
       }
     }
+  }
+
+  public void deleteRepositories(
+      Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds) {
+    Query deletedRepositoriesQuery = session.createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING);
+    deletedRepositoriesQuery.setParameter("deleted", true);
+    final List<Long> repositoriesIdsLong =
+        allowedRepositoryIds.stream().map(Long::valueOf).collect(Collectors.toList());
+    deletedRepositoriesQuery.setParameter("repoIds", repositoriesIdsLong);
+    Transaction transaction = session.beginTransaction();
+    int updatedCount = deletedRepositoriesQuery.executeUpdate();
+    LOGGER.debug(
+        "Mark Repositories as deleted : {}, count : {}", allowedRepositoryIds, updatedCount);
+    // Delete all VersionedInputs for repository ID
+    experimentRunDAO.deleteLogVersionedInputs(session, repositoriesIdsLong);
+    transaction.commit();
+  }
+
+  @Override
+  public Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
+      throws ModelDBException {
+    List<String> allowedRepositoryIds =
+        roleService.getAccessibleResourceIdsByActions(
+            ModelDBServiceResourceTypes.REPOSITORY,
+            ModelDBServiceActions.DELETE,
+            Collections.singletonList(String.valueOf(repositoryIds)));
+    if (allowedRepositoryIds.isEmpty()) {
+      throw new ModelDBException(
+          "Delete Access Denied for given repository Ids : " + repositoryIds,
+          Code.PERMISSION_DENIED);
+    }
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
+    }
+    return true;
   }
 
   @Override

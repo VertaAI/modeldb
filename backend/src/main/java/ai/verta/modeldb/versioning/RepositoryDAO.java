@@ -18,6 +18,10 @@ public interface RepositoryDAO {
   RepositoryEntity getRepositoryById(
       Session session, RepositoryIdentification id, boolean checkWrite) throws ModelDBException;
 
+  RepositoryEntity getRepositoryById(
+      Session session, RepositoryIdentification id, boolean checkWrite, boolean checkProtected)
+      throws ModelDBException;
+
   RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
       throws ModelDBException;
 
@@ -27,6 +31,9 @@ public interface RepositoryDAO {
 
   DeleteRepositoryRequest.Response deleteRepository(
       DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
+      throws ModelDBException;
+
+  Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException;
 
   ListRepositoriesRequest.Response listRepositories(

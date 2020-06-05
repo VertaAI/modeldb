@@ -6,12 +6,14 @@ import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
+import ai.verta.modeldb.versioning.RepositoryAccessModifierEnum.RepositoryAccessModifier;
 import ai.verta.modeldb.versioning.SetRepository;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -185,5 +187,9 @@ public class RepositoryEntity {
 
   public Integer getRepository_visibility() {
     return repository_visibility;
+  }
+
+  public boolean isProtected() {
+    return Objects.equals(repositoryAccessModifier, RepositoryAccessModifier.PROTECTED.getNumber());
   }
 }
