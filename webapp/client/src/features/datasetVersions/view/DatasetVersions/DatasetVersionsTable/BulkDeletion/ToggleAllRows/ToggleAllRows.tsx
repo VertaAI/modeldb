@@ -7,7 +7,7 @@ import {
   selectAllDatasetVersionsForDeleting,
   resetDatasetVersionsForDeleting,
   selectIsSelectedAllDatasetVersionsForDeleting,
-} from 'features/datasetVersions/store';
+} from 'features/datasetVersions';
 import { IApplicationState } from 'store/store';
 
 interface IPropsFromState {

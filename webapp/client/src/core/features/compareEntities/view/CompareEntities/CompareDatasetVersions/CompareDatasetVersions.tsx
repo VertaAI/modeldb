@@ -25,8 +25,6 @@ import {
   IRawDatasetVersionInfo,
   IPathBasedDatasetVersion,
 } from 'models/DatasetVersion';
-import DatasetVersionExperimentRuns from 'pages/authorized/DatasetPages/DatasetDetailPages/DatasetVersionPage/DatasetVersionExperimentRuns/DatasetVersionExperimentRuns';
-import { pathLocationLabels } from 'pages/authorized/DatasetPages/DatasetDetailPages/shared/constants';
 import {
   ComparedDatasetVersions,
   ComparedEntityIds,
@@ -54,6 +52,8 @@ import CompareDatasetVersionsTable, {
 } from './CompareDatasetVersionsTable/CompareDatasetVersionsTable';
 import ComparePathInfoTable from './ComparePathInfoTable/ComparePathInfoTable';
 import Reloading from 'core/shared/view/elements/Reloading/Reloading';
+import DatasetVersionExperimentRuns from 'features/datasetVersions/view/DatasetVersion/DatasetVersionExperimentRuns/DatasetVersionExperimentRuns';
+import { pathLocationLabels } from 'features/datasetVersions/view/shared/constants';
 
 interface ILocalProps {
   datasetId: string;

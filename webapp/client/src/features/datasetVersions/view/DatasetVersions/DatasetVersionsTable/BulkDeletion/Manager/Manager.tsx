@@ -9,7 +9,7 @@ import {
   deleteDatasetVersions,
   selectCommunications,
   resetDatasetVersionsForDeleting,
-} from 'features/datasetVersions/store';
+} from 'features/datasetVersions';
 import { IApplicationState } from 'store/store';
 
 import TableBulkDeletionManager from 'core/shared/view/domain/BulkDeletion/TableBulkDeletionComponents/TableBulkDeletionManager/TableBulkDeletionManager';
