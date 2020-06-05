@@ -6,7 +6,8 @@ import scala.language.reflectiveCalls
 
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
-import scala.util.{Failure, Success, Try}
+
+import java.io.FileNotFoundException
 
 class TestPathBlob extends FunSuite {
   /** Verify that a FileMetadata has correct path and does not have invalid parameter
@@ -51,24 +52,17 @@ class TestPathBlob extends FunSuite {
     val dirAttempt = pathBlob.getMetadata(f.testDir)
     val subdirAttempt = pathBlob.getMetadata(f.testDir)
 
-    assert(dirAttempt.isFailure)
-    assert(subdirAttempt.isFailure)
-    assert(dirAttempt match {case Failure(e) => e.getMessage contains "is a directory"})
-    assert(subdirAttempt match {case Failure(e) => e.getMessage contains "is a directory"})
-
-    assert(pathBlob.getMetadata(f.testfile).isSuccess)
+    assert(dirAttempt.isEmpty)
+    assert(subdirAttempt.isEmpty)
+    assert(pathBlob.getMetadata(f.testfile).isDefined)
   }
 
-  test("PathBlob should not store invalid paths, but should not stop execution") {
+  test("PathBlob should throw an exception when an invalid path is passed") {
     val f = fixture
     val invalid = f.testDir + "/invalid-file"
-    val pathBlob = PathBlob(List(invalid, f.testfile))
-
-
-    val invalidAttempt = pathBlob.getMetadata(invalid)
-    assert(invalidAttempt.isFailure)
-    assert(invalidAttempt match {case Failure(e) => e.getMessage contains "No such file or directory"})
-    assert(pathBlob.getMetadata(f.testfile).isSuccess)
+    assertThrows[FileNotFoundException] {
+      val pathBlob = PathBlob(List(invalid, f.testfile))
+    }
   }
 
   test("PathBlob should not contain duplicate paths") {

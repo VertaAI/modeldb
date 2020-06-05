@@ -13,10 +13,15 @@ import scala.util.{Failure, Success, Try}
  */
  case class PathBlob(private val paths: List[String]) extends Dataset {
   private val BufferSize = 8192
-  paths.map(expanduser).map((path: String) => processPath(new File(path)))
+
+  private val metadataList = paths.map(expanduser)
+  .flatMap((path: String) => processPath(new File(path)))
+  .map(metadata => metadata.path -> metadata)
+
+  protected var contents = HashMap(metadataList: _*)
 
   override def equals(other: Any) = other match {
-    case other: PathBlob => getAllMetadata.equals(other.getAllMetadata)
+    case other: PathBlob => contents.equals(other.contents)
     case _ => false
   }
 
@@ -25,7 +30,7 @@ import scala.util.{Failure, Success, Try}
    *  From https://stackoverflow.com/questions/41642595/scala-file-hashing
    *  @param path filepath
    */
-  private def hash(file: File): String = {
+  private def hash(file: File) = Try {
      val buffer = new Array[Byte](BufferSize)
      val messageDigest = MessageDigest.getInstance("MD5")
 
@@ -48,9 +53,11 @@ import scala.util.{Failure, Success, Try}
     *  @param file a file object, representing the path
     *  @return a list of components of file under the path
     */
-   private def processPath(file: File) = {
+   private def processPath(file: File): List[FileMetadata] = {
      var files = List(file) // stack
+     var ret: List[FileMetadata] = List()
 
+     // non-recursive DFS to prevent stack overflow
      while (files.length > 0) {
        var fileToProcess = files.head
        files = files.drop(1)
@@ -59,29 +66,27 @@ import scala.util.{Failure, Success, Try}
          files = fileToProcess.listFiles().toList ::: files
        }
        else {
-         processFile(fileToProcess)
+         ret = processFile(fileToProcess) :: ret
        }
      }
+
+     ret
    }
 
   /** Extract the metadata of the file
-   *  If the file has already been processed, it is skipped.
-   *  If an invalid is path, the exception is captured
+   *  If the file has an invalid path, exception is thrown immediately, and program stops (if not caught outside)
    *  @param file file
    *  @return the metadata of the file, wrapped in a FileMetadata object (if success)
    */
-   private def processFile(file: File) = {
-    if (!contents.contains(file.getPath())) {
-      contents.put(file.getPath(), Try {
-        new FileMetadata(
-          BigInt(file.lastModified()),
-          hash(file),
-          file.getPath(),
-          BigInt(file.length)
-        )
-      })
+   private def processFile(file: File) = hash(file) match {
+      case Failure(e) => throw e
+      case Success(fileHash) => new FileMetadata (
+        BigInt(file.lastModified()),
+        fileHash,
+        file.getPath(),
+        BigInt(file.length)
+      )
     }
-   }
 
   /** Analogous to Python's os.path.expanduser
    *  From https://stackoverflow.com/questions/6803913/java-analogous-to-python-os-path-expanduser-os-path-expandvars
@@ -99,10 +104,11 @@ object PathBlob {
    */
   def apply(pathVersioningBlob: VersioningPathDatasetBlob) = {
     var pathBlob = new PathBlob(List())
-
-    pathVersioningBlob.components.get.map(
-      comp => pathBlob.contents.put(comp.path.get, Success(pathBlob.toMetadata(comp)))
+    var metadataList = pathVersioningBlob.components.get.map(
+      comp => comp.path.get -> pathBlob.toMetadata(comp)
     )
+
+    pathBlob.contents = HashMap(metadataList: _*)
     pathBlob
   }
 

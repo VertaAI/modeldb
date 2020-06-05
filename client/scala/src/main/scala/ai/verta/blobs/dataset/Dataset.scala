@@ -6,7 +6,7 @@ import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 
 trait Dataset extends Blob {
-  protected var contents = new HashMap[String, Try[FileMetadata]]() // for deduplication and comparing
+  protected var contents: HashMap[String, FileMetadata] // for deduplication and comparing
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
@@ -30,28 +30,11 @@ trait Dataset extends Blob {
    *  @param path path to the file
    *  @return None if path is not in dataset blob, or some file metadata.
    */
-  def getMetadata(path: String): Try[FileMetadata] = contents.get(path) match {
-    case Some(v) => v
-    case None => Failure(new IllegalArgumentException("Path is not stored, or is a directory."))
-  }
+  def getMetadata(path: String) = contents.get(path)
 
   /** Get all the Dataset blob's corresponding list of components */
   protected def components = getAllMetadata.map(toComponent).toList
 
   /** Get the set of all the files' metadata managed by the Dataset blob  */
-  def getAllMetadata = contents.values.filter(_.isSuccess).map(_.get)
-}
-
-/** Represent a file's metadata stored in Dataset Blob
- *  @param lastModified last time file was modified
- *  @param md5 MD5 hash of the file
- *  @param path path of the file
- *  @param size size of the file
- */
-class FileMetadata(val lastModified: BigInt, val md5: String, val path: String, val size: BigInt) {
-  override def equals(other: Any) = other match {
-    case other: FileMetadata => lastModified == other.lastModified &&
-    md5 == other.md5 && path == other.path && size == other.size
-    case _ => false
-  }
+  def getAllMetadata = contents.values
 }
