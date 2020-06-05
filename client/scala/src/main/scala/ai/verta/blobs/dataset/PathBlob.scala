@@ -11,6 +11,8 @@ import scala.annotation.tailrec
 
 /** Captures metadata about files
  *  @param paths list of filepaths or directory paths
+ *  @throws IOException - if any path is invalid (i.e non-existent)
+ *  @throws SecurityException - If a security manager exists and its SecurityManager.checkRead(java.lang.String) method denies read access to any file
  */
 case class PathBlob(private val paths: List[String]) extends Dataset {
   private val BufferSize = 8192
@@ -76,6 +78,8 @@ case class PathBlob(private val paths: List[String]) extends Dataset {
    *  If the file has an invalid path, exception is thrown immediately, and program stops (if not caught outside)
    *  @param file file
    *  @return the metadata of the file, wrapped in a FileMetadata object (if success)
+   *  @throws IOException - if the path is invalid (i.e non-existent)
+   *  @throws SecurityException - If a security manager exists and its SecurityManager.checkRead(java.lang.String) method denies read access to the file
    */
   private def processFile(file: File) = hash(file) match {
     case Failure(e) => throw e
