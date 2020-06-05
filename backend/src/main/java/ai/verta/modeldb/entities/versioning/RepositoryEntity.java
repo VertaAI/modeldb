@@ -3,9 +3,11 @@ package ai.verta.modeldb.entities.versioning;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
+import ai.verta.modeldb.versioning.RepositoryAccessModifierEnum.RepositoryAccessModifier;
 import ai.verta.modeldb.versioning.SetRepository;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -156,5 +158,9 @@ public class RepositoryEntity {
 
   public Integer getRepository_visibility() {
     return repository_visibility;
+  }
+
+  public boolean isProtected() {
+    return Objects.equals(repositoryAccessModifier, RepositoryAccessModifier.PROTECTED.getNumber());
   }
 }
