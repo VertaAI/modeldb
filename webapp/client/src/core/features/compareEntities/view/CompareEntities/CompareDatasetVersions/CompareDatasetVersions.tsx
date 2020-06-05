@@ -41,7 +41,7 @@ import {
   selectCommunications,
   loadDatasetVersionExperimentRuns,
   selectDatasetVersionExperimentRuns,
-} from 'store/datasetVersions';
+} from 'features/datasetVersions/store';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

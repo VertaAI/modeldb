@@ -23,7 +23,7 @@ import { IDatasetsState, datasetsReducer } from './datasets';
 import {
   IDatasetVersionsState,
   datasetVersionsReducer,
-} from './datasetVersions';
+} from '../features/datasetVersions/store';
 import { experimentRunsReducer, IExperimentRunsState } from './experimentRuns';
 import { IExperimentsState, experimentsReducer } from './experiments';
 import {

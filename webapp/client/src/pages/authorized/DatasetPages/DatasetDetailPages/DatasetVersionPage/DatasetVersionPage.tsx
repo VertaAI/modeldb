@@ -39,7 +39,7 @@ import {
   selectDeletingDatasetVersion,
   loadDatasetVersionExperimentRuns,
   selectDatasetVersionExperimentRuns,
-} from 'store/datasetVersions';
+} from 'features/datasetVersions/store';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

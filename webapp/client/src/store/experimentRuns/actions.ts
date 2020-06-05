@@ -13,7 +13,6 @@ import {
   resetCurrentContextFilters,
   selectCurrentContextAppliedFilters,
 } from 'core/features/filter';
-import { handleDeleteEntities } from 'store/shared/deletion';
 import { ActionResult } from 'store/store';
 
 import ModelRecord from 'models/ModelRecord';
@@ -62,6 +61,7 @@ import {
   ISelectAllExperimentRunsForDeleting,
   selectAllExperimentRunsForDeletingActionType,
 } from './types';
+import { handleDeleteEntities } from 'store/shared/deletion';
 
 export const loadExperimentRuns = (
   projectId: string,

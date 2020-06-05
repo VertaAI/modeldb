@@ -45,7 +45,7 @@ import {
   selectCommunications,
   selectDatasetVersions,
   selectDatasetVersionsPagination,
-} from 'store/datasetVersions';
+} from 'features/datasetVersions/store';
 import { IApplicationState } from 'store/store';
 
 import DatasetDetailsLayout from '../shared/DatasetDetailsLayout/DatasetDetailsLayout';

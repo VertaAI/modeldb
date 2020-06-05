@@ -4,7 +4,7 @@ import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import normalizeError from 'core/shared/utils/normalizeError';
 import { ThunkDispatch } from 'redux-thunk';
 import { updateDatasetTags } from 'store/datasets';
-import { updateDatasetVersionTags } from 'store/datasetVersions';
+import { updateDatasetVersionTags } from 'features/datasetVersions/store';
 import { updateExpRunTags } from 'store/experimentRuns';
 import { updateExperimentTags } from 'store/experiments';
 import { updateProjectTags } from 'store/projects';

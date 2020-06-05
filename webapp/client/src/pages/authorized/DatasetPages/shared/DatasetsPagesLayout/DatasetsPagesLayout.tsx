@@ -7,7 +7,7 @@ import { Dataset } from 'models/Dataset';
 import { IDatasetVersion } from 'models/DatasetVersion';
 import routes, { GetRouteParams } from 'routes';
 import { selectDatasets } from 'store/datasets';
-import { selectDatasetVersions } from 'store/datasetVersions';
+import { selectDatasetVersions } from 'features/datasetVersions/store';
 import { IApplicationState } from 'store/store';
 
 import {

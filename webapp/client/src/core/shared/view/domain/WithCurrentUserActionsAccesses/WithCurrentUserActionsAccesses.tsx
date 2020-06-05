@@ -8,7 +8,7 @@ import { IApplicationState } from 'store/store';
 import * as Common from 'core/shared/models/Common';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import * as DatasetsStore from 'store/datasets';
-import * as DatasetVersionsStore from 'store/datasetVersions';
+import * as DatasetVersionsStore from 'features/datasetVersions/store';
 import * as ExperimentRunsStore from 'store/experimentRuns';
 import * as ExperimentsStore from 'store/experiments';
 import * as ProjectsStore from 'store/projects';
