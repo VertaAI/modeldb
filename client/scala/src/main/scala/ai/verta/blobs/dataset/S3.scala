@@ -14,10 +14,9 @@ import scala.util.{Failure, Success, Try}
 
 /** Captures metadata about S3 objects
  */
-case class S3(private val paths: List[S3Location]) extends Dataset {
-  private val s3: AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build()
-  private var versionMap = new HashMap[String, String]() // keep track of the version of each object
-  paths.map(getS3LocMetadata _)
+case class S3(private val paths: List[Tuple2[FileMetadata, Option[String]]]) extends Dataset {
+
+
 
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"
@@ -35,13 +34,17 @@ case class S3(private val paths: List[S3Location]) extends Dataset {
 object S3 {
   /** Constructor that user should use:
    */
-  // def apply(paths: List[S3Location]): Try[S3] = {
-  //   paths.map(getS3LocMetadata) match {
-  //     case Failure(e) => Failure(e)
-  //     case Success(list) =>
-  //   }
-  // }
-  
+  def apply(paths: List[S3Location]): Try[S3] = {
+    paths.map(getS3LocMetadata) match {
+      case Failure(e) => Failure(e)
+      case Success(list) => Success(new S3(list))
+    }
+  }
+
+  private val s3: AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build()
+  private var versionMap = new HashMap[String, String]() // keep track of the version of each object
+  paths.map(getS3LocMetadata _)
+
   /** Factory method to convert a versioning blob instance
    *  @param s3VersioningBlob the versioning blob to convert
    */
