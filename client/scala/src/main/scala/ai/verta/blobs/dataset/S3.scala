@@ -14,8 +14,7 @@ import scala.util.{Failure, Success, Try}
 
 /** Captures metadata about S3 objects
  */
-case class S3(private val paths: List[Tuple2[FileMetadata, Option[String]]]) extends Dataset {
-
+case class S3(private val metadataList: List[Tuple2[String, Metadata]], private val versionList: List[Tuple2[String, String]]) extends Dataset {
 
 
   /** Get the version id of a file
