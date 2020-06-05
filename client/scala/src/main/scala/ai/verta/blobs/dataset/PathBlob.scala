@@ -62,8 +62,7 @@ case class PathBlob(private val paths: List[String]) extends Dataset {
    *  @param stack a stack containing the files/dirs to explore
    *  @param acc accumulator list of file metadata to return
    */
-  @tailrec
-  private def dfs(stack: List[File], acc: List[FileMetadata]): List[FileMetadata] = {
+  @tailrec private def dfs(stack: List[File], acc: List[FileMetadata]): List[FileMetadata] = {
     if (stack.isEmpty) acc
     else if (stack.head.isDirectory) {
       val dir = stack.head
