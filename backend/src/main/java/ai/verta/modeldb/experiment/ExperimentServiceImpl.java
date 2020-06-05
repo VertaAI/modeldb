@@ -1131,10 +1131,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Map<String, String> projectIdFromExperimentMap =
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
-        errorMessage = "Access is denied. Experiment not found for given id : " + request.getId();
+        errorMessage = "Experiment '" + request.getId() + "' is not associated with any project";
         ModelDBUtils.logAndThrowError(
             errorMessage,
-            Code.PERMISSION_DENIED_VALUE,
+            Code.NOT_FOUND_VALUE,
             Any.pack(GetUrlForArtifact.getDefaultInstance()));
       }
 
