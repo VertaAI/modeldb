@@ -66,11 +66,11 @@ case class PathBlob(private val paths: List[String]) extends Dataset {
     if (stack.isEmpty) acc
     else if (stack.head.isDirectory) {
       val dir = stack.head
-      dfs(dir.listFiles().toList ::: stack.drop(1), acc)
+      dfs(dir.listFiles().toList ::: stack.tail, acc)
     }
     else {
       val file = stack.head
-      dfs(stack.drop(1), processFile(file) :: acc)
+      dfs(stack.tail, processFile(file) :: acc)
     }
   }
 
