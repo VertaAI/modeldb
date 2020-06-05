@@ -112,11 +112,13 @@ object S3 {
     versionListing: VersionListing,
     acc: List[Tuple2[FileMetadata, Option[String]]]
   ): Try[List[Tuple2[FileMetadata, Option[String]]]] = {
-    val batchAttempt = Try(versionListing.getVersionSummaries().asScala.toList
-    .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
-    .filter(_.isLatest())
-    .map(getVersionMetadata _) // List[Try]
-    .map(_.get))
+    val batchAttempt = Try(
+      versionListing.getVersionSummaries().asScala.toList
+                    .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
+                    .filter(_.isLatest())
+                    .map(getVersionMetadata) // List[Try]
+                    .map(_.get)
+      )
 
     batchAttempt match {
       case Failure(e) => Failure(e)
