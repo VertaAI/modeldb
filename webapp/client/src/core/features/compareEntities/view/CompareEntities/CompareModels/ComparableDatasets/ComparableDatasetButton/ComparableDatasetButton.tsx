@@ -26,7 +26,7 @@ import {
   loadDatasetVersion,
   selectCommunications,
   selectDatasetVersions,
-} from 'store/artifactManager';
+} from 'features/artifactManager/store';
 import { EntityType } from 'core/features/compareEntities/store';
 import { IApplicationState } from 'store/store';
 

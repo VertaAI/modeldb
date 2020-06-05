@@ -3,10 +3,10 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import Pile from 'core/shared/view/elements/PileWithPopup/Pile/Pile';
-import { EntityType } from 'store/artifactManager';
+import { EntityType } from 'features/artifactManager/store';
 import { IApplicationState } from 'store/store';
 
-import DownloadArtifactButton from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Artifacts/DownloadArtifactButton/DownloadArtifactButton';
+import DownloadArtifactButton from 'features/artifactManager/view/DownloadArtifactButton/DownloadArtifactButton';
 import { checkArtifactWithPath } from 'core/shared/models/Artifact';
 import { IArtifactCodeVersion } from 'core/shared/models/CodeVersion';
 import PilePopup from 'core/shared/view/elements/PileWithPopup/PilePopup/PilePopup';

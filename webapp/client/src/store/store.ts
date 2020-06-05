@@ -18,7 +18,7 @@ import * as Workspaces from 'features/workspaces/store';
 import {
   IArtifactManagerState,
   artifactManagerReducer,
-} from './artifactManager';
+} from '../features/artifactManager/store';
 import { IDatasetsState, datasetsReducer } from './datasets';
 import {
   IDatasetVersionsState,

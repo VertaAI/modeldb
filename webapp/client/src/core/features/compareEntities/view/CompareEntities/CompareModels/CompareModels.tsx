@@ -2,7 +2,7 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import Artifacts from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Artifacts/Artifacts/Artifacts';
+import Artifacts from 'features/artifactManager/view/Artifacts/Artifacts';
 import Observations from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/Observations';
 import Parameters from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Parameters/Parameters';
 import ClientSuggestion from 'core/shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';

@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom';
 
 import { Action } from 'core/shared/view/elements/PileWithActions/PileWithActions';
 import PilePopup from 'core/shared/view/elements/PileWithActions/PipePopup/PipePopup';
-import { checkSupportArtifactPreview } from 'store/artifactManager/helpers';
+import { checkSupportArtifactPreview } from 'features/artifactManager/store/helpers';
 import {
   IArtifact,
   IArtifactWithDatasetVersion,
   checkArtifactWithDatasetVersion,
 } from 'core/shared/models/Artifact';
 import { IconType } from 'core/shared/view/elements/Icon/Icon';
-import ArtifactPreview from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Artifacts/ArtifactButton/ArtifactPreview/ArtifactPreview';
-import { EntityType } from 'store/artifactManager';
+import ArtifactPreview from 'features/artifactManager/view/ArtifactButton/ArtifactPreview/ArtifactPreview';
+import { EntityType } from 'features/artifactManager/store';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import routes from 'routes';
-import { useArtifactDatasetVersion } from 'store/artifactManager/artifactDatasetVersion';
+import { useArtifactDatasetVersion } from 'features/artifactManager/store/artifactDatasetVersion';
 
 export const useInfoAction = ({
   popupIconType,

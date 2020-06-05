@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { EntityType } from 'store/artifactManager';
+import { EntityType } from 'features/artifactManager/store';
 import { IArtifact, checkArtifactWithPath } from 'core/shared/models/Artifact';
-import useDownloadArtifact from 'store/artifactManager/hooks/useDownloadArtifact';
+import useDownloadArtifact from 'features/artifactManager/store/hooks/useDownloadArtifact';
 import {
   toastSuccess,
   toastError,

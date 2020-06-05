@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { ICodeVersion } from 'core/shared/models/CodeVersion';
-import { EntityType } from 'store/artifactManager';
+import { EntityType } from 'features/artifactManager/store';
 
 import ArtifactCodeVersion from './ArtifactCodeVersion/ArtifactCodeVersion';
 import styles from './CodeVersion.module.css';

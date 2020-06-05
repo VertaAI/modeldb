@@ -9,8 +9,8 @@ import Button from 'core/shared/view/elements/Button/Button';
 import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { EntityType } from 'store/artifactManager';
-import useDownloadArtifact from 'store/artifactManager/hooks/useDownloadArtifact';
+import { EntityType } from 'features/artifactManager/store';
+import useDownloadArtifact from 'features/artifactManager/store/hooks/useDownloadArtifact';
 
 import styles from './DownloadArtifactButton.module.css';
 

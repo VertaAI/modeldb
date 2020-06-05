@@ -6,7 +6,7 @@ import {
   selectCommunications,
   selectDatasetVersion,
   loadDatasetVersion,
-} from 'store/artifactManager';
+} from 'features/artifactManager/store';
 import {
   initialCommunication,
   ICommunication,

@@ -16,8 +16,8 @@ import {
   EntityType,
   ArtifactPreviewFileExtension,
   ArtifactPreviewFileExtensions,
-} from 'store/artifactManager';
-import { getArtifactPreviewFileExtension } from 'store/artifactManager/helpers';
+} from 'features/artifactManager/store';
+import { getArtifactPreviewFileExtension } from 'features/artifactManager/store/helpers';
 import { IApplicationState } from 'store/store';
 
 import styles from './ArtifactPreview.module.css';

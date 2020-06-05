@@ -29,12 +29,12 @@ import {
   selectDownloadingArtifact,
   selectLoadingArtifactPreview,
   getDownloadArtifactsKey,
-} from 'store/artifactManager';
-import { checkSupportArtifactPreview } from 'store/artifactManager/helpers';
+} from 'features/artifactManager/store';
+import { checkSupportArtifactPreview } from 'features/artifactManager/store/helpers';
 import { IApplicationState } from 'store/store';
 import { AppError } from 'core/shared/models/Error';
 import LastCommunicationError from 'core/shared/view/elements/LastCommunicationError/LastCommunicationError';
-import { ArtifactDatasetVersion } from 'store/artifactManager/artifactDatasetVersion';
+import { ArtifactDatasetVersion } from 'features/artifactManager/store/artifactDatasetVersion';
 
 import DownloadArtifactButton from '../DownloadArtifactButton/DownloadArtifactButton';
 import styles from './ArtifactButton.module.css';

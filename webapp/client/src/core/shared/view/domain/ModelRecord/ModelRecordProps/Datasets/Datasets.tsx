@@ -4,7 +4,7 @@ import ClientSuggestion from 'core/shared/view/domain/ModelRecord/ModelRecordPro
 import { IArtifact } from 'core/shared/models/Artifact';
 
 import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
-import ArtifactButton from '../Artifacts/ArtifactButton/ArtifactButton';
+import ArtifactButton from '../../../../../../../features/artifactManager/view/ArtifactButton/ArtifactButton';
 
 import styles from '../shared/sharedStyles.module.css';
 

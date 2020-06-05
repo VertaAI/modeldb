@@ -3,7 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import Artifacts from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Artifacts/Artifacts/Artifacts';
+import Artifacts from 'features/artifactManager/view/Artifacts/Artifacts';
 import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import {
   ICommunicationById,
