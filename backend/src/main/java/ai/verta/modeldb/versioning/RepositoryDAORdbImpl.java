@@ -452,7 +452,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         .setWorkspaceTypeValue(repositoryEntity.getWorkspace_type())
         .setWorkspaceId(repositoryEntity.getWorkspace_id())
         .setTimeCreated(repositoryEntity.getDate_created())
-        .setTimeCreated(repositoryEntity.getDate_updated())
+        .setTimeUpdated(repositoryEntity.getDate_updated())
         .setName(repositoryEntity.getName())
         .setOwner(repositoryEntity.getOwner());
     ListTagsRequest.Response tags = listTags(session, repositoryEntity);
