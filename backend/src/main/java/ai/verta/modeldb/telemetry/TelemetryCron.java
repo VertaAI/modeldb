@@ -231,8 +231,11 @@ public class TelemetryCron extends TimerTask {
               .setValueType(ValueTypeEnum.ValueType.NUMBER)
               .build();
       telemetryDataList.add(tagMappingsCountKeyValue);
-    } catch (Exception e) {
-      LOGGER.error("Error on reading data from DB : {}", e.getMessage(), e);
+    } catch (Exception ex) {
+      LOGGER.error("Error on reading data from DB : {}", ex.getMessage(), ex);
+      if (ModelDBUtils.needToRetry(ex)) {
+        collectTelemetryDataFromDB();
+      }
     }
     return telemetryDataList;
   }

@@ -11,6 +11,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status.Code;
@@ -44,6 +45,12 @@ public class CommitDAORdbImpl implements CommitDAO {
           saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
       session.getTransaction().commit();
       return Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setCommit(author, commit, setBlobs, getRepository);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -161,6 +168,12 @@ public class CommitDAORdbImpl implements CommitDAO {
           .addAllCommits(commits)
           .setTotalRecords(commitPaginationDTO.getTotalRecords())
           .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return listCommits(request, getRepository);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -197,6 +210,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       CommitEntity commitEntity = getCommitEntity(session, commitHash, getRepository);
 
       return commitEntity.toCommitProto();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getCommit(commitHash, getRepository);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -219,7 +238,6 @@ public class CommitDAORdbImpl implements CommitDAO {
   public DeleteCommitRequest.Response deleteCommit(
       DeleteCommitRequest request, RepositoryDAO repositoryDAO) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repositoryEntity =
           repositoryDAO.getRepositoryById(session, request.getRepositoryId(), true);
       boolean exists =
@@ -301,6 +319,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             Code.FAILED_PRECONDITION);
       }
 
+      session.beginTransaction();
       // delete associated branch
       repositoryDAO.deleteBranchByCommit(session, repositoryEntity.getId(), request.getCommitSha());
 
@@ -312,6 +331,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
       session.getTransaction().commit();
       return DeleteCommitRequest.Response.newBuilder().build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteCommit(request, repositoryDAO);
+      } else {
+        throw ex;
+      }
     }
   }
 }
