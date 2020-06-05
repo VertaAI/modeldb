@@ -8,6 +8,7 @@ import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility
 import ai.verta.modeldb.versioning.SetRepository;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -165,5 +166,9 @@ public class RepositoryEntity {
 
   public Integer getRepositoryAccessModifier() {
     return repositoryAccessModifier;
+  }
+
+  public boolean isProtected() {
+    return Objects.equals(repositoryAccessModifier, RepositoryAccessModifier.PROTECTED.getNumber());
   }
 }
