@@ -1,5 +1,6 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.authservice.AuthService;
@@ -19,7 +20,10 @@ import ai.verta.modeldb.versioning.blob.visitors.Validator;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
+import com.google.protobuf.Any;
+import com.google.rpc.Status;
 import io.grpc.Status.Code;
+import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.LinkedList;
 import java.util.List;
@@ -661,6 +665,171 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, FindRepositoriesBlobs.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void addRepositoryAttributes(
+      AddRepositoryAttributes request,
+      StreamObserver<AddRepositoryAttributes.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      // Request Parameter Validation
+      String errorMessage = null;
+      if (!request.hasRepositoryId() && request.getAttributesList().isEmpty()) {
+        errorMessage =
+            "Repository ID and Attribute list not found in AddRepositoryAttributes request";
+      } else if (!request.hasRepositoryId()) {
+        errorMessage = "Repository ID not found in AddRepositoryAttributes request";
+      } else if (request.getAttributesList().isEmpty()) {
+        errorMessage = "Attribute list not found in AddRepositoryAttributes request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.warn(errorMessage);
+        Status status =
+            Status.newBuilder()
+                .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(errorMessage)
+                .addDetails(Any.pack(AddRepositoryAttributes.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+
+      repositoryDAO.addRepositoryAttributes(request.getRepositoryId(), request.getAttributesList());
+      responseObserver.onNext(AddRepositoryAttributes.Response.newBuilder().build());
+      responseObserver.onCompleted();
+
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, AddRepositoryAttributes.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void updateRepositoryAttribute(
+      UpdateRepositoryAttribute request,
+      StreamObserver<UpdateRepositoryAttribute.Response> responseObserver) {
+    QPSCountResource.inc();
+
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      // Request Parameter Validation
+      String errorMessage = null;
+      if (!request.hasRepositoryId() && request.getAttribute().getKey().isEmpty()) {
+        errorMessage =
+            "Repository ID and Attribute key not found in UpdateRepositoryAttributes request";
+      } else if (!request.hasRepositoryId()) {
+        errorMessage = "Repository ID not found in UpdateRepositoryAttributes request";
+      } else if (request.getAttribute().getKey().isEmpty()) {
+        errorMessage = "Attribute key not found in UpdateRepositoryAttributes request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.warn(errorMessage);
+        Status status =
+            Status.newBuilder()
+                .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(errorMessage)
+                .addDetails(Any.pack(UpdateRepositoryAttribute.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+
+      repositoryDAO.updateRepositoryAttribute(request.getRepositoryId(), request.getAttribute());
+      responseObserver.onNext(UpdateRepositoryAttribute.Response.newBuilder().build());
+      responseObserver.onCompleted();
+
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateRepositoryAttribute.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getRepositoryAttributes(
+      GetRepositoryAttributes request,
+      StreamObserver<GetRepositoryAttributes.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      // Request Parameter Validation
+      String errorMessage = null;
+      if (!request.hasRepositoryId()
+          && request.getAttributeKeysList().isEmpty()
+          && !request.getGetAll()) {
+        errorMessage =
+            "Repository ID and Repository attribute keys not found in GetRepositoryAttributes request";
+      } else if (!request.hasRepositoryId()) {
+        errorMessage = "Repository ID not found in GetRepositoryAttributes request";
+      } else if (request.getAttributeKeysList().isEmpty() && !request.getGetAll()) {
+        errorMessage = "Repository attribute keys not found in GetRepositoryAttributes request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.warn(errorMessage);
+        Status status =
+            Status.newBuilder()
+                .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(errorMessage)
+                .addDetails(Any.pack(GetRepositoryAttributes.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+
+      List<KeyValue> attributes =
+          repositoryDAO.getRepositoryAttributes(
+              request.getRepositoryId(), request.getAttributeKeysList(), request.getGetAll());
+      responseObserver.onNext(
+          GetRepositoryAttributes.Response.newBuilder().addAllAttributes(attributes).build());
+      responseObserver.onCompleted();
+
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetRepositoryAttributes.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void deleteRepositoryAttributes(
+      DeleteRepositoryAttributes request,
+      StreamObserver<DeleteRepositoryAttributes.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      // Request Parameter Validation
+      String errorMessage = null;
+      if (!request.hasRepositoryId()
+          && request.getAttributeKeysList().isEmpty()
+          && !request.getDeleteAll()) {
+        errorMessage =
+            "Repository ID and Repository attribute keys not found in DeleteRepositoryAttributes request";
+      } else if (!request.hasRepositoryId()) {
+        errorMessage = "Repository ID not found in DeleteRepositoryAttributes request";
+      } else if (request.getAttributeKeysList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage = "Repository attribute keys not found in DeleteRepositoryAttributes request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.warn(errorMessage);
+        Status status =
+            Status.newBuilder()
+                .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(errorMessage)
+                .addDetails(Any.pack(DeleteRepositoryAttributes.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+
+      repositoryDAO.deleteRepositoryAttributes(
+          request.getRepositoryId(), request.getAttributeKeysList(), request.getDeleteAll());
+      responseObserver.onNext(DeleteRepositoryAttributes.Response.newBuilder().build());
+      responseObserver.onCompleted();
+
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteRepositoryAttributes.Response.getDefaultInstance());
     }
   }
 }

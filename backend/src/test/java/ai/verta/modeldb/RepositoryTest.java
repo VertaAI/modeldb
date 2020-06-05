@@ -19,11 +19,14 @@ import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.AddRepositoryAttributes;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
+import ai.verta.modeldb.versioning.DeleteRepositoryAttributes;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.FindRepositories;
 import ai.verta.modeldb.versioning.GetBranchRequest;
+import ai.verta.modeldb.versioning.GetRepositoryAttributes;
 import ai.verta.modeldb.versioning.GetRepositoryRequest;
 import ai.verta.modeldb.versioning.ListRepositoriesRequest;
 import ai.verta.modeldb.versioning.Pagination;
@@ -33,11 +36,13 @@ import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.SetRepository.Response;
 import ai.verta.modeldb.versioning.SetTagRequest;
+import ai.verta.modeldb.versioning.UpdateRepositoryAttribute;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
+import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -929,25 +934,25 @@ public class RepositoryTest {
         "Delete Repository contains commit with tags test end................................");
   }
 
-  public static List<KeyValue> getAttributeList(){
+  public static List<KeyValue> getAttributeList() {
     List<KeyValue> attributeList = new ArrayList<>();
     Value intValue = Value.newBuilder().setNumberValue(1.1).build();
     attributeList.add(
-            KeyValue.newBuilder()
-                    .setKey("attribute_1" + Calendar.getInstance().getTimeInMillis())
-                    .setValue(intValue)
-                    .setValueType(ValueTypeEnum.ValueType.NUMBER)
-                    .build());
+        KeyValue.newBuilder()
+            .setKey("attribute_1" + Calendar.getInstance().getTimeInMillis())
+            .setValue(intValue)
+            .setValueType(ValueTypeEnum.ValueType.NUMBER)
+            .build());
     Value stringValue =
-            Value.newBuilder()
-                    .setStringValue("attributes_value_" + Calendar.getInstance().getTimeInMillis())
-                    .build();
+        Value.newBuilder()
+            .setStringValue("attributes_value_" + Calendar.getInstance().getTimeInMillis())
+            .build();
     attributeList.add(
-            KeyValue.newBuilder()
-                    .setKey("attribute_2_blob_" + Calendar.getInstance().getTimeInMillis())
-                    .setValue(stringValue)
-                    .setValueType(ValueTypeEnum.ValueType.BLOB)
-                    .build());
+        KeyValue.newBuilder()
+            .setKey("attribute_2_blob_" + Calendar.getInstance().getTimeInMillis())
+            .setValue(stringValue)
+            .setValueType(ValueTypeEnum.ValueType.BLOB)
+            .build());
     return attributeList;
   }
 
@@ -967,13 +972,13 @@ public class RepositoryTest {
 
     try {
       Assert.assertEquals(
-              "Repository Id not match with expected repository Id",
-              repositoryResponse.getRepository().getId(),
-              repositoryResponse.getRepository().getId());
+          "Repository Id not match with expected repository Id",
+          repositoryResponse.getRepository().getId(),
+          repositoryResponse.getRepository().getId());
       Assert.assertEquals(
-              "Repository attributes not match with expected repository attributes",
-              repository.getAttributesList(),
-              repositoryResponse.getRepository().getAttributesList());
+          "Repository attributes not match with expected repository attributes",
+          repository.getAttributesList(),
+          repositoryResponse.getRepository().getAttributesList());
 
       GetRepositoryRequest getRepositoryRequest =
           GetRepositoryRequest.newBuilder()
@@ -984,9 +989,9 @@ public class RepositoryTest {
       GetRepositoryRequest.Response getByNameResult =
           versioningServiceBlockingStub.getRepository(getRepositoryRequest);
       Assert.assertEquals(
-              "Repository attributes not match with expected repository attributes",
-              repository.getAttributesList(),
-              getByNameResult.getRepository().getAttributesList());
+          "Repository attributes not match with expected repository attributes",
+          repository.getAttributesList(),
+          getByNameResult.getRepository().getAttributesList());
     } finally {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
@@ -1000,5 +1005,497 @@ public class RepositoryTest {
     }
 
     LOGGER.info("Create repository with attributes test end................................");
+  }
+
+  @Test
+  public void addRepositoryAttributes() {
+    LOGGER.info("Add Repository Attributes test start................................");
+
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    // Create repository
+    Long repoId = createRepository(versioningServiceBlockingStub, NAME);
+
+    try {
+      List<KeyValue> attributeList = getAttributeList();
+
+      AddRepositoryAttributes addRepositoryAttributesRequest =
+          AddRepositoryAttributes.newBuilder().addAllAttributes(attributeList).build();
+
+      try {
+        versioningServiceBlockingStub.addRepositoryAttributes(addRepositoryAttributesRequest);
+        fail();
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn(
+            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      }
+
+      addRepositoryAttributesRequest =
+          AddRepositoryAttributes.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+              .addAllAttributes(attributeList)
+              .build();
+
+      versioningServiceBlockingStub.addRepositoryAttributes(addRepositoryAttributesRequest);
+
+      GetRepositoryRequest getRepositoryRequest =
+          GetRepositoryRequest.newBuilder()
+              .setId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      GetRepositoryRequest.Response getByNameResult =
+          versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+      Assert.assertEquals(
+          "Repository attributes not match with expected repository attributes",
+          addRepositoryAttributesRequest.getAttributesList(),
+          getByNameResult.getRepository().getAttributesList());
+
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
+
+    LOGGER.info("Add Repository Attributes test stop................................");
+  }
+
+  @Test
+  public void updateRepositoryAttributes() {
+    LOGGER.info("Update Repository Attributes test start................................");
+
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    SetRepository setRepository = getSetRepositoryRequest(NAME);
+    Repository repository = setRepository.toBuilder().getRepository();
+    repository = repository.toBuilder().addAllAttributes(getAttributeList()).build();
+    setRepository = setRepository.toBuilder().setRepository(repository).build();
+    SetRepository.Response repositoryResponse =
+        versioningServiceBlockingStub.createRepository(setRepository);
+    repository = repositoryResponse.getRepository();
+
+    try {
+      RepositoryIdentification repositoryIdentification =
+          RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build();
+      List<KeyValue> attributes = repository.getAttributesList();
+      Value stringValue =
+          Value.newBuilder()
+              .setStringValue(
+                  "attribute_1542193772147_updated_test_value"
+                      + Calendar.getInstance().getTimeInMillis())
+              .build();
+      KeyValue keyValue =
+          KeyValue.newBuilder()
+              .setKey(attributes.get(1).getKey())
+              .setValue(stringValue)
+              .setValueType(ValueTypeEnum.ValueType.STRING)
+              .build();
+      UpdateRepositoryAttribute updateRepositoryAttributesRequest =
+          UpdateRepositoryAttribute.newBuilder()
+              .setRepositoryId(repositoryIdentification)
+              .setAttribute(keyValue)
+              .build();
+
+      versioningServiceBlockingStub.updateRepositoryAttribute(updateRepositoryAttributesRequest);
+
+      GetRepositoryRequest getRepositoryRequest =
+          GetRepositoryRequest.newBuilder()
+              .setId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+              .build();
+      GetRepositoryRequest.Response getByNameResult =
+          versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+      Assert.assertTrue(
+          "Repository attributes not match with expected repository attributes",
+          getByNameResult
+              .getRepository()
+              .getAttributesList()
+              .contains(updateRepositoryAttributesRequest.getAttribute()));
+
+      Value intValue =
+          Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
+      keyValue =
+          KeyValue.newBuilder()
+              .setKey(attributes.get(1).getKey())
+              .setValue(intValue)
+              .setValueType(ValueTypeEnum.ValueType.NUMBER)
+              .build();
+      updateRepositoryAttributesRequest =
+          UpdateRepositoryAttribute.newBuilder()
+              .setRepositoryId(repositoryIdentification)
+              .setAttribute(keyValue)
+              .build();
+
+      versioningServiceBlockingStub.updateRepositoryAttribute(updateRepositoryAttributesRequest);
+      getRepositoryRequest =
+          GetRepositoryRequest.newBuilder()
+              .setId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+              .build();
+      getByNameResult = versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+      Assert.assertTrue(
+          "Repository attributes not match with expected repository attributes",
+          getByNameResult
+              .getRepository()
+              .getAttributesList()
+              .contains(updateRepositoryAttributesRequest.getAttribute()));
+
+      Value listValue =
+          Value.newBuilder()
+              .setListValue(
+                  ListValue.newBuilder().addValues(intValue).addValues(stringValue).build())
+              .build();
+      keyValue =
+          KeyValue.newBuilder()
+              .setKey(attributes.get(0).getKey())
+              .setValue(listValue)
+              .setValueType(ValueTypeEnum.ValueType.LIST)
+              .build();
+      updateRepositoryAttributesRequest =
+          UpdateRepositoryAttribute.newBuilder()
+              .setRepositoryId(repositoryIdentification)
+              .setAttribute(keyValue)
+              .build();
+
+      versioningServiceBlockingStub.updateRepositoryAttribute(updateRepositoryAttributesRequest);
+      getRepositoryRequest =
+          GetRepositoryRequest.newBuilder()
+              .setId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+              .build();
+      getByNameResult = versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+      Assert.assertTrue(
+          "Repository attributes not match with expected repository attributes",
+          getByNameResult
+              .getRepository()
+              .getAttributesList()
+              .contains(updateRepositoryAttributesRequest.getAttribute()));
+
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
+
+    LOGGER.info("Update Repository Attributes test stop................................");
+  }
+
+  @Test
+  public void updateRepositoryAttributesNegativeTest() {
+    LOGGER.info("Update Repository Attributes Negative test start................................");
+
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    Value stringValue = Value.newBuilder().setStringValue("attribute_updated_test_value").build();
+    KeyValue keyValue =
+        KeyValue.newBuilder()
+            .setKey("abc")
+            .setValue(stringValue)
+            .setValueType(ValueTypeEnum.ValueType.STRING)
+            .build();
+    UpdateRepositoryAttribute updateRepositoryAttributesRequest =
+        UpdateRepositoryAttribute.newBuilder().setAttribute(keyValue).build();
+
+    try {
+      versioningServiceBlockingStub.updateRepositoryAttribute(updateRepositoryAttributesRequest);
+      fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
+
+    RepositoryIdentification repositoryIdentification =
+        RepositoryIdentification.newBuilder().setRepoId(1000001).build();
+    updateRepositoryAttributesRequest =
+        UpdateRepositoryAttribute.newBuilder()
+            .setRepositoryId(repositoryIdentification)
+            .setAttribute(getAttributeList().get(0))
+            .build();
+    try {
+      versioningServiceBlockingStub.updateRepositoryAttribute(updateRepositoryAttributesRequest);
+      fail();
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
+
+    updateRepositoryAttributesRequest =
+        UpdateRepositoryAttribute.newBuilder()
+            .setRepositoryId(repositoryIdentification)
+            .clearAttribute()
+            .build();
+
+    try {
+      versioningServiceBlockingStub.updateRepositoryAttribute(updateRepositoryAttributesRequest);
+      fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
+
+    LOGGER.info("Update Repository Attributes Negative test stop................................");
+  }
+
+  @Test
+  public void getRepositoryAttributes() {
+    LOGGER.info("Get Repository Attributes test start................................");
+
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    SetRepository setRepository = getSetRepositoryRequest(NAME);
+    Repository repository = setRepository.toBuilder().getRepository();
+    repository = repository.toBuilder().addAllAttributes(getAttributeList()).build();
+    setRepository = setRepository.toBuilder().setRepository(repository).build();
+    SetRepository.Response repositoryResponse =
+        versioningServiceBlockingStub.createRepository(setRepository);
+    repository = repositoryResponse.getRepository();
+
+    try {
+      List<KeyValue> attributes = repository.getAttributesList();
+      LOGGER.info("Attributes size : " + attributes.size());
+
+      if (attributes.size() == 0) {
+        LOGGER.warn("Repository Attributes not found in database ");
+        fail();
+        return;
+      }
+
+      List<String> keys = new ArrayList<>();
+      if (attributes.size() > 1) {
+        for (int index = 0; index < attributes.size() - 1; index++) {
+          KeyValue keyValue = attributes.get(index);
+          keys.add(keyValue.getKey());
+        }
+      } else {
+        keys.add(attributes.get(0).getKey());
+      }
+      LOGGER.info("Attributes key size : " + keys.size());
+
+      RepositoryIdentification repositoryIdentification =
+          RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build();
+      GetRepositoryAttributes getRepositoryAttributesRequest =
+          GetRepositoryAttributes.newBuilder()
+              .setRepositoryId(repositoryIdentification)
+              .addAllAttributeKeys(keys)
+              .build();
+
+      GetRepositoryAttributes.Response response =
+          versioningServiceBlockingStub.getRepositoryAttributes(getRepositoryAttributesRequest);
+      LOGGER.info(response.getAttributesList().toString());
+      assertEquals(keys.size(), response.getAttributesList().size());
+
+      getRepositoryAttributesRequest =
+          GetRepositoryAttributes.newBuilder()
+              .setRepositoryId(repositoryIdentification)
+              .setGetAll(true)
+              .build();
+
+      response =
+          versioningServiceBlockingStub.getRepositoryAttributes(getRepositoryAttributesRequest);
+      LOGGER.info(response.getAttributesList().toString());
+      assertEquals(repository.getAttributesList().size(), response.getAttributesList().size());
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
+
+    LOGGER.info("Get Repository Attributes test stop................................");
+  }
+
+  @Test
+  public void getRepositoryAttributesNegativeTest() {
+    LOGGER.info("Get Repository Attributes Negative test start................................");
+
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    GetRepositoryAttributes getRepositoryAttributesRequest =
+        GetRepositoryAttributes.newBuilder().build();
+
+    try {
+      versioningServiceBlockingStub.getRepositoryAttributes(getRepositoryAttributesRequest);
+      fail();
+    } catch (StatusRuntimeException e) {
+      Status status = Status.fromThrowable(e);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
+
+    getRepositoryAttributesRequest =
+        GetRepositoryAttributes.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(10000001).build())
+            .setGetAll(true)
+            .build();
+    try {
+      versioningServiceBlockingStub.getRepositoryAttributes(getRepositoryAttributesRequest);
+      fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      checkEqualsAssert(ex);
+    }
+
+    LOGGER.info("Get Repository Attributes Negative test stop................................");
+  }
+
+  @Test
+  public void deleteRepositoryAttributesTest() {
+    LOGGER.info("Delete Repository Attributes test start................................");
+
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    SetRepository setRepository = getSetRepositoryRequest(NAME);
+    Repository repository = setRepository.toBuilder().getRepository();
+    repository = repository.toBuilder().addAllAttributes(getAttributeList()).build();
+    setRepository = setRepository.toBuilder().setRepository(repository).build();
+    SetRepository.Response repositoryResponse =
+        versioningServiceBlockingStub.createRepository(setRepository);
+    repository = repositoryResponse.getRepository();
+
+    try {
+      List<KeyValue> attributes = repository.getAttributesList();
+      LOGGER.info("Attributes size : " + attributes.size());
+      assertEquals(
+          "Attribute list size not match with expected attribute list size", 2, attributes.size());
+      List<String> keys = new ArrayList<>();
+      if (attributes.size() > 1) {
+        for (int index = 0; index < attributes.size() - 1; index++) {
+          KeyValue keyValue = attributes.get(index);
+          keys.add(keyValue.getKey());
+        }
+      } else {
+        keys.add(attributes.get(0).getKey());
+      }
+      LOGGER.info("Attributes key size : " + keys.size());
+
+      RepositoryIdentification repositoryIdentification =
+          RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build();
+      DeleteRepositoryAttributes deleteRepositoryAttributesRequest =
+          DeleteRepositoryAttributes.newBuilder()
+              .setRepositoryId(repositoryIdentification)
+              .addAllAttributeKeys(keys)
+              .build();
+      versioningServiceBlockingStub.deleteRepositoryAttributes(deleteRepositoryAttributesRequest);
+
+      GetRepositoryRequest getRepositoryRequest =
+          GetRepositoryRequest.newBuilder()
+              .setId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+              .build();
+      GetRepositoryRequest.Response response =
+          versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+
+      assertEquals(1, response.getRepository().getAttributesList().size());
+      assertNotEquals(
+          "Repository date_updated field not update on database",
+          repository.getDateUpdated(),
+          response.getRepository().getDateUpdated());
+      repository = response.getRepository();
+
+      if (response.getRepository().getAttributesList().size() != 0) {
+        deleteRepositoryAttributesRequest =
+            DeleteRepositoryAttributes.newBuilder()
+                .setRepositoryId(repositoryIdentification)
+                .setDeleteAll(true)
+                .build();
+        versioningServiceBlockingStub.deleteRepositoryAttributes(deleteRepositoryAttributesRequest);
+
+        response = versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+        LOGGER.info(
+            "All the Attributes deleted from server. Attributes count : "
+                + response.getRepository().getAttributesCount());
+        assertEquals(0, response.getRepository().getAttributesList().size());
+        assertNotEquals(
+            "Repository date_updated field not update on database",
+            repository.getDateUpdated(),
+            response.getRepository().getDateUpdated());
+      }
+
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
+
+    LOGGER.info("Delete Repository Attributes test stop................................");
+  }
+
+  @Test
+  public void deleteAllRepositoryAttributesTest() {
+    LOGGER.info("Delete All Repository Attributes test start................................");
+
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    DeleteRepositoryAttributes deleteRepositoryAttributesRequest =
+        DeleteRepositoryAttributes.newBuilder().build();
+
+    try {
+      versioningServiceBlockingStub.deleteRepositoryAttributes(deleteRepositoryAttributesRequest);
+      fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
+
+    SetRepository setRepository = getSetRepositoryRequest(NAME);
+    Repository repository = setRepository.toBuilder().getRepository();
+    repository = repository.toBuilder().addAllAttributes(getAttributeList()).build();
+    setRepository = setRepository.toBuilder().setRepository(repository).build();
+    SetRepository.Response repositoryResponse =
+        versioningServiceBlockingStub.createRepository(setRepository);
+    repository = repositoryResponse.getRepository();
+
+    try {
+
+      deleteRepositoryAttributesRequest =
+          DeleteRepositoryAttributes.newBuilder()
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+              .setDeleteAll(true)
+              .build();
+      versioningServiceBlockingStub.deleteRepositoryAttributes(deleteRepositoryAttributesRequest);
+      GetRepositoryRequest getRepositoryRequest =
+          GetRepositoryRequest.newBuilder()
+              .setId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+              .build();
+      GetRepositoryRequest.Response response =
+          versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+      LOGGER.info(
+          "All the Attributes deleted from server. Attributes count : "
+              + response.getRepository().getAttributesCount());
+      assertEquals(0, response.getRepository().getAttributesList().size());
+
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
+
+    LOGGER.info("Delete All Repository Attributes test stop................................");
   }
 }

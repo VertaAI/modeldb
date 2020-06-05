@@ -532,7 +532,7 @@ message AddRepositoryAttributes {
     }
 }
 
-message UpdateRepositoryAttributes {
+message UpdateRepositoryAttribute {
     RepositoryIdentification repository_id = 1;
     common.KeyValue attribute = 2;
 
@@ -542,6 +542,8 @@ message UpdateRepositoryAttributes {
 
 message GetRepositoryAttributes {
     RepositoryIdentification repository_id = 1;
+    repeated string attribute_keys = 2;
+    bool get_all = 3;
 
     message Response {
         repeated common.KeyValue attributes = 1;
@@ -865,18 +867,18 @@ service VersioningService {
         };
     };
 
-    rpc updateRepositoryAttributes(UpdateRepositoryAttributes) returns (UpdateRepositoryAttributes.Response) {
+    rpc updateRepositoryAttribute (UpdateRepositoryAttribute) returns (UpdateRepositoryAttribute.Response) {
         option (google.api.http) = {
-            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/updateRepositoryAttributes"
+            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/updateRepositoryAttribute"
             body: "*"
             additional_bindings {
-                post: "/v1/versioning/repositories/{repository_id.repo_id}/updateRepositoryAttributes"
+                post: "/v1/versioning/repositories/{repository_id.repo_id}/updateRepositoryAttribute"
                 body: "*"
             }
         };
     };
 
-    rpc getRepositoryAttributes(GetAttributes) returns (GetAttributes.Response) {
+    rpc getRepositoryAttributes(GetRepositoryAttributes) returns (GetRepositoryAttributes.Response) {
         option (google.api.http) = {
             get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/getRepositoryAttributes"
             additional_bindings {
