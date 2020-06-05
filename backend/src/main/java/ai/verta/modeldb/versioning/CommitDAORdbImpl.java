@@ -322,6 +322,12 @@ public class CommitDAORdbImpl implements CommitDAO {
           });
       session.getTransaction().commit();
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteCommits(repositoryIdentification, commitShas, repositoryDAO);
+      } else {
+        throw ex;
+      }
     }
   }
 
