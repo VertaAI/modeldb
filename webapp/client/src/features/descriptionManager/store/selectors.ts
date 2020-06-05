@@ -1,8 +1,8 @@
-import { IApplicationState } from '../store';
-import { IDescriptionActionState } from './types';
+import { IApplicationState } from '../../../store/store';
+import { IDescriptionManagerState } from './types';
 
-const selectState = (state: IApplicationState): IDescriptionActionState =>
-  state.descriptionAction;
+const selectState = (state: IApplicationState): IDescriptionManagerState =>
+  state.descriptionManager;
 
 export const selectIsAddingDesc = (state: IApplicationState) =>
   selectCommunications(state).addingDesc.isRequesting;

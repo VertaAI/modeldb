@@ -10,7 +10,7 @@ import { IConnectedReduxProps, IApplicationState } from 'store/store';
 import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import CodeVersion from 'core/shared/view/domain/CodeVersion/CodeVersion';
-import ProjectEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
+import ProjectEntityDescriptionManager from 'features/descriptionManager/view/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
 import { unknownUser } from 'models/User';
 
 import ExperimentBulkDeletion from './ExperimentBulkDeletion/ExperimentBulkDeletion';

@@ -26,7 +26,7 @@ import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesL
 import ProjectPageTabs from '../shared/ProjectPageTabs/ProjectPageTabs';
 import MarkdownManager from './MarkdownManager/MarkdownManager';
 import styles from './ProjectSummaryPage.module.css';
-import ProjectEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
+import ProjectEntityDescriptionManager from 'features/descriptionManager/view/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
 import SummaryInfo from 'core/shared/view/elements/SummaryViewComponents/SummaryInfo/SummaryInfo';
 import Reloading from 'core/shared/view/elements/Reloading/Reloading';
 

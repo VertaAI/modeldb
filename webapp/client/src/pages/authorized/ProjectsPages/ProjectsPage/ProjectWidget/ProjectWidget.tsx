@@ -15,7 +15,7 @@ import ProjectBulkDeletion from './ProjectBulkDeletion/ProjectBulkDeletion';
 import styles from './ProjectWidget.module.css';
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import { unknownUser } from 'models/User';
-import ProjectEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
+import ProjectEntityDescriptionManager from 'features/descriptionManager/view/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
 
 interface ILocalProps {
   project: Project;

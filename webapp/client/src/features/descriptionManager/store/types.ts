@@ -5,7 +5,7 @@ import {
   makeCommunicationActionTypes,
 } from 'core/shared/utils/redux/communication';
 
-export interface IDescriptionActionState {
+export interface IDescriptionManagerState {
   communications: {
     addingDesc: ICommunication;
     editingDesc: ICommunication;

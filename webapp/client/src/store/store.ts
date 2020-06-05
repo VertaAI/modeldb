@@ -24,10 +24,6 @@ import {
   IDatasetVersionsState,
   datasetVersionsReducer,
 } from './datasetVersions';
-import {
-  IDescriptionActionState,
-  descriptionActionReducer,
-} from './descriptionAction';
 import { experimentRunsReducer, IExperimentRunsState } from './experimentRuns';
 import { IExperimentsState, experimentsReducer } from './experiments';
 import {
@@ -37,6 +33,7 @@ import {
 import { IProjectsState, projectsReducer } from './projects';
 import { IProjectsPageState, projectsPageReducer } from './projectsPage';
 import * as TagsManagers from 'features/tagsManager';
+import * as DescriptionManager from 'features/descriptionManager';
 
 export interface IApplicationState
   extends Filter.IFilterRootState,
@@ -51,7 +48,7 @@ export interface IApplicationState
   projectsPage: IProjectsPageState;
   router: RouterState;
   tagsManager: TagsManagers.ITagsManagerState;
-  descriptionAction: IDescriptionActionState;
+  descriptionManager: DescriptionManager.IDescriptionManagerState;
   artifactManager: IArtifactManagerState;
   datasets: IDatasetsState;
   datasetVersions: IDatasetVersionsState;
@@ -80,7 +77,7 @@ export const createRootReducer = (history: History) =>
     projectsPage: projectsPageReducer,
     router: connectRouter(history),
     tagsManager: TagsManagers.tagActionReducer,
-    descriptionAction: descriptionActionReducer,
+    descriptionManager: DescriptionManager.reducer,
     artifactManager: artifactManagerReducer,
     datasets: datasetsReducer,
     datasetVersions: datasetVersionsReducer,

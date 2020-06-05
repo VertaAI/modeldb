@@ -6,7 +6,7 @@ import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentU
 import { EntityWithDescription } from 'core/shared/models/Description';
 import DescriptionManager from 'core/shared/view/domain/BaseDescriptionManager/DescriptionManager';
 
-import { addOrEditDescription } from 'store/descriptionAction';
+import { addOrEditDescription } from 'features/descriptionManager/store';
 
 interface ILocalProps {
   entityType: Extract<EntityWithDescription, 'dataset' | 'datasetVersion'>;

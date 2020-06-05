@@ -5,7 +5,7 @@ import { Dispatch, bindActionCreators } from 'redux';
 import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import { EntityWithDescription } from 'core/shared/models/Description';
 import DescriptionManager from 'core/shared/view/domain/BaseDescriptionManager/DescriptionManager';
-import { addOrEditDescription } from 'store/descriptionAction';
+import { addOrEditDescription } from 'features/descriptionManager/store';
 
 interface ILocalProps {
   entityType: Exclude<EntityWithDescription, 'endpoint'>;

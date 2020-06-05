@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { Dataset, DatasetType } from 'models/Dataset';
 import routes from 'routes';
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
-import DatasetEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
+import DatasetEntityDescriptionManager from 'features/descriptionManager/view/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
 import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
 
 import DatasetBulkDeletion from './DatasetBulkDeletion/DatasetBulkDeletion';

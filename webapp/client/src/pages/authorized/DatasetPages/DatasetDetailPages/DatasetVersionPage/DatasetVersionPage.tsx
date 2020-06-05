@@ -48,7 +48,7 @@ import { pathLocationLabels } from '../shared/constants';
 import DatasetPathInfoTable from '../shared/DatasetPathInfoTable/DatasetPathInfoTable';
 import DatasetVersionExperimentRuns from './DatasetVersionExperimentRuns/DatasetVersionExperimentRuns';
 import styles from './DatasetVersionPage.module.css';
-import DatasetEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
+import DatasetEntityDescriptionManager from 'features/descriptionManager/view/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
 import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
 
 interface ILocalProps {

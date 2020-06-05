@@ -2,9 +2,9 @@ import { combineReducers } from 'redux';
 
 import { makeCommunicationReducerFromEnum } from 'core/shared/utils/redux/communication';
 
-import { IDescriptionActionState, addOrEditDescActionTypes } from '../types';
+import { IDescriptionManagerState, addOrEditDescActionTypes } from '../types';
 
-export default combineReducers<IDescriptionActionState['communications']>({
+export default combineReducers<IDescriptionManagerState['communications']>({
   editingDesc: makeCommunicationReducerFromEnum(addOrEditDescActionTypes),
   addingDesc: makeCommunicationReducerFromEnum(addOrEditDescActionTypes),
 });

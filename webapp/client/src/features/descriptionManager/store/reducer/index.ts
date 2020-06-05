@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
 
-import { IDescriptionActionState } from '../types';
+import { IDescriptionManagerState } from '../types';
 import communications from './communications';
 
-export default combineReducers<IDescriptionActionState>({
+export default combineReducers<IDescriptionManagerState>({
   communications,
 });
