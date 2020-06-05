@@ -28,6 +28,7 @@ public class RepositoryEntity {
     this.date_created = new Date().getTime();
     this.date_updated = new Date().getTime();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
+    this.repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
     if (workspaceDTO.getWorkspaceId() != null) {
       this.workspace_id = workspaceDTO.getWorkspaceId();
       this.workspace_type = workspaceDTO.getWorkspaceType().getNumber();
@@ -71,6 +72,9 @@ public class RepositoryEntity {
 
   @Column(name = "repository_visibility")
   private Integer repository_visibility = null;
+
+  @Column(name = "repository_access_modifier")
+  private Integer repositoryAccessModifier = null;
 
   @Column(name = "deleted")
   private Boolean deleted = false;
@@ -128,6 +132,9 @@ public class RepositoryEntity {
     if (repository_visibility != null) {
       builder.setRepositoryVisibilityValue(repository_visibility);
     }
+    if (repositoryAccessModifier != null) {
+      builder.setRepositoryAccessModifierValue(repositoryAccessModifier);
+    }
     if (owner != null) {
       builder.setOwner(owner);
     }
@@ -135,10 +142,12 @@ public class RepositoryEntity {
   }
 
   public void update(SetRepository request) {
-    this.name = request.getRepository().getName();
-    this.description = request.getRepository().getDescription();
+    final Repository repository = request.getRepository();
+    this.name = repository.getName();
+    this.description = repository.getDescription();
     this.date_updated = new Date().getTime();
-    this.repository_visibility = request.getRepository().getRepositoryVisibilityValue();
+    this.repository_visibility = repository.getRepositoryVisibilityValue();
+    this.repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
   }
 
   public String getOwner() {

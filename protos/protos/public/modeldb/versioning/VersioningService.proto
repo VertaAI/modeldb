@@ -95,6 +95,14 @@ message RepositoryVisibilityEnum {
     }
 }
 
+message RepositoryAccessModifierEnum {
+    enum RepositoryAccessModifier {
+        UNKNOWN = 0;// default
+        REGULAR = 1;
+        PROTECTED = 2;
+    }
+}
+
 message Repository {
     uint64 id = 1;
     string name = 2; // Name that can be used in URL, like in GitHub
@@ -105,6 +113,8 @@ message Repository {
     WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
 
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
+    RepositoryAccessModifierEnum.RepositoryAccessModifier repositoryAccessModifier = 8;
+    string description = 9;
 
     string owner = 10;
 }
