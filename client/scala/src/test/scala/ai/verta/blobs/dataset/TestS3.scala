@@ -133,4 +133,18 @@ class TestS3 extends FunSuite {
     assert(s3Blob.isFailure)
     assert(s3Blob match {case Failure(e) => e.getMessage contains "Not Found"})
   }
+
+  test("S3 should produce similar hash and file size to PathBlob") {
+    val f = fixture
+    val s3Blob = S3(List(f.testfileLoc2)).get
+    val s3Metadata = s3Blob.getMetadata(f.testfilePath2).get
+
+    val workingDir = System.getProperty("user.dir")
+    val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir/testsubdir/testfile2"
+    val pathBlob = PathBlob(List(testDir)).get
+    val pathBlobMetadata = pathBlob.getMetadata(testDir).get
+
+    assert(s3Metadata.md5 equals pathBlobMetadata.md5)
+    assert(s3Metadata.size equals pathBlobMetadata.size)
+  }
 }
