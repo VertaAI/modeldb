@@ -235,40 +235,46 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   @Override
-  public boolean deleteCommits(RepositoryIdentification repositoryIdentification,
-      List<String> commitShas, RepositoryDAO repositoryDAO) throws ModelDBException {
+  public boolean deleteCommits(
+      RepositoryIdentification repositoryIdentification,
+      List<String> commitShas,
+      RepositoryDAO repositoryDAO)
+      throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       RepositoryEntity repositoryEntity =
           repositoryDAO.getRepositoryById(session, repositoryIdentification, true);
 
-      Query<CommitEntity> getCommitQuery = session.createQuery(
-          "From "
-              + CommitEntity.class.getSimpleName()
-              + " c WHERE c.commit_hash IN (:commitHashes)", CommitEntity.class);
+      Query<CommitEntity> getCommitQuery =
+          session.createQuery(
+              "From "
+                  + CommitEntity.class.getSimpleName()
+                  + " c WHERE c.commit_hash IN (:commitHashes)",
+              CommitEntity.class);
       getCommitQuery.setParameter("commitHashes", commitShas);
       List<CommitEntity> commitEntities = getCommitQuery.getResultList();
 
-      for (CommitEntity commitEntity: commitEntities) {
+      for (CommitEntity commitEntity : commitEntities) {
         if (!commitEntity.getChild_commits().isEmpty()) {
           throw new ModelDBException(
               "Commit has the child, please delete child commit first", Code.FAILED_PRECONDITION);
         }
       }
 
-      String getBranchByCommitHQLBuilder = "FROM "
-          + BranchEntity.class.getSimpleName()
-          + " br where br.id.repository_id = :repositoryId "
-          + " AND br.commit_hash IN (:commitHashes) ";
-      Query<BranchEntity> getBranchByCommitQuery = session.createQuery(
-          getBranchByCommitHQLBuilder, BranchEntity.class);
+      String getBranchByCommitHQLBuilder =
+          "FROM "
+              + BranchEntity.class.getSimpleName()
+              + " br where br.id.repository_id = :repositoryId "
+              + " AND br.commit_hash IN (:commitHashes) ";
+      Query<BranchEntity> getBranchByCommitQuery =
+          session.createQuery(getBranchByCommitHQLBuilder, BranchEntity.class);
       getBranchByCommitQuery.setParameter("repositoryId", repositoryEntity.getId());
       getBranchByCommitQuery.setParameter("commitHashes", commitShas);
       List<BranchEntity> branchEntities = getBranchByCommitQuery.list();
       if (branchEntities != null && !branchEntities.isEmpty()) {
         StringBuilder errorMessage = new StringBuilder("Commit is associated with branch name : ");
         int count = 0;
-        for (BranchEntity branchEntity: branchEntities) {
+        for (BranchEntity branchEntity : branchEntities) {
           errorMessage.append(branchEntity.getId().getBranch());
           if (count < branchEntities.size() - 1) {
             errorMessage.append(", ");
@@ -285,7 +291,8 @@ public class CommitDAORdbImpl implements CommitDAO {
               + " AND lm.id."
               + ModelDBConstants.ENTITY_TYPE
               + " = :entityType";
-      Query<LabelsMappingEntity> query = session.createQuery(getLabelsHql, LabelsMappingEntity.class);
+      Query<LabelsMappingEntity> query =
+          session.createQuery(getLabelsHql, LabelsMappingEntity.class);
       query.setParameter("entityHash", commitShas);
       query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_COMMIT_VALUE);
       List<LabelsMappingEntity> labelsMappingEntities = query.list();
@@ -307,12 +314,13 @@ public class CommitDAORdbImpl implements CommitDAO {
         throw new ModelDBException(
             "Commit is associated with Tags : "
                 + tagsEntities.stream()
-                .map(tagsEntity -> tagsEntity.getId().getTag())
-                .collect(Collectors.joining(",")),
+                    .map(tagsEntity -> tagsEntity.getId().getTag())
+                    .collect(Collectors.joining(",")),
             Code.FAILED_PRECONDITION);
       }
 
-      commitEntities.forEach((commitEntity) -> {
+      commitEntities.forEach(
+          (commitEntity) -> {
             if (commitEntity.getRepository().size() == 1) {
               session.delete(commitEntity);
             } else {
@@ -417,8 +425,6 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
 
       session.beginTransaction();
-      // delete associated branch
-      repositoryDAO.deleteBranchByCommit(session, repositoryEntity.getId(), request.getCommitSha());
 
       if (commitEntity.getRepository().size() == 1) {
         session.delete(commitEntity);

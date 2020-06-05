@@ -34,8 +34,11 @@ public interface CommitDAO {
       Session session, String commitHash, RepositoryFunction getRepositoryFunction)
       throws ModelDBException;
 
-  boolean deleteCommits(RepositoryIdentification repositoryIdentification,
-      List<String> commitShas, RepositoryDAO repositoryDAO) throws ModelDBException;
+  boolean deleteCommits(
+      RepositoryIdentification repositoryIdentification,
+      List<String> commitShas,
+      RepositoryDAO repositoryDAO)
+      throws ModelDBException;
 
   DeleteCommitRequest.Response deleteCommit(
       DeleteCommitRequest request, RepositoryDAO repositoryDAO) throws ModelDBException;
