@@ -125,7 +125,7 @@ object PathBlob {
    *  @return the metadata of the file, wrapped in a FileMetadata object (if success)
    */
   private def processFile(file: File) = hash(file) match {
-    case Failure(e) => throw e
+    case Failure(e) => Failure(e)
     case Success(fileHash) => Try(new FileMetadata (
       BigInt(file.lastModified()),
       fileHash,

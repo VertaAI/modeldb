@@ -3,6 +3,7 @@ package ai.verta.blobs.dataset
 import ai.verta.blobs._
 
 import scala.language.reflectiveCalls
+import scala.util.{Failure, Success, Try}
 
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
@@ -60,7 +61,10 @@ class TestPathBlob extends FunSuite {
   test("PathBlob constructor should fail when an invalid path is passed") {
     val f = fixture
     val invalid = f.testDir + "/invalid-file"
-    assert(PathBlob(List(invalid, f.testfile)).isFailure)
+    val invalidAttempt = PathBlob(List(invalid, f.testfile))
+
+    assert(invalidAttempt.isFailure)
+    println(invalidAttempt match {case Failure(e) => e.getMessage contains "No such file or directory"})
   }
 
   test("PathBlob should not contain duplicate paths") {
