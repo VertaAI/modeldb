@@ -46,7 +46,7 @@ object PathBlob {
     }
   }
 
-  /** Factory method to convert a versioning path dataset blob instance
+  /** Factory method to convert a versioning path dataset blob instance. Not meant to be used by user
    *  @param pathVersioningBlob the versioning blob to convert
    *  @return equivalent PathBlob instance
    */
