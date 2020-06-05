@@ -54,9 +54,7 @@ case class PathBlob(private val paths: List[String]) extends Dataset {
    *  @param file a file object, representing the path
    *  @return a list of components of file under the path
    */
-  private def processPath(file: File): List[FileMetadata] = {
-    dfs(List(file), List())
-  }
+  private def processPath(file: File): List[FileMetadata] = dfs(List(file), List())
 
   /** Tail-recursive DFS traversal to prevent stack overflow error
    *  @param stack a stack containing the files/dirs to explore
