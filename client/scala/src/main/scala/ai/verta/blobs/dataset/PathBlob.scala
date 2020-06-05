@@ -116,8 +116,8 @@ object PathBlob {
    *  @return equivalent VersioningBlob instance
    */
   def toVersioningBlob(blob: PathBlob) = VersioningBlob(
-      dataset = Some(VersioningDatasetBlob(
-        path = Some(VersioningPathDatasetBlob(Some(blob.components)))
-      ))
+    dataset = Some(VersioningDatasetBlob(
+      path = Some(VersioningPathDatasetBlob(Some(blob.components)))
+    ))
   )
 }
