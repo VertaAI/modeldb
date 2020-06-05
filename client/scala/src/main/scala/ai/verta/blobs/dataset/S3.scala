@@ -61,18 +61,19 @@ object S3 {
    *  @param s3VersioningBlob the versioning blob to convert
    */
   def apply(s3VersioningBlob: VersioningS3DatasetBlob) {
-    var s3 = new S3(List(), List())
-
-    s3VersioningBlob.components.get.map(
-      comp => {
-        val s3Path = comp.path.get.path.get
-
-        s3.contents.put(s3Path, s3.toMetadata(comp.path.get))
-        if (comp.s3_version_id.isDefined)
-          s3.versionMap.put(s3Path, comp.s3_version_id.get)
-      }
+    var s3Blob = new S3(List(), List())
+    val componentList = s3VersioningBlob.components.get
+    val metadataList = componentList.map(
+      comp => comp.path.get.path.get -> s3Blob.toMetadata(comp.path.get)
     )
-    s3
+    val versionList = componentList.filter(_.s3_version_id.isDefined).map(
+      comp => comp.path.get.path.get -> comp.s3_version_id.get
+    )
+
+    s3Blob.contents = HashMap(metadataList: _*)
+    s3Blob.versionMap = HashMap(versionList: _*)
+
+    s3Blob
   }
 
   /** Convert a S3 instance to a VersioningBlob
