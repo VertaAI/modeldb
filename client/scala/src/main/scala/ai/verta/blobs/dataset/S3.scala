@@ -13,9 +13,9 @@ import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 
 /** Captures metadata about S3 objects
- *  To create a new instance, use the constructor taking a list of paths (each is a string):
+ *  To create a new instance, use the constructor taking a list of S3 Locations
  *  {{{
- *  val s3Blob: Try[S3] = S3(List(new S3Loc("some-path-1"), new S3Loc("some-path-2")))
+ *  val s3Blob: Try[S3] = S3(List(new S3Location("some-path-1"), new S3Location("some-path-2")))
  *  }}}
  */
 case class S3(
