@@ -34,9 +34,10 @@ object PathBlob {
    *  @return if any path is invalid, a failure along with exception message. Otherwise, the pathblob (wrapped in success)
    */
   def apply(paths: List[String]): Try[PathBlob] = {
-    val metadataLists = Try(paths.map(expanduser)
-      .map((path: String) => processPath(new File(path)))
-      .map(_.get)
+    val metadataLists = Try(
+      paths.map(expanduser)
+           .map((path: String) => processPath(new File(path)))
+           .map(_.get)
     )
       // .map(metadata => metadata.path -> metadata)
 
