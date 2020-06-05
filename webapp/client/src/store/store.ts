@@ -29,7 +29,7 @@ import { IExperimentsState, experimentsReducer } from './experiments';
 import {
   IProjectCreationState,
   projectCreationReducer,
-} from './projectCreation';
+} from '../features/projectCreation/store';
 import { IProjectsState, projectsReducer } from './projects';
 import { IProjectsPageState, projectsPageReducer } from './projectsPage';
 import * as TagsManagers from 'features/tagsManager';
