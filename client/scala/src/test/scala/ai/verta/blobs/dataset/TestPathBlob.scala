@@ -32,14 +32,14 @@ class TestPathBlob extends FunSuite {
 
   test("PathBlob should retrieve a file's metadata correctly") {
     val f = fixture
-    var pathBlob = PathBlob(List(f.testfile))
+    var pathBlob = PathBlob(List(f.testfile)).get
 
     assertMetadata(pathBlob.getMetadata(f.testfile).get, f.testfile)
   }
 
   test("PathBlob should retrieve multiple files correctly") {
     val f = fixture
-    var pathBlob = PathBlob(List(f.testfile, f.testfile2))
+    var pathBlob = PathBlob(List(f.testfile, f.testfile2)).get
 
     assertMetadata(pathBlob.getMetadata(f.testfile).get, f.testfile)
     assertMetadata(pathBlob.getMetadata(f.testfile2).get, f.testfile2)
@@ -47,7 +47,7 @@ class TestPathBlob extends FunSuite {
 
   test("PathBlob should not store directory") {
     val f = fixture
-    val pathBlob = PathBlob(List(f.testDir, f.testSubdir))
+    val pathBlob = PathBlob(List(f.testDir, f.testSubdir)).get
 
     val dirAttempt = pathBlob.getMetadata(f.testDir)
     val subdirAttempt = pathBlob.getMetadata(f.testDir)
@@ -57,18 +57,16 @@ class TestPathBlob extends FunSuite {
     assert(pathBlob.getMetadata(f.testfile).isDefined)
   }
 
-  test("PathBlob should throw an exception when an invalid path is passed") {
+  test("PathBlob constructor should fail when an invalid path is passed") {
     val f = fixture
     val invalid = f.testDir + "/invalid-file"
-    assertThrows[FileNotFoundException] {
-      val pathBlob = PathBlob(List(invalid, f.testfile))
-    }
+    assert(PathBlob(List(invalid, f.testfile)).isFailure)
   }
 
   test("PathBlob should not contain duplicate paths") {
     val f = fixture
-    val pathBlob1 = PathBlob(List(f.testDir, f.testSubdir, f.testfile, f.testfile2, f.testfile))
-    val pathBlob2 = PathBlob(List(f.testfile, f.testfile2))
+    val pathBlob1 = PathBlob(List(f.testDir, f.testSubdir, f.testfile, f.testfile2, f.testfile)).get
+    val pathBlob2 = PathBlob(List(f.testfile, f.testfile2)).get
 
     assert(pathBlob1 equals pathBlob2)
   }
