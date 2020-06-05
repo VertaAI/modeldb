@@ -47,6 +47,8 @@ public interface ModelDBConstants {
   Integer NAME_LENGTH = 256;
   String PATH_DELIMITER = "/";
   Integer TAG_LENGTH = 40;
+  int INITIAL_CRON_DELAY = 300; // 300second = 5min : timeout in second
+  String INITIAL_DELAY = "initial_delay";
 
   // String Constants
   String STRING_COLON = ":";
@@ -141,6 +143,7 @@ public interface ModelDBConstants {
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
   String DELETED = "deleted";
   String DEV_KEY = "devKey";
+  String REQUEST_TIMEOUT = "requestTimeout";
 
   // Set to true to export the liquibase schema as sql statements
   Boolean EXPORT_SCHEMA = false;

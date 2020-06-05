@@ -149,6 +149,26 @@ class VersioningServiceStub(object):
         request_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositoriesBlobs.SerializeToString,
         response_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositoriesBlobs.Response.FromString,
         )
+    self.getUrlForBlobVersioned = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/getUrlForBlobVersioned',
+        request_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.GetUrlForBlobVersioned.SerializeToString,
+        response_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.GetUrlForBlobVersioned.Response.FromString,
+        )
+    self.commitVersionedBlobArtifactPart = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/commitVersionedBlobArtifactPart',
+        request_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.CommitVersionedBlobArtifactPart.SerializeToString,
+        response_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.CommitVersionedBlobArtifactPart.Response.FromString,
+        )
+    self.getCommittedVersionedBlobArtifactParts = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/getCommittedVersionedBlobArtifactParts',
+        request_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.GetCommittedVersionedBlobArtifactParts.SerializeToString,
+        response_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.GetCommittedVersionedBlobArtifactParts.Response.FromString,
+        )
+    self.commitMultipartVersionedBlobArtifact = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/commitMultipartVersionedBlobArtifact',
+        request_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.CommitMultipartVersionedBlobArtifact.SerializeToString,
+        response_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.CommitMultipartVersionedBlobArtifact.Response.FromString,
+        )
 
 
 class VersioningServiceServicer(object):
@@ -344,6 +364,34 @@ class VersioningServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def getUrlForBlobVersioned(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def commitVersionedBlobArtifactPart(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getCommittedVersionedBlobArtifactParts(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def commitMultipartVersionedBlobArtifact(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_VersioningServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -481,6 +529,26 @@ def add_VersioningServiceServicer_to_server(servicer, server):
           servicer.findRepositoriesBlobs,
           request_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositoriesBlobs.FromString,
           response_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositoriesBlobs.Response.SerializeToString,
+      ),
+      'getUrlForBlobVersioned': grpc.unary_unary_rpc_method_handler(
+          servicer.getUrlForBlobVersioned,
+          request_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.GetUrlForBlobVersioned.FromString,
+          response_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.GetUrlForBlobVersioned.Response.SerializeToString,
+      ),
+      'commitVersionedBlobArtifactPart': grpc.unary_unary_rpc_method_handler(
+          servicer.commitVersionedBlobArtifactPart,
+          request_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.CommitVersionedBlobArtifactPart.FromString,
+          response_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.CommitVersionedBlobArtifactPart.Response.SerializeToString,
+      ),
+      'getCommittedVersionedBlobArtifactParts': grpc.unary_unary_rpc_method_handler(
+          servicer.getCommittedVersionedBlobArtifactParts,
+          request_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.GetCommittedVersionedBlobArtifactParts.FromString,
+          response_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.GetCommittedVersionedBlobArtifactParts.Response.SerializeToString,
+      ),
+      'commitMultipartVersionedBlobArtifact': grpc.unary_unary_rpc_method_handler(
+          servicer.commitMultipartVersionedBlobArtifact,
+          request_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.CommitMultipartVersionedBlobArtifact.FromString,
+          response_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.CommitMultipartVersionedBlobArtifact.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

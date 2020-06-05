@@ -2169,11 +2169,14 @@ public class DatasetVersionTest {
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
-      DeleteDatasetVersions.Response deleteDatasetVersionsResponse =
-          datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
-      LOGGER.info("DeleteDatasetVersion deleted successfully");
-      LOGGER.info(deleteDatasetVersionsResponse.toString());
-      assertTrue(deleteDatasetVersionsResponse.getStatus());
+      try {
+        datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn(
+            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+      }
     } else {
       DeleteDatasetVersions.Response deleteDatasetVersionsResponse =
           datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersionsRequest);
