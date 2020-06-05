@@ -1,6 +1,7 @@
 package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
+import ai.verta.blobs._
 
 import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}

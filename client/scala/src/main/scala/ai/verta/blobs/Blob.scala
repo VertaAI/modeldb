@@ -1,3 +1,3 @@
-package ai.verta.blobs.dataset
+package ai.verta.blobs
 
 trait Blob {}
