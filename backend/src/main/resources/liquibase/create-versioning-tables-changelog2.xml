@@ -361,4 +361,15 @@
 			<column name="repository_access_modifier" type="int4" defaultValue="1"/>
 		</addColumn>
 	</changeSet>
+
+	<changeSet id="add-repository-description-column" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="repository" columnName="description"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="repository">
+			<column name="description" type="TEXT" value=""/>
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>
