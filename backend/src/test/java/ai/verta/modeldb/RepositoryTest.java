@@ -3,6 +3,7 @@ package ai.verta.modeldb;
 import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
 import static org.junit.Assert.*;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
@@ -49,6 +50,7 @@ import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -173,17 +175,19 @@ public class RepositoryTest {
 
   public static Long createRepository(
       VersioningServiceBlockingStub versioningServiceBlockingStub, String repoName) {
-    SetRepository setRepository =
-        SetRepository.newBuilder()
-            .setId(
-                RepositoryIdentification.newBuilder()
-                    .setNamedId(
-                        RepositoryNamedIdentification.newBuilder().setName(repoName).build())
-                    .build())
-            .setRepository(Repository.newBuilder().setName(repoName))
-            .build();
+    SetRepository setRepository = getSetRepositoryRequest(repoName);
     Response result = versioningServiceBlockingStub.createRepository(setRepository);
     return result.getRepository().getId();
+  }
+
+  private static SetRepository getSetRepositoryRequest(String repoName) {
+    return SetRepository.newBuilder()
+        .setId(
+            RepositoryIdentification.newBuilder()
+                .setNamedId(RepositoryNamedIdentification.newBuilder().setName(repoName).build())
+                .build())
+        .setRepository(Repository.newBuilder().setName(repoName))
+        .build();
   }
 
   private void checkEqualsAssert(StatusRuntimeException e) {
@@ -923,5 +927,78 @@ public class RepositoryTest {
     Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info(
         "Delete Repository contains commit with tags test end................................");
+  }
+
+  public static List<KeyValue> getAttributeList(){
+    List<KeyValue> attributeList = new ArrayList<>();
+    Value intValue = Value.newBuilder().setNumberValue(1.1).build();
+    attributeList.add(
+            KeyValue.newBuilder()
+                    .setKey("attribute_1" + Calendar.getInstance().getTimeInMillis())
+                    .setValue(intValue)
+                    .setValueType(ValueTypeEnum.ValueType.NUMBER)
+                    .build());
+    Value stringValue =
+            Value.newBuilder()
+                    .setStringValue("attributes_value_" + Calendar.getInstance().getTimeInMillis())
+                    .build();
+    attributeList.add(
+            KeyValue.newBuilder()
+                    .setKey("attribute_2_blob_" + Calendar.getInstance().getTimeInMillis())
+                    .setValue(stringValue)
+                    .setValueType(ValueTypeEnum.ValueType.BLOB)
+                    .build());
+    return attributeList;
+  }
+
+  @Test
+  public void createRepositoryWithAttributesTest() {
+    LOGGER.info("Create repository with attributes test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    SetRepository setRepository = getSetRepositoryRequest(NAME);
+    Repository repository = setRepository.toBuilder().getRepository();
+    repository = repository.toBuilder().addAllAttributes(getAttributeList()).build();
+    setRepository = setRepository.toBuilder().setRepository(repository).build();
+    SetRepository.Response repositoryResponse =
+        versioningServiceBlockingStub.createRepository(setRepository);
+
+    try {
+      Assert.assertEquals(
+              "Repository Id not match with expected repository Id",
+              repositoryResponse.getRepository().getId(),
+              repositoryResponse.getRepository().getId());
+      Assert.assertEquals(
+              "Repository attributes not match with expected repository attributes",
+              repository.getAttributesList(),
+              repositoryResponse.getRepository().getAttributesList());
+
+      GetRepositoryRequest getRepositoryRequest =
+          GetRepositoryRequest.newBuilder()
+              .setId(
+                  RepositoryIdentification.newBuilder()
+                      .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME)))
+              .build();
+      GetRepositoryRequest.Response getByNameResult =
+          versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+      Assert.assertEquals(
+              "Repository attributes not match with expected repository attributes",
+              repository.getAttributesList(),
+              getByNameResult.getRepository().getAttributesList());
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder()
+                      .setRepoId(repositoryResponse.getRepository().getId()))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
+
+    LOGGER.info("Create repository with attributes test end................................");
   }
 }

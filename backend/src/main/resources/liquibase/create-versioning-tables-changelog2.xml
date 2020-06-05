@@ -361,4 +361,15 @@
 			<column name="repository_access_modifier" type="int4" defaultValue="1"/>
 		</addColumn>
 	</changeSet>
+
+	<changeSet id="add-attributes-to-repository" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="attribute" columnName="repository_id"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="attribute">
+			<column name="repository_id" type="int8"/>
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>

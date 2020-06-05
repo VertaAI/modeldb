@@ -298,13 +298,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             workspaceDTO.getWorkspaceId(),
             workspaceDTO.getWorkspaceType(),
             LOGGER);
-        repositoryEntity =
-            new RepositoryEntity(
-                repository.getName(),
-                workspaceDTO,
-                repository.getOwner(),
-                repository.getRepositoryVisibility(),
-                repository.getRepositoryAccessModifier());
+        repositoryEntity = new RepositoryEntity(repository, workspaceDTO);
         repositoryEntity.setDeleted(true);
       } else {
         repositoryEntity = getRepositoryById(session, request.getId(), true);
@@ -423,7 +417,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public ListRepositoriesRequest.Response listRepositories(
-      ListRepositoriesRequest request, UserInfo currentLoginUserInfo) throws ModelDBException {
+      ListRepositoriesRequest request, UserInfo currentLoginUserInfo)
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<String> accessibleResourceIds =
           roleService.getAccessibleResourceIds(
@@ -508,8 +503,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       ListRepositoriesRequest.Response.Builder builder =
           ListRepositoriesRequest.Response.newBuilder();
 
-      repositoryEntities.forEach(
-          repositoryEntity -> builder.addRepositories(repositoryEntity.toProto()));
+      for (RepositoryEntity repositoryEntity : repositoryEntities) {
+        builder.addRepositories(repositoryEntity.toProto());
+      }
 
       long totalRecords = RdbmsUtils.count(session, repositoryEntityRoot, criteriaQuery);
       builder.setTotalRecords(totalRecords);
@@ -849,7 +845,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public FindRepositories.Response findRepositories(FindRepositories request)
-      throws ModelDBException {
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       WorkspaceDTO workspaceDTO =
@@ -894,11 +890,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         Long totalRecords =
             (Long) findRepositoriesQuery.getFindRepositoriesCountHQLQuery().uniqueResult();
 
+        List<Repository> repositories = new ArrayList<>();
+        for (RepositoryEntity repositoryEntity : repositoryEntities) {
+          repositories.add(repositoryEntity.toProto());
+        }
+
         return FindRepositories.Response.newBuilder()
-            .addAllRepositories(
-                repositoryEntities.stream()
-                    .map(RepositoryEntity::toProto)
-                    .collect(Collectors.toList()))
+            .addAllRepositories(repositories)
             .setTotalRecords(totalRecords)
             .build();
       } catch (ModelDBException ex) {

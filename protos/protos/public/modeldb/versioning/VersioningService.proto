@@ -13,6 +13,7 @@ import "modeldb/versioning/Config.proto";
 import "modeldb/versioning/Dataset.proto";
 import "modeldb/versioning/Enums.proto";
 import "modeldb/versioning/Environment.proto";
+import "common/CommonService.proto";
 
 // Base commit for the versioning system
 // DO NOT USE TO COMPUTE SHA
@@ -116,6 +117,7 @@ message Repository {
     RepositoryAccessModifierEnum.RepositoryAccessModifier repositoryAccessModifier = 8;
 
     string owner = 10;
+    repeated common.KeyValue attributes = 11;
 }
 
 // For pagination
@@ -522,6 +524,39 @@ message CommitMultipartVersionedBlobArtifact {
     }
 }
 
+message AddRepositoryAttributes {
+    RepositoryIdentification repository_id = 1;
+    repeated common.KeyValue attributes = 2;
+
+    message Response {
+    }
+}
+
+message UpdateRepositoryAttributes {
+    RepositoryIdentification repository_id = 1;
+    common.KeyValue attribute = 2;
+
+    message Response {
+    }
+}
+
+message GetRepositoryAttributes {
+    RepositoryIdentification repository_id = 1;
+
+    message Response {
+        repeated common.KeyValue attributes = 1;
+    }
+}
+
+message DeleteRepositoryAttributes {
+    RepositoryIdentification repository_id = 1;
+    repeated string attribute_keys = 2;
+    bool delete_all = 3;
+
+    message Response {
+    }
+}
+
 service VersioningService {
     // CRUD for repositories
     rpc ListRepositories(ListRepositoriesRequest) returns (ListRepositoriesRequest.Response) {
@@ -816,6 +851,46 @@ service VersioningService {
         option (google.api.http) = {
             post: "/v1/versioning/commitMultipartVersionedBlobArtifact"
             body: "*"
+        };
+    };
+
+    rpc addRepositoryAttributes(AddRepositoryAttributes) returns (AddRepositoryAttributes.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/addRepositoryAttributes"
+            body: "*"
+            additional_bindings {
+                post: "/v1/versioning/repositories/{repository_id.repo_id}/addRepositoryAttributes"
+                body: "*"
+            }
+        };
+    };
+
+    rpc updateRepositoryAttributes(UpdateRepositoryAttributes) returns (UpdateRepositoryAttributes.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/updateRepositoryAttributes"
+            body: "*"
+            additional_bindings {
+                post: "/v1/versioning/repositories/{repository_id.repo_id}/updateRepositoryAttributes"
+                body: "*"
+            }
+        };
+    };
+
+    rpc getRepositoryAttributes(GetAttributes) returns (GetAttributes.Response) {
+        option (google.api.http) = {
+            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/getRepositoryAttributes"
+            additional_bindings {
+                get: "/v1/versioning/repositories/{repository_id.repo_id}/getRepositoryAttributes"
+            }
+        };
+    };
+
+    rpc deleteRepositoryAttributes(DeleteRepositoryAttributes) returns (DeleteRepositoryAttributes.Response) {
+        option (google.api.http) = {
+            delete: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/deleteRepositoryAttributes"
+            additional_bindings {
+                delete: "/v1/versioning/repositories/{repository_id.repo_id}/deleteRepositoryAttributes"
+            }
         };
     };
 }
