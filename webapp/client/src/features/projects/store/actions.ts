@@ -9,7 +9,7 @@ import { ActionResult } from 'store/store';
 
 import { IWorkspace } from 'models/Workspace';
 import { selectCurrentContextFilters } from 'core/features/filter';
-import { handleDeleteEntities } from 'store/shared/deletion';
+import { handleDeleteEntities } from 'features/shared/deletion';
 
 import { selectProjectsPagination } from './selectors';
 import {

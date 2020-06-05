@@ -2,7 +2,7 @@ import {
   initialCommunication,
   ICommunication,
 } from 'core/shared/utils/redux/communication';
-import { makeSelectDeletingEntity } from 'store/shared/deletion';
+import { makeSelectDeletingEntity } from 'features/shared/deletion';
 
 import { IApplicationState } from '../../../store/store';
 import { IProjectsState } from './types';

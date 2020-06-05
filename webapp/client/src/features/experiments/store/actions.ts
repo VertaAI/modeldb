@@ -7,7 +7,7 @@ import { AppError } from 'core/shared/models/Error';
 import normalizeError from 'core/shared/utils/normalizeError';
 import * as Experiment from 'models/Experiment';
 import routes from 'routes';
-import { handleDeleteEntities } from 'store/shared/deletion';
+import { handleDeleteEntities } from 'features/shared/deletion';
 import { ActionResult } from 'store/store';
 import { makeThunkApiRequest } from 'utils/redux/actions';
 

@@ -8,7 +8,7 @@ import normalizeError from 'core/shared/utils/normalizeError';
 import * as Dataset from 'models/Dataset';
 import { IWorkspace } from 'models/Workspace';
 import routes from 'routes';
-import { handleDeleteEntities } from 'store/shared/deletion';
+import { handleDeleteEntities } from 'features/shared/deletion';
 import { ActionResult } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import { makeThunkApiRequest } from 'utils/redux/actions';

@@ -1,4 +1,4 @@
-import { makeSelectDeletingEntity } from 'store/shared/deletion';
+import { makeSelectDeletingEntity } from 'features/shared/deletion';
 
 import { IApplicationState } from '../../../store/store';
 import { IExperimentRunsState } from './types';

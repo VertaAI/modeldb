@@ -1,4 +1,4 @@
-import { makeSelectDeletingEntity } from 'store/shared/deletion';
+import { makeSelectDeletingEntity } from 'features/shared/deletion';
 
 import { initialCommunication } from 'core/shared/utils/redux/communication';
 import { IApplicationState } from '../../../store/store';

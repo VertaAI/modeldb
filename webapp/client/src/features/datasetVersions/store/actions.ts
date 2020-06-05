@@ -6,7 +6,7 @@ import normalizeError from 'core/shared/utils/normalizeError';
 import { ActionResult } from 'store/store';
 
 import { selectCurrentContextFilters } from 'core/features/filter';
-import { handleDeleteEntities } from 'store/shared/deletion';
+import { handleDeleteEntities } from 'features/shared/deletion';
 import { selectDatasetVersionsPagination } from './selectors';
 import {
   ILoadDatasetVersionsActions,

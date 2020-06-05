@@ -61,7 +61,7 @@ import {
   ISelectAllExperimentRunsForDeleting,
   selectAllExperimentRunsForDeletingActionType,
 } from './types';
-import { handleDeleteEntities } from 'store/shared/deletion';
+import { handleDeleteEntities } from 'features/shared/deletion';
 
 export const loadExperimentRuns = (
   projectId: string,
