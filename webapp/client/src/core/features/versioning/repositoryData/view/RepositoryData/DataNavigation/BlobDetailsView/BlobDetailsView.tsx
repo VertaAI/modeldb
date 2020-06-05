@@ -8,7 +8,7 @@ import { DataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox
 import { IBlobView } from 'core/features/versioning/repositoryData/store/types';
 import AssociatedExperimentRuns from 'core/shared/view/domain/Versioning/AssociatedExperimentRuns/AssociatedExperimentRuns';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import BlobView from './BlobView/BlobView';
 import styles from './BlobDetailsView.module.css';

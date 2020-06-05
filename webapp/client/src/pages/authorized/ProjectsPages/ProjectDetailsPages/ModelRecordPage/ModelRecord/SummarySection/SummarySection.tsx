@@ -10,7 +10,7 @@ import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
 import { Project } from 'models/Project';
 import { TextWithCopyTooltip } from 'core/shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
 import routes from 'routes';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import {
   makeURLFilters,
   makeDefaultExprNameFilter,

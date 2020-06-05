@@ -20,7 +20,7 @@ import {
   selectLoadingProjectWithMemo,
 } from 'store/projects';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import ChartsPage from './ChartsPage/ChartsPage';
 import CompareModelsPage from './CompareModelsPage/CompareModelsPage';

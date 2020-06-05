@@ -13,7 +13,7 @@ import routes from 'routes';
 import { CommitPointerHelpers } from 'core/shared/models/Versioning/RepositoryData';
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import styles from './CodeVersions.module.css';
 

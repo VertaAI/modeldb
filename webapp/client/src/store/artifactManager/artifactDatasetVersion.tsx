@@ -13,7 +13,7 @@ import {
 } from 'core/shared/utils/redux/communication';
 import { useSelector, useDispatch } from 'react-redux';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 export const useArtifactDatasetVersion = ({
   artifact,

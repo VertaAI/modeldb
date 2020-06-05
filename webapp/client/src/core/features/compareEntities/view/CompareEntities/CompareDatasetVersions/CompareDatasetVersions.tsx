@@ -43,7 +43,7 @@ import {
   selectDatasetVersionExperimentRuns,
 } from 'store/datasetVersions';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import ComparableAttributes from '../shared/ComparableAttributes/ComparableAttributes';
 import { getDiffValueBgClassname } from '../shared/DiffHighlight/DiffHighlight';

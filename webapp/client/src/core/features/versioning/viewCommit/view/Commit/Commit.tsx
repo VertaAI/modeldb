@@ -15,7 +15,7 @@ import Button from 'core/shared/view/elements/Button/Button';
 import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
 import routes from 'routes';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
 import { RepositoryNavigation } from 'core/features/versioning/repositoryNavigation';
 import AssociatedExperimentRuns from 'core/shared/view/domain/Versioning/AssociatedExperimentRuns/AssociatedExperimentRuns';

@@ -11,7 +11,7 @@ import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/Shorte
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import routes from 'routes';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import Tooltip from 'core/shared/view/elements/Tooltip/Tooltip';
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { ICommitView } from 'core/features/versioning/commitsHistory/store/types';

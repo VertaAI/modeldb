@@ -8,7 +8,7 @@ import { CommitPointerHelpers } from 'core/shared/models/Versioning/RepositoryDa
 import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
 import { IVersionedInputs } from 'models/ModelRecord';
 import routes from 'routes';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import { RecordInfo } from '../shared/RecordInfo/RecordInfo';
 import Section from '../shared/Section/Section';

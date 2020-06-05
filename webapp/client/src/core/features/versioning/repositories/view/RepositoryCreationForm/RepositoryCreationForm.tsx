@@ -8,7 +8,7 @@ import Button from 'core/shared/view/elements/Button/Button';
 import TextInputFieldWithTopLabel from 'core/shared/view/formComponents/formikFields/TextInputFieldWithTopLabel/TextInputFieldWithTopLabel';
 import PresetFormik from 'core/shared/view/formComponents/presetComponents/PresetFormik/PresetFormik';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspace } from 'store/workspaces';
+import { selectCurrentWorkspace } from 'features/workspaces/store';
 import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 

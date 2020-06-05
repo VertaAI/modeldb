@@ -10,7 +10,7 @@ import NotFoundPage from 'pages/authorized/NotFoundPage/NotFoundPage';
 import { AuthorizedLayout } from 'pages/authorized/shared/AuthorizedLayout';
 import routes, { GetRouteParams } from 'routes';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspace } from 'store/workspaces';
+import { selectCurrentWorkspace } from 'features/workspaces/store';
 
 import CommitPage from './CommitPage/CommitPage';
 import CommitsHistoryPage from './CommitsHistoryPage/CommitsHistoryPage';

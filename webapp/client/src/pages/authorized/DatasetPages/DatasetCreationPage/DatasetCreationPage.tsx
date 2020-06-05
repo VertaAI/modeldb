@@ -23,7 +23,7 @@ import * as DatasetsStore from 'store/datasets';
 import { IApplicationState } from 'store/store';
 
 import styles from './DatasetCreationPage.module.css';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 const mapStateToProps = (state: IApplicationState) => {
   return {

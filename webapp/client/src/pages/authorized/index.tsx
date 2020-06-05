@@ -15,7 +15,7 @@ import { IApplicationState } from 'store/store';
 import {
   selectWorkspaceByName,
   selectCurrentWorkspaceName,
-} from 'store/workspaces';
+} from 'features/workspaces/store';
 
 import NotFoundPage from './NotFoundPage/NotFoundPage';
 

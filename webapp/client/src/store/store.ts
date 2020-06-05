@@ -13,7 +13,7 @@ import * as ExperimentRunsTableConfig from 'core/features/experimentRunsTableCon
 import * as Filter from 'core/features/filter';
 import * as Layout from 'core/features/Layout';
 import * as Comment from 'features/comments';
-import * as Workspaces from 'store/workspaces';
+import * as Workspaces from 'features/workspaces/store';
 
 import {
   IArtifactManagerState,

@@ -28,7 +28,7 @@ import ProjectsPagesLayout from '../shared/ProjectsPagesLayout/ProjectsPagesLayo
 import DeletingProjectsManager from './DeletingProjectsManager/DeletingProjectsManager';
 import styles from './ProjectsPage.module.css';
 import Reloading from 'core/shared/view/elements/Reloading/Reloading';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 const mapStateToProps = (state: IApplicationState) => ({
   projects: selectProjects(state),

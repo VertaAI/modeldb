@@ -41,7 +41,7 @@ import {
   selectDatasetVersionExperimentRuns,
 } from 'store/datasetVersions';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import DatasetsPagesLayout from '../../shared/DatasetsPagesLayout/DatasetsPagesLayout';
 import { pathLocationLabels } from '../shared/constants';

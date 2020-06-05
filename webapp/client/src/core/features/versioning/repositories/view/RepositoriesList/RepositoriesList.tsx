@@ -5,7 +5,7 @@ import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataCom
 import NoEntitiesStub from 'core/shared/view/elements/NoEntitiesStub/NoEntitiesStub';
 import Pagination from 'core/shared/view/elements/Pagination/Pagination';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspace } from 'store/workspaces';
+import { selectCurrentWorkspace } from 'features/workspaces/store';
 
 import RepositoryWidget from '../RepositoryWidget/RepositoryWidget';
 import styles from './RepositoriesList.module.css';

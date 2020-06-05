@@ -19,7 +19,7 @@ import {
   selectLoadingDataset,
 } from 'store/datasets';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import CompareDatasetVersionsPage from './CompareDatasetVersionsPage/CompareDatasetVersionsPage';
 import DatasetSummaryPage from './DatasetSummaryPage/DatasetSummaryPage';

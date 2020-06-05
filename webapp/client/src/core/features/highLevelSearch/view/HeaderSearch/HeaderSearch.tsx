@@ -8,7 +8,7 @@ import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import MuiTextInput from 'core/shared/view/elements/MuiTextInput/MuiTextInput';
 import routes, { GetRouteParams } from 'routes';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import styles from './HeaderSearch.module.css';
 import { defaultFilter } from '../../constants';

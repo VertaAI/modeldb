@@ -10,7 +10,7 @@ import { IWorkspace } from 'models/Workspace';
 import routes from 'routes';
 import { handleDeleteEntities } from 'store/shared/deletion';
 import { ActionResult } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import { makeThunkApiRequest } from 'utils/redux/actions';
 
 import { selectDatasetsPagination } from './selectors';

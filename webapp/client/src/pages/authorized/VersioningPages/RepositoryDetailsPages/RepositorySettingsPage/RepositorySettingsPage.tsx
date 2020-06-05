@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
 import { useDeleteRepository } from 'core/features/versioning/repositories';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import RepositoryDetailsPagesLayout from '../shared/RepositoryDetailsPagesLayout/RepositoryDetailsPagesLayout';
 import styles from './RepositorySettingsPage.module.css';

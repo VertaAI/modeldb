@@ -4,7 +4,7 @@ import normalizeError from 'core/shared/utils/normalizeError';
 import { IProjectCreationSettings } from 'models/Project';
 import routes from 'routes';
 import { ActionResult } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import {
   createProjectActionTypes,
