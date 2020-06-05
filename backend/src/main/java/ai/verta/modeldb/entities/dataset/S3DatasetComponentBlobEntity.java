@@ -26,11 +26,12 @@ public class S3DatasetComponentBlobEntity {
     this.sha256 = pathDatasetComponentBlob.getSha256();
     this.md5 = pathDatasetComponentBlob.getMd5();
     this.s3_version_id = s3DatasetComponentBlob.getS3VersionId();
+    description = pathDatasetComponentBlob.getDescription();
   }
 
   @EmbeddedId private S3DatasetComponentBlobId id;
 
-  @Column(name = "path", columnDefinition = "TEXT")
+  @Column(name = "path", columnDefinition = "TEXT", nullable = false)
   private String path;
 
   @Column(name = "size")
@@ -47,6 +48,9 @@ public class S3DatasetComponentBlobEntity {
 
   @Column(name = "s3_version_id")
   private String s3_version_id;
+
+  @Column(name = "description", columnDefinition = "TEXT")
+  private String description;
 
   public String getPath() {
     return path;
@@ -78,6 +82,7 @@ public class S3DatasetComponentBlobEntity {
                 .setLastModifiedAtSource(this.last_modified_at_source)
                 .setSha256(this.sha256)
                 .setMd5(this.md5)
+                .setDescription(description)
                 .build())
         .build();
   }
@@ -92,7 +97,7 @@ class S3DatasetComponentBlobId implements Serializable {
   @Column(name = "s3_dataset_blob_id", nullable = false, columnDefinition = "varchar", length = 64)
   private String s3_dataset_blob_id;
 
-  public S3DatasetComponentBlobId(String blobHash, String blobHashDataset) {
+  S3DatasetComponentBlobId(String blobHash, String blobHashDataset) {
     this.blob_hash = blobHash;
     this.s3_dataset_blob_id = blobHashDataset;
   }
@@ -103,7 +108,7 @@ class S3DatasetComponentBlobId implements Serializable {
     return blob_hash;
   }
 
-  public String getS3_dataset_blob_id() {
+  String getS3_dataset_blob_id() {
     return s3_dataset_blob_id;
   }
 

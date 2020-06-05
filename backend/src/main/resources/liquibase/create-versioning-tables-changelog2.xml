@@ -361,4 +361,26 @@
 			<column name="repository_access_modifier" type="int4" defaultValue="1"/>
 		</addColumn>
 	</changeSet>
+
+	<changeSet author="lezhevg" id="add-description-to_s3_dataset_component_blob">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="s3_dataset_component_blob" columnName="description"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="s3_dataset_component_blob">
+            <column name="description" type="TEXT" defaultValue=""/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet author="lezhevg" id="add-description-to_path_dataset_component_blob">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="path_dataset_component_blob" columnName="description"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="path_dataset_component_blob">
+			<column name="description" type="TEXT" defaultValue=""/>
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>
