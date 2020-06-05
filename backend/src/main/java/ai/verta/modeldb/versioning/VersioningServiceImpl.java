@@ -144,8 +144,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        if (request.getRepository().getName().isEmpty()) {
-          throw new ModelDBException("Repository name is empty", Code.INVALID_ARGUMENT);
+        if (request.getRepository().getName().isEmpty()
+            && request.getRepository().getDescription().isEmpty()) {
+          throw new ModelDBException(
+              "Repository name and description is empty", Code.INVALID_ARGUMENT);
         }
 
         SetRepository.Response response =

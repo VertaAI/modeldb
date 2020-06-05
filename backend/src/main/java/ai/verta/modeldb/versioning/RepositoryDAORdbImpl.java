@@ -290,33 +290,30 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             session,
             SHORT_NAME,
             GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
-            "Repository",
+            RepositoryEntity.class.getSimpleName(),
             "repositoryName",
             request.getRepository().getName(),
             ModelDBConstants.WORKSPACE_ID,
             workspaceDTO.getWorkspaceId(),
             workspaceDTO.getWorkspaceType(),
             LOGGER);
-        repository =
-            new RepositoryEntity(
-                request.getRepository().getName(),
-                workspaceDTO,
-                request.getRepository().getOwner(),
-                request.getRepository().getRepositoryVisibility());
+        repository = new RepositoryEntity(request.getRepository(), workspaceDTO);
         repository.setDeleted(true);
       } else {
         repository = getRepositoryById(session, request.getId(), true);
-        ModelDBHibernateUtil.checkIfEntityAlreadyExists(
-            session,
-            SHORT_NAME,
-            GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
-            "Repository",
-            "repositoryName",
-            request.getRepository().getName(),
-            ModelDBConstants.WORKSPACE_ID,
-            repository.getWorkspace_id(),
-            WorkspaceType.forNumber(repository.getWorkspace_type()),
-            LOGGER);
+        if (!repository.getName().equals(request.getRepository().getName())) {
+          ModelDBHibernateUtil.checkIfEntityAlreadyExists(
+              session,
+              SHORT_NAME,
+              GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
+              RepositoryEntity.class.getSimpleName(),
+              "repositoryName",
+              request.getRepository().getName(),
+              ModelDBConstants.WORKSPACE_ID,
+              repository.getWorkspace_id(),
+              WorkspaceType.forNumber(repository.getWorkspace_type()),
+              LOGGER);
+        }
         repository.update(request);
       }
       session.beginTransaction();
