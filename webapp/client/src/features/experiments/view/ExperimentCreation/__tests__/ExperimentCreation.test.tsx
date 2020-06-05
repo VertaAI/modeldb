@@ -11,14 +11,14 @@ import {
   withAct,
   submitAsyncForm,
 } from 'core/shared/utils/tests/react/helpers';
-import { makeTagsManagerHelpers } from 'core/shared/view/domain/TagsManager/__tests__/helpers';
+import { makeTagsManagerHelpers } from 'core/shared/view/domain/BaseTagsManager/__tests__/helpers';
 import Experiment, { IExperimentCreationSettings } from 'models/Experiment';
 import routes from 'routes';
 import ExperimentsDataService from 'services/experiments/ExperimentsDataService';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
 
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
-import ExperimentCreationPage from '../ExperimentCreationPage';
+import ExperimentCreation from '../ExperimentCreation';
 
 // need for testing portals
 jest.mock('react-dom', () => {
@@ -35,12 +35,7 @@ const projectId = 'project-id';
 const makeComponent = async () => {
   return await withAct(async () => {
     const data = await makeMountComponentWithPredefinedData({
-      Component: () => (
-        <Route
-          path={routes.experimentCreation.getPath()}
-          component={ExperimentCreationPage}
-        />
-      ),
+      Component: () => <ExperimentCreation projectId={projectId} />,
       settings: {
         pathname: routes.experimentCreation.getRedirectPath({
           projectId,
@@ -60,7 +55,7 @@ const nameFieldHelpers = makeAsyncInputHelpersByName('name');
 const descriptionFieldHelpers = makeAsyncInputHelpersByName('description');
 const tagsFieldHelpers = makeTagsManagerHelpers();
 
-describe('(Pages) ExperimentCreationPage', () => {
+describe('(feature) ExperimentCreation', () => {
   it('should disable the "create" button when there are atleast a error', async () => {
     const { component } = await makeComponent();
 

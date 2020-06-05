@@ -9,7 +9,7 @@ import {
   selectExperimentForDeleting,
   unselectExperimentForDeleting,
   selectDeletingExperiment,
-} from 'store/experiments';
+} from 'features/experiments/store';
 import { IApplicationState } from 'store/store';
 
 interface ILocalProps {

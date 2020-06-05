@@ -5,7 +5,7 @@ import normalizeError from 'core/shared/utils/normalizeError';
 import { updateDatasetDesc } from 'features/datasets/store';
 import { updateDatasetVersionDesc } from 'features/datasetVersions/store';
 import { updateExpRunDesc } from 'store/experimentRuns';
-import { updateExperimentDescription } from 'store/experiments';
+import { updateExperimentDescription } from 'features/experiments/store';
 import { updateProjectDesc } from 'features/projects/store';
 import { ActionResult } from 'store/store';
 

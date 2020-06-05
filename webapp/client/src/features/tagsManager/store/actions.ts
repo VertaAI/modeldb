@@ -6,7 +6,7 @@ import { ThunkDispatch } from 'redux-thunk';
 import { updateDatasetTags } from 'features/datasets/store';
 import { updateDatasetVersionTags } from 'features/datasetVersions/store';
 import { updateExpRunTags } from 'store/experimentRuns';
-import { updateExperimentTags } from 'store/experiments';
+import { updateExperimentTags } from 'features/experiments/store';
 import { updateProjectTags } from 'features/projects/store';
 import { ActionResult } from 'store/store';
 

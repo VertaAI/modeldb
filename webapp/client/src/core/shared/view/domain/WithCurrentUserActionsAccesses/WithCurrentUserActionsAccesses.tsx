@@ -10,7 +10,7 @@ import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import * as DatasetsStore from 'features/datasets/store';
 import * as DatasetVersionsStore from 'features/datasetVersions/store';
 import * as ExperimentRunsStore from 'store/experimentRuns';
-import * as ExperimentsStore from 'store/experiments';
+import * as ExperimentsStore from 'features/experiments/store';
 import * as ProjectsStore from 'features/projects/store';
 
 export interface ILocalProps<T extends EntitiesActions.UserEntityAction[]> {

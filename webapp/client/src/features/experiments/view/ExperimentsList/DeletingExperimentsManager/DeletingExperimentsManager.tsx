@@ -10,7 +10,7 @@ import {
   deleteExperiments,
   selectCommunications,
   resetExperimentsForDeleting,
-} from 'store/experiments';
+} from 'features/experiments/store';
 import { IApplicationState } from 'store/store';
 
 interface ILocalProps {

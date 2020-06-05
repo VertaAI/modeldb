@@ -25,7 +25,7 @@ import {
   datasetVersionsReducer,
 } from '../features/datasetVersions/store';
 import { experimentRunsReducer, IExperimentRunsState } from './experimentRuns';
-import { IExperimentsState, experimentsReducer } from './experiments';
+import { IExperimentsState, experimentsReducer } from '../features/experiments/store';
 import {
   IProjectCreationState,
   projectCreationReducer,
