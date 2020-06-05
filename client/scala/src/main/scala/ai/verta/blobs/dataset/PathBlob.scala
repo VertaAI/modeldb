@@ -17,7 +17,7 @@ import scala.annotation.tailrec
  *  }}}
  *  If an invalid path is passed to the constructor, it will return a failure.
  */
-case class PathBlob(metadataList: List[Tuple2[String, FileMetadata]]) extends Dataset {
+case class PathBlob(private val metadataList: List[Tuple2[String, FileMetadata]]) extends Dataset {
   protected var contents = HashMap(metadataList: _*)
 
   override def equals(other: Any) = other match {
