@@ -8,7 +8,7 @@ import routes, { GetRouteParams } from 'routes';
 
 import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 import styles from './ModelRecordPage.module.css';
-import ModelRecord from './ModelRecord/ModelRecord';
+import ModelRecord from 'features/experimentRuns/view/ModelRecord/ModelRecord';
 
 type IUrlProps = GetRouteParams<typeof routes.modelRecord>;
 

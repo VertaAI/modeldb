@@ -5,7 +5,7 @@ import normalizeError from 'core/shared/utils/normalizeError';
 import { ThunkDispatch } from 'redux-thunk';
 import { updateDatasetTags } from 'features/datasets/store';
 import { updateDatasetVersionTags } from 'features/datasetVersions/store';
-import { updateExpRunTags } from 'store/experimentRuns';
+import { updateExpRunTags } from 'features/experimentRuns/store';
 import { updateExperimentTags } from 'features/experiments/store';
 import { updateProjectTags } from 'features/projects/store';
 import { ActionResult } from 'store/store';

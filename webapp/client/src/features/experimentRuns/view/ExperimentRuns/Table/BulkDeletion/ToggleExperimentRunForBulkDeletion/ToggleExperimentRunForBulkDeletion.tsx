@@ -7,7 +7,7 @@ import {
   selectExperimentRunForDeleting,
   unselectExperimentRunForDeleting,
   selectExperimentRunIdsForDeleting,
-} from 'store/experimentRuns';
+} from 'features/experimentRuns/store';
 import { IApplicationState } from 'store/store';
 
 interface ILocalProps {

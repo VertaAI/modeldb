@@ -36,6 +36,10 @@
   opacity: 0.5;
 }
 
+.deployButton {
+  margin-bottom: 15px;
+}
+
 .group_fai_block {
 }
 

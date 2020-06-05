@@ -4,8 +4,8 @@ import { RouteComponentProps, withRouter } from 'react-router';
 import routes, { GetRouteParams } from 'routes';
 
 import LayoutWithExprRunsFilter from '../shared/LayoutWithExprRunsFilter/LayoutWithExprRunsFilter';
-import ExperimentRuns from './ExperimentRuns/ExperimentRuns';
 import styles from './ExperimentRunsPage.module.css';
+import ExperimentRuns from 'features/experimentRuns/view/ExperimentRuns/ExperimentRuns';
 
 type AllProps = RouteComponentProps<
   GetRouteParams<typeof routes.experimentRuns>

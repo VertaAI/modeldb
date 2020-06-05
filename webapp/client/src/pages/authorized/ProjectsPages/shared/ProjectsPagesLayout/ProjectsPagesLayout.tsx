@@ -8,7 +8,7 @@ import {
   BreadcrumbsBuilder,
 } from 'pages/authorized/shared/AuthorizedLayout';
 import routes from 'routes';
-import { selectExperimentRuns } from 'store/experimentRuns';
+import { selectExperimentRuns } from 'features/experimentRuns/store';
 import { selectProjects } from 'features/projects/store';
 import { IApplicationState } from 'store/store';
 

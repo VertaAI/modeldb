@@ -12,7 +12,7 @@ import {
   getExperimentRunsOptions,
   lazyLoadChartData,
   selectSequentialChartData,
-} from 'store/experimentRuns';
+} from 'features/experimentRuns/store';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import ProjectsPagesLayout from '../../../shared/ProjectsPagesLayout/ProjectsPagesLayout';

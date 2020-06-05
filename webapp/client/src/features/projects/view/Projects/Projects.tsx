@@ -24,7 +24,7 @@ import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import DeletingProjectsManager from './DeletingProjectsManager/DeletingProjectsManager';
 import styles from './Projects.module.css';
 import ProjectWidget from './ProjectWidget/ProjectWidget';
-import { cleanChartData } from 'store/experimentRuns';
+import { cleanChartData } from 'features/experimentRuns/store';
 import NoEntitiesStub from 'core/shared/view/elements/NoEntitiesStub/NoEntitiesStub';
 
 const mapStateToProps = (state: IApplicationState) => ({

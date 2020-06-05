@@ -22,7 +22,7 @@ import {
   changePaginationWithLoadingExperimentRuns,
   changeSortingWithLoadingExperimentRuns,
   selectLoadingExperimentRuns,
-} from 'store/experimentRuns';
+} from 'features/experimentRuns/store';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import DashboardActions from './DashboardActions/DashboardActions';
@@ -83,49 +83,49 @@ class ExperimentRuns extends React.PureComponent<AllProps, ILocalState> {
             );
           }
           return (
-                  // todo find the better way
-                  <WithCurrentUserActionsAccesses
-                    entityType={data.length > 0 ? 'experimentRun' : 'project'}
-                    entityId={data.length > 0 ? data[0].id : projectId}
-                    actions={['delete']}
-                  >
-                    {({ actionsAccesses }) => (
-                      <>
-                        <div className={styles.actions}>
-                          <DashboardActions
-                            projectId={projectId}
-                            isEnableBulkDeletionMenuToggler={
-                              actionsAccesses.delete && data.length > 0
-                            }
-                            onToggleShowingBulkDeletion={
-                              this.toggleShowingBulkDeletionMenu
-                            }
-                          />
-                        </div>
-                        <div className={styles.table}>
-                          <Table
-                            withBulkDeletion={
-                              actionsAccesses.delete && data.length > 0
-                            }
-                            isShowBulkDeleteMenu={isShowBulkDeleteMenu}
-                            projectId={projectId}
-                            columnConfig={columnConfig}
-                            pagination={pagination}
-                            data={data}
-                            sorting={sorting}
-                            onSortingChange={this.onSortingChange}
-                            onCurrentPageChange={
-                              this.onPaginationCurrentPageChange
-                            }
-                            resetShowingBulkDeletionMenu={
-                              this.resetShowingBulkDeletionMenu
-                            }
-                          />
-                        </div>
-                      </>
-                    )}
-                  </WithCurrentUserActionsAccesses>
-                );
+            // todo find the better way
+            <WithCurrentUserActionsAccesses
+              entityType={data.length > 0 ? 'experimentRun' : 'project'}
+              entityId={data.length > 0 ? data[0].id : projectId}
+              actions={['delete']}
+            >
+              {({ actionsAccesses }) => (
+                <>
+                  <div className={styles.actions}>
+                    <DashboardActions
+                      projectId={projectId}
+                      isEnableBulkDeletionMenuToggler={
+                        actionsAccesses.delete && data.length > 0
+                      }
+                      onToggleShowingBulkDeletion={
+                        this.toggleShowingBulkDeletionMenu
+                      }
+                    />
+                  </div>
+                  <div className={styles.table}>
+                    <Table
+                      withBulkDeletion={
+                        actionsAccesses.delete && data.length > 0
+                      }
+                      isShowBulkDeleteMenu={isShowBulkDeleteMenu}
+                      projectId={projectId}
+                      columnConfig={columnConfig}
+                      pagination={pagination}
+                      data={data}
+                      sorting={sorting}
+                      onSortingChange={this.onSortingChange}
+                      onCurrentPageChange={
+                        this.onPaginationCurrentPageChange
+                      }
+                      resetShowingBulkDeletionMenu={
+                        this.resetShowingBulkDeletionMenu
+                      }
+                    />
+                  </div>
+                </>
+              )}
+            </WithCurrentUserActionsAccesses>
+          );
         })()}
       </div>
     );

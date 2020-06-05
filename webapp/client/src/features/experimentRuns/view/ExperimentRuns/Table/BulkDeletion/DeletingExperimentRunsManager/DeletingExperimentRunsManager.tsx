@@ -9,7 +9,7 @@ import {
   deleteExperimentRuns,
   selectCommunications,
   resetExperimentRunsForDeleting,
-} from 'store/experimentRuns';
+} from 'features/experimentRuns/store';
 import { IApplicationState } from 'store/store';
 
 import TableBulkDeletionManager from 'core/shared/view/domain/BulkDeletion/TableBulkDeletionComponents/TableBulkDeletionManager/TableBulkDeletionManager';

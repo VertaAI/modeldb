@@ -12,7 +12,7 @@ import PileWithActions, {
   Action,
 } from 'core/shared/view/elements/PileWithActions/PileWithActions';
 import { IApplicationState } from 'store/store';
-import * as ExperimentRunsStore from 'store/experimentRuns';
+import * as ExperimentRunsStore from 'features/experimentRuns/store';
 import { hasAccessToAction } from 'models/EntitiesActions';
 import ModelRecord from 'models/ModelRecord';
 import { initialCommunication } from 'core/shared/utils/redux/communication';

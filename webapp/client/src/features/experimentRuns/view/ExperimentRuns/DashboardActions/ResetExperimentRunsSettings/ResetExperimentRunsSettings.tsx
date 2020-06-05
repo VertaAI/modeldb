@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import Button from 'core/shared/view/elements/Button/Button';
-import { resetExperimentRunsSettings } from 'store/experimentRuns';
+import { resetExperimentRunsSettings } from 'features/experimentRuns/store';
 
 interface ILocalProps {
   projectId: string;

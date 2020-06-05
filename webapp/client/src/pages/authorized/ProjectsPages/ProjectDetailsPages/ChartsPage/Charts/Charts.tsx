@@ -16,7 +16,7 @@ import {
   selectLoadingSequentialChartData,
   selectLazyChartData,
   selectLoadingLazyChartData,
-} from 'store/experimentRuns';
+} from 'features/experimentRuns/store';
 import { selectCurrentContextAppliedFilters } from 'core/features/filter';
 import { IApplicationState } from 'store/store';
 

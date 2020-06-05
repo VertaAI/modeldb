@@ -12,7 +12,7 @@ import {
 import {
   deleteExperimentRunArtifact,
   selectDeletingExperimentRunArtifacts,
-} from 'store/experimentRuns';
+} from 'features/experimentRuns/store';
 import { IApplicationState } from 'store/store';
 
 import { IRow } from '../types';

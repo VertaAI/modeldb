@@ -25,7 +25,7 @@ import {
 import {
   loadExperimentRun,
   selectIsLoadingExperimentRun,
-} from 'store/experimentRuns';
+} from 'features/experimentRuns/store';
 import { selectProject } from 'features/projects/store';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 

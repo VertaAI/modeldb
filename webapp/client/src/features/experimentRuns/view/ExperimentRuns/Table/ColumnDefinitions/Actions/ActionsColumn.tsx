@@ -3,6 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
+import CompareClickAction from 'core/features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
 import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import { ICommunication } from 'core/shared/utils/redux/communication';
 import DeleteFAIWithLabel from 'core/shared/view/elements/DeleteFaiWithLabel/DeleteFaiWithLabel';
@@ -11,12 +12,11 @@ import { ShowCommentsButton } from 'features/comments';
 import {
   deleteExperimentRun,
   selectDeletingExperimentRun,
-} from 'store/experimentRuns';
+} from 'features/experimentRuns/store';
 import { IApplicationState } from 'store/store';
 
 import { IRow } from '../types';
 import styles from './Actions.module.css';
-import CompareClickAction from 'core/features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
 
 interface ILocalProps {
   row: IRow;

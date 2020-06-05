@@ -30,6 +30,7 @@ class SummaryColumn extends React.PureComponent<AllProps> {
         id,
         projectId,
         shortExperiment: experiment,
+        owner,
         name,
         tags,
         dateCreated,

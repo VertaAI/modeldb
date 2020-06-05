@@ -1,6 +1,6 @@
 import { makeSelectDeletingEntity } from 'store/shared/deletion';
 
-import { IApplicationState } from '../store';
+import { IApplicationState } from '../../../store/store';
 import { IExperimentRunsState } from './types';
 
 const selectState = (state: IApplicationState): IExperimentRunsState =>

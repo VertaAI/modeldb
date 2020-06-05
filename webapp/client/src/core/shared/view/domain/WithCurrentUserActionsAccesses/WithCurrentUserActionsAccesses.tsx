@@ -9,7 +9,7 @@ import * as Common from 'core/shared/models/Common';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import * as DatasetsStore from 'features/datasets/store';
 import * as DatasetVersionsStore from 'features/datasetVersions/store';
-import * as ExperimentRunsStore from 'store/experimentRuns';
+import * as ExperimentRunsStore from 'features/experimentRuns/store';
 import * as ExperimentsStore from 'features/experiments/store';
 import * as ProjectsStore from 'features/projects/store';
 
