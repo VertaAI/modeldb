@@ -31,7 +31,6 @@ import {
   projectCreationReducer,
 } from '../features/projectCreation/store';
 import { IProjectsState, projectsReducer } from './projects';
-import { IProjectsPageState, projectsPageReducer } from './projectsPage';
 import * as TagsManagers from 'features/tagsManager';
 import * as DescriptionManager from 'features/descriptionManager';
 
@@ -45,7 +44,6 @@ export interface IApplicationState
   experimentRuns: IExperimentRunsState;
   projectCreation: IProjectCreationState;
   projects: IProjectsState;
-  projectsPage: IProjectsPageState;
   router: RouterState;
   tagsManager: TagsManagers.ITagsManagerState;
   descriptionManager: DescriptionManager.IDescriptionManagerState;
@@ -74,7 +72,6 @@ export const createRootReducer = (history: History) =>
     filters: Filter.filtersReducer,
     projectCreation: projectCreationReducer,
     projects: projectsReducer,
-    projectsPage: projectsPageReducer,
     router: connectRouter(history),
     tagsManager: TagsManagers.tagActionReducer,
     descriptionManager: DescriptionManager.reducer,
