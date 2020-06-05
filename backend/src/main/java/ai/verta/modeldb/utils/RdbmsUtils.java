@@ -1757,29 +1757,37 @@ public class RdbmsUtils {
         builder.equal(elementMappingEntityRoot.get(ModelDBConstants.NAME), names[names.length - 1]);
     configBlobEntityRootPredicates.add(keyPredicate);
 
-    Predicate intValuePredicate =
-        getValuePredicate(
-            builder,
-            ModelDBConstants.HYPERPARAMETERS,
-            elementMappingEntityRoot.get("int_value"),
-            predicate);
-
-    Predicate floatValuePredicate =
-        getValuePredicate(
-            builder,
-            ModelDBConstants.HYPERPARAMETERS,
-            elementMappingEntityRoot.get("float_value"),
-            predicate);
-
+    List<Predicate> orPredicates = new ArrayList<>();
+    try {
+      Predicate intValuePredicate =
+          getValuePredicate(
+              builder,
+              ModelDBConstants.HYPERPARAMETERS,
+              elementMappingEntityRoot.get("int_value"),
+              predicate);
+      orPredicates.add(intValuePredicate);
+    } catch (Exception e) {
+      LOGGER.debug("Value could not be cast to int");
+    }
+    try {
+      Predicate floatValuePredicate =
+          getValuePredicate(
+              builder,
+              ModelDBConstants.HYPERPARAMETERS,
+              elementMappingEntityRoot.get("float_value"),
+              predicate);
+      orPredicates.add(floatValuePredicate);
+    } catch (Exception e) {
+      LOGGER.debug("Value could not be cast to float");
+    }
     Predicate stringValuePredicate =
         getValuePredicate(
             builder,
             ModelDBConstants.HYPERPARAMETERS,
             elementMappingEntityRoot.get("string_value"),
             predicate);
-
-    configBlobEntityRootPredicates.add(
-        builder.or(intValuePredicate, floatValuePredicate, stringValuePredicate));
+    orPredicates.add(stringValuePredicate);
+    configBlobEntityRootPredicates.add(builder.or(orPredicates.toArray(new Predicate[0])));
 
     Expression<String> parentPathFromChild =
         elementMappingEntityRoot.get(entityName).get(ModelDBConstants.ID);
