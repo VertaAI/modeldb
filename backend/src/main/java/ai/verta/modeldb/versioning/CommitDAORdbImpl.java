@@ -235,6 +235,97 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   @Override
+  public boolean deleteCommits(RepositoryIdentification repositoryIdentification,
+      List<String> commitShas, RepositoryDAO repositoryDAO) throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      RepositoryEntity repositoryEntity =
+          repositoryDAO.getRepositoryById(session, repositoryIdentification, true);
+
+      Query<CommitEntity> getCommitQuery = session.createQuery(
+          "From "
+              + CommitEntity.class.getSimpleName()
+              + " c WHERE c.commit_hash IN (:commitHashes)", CommitEntity.class);
+      getCommitQuery.setParameter("commitHashes", commitShas);
+      List<CommitEntity> commitEntities = getCommitQuery.getResultList();
+
+      for (CommitEntity commitEntity: commitEntities) {
+        if (!commitEntity.getChild_commits().isEmpty()) {
+          throw new ModelDBException(
+              "Commit has the child, please delete child commit first", Code.FAILED_PRECONDITION);
+        }
+      }
+
+      String getBranchByCommitHQLBuilder = "FROM "
+          + BranchEntity.class.getSimpleName()
+          + " br where br.id.repository_id = :repositoryId "
+          + " AND br.commit_hash IN (:commitHashes) ";
+      Query<BranchEntity> getBranchByCommitQuery = session.createQuery(
+          getBranchByCommitHQLBuilder, BranchEntity.class);
+      getBranchByCommitQuery.setParameter("repositoryId", repositoryEntity.getId());
+      getBranchByCommitQuery.setParameter("commitHashes", commitShas);
+      List<BranchEntity> branchEntities = getBranchByCommitQuery.list();
+      if (branchEntities != null && !branchEntities.isEmpty()) {
+        StringBuilder errorMessage = new StringBuilder("Commit is associated with branch name : ");
+        int count = 0;
+        for (BranchEntity branchEntity: branchEntities) {
+          errorMessage.append(branchEntity.getId().getBranch());
+          if (count < branchEntities.size() - 1) {
+            errorMessage.append(", ");
+          }
+          count++;
+        }
+        throw new ModelDBException(errorMessage.toString(), Code.FAILED_PRECONDITION);
+      }
+
+      String getLabelsHql =
+          "From LabelsMappingEntity lm where lm.id."
+              + ModelDBConstants.ENTITY_HASH
+              + " IN (:entityHashes) "
+              + " AND lm.id."
+              + ModelDBConstants.ENTITY_TYPE
+              + " = :entityType";
+      Query<LabelsMappingEntity> query = session.createQuery(getLabelsHql, LabelsMappingEntity.class);
+      query.setParameter("entityHash", commitShas);
+      query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_COMMIT_VALUE);
+      List<LabelsMappingEntity> labelsMappingEntities = query.list();
+      if (labelsMappingEntities.size() > 0) {
+        throw new ModelDBException("Commit is associated with Label", Code.FAILED_PRECONDITION);
+      }
+
+      String getTagsHql =
+          "From TagsEntity te where te.id."
+              + ModelDBConstants.REPOSITORY_ID
+              + " = :repoId "
+              + " AND te.commit_hash"
+              + " IN (:commitHashes)";
+      Query<TagsEntity> getTagsQuery = session.createQuery(getTagsHql, TagsEntity.class);
+      getTagsQuery.setParameter("repoId", repositoryEntity.getId());
+      getTagsQuery.setParameter("commitHash", commitShas);
+      List<TagsEntity> tagsEntities = getTagsQuery.list();
+      if (tagsEntities.size() > 0) {
+        throw new ModelDBException(
+            "Commit is associated with Tags : "
+                + tagsEntities.stream()
+                .map(tagsEntity -> tagsEntity.getId().getTag())
+                .collect(Collectors.joining(",")),
+            Code.FAILED_PRECONDITION);
+      }
+
+      commitEntities.forEach((commitEntity) -> {
+            if (commitEntity.getRepository().size() == 1) {
+              session.delete(commitEntity);
+            } else {
+              commitEntity.getRepository().remove(repositoryEntity);
+              session.update(commitEntity);
+            }
+          });
+      session.getTransaction().commit();
+      return true;
+    }
+  }
+
+  @Override
   public DeleteCommitRequest.Response deleteCommit(
       DeleteCommitRequest request, RepositoryDAO repositoryDAO) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
