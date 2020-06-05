@@ -11,7 +11,7 @@ import scala.util.{Failure, Success, Try}
 /** Captures metadata about files
  *  @param paths list of filepaths or directory paths
  */
- case class PathBlob(private val paths: List[String]) extends Dataset {
+case class PathBlob(private val paths: List[String]) extends Dataset {
   private val BufferSize = 8192
 
   private val metadataList = paths.map(expanduser)
@@ -31,62 +31,62 @@ import scala.util.{Failure, Success, Try}
    *  @param path filepath
    */
   private def hash(file: File) = Try {
-     val buffer = new Array[Byte](BufferSize)
-     val messageDigest = MessageDigest.getInstance("MD5")
+    val buffer = new Array[Byte](BufferSize)
+    val messageDigest = MessageDigest.getInstance("MD5")
 
-     val dis = new DigestInputStream(
-       new FileInputStream(file),
-       messageDigest
-     )
+    val dis = new DigestInputStream(
+      new FileInputStream(file),
+      messageDigest
+    )
 
-     try {
-       while (dis.read(buffer) != -1) {}
-     } finally {
-       dis.close()
-     }
+    try {
+      while (dis.read(buffer) != -1) {}
+    } finally {
+      dis.close()
+    }
 
-     // Convert to hexadecimal
-     messageDigest.digest.map("%02x".format(_)).mkString
-   }
+    // Convert to hexadecimal
+    messageDigest.digest.map("%02x".format(_)).mkString
+  }
 
-   /** Get the metadata of path.
-    *  @param file a file object, representing the path
-    *  @return a list of components of file under the path
-    */
-   private def processPath(file: File): List[FileMetadata] = {
-     var files = List(file) // stack
-     var ret: List[FileMetadata] = List()
+  /** Get the metadata of path.
+   *  @param file a file object, representing the path
+   *  @return a list of components of file under the path
+   */
+  private def processPath(file: File): List[FileMetadata] = {
+    var files = List(file) // stack
+    var ret: List[FileMetadata] = List()
 
-     // non-recursive DFS to prevent stack overflow
-     while (files.length > 0) {
-       var fileToProcess = files.head
-       files = files.drop(1)
+    // non-recursive DFS to prevent stack overflow
+    while (files.length > 0) {
+      var fileToProcess = files.head
+      files = files.drop(1)
 
-       if (fileToProcess.isDirectory()) {
-         files = fileToProcess.listFiles().toList ::: files
-       }
-       else {
-         ret = processFile(fileToProcess) :: ret
-       }
-     }
+      if (fileToProcess.isDirectory()) {
+        files = fileToProcess.listFiles().toList ::: files
+      }
+      else {
+        ret = processFile(fileToProcess) :: ret
+      }
+    }
 
-     ret
-   }
+    ret
+  }
 
   /** Extract the metadata of the file
    *  If the file has an invalid path, exception is thrown immediately, and program stops (if not caught outside)
    *  @param file file
    *  @return the metadata of the file, wrapped in a FileMetadata object (if success)
    */
-   private def processFile(file: File) = hash(file) match {
-      case Failure(e) => throw e
-      case Success(fileHash) => new FileMetadata (
-        BigInt(file.lastModified()),
-        fileHash,
-        file.getPath(),
-        BigInt(file.length)
-      )
-    }
+  private def processFile(file: File) = hash(file) match {
+    case Failure(e) => throw e
+    case Success(fileHash) => new FileMetadata (
+      BigInt(file.lastModified()),
+      fileHash,
+      file.getPath(),
+      BigInt(file.length)
+    )
+  }
 
   /** Analogous to Python's os.path.expanduser
    *  From https://stackoverflow.com/questions/6803913/java-analogous-to-python-os-path-expanduser-os-path-expandvars
