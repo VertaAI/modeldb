@@ -7,6 +7,7 @@ import java.io.{File, FileInputStream}
 
 import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
+import scala.annotation.tailrec
 
 /** Captures metadata about files
  *  @param paths list of filepaths or directory paths
@@ -54,23 +55,24 @@ case class PathBlob(private val paths: List[String]) extends Dataset {
    *  @return a list of components of file under the path
    */
   private def processPath(file: File): List[FileMetadata] = {
-    var files = List(file) // stack
-    var ret: List[FileMetadata] = List()
+    dfs(List(file), List())
+  }
 
-    // non-recursive DFS to prevent stack overflow
-    while (files.length > 0) {
-      var fileToProcess = files.head
-      files = files.drop(1)
-
-      if (fileToProcess.isDirectory()) {
-        files = fileToProcess.listFiles().toList ::: files
-      }
-      else {
-        ret = processFile(fileToProcess) :: ret
-      }
+  /** Tail-recursive DFS traversal to prevent stack overflow error
+   *  @param stack a stack containing the files/dirs to explore
+   *  @param acc accumulator list of file metadata to return
+   */
+  @tailrec
+  private def dfs(stack: List[File], acc: List[FileMetadata]): List[FileMetadata] = {
+    if (stack.isEmpty) acc
+    else if (stack.head.isDirectory) {
+      val dir = stack.head
+      dfs(dir.listFiles().toList ::: stack.drop(1), acc)
     }
-
-    ret
+    else {
+      val file = stack.head
+      dfs(stack.drop(1), processFile(file) :: acc)
+    }
   }
 
   /** Extract the metadata of the file
