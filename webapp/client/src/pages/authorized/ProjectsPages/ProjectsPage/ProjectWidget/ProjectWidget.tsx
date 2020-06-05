@@ -4,7 +4,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import ProjectEntityTagsManager from 'core/shared/view/domain/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
+import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import CopyToClipboard from 'core/shared/view/elements/CopyToClipboard/CopyToClipboard';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import { Project } from 'models/Project';

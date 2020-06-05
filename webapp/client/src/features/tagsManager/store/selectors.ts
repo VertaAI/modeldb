@@ -1,8 +1,8 @@
-import { IApplicationState } from '../store';
-import { ITagActionState } from './types';
+import { IApplicationState } from '../../../store/store';
+import { ITagsManagerState } from './types';
 
-const selectState = (state: IApplicationState): ITagActionState =>
-  state.tagAction;
+const selectState = (state: IApplicationState): ITagsManagerState =>
+  state.tagsManager;
 
 export const selectIsAddingTags = (state: IApplicationState) =>
   selectCommunications(state).addingTag.isRequesting;

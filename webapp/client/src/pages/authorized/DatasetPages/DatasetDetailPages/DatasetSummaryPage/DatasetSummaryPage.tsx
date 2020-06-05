@@ -17,7 +17,7 @@ import {
   selectLoadingDataset,
 } from 'store/datasets';
 import { IApplicationState } from 'store/store';
-import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
+import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
 import Attributes from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
 import DatasetEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
 import SummaryInfo from 'core/shared/view/elements/SummaryViewComponents/SummaryInfo/SummaryInfo';

@@ -7,7 +7,7 @@ import { ICommunication } from 'core/shared/utils/redux/communication';
 import Experiment from 'models/Experiment';
 import { selectDeletingExperiment } from 'store/experiments';
 import { IConnectedReduxProps, IApplicationState } from 'store/store';
-import ProjectEntityTagsManager from 'core/shared/view/domain/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
+import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import CodeVersion from 'core/shared/view/domain/CodeVersion/CodeVersion';
 import ProjectEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';

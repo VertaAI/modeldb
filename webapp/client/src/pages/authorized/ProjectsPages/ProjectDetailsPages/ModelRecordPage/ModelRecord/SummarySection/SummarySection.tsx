@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 
 import ModelRecord from 'models/ModelRecord';
 import ProjectEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
-import ProjectEntityTagsManager from 'core/shared/view/domain/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
+import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import { ShowCommentsButton } from 'features/comments';
 import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
 import { Project } from 'models/Project';

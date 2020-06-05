@@ -36,7 +36,7 @@ import {
 } from './projectCreation';
 import { IProjectsState, projectsReducer } from './projects';
 import { IProjectsPageState, projectsPageReducer } from './projectsPage';
-import { ITagActionState, tagActionReducer } from './tagAction';
+import * as TagsManagers from 'features/tagsManager';
 
 export interface IApplicationState
   extends Filter.IFilterRootState,
@@ -50,7 +50,7 @@ export interface IApplicationState
   projects: IProjectsState;
   projectsPage: IProjectsPageState;
   router: RouterState;
-  tagAction: ITagActionState;
+  tagsManager: TagsManagers.ITagsManagerState;
   descriptionAction: IDescriptionActionState;
   artifactManager: IArtifactManagerState;
   datasets: IDatasetsState;
@@ -79,7 +79,7 @@ export const createRootReducer = (history: History) =>
     projects: projectsReducer,
     projectsPage: projectsPageReducer,
     router: connectRouter(history),
-    tagAction: tagActionReducer,
+    tagsManager: TagsManagers.tagActionReducer,
     descriptionAction: descriptionActionReducer,
     artifactManager: artifactManagerReducer,
     datasets: datasetsReducer,

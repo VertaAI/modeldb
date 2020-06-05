@@ -53,7 +53,7 @@ import styles from './DatasetVersionsPage.module.css';
 import DeletingDatasetVersionsManager from './DatasetVersionsTable/BulkDeletion/Manager/Manager';
 import ToggleAllDatasetVersionsForBulkDeletion from './DatasetVersionsTable/BulkDeletion/ToggleAllRows/ToggleAllRows';
 import ToggleDatasetVersionForBulkDeletion from './DatasetVersionsTable/BulkDeletion/ToggleRow/ToggleRow';
-import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
+import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
 
 interface IPropsFromState {
   datasetVersions: IDatasetVersion[] | null;

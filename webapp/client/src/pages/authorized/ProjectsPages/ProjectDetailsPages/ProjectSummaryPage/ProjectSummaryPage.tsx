@@ -6,7 +6,7 @@ import { RouteComponentProps, withRouter } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import CodeVersion from 'core/shared/view/domain/CodeVersion/CodeVersion';
-import ProjectEntityTagsManager from 'core/shared/view/domain/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
+import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import { Markdown } from 'core/shared/utils/types';
 import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';

@@ -8,7 +8,7 @@ import { Dataset, DatasetType } from 'models/Dataset';
 import routes from 'routes';
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import DatasetEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
-import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
+import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
 
 import DatasetBulkDeletion from './DatasetBulkDeletion/DatasetBulkDeletion';
 import styles from './DatasetWidget.module.css';

@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
 
-import { ITagActionState } from '../types';
+import { ITagsManagerState } from '../types';
 import communications from './communications';
 
-export default combineReducers<ITagActionState>({
+export default combineReducers<ITagsManagerState>({
   communications,
 });

@@ -3,7 +3,7 @@ import * as React from 'react';
 import ResizeDetector from 'react-resize-detector';
 import { Link } from 'react-router-dom';
 
-import ProjectEntityTagsManager from 'core/shared/view/domain/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
+import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import { makeDefaultExprNameFilter } from 'core/features/filter/Model';
 import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
 import withProps from 'core/shared/utils/react/withProps';

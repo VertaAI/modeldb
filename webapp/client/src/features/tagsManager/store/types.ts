@@ -5,7 +5,7 @@ import {
   makeCommunicationActionTypes,
 } from 'core/shared/utils/redux/communication';
 
-export interface ITagActionState {
+export interface ITagsManagerState {
   communications: {
     addingTag: ICommunication;
     removingTag: ICommunication;

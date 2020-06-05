@@ -49,7 +49,7 @@ import DatasetPathInfoTable from '../shared/DatasetPathInfoTable/DatasetPathInfo
 import DatasetVersionExperimentRuns from './DatasetVersionExperimentRuns/DatasetVersionExperimentRuns';
 import styles from './DatasetVersionPage.module.css';
 import DatasetEntityDescriptionManager from 'core/shared/view/domain/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
-import DatasetEntityTagsManager from 'core/shared/view/domain/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
+import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
 
 interface ILocalProps {
   onShowNotFoundPage(): void; // todo check

@@ -3,12 +3,12 @@ import { combineReducers } from 'redux';
 import { makeCommunicationReducerFromEnum } from 'core/shared/utils/redux/communication';
 
 import {
-  ITagActionState,
+  ITagsManagerState,
   addTagActionTypes,
   removeTagActionTypes,
 } from '../types';
 
-export default combineReducers<ITagActionState['communications']>({
+export default combineReducers<ITagsManagerState['communications']>({
   addingTag: makeCommunicationReducerFromEnum(addTagActionTypes),
   removingTag: makeCommunicationReducerFromEnum(removeTagActionTypes),
 });
