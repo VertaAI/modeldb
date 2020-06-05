@@ -12,6 +12,4 @@ class FileMetadata(val lastModified: BigInt, val md5: String, val path: String, 
     md5 == other.md5 && path == other.path && size == other.size
     case _ => false
   }
-
-  override def toString = lastModified + " " + md5 + " " + path + " " + size
 }
