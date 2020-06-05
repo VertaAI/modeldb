@@ -64,7 +64,7 @@ class TestPathBlob extends FunSuite {
     val invalidAttempt = PathBlob(List(invalid, f.testfile))
 
     assert(invalidAttempt.isFailure)
-    println(invalidAttempt match {case Failure(e) => e.getMessage contains "No such file or directory"})
+    assert(invalidAttempt match {case Failure(e) => e.getMessage contains "No such file or directory"})
   }
 
   test("PathBlob should not contain duplicate paths") {
