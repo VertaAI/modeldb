@@ -313,7 +313,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         repositoryEntity.setDeleted(true);
       } else {
         repositoryEntity = getRepositoryById(session, request.getId(), true);
-        if (!repository.getName().equals(request.getRepository().getName())) {
+        if (!repository.getName().isEmpty()
+            && !repositoryEntity.getName().equals(repository.getName())) {
           ModelDBHibernateUtil.checkIfEntityAlreadyExists(
               session,
               SHORT_NAME,
