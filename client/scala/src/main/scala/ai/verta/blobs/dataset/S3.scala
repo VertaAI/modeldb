@@ -10,6 +10,7 @@ import collection.JavaConverters._
 
 import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
+import scala.annotation.tailrec
 
 /** Captures metadata about S3 objects
  *  To create a new instance, use the constructor taking a list of S3 Locations
@@ -115,7 +116,7 @@ object S3 {
 
   /** Helper function to deal with VersionListing when key is not provided
    */
-  private def handleVersionListing(
+  @tailrec private def handleVersionListing(
     versionListing: VersionListing,
     acc: List[Tuple2[FileMetadata, Option[String]]]
   ): Try[List[Tuple2[FileMetadata, Option[String]]]] = {
