@@ -34,18 +34,18 @@ class TestS3 extends FunSuite {
   def fixture =
     new {
       val testfilePath = "s3://verta-scala-test/testdir/testfile"
-      val testfileLoc = new S3Location(testfilePath)
+      val testfileLoc = S3Location(testfilePath).get
 
       val testfilePath2 = "s3://verta-scala-test/testdir/testsubdir/testfile2"
-      val testfileLoc2 = new S3Location(testfilePath2)
+      val testfileLoc2 = S3Location(testfilePath2).get
 
       val testdirPath = "s3://verta-scala-test/testdir/"
-      val testdirLoc = new S3Location(testdirPath)
+      val testdirLoc = S3Location(testdirPath).get
 
       val testsubdirPath = "s3://verta-scala-test/testdir/testsubdir/"
-      val testsubdirLoc = new S3Location(testsubdirPath)
+      val testsubdirLoc = S3Location(testsubdirPath).get
 
-      val bucketLoc = new S3Location("s3://verta-scala-test")
+      val bucketLoc = S3Location("s3://verta-scala-test").get
     }
 
   test("S3Location should correctly determine bucket name and key") {
@@ -57,10 +57,10 @@ class TestS3 extends FunSuite {
     assert(f.bucketLoc.key.isEmpty)
   }
 
-  test("S3Location should throw an exception when encountered non-S3 path") {
-    assertThrows[IllegalArgumentException] {
-      val s3 = new S3Location("http://verta-starter/census-train.csv")
-    }
+  test("S3Location construction should fail when encountered non-S3 path") {
+    val s3LocAttempt = S3Location("http://verta-starter/census-train.csv")
+    assert(s3LocAttempt.isFailure)
+    assert(s3LocAttempt match {case Failure(e) => e.getMessage contains "Illegal path; must be an S3 location"})
   }
 
   test("S3 blob should retrieve the file (i.e with key) correctly") {
@@ -92,7 +92,7 @@ class TestS3 extends FunSuite {
 
     // default should be the latest version
     val s3BlobDefault = S3(List(f.testfileLoc)).get
-    var s3BlobLatest = S3(List(new S3Location(f.testfilePath, Some(newVersionId)))).get
+    var s3BlobLatest = S3(List(S3Location(f.testfilePath, Some(newVersionId)).get)).get
 
     assert(s3BlobDefault equals s3BlobLatest)
     assert(s3BlobLatest.getVersionId(f.testfilePath).get equals newVersionId)
@@ -101,7 +101,7 @@ class TestS3 extends FunSuite {
     val oldVersionId = versionListing.getVersionSummaries().asScala.toList
     .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
     .filter(!_.isLatest()).head.getVersionId()
-    val s3BlobOld = S3(List(new S3Location(f.testfilePath, Some(oldVersionId)))).get
+    val s3BlobOld = S3(List(S3Location(f.testfilePath, Some(oldVersionId)).get)).get
 
     assert(!s3BlobDefault.equals(s3BlobOld))
     assert(s3BlobOld.getVersionId(f.testfilePath).get equals oldVersionId)
@@ -126,7 +126,7 @@ class TestS3 extends FunSuite {
   test("S3 blob construction should fail when an invalid path is passed") {
     val f = fixture
     val invalidPath = "s3://verta-scala-test/testdir/no-such-file"
-    val s3LocInvalid = new S3Location(invalidPath)
+    val s3LocInvalid = S3Location(invalidPath).get
 
     val s3Blob = S3(List(s3LocInvalid, f.testfileLoc))
 

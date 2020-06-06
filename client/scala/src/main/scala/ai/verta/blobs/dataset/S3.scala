@@ -1,7 +1,6 @@
 package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
-import java.net.{URL, URI}
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3._
@@ -15,7 +14,7 @@ import scala.util.{Failure, Success, Try}
 /** Captures metadata about S3 objects
  *  To create a new instance, use the constructor taking a list of S3 Locations
  *  {{{
- *  val s3Blob: Try[S3] = S3(List(new S3Location("some-path-1"), new S3Location("some-path-2")))
+ *  val s3Blob: Try[S3] = S3(List(S3Location("some-path-1").get, S3Location("some-path-2").get))
  *  }}}
  */
 case class S3(
@@ -173,22 +172,4 @@ object S3 {
 
   /** Helper function to construct path from bucket name and key */
   private def getPath(bucketName: String, key: String) = f"s3://${bucketName}/${key}"
-}
-
-/** A location in S3
- *  @param path S3 URL of the form "s3://<bucketName>" or "s3://<bucketName>/<key>"
- *  @param versionID: Version of the S3 file. Only relevant if path is to a file. If not set, latest version will be retrieved.
- */
-class S3Location(val path: String, val versionID: Option[String] = None) {
-  private val uri = new URI(path)
-  if (uri.getScheme() != "s3") throw new IllegalArgumentException("Illegal path")
-
-  val bucketName = uri.getAuthority()
-  val key = obtainKey(uri.getPath())
-
-  private def obtainKey(rawPath: String): Option[String] = {
-    if (rawPath.length() == 0 || (rawPath.charAt(0) == '/' && rawPath.length() == 1)) None
-    else if (rawPath.charAt(0) == '/') Some(rawPath.substring(1))
-    else Some(rawPath)
-  }
 }
