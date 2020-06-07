@@ -15,8 +15,6 @@ import org.scalatest.Assertions._
 
 import scala.collection.mutable.HashSet
 
-/**
- */
 class TestCommit extends FunSuite {
   implicit val ec = ExecutionContext.global
 
@@ -41,7 +39,7 @@ class TestCommit extends FunSuite {
       val pathBlob = PathBlob(List(testDir)).get
       f.commit.update("abc/def", pathBlob)
 
-      val getAttempt = f.commit.get("abc/def")
+      val getAttempt = f.commit.get("abc/def").get
       assert(getAttempt.isDefined)
 
       // check that the content of the pathblob is not corrupted:
@@ -50,7 +48,7 @@ class TestCommit extends FunSuite {
       }
       assert(pathBlob2 equals pathBlob)
 
-      assert(f.commit.get("tuv/wxy").isEmpty)
+      assert(f.commit.get("tuv/wxy").get.isEmpty)
     } finally {
       cleanup(f)
     }

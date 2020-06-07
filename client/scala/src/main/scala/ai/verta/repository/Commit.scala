@@ -32,9 +32,8 @@ class Commit(
    *  @param path location of a blob
    *  @return ModelDB versioning blob. If not existed, return None
    */
-  def get(path: String)(implicit ec: ExecutionContext): Option[Blob] = {
-    load_blobs()
-    blobs.get(path).map(versioningBlobToBlob)
+  def get(path: String)(implicit ec: ExecutionContext): Try[Option[Blob]] = {
+    loadBlobs().map(_ => blobs.get(path).map(versioningBlobToBlob))
   }
 
   /** Adds blob to this commit at path
@@ -42,21 +41,22 @@ class Commit(
    *  @param path Location to add blob to
    *  @param blob Instance of Blob subclass.
    */
-  def update[T <: Blob](path: String, blob: T)(implicit ec: ExecutionContext) = {
-    load_blobs()
-    becomeChild()
+  def update[T <: Blob](path: String, blob: T)(implicit ec: ExecutionContext): Try[Unit] = {
+    loadBlobs().map(_ => {
+      becomeChild()
 
-    /** TODO: Add blob subtypes to pattern matching */
-    val versioningBlob = blob match {
-      case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
-    }
+      /** TODO: Add blob subtypes to pattern matching */
+      val versioningBlob = blob match {
+        case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
+      }
 
-    blobs.put(path, versioningBlob)
+      blobs.put(path, versioningBlob)
+    })
   }
 
   /** Retrieve commit's blobs from remote
    */
-  private def load_blobs()(implicit ec: ExecutionContext): Unit = {
+  private def loadBlobs()(implicit ec: ExecutionContext): Try[Unit] = {
     if (!loaded_from_remote) {
       // if the commit is not saved, get the blobs of its parent(s)
       val ids: List[String] = commit.commit_sha match {
@@ -64,26 +64,33 @@ class Commit(
         case None => commit.parent_shas.get
       }
 
-      ids.map(id => loadBlobsFromId(id))
-      loaded_from_remote = true
+      Try(ids.map(id => loadBlobsFromId(id)).map(_.get).flatten) match {
+        case Failure(e) => Failure(e)
+        case Success(list) => Success {
+          loaded_from_remote = true
+          blobs = HashMap(list: _*)
+        }
+      }
     }
+    else Success(())
   }
+
 
   /** Retrieve blobs associated to commit with given id and update blobs
    *  @param id id of the commit
    */
-  private def loadBlobsFromId(id: String)(implicit ec: ExecutionContext): Try[List[Option[VersioningBlob]]] = {
+  private def loadBlobsFromId(
+    id: String
+  )(implicit ec: ExecutionContext): Try[List[Tuple2[String, VersioningBlob]]] = {
     clientSet.versioningService.ListCommitBlobs2(
       commit_sha = id,
       repository_id_repo_id = repo.id
     ) // Try[VersioningListCommitBlobsRequestResponse]
     .map(_.blobs) // Try[Option[List[VersioningBlobExpanded]]]
-    .map(ls => if (ls.isEmpty) null else ls.get.map(
-      blob => {
-        var joinedLocation = blob.location.get.mkString("/")
-        blobs.put(joinedLocation, blob.blob.get)
-      }
-    ))
+    .map(ls =>
+      if (ls.isEmpty) List()
+      else ls.get.map(blob => blob.location.get.mkString("/") -> blob.blob.get)
+    )
   }
 
   /** Become child of current commit (if current commit is saved)
