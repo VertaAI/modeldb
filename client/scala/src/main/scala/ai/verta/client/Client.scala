@@ -9,8 +9,6 @@ import ai.verta.swagger.client.{ClientSet, HttpClient}
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
-import java.net.URLEncoder
-
 class Client(conn: ClientConnection) {
   val httpClient = new HttpClient(conn.host, Map(
     "Grpc-Metadata-email" -> conn.auth.email,
@@ -68,7 +66,7 @@ class Client(conn: ClientConnection) {
       get = () => {
         clientSet.versioningService.GetRepository(
           id_named_id_workspace_name = workspace.getOrElse(getPersonalWorkspace()),
-          id_named_id_name = urlEncode(name)
+          id_named_id_name = name
         ).map(r => new Repository(clientSet, r.repository.get))
       },
       create = () => {
@@ -108,6 +106,4 @@ class Client(conn: ClientConnection) {
   private def getPersonalWorkspace()(implicit ec: ExecutionContext): String = {
     "personal"
   }
-
-  private def urlEncode(input: String): String = URLEncoder.encode(input, "UTF-8").replaceAll("\\+", "%20")
 }

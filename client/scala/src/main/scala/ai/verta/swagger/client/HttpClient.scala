@@ -13,12 +13,15 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
+import net.liftweb.json._
+import net.liftweb.json.Serialization.write
+
 class HttpClient(val host: String, val headers: Map[String, String]) {
   implicit val formats = DefaultFormats
   implicit val sttpBackend = AsyncHttpClientFutureBackend()
 
   private def urlEncodeUTF8(s: String) = {
-    URLEncoder.encode(s, "UTF-8")
+    URLEncoder.encode(s, "UTF-8").replaceAll("\\+", "%20")
   }
 
   private def urlEncodeUTF8(q: Map[String, List[String]]): String = {
@@ -29,12 +32,14 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
   }
 
   def request[T1, T2](method: String, path: String, query: Map[String, List[String]], body: T1, parser: JValue => T2)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
+    val safePath = path.split("/").map(urlEncodeUTF8).mkString("/")
+
     if (body == null)
-      requestInternal(method, path, query, null, parser)
+      requestInternal(method, safePath, query, null, parser)
     else
       body match {
-        case b: BaseSwagger => requestInternal(method, path, query, compactRender(b.toJson()), parser)
-        case b: String => requestInternal(method, path, query, b, parser)
+        case b: BaseSwagger => requestInternal(method, safePath, query, compactRender(b.toJson()), parser)
+        case b: String => requestInternal(method, safePath, query, jsonFormat(b), parser)
       }
   }
 
@@ -96,4 +101,12 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
   }
 
   def close(): Unit = Await.result(sttpBackend.close(), Duration.Inf)
+
+  /** Utility method to format the string for JSON parsing
+   *  @param input input
+   */
+  private def jsonFormat(input: String) = {
+    implicit val formats = DefaultFormats
+    write(input)
+  }
 }
