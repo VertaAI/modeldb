@@ -122,7 +122,7 @@ object S3 {
   ): Try[List[Tuple2[FileMetadata, Option[String]]]] = {
     val batchAttempt = Try(
       versionListing.getVersionSummaries().asScala.toList
-                    .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
+                    .filter((version: S3VersionSummary) => !version.getKey().endsWith("/")) // not a folder
                     .filter(_.isLatest())
                     .map(getVersionMetadata) // List[Try]
                     .map(_.get)
@@ -140,11 +140,10 @@ object S3 {
   /** Helper function to extract metadata from the return object
    */
   private def getObjectMetadata(obj: ObjectMetadata, bucketName: String, key: String) = Try {
-    val objPath = getPath(bucketName, key)
     val metadata = new FileMetadata(
       BigInt(obj.getLastModified().getTime()), // convert time to UNIX timestamp (ms)
       obj.getETag(),
-      objPath,
+      getPath(bucketName, key),
       BigInt(obj.getContentLength())
     )
 
@@ -157,11 +156,10 @@ object S3 {
   /** Helper function to extract metadata from a version summary
    */
   private def getVersionMetadata(version: S3VersionSummary) = Try {
-    val versionPath = getPath(version.getBucketName(), version.getKey())
     val metadata = new FileMetadata(
       BigInt(version.getLastModified().getTime()),
       version.getETag(),
-      versionPath,
+      getPath(version.getBucketName(), version.getKey()),
       BigInt(version.getSize())
     )
 
