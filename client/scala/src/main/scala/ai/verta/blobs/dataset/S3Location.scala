@@ -18,13 +18,13 @@ object S3Location {
    *  @param versionID: Version of the S3 file. Only relevant if path is to a file. If not set, latest version will be retrieved.
    *  @return if a non-S3 path is passed, a Failure with IllegalArgumentException; otherwise S3Location wrapped in Success.
    */
-  def apply(path: String, versionID: Option[String] = None) = {
+  def apply(path: String, versionID: Option[String] = None) = Try {
     val uri = new URI(path)
 
     if (uri.getScheme() != "s3")
-      Failure(new IllegalArgumentException("Illegal path; must be an S3 location"))
+      throw new IllegalArgumentException("Illegal path; must be an S3 location")
     else
-      Success(new S3Location(uri.getAuthority(), obtainKey(uri.getPath()), versionID))
+      new S3Location(uri.getAuthority(), obtainKey(uri.getPath()), versionID)
   }
 
   private def obtainKey(rawPath: String): Option[String] = {
