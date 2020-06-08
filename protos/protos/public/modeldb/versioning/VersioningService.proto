@@ -525,41 +525,6 @@ message CommitMultipartVersionedBlobArtifact {
     }
 }
 
-message AddRepositoryAttributes {
-    RepositoryIdentification repository_id = 1;
-    repeated common.KeyValue attributes = 2;
-
-    message Response {
-    }
-}
-
-message UpdateRepositoryAttribute {
-    RepositoryIdentification repository_id = 1;
-    common.KeyValue attribute = 2;
-
-    message Response {
-    }
-}
-
-message GetRepositoryAttributes {
-    RepositoryIdentification repository_id = 1;
-    repeated string attribute_keys = 2;
-    bool get_all = 3;
-
-    message Response {
-        repeated common.KeyValue attributes = 1;
-    }
-}
-
-message DeleteRepositoryAttributes {
-    RepositoryIdentification repository_id = 1;
-    repeated string attribute_keys = 2;
-    bool delete_all = 3;
-
-    message Response {
-    }
-}
-
 service VersioningService {
     // CRUD for repositories
     rpc ListRepositories(ListRepositoriesRequest) returns (ListRepositoriesRequest.Response) {
@@ -854,46 +819,6 @@ service VersioningService {
         option (google.api.http) = {
             post: "/v1/versioning/commitMultipartVersionedBlobArtifact"
             body: "*"
-        };
-    };
-
-    rpc addRepositoryAttributes(AddRepositoryAttributes) returns (AddRepositoryAttributes.Response) {
-        option (google.api.http) = {
-            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/addRepositoryAttributes"
-            body: "*"
-            additional_bindings {
-                post: "/v1/versioning/repositories/{repository_id.repo_id}/addRepositoryAttributes"
-                body: "*"
-            }
-        };
-    };
-
-    rpc updateRepositoryAttribute (UpdateRepositoryAttribute) returns (UpdateRepositoryAttribute.Response) {
-        option (google.api.http) = {
-            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/updateRepositoryAttribute"
-            body: "*"
-            additional_bindings {
-                post: "/v1/versioning/repositories/{repository_id.repo_id}/updateRepositoryAttribute"
-                body: "*"
-            }
-        };
-    };
-
-    rpc getRepositoryAttributes(GetRepositoryAttributes) returns (GetRepositoryAttributes.Response) {
-        option (google.api.http) = {
-            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/getRepositoryAttributes"
-            additional_bindings {
-                get: "/v1/versioning/repositories/{repository_id.repo_id}/getRepositoryAttributes"
-            }
-        };
-    };
-
-    rpc deleteRepositoryAttributes(DeleteRepositoryAttributes) returns (DeleteRepositoryAttributes.Response) {
-        option (google.api.http) = {
-            delete: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/deleteRepositoryAttributes"
-            additional_bindings {
-                delete: "/v1/versioning/repositories/{repository_id.repo_id}/deleteRepositoryAttributes"
-            }
         };
     };
 }

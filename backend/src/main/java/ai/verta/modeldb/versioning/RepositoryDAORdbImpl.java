@@ -1,6 +1,5 @@
 package ai.verta.modeldb.versioning;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -29,7 +28,6 @@ import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -962,134 +960,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return findRepositories(request);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
-  public void addRepositoryAttributes(
-      RepositoryIdentification repositoryId, List<KeyValue> attributesList)
-      throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity = getRepositoryById(session, repositoryId, true);
-      repositoryEntity.setAttributeMapping(
-          RdbmsUtils.convertAttributesFromAttributeEntityList(
-              repositoryEntity, ModelDBConstants.ATTRIBUTES, attributesList));
-      repositoryEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
-      Transaction transaction = session.beginTransaction();
-      session.saveOrUpdate(repositoryEntity);
-      transaction.commit();
-      LOGGER.debug("Repository attributes added successfully");
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        addRepositoryAttributes(repositoryId, attributesList);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
-  public void updateRepositoryAttribute(RepositoryIdentification repositoryId, KeyValue attribute)
-      throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity = getRepositoryById(session, repositoryId, true);
-      AttributeEntity updatedAttributeObj =
-          RdbmsUtils.generateAttributeEntity(
-              repositoryEntity, ModelDBConstants.ATTRIBUTES, attribute);
-
-      List<AttributeEntity> existingAttributes = repositoryEntity.getAttributeMapping();
-      if (!existingAttributes.isEmpty()) {
-        boolean doesExist = false;
-        for (AttributeEntity existingAttribute : existingAttributes) {
-          if (existingAttribute.getKey().equals(attribute.getKey())) {
-            existingAttribute.setKey(updatedAttributeObj.getKey());
-            existingAttribute.setValue(updatedAttributeObj.getValue());
-            existingAttribute.setValue_type(updatedAttributeObj.getValue_type());
-            doesExist = true;
-            break;
-          }
-        }
-        if (!doesExist) {
-          repositoryEntity.setAttributeMapping(Collections.singletonList(updatedAttributeObj));
-        }
-      } else {
-        repositoryEntity.setAttributeMapping(Collections.singletonList(updatedAttributeObj));
-      }
-      repositoryEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
-      Transaction transaction = session.beginTransaction();
-      session.saveOrUpdate(repositoryEntity);
-      transaction.commit();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        updateRepositoryAttribute(repositoryId, attribute);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
-  public List<KeyValue> getRepositoryAttributes(
-      RepositoryIdentification repositoryId, List<String> attributeKeysList, boolean getAll)
-      throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity = getRepositoryById(session, repositoryId, false);
-      if (getAll) {
-        return repositoryEntity.toProto().getAttributesList();
-      } else {
-        Query query = session.createQuery(GET_REPOSITORY_ATTRIBUTES_QUERY);
-        query.setParameterList("keys", attributeKeysList);
-        query.setParameter("repoId", repositoryEntity.getId());
-        query.setParameter("fieldType", ModelDBConstants.ATTRIBUTES);
-
-        @SuppressWarnings("unchecked")
-        List<AttributeEntity> attributeEntities = query.list();
-        return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
-      }
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return getRepositoryAttributes(repositoryId, attributeKeysList, getAll);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
-  public void deleteRepositoryAttributes(
-      RepositoryIdentification repositoryId, List<String> attributeKeysList, boolean deleteAll)
-      throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity = getRepositoryById(session, repositoryId, true);
-
-      Transaction transaction = session.beginTransaction();
-      StringBuilder stringQueryBuilder =
-          new StringBuilder(
-              "delete from " + AttributeEntity.class.getSimpleName() + " attr WHERE ");
-      if (deleteAll) {
-        stringQueryBuilder.append(
-            " attr.repositoryEntity." + ModelDBConstants.ID + " = :repositoryId");
-        Query query = session.createQuery(stringQueryBuilder.toString());
-        query.setParameter("repositoryId", repositoryEntity.getId());
-        query.executeUpdate();
-      } else {
-        stringQueryBuilder.append(" attr." + ModelDBConstants.KEY + " in (:keys)");
-        stringQueryBuilder.append(
-            " AND attr.repositoryEntity." + ModelDBConstants.ID + " = :repositoryId");
-        Query query = session.createQuery(stringQueryBuilder.toString());
-        query.setParameter("keys", attributeKeysList);
-        query.setParameter("repositoryId", repositoryEntity.getId());
-        query.executeUpdate();
-      }
-      repositoryEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
-      session.update(repositoryEntity);
-      transaction.commit();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        deleteRepositoryAttributes(repositoryId, attributeKeysList, deleteAll);
       } else {
         throw ex;
       }

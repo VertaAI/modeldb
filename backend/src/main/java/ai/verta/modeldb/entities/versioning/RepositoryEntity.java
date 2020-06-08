@@ -1,5 +1,6 @@
 package ai.verta.modeldb.entities.versioning;
 
+import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -10,6 +11,7 @@ import ai.verta.modeldb.versioning.RepositoryAccessModifierEnum.RepositoryAccess
 import ai.verta.modeldb.versioning.SetRepository;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -178,13 +180,16 @@ public class RepositoryEntity {
     return builder.build();
   }
 
-  public void update(SetRepository request) {
+  public void update(SetRepository request) throws InvalidProtocolBufferException {
     final Repository repository = request.getRepository();
     this.name = repository.getName();
     this.description = repository.getDescription();
     this.date_updated = new Date().getTime();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
     this.repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
+    this.workspace_id = repository.getWorkspaceId();
+    this.workspace_type = repository.getWorkspaceTypeValue();
+    updateAttribute(repository.getAttributesList());
   }
 
   public String getOwner() {
@@ -197,5 +202,33 @@ public class RepositoryEntity {
 
   public boolean isProtected() {
     return Objects.equals(repositoryAccessModifier, RepositoryAccessModifier.PROTECTED.getNumber());
+  }
+
+  private void updateAttribute(List<KeyValue> attributes) throws InvalidProtocolBufferException {
+    if (attributes != null && !attributes.isEmpty()) {
+      for (KeyValue attribute : attributes) {
+        AttributeEntity updatedAttributeObj =
+            RdbmsUtils.generateAttributeEntity(this, ModelDBConstants.ATTRIBUTES, attribute);
+
+        List<AttributeEntity> existingAttributes = this.getAttributeMapping();
+        if (!existingAttributes.isEmpty()) {
+          boolean doesExist = false;
+          for (AttributeEntity existingAttribute : existingAttributes) {
+            if (existingAttribute.getKey().equals(attribute.getKey())) {
+              existingAttribute.setKey(updatedAttributeObj.getKey());
+              existingAttribute.setValue(updatedAttributeObj.getValue());
+              existingAttribute.setValue_type(updatedAttributeObj.getValue_type());
+              doesExist = true;
+              break;
+            }
+          }
+          if (!doesExist) {
+            this.setAttributeMapping(Collections.singletonList(updatedAttributeObj));
+          }
+        } else {
+          this.setAttributeMapping(Collections.singletonList(updatedAttributeObj));
+        }
+      }
+    }
   }
 }

@@ -1,6 +1,5 @@
 package ai.verta.modeldb.versioning;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -66,18 +65,4 @@ public interface RepositoryDAO {
 
   FindRepositories.Response findRepositories(FindRepositories request)
       throws ModelDBException, InvalidProtocolBufferException;
-
-  void addRepositoryAttributes(RepositoryIdentification repositoryId, List<KeyValue> attributesList)
-      throws InvalidProtocolBufferException, ModelDBException;
-
-  void updateRepositoryAttribute(RepositoryIdentification repositoryId, KeyValue attribute)
-      throws InvalidProtocolBufferException, ModelDBException;
-
-  List<KeyValue> getRepositoryAttributes(
-      RepositoryIdentification repositoryId, List<String> attributeKeysList, boolean getAll)
-      throws InvalidProtocolBufferException, ModelDBException;
-
-  void deleteRepositoryAttributes(
-      RepositoryIdentification repositoryId, List<String> attributeKeysList, boolean deleteAll)
-      throws ModelDBException;
 }
