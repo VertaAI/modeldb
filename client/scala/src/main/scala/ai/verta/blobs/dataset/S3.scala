@@ -52,8 +52,8 @@ object S3 {
     queryAttempt match {
       case Failure(e) => Failure(e)
       case Success(list) => Success(new S3(
-        list.map(pair => pair._1.path -> pair._1),
-        list.filter(_._2.isDefined).map(pair => pair._1.path -> pair._2.get)
+        list.map(pair => pair.metadata.path -> pair.metadata),
+        list.filter(_.versionId.isDefined).map(pair => pair.metadata.path -> pair.versionId.get)
       ))
     }
   }
@@ -118,8 +118,8 @@ object S3 {
    */
   @tailrec private def handleVersionListing(
     versionListing: VersionListing,
-    acc: List[Tuple2[FileMetadata, Option[String]]]
-  ): Try[List[Tuple2[FileMetadata, Option[String]]]] = {
+    acc: List[VersionedFileMetadata]
+  ): Try[List[VersionedFileMetadata]] = {
     val batchAttempt = Try(
       versionListing.getVersionSummaries().asScala.toList
                     .filter((version: S3VersionSummary) => !version.getKey().endsWith("/")) // not a folder
@@ -148,9 +148,9 @@ object S3 {
     )
 
     if (obj.getVersionId() != null)
-      new Tuple2(metadata, Some(obj.getVersionId()))
+      new VersionedFileMetadata(metadata, Some(obj.getVersionId()))
     else
-      new Tuple2(metadata, None)
+      new VersionedFileMetadata(metadata)
   }
 
   /** Helper function to extract metadata from a version summary
@@ -164,9 +164,9 @@ object S3 {
     )
 
     if (version.getVersionId() != null)
-      new Tuple2(metadata, Some(version.getVersionId()))
+      new VersionedFileMetadata(metadata, Some(version.getVersionId()))
     else
-      new Tuple2(metadata, None)
+      new VersionedFileMetadata(metadata)
   }
 
   /** Helper function to construct path from bucket name and key */
