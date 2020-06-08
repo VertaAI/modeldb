@@ -186,11 +186,6 @@ public class ProjectTest {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      //      assertTrue(
-      //          Status.PERMISSION_DENIED.getCode() == status.getCode()
-      //              || Status.NOT_FOUND.getCode()
-      //                  == status.getCode()); // because of shadow delete the response could be
-      // 403 or 404
       assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
