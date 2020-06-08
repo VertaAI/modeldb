@@ -81,4 +81,34 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("Tagging unsaved commit should fail") {
+    val f = fixture
+
+    try {
+      f.commit.update("abc/def", f.pathBlob)
+      val tagAttempt = f.commit.tag("Some tag")
+      assert(tagAttempt.isFailure)
+      assert(tagAttempt match {
+        case Failure(e) => e.getMessage contains "Commit must be saved before it can be tagged"
+      })
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("newBranch unsaved commit should fail") {
+    val f = fixture
+
+    try {
+      f.commit.update("abc/def", f.pathBlob)
+      val newBranchAttempt = f.commit.newBranch("some-branch")
+      assert(newBranchAttempt.isFailure)
+      assert(newBranchAttempt match {
+        case Failure(e) => e.getMessage contains "Commit must be saved before it can be attached to a branch"
+      })
+    } finally {
+      cleanup(f)
+    }
+  }
 }
