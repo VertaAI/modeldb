@@ -49,8 +49,6 @@ trait Dataset extends Blob {
    */
   protected def canCombine(other: Dataset) = {
     val shared = contents.keySet.intersect(other.contents.keySet)
-    shared.isEmpty ||
-      contents.retain((k, v) => shared.contains(k))
-        .equals(other.contents.retain((k, v) => shared.contains(k)))
+    shared.isEmpty || contents.filterKeys(shared).equals(other.contents.filterKeys(shared))
   }
 }
