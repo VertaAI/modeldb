@@ -11,11 +11,15 @@ trait Dataset extends Blob {
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
-  protected def toMetadata(component: VersioningPathDatasetComponentBlob) = new FileMetadata(
+  protected def toMetadata(
+    component: VersioningPathDatasetComponentBlob,
+    versionId: Option[String] = None
+  ) = new FileMetadata(
     component.last_modified_at_source.get,
     component.md5.get,
     component.path.get,
-    component.size.get
+    component.size.get,
+    versionId
   )
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata

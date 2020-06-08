@@ -19,21 +19,17 @@ import scala.annotation.tailrec
  *  val s3Blob: Try[S3] = S3(List(S3Location("some-path-1").get, S3Location("some-path-2").get))
  *  }}}
  */
-case class S3(
-  private val metadataList: List[Tuple2[String, FileMetadata]],
-  private val versionList: List[Tuple2[String, String]]
-) extends Dataset {
+case class S3(private val metadataList: List[Tuple2[String, FileMetadata]]) extends Dataset {
   protected var contents = HashMap(metadataList: _*)
-  private var versionMap = HashMap(versionList: _*)
 
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"
-   *  @return the version id of the file
+   *  @return the version id of the file, if the file exists and has a versionId; otherwise None.
    */
-  def getVersionId(path: String) = versionMap.get(path)
+  def getVersionId(path: String) = contents.get(path).flatMap(_.versionId)
 
   override def equals(other: Any) = other match {
-    case other: S3 => contents.equals(other.contents) && versionMap.equals(other.versionMap)
+    case other: S3 => contents.equals(other.contents)
     case _ => false
   }
 }
@@ -51,10 +47,7 @@ object S3 {
 
     queryAttempt match {
       case Failure(e) => Failure(e)
-      case Success(list) => Success(new S3(
-        list.map(metadata => metadata.path -> metadata),
-        list.filter(_.versionId.isDefined).map(metadata => metadata.path -> metadata.versionId.get)
-      ))
+      case Success(list) => Success(new S3(list.map(metadata => metadata.path -> metadata)))
     }
   }
 
@@ -62,17 +55,11 @@ object S3 {
    *  @param s3VersioningBlob the versioning blob to convert
    */
   def apply(s3VersioningBlob: VersioningS3DatasetBlob) {
-    var s3Blob = new S3(List(), List())
+    var s3Blob = new S3(List())
     val componentList = s3VersioningBlob.components.get
     val metadataList = componentList.map(
-      comp => comp.path.get.path.get -> s3Blob.toMetadata(comp.path.get)
+      comp => comp.path.get.path.get -> s3Blob.toMetadata(comp.path.get, comp.s3_version_id)
     )
-    val versionList = componentList.filter(_.s3_version_id.isDefined).map(
-      comp => comp.path.get.path.get -> comp.s3_version_id.get
-    )
-
-    s3Blob.contents = HashMap(metadataList: _*)
-    s3Blob.versionMap = HashMap(versionList: _*)
 
     s3Blob
   }
@@ -84,7 +71,7 @@ object S3 {
   def toVersioningBlob(blob: S3) = {
     val s3Components = blob.components.map(comp => VersioningS3DatasetComponentBlob(
       Some(comp),
-      blob.versionMap.get(comp.path.get)
+      blob.getVersionId(comp.path.get)
     ))
 
     VersioningBlob(
