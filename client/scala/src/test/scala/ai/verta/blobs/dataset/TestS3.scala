@@ -60,6 +60,13 @@ class TestS3 extends FunSuite {
     TestMetadata.assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
   }
 
+  test("S3 blob should retrieve a folder correctly") {
+    val f = fixture
+    val s3Blob = S3(List(f.testsubdirLoc)).get
+
+    assert(s3Blob.getMetadata(f.testfilePath2).isDefined)
+  }
+
   test("S3 blob should retrieve the entire bucket correctly") {
     val f = fixture
     val s3Blob = S3(List(f.bucketLoc)).get
