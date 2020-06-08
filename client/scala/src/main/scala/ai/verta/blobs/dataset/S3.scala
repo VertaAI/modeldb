@@ -96,9 +96,8 @@ object S3 {
   /** Helper function to query metadata of S3 Location
    */
   private def getS3LocMetadata(loc: S3Location) = {
-    if (loc.key.isEmpty || loc.key.get.charAt(loc.key.get.length - 1) == '/') {
-      // no key, or is a folder
-      // null or empty string?
+    if (loc.key.isEmpty || loc.key.get.endsWith("/")) {
+      // no key (bucket), or is a folder
       val versionListing =
         if (loc.key.isEmpty) s3.listVersions(loc.bucketName, null)
         else s3.listVersions(loc.bucketName, loc.key.get)
