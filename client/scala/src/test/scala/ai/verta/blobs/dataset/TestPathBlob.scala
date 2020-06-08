@@ -22,7 +22,7 @@ class TestPathBlob extends FunSuite {
 
   test("PathBlob should retrieve a file's metadata correctly") {
     val f = fixture
-    var pathBlob = PathBlob(List(f.testfile)).get
+    var pathBlob = PathBlob(f.testfile).get
 
     TestMetadata.assertMetadata(pathBlob.getMetadata(f.testfile).get, f.testfile)
   }

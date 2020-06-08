@@ -14,9 +14,10 @@ import scala.annotation.tailrec
 
 /** Captures metadata about S3 objects
  *  Please set up AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION environment variables before use.
- *  To create a new instance, use the constructor taking a list of S3 Locations
+ *  To create a new instance, use the constructor taking a list of S3 Locations or a single location
  *  {{{
  *  val s3Blob: Try[S3] = S3(List(S3Location("some-path-1").get, S3Location("some-path-2").get))
+ *  val s3Blob2: Try[S3] = S3(S3Location("some-path"))
  *  }}}
  */
 case class S3(private val metadataList: List[Tuple2[String, FileMetadata]]) extends Dataset {
@@ -38,7 +39,14 @@ case class S3(private val metadataList: List[Tuple2[String, FileMetadata]]) exte
 object S3 {
   private val s3: AmazonS3 = AmazonS3ClientBuilder.standard().build()
 
-  /** Constructor that user should use:
+  /** Constructor taking only one S3Location
+   *  @param location a single S3Location
+   *  @return if location is invalid, a failure along with exception message. Otherwise, the blob (wrapped in success)
+   */
+  def apply(location: S3Location): Try[S3] = apply(List(location))
+
+  /** Constructor that user should use.
+  *  @return if any location is invalid, a failure along with exception message. Otherwise, the blob (wrapped in success)
    */
   def apply(paths: List[S3Location]): Try[S3] = {
     val queryAttempt = Try(

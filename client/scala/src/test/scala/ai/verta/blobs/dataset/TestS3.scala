@@ -54,7 +54,7 @@ class TestS3 extends FunSuite {
 
   test("S3 blob should retrieve the file (i.e with key) correctly") {
     val f = fixture
-    val s3Blob = S3(List(f.testfileLoc)).get
+    val s3Blob = S3(f.testfileLoc).get
 
     val s3File = s3Blob.getMetadata(f.testfilePath).get
     TestMetadata.assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)

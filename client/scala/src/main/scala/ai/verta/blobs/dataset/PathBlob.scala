@@ -30,6 +30,12 @@ case class PathBlob(private val metadataList: List[Tuple2[String, FileMetadata]]
 object PathBlob {
   private val BufferSize = 8192
 
+  /** Constructor taking only one path
+   *  @param path a single path
+   *  @return if the path is invalid, a failure along with exception message. Otherwise, the pathblob (wrapped in success)
+   */
+  def apply(path: String): Try[PathBlob] = apply(List(path))
+
   /** The constructor that user should use to create a new instance of PathBlob.
    *  @return if any path is invalid, a failure along with exception message. Otherwise, the pathblob (wrapped in success)
    */
