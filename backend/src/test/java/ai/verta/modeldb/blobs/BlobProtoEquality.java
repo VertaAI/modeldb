@@ -13,16 +13,16 @@ import org.junit.runner.RunWith;
 @RunWith(JUnitQuickcheck.class)
 public class BlobProtoEquality {
   @Property
-  public void protoEqualityAutogenBlob(AutogenBlob b) throws ModelDBException {
-    AutogenBlob newb = enforceOneof(b);
-    AutogenBlob other = newb == null ? null : AutogenBlob.fromProto(newb.toProto().build());
+  public void protoEqualityAutogenBlobDiff(AutogenBlobDiff b) throws ModelDBException {
+    AutogenBlobDiff newb = enforceOneof(b);
+    AutogenBlobDiff other = newb == null ? null : AutogenBlobDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEqualityAutogenBlobDiff(AutogenBlobDiff b) throws ModelDBException {
-    AutogenBlobDiff newb = enforceOneof(b);
-    AutogenBlobDiff other = newb == null ? null : AutogenBlobDiff.fromProto(newb.toProto().build());
+  public void protoEqualityAutogenBlob(AutogenBlob b) throws ModelDBException {
+    AutogenBlob newb = enforceOneof(b);
+    AutogenBlob other = newb == null ? null : AutogenBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 

@@ -75,7 +75,11 @@ public class DatasetContainer extends BlobContainer {
         break;
       case PATH:
         blobHash =
-            saveBlob(session, dataset.getPath(), blobHashes, hash -> super.process(session, hash, blobHashes));
+            saveBlob(
+                session,
+                dataset.getPath(),
+                blobHashes,
+                hash -> super.process(session, hash, blobHashes));
         break;
       default:
         throw new ModelDBException("Unknown blob type", Code.INTERNAL);
