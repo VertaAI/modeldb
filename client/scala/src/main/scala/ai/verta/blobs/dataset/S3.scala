@@ -98,7 +98,8 @@ object S3 {
     }
   }
 
-  /** Helper function to deal with VersionListing
+  /** Helper function to deal with VersionListing and extract metadata from the listing
+   *  Handle truncated listing via (tail) recursion
    */
   @tailrec private def handleVersionListing(
     versionListing: VersionListing,
