@@ -20,17 +20,6 @@ import collection.JavaConverters._
 import scala.collection.mutable.HashSet
 
 class TestS3 extends FunSuite {
-  /** Verify that a FileMetadata has correct path and does not have weird parameter
-   *  @param metadata file's metadata
-   *  @param path file's path (to be checked)
-   */
-  def assertMetadata(metadata: FileMetadata, path: String) = {
-    assert(metadata.path.equals(path))
-    assert(metadata.size > 0)
-    assert(metadata.lastModified > 0)
-    assert(metadata.md5.length > 0)
-  }
-
   def fixture =
     new {
       val testfilePath = "s3://verta-scala-test/testdir/testfile"
@@ -68,15 +57,15 @@ class TestS3 extends FunSuite {
     val s3Blob = S3(List(f.testfileLoc)).get
 
     val s3File = s3Blob.getMetadata(f.testfilePath).get
-    assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
+    TestMetadata.assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
   }
 
   test("S3 blob should retrieve the entire bucket correctly") {
     val f = fixture
     val s3Blob = S3(List(f.bucketLoc)).get
 
-    assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
-    assertMetadata(s3Blob.getMetadata(f.testfilePath2).get, f.testfilePath2)
+    TestMetadata.assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
+    TestMetadata.assertMetadata(s3Blob.getMetadata(f.testfilePath2).get, f.testfilePath2)
   }
 
   // testdir/testfile has two versions
@@ -111,8 +100,8 @@ class TestS3 extends FunSuite {
     val f = fixture
     val s3Blob = S3(List(f.testfileLoc, f.testfileLoc2)).get
 
-    assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
-    assertMetadata(s3Blob.getMetadata(f.testfilePath2).get, f.testfilePath2)
+    TestMetadata.assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
+    TestMetadata.assertMetadata(s3Blob.getMetadata(f.testfilePath2).get, f.testfilePath2)
   }
 
   test("S3 should not have duplicate paths") {
