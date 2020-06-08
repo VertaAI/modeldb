@@ -241,7 +241,6 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryDAO repositoryDAO)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       RepositoryEntity repositoryEntity =
           repositoryDAO.getRepositoryById(session, repositoryIdentification, true);
 
@@ -272,7 +271,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       getBranchByCommitQuery.setParameter("commitHashes", commitShas);
       List<BranchEntity> branchEntities = getBranchByCommitQuery.list();
       if (branchEntities != null && !branchEntities.isEmpty()) {
-        StringBuilder errorMessage = new StringBuilder("Commits are associated with branch name : ");
+        StringBuilder errorMessage =
+            new StringBuilder("Commits are associated with branch name : ");
         int count = 0;
         for (BranchEntity branchEntity : branchEntities) {
           errorMessage.append(branchEntity.getId().getBranch());
@@ -282,22 +282,6 @@ public class CommitDAORdbImpl implements CommitDAO {
           count++;
         }
         throw new ModelDBException(errorMessage.toString(), Code.FAILED_PRECONDITION);
-      }
-
-      String getLabelsHql =
-          "From LabelsMappingEntity lm where lm.id."
-              + ModelDBConstants.ENTITY_HASH
-              + " IN (:entityHashes) "
-              + " AND lm.id."
-              + ModelDBConstants.ENTITY_TYPE
-              + " = :entityType";
-      Query<LabelsMappingEntity> query =
-          session.createQuery(getLabelsHql, LabelsMappingEntity.class);
-      query.setParameter("entityHash", commitShas);
-      query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_COMMIT_VALUE);
-      List<LabelsMappingEntity> labelsMappingEntities = query.list();
-      if (labelsMappingEntities.size() > 0) {
-        throw new ModelDBException("Commit is associated with Label", Code.FAILED_PRECONDITION);
       }
 
       String getTagsHql =
@@ -317,6 +301,23 @@ public class CommitDAORdbImpl implements CommitDAO {
                     .map(tagsEntity -> tagsEntity.getId().getTag())
                     .collect(Collectors.joining(",")),
             Code.FAILED_PRECONDITION);
+      }
+
+      session.beginTransaction();
+      String getLabelsHql =
+              "From LabelsMappingEntity lm where lm.id."
+                      + ModelDBConstants.ENTITY_HASH
+                      + " IN (:entityHashes) "
+                      + " AND lm.id."
+                      + ModelDBConstants.ENTITY_TYPE
+                      + " = :entityType";
+      Query<LabelsMappingEntity> query =
+              session.createQuery(getLabelsHql, LabelsMappingEntity.class);
+      query.setParameter("entityHashes", commitShas);
+      query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_COMMIT_VALUE);
+      List<LabelsMappingEntity> labelsMappingEntities = query.list();
+      for (LabelsMappingEntity labelsMappingEntity: labelsMappingEntities) {
+        session.delete(labelsMappingEntity);
       }
 
       commitEntities.forEach(
@@ -388,22 +389,6 @@ public class CommitDAORdbImpl implements CommitDAO {
         throw new ModelDBException(errorMessage.toString(), Code.FAILED_PRECONDITION);
       }
 
-      String getLabelsHql =
-          new StringBuilder("From LabelsMappingEntity lm where lm.id.")
-              .append(ModelDBConstants.ENTITY_HASH)
-              .append(" = :entityHash ")
-              .append(" AND lm.id.")
-              .append(ModelDBConstants.ENTITY_TYPE)
-              .append(" = :entityType")
-              .toString();
-      Query query = session.createQuery(getLabelsHql);
-      query.setParameter("entityHash", commitEntity.getCommit_hash());
-      query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_COMMIT_VALUE);
-      List<LabelsMappingEntity> labelsMappingEntities = query.list();
-      if (labelsMappingEntities.size() > 0) {
-        throw new ModelDBException("Commit is associated with Label", Code.FAILED_PRECONDITION);
-      }
-
       String getTagsHql =
           new StringBuilder("From TagsEntity te where te.id.")
               .append(ModelDBConstants.REPOSITORY_ID)
@@ -425,6 +410,22 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
 
       session.beginTransaction();
+
+      String getLabelsHql =
+              new StringBuilder("From LabelsMappingEntity lm where lm.id.")
+                      .append(ModelDBConstants.ENTITY_HASH)
+                      .append(" = :entityHash ")
+                      .append(" AND lm.id.")
+                      .append(ModelDBConstants.ENTITY_TYPE)
+                      .append(" = :entityType")
+                      .toString();
+      Query<LabelsMappingEntity> query = session.createQuery(getLabelsHql, LabelsMappingEntity.class);
+      query.setParameter("entityHash", commitEntity.getCommit_hash());
+      query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_COMMIT_VALUE);
+      List<LabelsMappingEntity> labelsMappingEntities = query.list();
+      for (LabelsMappingEntity labelsMappingEntity: labelsMappingEntities) {
+        session.delete(labelsMappingEntity);
+      }
 
       if (commitEntity.getRepository().size() == 1) {
         session.delete(commitEntity);
