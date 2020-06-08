@@ -2403,6 +2403,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
       }
       Set<ArtifactPartEntity> artifactPartEntities = artifactEntity.getArtifactPartEntities();
+      LOGGER.debug("The list of artifact parts for artifact {}:", artifactEntity.getPath());
+      artifactPartEntities.forEach(
+          artifactPartEntity -> {
+            LOGGER.debug(
+                "Part Number: {}, etag: {}",
+                artifactPartEntity.getPartNumber(),
+                artifactPartEntity.getEtag());
+          });
       partETags =
           artifactPartEntities.stream()
               .map(ArtifactPartEntity::toPartETag)
