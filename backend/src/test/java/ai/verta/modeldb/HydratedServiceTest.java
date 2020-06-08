@@ -19,6 +19,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
 import ai.verta.uac.AddCollaboratorRequest;
@@ -84,6 +85,7 @@ public class HydratedServiceTest {
   private static AuthService authService;
   private static App app;
   private static DeleteEntitiesCron deleteEntitiesCron;
+  private static ParentTimestampUpdateCron parentTimestampUpdateCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -122,6 +124,7 @@ public class HydratedServiceTest {
     }
     deleteEntitiesCron =
         new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+    parentTimestampUpdateCron = new ParentTimestampUpdateCron(100);
   }
 
   @AfterClass
@@ -3784,7 +3787,7 @@ public class HydratedServiceTest {
         "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset1.getId(),
         datasetVersion1.getDatasetId());
-
+    parentTimestampUpdateCron.run();
     // Validate check for predicate value not empty
     List<KeyValueQuery> predicates = new ArrayList<>();
     Value stringValueType = Value.newBuilder().setStringValue("").build();
@@ -4029,6 +4032,7 @@ public class HydratedServiceTest {
     int pageLimit = 2;
     int count = 0;
     boolean isExpectedResultFound = false;
+
     for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       findDatasets =
           FindDatasets.newBuilder()
@@ -4052,11 +4056,6 @@ public class HydratedServiceTest {
         isExpectedResultFound = true;
         for (HydratedDataset hydratedDataset : response.getHydratedDatasetsList()) {
           Dataset dataset = hydratedDataset.getDataset();
-          assertEquals(
-              "HydratedDataset not match with expected dataset",
-              datasetMap.get(dataset.getId()),
-              dataset);
-
           if (count == 0) {
             assertEquals(
                 "HydratedDataset name not match with expected dataset name",

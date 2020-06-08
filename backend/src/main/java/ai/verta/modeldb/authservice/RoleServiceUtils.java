@@ -422,7 +422,7 @@ public class RoleServiceUtils implements RoleService {
                     collaborators.add(collaboratorTeam);
                   } catch (StatusRuntimeException ex) {
                     if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-                      LOGGER.warn(
+                      LOGGER.info(
                           "Current user is not a member of the team : "
                               + teamId
                               + ", "
@@ -440,7 +440,7 @@ public class RoleServiceUtils implements RoleService {
                     collaborators.add(collaboratorOrg);
                   } catch (StatusRuntimeException ex) {
                     if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-                      LOGGER.warn(
+                      LOGGER.info(
                           "Current user is not a member of the organization : "
                               + orgId
                               + ", "
@@ -661,7 +661,7 @@ public class RoleServiceUtils implements RoleService {
 
       return getRoleBindingByNameResponse.getRoleBinding();
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(roleBindingName + " : " + ex.getMessage());
+      LOGGER.info(roleBindingName + " : " + ex.getMessage());
       if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
         return (RoleBinding)
             ModelDBUtils.retryOrThrowException(
@@ -1172,7 +1172,7 @@ public class RoleServiceUtils implements RoleService {
         if (!e.getMessage().contains("Details: Doesn't exist")) {
           throw e;
         }
-        LOGGER.warn("Workspace ({}) not found on UAC", workspaceId);
+        LOGGER.info("Workspace ({}) not found on UAC", workspaceId);
       }
     }
     return workspaceRoleBindingList;

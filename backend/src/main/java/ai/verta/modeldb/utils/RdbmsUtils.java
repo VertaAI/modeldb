@@ -73,6 +73,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaBuilder.Trimspec;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
@@ -692,7 +693,11 @@ public class RdbmsUtils {
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   public static Predicate getValuePredicate(
-      CriteriaBuilder builder, String fieldName, Path valueExpression, KeyValueQuery keyValueQuery)
+      CriteriaBuilder builder,
+      String fieldName,
+      Path valueExpression,
+      KeyValueQuery keyValueQuery,
+      boolean stringColumn)
       throws InvalidProtocolBufferException {
 
     Value value = keyValueQuery.getValue();
@@ -707,8 +712,19 @@ public class RdbmsUtils {
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
         if (ModelDBHibernateUtil.rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
-          return getOperatorPredicate(
-              builder, valueExpression.as(Double.class), operator, value.getNumberValue());
+          if (stringColumn) {
+
+            return getOperatorPredicate(
+                builder,
+                builder
+                    .trim(Trimspec.BOTH, Character.valueOf('"'), valueExpression)
+                    .as(Double.class),
+                operator,
+                value.getNumberValue());
+          } else {
+            return getOperatorPredicate(
+                builder, valueExpression.as(Double.class), operator, value.getNumberValue());
+          }
         } else {
           return getOperatorPredicate(
               builder, builder.toBigDecimal(valueExpression), operator, value.getNumberValue());
@@ -1252,7 +1268,7 @@ public class RdbmsUtils {
 
     if (predicate != null) {
       Predicate valuePredicate =
-          getValuePredicate(builder, ModelDBConstants.ARTIFACTS, valueExpression, predicate);
+          getValuePredicate(builder, ModelDBConstants.ARTIFACTS, valueExpression, predicate, true);
       fieldPredicates.add(valuePredicate);
     }
 
@@ -1290,7 +1306,8 @@ public class RdbmsUtils {
               builder,
               ModelDBConstants.ATTRIBUTES,
               expression.get(ModelDBConstants.VALUE),
-              predicate);
+              predicate,
+              true);
       fieldPredicates.add(valuePredicate);
     }
 
@@ -1596,7 +1613,8 @@ public class RdbmsUtils {
                       builder,
                       ModelDBConstants.OBSERVATIONS,
                       observationEntityRootEntityRoot.get(names[1]),
-                      predicate);
+                      predicate,
+                      true);
 
               parentPathFromChild =
                   observationEntityRootEntityRoot.get(entityName).get(ModelDBConstants.ID);
@@ -1616,7 +1634,8 @@ public class RdbmsUtils {
                     builder,
                     ModelDBConstants.FEATURES,
                     featureEntityRoot.get(names[names.length - 1]),
-                    predicate);
+                    predicate,
+                    true);
 
             parentPathFromChild = featureEntityRoot.get(entityName).get(ModelDBConstants.ID);
             subquery.select(parentPathFromChild);
@@ -1634,7 +1653,8 @@ public class RdbmsUtils {
                     builder,
                     ModelDBConstants.TAGS,
                     tagsMappingRoot.get(ModelDBConstants.TAGS),
-                    predicate);
+                    predicate,
+                    true);
 
             parentPathFromChild = tagsMappingRoot.get(entityName).get(ModelDBConstants.ID);
             subquery.select(parentPathFromChild);
@@ -1649,7 +1669,7 @@ public class RdbmsUtils {
             versioningEntityRoot.alias(entityName + "_" + ModelDBConstants.VERSIONED_ALIAS + index);
             Predicate keyValuePredicate =
                 RdbmsUtils.getValuePredicate(
-                    builder, names[1], versioningEntityRoot.get(names[1]), predicate);
+                    builder, names[1], versioningEntityRoot.get(names[1]), predicate, false);
 
             List<Predicate> versioningValuePredicates = new ArrayList<>();
             versioningValuePredicates.add(keyValuePredicate);
@@ -1682,7 +1702,8 @@ public class RdbmsUtils {
             } else {
               expression = entityRootPath.get(predicate.getKey());
               Predicate queryPredicate =
-                  RdbmsUtils.getValuePredicate(builder, predicate.getKey(), expression, predicate);
+                  RdbmsUtils.getValuePredicate(
+                      builder, predicate.getKey(), expression, predicate, false);
               keyValuePredicates.add(queryPredicate);
               criteriaQuery.multiselect(entityRootPath, expression);
             }
@@ -1764,7 +1785,8 @@ public class RdbmsUtils {
               builder,
               ModelDBConstants.HYPERPARAMETERS,
               elementMappingEntityRoot.get("int_value"),
-              predicate);
+              predicate,
+              false);
       orPredicates.add(intValuePredicate);
     } catch (Exception e) {
       LOGGER.debug("Value could not be cast to int");
@@ -1775,7 +1797,8 @@ public class RdbmsUtils {
               builder,
               ModelDBConstants.HYPERPARAMETERS,
               elementMappingEntityRoot.get("float_value"),
-              predicate);
+              predicate,
+              false);
       orPredicates.add(floatValuePredicate);
     } catch (Exception e) {
       LOGGER.debug("Value could not be cast to float");
@@ -1785,7 +1808,8 @@ public class RdbmsUtils {
             builder,
             ModelDBConstants.HYPERPARAMETERS,
             elementMappingEntityRoot.get("string_value"),
-            predicate);
+            predicate,
+            true);
     orPredicates.add(stringValuePredicate);
     configBlobEntityRootPredicates.add(builder.or(orPredicates.toArray(new Predicate[0])));
 

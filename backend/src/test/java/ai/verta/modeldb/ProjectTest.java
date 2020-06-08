@@ -2905,6 +2905,9 @@ public class ProjectTest {
       assertTrue(deleteProjectResponse.getStatus());
 
       // Delete entities by cron job
+      // 3 calls to ensure all P, E and ER are deleted.
+      deleteEntitiesCron.run();
+      deleteEntitiesCron.run();
       deleteEntitiesCron.run();
 
       // Start cross-checking of deleted the project all data from DB from here.
@@ -2945,19 +2948,25 @@ public class ProjectTest {
       // For experimentRun1
       GetComments getCommentsRequest =
           GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
-      GetComments.Response getCommentsResponse =
-          commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-      LOGGER.info(
-          "experimentRun1 getExperimentRunComment Response : \n"
-              + getCommentsResponse.getCommentsList());
-      assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+      GetComments.Response getCommentsResponse;
+      try {
+        getCommentsResponse =
+            commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          fail();
+        }
+      } catch (StatusRuntimeException e) {
+        checkEqualsAssert(e);
+      }
       // For experimentRun3
       getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
-      getCommentsResponse = commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-      LOGGER.info(
-          "experimentRun3 getExperimentRunComment Response : \n"
-              + getCommentsResponse.getCommentsList());
-      assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+      try {
+        getCommentsResponse =
+            commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+        assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+      } catch (StatusRuntimeException e) {
+        checkEqualsAssert(e);
+      }
 
       // Start cross-checking for project collaborator
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
@@ -3068,6 +3077,8 @@ public class ProjectTest {
 
       // Delete entities by cron job
       deleteEntitiesCron.run();
+      deleteEntitiesCron.run();
+      deleteEntitiesCron.run();
 
       for (String projectId : projectIds) {
         // Start cross-checking of deleted the project all data from DB from here.
@@ -3108,20 +3119,27 @@ public class ProjectTest {
         // Start cross-checking for comment of experimentRun
         // For experimentRun1
         getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
-        getCommentsResponse =
-            commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-        LOGGER.info(
-            "experimentRun1 getExperimentRunComment Response : \n"
-                + getCommentsResponse.getCommentsList());
-        assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+        try {
+          getCommentsResponse =
+              commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+            fail();
+          }
+        } catch (StatusRuntimeException e) {
+          checkEqualsAssert(e);
+        }
+
         // For experimentRun3
         getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
-        getCommentsResponse =
-            commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-        LOGGER.info(
-            "experimentRun3 getExperimentRunComment Response : \n"
-                + getCommentsResponse.getCommentsList());
-        assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+        try {
+          getCommentsResponse =
+              commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+            fail();
+          }
+        } catch (StatusRuntimeException e) {
+          checkEqualsAssert(e);
+        }
 
         // Start cross-checking for project collaborator
         if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
@@ -3132,8 +3150,6 @@ public class ProjectTest {
                 CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
             GetCollaborator.Response getCollaboratorResponse =
                 collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
-            LOGGER.info(
-                "getCollaboratorResponse Response : \n" + getCommentsResponse.getCommentsList());
             assertTrue(getCollaboratorResponse.getSharedUsersList().isEmpty());
             fail();
           } catch (StatusRuntimeException e) {

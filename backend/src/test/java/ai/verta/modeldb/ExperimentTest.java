@@ -126,7 +126,10 @@ public class ExperimentTest {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+      assertTrue(
+          Status.PERMISSION_DENIED.getCode() == status.getCode()
+              || Status.NOT_FOUND.getCode()
+                  == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
@@ -2902,6 +2905,7 @@ public class ExperimentTest {
 
     // Delete entities by cron job
     deleteEntitiesCron.run();
+    deleteEntitiesCron.run();
 
     for (String experimentId : experimentIds) {
 
@@ -2934,20 +2938,22 @@ public class ExperimentTest {
     // For experimentRun1
     GetComments getCommentsRequest =
         GetComments.newBuilder().setEntityId(experimentRunList.get(0).getId()).build();
-    GetComments.Response getCommentsResponse =
-        commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-    LOGGER.info(
-        "experimentRun1 getExperimentRunComment Response : \n"
-            + getCommentsResponse.getCommentsList());
-    assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+    GetComments.Response getCommentsResponse;
+    try {
+      getCommentsResponse = commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+      assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
     // For experimentRun3
     getCommentsRequest =
         GetComments.newBuilder().setEntityId(experimentRunList.get(0).getId()).build();
-    getCommentsResponse = commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-    LOGGER.info(
-        "experimentRun3 getExperimentRunComment Response : \n"
-            + getCommentsResponse.getCommentsList());
-    assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+    try {
+      getCommentsResponse = commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+      assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
 
     // Delete Project
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
