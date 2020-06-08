@@ -148,6 +148,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
             && request.getRepository().getDescription().isEmpty()) {
           throw new ModelDBException(
               "Repository name and description is empty", Code.INVALID_ARGUMENT);
+        } else if (request.getRepository().getName().isEmpty()) {
+          throw new ModelDBException("Repository name should not be empty", Code.INVALID_ARGUMENT);
         }
 
         SetRepository.Response response =
