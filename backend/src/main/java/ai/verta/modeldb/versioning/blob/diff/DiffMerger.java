@@ -169,7 +169,31 @@ public class DiffMerger {
                     AutogenBlob::getEnvironment,
                     AutogenBlobDiff::getEnvironment,
                     DiffMerger::mergeEnvironment,
+                    conflictKeys))
+            .setDescription(
+                merge(
+                    a,
+                    d,
+                    AutogenBlob::getDescription,
+                    AutogenBlobDiff::getDescription,
+                    DiffMerger::mergeDescription,
                     conflictKeys)));
+  }
+
+  private static String mergeDescription(
+      String a, AutogenDescriptionDiff d, HashSet<String> conflictKeys) {
+    if (a == null && d == null) return null;
+    if (d == null) return a;
+    if (d.getStatus().isDeleted()) return null;
+    return Utils.removeEmpty(
+        mergeLast(
+            a,
+            d,
+            x -> d.getA(),
+            x -> d.getB(),
+            AutogenDescriptionDiff::getStatus,
+            description -> description,
+            conflictKeys));
   }
 
   public static AutogenCodeBlob mergeCode(

@@ -116,9 +116,18 @@ public class DiffComputer {
                 computeDiff(a, b, AutogenBlob::getDataset, DiffComputer::computeDatasetDiff))
             .setEnvironment(
                 computeDiff(
-                    a, b, AutogenBlob::getEnvironment, DiffComputer::computeEnvironmentDiff)));
-    // .setDescription(computeDiff(a, b, AutogenBlob::getDescription,
-    // DiffComputer::computeDescriptionDiff)));
+                    a, b, AutogenBlob::getEnvironment, DiffComputer::computeEnvironmentDiff))
+            .setDescription(
+                computeDiff(
+                    a, b, AutogenBlob::getDescription, DiffComputer::computeDescriptionDiff)));
+  }
+
+  private static AutogenDescriptionDiff computeDescriptionDiff(String a, String b) {
+    if (Objects.equals(a, b)) {
+      return null;
+    }
+
+    return new AutogenDescriptionDiff().setA(a).setB(b).setStatus(getStatus(a, b));
   }
 
   public static AutogenCodeDiff computeCodeDiff(AutogenCodeBlob a, AutogenCodeBlob b) {
