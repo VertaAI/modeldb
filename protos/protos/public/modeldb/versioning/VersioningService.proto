@@ -62,7 +62,8 @@ message Blob {
         EnvironmentBlob environment = 3;
         CodeBlob code = 4;
         ConfigBlob config = 5;
-    }
+    },
+    string description = 6;
 }
 
 message BlobExpanded {
