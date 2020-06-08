@@ -52,8 +52,8 @@ object S3 {
     queryAttempt match {
       case Failure(e) => Failure(e)
       case Success(list) => Success(new S3(
-        list.map(pair => pair.metadata.path -> pair.metadata),
-        list.filter(_.versionId.isDefined).map(pair => pair.metadata.path -> pair.versionId.get)
+        list.map(metadata => metadata.path -> metadata),
+        list.filter(_.versionId.isDefined).map(metadata => metadata.path -> metadata.versionId.get)
       ))
     }
   }
@@ -118,8 +118,8 @@ object S3 {
    */
   @tailrec private def handleVersionListing(
     versionListing: VersionListing,
-    acc: List[VersionedFileMetadata]
-  ): Try[List[VersionedFileMetadata]] = {
+    acc: List[FileMetadata]
+  ): Try[List[FileMetadata]] = {
     val batchAttempt = Try(
       versionListing.getVersionSummaries().asScala.toList
                     .filter((version: S3VersionSummary) => !version.getKey().endsWith("/")) // not a folder
@@ -140,33 +140,27 @@ object S3 {
   /** Helper function to extract metadata from the return object
    */
   private def getObjectMetadata(obj: ObjectMetadata, bucketName: String, key: String) = Try {
-    val metadata = new FileMetadata(
+    new FileMetadata(
       BigInt(obj.getLastModified().getTime()), // convert time to UNIX timestamp (ms)
       obj.getETag(),
       getPath(bucketName, key),
-      BigInt(obj.getContentLength())
+      BigInt(obj.getContentLength()),
+      if (obj.getVersionId() != null) Some(obj.getVersionId())
+      else None
     )
-
-    if (obj.getVersionId() != null)
-      new VersionedFileMetadata(metadata, Some(obj.getVersionId()))
-    else
-      new VersionedFileMetadata(metadata)
   }
 
   /** Helper function to extract metadata from a version summary
    */
   private def getVersionMetadata(version: S3VersionSummary) = Try {
-    val metadata = new FileMetadata(
+    new FileMetadata(
       BigInt(version.getLastModified().getTime()),
       version.getETag(),
       getPath(version.getBucketName(), version.getKey()),
-      BigInt(version.getSize())
+      BigInt(version.getSize()),
+      if (version.getVersionId() != null) Some(version.getVersionId())
+      else None
     )
-
-    if (version.getVersionId() != null)
-      new VersionedFileMetadata(metadata, Some(version.getVersionId()))
-    else
-      new VersionedFileMetadata(metadata)
   }
 
   /** Helper function to construct path from bucket name and key */
