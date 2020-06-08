@@ -4,7 +4,6 @@ import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
 import ai.verta.modeldb.versioning.RepositoryAccessModifierEnum.RepositoryAccessModifier;
-import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.modeldb.versioning.SetRepository;
 import java.util.Date;
 import java.util.HashSet;
@@ -25,25 +24,17 @@ public class RepositoryEntity {
 
   public RepositoryEntity() {}
 
-  public RepositoryEntity(
-      String name,
-      WorkspaceDTO workspaceDTO,
-      String owner,
-      RepositoryVisibility repositoryVisibility,
-      RepositoryAccessModifier repositoryAccessModifier) {
-    this.name = name;
+  public RepositoryEntity(Repository repository, WorkspaceDTO workspaceDTO) {
+    this.name = repository.getName();
+    this.description = repository.getDescription();
     this.date_created = new Date().getTime();
     this.date_updated = new Date().getTime();
-    if (repositoryVisibility != null) {
-      this.repository_visibility = repositoryVisibility.getNumber();
-    }
-    if (repositoryAccessModifier != null) {
-      this.repositoryAccessModifier = repositoryAccessModifier.getNumber();
-    }
+    this.repository_visibility = repository.getRepositoryVisibilityValue();
+    this.repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
     if (workspaceDTO.getWorkspaceId() != null) {
       this.workspace_id = workspaceDTO.getWorkspaceId();
       this.workspace_type = workspaceDTO.getWorkspaceType().getNumber();
-      this.owner = owner;
+      this.owner = repository.getOwner();
     } else {
       this.workspace_id = "";
       this.workspace_type = 0;
@@ -58,6 +49,9 @@ public class RepositoryEntity {
 
   @Column(name = "name", columnDefinition = "varchar", length = 50)
   private String name;
+
+  @Column(name = "description", columnDefinition = "TEXT")
+  private String description;
 
   @Column(name = "date_created")
   private Long date_created;
@@ -132,6 +126,7 @@ public class RepositoryEntity {
         Repository.newBuilder()
             .setId(this.id)
             .setName(this.name)
+            .setDescription(this.description)
             .setDateCreated(this.date_created)
             .setDateUpdated(this.date_updated)
             .setWorkspaceId(this.workspace_id)
@@ -151,9 +146,10 @@ public class RepositoryEntity {
   public void update(SetRepository request) {
     final Repository repository = request.getRepository();
     this.name = repository.getName();
+    this.description = repository.getDescription();
     this.date_updated = new Date().getTime();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
-    repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
+    this.repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
   }
 
   public String getOwner() {
@@ -162,10 +158,6 @@ public class RepositoryEntity {
 
   public Integer getRepository_visibility() {
     return repository_visibility;
-  }
-
-  public Integer getRepositoryAccessModifier() {
-    return repositoryAccessModifier;
   }
 
   public boolean isProtected() {

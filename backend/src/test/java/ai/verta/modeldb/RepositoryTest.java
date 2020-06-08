@@ -180,7 +180,10 @@ public class RepositoryTest {
                     .setNamedId(
                         RepositoryNamedIdentification.newBuilder().setName(repoName).build())
                     .build())
-            .setRepository(Repository.newBuilder().setName(repoName))
+            .setRepository(
+                Repository.newBuilder()
+                    .setName(repoName)
+                    .setDescription("This is test repository description"))
             .build();
     Response result = versioningServiceBlockingStub.createRepository(setRepository);
     return result.getRepository().getId();
@@ -337,6 +340,58 @@ public class RepositoryTest {
     }
 
     LOGGER.info("Update repository by name test end................................");
+  }
+
+  @Test
+  public void updateRepositoryDescriptionTest() {
+    LOGGER.info("Update repository description test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, NAME);
+
+    try {
+      String description = "this is test repository description from update repository call";
+      SetRepository setRepository =
+          SetRepository.newBuilder()
+              .setId(
+                  RepositoryIdentification.newBuilder()
+                      .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME).build())
+                      .build())
+              .setRepository(Repository.newBuilder().setName(NAME).setDescription(description))
+              .build();
+      SetRepository.Response result = versioningServiceBlockingStub.updateRepository(setRepository);
+      Assert.assertTrue(result.hasRepository());
+      Assert.assertEquals(description, result.getRepository().getDescription());
+
+      GetRepositoryRequest getRepositoryRequest =
+          GetRepositoryRequest.newBuilder()
+              .setId(
+                  RepositoryIdentification.newBuilder()
+                      .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME)))
+              .build();
+      GetRepositoryRequest.Response getByNameResult =
+          versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+      Assert.assertEquals(
+          "Repository Id not match with expected repository Id",
+          id,
+          getByNameResult.getRepository().getId());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          description,
+          getByNameResult.getRepository().getDescription());
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
+
+    LOGGER.info("Update repository description test end................................");
   }
 
   @Test
@@ -661,6 +716,10 @@ public class RepositoryTest {
             "Repository name not match with expected repository name",
             NAME_3,
             findRepositoriesResponse.getRepositories(0).getName());
+        Assert.assertEquals(
+            "Repository name not match with expected repository name",
+            "This is test repository description",
+            findRepositoriesResponse.getRepositories(0).getDescription());
 
         findRepositoriesRequest =
             FindRepositories.newBuilder()

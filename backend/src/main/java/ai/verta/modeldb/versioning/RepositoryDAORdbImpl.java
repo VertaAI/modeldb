@@ -302,34 +302,31 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             session,
             SHORT_NAME,
             GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
-            "Repository",
+            RepositoryEntity.class.getSimpleName(),
             "repositoryName",
             repository.getName(),
             ModelDBConstants.WORKSPACE_ID,
             workspaceDTO.getWorkspaceId(),
             workspaceDTO.getWorkspaceType(),
             LOGGER);
-        repositoryEntity =
-            new RepositoryEntity(
-                repository.getName(),
-                workspaceDTO,
-                repository.getOwner(),
-                repository.getRepositoryVisibility(),
-                repository.getRepositoryAccessModifier());
+        repositoryEntity = new RepositoryEntity(request.getRepository(), workspaceDTO);
         repositoryEntity.setDeleted(true);
       } else {
         repositoryEntity = getRepositoryById(session, request.getId(), true);
-        ModelDBHibernateUtil.checkIfEntityAlreadyExists(
-            session,
-            SHORT_NAME,
-            GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
-            "Repository",
-            "repositoryName",
-            repository.getName(),
-            ModelDBConstants.WORKSPACE_ID,
-            repositoryEntity.getWorkspace_id(),
-            WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
-            LOGGER);
+        if (!repository.getName().isEmpty()
+            && !repositoryEntity.getName().equals(repository.getName())) {
+          ModelDBHibernateUtil.checkIfEntityAlreadyExists(
+              session,
+              SHORT_NAME,
+              GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
+              RepositoryEntity.class.getSimpleName(),
+              "repositoryName",
+              repository.getName(),
+              ModelDBConstants.WORKSPACE_ID,
+              repositoryEntity.getWorkspace_id(),
+              WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
+              LOGGER);
+        }
         repositoryEntity.update(request);
       }
       session.beginTransaction();
