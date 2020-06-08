@@ -52,6 +52,20 @@ object PathBlob {
     }
   }
 
+  /** Factory method to combine two PathBlob instances
+   *  @param firstBlob: first pathblob
+   *  @param secondBlob: second pathblob
+   *  @return failure if the two blobs have conflicting entries; the combined blob otherwise.
+   */
+  def apply(firstBlob: PathBlob, secondBlob: PathBlob): Try[PathBlob] = {
+    if (firstBlob.canCombine(secondBlob)) {
+      var retBlob = new PathBlob(List())
+      retBlob.contents = firstBlob.contents ++ secondBlob.contents
+      Success(retBlob)
+    }
+    else Failure(new IllegalArgumentException("The two blobs have conflicting entries"))
+  }
+
   /** Factory method to convert a versioning path dataset blob instance. Not meant to be used by user
    *  @param pathVersioningBlob the versioning blob to convert
    *  @return equivalent PathBlob instance

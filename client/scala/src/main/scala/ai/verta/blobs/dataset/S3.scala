@@ -72,6 +72,20 @@ object S3 {
     s3Blob
   }
 
+  /** Factory method to combine two S3 instances
+   *  @param firstBlob: first S3 blob
+   *  @param secondBlob: second S3 blob
+   *  @return failure if the two blobs have conflicting entries; the combined blob otherwise.
+   */
+  def apply(firstBlob: S3, secondBlob: S3): Try[S3] = {
+    if (firstBlob.canCombine(secondBlob)) {
+      var retBlob = new S3(List())
+      retBlob.contents = firstBlob.contents ++ secondBlob.contents
+      Success(retBlob)
+    }
+    else Failure(new IllegalArgumentException("The two blobs have conflicting entries"))
+  }
+
   /** Convert a S3 instance to a VersioningBlob
    *  @param blob S3 instance
    *  @return equivalent VersioningBlob instance

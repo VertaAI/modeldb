@@ -63,4 +63,15 @@ class TestPathBlob extends FunSuite {
 
     assert(pathBlob1 equals pathBlob2)
   }
+
+  test("Reducing PathBlobs should retain the contents of both") {
+    val f = fixture
+    val pathBlob = PathBlob(List(f.testfile, f.testfile2)).get
+    val pathBlobCombined = PathBlob(
+      PathBlob(f.testfile).get,
+      PathBlob(f.testSubdir).get
+    ).get
+
+    assert(pathBlob equals pathBlobCombined)
+  }
 }

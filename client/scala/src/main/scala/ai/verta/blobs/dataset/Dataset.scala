@@ -42,4 +42,15 @@ trait Dataset extends Blob {
 
   /** Get the set of all the files' metadata managed by the Dataset blob  */
   def getAllMetadata = contents.values
+
+  /** Check if the other dataset is combinable (i.e no conflicting entries)
+   *  @param other other dataset to combine
+   *  @return whether there is a conflict in the contents of two dataset
+   */
+  protected def canCombine(other: Dataset) = {
+    val shared = contents.keySet.intersect(other.contents.keySet)
+    shared.isEmpty ||
+      contents.retain((k, v) => shared.contains(k))
+        .equals(other.contents.retain((k, v) => shared.contains(k)))
+  }
 }

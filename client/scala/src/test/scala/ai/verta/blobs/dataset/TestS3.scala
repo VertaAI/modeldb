@@ -35,6 +35,16 @@ class TestS3 extends FunSuite {
       val testsubdirLoc = S3Location(testsubdirPath).get
 
       val bucketLoc = S3Location("s3://verta-scala-test").get
+
+      // for versioning tests:
+      val s3: AmazonS3 = AmazonS3ClientBuilder.standard().build()
+      val versionListing = s3.listVersions("verta-scala-test", "testdir/testfile")
+      val oldVersionId = versionListing.getVersionSummaries().asScala.toList
+      .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
+      .filter(!_.isLatest()).head.getVersionId()
+      val newVersionId = versionListing.getVersionSummaries().asScala.toList
+      .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
+      .filter(_.isLatest()).head.getVersionId()
     }
 
   test("S3Location should correctly determine bucket name and key") {
@@ -78,29 +88,19 @@ class TestS3 extends FunSuite {
   // testdir/testfile has two versions
   test("S3 should retrieve the correct version") {
     val f = fixture
-    val s3: AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build()
-    var versionListing = s3.listVersions("verta-scala-test", "testdir/testfile")
-
-    // get latest version
-    val newVersionId = versionListing.getVersionSummaries().asScala.toList
-    .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
-    .filter(_.isLatest()).head.getVersionId()
 
     // default should be the latest version
     val s3BlobDefault = S3(List(f.testfileLoc)).get
-    var s3BlobLatest = S3(List(S3Location(f.testfilePath, Some(newVersionId)).get)).get
+    var s3BlobLatest = S3(List(S3Location(f.testfilePath, Some(f.newVersionId)).get)).get
 
     assert(s3BlobDefault equals s3BlobLatest)
-    assert(s3BlobLatest.getVersionId(f.testfilePath).get equals newVersionId)
+    assert(s3BlobLatest.getVersionId(f.testfilePath).get equals f.newVersionId)
 
     // get older version
-    val oldVersionId = versionListing.getVersionSummaries().asScala.toList
-    .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
-    .filter(!_.isLatest()).head.getVersionId()
-    val s3BlobOld = S3(List(S3Location(f.testfilePath, Some(oldVersionId)).get)).get
+    val s3BlobOld = S3(List(S3Location(f.testfilePath, Some(f.oldVersionId)).get)).get
 
     assert(!s3BlobDefault.equals(s3BlobOld))
-    assert(s3BlobOld.getVersionId(f.testfilePath).get equals oldVersionId)
+    assert(s3BlobOld.getVersionId(f.testfilePath).get equals f.oldVersionId)
   }
 
   test("S3 should retrieve multiple keys correctly") {
@@ -142,5 +142,25 @@ class TestS3 extends FunSuite {
 
     assert(s3Metadata.md5 equals pathBlobMetadata.md5)
     assert(s3Metadata.size equals pathBlobMetadata.size)
+  }
+
+  test("Reducing S3 blobs should retain the contents of both") {
+    val f = fixture
+    val s3Blob = S3(List(f.testfileLoc, f.testfileLoc2)).get
+    val s3BlobCombined = S3(S3(f.testfileLoc).get, S3(f.testsubdirLoc).get).get
+
+    assert(s3Blob equals s3BlobCombined)
+  }
+
+  test("Reducing S3 blobs with conflicting contents should fail") {
+    val f = fixture
+    val s3BlobDefault = S3(List(f.testfileLoc)).get
+
+    // get older version
+    val s3BlobOld = S3(List(S3Location(f.testfilePath, Some(f.oldVersionId)).get)).get
+
+    val combineAttempt = S3(s3BlobDefault, s3BlobOld)
+    assert(combineAttempt.isFailure)
+    assert(combineAttempt match {case Failure(e) => e.getMessage contains "conflicting entries"})
   }
 }
