@@ -37,6 +37,7 @@ public class RepositoryEntity {
   public RepositoryEntity(Repository repository, WorkspaceDTO workspaceDTO)
       throws InvalidProtocolBufferException {
     this.name = repository.getName();
+    this.description = repository.getDescription();
     this.date_created = new Date().getTime();
     this.date_updated = new Date().getTime();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
@@ -62,6 +63,9 @@ public class RepositoryEntity {
 
   @Column(name = "name", columnDefinition = "varchar", length = 50)
   private String name;
+
+  @Column(name = "description", columnDefinition = "TEXT")
+  private String description;
 
   @Column(name = "date_created")
   private Long date_created;
@@ -155,6 +159,7 @@ public class RepositoryEntity {
         Repository.newBuilder()
             .setId(this.id)
             .setName(this.name)
+            .setDescription(this.description)
             .setDateCreated(this.date_created)
             .setDateUpdated(this.date_updated)
             .setWorkspaceId(this.workspace_id)
@@ -176,6 +181,7 @@ public class RepositoryEntity {
   public void update(SetRepository request) {
     final Repository repository = request.getRepository();
     this.name = repository.getName();
+    this.description = repository.getDescription();
     this.date_updated = new Date().getTime();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
     this.repositoryAccessModifier = repository.getRepositoryAccessModifierValue();

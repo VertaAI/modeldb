@@ -115,6 +115,7 @@ message Repository {
 
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
     RepositoryAccessModifierEnum.RepositoryAccessModifier repositoryAccessModifier = 8;
+    string description = 9;
 
     string owner = 10;
     repeated common.KeyValue attributes = 11;

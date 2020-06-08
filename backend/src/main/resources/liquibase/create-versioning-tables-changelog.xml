@@ -199,4 +199,12 @@
                                  referencedColumnNames="id"
                                  referencedTableName="repository"/>
     </changeSet>
+
+    <changeSet id="modify-entity-hash-length-label-mapping" author="anandJ">
+        <modifyDataType
+                columnName="entity_hash"
+                newDataType="varchar(255)"
+                tableName="labels_mapping"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -362,6 +362,17 @@
 		</addColumn>
 	</changeSet>
 
+	<changeSet id="add-repository-description-column" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="repository" columnName="description"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="repository">
+			<column name="description" type="TEXT" value=""/>
+		</addColumn>
+	</changeSet>
+
 	<changeSet id="add-attributes-to-repository" author="anandJ">
 		<preConditions onFail="MARK_RAN">
 			<not>
