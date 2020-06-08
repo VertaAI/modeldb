@@ -202,6 +202,18 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
+      if (!projectDAO.projectExistsInDB(request.getProjectId())) {
+        String errorMessage = "Project ID not found.";
+        LOGGER.warn(errorMessage);
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.NOT_FOUND_VALUE)
+                .setMessage(errorMessage)
+                .addDetails(Any.pack(GetExperimentsInProject.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);

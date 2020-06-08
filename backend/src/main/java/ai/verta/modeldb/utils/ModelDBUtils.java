@@ -254,7 +254,7 @@ public class ModelDBUtils {
               if (userInfoValue != null) {
                 collaborator1 = new CollaboratorUser(authService, userInfoValue);
               } else {
-                LOGGER.error("skipping " + collaborator.getVertaId() + " because it is not found");
+                LOGGER.warn("skipping " + collaborator.getVertaId() + " because it is not found");
               }
               break;
             case ORGANIZATION:
@@ -290,7 +290,7 @@ public class ModelDBUtils {
                     + collaborator.getVertaId()
                     + " because the current user doesn't have access to it");
           } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
-            LOGGER.error("skipping " + collaborator.getVertaId() + " because it is not found");
+            LOGGER.warn("skipping " + collaborator.getVertaId() + " because it is not found");
           } else {
             LOGGER.error(ex.getMessage(), ex);
             throw ex;

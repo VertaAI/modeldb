@@ -127,6 +127,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .toString();
   private static final String GET_PROJECT_BY_ID_HQL =
       "From ProjectEntity p where p.id = :id AND p." + ModelDBConstants.DELETED + " = false";
+  private static final String COUNT_PROJECT_BY_ID_HQL =
+      "Select Count(id) From ProjectEntity p where p.deleted = false AND p.id = :projectId";
   private static final String GET_PROJECT_BY_IDS_HQL =
       "From ProjectEntity p where p.id IN (:ids) AND p." + ModelDBConstants.DELETED + " = false";
   private static final String GET_PROJECT_BY_SHORT_NAME_AND_OWNER_HQL =
@@ -796,7 +798,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       query.setParameter("id", id);
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
-        String errorMessage = "Project not found for given ID";
+        String errorMessage = ModelDBMessages.PROJECT_NOT_FOUND_FOR_ID;
         LOGGER.warn(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
@@ -1361,5 +1363,21 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return projectPaginationDTO.getProjects().stream()
         .map(Project::getId)
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean projectExistsInDB(String projectId) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Query query = session.createQuery(COUNT_PROJECT_BY_ID_HQL);
+      query.setParameter("projectId", projectId);
+      Long projectCount = (Long) query.getSingleResult();
+      return projectCount == 1L;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return projectExistsInDB(projectId);
+      } else {
+        throw ex;
+      }
+    }
   }
 }

@@ -42,6 +42,7 @@ import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
+import com.google.protobuf.Value.KindCase;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
@@ -9937,7 +9938,7 @@ public class ExperimentRunTest {
             .addHyperparameters(hyperparameter1)
             .addHyperparameters(
                 KeyValue.newBuilder()
-                    .setKey("C")
+                    .setKey("D")
                     .setValue(Value.newBuilder().setStringValue("test_hyper").build())
                     .build())
             .build();
@@ -9979,7 +9980,7 @@ public class ExperimentRunTest {
 
     keyValueQuery =
         KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.c")
+            .setKey("hyperparameters.d")
             .setValue(Value.newBuilder().setStringValue("test_hyper").build())
             .setOperator(Operator.EQ)
             .setValueType(ValueType.STRING)
@@ -10061,7 +10062,12 @@ public class ExperimentRunTest {
       ExperimentRun exprRun = response.getExperimentRuns(index);
       for (KeyValue kv : exprRun.getHyperparametersList()) {
         if (kv.getKey().equals("C")) {
-          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+          assertTrue(
+              "Value should be GTE 0.0001 " + kv,
+              (kv.getValue().getKindCase() == KindCase.STRING_VALUE
+                      ? Double.parseDouble(kv.getValue().getStringValue())
+                      : kv.getValue().getNumberValue())
+                  > 0.0001);
         }
       }
     }

@@ -332,4 +332,11 @@ public interface ProjectDAO {
 
   public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException;
+  /**
+   * Checks if project with the id exists with delete flag false
+   *
+   * @param projectId
+   * @return
+   */
+  boolean projectExistsInDB(String projectId);
 }
