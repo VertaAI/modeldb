@@ -23,7 +23,6 @@ public class PathDatasetComponentBlobEntity {
     this.last_modified_at_source = pathDatasetComponentBlob.getLastModifiedAtSource();
     this.sha256 = pathDatasetComponentBlob.getSha256();
     this.md5 = pathDatasetComponentBlob.getMd5();
-    description = pathDatasetComponentBlob.getDescription();
   }
 
   @EmbeddedId private PathDatasetComponentBlobId id;
@@ -42,9 +41,6 @@ public class PathDatasetComponentBlobEntity {
 
   @Column(name = "md5", columnDefinition = "text")
   private String md5;
-
-  @Column(name = "description", columnDefinition = "TEXT", nullable = false)
-  private String description;
 
   public String getPath() {
     return path;
@@ -66,10 +62,6 @@ public class PathDatasetComponentBlobEntity {
     return md5;
   }
 
-  public String getDescription() {
-    return description;
-  }
-
   public PathDatasetComponentBlob toProto() {
     return PathDatasetComponentBlob.newBuilder()
         .setPath(this.path)
@@ -77,7 +69,6 @@ public class PathDatasetComponentBlobEntity {
         .setLastModifiedAtSource(this.last_modified_at_source)
         .setSha256(this.sha256)
         .setMd5(this.md5)
-        .setDescription(description)
         .build();
   }
 }

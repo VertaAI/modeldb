@@ -26,7 +26,6 @@ public class S3DatasetComponentBlobEntity {
     this.sha256 = pathDatasetComponentBlob.getSha256();
     this.md5 = pathDatasetComponentBlob.getMd5();
     this.s3_version_id = s3DatasetComponentBlob.getS3VersionId();
-    description = pathDatasetComponentBlob.getDescription();
   }
 
   @EmbeddedId private S3DatasetComponentBlobId id;
@@ -48,9 +47,6 @@ public class S3DatasetComponentBlobEntity {
 
   @Column(name = "s3_version_id")
   private String s3_version_id;
-
-  @Column(name = "description", columnDefinition = "TEXT")
-  private String description;
 
   public String getPath() {
     return path;
@@ -82,7 +78,6 @@ public class S3DatasetComponentBlobEntity {
                 .setLastModifiedAtSource(this.last_modified_at_source)
                 .setSha256(this.sha256)
                 .setMd5(this.md5)
-                .setDescription(description)
                 .build())
         .build();
   }

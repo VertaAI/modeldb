@@ -3,6 +3,7 @@ package ai.verta.modeldb.versioning.blob.factory;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.S3DatasetComponentBlobEntity;
+import ai.verta.modeldb.entities.versioning.BlobInfoEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.DatasetBlob;
@@ -28,9 +29,14 @@ public class DatasetBlobFactory extends BlobFactory {
   @Override
   public Blob getBlob(Session session) throws ModelDBException {
     DatasetBlob.Builder datasetBlobBuilder = DatasetBlob.newBuilder();
+    BlobInfoEntity blobInfoEntity = session.get(BlobInfoEntity.class, getElementSha());
+    Blob.Builder builder = Blob.newBuilder();
+    if (blobInfoEntity != null) {
+      builder.setDescription(blobInfoEntity.getDescription());
+    }
     switch (getElementType()) {
       case S_3_DATASET_BLOB:
-        return Blob.newBuilder()
+        return builder
             .setDataset(datasetBlobBuilder.setS3(getS3Blob(session, getElementSha())))
             .build();
       case PATH_DATASET_BLOB:
@@ -38,9 +44,9 @@ public class DatasetBlobFactory extends BlobFactory {
         if (pathBlob == null) {
           throw new ModelDBException("Path blob not found", Code.INTERNAL);
         }
-        return Blob.newBuilder().setDataset(datasetBlobBuilder.setPath(pathBlob)).build();
+        return builder.setDataset(datasetBlobBuilder.setPath(pathBlob)).build();
     }
-    return Blob.newBuilder().setDataset(datasetBlobBuilder).build();
+    return builder.setDataset(datasetBlobBuilder).build();
   }
 
   private static S3DatasetBlob getS3Blob(Session session, String blobHash) throws ModelDBException {

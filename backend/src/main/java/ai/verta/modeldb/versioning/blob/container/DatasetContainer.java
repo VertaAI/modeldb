@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import org.hibernate.Session;
 
 public class DatasetContainer extends BlobContainer {
@@ -53,13 +54,14 @@ public class DatasetContainer extends BlobContainer {
             final String componentHash = computeSHA(componentBlob);
             componentHashes.put(componentHash, componentBlob);
           }
-          blobHash = computeSHAS3Dataset(componentHashes);
+          blobHash = super.process(session, computeSHAS3Dataset(componentHashes), blobHashes);
           if (!blobHashes.contains(blobHash)) {
             blobHashes.add(blobHash);
             for (Map.Entry<String, AutogenS3DatasetComponentBlob> component :
                 componentHashes.entrySet()) {
-              if (!blobHashes.contains(component.getKey())) {
-                blobHashes.add(component.getKey());
+              String key = component.getKey() + ":" + blobHash;
+              if (!blobHashes.contains(key)) {
+                blobHashes.add(key);
                 S3DatasetComponentBlobEntity s3DatasetComponentBlobEntity =
                     new S3DatasetComponentBlobEntity(
                         component.getKey(), blobHash, component.getValue().toProto().build());
@@ -72,7 +74,8 @@ public class DatasetContainer extends BlobContainer {
         }
         break;
       case PATH:
-        blobHash = saveBlob(session, dataset.getPath(), blobHashes);
+        blobHash =
+            saveBlob(session, dataset.getPath(), blobHashes, hash -> super.process(session, hash, blobHashes));
         break;
       default:
         throw new ModelDBException("Unknown blob type", Code.INTERNAL);
@@ -84,6 +87,15 @@ public class DatasetContainer extends BlobContainer {
 
   static String saveBlob(Session session, PathDatasetBlob path, Set<String> blobHashes)
       throws NoSuchAlgorithmException {
+    return saveBlob(session, path, blobHashes, hash -> hash);
+  }
+
+  static String saveBlob(
+      Session session,
+      PathDatasetBlob path,
+      Set<String> blobHashes,
+      Function<String, String> process)
+      throws NoSuchAlgorithmException {
     // sorted
     Map<String, AutogenPathDatasetComponentBlob> componentHashes = new LinkedHashMap<>();
     AutogenPathDatasetBlob autogenPathDatasetBlob = AutogenPathDatasetBlob.fromProto(path);
@@ -92,13 +104,14 @@ public class DatasetContainer extends BlobContainer {
         final String componentHash = computeSHA(componentBlob);
         componentHashes.put(componentHash, componentBlob);
       }
-      String blobHash = computeSHAPathDataset(componentHashes);
+      String blobHash = process.apply(computeSHAPathDataset(componentHashes));
       if (!blobHashes.contains(blobHash)) {
         blobHashes.add(blobHash);
         for (Map.Entry<String, AutogenPathDatasetComponentBlob> component :
             componentHashes.entrySet()) {
-          if (!blobHashes.contains(component.getKey())) {
-            blobHashes.add(component.getKey());
+          String key = component.getKey() + ":" + blobHash;
+          if (!blobHashes.contains(key)) {
+            blobHashes.add(key);
             PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
                 new PathDatasetComponentBlobEntity(
                     component.getKey(), blobHash, component.getValue().toProto().build());

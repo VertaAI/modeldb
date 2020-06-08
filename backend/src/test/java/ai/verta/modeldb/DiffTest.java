@@ -1095,10 +1095,15 @@ public class DiffTest {
   }
 
   private BlobExpanded modifiedBlobExpanded(int blobType) {
-    String path3 = "/protos/proto/public/test22.txt";
+    String path3;
+    if (blobType == 0) {
+      path3 = "/protos/proto/public/versioning/versioning.proto";
+    } else {
+      path3 = "/protos/proto/public/test22.txt";
+    }
     BlobExpanded blobExpanded3 =
         BlobExpanded.newBuilder()
-            .setBlob(getDatasetBlobFromPath(path3))
+            .setBlob(getDatasetBlobFromPath(path3).toBuilder().setDescription("description"))
             .addAllLocation(LOCATION3)
             .build();
 

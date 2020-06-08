@@ -362,25 +362,17 @@
 		</addColumn>
 	</changeSet>
 
-	<changeSet author="lezhevg" id="add-description-to_s3_dataset_component_blob">
+	<changeSet author="lezhevg" id="add-description-to_blob">
 		<preConditions onFail="MARK_RAN">
 			<not>
-				<columnExists tableName="s3_dataset_component_blob" columnName="description"/>
+				<tableExists tableName="blob_info"/>
 			</not>
 		</preConditions>
-		<addColumn tableName="s3_dataset_component_blob">
-            <column name="description" type="TEXT" value=""/>
-		</addColumn>
-	</changeSet>
-
-	<changeSet author="lezhevg" id="add-description-to_path_dataset_component_blob">
-		<preConditions onFail="MARK_RAN">
-			<not>
-				<columnExists tableName="path_dataset_component_blob" columnName="description"/>
-			</not>
-		</preConditions>
-		<addColumn tableName="path_dataset_component_blob">
-			<column name="description" type="TEXT" value=""/>
-		</addColumn>
+		<createTable tableName="blob_info">
+			<column name="blob_hash" type="varchar(64)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+            <column name="description" type="TEXT"/>
+		</createTable>
 	</changeSet>
 </databaseChangeLog>
