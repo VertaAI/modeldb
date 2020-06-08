@@ -13,6 +13,7 @@ import scala.util.{Failure, Success, Try}
 import scala.annotation.tailrec
 
 /** Captures metadata about S3 objects
+ *  Please set up AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION environment variables before use.
  *  To create a new instance, use the constructor taking a list of S3 Locations
  *  {{{
  *  val s3Blob: Try[S3] = S3(List(S3Location("some-path-1").get, S3Location("some-path-2").get))
@@ -39,7 +40,7 @@ case class S3(
 
 /** Companion object to handle interaction with versioning blob */
 object S3 {
-  private val s3: AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build()
+  private val s3: AmazonS3 = AmazonS3ClientBuilder.standard().build()
 
   /** Constructor that user should use:
    */
