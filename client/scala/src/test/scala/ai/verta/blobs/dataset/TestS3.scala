@@ -40,11 +40,11 @@ class TestS3 extends FunSuite {
       val s3: AmazonS3 = AmazonS3ClientBuilder.standard().build()
       val versionListing = s3.listVersions("verta-scala-test", "testdir/testfile")
       val oldVersionId = versionListing.getVersionSummaries().asScala.toList
-      .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
-      .filter(!_.isLatest()).head.getVersionId()
+        .filter((version: S3VersionSummary) => !version.getKey().endsWith("/")) // not a folder
+        .filter(!_.isLatest()).head.getVersionId()
       val newVersionId = versionListing.getVersionSummaries().asScala.toList
-      .filter((version: S3VersionSummary) => version.getKey().charAt(version.getKey().length() - 1) != '/') // not a folder
-      .filter(_.isLatest()).head.getVersionId()
+        .filter((version: S3VersionSummary) => !version.getKey().endsWith("/")) // not a folder
+        .filter(_.isLatest()).head.getVersionId()
     }
 
   test("S3Location should correctly determine bucket name and key") {
