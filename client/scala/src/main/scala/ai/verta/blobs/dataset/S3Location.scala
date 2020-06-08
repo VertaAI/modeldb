@@ -10,7 +10,11 @@ import scala.util.{Try, Success, Failure}
  *  val S3Location: Try[S3Location] = S3Location("some-path-1")
  *  }}}
  */
-class S3Location(val bucketName: String, val key: Option[String], val versionID: Option[String] = None) {}
+class S3Location(
+  val bucketName: String,
+  val key: Option[String] = None, 
+  val versionID: Option[String] = None
+) {}
 
 object S3Location {
   /** Factory method to create S3 location.
