@@ -2326,6 +2326,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
       }
 
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
+
       CommitArtifactPart.Response response = experimentRunDAO.commitArtifactPart(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -2352,6 +2357,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       if (errorMessage != null) {
         throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
       }
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       GetCommittedArtifactParts.Response response =
           experimentRunDAO.getCommittedArtifactParts(request);
@@ -2380,6 +2390,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       if (errorMessage != null) {
         throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
       }
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       CommitMultipartArtifact.Response response =
           experimentRunDAO.commitMultipartArtifact(
