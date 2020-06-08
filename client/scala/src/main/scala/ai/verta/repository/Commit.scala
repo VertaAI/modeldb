@@ -104,6 +104,7 @@ class Commit(
    */
   private def becomeChild() = {
     if (saved) {
+      /** TODO: Deal with author, date_created */
       commit = VersioningCommit(
         parent_shas = commit.commit_sha.map(List(_))
       )
