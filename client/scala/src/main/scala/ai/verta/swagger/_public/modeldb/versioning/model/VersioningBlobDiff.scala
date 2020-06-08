@@ -21,6 +21,7 @@ case class VersioningBlobDiff (
   code: Option[VersioningCodeDiff] = None,
   config: Option[VersioningConfigDiff] = None,
   dataset: Option[VersioningDatasetDiff] = None,
+  description: Option[VersioningDescriptionDiff] = None,
   environment: Option[VersioningEnvironmentDiff] = None,
   location: Option[List[String]] = None,
   status: Option[DiffStatusEnumDiffStatus] = None
@@ -35,6 +36,7 @@ object VersioningBlobDiff {
         obj.code.map(x => JField("code", ((x: VersioningCodeDiff) => VersioningCodeDiff.toJson(x))(x))),
         obj.config.map(x => JField("config", ((x: VersioningConfigDiff) => VersioningConfigDiff.toJson(x))(x))),
         obj.dataset.map(x => JField("dataset", ((x: VersioningDatasetDiff) => VersioningDatasetDiff.toJson(x))(x))),
+        obj.description.map(x => JField("description", ((x: VersioningDescriptionDiff) => VersioningDescriptionDiff.toJson(x))(x))),
         obj.environment.map(x => JField("environment", ((x: VersioningEnvironmentDiff) => VersioningEnvironmentDiff.toJson(x))(x))),
         obj.location.map(x => JField("location", ((x: List[String]) => JArray(x.map(JString)))(x))),
         obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x)))
@@ -54,6 +56,7 @@ object VersioningBlobDiff {
           code = fieldsMap.get("code").map(VersioningCodeDiff.fromJson),
           config = fieldsMap.get("config").map(VersioningConfigDiff.fromJson),
           dataset = fieldsMap.get("dataset").map(VersioningDatasetDiff.fromJson),
+          description = fieldsMap.get("description").map(VersioningDescriptionDiff.fromJson),
           environment = fieldsMap.get("environment").map(VersioningEnvironmentDiff.fromJson),
           location = fieldsMap.get("location").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson)

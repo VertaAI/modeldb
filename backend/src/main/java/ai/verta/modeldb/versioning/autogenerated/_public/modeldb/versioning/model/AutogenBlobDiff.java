@@ -21,6 +21,7 @@ public class AutogenBlobDiff implements ProtoType {
   private AutogenCodeDiff Code;
   private AutogenConfigDiff Config;
   private AutogenDatasetDiff Dataset;
+  private AutogenDescriptionDiff Description;
   private AutogenEnvironmentDiff Environment;
   private List<String> Location;
   private AutogenDiffStatusEnumDiffStatus Status;
@@ -29,6 +30,7 @@ public class AutogenBlobDiff implements ProtoType {
     this.Code = null;
     this.Config = null;
     this.Dataset = null;
+    this.Description = null;
     this.Environment = null;
     this.Location = null;
     this.Status = null;
@@ -42,6 +44,9 @@ public class AutogenBlobDiff implements ProtoType {
       return false;
     }
     if (this.Dataset != null && !this.Dataset.equals(null)) {
+      return false;
+    }
+    if (this.Description != null && !this.Description.equals(null)) {
       return false;
     }
     if (this.Environment != null && !this.Environment.equals(null)) {
@@ -74,6 +79,11 @@ public class AutogenBlobDiff implements ProtoType {
     if (this.Dataset != null && !this.Dataset.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"Dataset\": " + Dataset);
+      first = false;
+    }
+    if (this.Description != null && !this.Description.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Description\": " + Description);
       first = false;
     }
     if (this.Environment != null && !this.Environment.equals(null)) {
@@ -137,6 +147,14 @@ public class AutogenBlobDiff implements ProtoType {
         if (this.Dataset == null && other.Dataset != null) return false;
         if (this.Dataset != null && other.Dataset == null) return false;
         if (!f.apply(this.Dataset, other.Dataset)) return false;
+      }
+    }
+    {
+      Function3<AutogenDescriptionDiff, AutogenDescriptionDiff, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Description != null || other.Description != null) {
+        if (this.Description == null && other.Description != null) return false;
+        if (this.Description != null && other.Description == null) return false;
+        if (!f.apply(this.Description, other.Description)) return false;
       }
     }
     {
@@ -204,6 +222,15 @@ public class AutogenBlobDiff implements ProtoType {
     return this.Dataset;
   }
 
+  public AutogenBlobDiff setDescription(AutogenDescriptionDiff value) {
+    this.Description = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public AutogenDescriptionDiff getDescription() {
+    return this.Description;
+  }
+
   public AutogenBlobDiff setEnvironment(AutogenEnvironmentDiff value) {
     this.Environment = Utils.removeEmpty(value);
     return this;
@@ -251,6 +278,11 @@ public class AutogenBlobDiff implements ProtoType {
       Function<ai.verta.modeldb.versioning.BlobDiff, AutogenDatasetDiff> f =
           x -> AutogenDatasetDiff.fromProto(blob.getDataset());
       obj.setDataset(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.BlobDiff, AutogenDescriptionDiff> f =
+          x -> AutogenDescriptionDiff.fromProto(blob.getDescription());
+      obj.setDescription(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.BlobDiff, AutogenEnvironmentDiff> f =
@@ -303,6 +335,16 @@ public class AutogenBlobDiff implements ProtoType {
       }
     }
     {
+      if (this.Description != null && !this.Description.equals(null)) {
+        Function<ai.verta.modeldb.versioning.BlobDiff.Builder, Void> f =
+            x -> {
+              builder.setDescription(this.Description.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
       if (this.Environment != null && !this.Environment.equals(null)) {
         Function<ai.verta.modeldb.versioning.BlobDiff.Builder, Void> f =
             x -> {
@@ -344,6 +386,7 @@ public class AutogenBlobDiff implements ProtoType {
     visitor.preVisitDeepAutogenCodeDiff(this.Code);
     visitor.preVisitDeepAutogenConfigDiff(this.Config);
     visitor.preVisitDeepAutogenDatasetDiff(this.Dataset);
+    visitor.preVisitDeepAutogenDescriptionDiff(this.Description);
     visitor.preVisitDeepAutogenEnvironmentDiff(this.Environment);
     visitor.preVisitDeepListOfString(this.Location);
 
@@ -358,6 +401,7 @@ public class AutogenBlobDiff implements ProtoType {
     this.setCode(visitor.postVisitDeepAutogenCodeDiff(this.Code));
     this.setConfig(visitor.postVisitDeepAutogenConfigDiff(this.Config));
     this.setDataset(visitor.postVisitDeepAutogenDatasetDiff(this.Dataset));
+    this.setDescription(visitor.postVisitDeepAutogenDescriptionDiff(this.Description));
     this.setEnvironment(visitor.postVisitDeepAutogenEnvironmentDiff(this.Environment));
     this.setLocation(visitor.postVisitDeepListOfString(this.Location));
 

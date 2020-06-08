@@ -93,6 +93,15 @@ public class BlobProtoEquality {
   }
 
   @Property
+  public void protoEqualityAutogenDescriptionDiff(AutogenDescriptionDiff b)
+      throws ModelDBException {
+    AutogenDescriptionDiff newb = enforceOneof(b);
+    AutogenDescriptionDiff other =
+        newb == null ? null : AutogenDescriptionDiff.fromProto(newb.toProto().build());
+    assertEquals(newb, other);
+  }
+
+  @Property
   public void protoEqualityAutogenDiscreteHyperparameterSetConfigBlob(
       AutogenDiscreteHyperparameterSetConfigBlob b) throws ModelDBException {
     AutogenDiscreteHyperparameterSetConfigBlob newb = enforceOneof(b);

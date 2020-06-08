@@ -62,6 +62,11 @@ public class BlobEquality {
   }
 
   @Property
+  public void equalityAutogenDescriptionDiff(AutogenDescriptionDiff b) {
+    assertTrue(b.equals(b));
+  }
+
+  @Property
   public void equalityAutogenDiscreteHyperparameterSetConfigBlob(
       AutogenDiscreteHyperparameterSetConfigBlob b) {
     assertTrue(b.equals(b));

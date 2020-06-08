@@ -117,6 +117,8 @@ public class DiffComputer {
             .setEnvironment(
                 computeDiff(
                     a, b, AutogenBlob::getEnvironment, DiffComputer::computeEnvironmentDiff)));
+    // .setDescription(computeDiff(a, b, AutogenBlob::getDescription,
+    // DiffComputer::computeDescriptionDiff)));
   }
 
   public static AutogenCodeDiff computeCodeDiff(AutogenCodeBlob a, AutogenCodeBlob b) {

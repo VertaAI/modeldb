@@ -3350,6 +3350,9 @@
         },
         "config": {
           "$ref": "#/definitions/versioningConfigDiff"
+        },
+        "description": {
+          "$ref": "#/definitions/versioningDescriptionDiff"
         }
       }
     },
@@ -3638,6 +3641,23 @@
     },
     "versioningDeleteTagRequestResponse": {
       "type": "object"
+    },
+    "versioningDescriptionDiff": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
+        },
+        "A": {
+          "type": "string"
+        },
+        "B": {
+          "type": "string"
+        },
+        "C": {
+          "type": "string"
+        }
+      }
     },
     "versioningDiscreteHyperparameterSetConfigBlob": {
       "type": "object",

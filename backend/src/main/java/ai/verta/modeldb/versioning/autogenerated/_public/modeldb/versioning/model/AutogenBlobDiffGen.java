@@ -29,6 +29,10 @@ public class AutogenBlobDiffGen extends Generator<AutogenBlobDiff> {
       obj.setDataset(Utils.removeEmpty(gen().type(AutogenDatasetDiff.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
+      obj.setDescription(
+          Utils.removeEmpty(gen().type(AutogenDescriptionDiff.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
       obj.setEnvironment(
           Utils.removeEmpty(gen().type(AutogenEnvironmentDiff.class).generate(r, status)));
     }
