@@ -28,7 +28,6 @@ import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import { AllEntityAction } from 'models/EntitiesActions';
 import routes from 'routes';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { ownerAllowedActions } from 'utils/tests/mocks/models/collaborators';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 
 import CompareChanges from '../CompareChanges';
@@ -42,6 +41,8 @@ import {
 import { createWaitForPred } from 'core/shared/utils/tests/integrations/waitForByPred';
 import { createWaitForExpect } from 'core/shared/utils/tests/integrations/waitForExpect';
 import { getDisplayedNotifications } from 'core/shared/view/elements/Notification/__tests__/helpers';
+
+const ownerAllowedActions: any = [];
 
 const currentWorkspace = userWorkspacesWithCurrentUser.user;
 const repository = repositories[0];
@@ -91,7 +92,7 @@ type MakeComponentProps = {
   branches: Branch[];
   tags: CommitTag[];
   compareChangesQuery: MockedResponse;
-  allowedActions: AllEntityAction[];
+  allowedActions: any;
 
   graphqlMocks?: MockedResponse[];
 };
@@ -128,7 +129,7 @@ const makeComponent = async ({
             path={routes.repositoryCompareChanges.getPath()}
             component={() => (
               <CompareChanges
-                repository={{ ...repository, allowedActions }}
+                repository={{ ...repository }}
                 branches={branches}
                 tags={tags}
                 commitPointerA={commitPointerA}
@@ -173,7 +174,7 @@ const defaultProps: MakeComponentProps = {
   allowedActions: ownerAllowedActions,
 };
 
-describe('(feature copmareChanges)', () => {
+describe.only('(feature copmareChanges)', () => {
   describe('(view CompareChanges)', () => {
     it('should load commits by commit pointers and display compare between commits', async () => {
       const { component } = await makeComponent(defaultProps);
@@ -225,56 +226,6 @@ describe('(feature copmareChanges)', () => {
       const findMergeCommitsButton = findByDataTestAttribute(
         'merge-commits-button'
       );
-
-      describe('displaying merging button', () => {
-        const checkMergingButtonDisplaying = async (
-          {
-            allowedActions,
-            compareChangesQuery,
-          }: Pick<MakeComponentProps, 'allowedActions' | 'compareChangesQuery'>,
-          props: { shouldDisplay: boolean }
-        ) => {
-          const { component } = await makeComponent({
-            ...defaultProps,
-            compareChangesQuery,
-            allowedActions,
-          });
-
-          await waitFor(component);
-
-          expect(findMergeCommitsButton(component).length).toEqual(
-            props.shouldDisplay ? 1 : 0
-          );
-        };
-
-        it('should be enable when a user has access and there are diffs', async () => {
-          await checkMergingButtonDisplaying(
-            {
-              compareChangesQuery: makeCompareChangesQueryWithDefault(
-                serverDiffs
-              ),
-              allowedActions: ['update'],
-            },
-            { shouldDisplay: true }
-          );
-          await checkMergingButtonDisplaying(
-            {
-              compareChangesQuery: makeCompareChangesQueryWithDefault([]),
-              allowedActions: ['update'],
-            },
-            { shouldDisplay: false }
-          );
-          await checkMergingButtonDisplaying(
-            {
-              compareChangesQuery: makeCompareChangesQueryWithDefault(
-                serverDiffs
-              ),
-              allowedActions: [],
-            },
-            { shouldDisplay: false }
-          );
-        });
-      });
 
       const mergeCommits = async (component: ReactWrapper<any>) => {
         await waitFor(component);

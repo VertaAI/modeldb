@@ -31,6 +31,7 @@ const mapStateToProps = (
   state: IApplicationState,
   localProps: ILocalProps<EntitiesActions.UserEntityAction[]>
 ) => {
+  return {};
 };
 
 type AllProps<T extends EntitiesActions.UserEntityAction[]> = ILocalProps<T> &

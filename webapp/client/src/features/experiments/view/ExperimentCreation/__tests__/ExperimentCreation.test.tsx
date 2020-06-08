@@ -44,6 +44,7 @@ const makeComponent = async () => {
       },
     });
     await flushAllPromisesFor(data.component);
+    await flushAllPromisesFor(data.component);
     return data;
   });
 };

@@ -13,7 +13,6 @@ import routes, { GetRouteParams } from 'routes';
 import { currentUserProjects } from 'utils/tests/mocks/models/projectsMocks';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 
-import DeveloperKeyInfo from '../DeveloperKeyInfo/DeveloperKeyInfo';
 import { IProjectsAllProps, ProjectsView } from '../Projects';
 import styles from '../Projects.module.css';
 import ProjectWidget from '../ProjectWidget/ProjectWidget';
@@ -23,7 +22,7 @@ const makeShallowComponent = (props: Partial<IProjectsAllProps> = {}) => {
     ...makeRouterMockProps<GetRouteParams<typeof routes.projects>>({
       workspaceName: userWorkspacesWithCurrentUser.user.name,
     }),
-    workspaceName: userWorkspacesWithCurrentUser.user.name,
+    workspaceName: userWorkspacesWithCurrentUser.user.name as any,
     dispatch: jest.fn(),
     filters: [],
     loadingProjects: initialCommunication,
@@ -95,12 +94,5 @@ describe('(feature) Projects', () => {
     });
 
     expect(component.find(NoResultsStub).length).toBe(1);
-  });
-
-  it('should render developer key info if a user has not projects', () => {
-    const component = makeShallowComponent({ projects: [] });
-
-    expect(component.find(`${styles.root}`).children.length).toEqual(1);
-    expect(component.find(DeveloperKeyInfo).length).toBe(1);
   });
 });

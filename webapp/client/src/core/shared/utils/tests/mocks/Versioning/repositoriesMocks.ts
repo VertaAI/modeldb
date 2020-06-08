@@ -1,7 +1,7 @@
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 
-import { currentUser } from '../../../../../../utils/tests/mocks/models/users';
-import { userWorkspacesWithCurrentUser } from '../../../../../../utils/tests/mocks/models/workspace';
+import { currentUser } from '../users';
+import { userWorkspacesWithCurrentUser } from '../workspace';
 
 export const repositories: IRepository[] = [
   {

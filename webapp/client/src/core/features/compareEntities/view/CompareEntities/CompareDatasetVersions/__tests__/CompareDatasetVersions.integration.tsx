@@ -14,18 +14,14 @@ import {
   IQueryDatasetVersion,
   IPathBasedDatasetVersion,
 } from 'models/DatasetVersion';
-import User from 'models/User';
 import DatasetVersionsDataService from 'services/datasetVersions/DatasetVersionsDataService';
 import {
   IDatasetsState,
   datasetsReducer,
   loadDatasetActionTypes,
-} from 'features/datasets/store';
+} from 'features/datasets';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
-import setUserWorkspacesInStore from 'utils/tests/integrations/storeUpdaters/setWorkspaces';
 import { makeDataset } from 'utils/tests/mocks/models/datasetMocks';
-import { users } from 'utils/tests/mocks/models/users';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 
 import diffHighlightStyles from '../../shared/DiffHighlight/DiffHighlight.module.css';
 import CompareDatasetVersions, {
@@ -46,11 +42,8 @@ const mockDataset = makeDataset({
   id: 'id',
   name: 'dataset',
   attributes: [],
-  collaborators: [],
   description: 'description',
-  owner: users[0],
   type: 'raw',
-  allowedActions: [],
 });
 
 const renderComponent = async ({
@@ -66,7 +59,7 @@ const renderComponent = async ({
   };
 
   (DatasetVersionsDataService as any).mockImplementation(() => ({
-    loadDatasetVersion: jest.fn((workspaceName, id) =>
+    loadDatasetVersion: jest.fn(id =>
       Promise.resolve(
         datasetVersion1.id === id ? datasetVersion1 : datasetVersion2
       )
@@ -82,9 +75,6 @@ const renderComponent = async ({
           type: datasetVersion1.type,
         }),
       },
-    },
-    updateStoreBeforeMount: async store => {
-      await setUserWorkspacesInStore(store, userWorkspacesWithCurrentUser);
     },
   });
 
@@ -242,8 +232,6 @@ describe('component', () => {
       dateLogged: new Date(),
       dateUpdated: new Date(),
       description: 'description',
-      owner: mockDataset.owner,
-      ownerId: mockDataset.ownerId,
       version: 0,
       info: {
         features: [],
@@ -259,8 +247,6 @@ describe('component', () => {
       dateLogged: new Date(),
       dateUpdated: new Date(),
       description: 'description',
-      owner: mockDataset.owner,
-      ownerId: mockDataset.ownerId,
       version: 0,
       info: {
         features: [],
@@ -282,10 +268,7 @@ describe('component', () => {
 
     describe('when dataset versions type is raw', () => {
       const updateRawDatasetVersion = (
-        newProps: Partial<
-          Omit<IRawDatasetVersion, 'owner' | 'info' | 'ownerId'>
-        > & {
-          owner?: { username: string };
+        newProps: Partial<Omit<IRawDatasetVersion, 'info'>> & {
           info?: Partial<IRawDatasetVersion['info']>;
         },
         rawDatasetVersion: IRawDatasetVersion
@@ -294,19 +277,6 @@ describe('component', () => {
           ...rawDatasetVersion,
           ...newProps,
         };
-        if (newProps.owner) {
-          const newOwner = new User({
-            username: newProps.owner.username,
-            id: `${newProps.owner.username}-id`,
-            email: 'collaborator@gmail.com',
-            fullName: newProps.owner.username,
-          });
-          return {
-            ...(updatedData as any),
-            owner: newOwner,
-            ownerId: newOwner.id,
-          };
-        }
         if (!updatedData.info.features) {
           return {
             ...updatedData,
@@ -328,8 +298,6 @@ describe('component', () => {
         dateLogged: new Date(),
         dateUpdated: new Date(),
         description: 'description',
-        owner: mockDataset.owner,
-        ownerId: mockDataset.ownerId,
         version: 0,
         info: {
           features: [],
@@ -345,8 +313,6 @@ describe('component', () => {
         dateLogged: new Date(),
         dateUpdated: new Date(),
         description: 'description',
-        owner: mockDataset.owner,
-        ownerId: mockDataset.ownerId,
         version: 0,
         info: {
           features: [],
@@ -459,70 +425,6 @@ describe('component', () => {
             ),
             datasetVersion2: updateRawDatasetVersion(
               { parentId: undefined },
-              rawDatasetVersion2
-            ),
-          }
-        );
-      });
-
-      describe('property "Owner"', () => {
-        testRenderPropertyRow(
-          {
-            propertyType: 'ownerId',
-            propertyTitle: 'Owner',
-          },
-          {
-            datasetVersion1: rawDatasetVersion1,
-            datasetVersion2: rawDatasetVersion2,
-          }
-        );
-
-        testRenderPropertyValue(
-          {
-            propertyType: 'ownerId',
-            getExpectedValue: () => 'owner',
-          },
-          {
-            datasetVersion1: updateRawDatasetVersion(
-              { owner: { username: 'owner' } },
-              rawDatasetVersion1
-            ),
-            datasetVersion2: updateRawDatasetVersion(
-              { owner: { username: 'owner' } },
-              rawDatasetVersion2
-            ),
-          }
-        );
-
-        testBgHighlightingDiffValue(
-          {
-            isDiff: true,
-            propertyType: 'ownerId',
-          },
-          {
-            datasetVersion1: updateRawDatasetVersion(
-              { owner: { username: 'owner-1' } },
-              rawDatasetVersion1
-            ),
-            datasetVersion2: updateRawDatasetVersion(
-              { owner: { username: 'owner-2' } },
-              rawDatasetVersion2
-            ),
-          }
-        );
-
-        testBgHighlightingDiffValue(
-          {
-            isDiff: false,
-            propertyType: 'ownerId',
-          },
-          {
-            datasetVersion1: updateRawDatasetVersion(
-              { owner: { username: 'owner' } },
-              rawDatasetVersion1
-            ),
-            datasetVersion2: updateRawDatasetVersion(
-              { owner: { username: 'owner' } },
               rawDatasetVersion2
             ),
           }
@@ -1171,8 +1073,6 @@ describe('component', () => {
         dateLogged: new Date(),
         dateUpdated: new Date(),
         description: 'description',
-        owner: mockDataset.owner,
-        ownerId: mockDataset.ownerId,
         version: 0,
         info: {
           queryParameters: [],
@@ -1188,8 +1088,6 @@ describe('component', () => {
         dateLogged: new Date(),
         dateUpdated: new Date(),
         description: 'description',
-        owner: mockDataset.owner,
-        ownerId: mockDataset.ownerId,
         version: 0,
         info: {
           queryParameters: [],
@@ -1413,8 +1311,6 @@ describe('component', () => {
         dateLogged: new Date(),
         dateUpdated: new Date(),
         description: 'description',
-        owner: mockDataset.owner,
-        ownerId: mockDataset.ownerId,
         version: 0,
         info: {
           datasetPathInfos: [],
@@ -1430,8 +1326,6 @@ describe('component', () => {
         dateLogged: new Date(),
         dateUpdated: new Date(),
         description: 'description',
-        owner: mockDataset.owner,
-        ownerId: mockDataset.ownerId,
         version: 0,
         info: {
           datasetPathInfos: [],

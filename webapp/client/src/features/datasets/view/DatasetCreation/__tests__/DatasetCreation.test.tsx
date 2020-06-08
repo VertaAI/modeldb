@@ -120,13 +120,13 @@ describe('(feature) DatasetCreation', () => {
       tags: expectedDataset.tags,
       visibility: 'private',
       type: 'path',
-      workspaceName: predefinedData.userWorkspaces.user.name,
+      workspaceName: 'personal',
     };
     expect(createDatasetSpy).toBeCalledWith(expectedDatasetSettings);
     expect(history.location.pathname).toBe(
       routes.datasetSummary.getRedirectPath({
         datasetId: expectedDataset.id,
-        workspaceName: predefinedData.userWorkspaces.user.name,
+        workspaceName: 'personal',
       })
     );
   });
