@@ -19,9 +19,14 @@ class TestCommit extends FunSuite {
         val client = new Client(ClientConnection.fromEnvironment())
         val repo = client.getOrCreateRepository("My Repo").get
         val commit = repo.getCommitByBranch().get
+        val pathBlob = PathBlob(List(
+          f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir"
+        )).get
     }
 
-  def cleanup(f: AnyRef{val client: Client; val repo: Repository; val commit: Commit}) = {
+  def cleanup(
+    f: AnyRef{val client: Client; val repo: Repository; val commit: Commit; val pathBlob: PathBlob}
+  ) = {
     f.client.deleteRepository(f.repo.id)
     f.client.close()
   }
@@ -30,22 +35,48 @@ class TestCommit extends FunSuite {
     val f = fixture
 
     try {
-      val workingDir = System.getProperty("user.dir")
-      val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
-      val pathBlob = PathBlob(List(testDir)).get
-      f.commit.update("abc/def", pathBlob)
+      val originalId = f.commit.id
+      f.commit.update("abc/def", f.pathBlob)
+      assert(f.commit.save("Some message").isSuccess)
 
-      val getAttempt = f.commit.get("abc/def").get
+      // get the commit that was previously saved:
+      val newCommit = f.repo.getCommitById(f.commit.id).get
+      val originalCommit = f.repo.getCommitById(originalId).get
+      assert(newCommit equals f.commit)
+      assert(!newCommit.equals(originalCommit))
 
       // check that the content of the pathblob is not corrupted:
+      val getAttempt = newCommit.get("abc/def").get
       val pathBlob2 = getAttempt match {
         case blob: PathBlob => blob
       }
-      assert(pathBlob2 equals pathBlob)
+      assert(pathBlob2 equals f.pathBlob)
+    } finally {
+      cleanup(f)
+    }
+  }
 
-      val getAttempt2 = f.commit.get("xyz/tuv")
-      assert(getAttempt2.isFailure)
-      assert(getAttempt2 match {case Failure(e) => e.getMessage contains "No blob was stored at this path."})
+  test("Saving unmodified commit should fail") {
+    val f = fixture
+
+    try {
+      val saveAttempt = f.commit.save("Some message")
+      assert(saveAttempt.isFailure)
+      assert(saveAttempt match {
+        case Failure(e) => e.getMessage contains "Commit is already saved"
+      })
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("Get with invalid paths should fail") {
+    val f = fixture
+
+    try {
+      val getAttempt = f.commit.get("xyz/tuv")
+      assert(getAttempt.isFailure)
+      assert(getAttempt match {case Failure(e) => e.getMessage contains "No blob was stored at this path."})
     } finally {
       cleanup(f)
     }

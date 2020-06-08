@@ -60,6 +60,78 @@ class Commit(
     })
   }
 
+  /** Saves this commit to ModelDB
+   *  @param message description of this commit
+   */
+  def save(message: String)(implicit ec: ExecutionContext) = {
+    if (saved)
+      Failure(new IllegalStateException("Commit is already saved"))
+    else
+      createCommit(message = message, blobs = Some(blobsList))
+  }
+
+  /** Helper function to create a new commit and assign to current instance.
+   */
+  private def createCommit(
+    message: String,
+    blobs: Option[List[VersioningBlobExpanded]] = None,
+    commitBase: Option[String] = None,
+    diffs: Option[List[VersioningBlobDiff]] = None)(implicit ec: ExecutionContext) = {
+      clientSet.versioningService.CreateCommit2(
+        body = VersioningCreateCommitRequest(
+          commit = Some(addMessage(message)),
+          blobs = blobs,
+          commit_base = commitBase,
+          diffs = diffs
+        ),
+        repository_id_repo_id = repo.id
+      ).map(r => if (!r.commit.isEmpty) {
+        commit = r.commit.get
+        init()
+      }).flatMap(_ =>
+        // if there is a branch associated to the commit instance, update the branchs
+        if (commitBranch.isDefined) setBranch(commitBranch.get)
+        else Success(())
+      )
+  }
+
+  /** Convert a location to "repeated string" representation
+   *  @param path path
+   *  @return the repeated string representation of the path
+   */
+   private def pathToLocation(path: String): List[String] = {
+     if (path.startsWith("/")) pathToLocation(path.substring(1))
+     else path.split("/").toList
+   }
+
+  /** Convert the dictionary of blobs into list form for API requests
+    *  @return the list required
+    */
+  private def blobsList: List[VersioningBlobExpanded] = {
+    (for ((path, blob) <- blobs) yield VersioningBlobExpanded(
+        blob = Some(blob),
+        location = Some(pathToLocation(path))
+    )).toList
+  }
+
+  /** Add message to current commit. Done before saving
+   *  @param message message
+   */
+  private def addMessage(message: String) = VersioningCommit(
+    /** TODO: Deal with author, date_created */
+    commit_sha = commit.commit_sha,
+    message = Some(message),
+    parent_shas = commit.parent_shas
+  )
+
+  /** Reset the state of commit
+   */
+  private def init() = {
+    saved = true
+    loadedFromRemote = false
+    blobs = new HashMap[String, VersioningBlob]()
+  }
+
   /** Retrieve commit's blobs from remote
    */
   private def loadBlobs()(implicit ec: ExecutionContext): Try[Unit] = {
