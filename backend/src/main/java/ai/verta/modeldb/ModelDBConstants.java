@@ -211,6 +211,7 @@ public interface ModelDBConstants {
       "https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry";
 
   // Versioning constant
+  String BLOB = "Blob";
   String BLOBS = "blobs";
   String SUBTREES = "subtrees";
   String REPOSITORY_ID = "repository_id";

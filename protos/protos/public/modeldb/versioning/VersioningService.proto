@@ -13,6 +13,7 @@ import "modeldb/versioning/Config.proto";
 import "modeldb/versioning/Dataset.proto";
 import "modeldb/versioning/Enums.proto";
 import "modeldb/versioning/Environment.proto";
+import "common/CommonService.proto";
 
 // Base commit for the versioning system
 // DO NOT USE TO COMPUTE SHA
@@ -63,6 +64,7 @@ message Blob {
         CodeBlob code = 4;
         ConfigBlob config = 5;
     }
+    repeated common.KeyValue attributes = 10;
 }
 
 message BlobExpanded {

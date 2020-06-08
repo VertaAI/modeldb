@@ -3,6 +3,7 @@ package ai.verta.modeldb;
 import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
 import static org.junit.Assert.*;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
@@ -49,6 +50,7 @@ import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -197,6 +199,28 @@ public class RepositoryTest {
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
+  }
+
+  public static List<KeyValue> getAttributeList() {
+    List<KeyValue> attributeList = new ArrayList<>();
+    Value intValue = Value.newBuilder().setNumberValue(1.1).build();
+    attributeList.add(
+        KeyValue.newBuilder()
+            .setKey("attribute_1" + Calendar.getInstance().getTimeInMillis())
+            .setValue(intValue)
+            .setValueType(ValueTypeEnum.ValueType.NUMBER)
+            .build());
+    Value stringValue =
+        Value.newBuilder()
+            .setStringValue("attributes_value_" + Calendar.getInstance().getTimeInMillis())
+            .build();
+    attributeList.add(
+        KeyValue.newBuilder()
+            .setKey("attribute_2_blob_" + Calendar.getInstance().getTimeInMillis())
+            .setValue(stringValue)
+            .setValueType(ValueTypeEnum.ValueType.BLOB)
+            .build());
+    return attributeList;
   }
 
   @Test

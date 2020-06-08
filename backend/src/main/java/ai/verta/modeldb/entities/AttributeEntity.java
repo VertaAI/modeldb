@@ -1,7 +1,9 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.common.KeyValue;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
@@ -46,6 +48,8 @@ public class AttributeEntity {
       setDatasetEntity(entity);
     } else if (entity instanceof DatasetVersionEntity) {
       setDatasetVersionEntity(entity);
+    } else if (entity instanceof BlobContainer) {
+      this.entity_name = ModelDBConstants.BLOB;
     }
 
     this.field_type = fieldType;
@@ -88,6 +92,9 @@ public class AttributeEntity {
   @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @JoinColumn(name = "dataset_version_id")
   private DatasetVersionEntity datasetVersionEntity;
+
+  @Column(name = "blob_hash", length = 64)
+  private String blob_hash;
 
   @Column(name = "entity_name", length = 50)
   private String entity_name;
@@ -179,6 +186,11 @@ public class AttributeEntity {
   public void setDatasetVersionEntity(Object entity) {
     this.datasetVersionEntity = (DatasetVersionEntity) entity;
     this.entity_name = this.datasetVersionEntity.getClass().getSimpleName();
+  }
+
+  public void setBlob_hash(String blob_hash) {
+    this.blob_hash = blob_hash;
+    this.entity_name = ModelDBConstants.BLOB;
   }
 
   public String getField_type() {
