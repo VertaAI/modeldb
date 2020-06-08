@@ -113,7 +113,7 @@ object S3 {
     }
   }
 
-  /** Helper function to deal with VersionListing when key is not provided
+  /** Helper function to deal with VersionListing
    */
   @tailrec private def handleVersionListing(
     versionListing: VersionListing,
