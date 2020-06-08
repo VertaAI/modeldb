@@ -36,15 +36,16 @@ class TestCommit extends FunSuite {
       f.commit.update("abc/def", pathBlob)
 
       val getAttempt = f.commit.get("abc/def").get
-      assert(getAttempt.isDefined)
 
       // check that the content of the pathblob is not corrupted:
-      val pathBlob2 = getAttempt.get match {
+      val pathBlob2 = getAttempt match {
         case blob: PathBlob => blob
       }
       assert(pathBlob2 equals pathBlob)
 
-      assert(f.commit.get("tuv/wxy").get.isEmpty)
+      val getAttempt2 = f.commit.get("xyz/tuv")
+      assert(getAttempt2.isFailure)
+      assert(getAttempt2 match {case Failure(e) => e.getMessage contains "No blob was stored at this path."})
     } finally {
       cleanup(f)
     }

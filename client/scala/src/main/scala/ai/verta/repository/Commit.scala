@@ -32,8 +32,13 @@ class Commit(
    *  @param path location of a blob
    *  @return ModelDB versioning blob. If not existed, return None
    */
-  def get(path: String)(implicit ec: ExecutionContext): Try[Option[Blob]] = {
-    loadBlobs().map(_ => blobs.get(path).map(versioningBlobToBlob))
+  def get(path: String)(implicit ec: ExecutionContext): Try[Blob] = {
+    loadBlobs().flatMap(_ =>
+      blobs.get(path) match {
+        case None => Failure(new NoSuchElementException("No blob was stored at this path."))
+        case Some(blob) => Success(versioningBlobToBlob(blob))
+      }
+    )
   }
 
   /** Adds blob to this commit at path
