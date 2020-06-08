@@ -10,10 +10,11 @@ import scala.util.{Failure, Success, Try}
 import scala.annotation.tailrec
 
 /** Captures metadata about files
- *  To create a new instance, use the constructor taking a list of paths (each is a string):
+ *  To create a new instance, use the constructor taking a list of paths (each is a string) or a single path:
  *  {{{
  *  val pathList = List("some-path1", "some-path2")
  *  val pathBlob: Try[PathBlob] = PathBlob(pathList)
+ *  val pathBlob2: Try[PathBlob] = PathBlob("some-other-path")
  *  }}}
  *  If an invalid path is passed to the constructor, it will return a failure.
  */
