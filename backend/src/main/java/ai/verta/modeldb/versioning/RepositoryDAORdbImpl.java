@@ -303,7 +303,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 workspaceDTO,
                 request.getRepository().getOwner(),
                 request.getRepository().getRepositoryVisibility());
-        repository.setDeleted(true);
       } else {
         repository = getRepositoryById(session, request.getId(), true);
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -337,19 +336,24 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
       session.getTransaction().commit();
       if (create) {
-        createRoleBindingsForRepository(request, userInfo, repository);
-
-        // Update repository deleted status to false after roleBindings created successfully
-        session.beginTransaction();
-        repository.setDeleted(false);
-        session.update(repository);
-        session.getTransaction().commit();
+        try {
+          createRoleBindingsForRepository(request, userInfo, repository);
+        } catch (Exception e) {
+          LOGGER.info("Exception from UAC during Repo role binding creation : {}",e.getMessage());
+          LOGGER.info("Deleting the created repository {}",repository.getId());
+          // delete the repo created
+          session.beginTransaction();
+          session.delete(repository);
+          session.getTransaction().commit();
+          throw e;
+        }
       }
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setRepository(commitDAO, request, userInfo, create);
       } else {
+
         throw ex;
       }
     }
