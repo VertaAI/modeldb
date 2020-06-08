@@ -86,11 +86,8 @@ object S3 {
   private def getS3LocMetadata(loc: S3Location) = {
     if (loc.key.isEmpty || loc.key.get.endsWith("/")) {
       // no key (bucket), or is a folder
-      val versionListing =
-        if (loc.key.isEmpty) s3.listVersions(loc.bucketName, null)
-        else s3.listVersions(loc.bucketName, loc.key.get)
-
-      handleVersionListing(versionListing, List())
+      val versionListing = s3.listVersions(loc.bucketName, loc.key.orNull)
+      handleVersionListing(versionListing, List()).map(_.reverse)
     }
     else {
       val request =
@@ -112,6 +109,7 @@ object S3 {
                     .filter((version: S3VersionSummary) => !version.getKey().endsWith("/")) // not a folder
                     .filter(_.isLatest())
                     .map(getVersionMetadata) // List[Try]
+                    .reverse
                     .map(_.get)
       )
 
@@ -132,8 +130,7 @@ object S3 {
       obj.getETag(),
       getPath(bucketName, key),
       BigInt(obj.getContentLength()),
-      if (obj.getVersionId() != null) Some(obj.getVersionId())
-      else None
+      Option(obj.getVersionId())
     )
   }
 
@@ -145,8 +142,7 @@ object S3 {
       version.getETag(),
       getPath(version.getBucketName(), version.getKey()),
       BigInt(version.getSize()),
-      if (version.getVersionId() != null) Some(version.getVersionId())
-      else None
+      Option(version.getVersionId())
     )
   }
 

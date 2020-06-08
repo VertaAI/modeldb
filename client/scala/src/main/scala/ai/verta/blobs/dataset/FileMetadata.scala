@@ -16,8 +16,9 @@ class FileMetadata(
 ) {
   override def equals(other: Any) = other match {
     case other: FileMetadata => lastModified == other.lastModified &&
-    md5 == other.md5 && path == other.path && size == other.size &&
-    ((versionId.isEmpty && other.versionId.isEmpty) || (versionId.get == other.versionId.get))
+      md5 == other.md5 && path == other.path && size == other.size &&
+      ((versionId.isEmpty && other.versionId.isEmpty) ||
+      (versionId.isDefined && other.versionId.isDefined && versionId.get == other.versionId.get))
     case _ => false
   }
 }
