@@ -272,7 +272,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       getBranchByCommitQuery.setParameter("commitHashes", commitShas);
       List<BranchEntity> branchEntities = getBranchByCommitQuery.list();
       if (branchEntities != null && !branchEntities.isEmpty()) {
-        StringBuilder errorMessage = new StringBuilder("Commit is associated with branch name : ");
+        StringBuilder errorMessage = new StringBuilder("Commits are associated with branch name : ");
         int count = 0;
         for (BranchEntity branchEntity : branchEntities) {
           errorMessage.append(branchEntity.getId().getBranch());
