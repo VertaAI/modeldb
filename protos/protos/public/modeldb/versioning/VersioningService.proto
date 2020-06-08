@@ -86,6 +86,14 @@ message BlobDiff {
         CodeDiff code = 5;
         ConfigDiff config = 6;
     }
+    DescriptionDiff description = 7;
+}
+
+message DescriptionDiff {
+    DiffStatusEnum.DiffStatus status = 1;
+    string A = 2;
+    string B = 3;
+    string C = 4;
 }
 
 message RepositoryVisibilityEnum {

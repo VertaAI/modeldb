@@ -2964,6 +2964,15 @@
       ],
       "default": "EQ"
     },
+    "RepositoryAccessModifierEnumRepositoryAccessModifier": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "REGULAR",
+        "PROTECTED"
+      ],
+      "default": "UNKNOWN"
+    },
     "RepositoryVisibilityEnumRepositoryVisibility": {
       "type": "string",
       "enum": [
@@ -3311,6 +3320,9 @@
         },
         "config": {
           "$ref": "#/definitions/versioningConfigBlob"
+        },
+        "description": {
+          "type": "string"
         }
       }
     },
@@ -4439,6 +4451,9 @@
         },
         "repository_visibility": {
           "$ref": "#/definitions/RepositoryVisibilityEnumRepositoryVisibility"
+        },
+        "repositoryAccessModifier": {
+          "$ref": "#/definitions/RepositoryAccessModifierEnumRepositoryAccessModifier"
         },
         "owner": {
           "type": "string"
