@@ -17,7 +17,7 @@ class Commit(
   private var commit: VersioningCommit, private val commitBranch: Option[String] = None
 ) {
   private var saved = true // whether the commit instance is saved to database, or is currently being modified.
-  private var loaded_from_remote = false // whether blob has been retrieved from remote
+  private var loadedFromRemote = false // whether blobs has been retrieved from remote
   private var blobs = new HashMap[String, VersioningBlob]() // mutable map for storing blobs
 
   /** Return the id of the commit */
@@ -57,7 +57,7 @@ class Commit(
   /** Retrieve commit's blobs from remote
    */
   private def loadBlobs()(implicit ec: ExecutionContext): Try[Unit] = {
-    if (!loaded_from_remote) {
+    if (!loadedFromRemote) {
       // if the commit is not saved, get the blobs of its parent(s)
       val ids: List[String] = commit.commit_sha match {
         case Some(v) => List(v)
@@ -67,7 +67,7 @@ class Commit(
       Try(ids.map(id => loadBlobsFromId(id)).map(_.get).flatten) match {
         case Failure(e) => Failure(e)
         case Success(list) => Success {
-          loaded_from_remote = true
+          loadedFromRemote = true
           blobs = HashMap(list: _*)
         }
       }
@@ -108,9 +108,9 @@ class Commit(
   /** Helper function to convert a VersioningBlob instance to corresponding Blob subclass instance
    *  @param vb the VersioningBlob instance
    *  @return an instance of a Blob subclass
-   *  TODO: finish the pattern matching with other blob subclasses
    */
   def versioningBlobToBlob(vb: VersioningBlob): Blob = vb match {
+    /** TODO: finish the pattern matching with other blob subclasses */
     case VersioningBlob(_, _, Some(VersioningDatasetBlob(Some(path), _)), _) => PathBlob(path)
   }
 
