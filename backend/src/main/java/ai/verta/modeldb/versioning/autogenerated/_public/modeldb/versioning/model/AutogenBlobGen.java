@@ -29,6 +29,9 @@ public class AutogenBlobGen extends Generator<AutogenBlob> {
       obj.setDataset(Utils.removeEmpty(gen().type(AutogenDatasetBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
+      obj.setDescription(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+    }
+    if (r.nextBoolean()) {
       obj.setEnvironment(
           Utils.removeEmpty(gen().type(AutogenEnvironmentBlob.class).generate(r, status)));
     }

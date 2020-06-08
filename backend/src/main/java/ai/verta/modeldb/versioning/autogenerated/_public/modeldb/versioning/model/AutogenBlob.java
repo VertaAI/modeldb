@@ -19,12 +19,14 @@ public class AutogenBlob implements ProtoType {
   private AutogenCodeBlob Code;
   private AutogenConfigBlob Config;
   private AutogenDatasetBlob Dataset;
+  private String Description;
   private AutogenEnvironmentBlob Environment;
 
   public AutogenBlob() {
     this.Code = null;
     this.Config = null;
     this.Dataset = null;
+    this.Description = "";
     this.Environment = null;
   }
 
@@ -36,6 +38,9 @@ public class AutogenBlob implements ProtoType {
       return false;
     }
     if (this.Dataset != null && !this.Dataset.equals(null)) {
+      return false;
+    }
+    if (this.Description != null && !this.Description.equals("")) {
       return false;
     }
     if (this.Environment != null && !this.Environment.equals(null)) {
@@ -62,6 +67,11 @@ public class AutogenBlob implements ProtoType {
     if (this.Dataset != null && !this.Dataset.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"Dataset\": " + Dataset);
+      first = false;
+    }
+    if (this.Description != null && !this.Description.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"Description\": " + "\"" + Description + "\"");
       first = false;
     }
     if (this.Environment != null && !this.Environment.equals(null)) {
@@ -118,6 +128,14 @@ public class AutogenBlob implements ProtoType {
       }
     }
     {
+      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Description != null || other.Description != null) {
+        if (this.Description == null && other.Description != null) return false;
+        if (this.Description != null && other.Description == null) return false;
+        if (!f.apply(this.Description, other.Description)) return false;
+      }
+    }
+    {
       Function3<AutogenEnvironmentBlob, AutogenEnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
       if (this.Environment != null || other.Environment != null) {
         if (this.Environment == null && other.Environment != null) return false;
@@ -155,6 +173,15 @@ public class AutogenBlob implements ProtoType {
     return this.Dataset;
   }
 
+  public AutogenBlob setDescription(String value) {
+    this.Description = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public String getDescription() {
+    return this.Description;
+  }
+
   public AutogenBlob setEnvironment(AutogenEnvironmentBlob value) {
     this.Environment = Utils.removeEmpty(value);
     return this;
@@ -184,6 +211,10 @@ public class AutogenBlob implements ProtoType {
       Function<ai.verta.modeldb.versioning.Blob, AutogenDatasetBlob> f =
           x -> AutogenDatasetBlob.fromProto(blob.getDataset());
       obj.setDataset(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.Blob, String> f = x -> (blob.getDescription());
+      obj.setDescription(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.Blob, AutogenEnvironmentBlob> f =
@@ -227,6 +258,16 @@ public class AutogenBlob implements ProtoType {
       }
     }
     {
+      if (this.Description != null && !this.Description.equals("")) {
+        Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
+            x -> {
+              builder.setDescription(this.Description);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
       if (this.Environment != null && !this.Environment.equals(null)) {
         Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
             x -> {
@@ -248,6 +289,7 @@ public class AutogenBlob implements ProtoType {
     visitor.preVisitDeepAutogenCodeBlob(this.Code);
     visitor.preVisitDeepAutogenConfigBlob(this.Config);
     visitor.preVisitDeepAutogenDatasetBlob(this.Dataset);
+    visitor.preVisitDeepString(this.Description);
     visitor.preVisitDeepAutogenEnvironmentBlob(this.Environment);
   }
 
@@ -259,6 +301,7 @@ public class AutogenBlob implements ProtoType {
     this.setCode(visitor.postVisitDeepAutogenCodeBlob(this.Code));
     this.setConfig(visitor.postVisitDeepAutogenConfigBlob(this.Config));
     this.setDataset(visitor.postVisitDeepAutogenDatasetBlob(this.Dataset));
+    this.setDescription(visitor.postVisitDeepString(this.Description));
     this.setEnvironment(visitor.postVisitDeepAutogenEnvironmentBlob(this.Environment));
     return this.postVisitShallow(visitor);
   }
