@@ -1319,8 +1319,18 @@ public class BlobDAORdbImpl implements BlobDAO {
               commitEntity.getRootSha(),
               request.getLocationList(),
               Collections.singletonList(BlobType.DATASET_BLOB));
-      String presignedUrl =
-          getPresignedUrl(artifactStoreDAO, session, request, locationBlobWithHashMap);
+
+      String locationKey = String.join("#", request.getLocationList());
+      if (!locationBlobWithHashMap.containsKey(locationKey)) {
+        throw new ModelDBException(
+            "Blob Location '" + request.getLocationList() + "' not found in commit blobs",
+            Status.Code.INVALID_ARGUMENT);
+      }
+      Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
+      Blob blob = blobExpandedMap.getKey().getBlob();
+      String blobHash = blobExpandedMap.getValue();
+
+      String presignedUrl = getPresignedUrl(artifactStoreDAO, session, request, blob, blobHash);
       GetUrlForBlobVersioned.Response.Builder responseBuilder =
           GetUrlForBlobVersioned.Response.newBuilder();
       if (presignedUrl != null && !presignedUrl.isEmpty()) {
@@ -1334,18 +1344,9 @@ public class BlobDAORdbImpl implements BlobDAO {
       ArtifactStoreDAO artifactStoreDAO,
       Session session,
       GetUrlForBlobVersioned request,
-      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap)
+      Blob blob,
+      String blobHash)
       throws ModelDBException {
-    String locationKey = String.join("#", request.getLocationList());
-    if (!locationBlobWithHashMap.containsKey(locationKey)) {
-      throw new ModelDBException(
-          "Blob Location '" + request.getLocationList() + "' not found in commit blobs",
-          Status.Code.INVALID_ARGUMENT);
-    }
-    Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
-    Blob blob = blobExpandedMap.getKey().getBlob();
-    String blobHash = blobExpandedMap.getValue();
-
     PathDatasetComponentBlob pathDatasetComponentBlob =
         getDatasetComponentBlob(blob, request.getPathDatasetComponentBlobPath());
 
