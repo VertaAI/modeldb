@@ -511,6 +511,58 @@ public class Visitor {
     return null;
   }
 
+  public void preVisitListOfAutogenDescriptionDiff(List<AutogenDescriptionDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenDescriptionDiff val : lst) {
+      preVisitAutogenDescriptionDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenDescriptionDiff(List<AutogenDescriptionDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenDescriptionDiff val : lst) {
+      preVisitDeepAutogenDescriptionDiff(val);
+    }
+  }
+
+  public List<AutogenDescriptionDiff> postVisitListOfAutogenDescriptionDiff(
+      List<AutogenDescriptionDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenDescriptionDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenDescriptionDiff val : lst) {
+      collect.add(postVisitAutogenDescriptionDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenDescriptionDiff> postVisitDeepListOfAutogenDescriptionDiff(
+      List<AutogenDescriptionDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenDescriptionDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenDescriptionDiff val : lst) {
+      collect.add(postVisitDeepAutogenDescriptionDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenDescriptionDiff(AutogenDescriptionDiff blob) throws ModelDBException {}
+
+  public void preVisitDeepAutogenDescriptionDiff(AutogenDescriptionDiff blob)
+      throws ModelDBException {}
+
+  public AutogenDescriptionDiff postVisitAutogenDescriptionDiff(AutogenDescriptionDiff blob)
+      throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenDescriptionDiff postVisitDeepAutogenDescriptionDiff(AutogenDescriptionDiff blob)
+      throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
   public void preVisitListOfAutogenDiscreteHyperparameterSetConfigBlob(
       List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) return;
@@ -2455,6 +2507,9 @@ public class Visitor {
     }
     if (b instanceof AutogenDatasetDiff) {
       return Utils.removeEmpty((T) postVisitDeepAutogenDatasetDiff((AutogenDatasetDiff) b));
+    }
+    if (b instanceof AutogenDescriptionDiff) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenDescriptionDiff((AutogenDescriptionDiff) b));
     }
     if (b instanceof AutogenDiscreteHyperparameterSetConfigBlob) {
       return Utils.removeEmpty(
