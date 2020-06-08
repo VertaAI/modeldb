@@ -3,8 +3,6 @@ package ai.verta.repository
 import ai.verta.client._
 import ai.verta.blobs._
 import ai.verta.blobs.dataset._
-import ai.verta.swagger.client.HttpException
-import ai.verta.swagger._public.modeldb.versioning.model.VersioningSetTagRequestResponse
 
 import scala.concurrent.ExecutionContext
 import scala.language.reflectiveCalls
@@ -12,8 +10,6 @@ import scala.util.{Try, Success, Failure}
 
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
-
-import scala.collection.mutable.HashSet
 
 class TestCommit extends FunSuite {
   implicit val ec = ExecutionContext.global
@@ -30,7 +26,7 @@ class TestCommit extends FunSuite {
     f.client.close()
   }
 
-  test("Get should retrieve only blobs that were updated") {
+  test("Get should retrieve blobs that were updated") {
     val f = fixture
 
     try {

@@ -40,6 +40,7 @@ class Commit(
    *  If path is already in this Commit, it will be updated to the new blob
    *  @param path Location to add blob to
    *  @param blob Instance of Blob subclass.
+   *  @return whether the update attempt succeeds.
    */
   def update[T <: Blob](path: String, blob: T)(implicit ec: ExecutionContext): Try[Unit] = {
     loadBlobs().map(_ => {
