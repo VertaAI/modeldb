@@ -34,12 +34,10 @@ class Commit(
    *  @return The blob. If not existed, or retrieving blobs from backend fails, return a failure.
    */
   def get(path: String)(implicit ec: ExecutionContext): Try[Blob] = {
-    loadBlobs().flatMap(_ =>
       blobs.get(path) match {
         case None => Failure(new NoSuchElementException("No blob was stored at this path."))
         case Some(blob) => Success(versioningBlobToBlob(blob))
       }
-    )
   }
 
   /** Adds blob to this commit at path
@@ -59,36 +57,6 @@ class Commit(
     }
 
     Commit(clientSet, repo, childCommit, commitBranch, false, Some(blobs + (path -> versioningBlob)))
-  }
-
-  /** Retrieve commit's blobs from remote
-   */
-  private def loadBlobs()(implicit ec: ExecutionContext): Try[Map[String, VersioningBlob]] = {
-      // if the commit is not saved, get the blobs of its parent(s)
-      val ids: List[String] = commit.commit_sha match {
-        case Some(v) => List(v)
-        case None => commit.parent_shas.get
-      }
-
-      Try(ids.map(id => loadBlobsFromId(id)).map(_.get).reduce(_ ++ _))
-    }
-
-
-  /** Retrieve blobs associated to commit with given id and update blobs
-   *  @param id id of the commit
-   */
-  private def loadBlobsFromId(
-    id: String
-  )(implicit ec: ExecutionContext): Try[Map[String, VersioningBlob]] = {
-    clientSet.versioningService.ListCommitBlobs2(
-      commit_sha = id,
-      repository_id_repo_id = repo.id
-    ) // Try[VersioningListCommitBlobsRequestResponse]
-    .map(_.blobs) // Try[Option[List[VersioningBlobExpanded]]]
-    .map(ls =>
-      if (ls.isEmpty) Map[String, VersioningBlob]()
-      else ls.get.map(blob => blob.location.get.mkString("/") -> blob.blob.get).toMap
-    )
   }
 
   /** Return a child commit child of current commit (if current commit is saved)
@@ -156,7 +124,46 @@ object Commit {
   )(implicit ec: ExecutionContext) = Try {
     // wrap in Try because loading blobs from DB might fail
     var commit = new Commit(clientSet, repo, versioningCommit, commitBranch, saved)
-    commit.blobs = blobs.getOrElse(commit.loadBlobs().get)
+    commit.blobs = blobs.getOrElse(loadBlobs(clientSet, repo, versioningCommit).get)
     commit
+  }
+
+  /** Retrieve commit's blobs from remote
+   *  @param clientSet client set
+   *  @param repo commit's repository
+   *  @param versioningCommit versioning commit instance of the commit
+   */
+  private def loadBlobs(
+    clientSet: ClientSet,
+    repo: Repository,
+    versioningCommit: VersioningCommit
+  )(implicit ec: ExecutionContext): Try[Map[String, VersioningBlob]] = {
+      // if the commit is not saved, get the blobs of its parent(s)
+      val ids: List[String] = versioningCommit.commit_sha match {
+        case Some(v) => List(v)
+        case None => versioningCommit.parent_shas.get
+      }
+
+      Try(ids.map(id => loadBlobsFromId(clientSet, repo, id)).map(_.get).reduce(_ ++ _))
+    }
+
+
+  /** Retrieve blobs associated to commit with given id and construct the map
+   *  @param id id of the commit
+   */
+  private def loadBlobsFromId(
+    clientSet: ClientSet,
+    repo: Repository,
+    id: String
+  )(implicit ec: ExecutionContext): Try[Map[String, VersioningBlob]] = {
+    clientSet.versioningService.ListCommitBlobs2(
+      commit_sha = id,
+      repository_id_repo_id = repo.id
+    ) // Try[VersioningListCommitBlobsRequestResponse]
+    .map(_.blobs) // Try[Option[List[VersioningBlobExpanded]]]
+    .map(ls =>
+      if (ls.isEmpty) Map[String, VersioningBlob]()
+      else ls.get.map(blob => blob.location.get.mkString("/") -> blob.blob.get).toMap
+    )
   }
 }
