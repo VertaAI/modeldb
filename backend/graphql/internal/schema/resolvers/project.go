@@ -27,47 +27,41 @@ func (r *projectResolver) ProjectVisibility(ctx context.Context, obj *ai_verta_m
 	return schema.ProjectVisibility(obj.GetProjectVisibility().String()), nil
 }
 func (r *projectResolver) Access(ctx context.Context, obj *ai_verta_modeldb.Project) (schema.AccessType, error) {
-	if r.Connections.HasUac() {
-		self, ok := ctx.Value("uac-self").(*ai_verta_uac.UserInfo)
-		if !ok {
-			r.Logger.Error(errors.FailedToFetchAuth.Error())
-			return "", errors.FailedToFetchAuth
-		}
-		if obj.GetOwner() == self.GetUserId() {
-			return schema.AccessTypeOwner, nil
-		}
-
-		// TODO: add dataloader for efficiency
-		collaborators, err := getCollaborators(r.Resolver, ctx, obj.GetId(), func(ctx context.Context, in *uac.GetCollaborator, opts ...grpc.CallOption) (*uac.GetCollaborator_Response, error) {
-			return r.Connections.Collaborator.GetProjectCollaborators(ctx, in, opts...)
-		})
-		if err != nil {
-			return "", nil
-		}
-
-		for _, c := range collaborators {
-			if c.GetUserId() == self.GetUserId() {
-				return schema.AccessType(c.GetCollaboratorType().String()), nil
-			}
-		}
-
-		return schema.AccessTypeReadOnly, nil
+	self, ok := ctx.Value("uac-self").(*ai_verta_uac.UserInfo)
+	if !ok {
+		r.Logger.Error(errors.FailedToFetchAuth(ctx).Message)
+		return "", errors.FailedToFetchAuth(ctx)
 	}
-	return schema.AccessTypeOwner, nil
+	if obj.GetOwner() == self.GetUserId() {
+		return schema.AccessTypeOwner, nil
+	}
+
+	// TODO: add dataloader for efficiency
+	collaborators, err := getCollaborators(r.Resolver, ctx, obj.GetId(), func(ctx context.Context, in *uac.GetCollaborator, opts ...grpc.CallOption) (*uac.GetCollaborator_Response, error) {
+		return r.Connections.Collaborator.GetProjectCollaborators(ctx, in, opts...)
+	})
+	if err != nil {
+		return "", nil
+	}
+
+	for _, c := range collaborators {
+		if c.GetUserId() == self.GetUserId() {
+			return schema.AccessType(c.GetCollaboratorType().String()), nil
+		}
+	}
+
+	return schema.AccessTypeReadOnly, nil
 }
 func (r *projectResolver) Owner(ctx context.Context, obj *ai_verta_modeldb.Project) (*ai_verta_uac.UserInfo, error) {
 	return dataloaders.GetUserById(ctx, obj.GetOwner())
 }
 func (r *projectResolver) Attributes(ctx context.Context, obj *ai_verta_modeldb.Project) ([]schema.KeyValue, error) {
-	return keyValueSliceConverter(obj.GetAttributes())
+	return keyValueSliceConverter(ctx, obj.GetAttributes())
 }
 func (r *projectResolver) Collaborators(ctx context.Context, obj *ai_verta_modeldb.Project) ([]schema.Collaborator, error) {
-	if r.Connections.HasUac() {
-		return getConvertedCollaborators(r.Resolver, ctx, obj.GetId(), func(ctx context.Context, in *uac.GetCollaborator, opts ...grpc.CallOption) (*uac.GetCollaborator_Response, error) {
-			return r.Connections.Collaborator.GetProjectCollaborators(ctx, in, opts...)
-		})
-	}
-	return []schema.Collaborator{}, nil
+	return getConvertedCollaborators(r.Resolver, ctx, obj.GetId(), func(ctx context.Context, in *uac.GetCollaborator, opts ...grpc.CallOption) (*uac.GetCollaborator_Response, error) {
+		return r.Connections.Collaborator.GetProjectCollaborators(ctx, in, opts...)
+	})
 }
 func (r *projectResolver) Experiments(ctx context.Context, obj *ai_verta_modeldb.Project, next *string, query *schema.ExperimentsQuery) (*schema.Experiments, error) {
 	// TODO: add pagination

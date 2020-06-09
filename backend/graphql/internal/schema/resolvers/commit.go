@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema"
-	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/dataloaders"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/errors"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
@@ -27,7 +26,14 @@ func (r *commitResolver) Date(ctx context.Context, obj *models.Commit) (string, 
 	return strconv.FormatUint(obj.Commit.GetDateCreated(), 10), nil
 }
 func (r *commitResolver) Author(ctx context.Context, obj *models.Commit) (*uac.UserInfo, error) {
-	return dataloaders.GetUserById(ctx, obj.Commit.GetAuthor())
+	res, err := r.Connections.UAC.GetUser(ctx, &uac.GetUser{
+		UserId: obj.Commit.GetAuthor(),
+	})
+	if err != nil {
+		r.Logger.Error("failed to fetch author", zap.Error(err))
+		return nil, err
+	}
+	return res, nil
 }
 func (r *commitResolver) GetLocation(ctx context.Context, obj *models.Commit, location []string) (schema.CommitElement, error) {
 	res, err := r.Connections.Versioning.GetCommitComponent(ctx, &versioning.GetCommitComponentRequest{
@@ -140,8 +146,8 @@ func (r *commitResolver) Runs(ctx context.Context, obj *models.Commit, query *sc
 }
 func (r *commitResolver) SetTag(ctx context.Context, obj *models.Commit, name string) (*versioning.Repository, error) {
 	if !isMutation(ctx) {
-		r.Logger.Error(errors.SetTagOutsideMutation.Error())
-		return nil, errors.SetTagOutsideMutation
+		r.Logger.Info(errors.UpdateOutsideMutation(ctx).Message)
+		return nil, errors.UpdateOutsideMutation(ctx)
 	}
 	_, err := r.Connections.Versioning.SetTag(ctx, &versioning.SetTagRequest{
 		RepositoryId: &versioning.RepositoryIdentification{
@@ -158,8 +164,8 @@ func (r *commitResolver) SetTag(ctx context.Context, obj *models.Commit, name st
 }
 func (r *commitResolver) SetBranch(ctx context.Context, obj *models.Commit, name string) (*versioning.Repository, error) {
 	if !isMutation(ctx) {
-		r.Logger.Error(errors.SetTagOutsideMutation.Error())
-		return nil, errors.SetTagOutsideMutation
+		r.Logger.Info(errors.UpdateOutsideMutation(ctx).Message)
+		return nil, errors.UpdateOutsideMutation(ctx)
 	}
 	_, err := r.Connections.Versioning.SetBranch(ctx, &versioning.SetBranchRequest{
 		RepositoryId: &versioning.RepositoryIdentification{
@@ -185,7 +191,7 @@ func (r *namedCommitBlobResolver) Content(ctx context.Context, obj *models.Named
 	if blob, ok := res.(*models.CommitBlob); ok {
 		return blob, nil
 	}
-	return nil, errors.InvalidTypeFromModeldb
+	return nil, errors.InvalidTypeFromModeldb(ctx)
 }
 
 type namedCommitFolderResolver struct{ *Resolver }
@@ -198,7 +204,7 @@ func (r *namedCommitFolderResolver) Content(ctx context.Context, obj *models.Nam
 	if folder, ok := res.(*schema.CommitFolder); ok {
 		return folder, nil
 	}
-	return nil, errors.InvalidTypeFromModeldb
+	return nil, errors.InvalidTypeFromModeldb(ctx)
 }
 
 type commitBlobResolver struct{ *Resolver }

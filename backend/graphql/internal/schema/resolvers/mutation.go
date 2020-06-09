@@ -46,26 +46,24 @@ func (r *mutationResolver) DelRunTag(ctx context.Context, id string, tag string)
 	return res.GetExperimentRun(), nil
 }
 func (r *mutationResolver) SetCollaboratorProject(ctx context.Context, projid string, email string, typeArg schema.AccessType) (*ai_verta_modeldb.Project, error) {
-	if r.Connections.HasUac() {
-		t := ai_verta_common.CollaboratorTypeEnum_READ_ONLY
-		switch typeArg {
-		case schema.AccessTypeReadOnly:
-			t = ai_verta_common.CollaboratorTypeEnum_READ_ONLY
-		case schema.AccessTypeReadWrite:
-			t = ai_verta_common.CollaboratorTypeEnum_READ_WRITE
-		}
+	t := ai_verta_common.CollaboratorTypeEnum_READ_ONLY
+	switch typeArg {
+	case schema.AccessTypeReadOnly:
+		t = ai_verta_common.CollaboratorTypeEnum_READ_ONLY
+	case schema.AccessTypeReadWrite:
+		t = ai_verta_common.CollaboratorTypeEnum_READ_WRITE
+	}
 
-		res, err := r.Connections.Collaborator.AddOrUpdateProjectCollaborator(
-			ctx,
-			&ai_verta_uac.AddCollaboratorRequest{EntityIds: []string{projid}, ShareWith: email, CollaboratorType: t},
-		)
-		if err != nil {
-			return nil, err
-		}
+	res, err := r.Connections.Collaborator.AddOrUpdateProjectCollaborator(
+		ctx,
+		&ai_verta_uac.AddCollaboratorRequest{EntityIds: []string{projid}, ShareWith: email, CollaboratorType: t},
+	)
+	if err != nil {
+		return nil, err
+	}
 
-		if !res.GetStatus() {
-			return nil, errors.ModelDbInternalFailure
-		}
+	if !res.GetStatus() {
+		return nil, errors.ModelDbInternalError(ctx)
 	}
 
 	pres, err := r.Connections.Project.GetProjectById(ctx, &ai_verta_modeldb.GetProjectById{Id: projid})
@@ -76,18 +74,16 @@ func (r *mutationResolver) SetCollaboratorProject(ctx context.Context, projid st
 }
 func (r *mutationResolver) DelCollaboratorProject(ctx context.Context, projid string, collid string) (*ai_verta_modeldb.Project, error) {
 	// TODO: figure out why we need the date deleted (empty doesn't delete)
-	if r.Connections.HasUac() {
-		res, err := r.Connections.Collaborator.RemoveProjectCollaborator(
-			ctx,
-			&ai_verta_uac.RemoveCollaborator{EntityId: projid, ShareWith: collid, DateDeleted: 1},
-		)
-		if err != nil {
-			return nil, err
-		}
+	res, err := r.Connections.Collaborator.RemoveProjectCollaborator(
+		ctx,
+		&ai_verta_uac.RemoveCollaborator{EntityId: projid, ShareWith: collid, DateDeleted: 1},
+	)
+	if err != nil {
+		return nil, err
+	}
 
-		if !res.GetStatus() {
-			return nil, errors.ModelDbInternalFailure
-		}
+	if !res.GetStatus() {
+		return nil, errors.ModelDbInternalError(ctx)
 	}
 
 	pres, err := r.Connections.Project.GetProjectById(ctx, &ai_verta_modeldb.GetProjectById{Id: projid})
