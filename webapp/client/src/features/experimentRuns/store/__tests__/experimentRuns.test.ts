@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import routes from 'core/shared/routes';
 
-import setupIntegrationTest from 'utils/tests/integrations/setupIntegrationTest';
+import setupIntegrationTest from 'core/shared/utils/tests/integrations/setupIntegrationTest';
 
 import { IFilterData, makeDefaultTagFilter } from 'core/features/filter/Model';
 import { ISorting } from 'core/shared/models/Sorting';
@@ -11,7 +11,7 @@ import {
   IFilterState,
   selectCurrentContextFilters,
 } from 'core/features/filter';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 
 import {
   changePaginationWithLoadingExperimentRuns,

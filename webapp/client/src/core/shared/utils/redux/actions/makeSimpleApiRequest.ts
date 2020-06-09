@@ -3,12 +3,13 @@ import { ThunkAction } from 'redux-thunk';
 import { ActionType } from 'typesafe-actions';
 
 import normalizeError from 'core/shared/utils/normalizeError';
+import { IApplicationState, IThunkActionDependencies } from 'store/store';
 
 import { IResetableAsyncAction, GetActionCreatorPayload } from './types';
 
 const makeSimpleApiRequest = <
-  State,
-  Deps,
+  State extends IApplicationState,
+  Deps extends IThunkActionDependencies,
   ResetableAsyncAction extends IResetableAsyncAction<any, any, any, any>
 >(
   resetableAsyncAction: ResetableAsyncAction

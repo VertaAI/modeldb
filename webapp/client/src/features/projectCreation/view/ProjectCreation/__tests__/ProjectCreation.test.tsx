@@ -13,9 +13,9 @@ import {
 import { Project, IProjectCreationSettings } from 'core/shared/models/Project';
 import routes from 'core/shared/routes';
 import { ProjectDataService } from 'services/projects';
-import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { makeProject } from 'utils/tests/mocks/models/projectsMocks';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import { makeProject } from 'core/shared/utils/tests/mocks/models/projectsMocks';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 import { makeTagsManagerHelpers } from 'core/shared/view/domain/BaseTagsManager/__tests__/helpers';
 
 import ProjectCreation from '../ProjectCreation';

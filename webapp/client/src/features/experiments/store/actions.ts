@@ -9,7 +9,7 @@ import * as Experiment from 'core/shared/models/Experiment';
 import routes from 'core/shared/routes';
 import { handleDeleteEntities } from 'features/shared/deletion';
 import { ActionResult } from 'store/store';
-import { makeThunkApiRequest } from 'utils/redux/actions';
+import { makeThunkApiRequest } from 'core/shared/utils/redux/actions';
 
 import { selectExperimentsPagination } from './selectors';
 import {

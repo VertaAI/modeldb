@@ -1,13 +1,14 @@
 import { Dispatch } from 'redux';
 
 import { AppError } from 'core/shared/models/Error';
+import { IApplicationState, IThunkActionDependencies } from 'store/store';
 
 import makeCommunicationThunk from './makeCommunicationThunk';
 import makeSimpleApiRequest from './makeSimpleApiRequest';
 
 export default function makeThunkApiRequest<
-  State,
-  Deps,
+  State extends IApplicationState,
+  Deps extends IThunkActionDependencies,
   RequestType extends string,
   SuccessType extends string,
   FailureType extends string,

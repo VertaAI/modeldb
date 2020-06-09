@@ -1,5 +1,5 @@
 import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
-import { users } from 'core/shared/utils/tests/mocks/users';
+import { users } from 'core/shared/utils/tests/mocks/models/users';
 
 const commitA: IHydratedCommit = {
   author: users[0],

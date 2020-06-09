@@ -4,10 +4,10 @@ import React from 'react';
 import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { IFullCommitComponentLocationComponents } from 'core/shared/models/Versioning/RepositoryData';
-import { repositories } from 'core/shared/utils/tests/mocks/Versioning/repositoriesMocks';
+import { repositories } from 'core/shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
 import routes from 'core/shared/routes';
-import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 
 import RepositoryBreadcrumbs from '../RepositoryBreadcrumbs';
 import { findByDataTestAttribute } from 'core/shared/utils/tests/react/helpers';

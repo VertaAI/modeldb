@@ -10,8 +10,8 @@ import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub
 import Pagination from 'core/shared/view/elements/Pagination/Pagination';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import routes, { GetRouteParams } from 'core/shared/routes';
-import { currentUserProjects } from 'utils/tests/mocks/models/projectsMocks';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import { currentUserProjects } from 'core/shared/utils/tests/mocks/models/projectsMocks';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 
 import { IProjectsAllProps, ProjectsView } from '../Projects';
 import styles from '../Projects.module.css';

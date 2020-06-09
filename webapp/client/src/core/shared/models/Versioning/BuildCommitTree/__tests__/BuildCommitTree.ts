@@ -4,7 +4,7 @@ import {
   ISubFolderElement,
   IFolderElement,
 } from 'core/shared/models/Versioning/RepositoryData';
-import { S3DatasetBlob } from 'core/shared/utils/tests/mocks/Versioning/blobMocks';
+import { S3DatasetBlob } from 'core/shared/utils/tests/mocks/models/Versioning/blobMocks';
 
 import * as B from '../index';
 

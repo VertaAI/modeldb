@@ -17,9 +17,9 @@ import Experiment, {
 } from 'core/shared/models/Experiment';
 import routes from 'core/shared/routes';
 import ExperimentsDataService from 'services/experiments/ExperimentsDataService';
-import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
+import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
 
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 import ExperimentCreation from '../ExperimentCreation';
 
 // need for testing portals

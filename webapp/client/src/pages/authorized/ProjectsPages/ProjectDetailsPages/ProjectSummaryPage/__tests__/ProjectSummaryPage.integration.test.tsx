@@ -15,9 +15,9 @@ import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromi
 import { Project } from 'core/shared/models/Project';
 import ProjectsPage from 'pages/authorized/ProjectsPages/ProjectsPage/ProjectsPage';
 import { ProjectDataService } from 'services/projects';
-import { makeComponentForIntegratingTest } from 'utils/tests/integrations/makeMountComponentForIntegratingTest';
-import { makeProject } from 'utils/tests/mocks/models/projectsMocks';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import { makeComponentForIntegratingTest } from 'core/shared/utils/tests/integrations/makeMountComponentForIntegratingTest';
+import { makeProject } from 'core/shared/utils/tests/mocks/models/projectsMocks';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 
 import ProjectDetailsPage from '../../ProjectDetailsPage';
 

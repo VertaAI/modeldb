@@ -14,9 +14,9 @@ import delay from 'core/shared/utils/delay';
 import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
 import { IDataset, Dataset } from 'core/shared/models/Dataset';
 import { DatasetsDataService } from 'services/datasets';
-import { makeComponentForIntegratingTest } from 'utils/tests/integrations/makeMountComponentForIntegratingTest';
-import { makeDataset } from 'utils/tests/mocks/models/datasetMocks';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import { makeComponentForIntegratingTest } from 'core/shared/utils/tests/integrations/makeMountComponentForIntegratingTest';
+import { makeDataset } from 'core/shared/utils/tests/mocks/models/datasetMocks';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 
 import DatasetsPage from '../../../DatasetsPage/DatasetsPage';
 import DatasetDetailPages from '../../DatasetDetailPages';

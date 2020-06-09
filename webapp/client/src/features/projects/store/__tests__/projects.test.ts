@@ -3,8 +3,8 @@ import * as R from 'ramda';
 import checkURLSearchParams from 'core/shared/utils/tests/checkURLSearchParams';
 import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
 import routes from 'core/shared/routes';
-import setupIntegrationTest from 'utils/tests/integrations/setupIntegrationTest';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import setupIntegrationTest from 'core/shared/utils/tests/integrations/setupIntegrationTest';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 
 import {
   changeProjectsPaginationWithLoading,

@@ -14,7 +14,7 @@ import { makeTagsManagerHelpers } from 'core/shared/view/domain/BaseTagsManager/
 import { Dataset, IDatasetCreationSettings } from 'core/shared/models/Dataset';
 import routes from 'core/shared/routes';
 import DatasetsDataService from 'services/datasets/DatasetsDataService';
-import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
+import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
 
 import DatasetCreation from '../DatasetCreation';
 

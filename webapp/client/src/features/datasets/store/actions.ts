@@ -11,7 +11,7 @@ import routes from 'core/shared/routes';
 import { handleDeleteEntities } from 'features/shared/deletion';
 import { ActionResult } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
-import { makeThunkApiRequest } from 'utils/redux/actions';
+import { makeThunkApiRequest } from 'core/shared/utils/redux/actions';
 
 import { selectDatasetsPagination } from './selectors';
 import {

@@ -20,8 +20,8 @@ import {
   datasetsReducer,
   loadDatasetActionTypes,
 } from 'features/datasets';
-import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { makeDataset } from 'utils/tests/mocks/models/datasetMocks';
+import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import { makeDataset } from 'core/shared/utils/tests/mocks/models/datasetMocks';
 
 import diffHighlightStyles from '../../shared/DiffHighlight/DiffHighlight.module.css';
 import CompareDatasetVersions, {

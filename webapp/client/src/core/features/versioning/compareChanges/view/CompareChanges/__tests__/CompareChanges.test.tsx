@@ -15,8 +15,8 @@ import {
 } from 'core/shared/models/Versioning/RepositoryData';
 import { flushAllPromisesFor } from 'core/shared/utils/tests/integrations/flushAllPromisesFor';
 import waitFor from 'core/shared/utils/tests/integrations/waitFor';
-import { commits } from 'core/shared/utils/tests/mocks/Versioning/commitsMocks';
-import { repositories } from 'core/shared/utils/tests/mocks/Versioning/repositoriesMocks';
+import { commits } from 'core/shared/utils/tests/mocks/models/Versioning/commitsMocks';
+import { repositories } from 'core/shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
 import {
   findByText,
   withAct,
@@ -27,8 +27,8 @@ import { shortenSHA } from 'core/shared/view/domain/Versioning/ShortenedSHA/Shor
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import { AllEntityAction } from 'core/shared/models/EntitiesActions';
 import routes from 'core/shared/routes';
-import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 
 import CompareChanges from '../CompareChanges';
 

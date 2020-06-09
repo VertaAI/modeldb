@@ -25,7 +25,7 @@ import {
   projectsReducer,
   loadProjectActionTypes,
 } from 'features/projects/store';
-import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
+import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
 import diffHighlightStyles from '../../shared/DiffHighlight/DiffHighlight.module.css';
 
 import CompareModels, { ICompareModelsLocalProps } from '../CompareModels';

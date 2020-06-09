@@ -10,7 +10,7 @@ import {
   makeDefaultStringFilter,
 } from 'core/features/filter/Model';
 import { IPagination } from 'core/shared/models/Pagination';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 
 import ProjectDataService from '../ProjectDataService';
 import { ILoadProjectsRequest } from '../responseRequest/makeLoadProjectsRequest';

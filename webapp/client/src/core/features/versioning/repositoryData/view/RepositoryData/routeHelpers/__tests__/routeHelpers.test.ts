@@ -5,9 +5,9 @@ import {
   CommitPointerHelpers,
   defaultCommitPointer,
 } from 'core/shared/models/Versioning/RepositoryData';
-import { repositories } from 'core/shared/utils/tests/mocks/Versioning/repositoriesMocks';
+import { repositories } from 'core/shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
 import routes, { GetRouteParams } from 'core/shared/routes';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 
 import * as RouteHelpers from '../index';
 

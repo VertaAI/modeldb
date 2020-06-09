@@ -14,17 +14,17 @@ import {
 } from 'core/shared/models/Versioning/RepositoryData';
 import wait from 'core/shared/utils/tests/integrations/wait';
 import waitFor from 'core/shared/utils/tests/integrations/waitFor';
-import { S3DatasetBlob } from 'core/shared/utils/tests/mocks/Versioning/blobMocks';
-import { commits } from 'core/shared/utils/tests/mocks/Versioning/commitsMocks';
-import { repositories } from 'core/shared/utils/tests/mocks/Versioning/repositoriesMocks';
+import { S3DatasetBlob } from 'core/shared/utils/tests/mocks/models/Versioning/blobMocks';
+import { commits } from 'core/shared/utils/tests/mocks/models/Versioning/commitsMocks';
+import { repositories } from 'core/shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
 import {
   withAct,
   findByDataTestAttribute,
 } from 'core/shared/utils/tests/react/helpers';
 import { createBranchesAndTagsListHelpers } from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/__tests__/helpers';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 
 import RepositoryData from '../RepositoryData';
 import {

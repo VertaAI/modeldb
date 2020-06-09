@@ -8,7 +8,7 @@ import {
 } from 'core/shared/utils/tests/react/helpers';
 
 import Reloading from '../Reloading';
-import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
+import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
 
 const makeComponent = async ({
   pathname,
