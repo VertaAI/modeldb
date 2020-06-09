@@ -13,6 +13,7 @@ message IDTypeEnum {
         VERSIONING_REPOSITORY = 1;
         VERSIONING_COMMIT = 2;
         VERSIONING_REPO_COMMIT_BLOB = 3;
+        VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION = 4;
     }
 }
 
@@ -21,7 +22,14 @@ message IdentificationType {
     oneof id {
         uint64 int_id = 2;
         string string_id = 3;
+        VersioningCompositeIdentifier composite_id = 4;
     }
+}
+
+message VersioningCompositeIdentifier {
+    uint64 repo_id = 4;
+    string commit_hash = 5;
+    repeated string location = 6;
 }
 
 message GetLabelsRequest {
