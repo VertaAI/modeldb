@@ -2,10 +2,11 @@ package ai.verta.modeldb.cron_jobs;
 
 import static ai.verta.modeldb.authservice.AuthServiceChannel.isBackgroundUtilsCall;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.WorkspaceTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorOrg;
@@ -21,7 +22,6 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.uac.ModelResourceEnum;
 import ai.verta.uac.UserInfo;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -146,7 +146,7 @@ public class DeleteEntitiesCron extends TimerTask {
     // Delete all resources
     roleService.deleteAllResources(
         projectEntities.stream().map(ProjectEntity::getId).collect(Collectors.toList()),
-        ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+        ModelDBServiceResourceTypes.PROJECT);
 
     // Remove all role bindings
     if (!roleBindingNames.isEmpty()) {
@@ -165,7 +165,7 @@ public class DeleteEntitiesCron extends TimerTask {
               ModelDBConstants.ROLE_PROJECT_OWNER,
               project.getId(),
               project.getOwner(),
-              ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT.name());
+              ModelDBServiceResourceTypes.PROJECT.name());
       if (ownerRoleBindingName != null) {
         roleBindingNames.add(ownerRoleBindingName);
       }
@@ -176,7 +176,7 @@ public class DeleteEntitiesCron extends TimerTask {
                 ModelDBConstants.ROLE_PROJECT_PUBLIC_READ,
                 projectId,
                 authService.getVertaIdFromUserInfo(unsignedUser),
-                ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT.name());
+                ModelDBServiceResourceTypes.PROJECT.name());
         if (publicReadRoleBindingName != null) {
           roleBindingNames.add(publicReadRoleBindingName);
         }
@@ -189,7 +189,7 @@ public class DeleteEntitiesCron extends TimerTask {
               WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type()),
               projectId,
               ModelDBConstants.ROLE_PROJECT_ADMIN,
-              ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+              ModelDBServiceResourceTypes.PROJECT,
               ProjectVisibility.forNumber(project.getProject_visibility())
                   .equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
               "_GLOBAL_SHARING");
@@ -256,7 +256,7 @@ public class DeleteEntitiesCron extends TimerTask {
               ModelDBConstants.ROLE_EXPERIMENT_OWNER,
               experimentEntity.getId(),
               experimentEntity.getOwner(),
-              ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT.name());
+              ModelDBServiceResourceTypes.EXPERIMENT.name());
       if (ownerRoleBindingName != null) {
         roleBindingNames.add(ownerRoleBindingName);
       }
@@ -315,7 +315,7 @@ public class DeleteEntitiesCron extends TimerTask {
               ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
               experimentRunEntity.getId(),
               experimentRunEntity.getOwner(),
-              ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
+              ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
       if (ownerRoleBindingName != null) {
         roleBindingNames.add(ownerRoleBindingName);
       }
@@ -406,7 +406,7 @@ public class DeleteEntitiesCron extends TimerTask {
     // Remove all datasetEntity collaborators
     roleService.deleteAllResources(
         datasetEntities.stream().map(DatasetEntity::getId).collect(Collectors.toList()),
-        ModelResourceEnum.ModelDBServiceResourceTypes.DATASET);
+        ModelDBServiceResourceTypes.DATASET);
 
     // Remove all role bindings
     if (!roleBindingNames.isEmpty()) {
@@ -425,7 +425,7 @@ public class DeleteEntitiesCron extends TimerTask {
               ModelDBConstants.ROLE_DATASET_OWNER,
               datasetEntity.getId(),
               datasetEntity.getOwner(),
-              ModelResourceEnum.ModelDBServiceResourceTypes.DATASET.name());
+              ModelDBServiceResourceTypes.DATASET.name());
       if (ownerRoleBindingName != null) {
         roleBindingNames.add(ownerRoleBindingName);
       }
@@ -437,7 +437,7 @@ public class DeleteEntitiesCron extends TimerTask {
                 ModelDBConstants.ROLE_DATASET_PUBLIC_READ,
                 datasetId,
                 authService.getVertaIdFromUserInfo(unsignedUser),
-                ModelResourceEnum.ModelDBServiceResourceTypes.DATASET.name());
+                ModelDBServiceResourceTypes.DATASET.name());
         if (publicReadRoleBindingName != null && !publicReadRoleBindingName.isEmpty()) {
           roleBindingNames.add(publicReadRoleBindingName);
         }
@@ -472,7 +472,7 @@ public class DeleteEntitiesCron extends TimerTask {
                     ModelDBConstants.ROLE_DATASET_READ_ONLY,
                     datasetId,
                     new CollaboratorOrg(workspaceId),
-                    ModelResourceEnum.ModelDBServiceResourceTypes.DATASET.name());
+                    ModelDBServiceResourceTypes.DATASET.name());
             if (orgDatasetReadRoleBindingName != null && !orgDatasetReadRoleBindingName.isEmpty()) {
               workspaceRoleBindings.add(orgDatasetReadRoleBindingName);
             }
@@ -489,7 +489,7 @@ public class DeleteEntitiesCron extends TimerTask {
             workspaceType,
             datasetId,
             ModelDBConstants.ROLE_DATASET_ADMIN,
-            ModelResourceEnum.ModelDBServiceResourceTypes.DATASET,
+            ModelDBServiceResourceTypes.DATASET,
             datasetVisibility.equals(DatasetVisibilityEnum.DatasetVisibility.ORG_SCOPED_PUBLIC),
             DATASET_GLOBAL_SHARING);
 
@@ -541,7 +541,7 @@ public class DeleteEntitiesCron extends TimerTask {
               ModelDBConstants.ROLE_DATASET_VERSION_OWNER,
               datasetVersionEntity.getId(),
               datasetVersionEntity.getOwner(),
-              ModelResourceEnum.ModelDBServiceResourceTypes.DATASET_VERSION.name());
+              ModelDBServiceResourceTypes.DATASET_VERSION.name());
       if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
         roleBindingNames.add(ownerRoleBindingName);
       }
@@ -672,7 +672,7 @@ public class DeleteEntitiesCron extends TimerTask {
               ModelDBConstants.ROLE_REPOSITORY_OWNER,
               String.valueOf(repositoryEntity.getId()),
               repositoryEntity.getOwner(),
-              ModelResourceEnum.ModelDBServiceResourceTypes.REPOSITORY.name());
+              ModelDBServiceResourceTypes.REPOSITORY.name());
       if (ownerRoleBindingName != null) {
         roleBindingNames.add(ownerRoleBindingName);
       }
@@ -684,7 +684,7 @@ public class DeleteEntitiesCron extends TimerTask {
               WorkspaceTypeEnum.WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
               String.valueOf(repositoryEntity.getId()),
               ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-              ModelResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
+              ModelDBServiceResourceTypes.REPOSITORY,
               repositoryEntity
                   .getRepository_visibility()
                   .equals(DatasetVisibilityEnum.DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
@@ -698,7 +698,7 @@ public class DeleteEntitiesCron extends TimerTask {
         allowedResources.stream()
             .map(repositoryEntity -> String.valueOf(repositoryEntity.getId()))
             .collect(Collectors.toList()),
-        ModelResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+        ModelDBServiceResourceTypes.REPOSITORY);
 
     // Remove all role bindings
     if (!roleBindingNames.isEmpty()) {

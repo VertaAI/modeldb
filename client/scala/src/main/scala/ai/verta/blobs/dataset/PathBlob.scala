@@ -10,10 +10,11 @@ import scala.util.{Failure, Success, Try}
 import scala.annotation.tailrec
 
 /** Captures metadata about files
- *  To create a new instance, use the constructor taking a list of paths (each is a string):
+ *  To create a new instance, use the constructor taking a list of paths (each is a string) or a single path:
  *  {{{
  *  val pathList = List("some-path1", "some-path2")
  *  val pathBlob: Try[PathBlob] = PathBlob(pathList)
+ *  val pathBlob2: Try[PathBlob] = PathBlob("some-other-path")
  *  }}}
  *  If an invalid path is passed to the constructor, it will return a failure.
  */
@@ -30,6 +31,12 @@ case class PathBlob(private val metadataList: List[Tuple2[String, FileMetadata]]
 object PathBlob {
   private val BufferSize = 8192
 
+  /** Constructor taking only one path
+   *  @param path a single path
+   *  @return if the path is invalid, a failure along with exception message. Otherwise, the pathblob (wrapped in success)
+   */
+  def apply(path: String): Try[PathBlob] = apply(List(path))
+
   /** The constructor that user should use to create a new instance of PathBlob.
    *  @return if any path is invalid, a failure along with exception message. Otherwise, the pathblob (wrapped in success)
    */
@@ -44,6 +51,20 @@ object PathBlob {
       case Failure(e) => Failure(e)
       case Success(list) => Success(new PathBlob(list.flatten.map(metadata => metadata.path -> metadata)))
     }
+  }
+
+  /** Factory method to combine two PathBlob instances
+   *  @param firstBlob: first pathblob
+   *  @param secondBlob: second pathblob
+   *  @return failure if the two blobs have conflicting entries; the combined blob otherwise.
+   */
+  def reduce(firstBlob: PathBlob, secondBlob: PathBlob): Try[PathBlob] = {
+    if (firstBlob.notConflicts(secondBlob)) {
+      var retBlob = new PathBlob(List())
+      retBlob.contents = firstBlob.contents ++ secondBlob.contents
+      Success(retBlob)
+    }
+    else Failure(new IllegalArgumentException("The two blobs have conflicting entries"))
   }
 
   /** Factory method to convert a versioning path dataset blob instance. Not meant to be used by user

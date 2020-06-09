@@ -2116,7 +2116,15 @@ class ExperimentRun(_ModelDBEntity):
                 part_stream = six.BytesIO(file_part)
 
                 # upload part
-                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+                #     Retry connection errors, to make large multipart uploads more robust.
+                for _ in range(3):
+                    try:
+                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+                    except requests.ConnectionError:  # e.g. broken pipe
+                        time.sleep(1)
+                        continue  # try again
+                    else:
+                        break
                 response.raise_for_status()
 
                 # commit part
@@ -3864,8 +3872,10 @@ class ExperimentRun(_ModelDBEntity):
 
         if wait:
             print("waiting for deployment...", end='')
+            sys.stdout.flush()
             while self.get_deployment_status()['status'] not in ("deployed", "error"):
                 print(".", end='')
+                sys.stdout.flush()
                 time.sleep(5)
             print()
             if self.get_deployment_status()['status'] == "error":
@@ -3909,8 +3919,10 @@ class ExperimentRun(_ModelDBEntity):
 
             if wait:
                 print("waiting for undeployment...", end='')
+                sys.stdout.flush()
                 while self.get_deployment_status()['status'] != "not deployed":
                     print(".", end='')
+                    sys.stdout.flush()
                     time.sleep(5)
                 print()
 

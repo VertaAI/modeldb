@@ -1,9 +1,10 @@
 package ai.verta.modeldb.utils;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.common.ValueTypeEnum;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.GetHydratedProjects;
@@ -12,7 +13,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.UpdateProjectName;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -254,7 +254,7 @@ public class ModelDBUtils {
               if (userInfoValue != null) {
                 collaborator1 = new CollaboratorUser(authService, userInfoValue);
               } else {
-                LOGGER.error("skipping " + collaborator.getVertaId() + " because it is not found");
+                LOGGER.warn("skipping " + collaborator.getVertaId() + " because it is not found");
               }
               break;
             case ORGANIZATION:
@@ -290,7 +290,7 @@ public class ModelDBUtils {
                     + collaborator.getVertaId()
                     + " because the current user doesn't have access to it");
           } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
-            LOGGER.error("skipping " + collaborator.getVertaId() + " because it is not found");
+            LOGGER.warn("skipping " + collaborator.getVertaId() + " because it is not found");
           } else {
             LOGGER.error(ex.getMessage(), ex);
             throw ex;
