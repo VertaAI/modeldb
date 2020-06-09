@@ -326,6 +326,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       boolean create)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     RepositoryEntity repositoryEntity;
+    final Repository repository = request.getRepository();
     if (create) {
       WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(request.getId(), false, true);
       ModelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -334,28 +335,31 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
           RepositoryEntity.class.getSimpleName(),
           "repositoryName",
-          request.getRepository().getName(),
+          repository.getName(),
           ModelDBConstants.WORKSPACE_ID,
           workspaceDTO.getWorkspaceId(),
           workspaceDTO.getWorkspaceType(),
           LOGGER);
-      repositoryEntity = new RepositoryEntity(request.getRepository(), workspaceDTO);
+      repositoryEntity = new RepositoryEntity(repository, workspaceDTO);
       repositoryEntity.setDeleted(true);
     } else {
       repositoryEntity = getRepositoryById(session, request.getId(), true);
-      ModelDBHibernateUtil.checkIfEntityAlreadyExists(
-          session,
-          SHORT_NAME,
-          GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
-          "Repository",
-          "repositoryName",
-          request.getRepository().getName(),
-          ModelDBConstants.WORKSPACE_ID,
-          repositoryEntity.getWorkspace_id(),
-          WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
-          LOGGER);
-      repositoryEntity.update(request);
-    }
+      if (!repository.getName().isEmpty()
+              && !repositoryEntity.getName().equals(repository.getName())) {
+        ModelDBHibernateUtil.checkIfEntityAlreadyExists(
+                session,
+                SHORT_NAME,
+                GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
+                RepositoryEntity.class.getSimpleName(),
+                "repositoryName",
+                repository.getName(),
+                ModelDBConstants.WORKSPACE_ID,
+                repositoryEntity.getWorkspace_id(),
+                WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
+                LOGGER);
+      }
+        repositoryEntity.update(request);
+      }
     session.beginTransaction();
     session.saveOrUpdate(repositoryEntity);
     if (create) {
