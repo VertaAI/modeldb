@@ -31,16 +31,24 @@ class Commit(
 
   /** Retrieves the blob at path from this commit
    *  @param path location of a blob
-   *  @return ModelDB versioning blob. If not existed, return None
+   *  @return the blob. If not existed, fails.
    */
-  def get(path: String)(implicit ec: ExecutionContext): Try[Blob] = {
+  def get(path: String)(implicit ec: ExecutionContext): Try[Blob] =
+    getVersioningBlob(path).map(versioningBlobToBlob)
+
+  /** Retrieve the versioning blob stored at the path
+   *  Helper function for get and remove operations
+   *  @param path location of the blob
+   *  @return ModelDB versioning blob. If not existed, fails.
+   */
+  private def getVersioningBlob(path: String)(implicit ec: ExecutionContext): Try[VersioningBlob] =
     loadBlobs().flatMap(_ =>
       blobs.get(path) match {
         case None => Failure(new NoSuchElementException("No blob was stored at this path."))
-        case Some(blob) => Success(versioningBlobToBlob(blob))
+        case Some(blob) => Success(blob)
       }
     )
-  }
+
 
   /** Adds blob to this commit at path
    *  If path is already in this Commit, it will be updated to the new blob
@@ -59,6 +67,23 @@ class Commit(
       }
 
       childCommit.blobs = blobs + new Tuple2(path, versioningBlob)
+      childCommit.saved = false
+      childCommit.loadedFromRemote = true
+
+      childCommit
+    })
+  }
+
+  /** Remove a blob to this commit at path
+   *  @param path Location to add blob to
+   *  @return whether the update attempt succeeds.
+   */
+  def remove(path: String)(implicit ec: ExecutionContext): Try[Commit] = {
+    getVersioningBlob(path).map(_ => {
+      // creating new commit:
+      val childCommit = getChild()
+
+      childCommit.blobs = blobs - path
       childCommit.saved = false
       childCommit.loadedFromRemote = true
 

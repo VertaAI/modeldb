@@ -81,4 +81,32 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("Remove should discard blob from commit") {
+    val f = fixture
+
+    try {
+      val newCommit = f.commit.update("abc/def", f.pathBlob)
+                              .flatMap(_.update("mnp/qrs", f.pathBlob))
+                              .flatMap(_.remove("abc/def")).get
+
+      val getAttempt = newCommit.get("abc/def")
+      assert(getAttempt.isFailure)
+      assert(getAttempt match {case Failure(e) => e.getMessage contains "No blob was stored at this path."})
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("Remove a non-existing path should fail") {
+    val f = fixture
+
+    try {
+      val removeAttempt = f.commit.remove("abc/def")
+      assert(removeAttempt.isFailure)
+      assert(removeAttempt match {case Failure(e) => e.getMessage contains "No blob was stored at this path."})
+    } finally {
+      cleanup(f)
+    }
+  }
 }
