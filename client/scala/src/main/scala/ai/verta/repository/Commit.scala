@@ -95,13 +95,10 @@ class Commit(
       .flatMap(r => {
         val newCom = new Commit(clientSet, repo, r.commit.get, commitBranch)
 
-        if (commitBranch.isDefined) {
-          setBranch(r.commit.get, commitBranch.get) match {
-            case Failure(e) => Failure(e)
-            case Success(()) => Success(newCom)
-          }
-        }
-        else Success(newCom)
+        if (commitBranch.isDefined)
+          setBranch(r.commit.get, commitBranch.get).map(_ => newCom)
+        else
+          Success(newCom)
       })
   }
 
