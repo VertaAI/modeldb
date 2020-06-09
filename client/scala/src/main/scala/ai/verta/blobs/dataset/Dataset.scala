@@ -7,20 +7,7 @@ import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 
 trait Dataset extends Blob {
-  protected var contents: HashMap[String, FileMetadata] // for deduplication and comparing
-
-  /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
-   */
-  protected def toMetadata(
-    component: VersioningPathDatasetComponentBlob,
-    versionId: Option[String] = None
-  ) = new FileMetadata(
-    component.last_modified_at_source.get,
-    component.md5.get,
-    component.path.get,
-    component.size.get,
-    versionId
-  )
+  protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
@@ -51,4 +38,19 @@ trait Dataset extends Blob {
     val shared = contents.keySet.intersect(other.contents.keySet)
     contents.filterKeys(shared).equals(other.contents.filterKeys(shared))
   }
+}
+
+object Dataset {
+  /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
+   */
+   private[dataset] def toMetadata(
+     component: VersioningPathDatasetComponentBlob,
+     versionId: Option[String] = None
+   ) = new FileMetadata(
+     component.last_modified_at_source.get,
+     component.md5.get,
+     component.path.get,
+     component.size.get,
+     versionId
+   )
 }
