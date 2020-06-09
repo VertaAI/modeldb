@@ -18,7 +18,7 @@ class Commit(
 ) {
   private var saved = true // whether the commit instance is saved to database, or is currently being modified.
   private var loadedFromRemote = false // whether blobs has been retrieved from remote
-  private var blobs = Map[String, VersioningBlob]() // mutable map for storing blobs
+  private var blobs = Map[String, VersioningBlob]() // mutable map for storing blobs. Only loaded when used
 
   /** Return the id of the commit */
   def id = commit.commit_sha
@@ -67,6 +67,7 @@ class Commit(
   }
 
   /** Retrieve commit's blobs from remote
+   *  This is only called when user perform operations involving blobs.
    */
   private def loadBlobs()(implicit ec: ExecutionContext): Try[Unit] = {
     if (!loadedFromRemote) {
@@ -79,6 +80,7 @@ class Commit(
       Try(ids.map(id => loadBlobsFromId(id)).map(_.get).reduce(_ ++ _)) match {
         case Failure(e) => Failure(e)
         case Success(map) => Success {
+          // the map is successfully loaded and assigned to blobs field:
           loadedFromRemote = true
           blobs = map
         }
