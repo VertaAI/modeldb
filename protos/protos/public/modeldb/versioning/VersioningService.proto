@@ -13,6 +13,7 @@ import "modeldb/versioning/Config.proto";
 import "modeldb/versioning/Dataset.proto";
 import "modeldb/versioning/Enums.proto";
 import "modeldb/versioning/Environment.proto";
+import "common/CommonService.proto";
 
 // Base commit for the versioning system
 // DO NOT USE TO COMPUTE SHA
@@ -114,8 +115,10 @@ message Repository {
 
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
     RepositoryAccessModifierEnum.RepositoryAccessModifier repositoryAccessModifier = 8;
+    string description = 9;
 
     string owner = 10;
+    repeated common.KeyValue attributes = 11;
 }
 
 // For pagination

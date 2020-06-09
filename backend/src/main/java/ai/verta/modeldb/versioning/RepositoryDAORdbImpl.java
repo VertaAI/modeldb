@@ -2,15 +2,14 @@ package ai.verta.modeldb.versioning;
 
 import static ai.verta.modeldb.versioning.SetRepository.Response.newBuilder;
 
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.Dataset;
-import ai.verta.modeldb.KeyValueQuery;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -25,10 +24,13 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
+import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolStringList;
+import com.google.rpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
+import io.grpc.protobuf.StatusProto;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -149,6 +151,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(ModelDBConstants.DELETED)
           .append(" = false ")
           .toString();
+  private static final String GET_REPOSITORY_ATTRIBUTES_QUERY =
+      new StringBuilder("From " + AttributeEntity.class.getSimpleName() + " attr where attr.")
+          .append(ModelDBConstants.KEY)
+          .append(" in (:keys) AND attr.repositoryEntity.")
+          .append(ModelDBConstants.ID)
+          .append(" = :repoId AND attr.field_type = :fieldType")
+          .toString();
 
   public RepositoryDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
@@ -216,6 +225,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public RepositoryEntity getRepositoryById(
       Session session, RepositoryIdentification id, boolean checkWrite) throws ModelDBException {
+    return getRepositoryById(session, id, checkWrite, true);
+  }
+
+  @Override
+  public RepositoryEntity getRepositoryById(
+      Session session, RepositoryIdentification id, boolean checkWrite, boolean checkProtected)
+      throws ModelDBException {
     RepositoryEntity repository;
     if (id.hasNamedId()) {
       WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(id, true);
@@ -235,6 +251,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                           "Couldn't find repository by id " + id.getRepoId(), Code.NOT_FOUND));
     }
     try {
+      if (checkProtected && repository.isProtected()) {
+        throw new ModelDBException(
+            "Can't access repository because it's protected", Code.PERMISSION_DENIED);
+      }
       if (checkWrite) {
         roleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.REPOSITORY,
@@ -285,7 +305,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public SetRepository.Response setRepository(
       CommitDAO commitDAO, SetRepository request, UserInfo userInfo, boolean create)
-      throws ModelDBException, NoSuchAlgorithmException {
+      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = setRepository(session, commitDAO, request, userInfo, create);
       return newBuilder().setRepository(repository.toProto()).build();
@@ -304,30 +324,25 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       SetRepository request,
       UserInfo userInfo,
       boolean create)
-      throws ModelDBException, NoSuchAlgorithmException {
-    RepositoryEntity repository;
+      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
+    RepositoryEntity repositoryEntity;
     if (create) {
       WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(request.getId(), false, true);
       ModelDBHibernateUtil.checkIfEntityAlreadyExists(
           session,
           SHORT_NAME,
           GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
-          "Repository",
+          RepositoryEntity.class.getSimpleName(),
           "repositoryName",
           request.getRepository().getName(),
           ModelDBConstants.WORKSPACE_ID,
           workspaceDTO.getWorkspaceId(),
           workspaceDTO.getWorkspaceType(),
           LOGGER);
-      repository =
-          new RepositoryEntity(
-              request.getRepository().getName(),
-              workspaceDTO,
-              request.getRepository().getOwner(),
-              request.getRepository().getRepositoryVisibility());
-      repository.setDeleted(true);
+      repositoryEntity = new RepositoryEntity(request.getRepository(), workspaceDTO);
+      repositoryEntity.setDeleted(true);
     } else {
-      repository = getRepositoryById(session, request.getId(), true);
+      repositoryEntity = getRepositoryById(session, request.getId(), true);
       ModelDBHibernateUtil.checkIfEntityAlreadyExists(
           session,
           SHORT_NAME,
@@ -336,13 +351,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           "repositoryName",
           request.getRepository().getName(),
           ModelDBConstants.WORKSPACE_ID,
-          repository.getWorkspace_id(),
-          WorkspaceType.forNumber(repository.getWorkspace_type()),
+          repositoryEntity.getWorkspace_id(),
+          WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
           LOGGER);
-      repository.update(request);
+      repositoryEntity.update(request);
     }
     session.beginTransaction();
-    session.saveOrUpdate(repository);
+    session.saveOrUpdate(repositoryEntity);
     if (create) {
       Commit initCommit =
           Commit.newBuilder().setMessage(ModelDBConstants.INITIAL_COMMIT_MESSAGE).build();
@@ -352,23 +367,23 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               initCommit,
               FileHasher.getSha(new String()),
               authService.getVertaIdFromUserInfo(userInfo),
-              repository);
+              repositoryEntity);
 
       saveBranch(
-          session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repository);
+          session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repositoryEntity);
     }
     session.getTransaction().commit();
     if (create) {
-      createRoleBindingsForRepository(request, userInfo, repository);
+      createRoleBindingsForRepository(request, userInfo, repositoryEntity);
 
       // Update repository deleted status to false after roleBindings created successfully
       session.beginTransaction();
-      repository.setDeleted(false);
-      session.update(repository);
+      repositoryEntity.setDeleted(false);
+      session.update(repositoryEntity);
       session.getTransaction().commit();
     }
 
-    return repository;
+    return repositoryEntity;
   }
 
   private void createRoleBindingsForRepository(
@@ -393,6 +408,41 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         GLOBAL_SHARING);
   }
 
+  public void deleteRepositories(
+      Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds) {
+    Query deletedRepositoriesQuery = session.createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING);
+    deletedRepositoriesQuery.setParameter("deleted", true);
+    final List<Long> repositoriesIdsLong =
+        allowedRepositoryIds.stream().map(Long::valueOf).collect(Collectors.toList());
+    deletedRepositoriesQuery.setParameter("repoIds", repositoriesIdsLong);
+    Transaction transaction = session.beginTransaction();
+    int updatedCount = deletedRepositoriesQuery.executeUpdate();
+    LOGGER.debug(
+        "Mark Repositories as deleted : {}, count : {}", allowedRepositoryIds, updatedCount);
+    // Delete all VersionedInputs for repository ID
+    experimentRunDAO.deleteLogVersionedInputs(session, repositoriesIdsLong);
+    transaction.commit();
+  }
+
+  @Override
+  public Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
+      throws ModelDBException {
+    List<String> allowedRepositoryIds =
+        roleService.getAccessibleResourceIdsByActions(
+            ModelDBServiceResourceTypes.REPOSITORY,
+            ModelDBServiceActions.DELETE,
+            Collections.singletonList(String.valueOf(repositoryIds)));
+    if (allowedRepositoryIds.isEmpty()) {
+      throw new ModelDBException(
+          "Delete Access Denied for given repository Ids : " + repositoryIds,
+          Code.PERMISSION_DENIED);
+    }
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
+    }
+    return true;
+  }
+
   @Override
   public DeleteRepositoryRequest.Response deleteRepository(
       DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
@@ -411,17 +461,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             Code.PERMISSION_DENIED);
       }
 
-      Query deletedRepositoriesQuery = session.createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING);
-      deletedRepositoriesQuery.setParameter("deleted", true);
-      deletedRepositoriesQuery.setParameter(
-          "repoIds", allowedRepositoryIds.stream().map(Long::valueOf).collect(Collectors.toList()));
-      Transaction transaction = session.beginTransaction();
-      int updatedCount = deletedRepositoriesQuery.executeUpdate();
-      LOGGER.debug(
-          "Mark Repositories as deleted : {}, count : {}", allowedRepositoryIds, updatedCount);
-      // Delete all VersionedInputs for repository ID
-      experimentRunDAO.deleteLogVersionedInputs(session, repository.getId(), null);
-      transaction.commit();
+      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -434,7 +474,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   Repository createRepository(
       Session session, CommitDAO commitDAO, Dataset dataset, UserInfo userInfo)
-      throws NoSuchAlgorithmException, ModelDBException {
+      throws NoSuchAlgorithmException, ModelDBException, InvalidProtocolBufferException {
     RepositoryEntity repositoryEntity =
         setRepository(
             session,
@@ -453,7 +493,25 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             userInfo,
             true);
 
-    // TODO: add attribute support
+    repositoryEntity.setAttributeMapping(
+        dataset.getAttributesList().stream()
+            .map(
+                attribute -> {
+                  try {
+                    return RdbmsUtils.generateAttributeEntity(
+                        repositoryEntity, ModelDBConstants.ATTRIBUTES, attribute);
+                  } catch (InvalidProtocolBufferException e) {
+                    LOGGER.error("Unexpected error occured {}", e.getMessage());
+                    Status status =
+                        Status.newBuilder()
+                            .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                            .setMessage(e.getMessage())
+                            .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
+                            .build();
+                    throw StatusProto.toStatusRuntimeException(status);
+                  }
+                })
+            .collect(Collectors.toList()));
 
     ProtocolStringList tags = dataset.getTagsList();
     for (String tag : tags) {
@@ -474,14 +532,32 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         .setName(repositoryEntity.getName())
         .setOwner(repositoryEntity.getOwner());
     ListTagsRequest.Response tags = listTags(session, repositoryEntity);
-    // TODO: add attribute support
+    dataset.addAllAttributes(
+        repositoryEntity.getAttributeMapping().stream()
+            .map(
+                attributeEntity -> {
+                  try {
+                    return attributeEntity.getProtoObj();
+                  } catch (InvalidProtocolBufferException e) {
+                    LOGGER.error("Unexpected error occured {}", e.getMessage());
+                    Status status =
+                        Status.newBuilder()
+                            .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                            .setMessage(e.getMessage())
+                            .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
+                            .build();
+                    throw StatusProto.toStatusRuntimeException(status);
+                  }
+                })
+            .collect(Collectors.toList()));
     dataset.addAllTags(tags.getTagsList());
     return dataset.build();
   }
 
   @Override
   public ListRepositoriesRequest.Response listRepositories(
-      ListRepositoriesRequest request, UserInfo currentLoginUserInfo) throws ModelDBException {
+      ListRepositoriesRequest request, UserInfo currentLoginUserInfo)
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<String> accessibleResourceIds =
           roleService.getAccessibleResourceIds(
@@ -566,8 +642,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       ListRepositoriesRequest.Response.Builder builder =
           ListRepositoriesRequest.Response.newBuilder();
 
-      repositoryEntities.forEach(
-          repositoryEntity -> builder.addRepositories(repositoryEntity.toProto()));
+      for (RepositoryEntity repositoryEntity : repositoryEntities) {
+        builder.addRepositories(repositoryEntity.toProto());
+      }
 
       long totalRecords = RdbmsUtils.count(session, repositoryEntityRoot, criteriaQuery);
       builder.setTotalRecords(totalRecords);
@@ -916,7 +993,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public FindRepositories.Response findRepositories(FindRepositories request)
-      throws ModelDBException {
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       WorkspaceDTO workspaceDTO =
@@ -961,11 +1038,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         Long totalRecords =
             (Long) findRepositoriesQuery.getFindRepositoriesCountHQLQuery().uniqueResult();
 
+        List<Repository> repositories = new ArrayList<>();
+        for (RepositoryEntity repositoryEntity : repositoryEntities) {
+          repositories.add(repositoryEntity.toProto());
+        }
+
         return FindRepositories.Response.newBuilder()
-            .addAllRepositories(
-                repositoryEntities.stream()
-                    .map(RepositoryEntity::toProto)
-                    .collect(Collectors.toList()))
+            .addAllRepositories(repositories)
             .setTotalRecords(totalRecords)
             .build();
       } catch (ModelDBException ex) {

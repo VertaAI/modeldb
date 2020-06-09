@@ -38,7 +38,7 @@ public class LabelsMappingEntity {
     @Column(name = "label", length = 50)
     private String label;
 
-    @Column(name = "entity_hash", nullable = false, columnDefinition = "varchar", length = 64)
+    @Column(name = "entity_hash", nullable = false, columnDefinition = "varchar")
     private String entity_hash;
 
     @Column(name = "entity_type")

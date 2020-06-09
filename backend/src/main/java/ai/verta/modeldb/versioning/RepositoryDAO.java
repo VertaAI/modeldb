@@ -7,6 +7,7 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import org.hibernate.Session;
 
 public interface RepositoryDAO {
@@ -15,6 +16,10 @@ public interface RepositoryDAO {
 
   RepositoryEntity getRepositoryById(
       Session session, RepositoryIdentification id, boolean checkWrite) throws ModelDBException;
+
+  RepositoryEntity getRepositoryById(
+      Session session, RepositoryIdentification id, boolean checkWrite, boolean checkProtected)
+      throws ModelDBException;
 
   RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
       throws ModelDBException;
@@ -27,8 +32,12 @@ public interface RepositoryDAO {
       DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException;
 
+  Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
+      throws ModelDBException;
+
   ListRepositoriesRequest.Response listRepositories(
-      ListRepositoriesRequest request, UserInfo userInfo) throws ModelDBException;
+      ListRepositoriesRequest request, UserInfo userInfo)
+      throws ModelDBException, InvalidProtocolBufferException;
 
   ListTagsRequest.Response listTags(ListTagsRequest request) throws ModelDBException;
 
@@ -54,5 +63,6 @@ public interface RepositoryDAO {
   ListCommitsLogRequest.Response listCommitsLog(ListCommitsLogRequest request)
       throws ModelDBException;
 
-  FindRepositories.Response findRepositories(FindRepositories request) throws ModelDBException;
+  FindRepositories.Response findRepositories(FindRepositories request)
+      throws ModelDBException, InvalidProtocolBufferException;
 }
