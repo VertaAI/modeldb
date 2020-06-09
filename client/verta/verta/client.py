@@ -771,7 +771,7 @@ class _ModelDBEntity(object):
         method : {'GET', 'PUT'}
             HTTP method to request for the generated URL.
         artifact_type : int, optional
-            Variant of `_CommonService.ArtifactTypeEnum`. This informs the backend what slot to check
+            Variant of `_CommonCommonService.ArtifactTypeEnum`. This informs the backend what slot to check
             for the artifact, if necessary.
         part_num : int, optional
             If using Multipart Upload, number of part to be uploaded.
@@ -1078,7 +1078,7 @@ class _ModelDBEntity(object):
 
             msg.code_version.code_archive.path = artifact_path
             msg.code_version.code_archive.path_only = False
-            msg.code_version.code_archive.artifact_type = _CommonService.ArtifactTypeEnum.CODE
+            msg.code_version.code_archive.artifact_type = _CommonCommonService.ArtifactTypeEnum.CODE
             msg.code_version.code_archive.filename_extension = extension
         # TODO: check if we actually have any loggable information
         msg.code_version.date_logged = _utils.now()
@@ -2013,7 +2013,7 @@ class ExperimentRun(_ModelDBEntity):
                 - If file-like, then the contents will be read as bytes and uploaded as an artifact.
                 - Otherwise, the object will be serialized and uploaded as an artifact.
         artifact_type : int
-            Variant of `_CommonService.ArtifactTypeEnum`.
+            Variant of `_CommonCommonService.ArtifactTypeEnum`.
         extension : str, optional
             Filename extension associated with the artifact.
         method : str, optional
@@ -2053,7 +2053,7 @@ class ExperimentRun(_ModelDBEntity):
 
         # log key to ModelDB
         Message = _ExperimentRunService.LogArtifact
-        artifact_msg = _CommonService.Artifact(key=key,
+        artifact_msg = _CommonCommonService.Artifact(key=key,
                                                path=artifact_path,
                                                path_only=False,
                                                artifact_type=artifact_type,
@@ -2160,11 +2160,11 @@ class ExperimentRun(_ModelDBEntity):
         artifact_path : str
             Filesystem path of the artifact.
         artifact_type : int
-            Variant of `_CommonService.ArtifactTypeEnum`.
+            Variant of `_CommonCommonService.ArtifactTypeEnum`.
         """
         # log key-path to ModelDB
         Message = _ExperimentRunService.LogArtifact
-        artifact_msg = _CommonService.Artifact(key=key,
+        artifact_msg = _CommonCommonService.Artifact(key=key,
                                                path=artifact_path,
                                                path_only=True,
                                                artifact_type=artifact_type)
@@ -2778,7 +2778,7 @@ class ExperimentRun(_ModelDBEntity):
             extension = _artifact_utils.get_file_ext(dataset)
         except (TypeError, ValueError):
             extension = None
-        self._log_artifact(key, dataset, _CommonService.ArtifactTypeEnum.DATA, extension, overwrite=overwrite)
+        self._log_artifact(key, dataset, _CommonCommonService.ArtifactTypeEnum.DATA, extension, overwrite=overwrite)
 
     def log_dataset_version(self, key, dataset_version, overwrite=False):
         """
@@ -2800,10 +2800,10 @@ class ExperimentRun(_ModelDBEntity):
 
         # log key-path to ModelDB
         Message = _ExperimentRunService.LogDataset
-        artifact_msg = _CommonService.Artifact(key=key,
+        artifact_msg = _CommonCommonService.Artifact(key=key,
                                                path=dataset_path,
                                                path_only=True,
-                                               artifact_type=_CommonService.ArtifactTypeEnum.DATA,
+                                               artifact_type=_CommonCommonService.ArtifactTypeEnum.DATA,
                                                linked_artifact_id=dataset_version.id)
         msg = Message(id=self.id, dataset=artifact_msg, overwrite=overwrite)
         data = _utils.proto_to_json(msg)
@@ -3010,10 +3010,10 @@ class ExperimentRun(_ModelDBEntity):
         else:
             train_data = None
 
-        self._log_artifact("model.pkl", model, _CommonService.ArtifactTypeEnum.MODEL, model_extension, method)
-        self._log_artifact("model_api.json", model_api, _CommonService.ArtifactTypeEnum.BLOB, 'json')
+        self._log_artifact("model.pkl", model, _CommonCommonService.ArtifactTypeEnum.MODEL, model_extension, method)
+        self._log_artifact("model_api.json", model_api, _CommonCommonService.ArtifactTypeEnum.BLOB, 'json')
         if train_data is not None:
-            self._log_artifact("train_data", train_data, _CommonService.ArtifactTypeEnum.DATA, 'csv')
+            self._log_artifact("train_data", train_data, _CommonCommonService.ArtifactTypeEnum.DATA, 'csv')
 
     def log_tf_saved_model(self, export_dir):
         with tempfile.TemporaryFile() as tempf:
@@ -3024,7 +3024,7 @@ class ExperimentRun(_ModelDBEntity):
                         zipf.write(filepath, os.path.relpath(filepath, export_dir))
             tempf.seek(0)
             # TODO: change _log_artifact() to not read file into memory
-            self._log_artifact("tf_saved_model", tempf, _CommonService.ArtifactTypeEnum.BLOB, 'zip')
+            self._log_artifact("tf_saved_model", tempf, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
 
     def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
         """
@@ -3108,8 +3108,8 @@ class ExperimentRun(_ModelDBEntity):
             self.log_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts)
 
         self._log_modules(custom_modules, overwrite=overwrite)
-        self._log_artifact("model.pkl", serialized_model, _CommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
-        self._log_artifact("model_api.json", model_api, _CommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
+        self._log_artifact("model.pkl", serialized_model, _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
+        self._log_artifact("model_api.json", model_api, _CommonCommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
 
     def get_model(self):
         """
@@ -3170,7 +3170,7 @@ class ExperimentRun(_ModelDBEntity):
             bytestream.seek(0)
             image = bytestream
 
-        self._log_artifact(key, image, _CommonService.ArtifactTypeEnum.IMAGE, extension, overwrite=overwrite)
+        self._log_artifact(key, image, _CommonCommonService.ArtifactTypeEnum.IMAGE, extension, overwrite=overwrite)
 
     def log_image_path(self, key, image_path):
         """
@@ -3190,7 +3190,7 @@ class ExperimentRun(_ModelDBEntity):
         _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
-        self._log_artifact_path(key, image_path, _CommonService.ArtifactTypeEnum.IMAGE)
+        self._log_artifact_path(key, image_path, _CommonCommonService.ArtifactTypeEnum.IMAGE)
 
     def get_image(self, key):
         """
@@ -3262,7 +3262,7 @@ class ExperimentRun(_ModelDBEntity):
             artifact = tempf
             extension = 'zip'
 
-        self._log_artifact(key, artifact, _CommonService.ArtifactTypeEnum.BLOB, extension, overwrite=overwrite)
+        self._log_artifact(key, artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, extension, overwrite=overwrite)
 
     def log_artifact_path(self, key, artifact_path):
         """
@@ -3282,7 +3282,7 @@ class ExperimentRun(_ModelDBEntity):
         _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
-        self._log_artifact_path(key, artifact_path, _CommonService.ArtifactTypeEnum.BLOB)
+        self._log_artifact_path(key, artifact_path, _CommonCommonService.ArtifactTypeEnum.BLOB)
 
     def get_artifact(self, key):
         """
@@ -3467,7 +3467,7 @@ class ExperimentRun(_ModelDBEntity):
             print(requirements)
 
         requirements = six.BytesIO(six.ensure_binary('\n'.join(requirements)))  # as file-like
-        self._log_artifact("requirements.txt", requirements, _CommonService.ArtifactTypeEnum.BLOB, 'txt', overwrite=overwrite)
+        self._log_artifact("requirements.txt", requirements, _CommonCommonService.ArtifactTypeEnum.BLOB, 'txt', overwrite=overwrite)
 
     def log_modules(self, paths, search_path=None):
         """
@@ -3599,7 +3599,7 @@ class ExperimentRun(_ModelDBEntity):
                 zipf.printdir()
         bytestream.seek(0)
 
-        self._log_artifact("custom_modules", bytestream, _CommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
+        self._log_artifact("custom_modules", bytestream, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
     def log_setup_script(self, script, overwrite=False):
         """
@@ -3639,7 +3639,7 @@ class ExperimentRun(_ModelDBEntity):
         # convert to file-like for `_log_artifact()`
         script = six.BytesIO(script)
 
-        self._log_artifact("setup_script", script, _CommonService.ArtifactTypeEnum.BLOB, 'py', overwrite=overwrite)
+        self._log_artifact("setup_script", script, _CommonCommonService.ArtifactTypeEnum.BLOB, 'py', overwrite=overwrite)
 
     def log_training_data(self, train_features, train_targets, overwrite=False):
         """
