@@ -254,4 +254,38 @@ public class MetadataTest {
     LOGGER.info(
         "Add & Delete labels for combo of repo, commit, blob  test stop................................");
   }
+
+  @Test
+  public void addDeleteLabelsWithComboRepoCommitTest() {
+    LOGGER.info("Add & Delete labels for combo of repo, commit test start..........");
+
+    MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
+
+    VersioningCompositeIdentifier identifier =
+        VersioningCompositeIdentifier.newBuilder()
+            .setRepoId(1)
+            .setCommitHash(UUID.randomUUID().toString())
+            .build();
+    IdentificationType id1 =
+        IdentificationType.newBuilder()
+            .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)
+            .setVersioningCompositeId(identifier)
+            .build();
+    AddLabelsRequest addLabelsRequest2 =
+        AddLabelsRequest.newBuilder().setId(id1).addLabels("Backend").addLabels("Frontend").build();
+    AddLabelsRequest.Response addLabelsResponse2 = serviceBlockingStub.addLabels(addLabelsRequest2);
+    assertTrue("Labels not persist successfully", addLabelsResponse2.getStatus());
+
+    DeleteLabelsRequest deleteLabelsRequest =
+        DeleteLabelsRequest.newBuilder()
+            .setId(id1)
+            .addLabels("Backend")
+            .addLabels("Frontend")
+            .build();
+    DeleteLabelsRequest.Response deleteLabelsResponse =
+        serviceBlockingStub.deleteLabels(deleteLabelsRequest);
+    assertTrue(deleteLabelsResponse.getStatus());
+
+    LOGGER.info("Add & Delete labels for combo of repo, commit  test stop.........");
+  }
 }

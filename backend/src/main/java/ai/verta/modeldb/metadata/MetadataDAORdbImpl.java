@@ -48,7 +48,9 @@ public class MetadataDAORdbImpl implements MetadataDAO {
         entityHash = id.getStringId();
         break;
       case VERSIONING_COMPOSITE_ID:
-        entityHash = LabelsMappingEntity.getVersioningCompositeId(id.getVersioningCompositeId());
+        entityHash =
+            LabelsMappingEntity.getVersioningCompositeId(
+                id.getVersioningCompositeId(), id.getIdType());
       default:
         throw new StatusRuntimeException(io.grpc.Status.INTERNAL);
     }

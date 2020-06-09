@@ -1227,7 +1227,8 @@ public class BlobDAORdbImpl implements BlobDAO {
             }
             break;
           case ModelDBConstants.VERSIONING_REPO_COMMIT_BLOB:
-            LOGGER.debug("switch case : " + ModelDBConstants.VERSIONING_REPO_COMMIT_BLOB);
+          case ModelDBConstants.VERSIONING_REPO_COMMIT:
+            LOGGER.debug("switch case : Blob");
             if (names[1].contains(ModelDBConstants.LABEL)) {
               StringBuilder subQueryBuilder =
                   new StringBuilder("SELECT lb.id.entity_hash FROM ")
@@ -1236,8 +1237,13 @@ public class BlobDAORdbImpl implements BlobDAO {
                       .append(" lb.id.entity_type = :entityType")
                       .append(" AND lb.id.label = :label");
               Query labelQuery = session.createQuery(subQueryBuilder.toString());
-              labelQuery.setParameter(
-                  "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB.getNumber());
+              if (names[0].equals(ModelDBConstants.VERSIONING_REPO_COMMIT_BLOB)) {
+                labelQuery.setParameter(
+                    "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB.getNumber());
+              } else {
+                labelQuery.setParameter(
+                    "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT.getNumber());
+              }
               labelQuery.setParameter("label", predicate.getValue().getStringValue());
               List<String> blobHashes = labelQuery.list();
               List<String> commitHashes = new ArrayList<>();

@@ -1,5 +1,6 @@
 package ai.verta.modeldb.entities.metadata;
 
+import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -25,7 +26,7 @@ public class LabelsMappingEntity {
     } else if (id.getIdCase().equals(IdentificationType.IdCase.STRING_ID)) {
       this.id = new LabelMappingId(id.getStringId(), id.getIdTypeValue(), label);
     } else if (id.getIdCase().equals(IdentificationType.IdCase.VERSIONING_COMPOSITE_ID)) {
-      String compositeId = getVersioningCompositeId(id.getVersioningCompositeId());
+      String compositeId = getVersioningCompositeId(id.getVersioningCompositeId(), id.getIdType());
       this.id = new LabelMappingId(compositeId, id.getIdTypeValue(), label);
     } else {
       throw new StatusRuntimeException(Status.INVALID_ARGUMENT);
@@ -86,21 +87,33 @@ public class LabelsMappingEntity {
     }
   }
 
-  public static String getVersioningCompositeId(VersioningCompositeIdentifier identifier) {
-    return identifier.getRepoId()
-        + "::"
-        + identifier.getCommitHash()
-        + "::"
-        + ModelDBUtils.getLocationWithSlashOperator(identifier.getLocationList());
+  public static String getVersioningCompositeId(
+      VersioningCompositeIdentifier identifier, IDTypeEnum.IDType idType) {
+    if (idType.equals(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)) {
+      return identifier.getRepoId()
+          + "::"
+          + identifier.getCommitHash()
+          + "::"
+          + ModelDBUtils.getLocationWithSlashOperator(identifier.getLocationList());
+    } else {
+      return identifier.getRepoId() + "::" + identifier.getCommitHash();
+    }
   }
 
   public static VersioningCompositeIdentifier getVersioningCompositeIdentifier(
       String identifierIdStr) {
     String[] identifierArr = identifierIdStr.split("::");
-    return VersioningCompositeIdentifier.newBuilder()
-        .setRepoId(Long.parseLong(identifierArr[0]))
-        .setCommitHash(identifierArr[1])
-        .addAllLocation(Arrays.asList(identifierArr[2].split("/")))
-        .build();
+    if (identifierArr.length == 3) {
+      return VersioningCompositeIdentifier.newBuilder()
+          .setRepoId(Long.parseLong(identifierArr[0]))
+          .setCommitHash(identifierArr[1])
+          .addAllLocation(Arrays.asList(identifierArr[2].split("/")))
+          .build();
+    } else {
+      return VersioningCompositeIdentifier.newBuilder()
+          .setRepoId(Long.parseLong(identifierArr[0]))
+          .setCommitHash(identifierArr[1])
+          .build();
+    }
   }
 }
