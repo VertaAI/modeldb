@@ -305,18 +305,18 @@ public class CommitDAORdbImpl implements CommitDAO {
 
       session.beginTransaction();
       String getLabelsHql =
-              "From LabelsMappingEntity lm where lm.id."
-                      + ModelDBConstants.ENTITY_HASH
-                      + " IN (:entityHashes) "
-                      + " AND lm.id."
-                      + ModelDBConstants.ENTITY_TYPE
-                      + " = :entityType";
+          "From LabelsMappingEntity lm where lm.id."
+              + ModelDBConstants.ENTITY_HASH
+              + " IN (:entityHashes) "
+              + " AND lm.id."
+              + ModelDBConstants.ENTITY_TYPE
+              + " = :entityType";
       Query<LabelsMappingEntity> query =
-              session.createQuery(getLabelsHql, LabelsMappingEntity.class);
+          session.createQuery(getLabelsHql, LabelsMappingEntity.class);
       query.setParameter("entityHashes", commitShas);
       query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_COMMIT_VALUE);
       List<LabelsMappingEntity> labelsMappingEntities = query.list();
-      for (LabelsMappingEntity labelsMappingEntity: labelsMappingEntities) {
+      for (LabelsMappingEntity labelsMappingEntity : labelsMappingEntities) {
         session.delete(labelsMappingEntity);
       }
 
@@ -412,18 +412,19 @@ public class CommitDAORdbImpl implements CommitDAO {
       session.beginTransaction();
 
       String getLabelsHql =
-              new StringBuilder("From LabelsMappingEntity lm where lm.id.")
-                      .append(ModelDBConstants.ENTITY_HASH)
-                      .append(" = :entityHash ")
-                      .append(" AND lm.id.")
-                      .append(ModelDBConstants.ENTITY_TYPE)
-                      .append(" = :entityType")
-                      .toString();
-      Query<LabelsMappingEntity> query = session.createQuery(getLabelsHql, LabelsMappingEntity.class);
+          new StringBuilder("From LabelsMappingEntity lm where lm.id.")
+              .append(ModelDBConstants.ENTITY_HASH)
+              .append(" = :entityHash ")
+              .append(" AND lm.id.")
+              .append(ModelDBConstants.ENTITY_TYPE)
+              .append(" = :entityType")
+              .toString();
+      Query<LabelsMappingEntity> query =
+          session.createQuery(getLabelsHql, LabelsMappingEntity.class);
       query.setParameter("entityHash", commitEntity.getCommit_hash());
       query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_COMMIT_VALUE);
       List<LabelsMappingEntity> labelsMappingEntities = query.list();
-      for (LabelsMappingEntity labelsMappingEntity: labelsMappingEntities) {
+      for (LabelsMappingEntity labelsMappingEntity : labelsMappingEntities) {
         session.delete(labelsMappingEntity);
       }
 
