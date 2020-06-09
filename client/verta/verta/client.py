@@ -2116,7 +2116,15 @@ class ExperimentRun(_ModelDBEntity):
                 part_stream = six.BytesIO(file_part)
 
                 # upload part
-                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+                #     Retry connection errors, to make large multipart uploads more robust.
+                for _ in range(3):
+                    try:
+                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+                    except requests.ConnectionError:  # e.g. broken pipe
+                        time.sleep(1)
+                        continue  # try again
+                    else:
+                        break
                 response.raise_for_status()
 
                 # commit part
