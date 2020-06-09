@@ -55,6 +55,7 @@ class Commit(
       /** TODO: Add blob subtypes to pattern matching */
       val versioningBlob = blob match {
         case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
+        case s3: S3 => S3.toVersioningBlob(s3)
       }
 
       childCommit.blobs = blobs + (path -> versioningBlob)
@@ -122,6 +123,7 @@ class Commit(
   def versioningBlobToBlob(vb: VersioningBlob): Blob = vb match {
     /** TODO: finish the pattern matching with other blob subclasses */
     case VersioningBlob(_, _, Some(VersioningDatasetBlob(Some(path), _)), _) => PathBlob(path)
+    case VersioningBlob(_, _, Some(VersioningDatasetBlob(_, Some(s3))), _) => S3(s3)
   }
 
   /** Creates a branch at this Commit and returns the checked-out branch

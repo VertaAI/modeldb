@@ -19,13 +19,12 @@ class TestCommit extends FunSuite {
         val client = new Client(ClientConnection.fromEnvironment())
         val repo = client.getOrCreateRepository("My Repo").get
         val commit = repo.getCommitByBranch().get
-        val pathBlob = PathBlob(List(
-          f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir"
-        )).get
+        val pathBlob = PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir").get
+        val s3Blob = S3(S3Location("s3://verta-scala-test/testdir/testsubdir/testfile2").get).get
     }
 
   def cleanup(
-    f: AnyRef{val client: Client; val repo: Repository; val commit: Commit; val pathBlob: PathBlob}
+    f: AnyRef{val client: Client; val repo: Repository; val commit: Commit; val pathBlob: PathBlob; val s3Blob: S3}
   ) = {
     f.client.deleteRepository(f.repo.id)
     f.client.close()
@@ -35,14 +34,21 @@ class TestCommit extends FunSuite {
     val f = fixture
 
     try {
-      val newCommit = f.commit.update("abc/def", f.pathBlob).get
-      val getAttempt = newCommit.get("abc/def").get
+      val newCommit = f.commit.update("abc/def", f.pathBlob)
+                              .flatMap(_.update("mnp/qrs", f.s3Blob)).get
 
-      // check that the content of the pathblob is not corrupted:
-      val pathBlob2 = getAttempt match {
+      // check that the contents of the blobs are not corrupted:
+      val pathBlob2 = newCommit.get("abc/def").get match {
         case blob: PathBlob => blob
+        case blob: S3 => blob
       }
       assert(pathBlob2 equals f.pathBlob)
+
+      val s3Blob2 = newCommit.get("mnp/qrs").get match {
+        case blob: PathBlob => blob
+        case blob: S3 => blob
+      }
+      assert(s3Blob2 equals f.s3Blob)
 
       val getAttempt2 = newCommit.get("xyz/tuv")
       assert(getAttempt2.isFailure)

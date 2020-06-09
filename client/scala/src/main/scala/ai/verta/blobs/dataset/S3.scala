@@ -62,13 +62,14 @@ object S3 {
   /** Factory method to convert a versioning blob instance
    *  @param s3VersioningBlob the versioning blob to convert
    */
-  def apply(s3VersioningBlob: VersioningS3DatasetBlob) {
+  def apply(s3VersioningBlob: VersioningS3DatasetBlob) = {
     var s3Blob = new S3(List())
     val componentList = s3VersioningBlob.components.get
     val metadataList = componentList.map(
       comp => comp.path.get.path.get -> s3Blob.toMetadata(comp.path.get, comp.s3_version_id)
     )
 
+    s3Blob.contents = HashMap(metadataList: _*)
     s3Blob
   }
 
