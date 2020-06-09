@@ -18,7 +18,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
     clientSet.versioningService.GetCommit2(
       repository_id_repo_id = repo.id.get,
       commit_sha = id
-    ).flatMap(r => Commit(clientSet, this, r.commit.get))
+    ).map(r => new Commit(clientSet, this, r.commit.get))
   }
 
   /** Get commit by specified branch
@@ -29,7 +29,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
      clientSet.versioningService.GetBranch2(
        branch = branch,
        repository_id_repo_id = repo.id.get
-     ).flatMap(r => Commit(clientSet, this, r.commit.get, Some(branch)))
+     ).map(r => new Commit(clientSet, this, r.commit.get, Some(branch)))
    }
 
    /** Get commit by specified tag
@@ -40,7 +40,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
      clientSet.versioningService.GetTag2(
        tag = tag,
        repository_id_repo_id = repo.id.get
-     ).flatMap(r => Commit(clientSet, this, r.commit.get))
+     ).map(r => new Commit(clientSet, this, r.commit.get))
    }
 
    /** Delete a tag from this repository
