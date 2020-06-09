@@ -1,5 +1,6 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
@@ -12,6 +13,15 @@ import org.hibernate.Session;
 public interface CommitDAO {
   Response setCommit(
       String author, Commit commit, BlobFunction setBlobs, RepositoryFunction getRepository)
+      throws ModelDBException, NoSuchAlgorithmException;
+
+  Response setCommitFromDatasetVersion(
+      DatasetVersion datasetVersion,
+      String author,
+      Commit commit,
+      BlobDAO blobDAO,
+      RepositoryFunction getRepository,
+      FileHasher fileHasher)
       throws ModelDBException, NoSuchAlgorithmException;
 
   CommitEntity saveCommitEntity(

@@ -100,10 +100,11 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       Function4<Supplier<Object>, Object, String, Object> processLabel) {
     if (id.getIdType() == VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION) {
       String label = labels.get(0);
-      LabelsMappingDescriptionEntity.LabelMappingId id0 = LabelsMappingDescriptionEntity.createId(id);
-      LabelsMappingEntity existingLabelsMappingEntity =
-              session.get(LabelsMappingEntity.class, id0);
-      processLabel.apply(() -> new LabelsMappingDescriptionEntity(id0, label), existingLabelsMappingEntity, label);
+      LabelsMappingDescriptionEntity.LabelMappingId id0 =
+          LabelsMappingDescriptionEntity.createId(id);
+      LabelsMappingEntity existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
+      processLabel.apply(
+          () -> new LabelsMappingDescriptionEntity(id0, label), existingLabelsMappingEntity, label);
     } else {
       for (String label : labels) {
         LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
@@ -115,7 +116,10 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   private <T> void saveLabel(
-      Session session, Supplier<T> labelsMappingEntity, T existingLabelsMappingEntity, String label) {
+      Session session,
+      Supplier<T> labelsMappingEntity,
+      T existingLabelsMappingEntity,
+      String label) {
     if (existingLabelsMappingEntity == null) {
       session.save(labelsMappingEntity.get());
     } else {
@@ -129,7 +133,10 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   private <T> void deleteLabels(
-      Session session, Supplier<T> labelsMappingEntity, T existingLabelsMappingEntity, String label) {
+      Session session,
+      Supplier<T> labelsMappingEntity,
+      T existingLabelsMappingEntity,
+      String label) {
     if (existingLabelsMappingEntity != null) {
       session.delete(existingLabelsMappingEntity);
     } else {
@@ -145,32 +152,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   @Override
   public List<String> getLabels(IdentificationType id) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      List<LabelsMappingEntityBase> labelsMappingEntities;
-      if (id.getIdType() == VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION) {
-        Query<LabelsMappingDescriptionEntity> query =
-            session.createQuery(GET_LABELS_DESCRIPTION_HQL, LabelsMappingDescriptionEntity.class);
-        VersioningCompositeIdentifier compositeId = id.getCompositeId();
-        query.setParameter("repositoryId", compositeId.getRepoId());
-        query.setParameter("commitSha", compositeId.getCommitHash());
-        query.setParameter(
-            "location", ModelDBUtils.getJoinedLocation(compositeId.getLocationList()));
-        labelsMappingEntities =
-            query.list().stream()
-                .map(e -> (LabelsMappingEntityBase) e)
-                .collect(Collectors.toList());
-      } else {
-        Query<LabelsMappingEntity> query =
-            session.createQuery(GET_LABELS_HQL, LabelsMappingEntity.class);
-        query.setParameter("entityHash", getEntityHash(id));
-        query.setParameter("entityType", id.getIdTypeValue());
-        labelsMappingEntities =
-            query.list().stream()
-                .map(e -> (LabelsMappingEntityBase) e)
-                .collect(Collectors.toList());
-      }
-      return labelsMappingEntities.stream()
-          .map(LabelsMappingEntityBase::getLabel)
-          .collect(Collectors.toList());
+      return getLabels(session, id);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getLabels(id);
@@ -178,6 +160,31 @@ public class MetadataDAORdbImpl implements MetadataDAO {
         throw ex;
       }
     }
+  }
+
+  @Override
+  public List<String> getLabels(Session session, IdentificationType id) {
+    List<LabelsMappingEntityBase> labelsMappingEntities;
+    if (id.getIdType() == VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION) {
+      Query<LabelsMappingDescriptionEntity> query =
+          session.createQuery(GET_LABELS_DESCRIPTION_HQL, LabelsMappingDescriptionEntity.class);
+      VersioningCompositeIdentifier compositeId = id.getCompositeId();
+      query.setParameter("repositoryId", compositeId.getRepoId());
+      query.setParameter("commitSha", compositeId.getCommitHash());
+      query.setParameter("location", ModelDBUtils.getJoinedLocation(compositeId.getLocationList()));
+      labelsMappingEntities =
+          query.list().stream().map(e -> (LabelsMappingEntityBase) e).collect(Collectors.toList());
+    } else {
+      Query<LabelsMappingEntity> query =
+          session.createQuery(GET_LABELS_HQL, LabelsMappingEntity.class);
+      query.setParameter("entityHash", getEntityHash(id));
+      query.setParameter("entityType", id.getIdTypeValue());
+      labelsMappingEntities =
+          query.list().stream().map(e -> (LabelsMappingEntityBase) e).collect(Collectors.toList());
+    }
+    return labelsMappingEntities.stream()
+        .map(LabelsMappingEntityBase::getLabel)
+        .collect(Collectors.toList());
   }
 
   @Override

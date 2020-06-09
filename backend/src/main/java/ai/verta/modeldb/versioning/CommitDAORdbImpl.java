@@ -1,6 +1,7 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
@@ -13,15 +14,11 @@ import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
+import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -48,6 +45,38 @@ public class CommitDAORdbImpl implements CommitDAO {
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setCommit(author, commit, setBlobs, getRepository);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public Response setCommitFromDatasetVersion(
+      DatasetVersion datasetVersion,
+      String author,
+      Commit commit,
+      BlobDAO blobDAO,
+      RepositoryFunction getRepository,
+      FileHasher fileHasher)
+      throws ModelDBException, NoSuchAlgorithmException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      List<BlobContainer> blobList =
+          Collections.singletonList(
+              BlobContainer.create(
+                  BlobExpanded.newBuilder().setBlob(Blob.newBuilder().build()).build()));
+      final String rootSha = blobDAO.setBlobs(session, blobList, fileHasher);
+      RepositoryEntity repositoryEntity = getRepository.apply(session);
+
+      CommitEntity commitEntity =
+          saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
+      session.getTransaction().commit();
+      return Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setCommitFromDatasetVersion(
+            datasetVersion, author, commit, blobDAO, getRepository, fileHasher);
       } else {
         throw ex;
       }

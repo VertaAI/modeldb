@@ -2,13 +2,16 @@ package ai.verta.modeldb.versioning;
 
 import static java.util.stream.Collectors.toMap;
 
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.metadata.IDTypeEnum;
+import ai.verta.modeldb.metadata.IdentificationType;
+import ai.verta.modeldb.metadata.MetadataDAO;
+import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
@@ -194,6 +197,150 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
     throw new ModelDBException(
         "Unexpected logic issue found when fetching blobs", Status.Code.UNKNOWN);
+  }
+
+  @Override
+  public DatasetVersion convert(
+      MetadataDAO metadataDAO,
+      RepositoryFunction repositoryFunction,
+      String commitHash,
+      ProtocolStringList locationList)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      RepositoryEntity repository = repositoryFunction.apply(session);
+      CommitEntity commit = session.get(CommitEntity.class, commitHash);
+
+      if (commit == null) {
+        throw new ModelDBException("No such commit", Status.Code.NOT_FOUND);
+      }
+
+      if (!VersioningUtils.commitRepositoryMappingExists(session, commitHash, repository.getId())) {
+        throw new ModelDBException("No such commit found in the repository", Status.Code.NOT_FOUND);
+      }
+
+      String folderHash = commit.getRootSha();
+      if (locationList.isEmpty()) {
+        throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
+      }
+      for (int index = 0; index < locationList.size(); index++) {
+        String folderLocation = locationList.get(index);
+        String folderQueryHQL =
+            "From "
+                + InternalFolderElementEntity.class.getSimpleName()
+                + " parentIfe WHERE parentIfe.element_name = :location AND parentIfe.folder_hash = :folderHash";
+        Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL);
+        fetchTreeQuery.setParameter("location", folderLocation);
+        fetchTreeQuery.setParameter("folderHash", folderHash);
+        InternalFolderElementEntity elementEntity = fetchTreeQuery.uniqueResult();
+
+        if (elementEntity == null) {
+          LOGGER.info(
+              "No such folder found : {}. Failed at index {} looking for {}",
+              folderLocation,
+              index,
+              folderLocation);
+          throw new ModelDBException(
+              "No such folder found : " + folderLocation, Status.Code.NOT_FOUND);
+        }
+        if (elementEntity.getElement_type().equals(TREE)) {
+          folderHash = elementEntity.getElement_sha();
+          if (index == locationList.size() - 1) {
+            throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
+          }
+        } else {
+          if (index == locationList.size() - 1) {
+            ai.verta.modeldb.versioning.Blob blob = getBlob(session, elementEntity);
+            DatasetVersion.Builder builder = DatasetVersion.newBuilder();
+            builder.setId(commitHash);
+            if (commit.getParent_commits().size() != 0) {
+              builder.setParentId(commit.getParent_commits().iterator().next().getCommit_hash());
+            }
+            builder.setDatasetId(String.valueOf(repository.getId()));
+            builder.setTimeLogged(commit.getDate_created());
+
+            VersioningCompositeIdentifier.Builder versioningCompositeIdentifier =
+                VersioningCompositeIdentifier.newBuilder()
+                    .addAllLocation(locationList)
+                    .setRepoId(repository.getId())
+                    .setCommitHash(commitHash);
+            List<String> labelsDescription =
+                metadataDAO.getLabels(
+                    session,
+                    IdentificationType.newBuilder()
+                        .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION)
+                        .setCompositeId(versioningCompositeIdentifier)
+                        .build());
+            if (labelsDescription.size() > 0) {
+              builder.setDescription(labelsDescription.get(0));
+            }
+            List<String> labels =
+                metadataDAO.getLabels(
+                    session,
+                    IdentificationType.newBuilder()
+                        .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+                        .setCompositeId(versioningCompositeIdentifier)
+                        .build());
+            if (labels.size() > 0) {
+              builder.addAllTags(labels);
+            }
+            builder.setDatasetVersionVisibilityValue(repository.getRepository_visibility());
+            builder.addAllAttributes(blob.getAttributesList());
+            builder.setOwner(commit.getAuthor());
+            DatasetBlob dataset = blob.getDataset();
+            PathDatasetVersionInfo.Builder builderPathDatasetVersion =
+                PathDatasetVersionInfo.newBuilder();
+            List<DatasetPartInfo> components;
+            if (dataset.hasPath()) {
+              builderPathDatasetVersion.setLocationType(
+                  PathLocationTypeEnum.PathLocationType.LOCAL_FILE_SYSTEM);
+              components =
+                  dataset.getPath().getComponentsList().stream()
+                      .map(this::getPathInfo)
+                      .collect(Collectors.toList());
+            } else if (dataset.hasS3()) {
+              builderPathDatasetVersion.setLocationType(
+                  PathLocationTypeEnum.PathLocationType.S3_FILE_SYSTEM);
+              components =
+                  dataset.getS3().getComponentsList().stream()
+                      .map(S3DatasetComponentBlob::getPath)
+                      .map(this::getPathInfo)
+                      .collect(Collectors.toList());
+            } else {
+              LOGGER.error("unexpected error");
+              throw new ModelDBException("Unknown blob type");
+            }
+            Optional<Long> sum =
+                components.stream().map(DatasetPartInfo::getSize).reduce(Long::sum);
+            sum.ifPresent(builderPathDatasetVersion::setSize);
+            builder.setPathDatasetVersionInfo(
+                builderPathDatasetVersion
+                    .setBasePath(ModelDBUtils.getLocationWithSlashOperator(locationList))
+                    .addAllDatasetPartInfos(components));
+            DatasetVersion datasetVersion = builder.build();
+            return datasetVersion;
+          } else {
+            throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
+          }
+        }
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return convert(metadataDAO, repositoryFunction, commitHash, locationList);
+      } else {
+        throw ex;
+      }
+    }
+    throw new ModelDBException(
+        "Unexpected logic issue found when fetching blobs", Status.Code.UNKNOWN);
+  }
+
+  private DatasetPartInfo getPathInfo(PathDatasetComponentBlob pathDatasetComponentBlob) {
+    return DatasetPartInfo.newBuilder()
+        .setSize(pathDatasetComponentBlob.getSize())
+        .setLastModifiedAtSource(pathDatasetComponentBlob.getLastModifiedAtSource())
+        .setChecksum(pathDatasetComponentBlob.getMd5())
+        .setPath(pathDatasetComponentBlob.getPath())
+        .build();
   }
 
   /**
