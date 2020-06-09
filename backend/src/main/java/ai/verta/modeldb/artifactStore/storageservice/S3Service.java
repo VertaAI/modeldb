@@ -86,7 +86,7 @@ public class S3Service implements ArtifactStoreService {
       String errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
       Status status =
           Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-      LOGGER.warn(errorMessage);
+      LOGGER.info(errorMessage);
       throw StatusProto.toStatusRuntimeException(status);
     }
 

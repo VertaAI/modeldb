@@ -9,15 +9,15 @@ import ai.verta.swagger._public.uac.model.IdServiceProviderEnumIdServiceProvider
 import ai.verta.swagger._public.uac.model.UacFlagEnum._
 import ai.verta.swagger.client.objects._
 
-case class UacPagination (
+case class VertauacPagination (
   page_limit: Option[BigInt] = None,
   page_number: Option[BigInt] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = UacPagination.toJson(this)
+  def toJson(): JValue = VertauacPagination.toJson(this)
 }
 
-object UacPagination {
-  def toJson(obj: UacPagination): JObject = {
+object VertauacPagination {
+  def toJson(obj: VertauacPagination): JObject = {
     new JObject(
       List[Option[JField]](
         obj.page_limit.map(x => JField("page_limit", JInt(x))),
@@ -29,11 +29,11 @@ object UacPagination {
     )
   }
 
-  def fromJson(value: JValue): UacPagination =
+  def fromJson(value: JValue): VertauacPagination =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        UacPagination(
+        VertauacPagination(
           // TODO: handle required
           page_limit = fieldsMap.get("page_limit").map(JsonConverter.fromJsonInteger),
           page_number = fieldsMap.get("page_number").map(JsonConverter.fromJsonInteger)
