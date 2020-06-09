@@ -7,7 +7,10 @@ import os
 import tempfile
 import zipfile
 
+import requests
+
 from verta._internal_utils import _artifact_utils
+from verta._internal_utils import _utils
 
 from . import utils
 
@@ -87,6 +90,43 @@ class TestArtifacts:
 
         with zipfile.ZipFile(experiment_run.get_artifact(key), 'r') as zipf:
             assert filepaths == set(zipf.namelist())
+
+    @pytest.mark.not_oss
+    # NOTE: `capsys` prevents prints within this test from being output to logs
+    def test_upload_multipart(self, capsys, experiment_run, strs):
+        key = strs[0]
+
+        # for verifying that multipart upload occurs
+        get_parts_url = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
+            experiment_run._conn.scheme,
+            experiment_run._conn.socket,
+        )
+        get_parts_params = {
+            'id': experiment_run.id,
+            'key': key,
+        }
+
+        FILE_SIZE = 6*10**6  # 6 MB
+        with tempfile.NamedTemporaryFile(suffix='.txt') as tempf:
+            tempf.truncate(FILE_SIZE)  # zero-filled
+            tempf.flush()  # flush object buffer
+            os.fsync(tempf.fileno())  # flush OS buffer
+
+            # no committed artifact parts yet
+            response = _utils.make_request("GET", get_parts_url, experiment_run._conn, params=get_parts_params)
+            with pytest.raises(requests.HTTPError):
+                _utils.raise_for_http_error(response)
+            assert "Can't find specified artifact" in response.text
+
+            # log artifact
+            experiment_run.log_artifact(key, tempf)
+
+            # Client entered multipart loop
+            assert "uploading part " in capsys.readouterr().out
+
+            # artifact parts ModelDB entry exists
+            response = _utils.make_request("GET", get_parts_url, experiment_run._conn, params=get_parts_params)
+            _utils.raise_for_http_error(response)
 
     def test_empty(self, experiment_run, strs):
         """uploading empty data, e.g. an empty file, raises an error"""
