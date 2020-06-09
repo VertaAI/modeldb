@@ -80,18 +80,19 @@ class Commit(
       Try(ids.map(id => loadBlobsFromId(id)).map(_.get).reduce(_ ++ _)) match {
         case Failure(e) => Failure(e)
         case Success(map) => Success {
-          // the map is successfully loaded and assigned to blobs field:
+          // the blobs are successfully loaded and assigned to the internal field:
           loadedFromRemote = true
           blobs = map
         }
       }
     }
-    else Success(())
+    else Success(()) // if the blobs are already loaded, ignore
   }
 
 
-  /** Retrieve blobs associated to commit with given id and update blobs
+  /** Retrieve blobs associated to commit with given id
    *  @param id id of the commit
+   *  @return the blobs, in the form of map from path to blob stored at path
    */
   private def loadBlobsFromId(
     id: String
