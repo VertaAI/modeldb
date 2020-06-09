@@ -2121,7 +2121,7 @@ class ExperimentRun(_ModelDBEntity):
                     try:
                         response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                     except requests.ConnectionError:  # e.g. broken pipe
-                        time.sleep(10)
+                        time.sleep(1)
                         continue  # try again
                     else:
                         break
