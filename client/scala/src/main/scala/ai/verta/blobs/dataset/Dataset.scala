@@ -47,7 +47,7 @@ trait Dataset extends Blob {
    *  @param other other dataset to combine
    *  @return whether there is a conflict in the contents of two dataset
    */
-  protected def conflicts(other: Dataset) = {
+  protected def notConflicts(other: Dataset) = {
     val shared = contents.keySet.intersect(other.contents.keySet)
     contents.filterKeys(shared).equals(other.contents.filterKeys(shared))
   }

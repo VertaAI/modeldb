@@ -78,7 +78,7 @@ object S3 {
    *  @return failure if the two blobs have conflicting entries; the combined blob otherwise.
    */
   def reduce(firstBlob: S3, secondBlob: S3): Try[S3] = {
-    if (firstBlob.conflicts(secondBlob)) {
+    if (firstBlob.notConflicts(secondBlob)) {
       var retBlob = new S3(List())
       retBlob.contents = firstBlob.contents ++ secondBlob.contents
       Success(retBlob)

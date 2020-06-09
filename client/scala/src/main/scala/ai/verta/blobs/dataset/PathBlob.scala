@@ -59,7 +59,7 @@ object PathBlob {
    *  @return failure if the two blobs have conflicting entries; the combined blob otherwise.
    */
   def reduce(firstBlob: PathBlob, secondBlob: PathBlob): Try[PathBlob] = {
-    if (firstBlob.conflicts(secondBlob)) {
+    if (firstBlob.notConflicts(secondBlob)) {
       var retBlob = new PathBlob(List())
       retBlob.contents = firstBlob.contents ++ secondBlob.contents
       Success(retBlob)
