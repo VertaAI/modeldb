@@ -148,7 +148,7 @@ class TestS3 extends FunSuite {
   test("Reducing S3 blobs should retain the contents of both") {
     val f = fixture
     val s3Blob = S3(List(f.testfileLoc, f.testfileLoc2)).get
-    val s3BlobCombined = S3(S3(f.testfileLoc).get, S3(f.testsubdirLoc).get).get
+    val s3BlobCombined = S3.reduce(S3(f.testfileLoc).get, S3(f.testsubdirLoc).get).get
 
     assert(s3Blob equals s3BlobCombined)
   }
@@ -160,7 +160,7 @@ class TestS3 extends FunSuite {
     // get older version
     val s3BlobOld = S3(List(S3Location(f.testfilePath, Some(f.oldVersionId)).get)).get
 
-    val combineAttempt = S3(s3BlobDefault, s3BlobOld)
+    val combineAttempt = S3.reduce(s3BlobDefault, s3BlobOld)
     assert(combineAttempt.isFailure)
     assert(combineAttempt match {case Failure(e) => e.getMessage contains "conflicting entries"})
   }

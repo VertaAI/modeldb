@@ -67,7 +67,7 @@ class TestPathBlob extends FunSuite {
   test("Reducing PathBlobs should retain the contents of both") {
     val f = fixture
     val pathBlob = PathBlob(List(f.testfile, f.testfile2)).get
-    val pathBlobCombined = PathBlob(
+    val pathBlobCombined = PathBlob.reduce(
       PathBlob(f.testfile).get,
       PathBlob(f.testSubdir).get
     ).get

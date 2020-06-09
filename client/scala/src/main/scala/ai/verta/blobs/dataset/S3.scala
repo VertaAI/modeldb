@@ -72,13 +72,13 @@ object S3 {
     s3Blob
   }
 
-  /** Factory method to combine two S3 instances
+  /** Combine two S3 instances
    *  @param firstBlob: first S3 blob
    *  @param secondBlob: second S3 blob
    *  @return failure if the two blobs have conflicting entries; the combined blob otherwise.
    */
-  def apply(firstBlob: S3, secondBlob: S3): Try[S3] = {
-    if (firstBlob.canCombine(secondBlob)) {
+  def reduce(firstBlob: S3, secondBlob: S3): Try[S3] = {
+    if (firstBlob.conflicts(secondBlob)) {
       var retBlob = new S3(List())
       retBlob.contents = firstBlob.contents ++ secondBlob.contents
       Success(retBlob)
@@ -109,7 +109,7 @@ object S3 {
     if (loc.key.isEmpty || loc.key.get.endsWith("/")) {
       // no key (bucket), or is a folder
       val versionListing = s3.listVersions(loc.bucketName, loc.key.orNull)
-      handleVersionListing(versionListing, List()).map(_.reverse)
+      handleVersionListing(versionListing, List()).map(_.reverse) // list was originally reversed
     }
     else {
       val request =
@@ -132,7 +132,7 @@ object S3 {
                     .filter((version: S3VersionSummary) => !version.getKey().endsWith("/")) // not a folder
                     .filter(_.isLatest())
                     .map(getVersionMetadata) // List[Try]
-                    .reverse
+                    .reverse // reverse the batch
                     .map(_.get)
       )
 
@@ -141,7 +141,8 @@ object S3 {
       case Success(batch) =>
         if (versionListing.isTruncated())
           handleVersionListing(s3.listNextBatchOfVersions(versionListing), batch ::: acc)
-        else Success(batch ::: acc)
+        else Success(batch ::: acc) // concat order is for efficiency purpose.
+        // whole list will be reversed later
     }
   }
 
