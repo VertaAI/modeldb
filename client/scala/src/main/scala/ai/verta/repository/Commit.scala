@@ -14,7 +14,7 @@ import scala.collection.immutable.Map
  */
 class Commit(
   private val clientSet: ClientSet, private val repo: Repository,
-  private var commit: VersioningCommit, private val commitBranch: Option[String] = None
+  private val commit: VersioningCommit, private val commitBranch: Option[String] = None
 ) {
   private var saved = true // whether the commit instance is saved to database, or is currently being modified.
   private var loadedFromRemote = false // whether blobs has been retrieved from remote
