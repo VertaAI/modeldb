@@ -3,14 +3,11 @@ import routes from 'core/shared/routes';
 
 import setupIntegrationTest from 'core/shared/utils/tests/integrations/setupIntegrationTest';
 
-import { IFilterData, makeDefaultTagFilter } from 'core/features/filter/Model';
+import { IFilterData, makeDefaultTagFilter } from 'core/shared/models/Filters';
 import { ISorting } from 'core/shared/models/Sorting';
 import checkURLSearchParams from 'core/shared/utils/tests/checkURLSearchParams';
 import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
-import {
-  IFilterState,
-  selectCurrentContextFilters,
-} from 'core/features/filter';
+import { IFilterState, selectCurrentContextFilters } from 'features/filter';
 import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 
 import {

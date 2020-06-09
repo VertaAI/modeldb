@@ -1,7 +1,7 @@
 import * as React from 'react';
 import cn from 'classnames';
 
-import { makeDefaultTagFilter } from 'core/features/filter/Model';
+import { makeDefaultTagFilter } from 'core/shared/models/Filters';
 
 import Draggable from '../Draggable/Draggable';
 import styles from './TagBlock.module.css';

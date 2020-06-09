@@ -6,7 +6,7 @@ import {
   IFilterData,
   IQuickFilter,
   PropertyType,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 import {
   MakeCommunicationActions,
   makeCommunicationActionTypes,

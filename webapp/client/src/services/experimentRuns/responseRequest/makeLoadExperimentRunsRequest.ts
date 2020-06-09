@@ -3,15 +3,15 @@ import axios from 'axios';
 import {
   makeFilterConverter,
   IServerFiltersInRequest,
-} from 'core/features/filter/service/serverModel/Filters/converters';
+} from 'services/serverModel/Filters/converters';
 import {
   IFilterData,
   PropertyType,
   IExperimentNameFilterData,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 import { IPagination } from 'core/shared/models/Pagination';
 import { ISorting } from 'core/shared/models/Sorting';
-import { makeAddFiltersToRequestWithDefaultFilters } from 'features/filter/service/serverModel/Filter/converters';
+import { makeAddFiltersToRequest } from 'services/serverModel/Filters/converters';
 import { addPaginationToRequest } from 'services/serverModel/Pagination/converters';
 import { IServerPaginationInRequest } from 'services/serverModel/Pagination/Pagination';
 import { getServerSorting } from 'services/serverModel/Sorting/Sorting';
@@ -19,7 +19,7 @@ import { getServerSorting } from 'services/serverModel/Sorting/Sorting';
 import {
   ServerFilterValueType,
   getServerFilterOperator,
-} from 'core/features/filter/service/serverModel/Filters/Filters';
+} from 'services/serverModel/Filters/Filters';
 import { IWorkspace } from 'core/shared/models/Workspace';
 import { addWorkspaceName } from 'services/serverModel/Workspace/converters';
 
@@ -77,9 +77,9 @@ const addServerFilters = (
     },
   });
 
-  return makeAddFiltersToRequestWithDefaultFilters([
-    experimentNameFilterConverter,
-  ])(filters)(request);
+  return makeAddFiltersToRequest([experimentNameFilterConverter])(filters)(
+    request
+  );
 };
 
 const addPagination = (

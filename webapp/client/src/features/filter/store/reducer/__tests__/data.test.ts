@@ -2,8 +2,8 @@ import {
   IFilterPayload,
   IFilterState,
   manageFiltersTypes,
-} from 'core/features/filter';
-import { OperatorType, PropertyType } from 'core/features/filter/Model';
+} from 'features/filter';
+import { OperatorType, PropertyType } from 'core/shared/models/Filters';
 
 import dataReducer, { initial } from '../data';
 

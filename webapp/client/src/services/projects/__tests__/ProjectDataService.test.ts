@@ -4,11 +4,11 @@ import MockAdapter from 'axios-mock-adapter';
 import {
   ServerFilterValueType,
   ServerFilterOperator,
-} from 'core/features/filter/service/serverModel/Filters/Filters';
+} from 'services/serverModel/Filters/Filters';
 import {
   makeDefaultTagFilter,
   makeDefaultStringFilter,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 import { IPagination } from 'core/shared/models/Pagination';
 import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
 

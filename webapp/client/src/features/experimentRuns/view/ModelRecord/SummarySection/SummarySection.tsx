@@ -14,7 +14,7 @@ import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import {
   makeURLFilters,
   makeDefaultExprNameFilter,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 
 import Section from '../shared/Section/Section';
 import styles from './SummarySection.module.css';

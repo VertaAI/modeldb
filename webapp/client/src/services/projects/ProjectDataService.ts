@@ -3,7 +3,7 @@ import { JsonConvert } from 'json2typescript';
 
 import { IArtifact } from 'core/shared/models/Artifact';
 import { EntityErrorType } from 'core/shared/models/Common';
-import { IFilterData } from 'core/features/filter/Model';
+import { IFilterData } from 'core/shared/models/Filters';
 import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
 import { Markdown } from 'core/shared/utils/types';
 import {

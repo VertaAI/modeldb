@@ -1,11 +1,11 @@
 import { History } from 'history';
 import { action } from 'typesafe-actions';
 
-import { IFilterData } from 'core/features/filter/Model';
+import { IFilterData } from 'core/shared/models/Filters';
 import normalizeError from 'core/shared/utils/normalizeError';
 import { ActionResult } from 'store/store';
 
-import { selectCurrentContextFilters } from 'core/features/filter';
+import { selectCurrentContextFilters } from 'features/filter';
 import { handleDeleteEntities } from 'features/shared/deletion';
 import { selectDatasetVersionsPagination } from './selectors';
 import {

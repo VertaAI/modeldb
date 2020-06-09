@@ -10,7 +10,7 @@ import * as HighLevelSearch from 'features/highLevelSearch';
 import * as CompareEntities from 'features/compareEntities';
 import * as RepositoryNavigation from 'features/versioning/repositoryNavigation';
 import * as ExperimentRunsTableConfig from 'features/experimentRunsTableConfig';
-import * as Filter from 'core/features/filter';
+import * as Filter from 'features/filter';
 import * as Layout from 'features/layout';
 import * as Comment from 'features/comments';
 import * as Workspaces from 'features/workspaces/store';

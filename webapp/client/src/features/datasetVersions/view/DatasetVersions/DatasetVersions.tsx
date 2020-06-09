@@ -7,8 +7,8 @@ import { bindActionCreators, Dispatch } from 'redux';
 
 import CompareClickAction from 'features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
 import ComparedEntitesManager from 'features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
-import { selectCurrentContextFilters } from 'core/features/filter';
-import { IFilterData } from 'core/features/filter/Model';
+import { selectCurrentContextFilters } from 'features/filter';
+import { IFilterData } from 'core/shared/models/Filters';
 import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
 import { formatBytes } from 'core/shared/utils/mapperConverters/DataSizeConverted';
 import withProps from 'core/shared/utils/react/withProps';

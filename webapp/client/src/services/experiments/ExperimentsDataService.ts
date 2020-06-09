@@ -2,7 +2,7 @@ import { JsonConvert } from 'json2typescript';
 import * as R from 'ramda';
 
 import { IArtifact } from 'core/shared/models/Artifact';
-import { IFilterData } from 'core/features/filter/Model';
+import { IFilterData } from 'core/shared/models/Filters';
 import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
 import * as Experiment from 'core/shared/models/Experiment';
 import { convertServerCodeVersion } from 'services/serverModel/CodeVersion/converters';

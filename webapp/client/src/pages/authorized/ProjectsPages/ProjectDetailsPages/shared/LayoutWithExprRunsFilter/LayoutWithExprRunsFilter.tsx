@@ -2,8 +2,8 @@ import React from 'react';
 import { Omit, connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
 
-import { IFilterContext } from 'core/features/filter';
-import { defaultQuickFilters } from 'features/filter/Model';
+import { IFilterContext } from 'features/filter';
+import { defaultQuickFilters } from 'core/shared/models/Filters';
 import ModelRecord from 'core/shared/models/ModelRecord';
 import routes, { GetRouteParams } from 'core/shared/routes';
 import {

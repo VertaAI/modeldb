@@ -1,7 +1,7 @@
 import { shallow } from 'enzyme';
 import * as React from 'react';
 
-import { makeDefaultStringFilter } from 'core/features/filter/Model';
+import { makeDefaultStringFilter } from 'core/shared/models/Filters';
 import { createCodeError } from 'core/shared/models/Error';
 import { initialCommunication } from 'core/shared/utils/redux/communication';
 import { makeRouterMockProps } from 'core/shared/utils/tests/react/routeComponentProps';

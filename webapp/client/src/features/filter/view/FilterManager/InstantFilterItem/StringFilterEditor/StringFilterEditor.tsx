@@ -6,7 +6,7 @@ import {
   IExperimentNameFilterData,
   StringFilterOperator,
   OperatorType,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 import TextInput from 'core/shared/view/elements/TextInput/TextInput';
 
 import FilterSelect from '../FilterSelect/FilterSelect';

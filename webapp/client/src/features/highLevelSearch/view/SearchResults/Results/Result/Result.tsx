@@ -16,7 +16,7 @@ import { IWorkspace } from 'core/shared/models/Workspace';
 import {
   makeDefaultExprNameFilter,
   makeURLFilters,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 import { NA } from 'core/shared/view/elements/PageComponents';
 
 import styles from './Result.module.css';

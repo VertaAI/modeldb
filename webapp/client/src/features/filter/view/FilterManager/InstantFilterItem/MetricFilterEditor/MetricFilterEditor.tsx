@@ -6,7 +6,7 @@ import {
   OperatorType,
   IMetricFilterData,
   MetricFilterOperator,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
 import TextInput from 'core/shared/view/elements/TextInput/TextInput';
 

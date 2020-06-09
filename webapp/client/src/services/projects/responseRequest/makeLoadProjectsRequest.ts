@@ -1,8 +1,8 @@
-import { IServerFiltersInRequest } from 'core/features/filter/service/serverModel/Filters/converters';
-import { IFilterData } from 'core/features/filter/Model';
+import { IServerFiltersInRequest } from 'services/serverModel/Filters/converters';
+import { IFilterData } from 'core/shared/models/Filters';
 import { IPagination } from 'core/shared/models/Pagination';
 import { IWorkspace } from 'core/shared/models/Workspace';
-import { makeAddFiltersToRequestWithDefaultFilters } from 'features/filter/service/serverModel/Filter/converters';
+import { makeAddFiltersToRequest } from 'services/serverModel/Filters/converters';
 import { addPaginationToRequest } from 'services/serverModel/Pagination/converters';
 import { IServerPaginationInRequest } from 'services/serverModel/Pagination/Pagination';
 import {
@@ -17,9 +17,7 @@ export type ILoadProjectsRequest = IServerFiltersInRequest &
   IServerEntityWithWorkspaceName;
 type ITransformedLoadProjectsRequest = Partial<ILoadProjectsRequest>;
 
-const addFilters = makeAddFiltersToRequestWithDefaultFilters<
-  ITransformedLoadProjectsRequest
->();
+const addFilters = makeAddFiltersToRequest<ITransformedLoadProjectsRequest>();
 
 const makeLoadProjectsRequest = (
   filters: IFilterData[],

@@ -7,7 +7,7 @@ import {
   IFilterData,
   PropertyType,
   OperatorType,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
 import { ISorting } from 'core/shared/models/Sorting';
 import { ShortExperiment } from 'core/shared/models/Experiment';

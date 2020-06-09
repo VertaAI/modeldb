@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { makeDefaultTagFilter } from 'core/features/filter/Model';
+import { makeDefaultTagFilter } from 'core/shared/models/Filters';
 import Confirm from 'core/shared/view/elements/Confirm/Confirm';
 import Draggable from 'core/shared/view/elements/Draggable/Draggable';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';

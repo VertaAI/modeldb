@@ -10,7 +10,7 @@ import {
   IRoute as _IRoute,
 } from 'core/shared/routes/makeRoute';
 import * as P from 'core/shared/routes/pathBuilder';
-import { IURLWithFilters } from 'core/features/filter/Model';
+import { IURLWithFilters } from 'core/shared/models/Filters';
 import { IURLWithResultsSorting } from 'features/highLevelSearch/url';
 
 import {

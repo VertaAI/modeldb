@@ -8,11 +8,11 @@ import routes from 'core/shared/routes';
 import {
   selectCurrentContextAppliedFilters,
   updateContextFilters,
-} from 'core/features/filter';
+} from 'features/filter';
 import {
   makeDefaultExprNameFilter,
   PropertyType,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import NoEntitiesStub from 'core/shared/view/elements/NoEntitiesStub/NoEntitiesStub';
 import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub';

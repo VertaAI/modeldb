@@ -1,8 +1,8 @@
 import {
   getServerFilterValueType,
   getServerFilterOperator,
-} from 'core/features/filter/service/serverModel/Filters/Filters';
-import { IFilterData } from 'core/features/filter/Model';
+} from 'services/serverModel/Filters/Filters';
+import { IFilterData } from 'core/shared/models/Filters';
 
 export interface IFilterConverter<
   R extends IServerFiltersInRequest,

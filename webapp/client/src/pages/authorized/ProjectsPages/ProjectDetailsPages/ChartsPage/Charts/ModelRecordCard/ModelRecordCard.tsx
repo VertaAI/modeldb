@@ -3,7 +3,7 @@ import { RouteComponentProps, withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 import routes, { GetRouteParams } from 'core/shared/routes';
 
-import { makeDefaultMetricFilter } from 'core/features/filter/Model';
+import { makeDefaultMetricFilter } from 'core/shared/models/Filters';
 import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
 import Draggable from 'core/shared/view/elements/Draggable/Draggable';
 import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';

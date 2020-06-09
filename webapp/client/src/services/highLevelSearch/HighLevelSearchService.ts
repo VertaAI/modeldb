@@ -28,7 +28,7 @@ import {
   makeDefaultTagFilter,
   IStringFilterData,
   makeDefaultNameFilter,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 import { ExperimentRunsDataService } from 'services/experimentRuns';
 import { ExperimentsDataService } from 'services/experiments';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
@@ -36,7 +36,7 @@ import { RecordFromUnion, RecordValues } from 'core/shared/utils/types';
 import { DatasetsDataService } from 'services/datasets';
 import { ISorting } from 'core/shared/models/Sorting';
 import matchType from 'core/shared/utils/matchType';
-import { getServerFilterOperator } from 'core/features/filter/service/serverModel/Filters/Filters';
+import { getServerFilterOperator } from 'services/serverModel/Filters/Filters';
 
 import * as graphqlTypes from './graphql-types/RepositoriesResult';
 import { paginationSettings } from 'features/highLevelSearch/constants';

@@ -2,7 +2,7 @@ import {
   makeDefaultTagFilter,
   IFilterData,
   IStringFilterData,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
 import makeSetupIntegrationTest from 'core/shared/utils/tests/integrations/makeSetupIntegrationTest';
 

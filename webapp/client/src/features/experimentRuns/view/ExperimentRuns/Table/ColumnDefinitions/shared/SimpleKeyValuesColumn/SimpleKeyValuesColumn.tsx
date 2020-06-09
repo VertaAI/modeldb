@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { makeDefaultMetricFilter } from 'core/features/filter/Model';
+import { makeDefaultMetricFilter } from 'core/shared/models/Filters';
 import { IHyperparameter } from 'core/shared/models/HyperParameters';
 import { IMetric } from 'core/shared/models/Metrics';
 import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';

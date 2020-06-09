@@ -1,7 +1,7 @@
 import { History } from 'history';
 import { action, createAction } from 'typesafe-actions';
 
-import { IFilterData } from 'core/features/filter/Model';
+import { IFilterData } from 'core/shared/models/Filters';
 import { IPagination } from 'core/shared/models/Pagination';
 import { ISorting } from 'core/shared/models/Sorting';
 import normalizeError from 'core/shared/utils/normalizeError';
@@ -9,7 +9,7 @@ import { ISetEntitiesComments, setEntitiesComments } from 'features/comments';
 import {
   resetCurrentContextFilters,
   selectCurrentContextAppliedFilters,
-} from 'core/features/filter';
+} from 'features/filter';
 import { ActionResult } from 'store/store';
 
 import ModelRecord from 'core/shared/models/ModelRecord';

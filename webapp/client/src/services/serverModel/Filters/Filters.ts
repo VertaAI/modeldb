@@ -2,7 +2,7 @@ import {
   IFilterData,
   PropertyType,
   OperatorType,
-} from 'core/features/filter/Model';
+} from 'core/shared/models/Filters';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import matchBy from 'core/shared/utils/matchBy';
 

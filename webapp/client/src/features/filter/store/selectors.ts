@@ -1,4 +1,4 @@
-import { PropertyType } from 'core/features/filter/Model';
+import { PropertyType } from 'core/shared/models/Filters';
 
 import { IFilterRootState, IFilterState } from './types';
 

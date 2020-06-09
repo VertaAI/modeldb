@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { BaseDataService } from 'services/BaseDataService';
 import { EntityErrorType } from 'core/shared/models/Common';
 import { HttpError } from 'core/shared/models/Error';
-import { IFilterData } from 'core/features/filter/Model';
+import { IFilterData } from 'core/shared/models/Filters';
 import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
 import * as Dataset from 'core/shared/models/Dataset';
 import { IWorkspace } from 'core/shared/models/Workspace';

@@ -7,8 +7,8 @@ import {
   IColumnConfig,
   selectColumnConfig,
 } from 'features/experimentRunsTableConfig';
-import { selectCurrentContextAppliedFilters } from 'core/features/filter';
-import { IFilterData } from 'core/features/filter/Model';
+import { selectCurrentContextAppliedFilters } from 'features/filter';
+import { IFilterData } from 'core/shared/models/Filters';
 import { IPagination } from 'core/shared/models/Pagination';
 import { ISorting } from 'core/shared/models/Sorting';
 import { ICommunication } from 'core/shared/utils/redux/communication';

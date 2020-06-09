@@ -1,8 +1,8 @@
 import { History } from 'history';
 import { action } from 'typesafe-actions';
 
-import { selectCurrentContextFilters } from 'core/features/filter';
-import { IFilterData } from 'core/features/filter/Model';
+import { selectCurrentContextFilters } from 'features/filter';
+import { IFilterData } from 'core/shared/models/Filters';
 import { AppError } from 'core/shared/models/Error';
 import normalizeError from 'core/shared/utils/normalizeError';
 import * as Dataset from 'core/shared/models/Dataset';

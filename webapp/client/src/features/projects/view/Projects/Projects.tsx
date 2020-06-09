@@ -2,7 +2,7 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import { selectCurrentContextFilters } from 'core/features/filter';
+import { selectCurrentContextFilters } from 'features/filter';
 import Button from 'core/shared/view/elements/Button/Button';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub';
