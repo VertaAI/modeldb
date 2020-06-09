@@ -114,14 +114,6 @@ class Commit(
 }
 
 object Commit {
-  /** Factory method to instantiate the Commit instance
-   *  @param clientSet client set
-   *  @param repo commit's repository
-   *  @param versioningCommit versioning commit instance of the commit
-   *  @param commitBranch (optional) whether the commit is associated with a branch
-   *  @param saved whether the instance is saved to database
-   *  @param blobs (optional) the associated blobs of commit. If saved, should not be provided; the blobs will be retrieved from DB.
-   */
   def apply(
     clientSet: ClientSet,
     repo: Repository,
