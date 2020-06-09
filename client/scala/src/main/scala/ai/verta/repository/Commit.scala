@@ -13,12 +13,13 @@ import scala.collection.immutable.Map
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
  */
 class Commit(
-  private val clientSet: ClientSet, private val repo: Repository,
-  private val commit: VersioningCommit, private val commitBranch: Option[String] = None
+  private val clientSet: ClientSet,
+  private val repo: Repository,
+  private val commit: VersioningCommit,
+  private val commitBranch: Option[String] = None,
+  private val saved: Boolean = true
 ) {
-  private var saved = true // whether the commit instance is saved to database, or is currently being modified.
-  private var loadedFromRemote = false // whether blobs has been retrieved from remote
-  private var blobs = Map[String, VersioningBlob]() // mutable map for storing blobs
+  private var blobs = Map[String, VersioningBlob]()
 
   /** Return the id of the commit */
   def id = commit.commit_sha
@@ -48,44 +49,29 @@ class Commit(
    *  @return The new commit, if succeeds.
    */
   def update(path: String, blob: Blob)(implicit ec: ExecutionContext): Try[Commit] = {
-    loadBlobs().map(_ => {
-      // creating new commit:
-      val childCommit = getChild()
+    // creating new commit:
+    val childCommit = getChild()
 
-      /** TODO: Add blob subtypes to pattern matching */
-      val versioningBlob = blob match {
-        case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
-        case s3: S3 => S3.toVersioningBlob(s3)
-      }
+    /** TODO: Add blob subtypes to pattern matching */
+    val versioningBlob = blob match {
+      case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
+      case s3: S3 => S3.toVersioningBlob(s3)
+    }
 
-      childCommit.blobs = blobs + (path -> versioningBlob)
-      childCommit.saved = false
-      childCommit.loadedFromRemote = true
-
-      childCommit
-    })
+    Commit(clientSet, repo, childCommit, commitBranch, false, Some(blobs + (path -> versioningBlob)))
   }
 
   /** Retrieve commit's blobs from remote
    */
-  private def loadBlobs()(implicit ec: ExecutionContext): Try[Unit] = {
-    if (!loadedFromRemote) {
+  private def loadBlobs()(implicit ec: ExecutionContext): Try[Map[String, VersioningBlob]] = {
       // if the commit is not saved, get the blobs of its parent(s)
       val ids: List[String] = commit.commit_sha match {
         case Some(v) => List(v)
         case None => commit.parent_shas.get
       }
 
-      Try(ids.map(id => loadBlobsFromId(id)).map(_.get).reduce(_ ++ _)) match {
-        case Failure(e) => Failure(e)
-        case Success(map) => Success {
-          loadedFromRemote = true
-          blobs = map
-        }
-      }
+      Try(ids.map(id => loadBlobsFromId(id)).map(_.get).reduce(_ ++ _))
     }
-    else Success(())
-  }
 
 
   /** Retrieve blobs associated to commit with given id and update blobs
@@ -107,14 +93,11 @@ class Commit(
 
   /** Return a child commit child of current commit (if current commit is saved)
    *  This helper function is used for modifcation
+   *  TODO: Deal with author, date_created
    */
-  private def getChild() = {
-    /** TODO: Deal with author, date_created */
-    val newCommit = VersioningCommit(
+  private def getChild() = VersioningCommit(
       parent_shas = if (saved) commit.commit_sha.map(List(_)) else commit.parent_shas
     )
-    new Commit(clientSet, repo, newCommit, commitBranch)
-  }
 
   /** Helper function to convert a VersioningBlob instance to corresponding Blob subclass instance
    *  @param vb the VersioningBlob instance
@@ -159,5 +142,21 @@ class Commit(
       branch = branch,
       repository_id_repo_id = repo.id
     ).map(_ => ())
+  }
+}
+
+object Commit {
+  def apply(
+    clientSet: ClientSet,
+    repo: Repository,
+    versioningCommit: VersioningCommit,
+    commitBranch: Option[String] = None,
+    saved: Boolean = true,
+    blobs: Option[Map[String, VersioningBlob]] = None
+  )(implicit ec: ExecutionContext) = Try {
+    // wrap in Try because loading blobs from DB might fail
+    var commit = new Commit(clientSet, repo, versioningCommit, commitBranch, saved)
+    commit.blobs = blobs.getOrElse(commit.loadBlobs().get)
+    commit
   }
 }
