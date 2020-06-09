@@ -1140,6 +1140,21 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
+      Map<String, String> projectIdFromExperimentMap =
+          experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
+      if (projectIdFromExperimentMap.size() == 0) {
+        errorMessage = "Experiment '" + request.getId() + "' is not associated with any project";
+        ModelDBUtils.logAndThrowError(
+            errorMessage,
+            Code.NOT_FOUND_VALUE,
+            Any.pack(GetUrlForArtifact.getDefaultInstance()));
+      }
+
+      String projectId = projectIdFromExperimentMap.get(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
+
       String s3Key = null;
 
       /*Process code*/

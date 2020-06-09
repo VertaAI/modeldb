@@ -1205,6 +1205,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
+
       final String s3Key;
       final String uploadId;
 

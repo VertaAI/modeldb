@@ -1452,6 +1452,10 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
+
       String s3Key = null;
 
       /*Process code*/
