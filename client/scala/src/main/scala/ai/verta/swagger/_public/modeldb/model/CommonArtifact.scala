@@ -1,22 +1,20 @@
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT
-package ai.verta.swagger._public.modeldb.versioning.model
+package ai.verta.swagger._public.modeldb.model
 
 import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.versioning.model.ArtifactTypeEnumArtifactType._
-import ai.verta.swagger._public.modeldb.versioning.model.DiffStatusEnumDiffStatus._
-import ai.verta.swagger._public.modeldb.versioning.model.OperatorEnumOperator._
-import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
-import ai.verta.swagger._public.modeldb.versioning.model.RepositoryVisibilityEnumRepositoryVisibility._
-import ai.verta.swagger._public.modeldb.versioning.model.TernaryEnumTernary._
-import ai.verta.swagger._public.modeldb.versioning.model.ValueTypeEnumValueType._
-import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
-import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
+import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
+import ai.verta.swagger._public.modeldb.model.ModeldbProjectVisibility._
+import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
+import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
+import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
+import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
+import ai.verta.swagger._public.modeldb.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbArtifact (
+case class CommonArtifact (
   artifact_type: Option[ArtifactTypeEnumArtifactType] = None,
   filename_extension: Option[String] = None,
   key: Option[String] = None,
@@ -24,11 +22,11 @@ case class ModeldbArtifact (
   path: Option[String] = None,
   path_only: Option[Boolean] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbArtifact.toJson(this)
+  def toJson(): JValue = CommonArtifact.toJson(this)
 }
 
-object ModeldbArtifact {
-  def toJson(obj: ModeldbArtifact): JObject = {
+object CommonArtifact {
+  def toJson(obj: CommonArtifact): JObject = {
     new JObject(
       List[Option[JField]](
         obj.artifact_type.map(x => JField("artifact_type", ((x: ArtifactTypeEnumArtifactType) => ArtifactTypeEnumArtifactType.toJson(x))(x))),
@@ -44,11 +42,11 @@ object ModeldbArtifact {
     )
   }
 
-  def fromJson(value: JValue): ModeldbArtifact =
+  def fromJson(value: JValue): CommonArtifact =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbArtifact(
+        CommonArtifact(
           // TODO: handle required
           artifact_type = fieldsMap.get("artifact_type").map(ArtifactTypeEnumArtifactType.fromJson),
           filename_extension = fieldsMap.get("filename_extension").map(JsonConverter.fromJsonString),

@@ -4,11 +4,12 @@ import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInt
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.OperatorEnum.Operator;
@@ -7465,7 +7466,7 @@ public class ExperimentRunTest {
                         Artifact.newBuilder()
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
-                            .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                            .setArtifactType(ArtifactType.CODE)
                             .build())
                     .build())
             .build();
@@ -7603,7 +7604,7 @@ public class ExperimentRunTest {
                         Artifact.newBuilder()
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
-                            .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                            .setArtifactType(ArtifactType.CODE)
                             .build())
                     .build())
             .build();

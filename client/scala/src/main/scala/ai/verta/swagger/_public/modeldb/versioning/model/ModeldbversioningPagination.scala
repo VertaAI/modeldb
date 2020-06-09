@@ -16,15 +16,15 @@ import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
-case class VersioningPagination (
+case class ModeldbversioningPagination (
   page_limit: Option[BigInt] = None,
   page_number: Option[BigInt] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = VersioningPagination.toJson(this)
+  def toJson(): JValue = ModeldbversioningPagination.toJson(this)
 }
 
-object VersioningPagination {
-  def toJson(obj: VersioningPagination): JObject = {
+object ModeldbversioningPagination {
+  def toJson(obj: ModeldbversioningPagination): JObject = {
     new JObject(
       List[Option[JField]](
         obj.page_limit.map(x => JField("page_limit", JInt(x))),
@@ -36,11 +36,11 @@ object VersioningPagination {
     )
   }
 
-  def fromJson(value: JValue): VersioningPagination =
+  def fromJson(value: JValue): ModeldbversioningPagination =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        VersioningPagination(
+        ModeldbversioningPagination(
           // TODO: handle required
           page_limit = fieldsMap.get("page_limit").map(JsonConverter.fromJsonInteger),
           page_number = fieldsMap.get("page_number").map(JsonConverter.fromJsonInteger)

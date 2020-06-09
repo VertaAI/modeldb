@@ -2,9 +2,10 @@ package ai.verta.modeldb.experimentRun;
 
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
-import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.ArtifactPart;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
@@ -68,7 +69,6 @@ import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.ModelResourceEnum;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.amazonaws.services.s3.model.PartETag;
@@ -352,7 +352,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         ownerRole,
         new CollaboratorUser(authService, userInfo),
         experimentRun.getId(),
-        ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
+        ModelDBServiceResourceTypes.EXPERIMENT_RUN);
   }
 
   private Set<HyperparameterElementMappingEntity> prepareHyperparameterElemMappings(
@@ -1288,14 +1288,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     // Validate if current user has access to the entity or not
     if (projectIdSet.size() == 1) {
       roleService.isSelfAllowed(
-          ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceResourceTypes.PROJECT,
           modelDBServiceActions,
           new ArrayList<>(projectIdSet).get(0));
       accessibleExperimentRunIds.addAll(requestedExperimentRunIds);
     } else {
       allowedProjectIds =
           roleService.getSelfAllowedResources(
-              ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
+              ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
       // Validate if current user has access to the entity or not
       allowedProjectIds.retainAll(projectIdSet);
       for (Map.Entry<String, String> entry : projectIdExperimentRunIdMap.entrySet()) {

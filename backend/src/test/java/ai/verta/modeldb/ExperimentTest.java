@@ -2,6 +2,8 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
@@ -176,14 +178,14 @@ public class ExperimentTest {
             .setKey("Google developer Artifact")
             .setPath(
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Flh3.googleusercontent.com%2FFyZA5SbKPJA7Y3XCeb9-uGwow8pugxj77Z1xvs8vFS6EI3FABZDCDtA9ScqzHKjhU8av_Ck95ET-P_rPJCbC2v_OswCN8A%3Ds688&imgrefurl=https%3A%2F%2Fdevelopers.google.com%2F&docid=1MVaWrOPIjYeJM&tbnid=I7xZkRN5m6_z-M%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw..i&w=688&h=387&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw&iact=mrc&uact=8")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.BLOB)
+            .setArtifactType(ArtifactType.BLOB)
             .build());
     artifactList.add(
         Artifact.newBuilder()
             .setKey("Google Pay Artifact")
             .setPath(
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Fpay.google.com%2Fabout%2Fstatic%2Fimages%2Fsocial%2Fknowledge_graph_logo.png&imgrefurl=https%3A%2F%2Fpay.google.com%2Fabout%2F&docid=zmoE9BrSKYr4xM&tbnid=eCL1Y6f9xrPtDM%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg..i&w=1200&h=630&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg&iact=mrc&uact=8")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.IMAGE)
+            .setArtifactType(ArtifactType.IMAGE)
             .build());
 
     return CreateExperiment.newBuilder()
@@ -2342,7 +2344,7 @@ public class ExperimentTest {
                         Artifact.newBuilder()
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
-                            .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                            .setArtifactType(ArtifactType.CODE)
                             .build())
                     .build())
             .build();
@@ -2365,7 +2367,7 @@ public class ExperimentTest {
                           Artifact.newBuilder()
                               .setKey("code_version_image")
                               .setPath("https://xyz_path_string.com/image.png")
-                              .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                              .setArtifactType(ArtifactType.CODE)
                               .build())
                       .build())
               .build();
@@ -2426,7 +2428,7 @@ public class ExperimentTest {
                         Artifact.newBuilder()
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
-                            .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                            .setArtifactType(ArtifactType.CODE)
                             .build())
                     .build())
             .build();
@@ -2497,14 +2499,14 @@ public class ExperimentTest {
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.MODEL)
+            .setArtifactType(ArtifactType.MODEL)
             .build();
     artifacts.add(artifact1);
     Artifact artifact2 =
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .build();
     artifacts.add(artifact2);
 
@@ -2587,14 +2589,14 @@ public class ExperimentTest {
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.MODEL)
+            .setArtifactType(ArtifactType.MODEL)
             .build();
     artifacts.add(artifact1);
     Artifact artifact2 =
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .build();
     artifacts.add(artifact2);
 

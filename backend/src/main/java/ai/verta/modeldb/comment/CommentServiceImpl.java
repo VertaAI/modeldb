@@ -1,5 +1,6 @@
 package ai.verta.modeldb.comment;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddComment;
 import ai.verta.modeldb.Comment;
 import ai.verta.modeldb.CommentServiceGrpc.CommentServiceImplBase;
@@ -16,7 +17,6 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.rpc.Code;

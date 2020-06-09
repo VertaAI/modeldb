@@ -4,6 +4,8 @@ import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProject;
 import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInterceptor;
 import static org.junit.Assert.*;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum;
@@ -5499,7 +5501,7 @@ public class HydratedServiceTest {
         Artifact.newBuilder()
             .setKey("Google Pay datasets_1")
             .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion1.getId())
             .build();
     artifacts.add(artifact1);
@@ -5508,7 +5510,7 @@ public class HydratedServiceTest {
         Artifact.newBuilder()
             .setKey("Google Pay datasets_2")
             .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion2.getId())
             .build();
     artifacts.add(artifact2);
