@@ -6,7 +6,7 @@ import {
   makeCommunicationActionTypes,
   ICommunicationById,
 } from 'core/shared/utils/redux/communication';
-import Experiment from 'models/Experiment';
+import Experiment from 'core/shared/models/Experiment';
 import { EntityAlreadyExistsErrorType } from 'services/shared/EntityAlreadyExistError';
 
 export interface IExperimentsState {

@@ -15,10 +15,10 @@ import cloneClassInstance from 'core/shared/utils/cloneClassInstance';
 import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
 import { findByDataTestAttribute } from 'core/shared/utils/tests/react/helpers';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { ShortExperiment } from 'models/Experiment';
-import ModelRecord from 'models/ModelRecord';
-import { Project } from 'models/Project';
-import User from 'models/User';
+import { ShortExperiment } from 'core/shared/models/Experiment';
+import ModelRecord from 'core/shared/models/ModelRecord';
+import { Project } from 'core/shared/models/Project';
+import User from 'core/shared/models/User';
 import ExperimentRunsDataService from 'services/experimentRuns/ExperimentRunsDataService';
 import {
   IProjectsState,

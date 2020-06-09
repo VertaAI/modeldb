@@ -23,7 +23,7 @@ import {
   IPagination,
 } from 'core/shared/models/Pagination';
 import { ProjectDataService } from 'services/projects';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import {
   makeDefaultTagFilter,
   IStringFilterData,

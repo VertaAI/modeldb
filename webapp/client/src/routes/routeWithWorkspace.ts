@@ -1,6 +1,6 @@
 import { matchPath } from 'react-router-dom';
 
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 
 import makeRoute, { IRoute } from 'core/shared/routes/makeRoute';
 import * as P from 'core/shared/routes/pathBuilder';

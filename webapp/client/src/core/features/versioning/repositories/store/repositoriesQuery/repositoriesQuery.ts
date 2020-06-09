@@ -4,7 +4,7 @@ import { useHistory } from 'react-router';
 import { useCallback } from 'react';
 
 import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import {
   IPaginationSettings,
   IPagination,

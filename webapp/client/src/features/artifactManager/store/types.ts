@@ -8,7 +8,7 @@ import {
   ICommunicationById,
 } from 'core/shared/utils/redux/communication';
 import { URL } from 'core/shared/utils/types';
-import { IDatasetVersion } from 'models/DatasetVersion';
+import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
 
 export interface IArtifactManagerState {
   data: {

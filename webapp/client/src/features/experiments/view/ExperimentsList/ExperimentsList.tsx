@@ -28,7 +28,7 @@ import {
   selectExperimentsPagination,
   selectLoadingExperiments,
 } from 'features/experiments/store';
-import Experiment from 'models/Experiment';
+import Experiment from 'core/shared/models/Experiment';
 import makeExprRunsFilterContextName from 'pages/authorized/ProjectsPages/ProjectDetailsPages/shared/makeExprRunsFilterContextName';
 import { selectProject } from 'features/projects/store';
 import { IApplicationState } from 'store/store';

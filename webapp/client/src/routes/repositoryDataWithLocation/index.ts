@@ -11,7 +11,7 @@ import {
 } from 'core/shared/models/Versioning/RepositoryData';
 import makeRoute from 'core/shared/routes/makeRoute';
 import * as P from 'core/shared/routes/pathBuilder';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import routes from 'routes';
 import { parseCurrentWorkspaceName } from 'routes/routeWithWorkspace';
 

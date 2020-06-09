@@ -8,8 +8,8 @@ import {
   makeCommunicationActionTypes,
 } from 'core/shared/utils/redux/communication';
 import { Markdown } from 'core/shared/utils/types';
-import { Dataset } from 'models/Dataset';
-import { Project } from 'models/Project';
+import { Dataset } from 'core/shared/models/Dataset';
+import { Project } from 'core/shared/models/Project';
 
 export interface IProjectsState {
   data: {

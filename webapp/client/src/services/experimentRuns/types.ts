@@ -1,5 +1,5 @@
 import { DataWithPagination } from 'core/shared/models/Pagination';
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 
 import * as Comments from 'features/comments';
 

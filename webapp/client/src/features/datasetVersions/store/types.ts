@@ -7,8 +7,8 @@ import {
   MakeCommunicationActions,
   ICommunicationById,
 } from 'core/shared/utils/redux/communication';
-import { IDatasetVersion } from 'models/DatasetVersion';
-import ModelRecord from 'models/ModelRecord';
+import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
+import ModelRecord from 'core/shared/models/ModelRecord';
 
 export interface IDatasetVersionsState {
   data: {

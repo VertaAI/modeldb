@@ -6,7 +6,7 @@ import { IPagination } from 'core/shared/models/Pagination';
 import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub';
 import Pagination from 'core/shared/view/elements/Pagination/Pagination';
 import { IResult, SearchField } from 'core/shared/models/HighLevelSearch';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 
 import { actions } from '../../../store';
 import styles from './Results.module.css';

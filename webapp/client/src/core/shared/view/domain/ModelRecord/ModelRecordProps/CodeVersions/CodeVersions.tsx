@@ -6,7 +6,7 @@ import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/S
 import ModelRecord, {
   ICodeVersionsFromBlob,
   IVersionedInputs,
-} from 'models/ModelRecord';
+} from 'core/shared/models/ModelRecord';
 import { ICodeVersion } from 'core/shared/models/CodeVersion';
 import CodeVersion from 'core/shared/view/domain/CodeVersion/CodeVersion';
 import routes from 'routes';

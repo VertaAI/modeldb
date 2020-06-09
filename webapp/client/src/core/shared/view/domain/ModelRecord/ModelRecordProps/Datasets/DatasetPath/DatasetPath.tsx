@@ -5,7 +5,7 @@ import * as React from 'react';
 import { formatBytes } from 'core/shared/utils/mapperConverters/DataSizeConverted';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import Popup from 'core/shared/view/elements/Popup/Popup';
-import { IDatasetPathPartInfo } from 'models/DatasetVersion';
+import { IDatasetPathPartInfo } from 'core/shared/models/DatasetVersion';
 
 import styles from './DatasetPath.module.css';
 

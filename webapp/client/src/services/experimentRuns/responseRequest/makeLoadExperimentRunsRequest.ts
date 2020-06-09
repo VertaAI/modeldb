@@ -20,7 +20,7 @@ import {
   ServerFilterValueType,
   getServerFilterOperator,
 } from 'core/features/filter/service/serverModel/Filters/Filters';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import { addWorkspaceName } from 'services/serverModel/Workspace/converters';
 
 export type IGetExperimentRunsRequest = {

@@ -23,7 +23,7 @@ import {
   EntityType,
 } from './types';
 import { HttpError } from 'core/shared/models/Error';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 
 const loadArtifactUrlOrReturnLoaded = (
   entityType: EntityType,

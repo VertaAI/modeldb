@@ -6,7 +6,7 @@ import {
   IWithCommentSettings,
 } from 'core/features/comments';
 import { IComment } from 'core/features/comments/Model';
-import { unknownUser } from 'models/User';
+import { unknownUser } from 'core/shared/models/User';
 
 import CommentUserAvatar from './CommentUserAvatar/CommentUserAvatar';
 

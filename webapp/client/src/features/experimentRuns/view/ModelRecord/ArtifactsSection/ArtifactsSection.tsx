@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 import ClientSuggestion from 'core/shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
 import vertaDocLinks from 'core/shared/utils/globalConstants/vertaDocLinks';
 

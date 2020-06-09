@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import vertaDocLinks from 'core/shared/utils/globalConstants/vertaDocLinks';
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 
 import ClientSuggestion from '../shared/ClientSuggestion/ClientSuggestion';
 import styles from './Parameters.module.css';

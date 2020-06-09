@@ -10,13 +10,13 @@ import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentU
 import { ICommunication } from 'core/shared/utils/redux/communication';
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import Draggable from 'core/shared/view/elements/Draggable/Draggable';
-import Experiment from 'models/Experiment';
+import Experiment from 'core/shared/models/Experiment';
 import { selectDeletingExperiment } from 'features/experiments/store';
 import { IConnectedReduxProps, IApplicationState } from 'store/store';
 
 import ExperimentBulkDeletion from './ExperimentBulkDeletion/ExperimentBulkDeletion';
 import styles from './ExperimentWidget.module.css';
-import { unknownUser } from 'models/User';
+import { unknownUser } from 'core/shared/models/User';
 
 interface ILocalProps {
   projectId: string;

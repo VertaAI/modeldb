@@ -12,7 +12,7 @@ import routes from 'routes';
 import { HttpError } from 'core/shared/models/Error';
 import delay from 'core/shared/utils/delay';
 import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
-import { Project } from 'models/Project';
+import { Project } from 'core/shared/models/Project';
 import ProjectsPage from 'pages/authorized/ProjectsPages/ProjectsPage/ProjectsPage';
 import { ProjectDataService } from 'services/projects';
 import { makeComponentForIntegratingTest } from 'utils/tests/integrations/makeMountComponentForIntegratingTest';

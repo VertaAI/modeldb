@@ -1,4 +1,4 @@
-import User, { CurrentUser } from 'models/User';
+import User, { CurrentUser } from 'core/shared/models/User';
 
 export const currentUser: CurrentUser = new CurrentUser({
   id: 'current-user-id',

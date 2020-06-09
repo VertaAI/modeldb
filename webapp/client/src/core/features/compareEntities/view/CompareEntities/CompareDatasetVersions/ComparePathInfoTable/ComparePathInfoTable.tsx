@@ -10,7 +10,7 @@ import removeQuotes from 'core/shared/utils/removeQuotes';
 import Table from 'core/shared/view/elements/Table/Table';
 import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';
 import IdView from 'core/shared/view/elements/IdView/IdView';
-import { IDatasetPathPartInfo } from 'models/DatasetVersion';
+import { IDatasetPathPartInfo } from 'core/shared/models/DatasetVersion';
 import {
   IDiffDatasetPathInfos,
   EntityType,

@@ -7,7 +7,7 @@ import {
   MakeCommunicationActions,
   makeCommunicationActionTypes,
 } from 'core/shared/utils/redux/communication';
-import { Dataset } from 'models/Dataset';
+import { Dataset } from 'core/shared/models/Dataset';
 import { EntityAlreadyExistsErrorType } from 'services/shared/EntityAlreadyExistError';
 
 export interface IDatasetsState {

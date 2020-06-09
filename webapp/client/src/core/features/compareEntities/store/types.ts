@@ -1,5 +1,5 @@
-import { IDatasetVersion } from 'models/DatasetVersion';
-import ModelRecord from 'models/ModelRecord';
+import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
+import ModelRecord from 'core/shared/models/ModelRecord';
 
 export interface ICompareEntitiesState {
   data: {

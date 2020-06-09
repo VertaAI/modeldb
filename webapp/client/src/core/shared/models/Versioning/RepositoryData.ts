@@ -1,4 +1,4 @@
-import User from 'models/User';
+import User from 'core/shared/models/User';
 
 import { Brand } from '../../utils/Brand';
 import { IBlob } from './Blob/Blob';

@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import * as EntitiesActions from 'models/EntitiesActions';
+import * as EntitiesActions from 'core/shared/models/EntitiesActions';
 import { IApplicationState } from 'store/store';
 
 import * as Common from 'core/shared/models/Common';
@@ -41,15 +41,10 @@ class WithCurrentUserActionsAccesses<
   T extends EntitiesActions.UserEntityAction[]
 > extends React.PureComponent<AllProps<T>> {
   public render() {
-    const {
-      actions,
-    } = this.props;
+    const { actions } = this.props;
 
     const actionsAccesses = R.fromPairs(
-      actions.map(action => [
-        action,
-        true,
-      ])
+      actions.map(action => [action, true])
     ) as IActionAccesses<EntitiesActions.UserEntityAction>;
 
     return this.props.children({

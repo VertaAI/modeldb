@@ -1,4 +1,4 @@
-import { Project } from 'models/Project';
+import { Project } from 'core/shared/models/Project';
 
 import { userWorkspacesWithCurrentUser } from './workspace';
 

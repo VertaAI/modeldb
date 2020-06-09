@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { useQuery } from 'react-apollo';
 
 import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import resultToCommunicationWithData from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
 import { USER_FRAGMENT } from 'core/shared/graphql/User/User';
 import { WORKSPACE_FRAGMENT } from 'core/shared/graphql/Workspace';

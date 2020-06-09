@@ -11,8 +11,8 @@ import withProps from 'core/shared/utils/react/withProps';
 import IdView from 'core/shared/view/elements/IdView/IdView';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import TagBlock from 'core/shared/view/elements/TagBlock/TagBlock';
-import ModelRecord from 'models/ModelRecord';
-import { Project } from 'models/Project';
+import ModelRecord from 'core/shared/models/ModelRecord';
+import { Project } from 'core/shared/models/Project';
 import {
   ComparedEntityIds,
   IModelsDifferentProps,

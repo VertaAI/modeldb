@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { CommitPointerHelpers } from 'core/shared/models/Versioning/RepositoryData';
 import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
-import { IVersionedInputs } from 'models/ModelRecord';
+import { IVersionedInputs } from 'core/shared/models/ModelRecord';
 import routes from 'routes';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

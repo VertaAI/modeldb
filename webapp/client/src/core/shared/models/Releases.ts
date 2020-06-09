@@ -1,4 +1,4 @@
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 
 import { IArtifact } from './Artifact';
 

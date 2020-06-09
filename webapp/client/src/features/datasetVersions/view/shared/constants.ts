@@ -1,4 +1,4 @@
-import { DatasetVersionPathLocationType } from 'models/DatasetVersion';
+import { DatasetVersionPathLocationType } from 'core/shared/models/DatasetVersion';
 
 export const pathLocationLabels: Record<
   DatasetVersionPathLocationType,

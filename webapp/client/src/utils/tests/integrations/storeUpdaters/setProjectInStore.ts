@@ -1,5 +1,5 @@
 import { CommunicationActionsToObj } from 'core/shared/utils/redux/communication';
-import { Project } from 'models/Project';
+import { Project } from 'core/shared/models/Project';
 import { Store } from 'redux';
 import { ILoadProjectActions } from 'features/projects/store';
 

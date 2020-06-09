@@ -1,4 +1,4 @@
-import { Dataset } from 'models/Dataset';
+import { Dataset } from 'core/shared/models/Dataset';
 
 import { userWorkspacesWithCurrentUser } from './workspace';
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { flushAllPromisesFor } from 'core/shared/utils/tests/integrations/flushAllPromisesFor';
-import { IWorkspace, IUserWorkspaces } from 'models/Workspace';
+import { IWorkspace, IUserWorkspaces } from 'core/shared/models/Workspace';
 import routes from 'routes';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';

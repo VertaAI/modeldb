@@ -14,7 +14,7 @@ import TagsField from 'core/shared/view/formComponents/formikFields/TagsFieldWit
 import TextInputFieldWithTopLabel from 'core/shared/view/formComponents/formikFields/TextInputFieldWithTopLabel/TextInputFieldWithTopLabel';
 import PresetFormik from 'core/shared/view/formComponents/presetComponents/PresetFormik/PresetFormik';
 import * as ExperimentsStore from 'features/experiments/store';
-import * as Experiment from 'models/Experiment';
+import * as Experiment from 'core/shared/models/Experiment';
 import { IApplicationState } from 'store/store';
 
 import styles from './ExperimentCreation.module.css';

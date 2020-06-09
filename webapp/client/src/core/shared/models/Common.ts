@@ -22,7 +22,7 @@ export type EntityType =
   | 'experimentRun'
   | 'dataset'
   | 'datasetVersion'
-  | 'repository'
+  | 'repository';
 export const EntityType: { [K in EntityType]: K } = {
   dataset: 'dataset',
   datasetVersion: 'datasetVersion',
@@ -36,3 +36,5 @@ export interface IDateRange {
   from: Date;
   to: Date;
 }
+
+export const userNotFoundError = 'userNotFound';

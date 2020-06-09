@@ -12,7 +12,7 @@ import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import findHighlight from 'core/shared/utils/findHighlight';
 import { Icon, IconType } from 'core/shared/view/elements/Icon/Icon';
 import routes from 'routes';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import {
   makeDefaultExprNameFilter,
   makeURLFilters,
@@ -20,7 +20,7 @@ import {
 import { NA } from 'core/shared/view/elements/PageComponents';
 
 import styles from './Result.module.css';
-import { unknownUser } from 'models/User';
+import { unknownUser } from 'core/shared/models/User';
 
 interface ILocalProps {
   searchValue: string;

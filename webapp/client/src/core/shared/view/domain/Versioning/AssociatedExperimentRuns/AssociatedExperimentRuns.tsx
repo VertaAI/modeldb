@@ -6,8 +6,8 @@ import Table from 'core/shared/view/elements/Table/Table';
 import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';
 import { PageHeader } from 'core/shared/view/elements/PageComponents';
 import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
-import { IExperimentRunInfo } from 'models/ModelRecord';
-import { IWorkspace } from 'models/Workspace';
+import { IExperimentRunInfo } from 'core/shared/models/ModelRecord';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import routes from 'routes';
 
 import styles from './AssociatedExperimentRuns.module.css';

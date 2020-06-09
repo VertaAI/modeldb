@@ -11,13 +11,13 @@ import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import CopyToClipboard from 'core/shared/view/elements/CopyToClipboard/CopyToClipboard';
 import Draggable from 'core/shared/view/elements/Draggable/Draggable';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import { Project } from 'models/Project';
+import { Project } from 'core/shared/models/Project';
 import routes from 'routes';
 import { IConnectedReduxProps } from 'store/store';
 
 import ProjectBulkDeletion from './ProjectBulkDeletion/ProjectBulkDeletion';
 import styles from './ProjectWidget.module.css';
-import { unknownUser } from 'models/User';
+import { unknownUser } from 'core/shared/models/User';
 
 interface ILocalProps {
   project: Project;

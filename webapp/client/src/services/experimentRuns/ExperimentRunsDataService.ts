@@ -11,12 +11,12 @@ import {
 } from 'core/features/filter/Model';
 import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
 import { ISorting } from 'core/shared/models/Sorting';
-import { ShortExperiment } from 'models/Experiment';
+import { ShortExperiment } from 'core/shared/models/Experiment';
 import ModelRecord, {
   LoadExperimentRunErrorType,
   IVersionedInputs,
-} from 'models/ModelRecord';
-import User from 'models/User';
+} from 'core/shared/models/ModelRecord';
+import User from 'core/shared/models/User';
 import {
   convertServerCodeVersion,
   convertServerCodeVersionsFromBlob,
@@ -32,7 +32,7 @@ import {
   ILoadModelRecordResult,
   ILazyLoadChartData,
 } from './types';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import { RepositoriesDataService } from 'core/services/versioning/repositories';
 
 export const chartsPageSettings = {
@@ -336,9 +336,7 @@ const convertServerExperimentRun = async (
   const result: ILoadModelRecordResult = {
     experimentRun: modelRecord,
     comments: (hydrated_experiment_run.comments || []).map((comment: any) =>
-      Comments.convertServerComment(
-        comment,
-      )
+      Comments.convertServerComment(comment)
     ),
   };
   return result;

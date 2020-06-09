@@ -9,7 +9,7 @@ import { Dispatch, bindActionCreators } from 'redux';
 import { IFilterData } from 'core/features/filter/Model';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 import {
   resetExperimentRunsSettings,
   selectSequentialChartData,

@@ -5,8 +5,8 @@ import { EntityErrorType } from 'core/shared/models/Common';
 import { HttpError } from 'core/shared/models/Error';
 import { IFilterData } from 'core/features/filter/Model';
 import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
-import * as Dataset from 'models/Dataset';
-import { IWorkspace } from 'models/Workspace';
+import * as Dataset from 'core/shared/models/Dataset';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
 import { convertServerUser } from 'core/services/serverModel/User/converters';
 
@@ -18,7 +18,7 @@ import {
   convertServerPaginationResponse,
   IServerPaginatedResponse,
 } from 'core/services/serverModel/Pagination/Pagination';
-import { unknownUser } from 'models/User';
+import { unknownUser } from 'core/shared/models/User';
 
 const convertDatasetVisibilityToServer = (
   datasetVisibility: Dataset.DatasetVisibility
@@ -41,7 +41,10 @@ export default class DatasetsDataService extends BaseDataService {
   ): Promise<Dataset.Dataset> {
     const request = (() => {
       const requestFields: {
-        [K in keyof Omit<Required<Dataset.IDatasetCreationSettings>, 'workspaceName'>]: [string, any]
+        [K in keyof Omit<
+          Required<Dataset.IDatasetCreationSettings>,
+          'workspaceName'
+        >]: [string, any]
       } = {
         name: ['name', settings.name],
         visibility: [

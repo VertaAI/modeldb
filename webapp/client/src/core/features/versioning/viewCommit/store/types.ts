@@ -5,7 +5,7 @@ import {
   SHA,
 } from 'core/shared/models/Versioning/RepositoryData';
 import { ICommunication } from 'core/shared/utils/redux/communication';
-import { IExperimentRunInfo } from 'models/ModelRecord';
+import { IExperimentRunInfo } from 'core/shared/models/ModelRecord';
 import { Diff } from 'core/shared/models/Versioning/Blob/Diff';
 
 export interface IViewCommitState {

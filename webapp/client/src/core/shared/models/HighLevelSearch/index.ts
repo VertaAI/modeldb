@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 
 import { RecordFromUnion } from 'core/shared/utils/types';
-import Experiment from 'models/Experiment';
-import { Project } from 'models/Project';
+import Experiment from 'core/shared/models/Experiment';
+import { Project } from 'core/shared/models/Project';
 import { ICommunication } from 'core/shared/utils/redux/communication';
-import User from 'models/User';
+import User from 'core/shared/models/User';
 
 import { ISorting } from '../Sorting';
 import { IRepository } from '../Versioning/Repository';
@@ -121,10 +121,7 @@ export type ProjectResult = EntityResultCommonData & { entityType: 'project' };
 
 export type DatasetResult = EntityResultCommonData & { entityType: 'dataset' };
 
-export type RepositoryResult = Omit<
-  EntityResultCommonData,
-  'tags'
-> & {
+export type RepositoryResult = Omit<EntityResultCommonData, 'tags'> & {
   labels: IRepository['labels'];
   entityType: 'repository';
 };

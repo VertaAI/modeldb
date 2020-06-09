@@ -1,4 +1,4 @@
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 
 export const projectId = 'b9edf9ac-61ad-43bf-a148-42315a25b4d4';
 // All data without missing metrics or hyperparams:

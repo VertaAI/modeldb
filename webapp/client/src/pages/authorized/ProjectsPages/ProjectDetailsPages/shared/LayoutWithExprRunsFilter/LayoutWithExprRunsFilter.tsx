@@ -4,7 +4,7 @@ import { RouteComponentProps, withRouter } from 'react-router';
 
 import { IFilterContext } from 'core/features/filter';
 import { defaultQuickFilters } from 'features/filter/Model';
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
 import {
   loadExperimentRuns,
@@ -53,10 +53,7 @@ class ProjectDetailsPage extends React.Component<AllProps, ILocalState> {
     super(props);
     const projectId = props.match.params.projectId;
     this.filterContext = {
-      quickFilters: [
-        defaultQuickFilters.name,
-        defaultQuickFilters.tag,
-      ],
+      quickFilters: [defaultQuickFilters.name, defaultQuickFilters.tag],
       name: makeExprRunsFilterContextName(projectId),
       onApplyFilters: (filters, dispatch) => {
         const isChartsPage = Boolean(

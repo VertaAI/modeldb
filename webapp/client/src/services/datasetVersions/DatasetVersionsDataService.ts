@@ -8,7 +8,7 @@ import {
   IQueryDatasetVersionInfo,
   IRawDatasetVersionInfo,
   DatasetVersionPathLocationTypes,
-} from 'models/DatasetVersion';
+} from 'core/shared/models/DatasetVersion';
 
 import makeLoadDatasetVersionsRequest from './responseRequest/makeLoadDatasetVersionsRequest';
 

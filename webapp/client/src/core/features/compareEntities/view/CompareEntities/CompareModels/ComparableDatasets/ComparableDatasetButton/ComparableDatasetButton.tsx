@@ -19,7 +19,7 @@ import Button from 'core/shared/view/elements/Button/Button';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import Popup from 'core/shared/view/elements/Popup/Popup';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { IDatasetVersion } from 'models/DatasetVersion';
+import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
 import routes, { GetRouteParams } from 'routes';
 import {
   reset,

@@ -34,7 +34,7 @@ import {
   selectDatasetVersionsPagination,
 } from '../../store';
 import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
-import { IDatasetVersion } from 'models/DatasetVersion';
+import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
 import routes from 'routes';
 import { IApplicationState } from 'store/store';
 

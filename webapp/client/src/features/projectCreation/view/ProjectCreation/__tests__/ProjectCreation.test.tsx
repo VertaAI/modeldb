@@ -10,7 +10,7 @@ import {
   withAct,
   submitAsyncForm,
 } from 'core/shared/utils/tests/react/helpers';
-import { Project, IProjectCreationSettings } from 'models/Project';
+import { Project, IProjectCreationSettings } from 'core/shared/models/Project';
 import routes from 'routes';
 import { ProjectDataService } from 'services/projects';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';

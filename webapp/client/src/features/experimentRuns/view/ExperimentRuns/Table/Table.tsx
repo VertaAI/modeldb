@@ -14,7 +14,7 @@ import SelectFieldSorting from 'core/shared/view/elements/Table/Plugins/HeaderCe
 import PagingPanel from 'core/shared/view/elements/Table/Plugins/PagingPanel/TablePagingPanel';
 import AppTable from 'core/shared/view/elements/Table/Table';
 import { ColumnDefinition } from 'core/shared/view/elements/Table/types';
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 
 import DeletingExperimentRunsManager from './BulkDeletion/DeletingExperimentRunsManager/DeletingExperimentRunsManager';
 import ToggleAllExperimentRunsForBulkDeletion from './BulkDeletion/ToggleAllExperimentRunsForBulkDeletion/ToggleAllExperimentRunsForBulkDeletion';

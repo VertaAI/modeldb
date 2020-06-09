@@ -12,7 +12,7 @@ import routes from 'routes';
 import { HttpError } from 'core/shared/models/Error';
 import delay from 'core/shared/utils/delay';
 import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
-import { IDataset, Dataset } from 'models/Dataset';
+import { IDataset, Dataset } from 'core/shared/models/Dataset';
 import { DatasetsDataService } from 'services/datasets';
 import { makeComponentForIntegratingTest } from 'utils/tests/integrations/makeMountComponentForIntegratingTest';
 import { makeDataset } from 'utils/tests/mocks/models/datasetMocks';

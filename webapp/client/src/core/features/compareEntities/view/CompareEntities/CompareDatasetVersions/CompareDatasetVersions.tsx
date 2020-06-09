@@ -24,7 +24,7 @@ import {
   IQueryDatasetVersionInfo,
   IRawDatasetVersionInfo,
   IPathBasedDatasetVersion,
-} from 'models/DatasetVersion';
+} from 'core/shared/models/DatasetVersion';
 import {
   ComparedDatasetVersions,
   ComparedEntityIds,

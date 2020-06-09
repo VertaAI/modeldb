@@ -38,7 +38,7 @@ import {
   ILoadDatasetVersionExperimentRunsActions,
   loadDatasetVersionExperimentRunsActionTypes,
 } from './types';
-import { WorkspaceName } from 'models/Workspace';
+import { WorkspaceName } from 'core/shared/models/Workspace';
 
 export const loadDatasetVersions = (
   datasetId: string,

@@ -1,10 +1,9 @@
-import User, { CurrentUser } from 'models/User';
-import * as Workspace from 'models/Workspace';
+import User, { CurrentUser } from 'core/shared/models/User';
+import * as Workspace from 'core/shared/models/Workspace';
 
 import { RepositoryBranches, CommitTag } from './RepositoryData';
 
-export interface IRepository
-  extends Workspace.IEntityWithShortWorkspace {
+export interface IRepository extends Workspace.IEntityWithShortWorkspace {
   id: string;
   name: string;
   dateCreated: Date;

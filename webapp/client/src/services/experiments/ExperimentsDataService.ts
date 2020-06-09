@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { IArtifact } from 'core/shared/models/Artifact';
 import { IFilterData } from 'core/features/filter/Model';
 import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
-import * as Experiment from 'models/Experiment';
+import * as Experiment from 'core/shared/models/Experiment';
 import { convertServerCodeVersion } from 'services/serverModel/CodeVersion/converters';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
 import { convertServerUser } from 'core/services/serverModel/User/converters';
@@ -15,7 +15,7 @@ import makeLoadExperimentsRequest, {
   makeGetExperimentsByWorkspaceRequest,
 } from './responseRequest/makeLoadExperimentsRequest';
 import { ILoadExperimentsResponse } from './types';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import { ISorting } from 'core/shared/models/Sorting';
 import {
   IServerPaginatedResponse,

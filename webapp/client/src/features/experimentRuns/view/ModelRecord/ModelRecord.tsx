@@ -15,7 +15,7 @@ import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import * as ExperimentRunsStore from 'features/experimentRuns/store';
 import * as ProjectsStore from 'features/projects/store';
 import { IApplicationState } from 'store/store';
-import { hasAccessToAction } from 'models/EntitiesActions';
+import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
 import ClientSuggestion from 'core/shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
 
 import styles from './ModelRecord.module.css';
@@ -46,12 +46,12 @@ const mapStateToProps = (state: IApplicationState, localProps: ILocalProps) => {
     data: modelRecord,
     loading:
       ExperimentRunsStore.selectCommunications(state).loadingExperimentRun[
-      localProps.id
+        localProps.id
       ] || initialCommunication,
     project: ProjectsStore.selectProject(state, localProps.projectId),
     deleting:
       ExperimentRunsStore.selectCommunications(state).deletingExperimentRun[
-      localProps.id
+        localProps.id
       ] || initialCommunication,
   };
 };
@@ -85,7 +85,7 @@ class ModelRecordView extends React.PureComponent<AllProps> {
           entityNotFound: () =>
             this.props.onShowNotFoundPage(this.props.loading.error),
         },
-        () => { }
+        () => {}
       );
     }
 
@@ -163,12 +163,12 @@ class ModelRecordView extends React.PureComponent<AllProps> {
                 modelRecordId={data.id}
               />
             ) : (
-                <ClientSuggestion
-                  fieldName={'dataset'}
-                  clientMethod={'log_dataset_version()'}
-                  link={vertaDocLinks.log_dataset}
-                />
-              )}
+              <ClientSuggestion
+                fieldName={'dataset'}
+                clientMethod={'log_dataset_version()'}
+                link={vertaDocLinks.log_dataset}
+              />
+            )}
           </Section>
         </PageCard>
       </Reloading>

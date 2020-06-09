@@ -5,7 +5,7 @@ import { selectCurrentContextFilters } from 'core/features/filter';
 import { IFilterData } from 'core/features/filter/Model';
 import { AppError } from 'core/shared/models/Error';
 import normalizeError from 'core/shared/utils/normalizeError';
-import * as Experiment from 'models/Experiment';
+import * as Experiment from 'core/shared/models/Experiment';
 import routes from 'routes';
 import { handleDeleteEntities } from 'features/shared/deletion';
 import { ActionResult } from 'store/store';
@@ -78,7 +78,10 @@ export const loadExperiments = (
     .loadExperiments(projectId, filters, pagination)
     .then(({ data, totalCount }) => {
       dispatch(
-        action(loadExperimentsActionTypes.SUCCESS, { experiments: data, totalCount })
+        action(loadExperimentsActionTypes.SUCCESS, {
+          experiments: data,
+          totalCount,
+        })
       );
     })
     .catch(error => {

@@ -9,7 +9,7 @@ import {
   toastError,
   useToastCommunicationError,
 } from 'core/shared/view/elements/Notification/Notification';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import routes from 'routes';
 
 import { useMergeCommitsMutation } from '../../../store/mergeCommits/useMergeCommits';

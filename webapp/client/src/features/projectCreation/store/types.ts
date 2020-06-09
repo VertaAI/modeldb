@@ -8,7 +8,7 @@ import {
   IProjectCreationSettings,
   Project,
   projectAlreadyExistsError,
-} from 'models/Project';
+} from 'core/shared/models/Project';
 
 export interface IProjectCreationState {
   communications: {

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Reducer } from 'redux';
 
-import { IDatasetVersion } from 'models/DatasetVersion';
+import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
 
 import { substractPaginationTotalCount } from 'core/shared/models/Pagination';
 import { updateById, upsert } from 'core/shared/utils/collection';

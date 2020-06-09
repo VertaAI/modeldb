@@ -1,7 +1,7 @@
 import { IServerFiltersInRequest } from 'core/features/filter/service/serverModel/Filters/converters';
 import { IFilterData } from 'core/features/filter/Model';
 import { IPagination } from 'core/shared/models/Pagination';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import { makeAddFiltersToRequestWithDefaultFilters } from 'features/filter/service/serverModel/Filter/converters';
 import { addPaginationToRequest } from 'core/services/serverModel/Pagination/converters';
 import { IServerPaginationInRequest } from 'core/services/serverModel/Pagination/Pagination';

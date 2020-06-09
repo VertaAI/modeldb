@@ -12,7 +12,9 @@ import {
   submitAsyncForm,
 } from 'core/shared/utils/tests/react/helpers';
 import { makeTagsManagerHelpers } from 'core/shared/view/domain/BaseTagsManager/__tests__/helpers';
-import Experiment, { IExperimentCreationSettings } from 'models/Experiment';
+import Experiment, {
+  IExperimentCreationSettings,
+} from 'core/shared/models/Experiment';
 import routes from 'routes';
 import ExperimentsDataService from 'services/experiments/ExperimentsDataService';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';

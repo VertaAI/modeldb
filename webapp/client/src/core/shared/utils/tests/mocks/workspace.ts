@@ -1,6 +1,4 @@
-import {
-  IUserWorkspaces,
-} from 'models/Workspace';
+import { IUserWorkspaces } from 'core/shared/models/Workspace';
 
 import { currentUser } from './users';
 

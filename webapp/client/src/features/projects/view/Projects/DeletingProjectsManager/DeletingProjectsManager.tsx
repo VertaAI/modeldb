@@ -5,7 +5,7 @@ import { bindActionCreators, Dispatch } from 'redux';
 
 import BulkDeletionManager from 'core/shared/view/domain/BulkDeletion/WidgetsBulkDeletionComponents/BulkDeletionManager/BulkDeletionManager';
 import { ICommunication } from 'core/shared/utils/redux/communication';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import {
   selectProjectIdsForDeleting,
   unselectProjectForDeleting,

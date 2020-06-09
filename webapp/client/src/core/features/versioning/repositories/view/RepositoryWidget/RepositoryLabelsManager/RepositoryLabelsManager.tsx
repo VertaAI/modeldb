@@ -2,7 +2,7 @@ import React from 'react';
 
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import TagsManager from 'core/shared/view/domain/BaseTagsManager/TagsManager';
-import { hasAccessToAction } from 'models/EntitiesActions';
+import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
 
 import styles from './RepositoryLabelsManager.module.css';
 import {

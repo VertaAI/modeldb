@@ -14,7 +14,7 @@ import { ISorting } from 'core/shared/models/Sorting';
 import { ICommunication } from 'core/shared/utils/redux/communication';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 import {
   selectExperimentRuns,
   selectExperimentRunsPagination,
@@ -114,9 +114,7 @@ class ExperimentRuns extends React.PureComponent<AllProps, ILocalState> {
                       data={data}
                       sorting={sorting}
                       onSortingChange={this.onSortingChange}
-                      onCurrentPageChange={
-                        this.onPaginationCurrentPageChange
-                      }
+                      onCurrentPageChange={this.onPaginationCurrentPageChange}
                       resetShowingBulkDeletionMenu={
                         this.resetShowingBulkDeletionMenu
                       }

@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { IArtifactWithDatasetVersion } from 'core/shared/models/Artifact';
-import { IDatasetVersion } from 'models/DatasetVersion';
+import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
 import {
   selectCommunications,
   selectDatasetVersion,

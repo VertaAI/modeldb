@@ -25,7 +25,7 @@ import {
 import { createBranchesAndTagsListHelpers } from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/__tests__/helpers';
 import { shortenSHA } from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { AllEntityAction } from 'models/EntitiesActions';
+import { AllEntityAction } from 'core/shared/models/EntitiesActions';
 import routes from 'routes';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';

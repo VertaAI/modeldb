@@ -1,5 +1,5 @@
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
-import * as Workspace from 'models/Workspace';
+import * as Workspace from 'core/shared/models/Workspace';
 import { IApplicationState } from 'store/store';
 import { successfullCommunication } from 'core/shared/utils/redux/communication';
 

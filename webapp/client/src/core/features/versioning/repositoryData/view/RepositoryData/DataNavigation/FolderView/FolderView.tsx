@@ -17,7 +17,7 @@ import CurrentCommitInfo from './CurrentCommitInfo/CurrentCommitInfo';
 import FolderElement from './FolderElement/FolderElement';
 import styles from './FolderView.module.css';
 import NavigationItem from './NavigationItem/NavigationItem';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 
 interface ILocalProps {
   fullCommitComponentLocationComponents: IFullCommitComponentLocationComponents;

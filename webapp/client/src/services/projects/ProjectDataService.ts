@@ -10,8 +10,8 @@ import {
   Project,
   IProjectCreationSettings,
   projectAlreadyExistsError,
-} from 'models/Project';
-import { IWorkspace } from 'models/Workspace';
+} from 'core/shared/models/Project';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import {
   convertHydratedProjectToClient,
   convertProjectVisibilityToServer,

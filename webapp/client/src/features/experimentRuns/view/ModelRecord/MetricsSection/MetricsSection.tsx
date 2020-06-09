@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 import vertaDocLinks from 'core/shared/utils/globalConstants/vertaDocLinks';
 import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
 import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';

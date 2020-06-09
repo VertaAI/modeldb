@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Avatar from 'react-avatar';
 
-import User from 'models/User';
+import User from 'core/shared/models/User';
 
 interface ILocalProps {
   user: User;

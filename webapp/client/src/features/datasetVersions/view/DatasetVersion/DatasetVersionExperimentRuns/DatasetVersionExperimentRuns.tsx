@@ -6,8 +6,8 @@ import { NavLink } from 'react-router-dom';
 import Table from 'core/shared/view/elements/Table/Table';
 import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';
 import IdView from 'core/shared/view/elements/IdView/IdView';
-import ModelRecord from 'models/ModelRecord';
-import { IWorkspace } from 'models/Workspace';
+import ModelRecord from 'core/shared/models/ModelRecord';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import routes from 'routes';
 
 import styles from './DatasetVersionExperimentRuns.module.css';

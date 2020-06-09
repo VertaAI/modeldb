@@ -18,7 +18,7 @@ import {
   selectCommunications,
   resetCreateProjectCommunication,
 } from 'features/projectCreation';
-import { IProjectCreationSettings } from 'models/Project';
+import { IProjectCreationSettings } from 'core/shared/models/Project';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspace } from 'features/workspaces/store';
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { NetworkGraph } from 'core/features/versioning/networkGraph';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 
 import RepositoryDetailsPagesLayout from '../shared/RepositoryDetailsPagesLayout/RepositoryDetailsPagesLayout';
 import styles from './NetworkPage.module.css';

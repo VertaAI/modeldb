@@ -13,8 +13,8 @@ import PileWithActions, {
 } from 'core/shared/view/elements/PileWithActions/PileWithActions';
 import { IApplicationState } from 'store/store';
 import * as ExperimentRunsStore from 'features/experimentRuns/store';
-import { hasAccessToAction } from 'models/EntitiesActions';
-import ModelRecord from 'models/ModelRecord';
+import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
+import ModelRecord from 'core/shared/models/ModelRecord';
 import { initialCommunication } from 'core/shared/utils/redux/communication';
 import ConfirmAction from 'core/shared/view/elements/ConfirmAction/ConfirmAction';
 import { useInfoAction } from './InfoAction/InfoAction';

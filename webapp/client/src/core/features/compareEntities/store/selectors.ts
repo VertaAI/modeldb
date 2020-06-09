@@ -14,8 +14,10 @@ import {
   IQueryDatasetVersion,
   IPathBasedDatasetVersion,
   IDatasetPathPartInfo,
-} from 'models/DatasetVersion';
-import ModelRecord, { ICodeVersionsFromBlob } from 'models/ModelRecord';
+} from 'core/shared/models/DatasetVersion';
+import ModelRecord, {
+  ICodeVersionsFromBlob,
+} from 'core/shared/models/ModelRecord';
 import { selectDatasetVersion } from 'features/datasetVersions/store';
 import { selectExperimentRun } from 'features/experimentRuns/store';
 import { IApplicationState } from 'store/store';

@@ -11,7 +11,7 @@ import routes from 'routes';
 import RepositoryLabelsManager from './RepositoryLabelsManager/RepositoryLabelsManager';
 import styles from './RepositoryWidget.module.css';
 import { useDeleteRepositoryMutation } from '../../store/deleteRepository/deleteRepository';
-import { hasAccessToAction } from 'models/EntitiesActions';
+import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
 
 interface ILocalProps {
   onDeleted: (repositoryId: IRepository['id']) => void;

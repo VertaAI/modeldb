@@ -1,5 +1,5 @@
 import { CommunicationActionsToObj } from 'core/shared/utils/redux/communication';
-import { Dataset } from 'models/Dataset';
+import { Dataset } from 'core/shared/models/Dataset';
 import { Store } from 'redux';
 import { ILoadDatasetActions } from 'features/datasets/store';
 

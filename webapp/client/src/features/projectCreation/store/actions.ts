@@ -1,7 +1,7 @@
 import { action } from 'typesafe-actions';
 
 import normalizeError from 'core/shared/utils/normalizeError';
-import { IProjectCreationSettings } from 'models/Project';
+import { IProjectCreationSettings } from 'core/shared/models/Project';
 import routes from 'routes';
 import { ActionResult } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';

@@ -14,7 +14,7 @@ import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCom
 import DefaultMatchRemoteDataWithReloading from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { hasAccessToAction } from 'models/EntitiesActions';
+import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
 import routes from 'routes';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

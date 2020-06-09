@@ -10,7 +10,7 @@ import {
   Branch,
   defaultCommitPointer,
 } from 'core/shared/models/Versioning/RepositoryData';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import routes, { GetRouteParams } from 'routes';
 import { IRepositoryDataWithLocationParams } from 'routes/repositoryDataWithLocation';
 

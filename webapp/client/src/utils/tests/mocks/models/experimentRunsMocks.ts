@@ -1,4 +1,4 @@
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 
 export const makeExperimentRun = ({
   id,

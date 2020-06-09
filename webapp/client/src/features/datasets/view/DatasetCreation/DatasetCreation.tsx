@@ -17,7 +17,7 @@ import TagsField from 'core/shared/view/formComponents/formikFields/TagsFieldWit
 import TextInputFieldWithTopLabel from 'core/shared/view/formComponents/formikFields/TextInputFieldWithTopLabel/TextInputFieldWithTopLabel';
 import PresetFormik from 'core/shared/view/formComponents/presetComponents/PresetFormik/PresetFormik';
 import * as DatasetsStore from 'features/datasets/store';
-import * as Dataset from 'models/Dataset';
+import * as Dataset from 'core/shared/models/Dataset';
 import { IApplicationState } from 'store/store';
 import {
   selectWorkspaces,

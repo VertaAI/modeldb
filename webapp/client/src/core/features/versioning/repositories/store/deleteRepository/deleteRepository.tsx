@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { useMutation } from 'react-apollo';
 import * as React from 'react';
 
-import { hasAccessToAction } from 'models/EntitiesActions';
+import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
 import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { mutationResultToCommunication } from 'core/shared/utils/graphql/queryResultToCommunicationWithData';

@@ -3,7 +3,7 @@ import { useQuery } from 'react-apollo';
 
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { WORKSPACE_FRAGMENT } from 'core/shared/graphql/Workspace';
-import { IWorkspace } from 'models/Workspace';
+import { IWorkspace } from 'core/shared/models/Workspace';
 import resultToCommunicationWithData from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
 
 import { convertNetwork } from './converters';

@@ -7,7 +7,7 @@ import { mapObj, groupBy } from 'core/shared/utils/collection';
 import VerticalTable, {
   IPropDefinition as IRowDefinition,
 } from 'core/shared/view/elements/VerticalTable/VerticalTable';
-import { IDatasetVersion } from 'models/DatasetVersion';
+import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
 import {
   IDatasetVersionsDifferentProps,
   ComparedDatasetVersions,

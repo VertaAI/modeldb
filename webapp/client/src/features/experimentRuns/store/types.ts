@@ -9,7 +9,7 @@ import {
   makeCommunicationReducerFromEnum,
   ICommunicationById,
 } from 'core/shared/utils/redux/communication';
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 
 export interface IExperimentRunsState {
   data: {

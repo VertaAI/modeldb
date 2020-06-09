@@ -3,8 +3,8 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
 
-import { Dataset } from 'models/Dataset';
-import { IDatasetVersion } from 'models/DatasetVersion';
+import { Dataset } from 'core/shared/models/Dataset';
+import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
 import routes, { GetRouteParams } from 'routes';
 import { selectDatasets } from 'features/datasets/store';
 import { selectDatasetVersions } from 'features/datasetVersions/store';

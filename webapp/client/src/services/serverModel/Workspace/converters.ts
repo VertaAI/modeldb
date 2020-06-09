@@ -3,7 +3,7 @@ import {
   IWorkspace,
   IShortWorkspace,
   IEntityWithShortWorkspace,
-} from 'models/Workspace';
+} from 'core/shared/models/Workspace';
 import { IServerEntityWithWorkspace } from 'services/serverModel/Workspace/Workspace';
 
 export const addWorkspaceName = <T>(workspaceName: IWorkspace['name']) => (

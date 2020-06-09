@@ -7,13 +7,13 @@ import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
 import { formatBytes } from 'core/shared/utils/mapperConverters';
 import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
 import { findByDataTestAttribute } from 'core/shared/utils/tests/react/helpers';
-import { Dataset } from 'models/Dataset';
+import { Dataset } from 'core/shared/models/Dataset';
 import {
   IDatasetVersion,
   IRawDatasetVersion,
   IQueryDatasetVersion,
   IPathBasedDatasetVersion,
-} from 'models/DatasetVersion';
+} from 'core/shared/models/DatasetVersion';
 import DatasetVersionsDataService from 'services/datasetVersions/DatasetVersionsDataService';
 import {
   IDatasetsState,

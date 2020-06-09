@@ -15,7 +15,7 @@ import {
 } from 'core/features/filter';
 import { ActionResult } from 'store/store';
 
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'core/shared/models/ModelRecord';
 import {
   selectExperimentRunsPagination,
   selectExperimentRunsSorting,
