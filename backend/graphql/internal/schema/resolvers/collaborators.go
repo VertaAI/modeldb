@@ -101,7 +101,7 @@ func (r *Resolver) resolveCollaborator(ctx context.Context, ref schema.Collabora
 
 	go func() {
 		defer wg.Done()
-		if ref.UsernameOrEmail != nil {
+		if ref.UsernameOrEmail != nil && r.Connections.HasUac() {
 			res, err := r.Connections.UAC.GetUser(ctx, &uac.GetUser{
 				Email: *ref.UsernameOrEmail,
 			})
@@ -115,7 +115,7 @@ func (r *Resolver) resolveCollaborator(ctx context.Context, ref schema.Collabora
 
 	go func() {
 		defer wg.Done()
-		if ref.UsernameOrEmail != nil {
+		if ref.UsernameOrEmail != nil && r.Connections.HasUac() {
 			res, err := r.Connections.UAC.GetUser(ctx, &uac.GetUser{
 				Username: *ref.UsernameOrEmail,
 			})
@@ -129,7 +129,7 @@ func (r *Resolver) resolveCollaborator(ctx context.Context, ref schema.Collabora
 
 	go func() {
 		defer wg.Done()
-		if ref.TeamID != nil {
+		if ref.TeamID != nil && r.Connections.HasUac() {
 			res, err := r.Connections.Team.GetTeamById(ctx, &uac.GetTeamById{
 				TeamId: *ref.TeamID,
 			})

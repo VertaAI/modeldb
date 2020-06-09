@@ -22,36 +22,42 @@ func (r *organizationResolver) DateUpdated(ctx context.Context, obj *ai_verta_ua
 	return strconv.FormatUint(uint64(obj.GetUpdatedTimestamp()), 10), nil
 }
 func (r *organizationResolver) Teams(ctx context.Context, obj *ai_verta_uac.Organization) ([]*ai_verta_uac.Team, error) {
-	res, err := r.Connections.Organization.ListTeams(
-		ctx,
-		&ai_verta_uac.ListTeams{OrgId: obj.GetId()},
-	)
-	if err != nil {
-		r.Logger.Error("failed to get teams", zap.Error(err))
-		return nil, err
-	}
-
-	ids := res.GetTeamIds()
-	teams := make([]*ai_verta_uac.Team, len(ids))
-	for i, id := range ids {
-		team, err := dataloaders.GetTeamById(ctx, id)
+	if r.Connections.HasUac() {
+		res, err := r.Connections.Organization.ListTeams(
+			ctx,
+			&ai_verta_uac.ListTeams{OrgId: obj.GetId()},
+		)
 		if err != nil {
-			r.Logger.Error("failed to get team", zap.Error(err), zap.String("team", ids[i]))
+			r.Logger.Error("failed to get teams", zap.Error(err))
 			return nil, err
 		}
-		teams[i] = team
+
+		ids := res.GetTeamIds()
+		teams := make([]*ai_verta_uac.Team, len(ids))
+		for i, id := range ids {
+			team, err := dataloaders.GetTeamById(ctx, id)
+			if err != nil {
+				r.Logger.Error("failed to get team", zap.Error(err), zap.String("team", ids[i]))
+				return nil, err
+			}
+			teams[i] = team
+		}
+		return teams, nil
 	}
-	return teams, nil
+	return []*ai_verta_uac.Team{}, nil
 }
 
 func getOrganizationById(logger *zap.Logger, ctx context.Context, connections *connections.Connections, id string) (*ai_verta_uac.Organization, error) {
-	res, err := connections.Organization.GetOrganizationById(
-		ctx,
-		&ai_verta_uac.GetOrganizationById{OrgId: id},
-	)
-	if err != nil {
-		logger.Error("failed to get organization", zap.Error(err))
-		return nil, err
+	if connections.HasUac() {
+		res, err := connections.Organization.GetOrganizationById(
+			ctx,
+			&ai_verta_uac.GetOrganizationById{OrgId: id},
+		)
+		if err != nil {
+			logger.Error("failed to get organization", zap.Error(err))
+			return nil, err
+		}
+		return res.GetOrganization(), nil
 	}
-	return res.GetOrganization(), nil
+	return &ai_verta_uac.Organization{}, nil
 }

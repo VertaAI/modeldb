@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema"
+	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/dataloaders"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/errors"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
@@ -26,9 +27,7 @@ func (r *commitResolver) Date(ctx context.Context, obj *models.Commit) (string, 
 	return strconv.FormatUint(obj.Commit.GetDateCreated(), 10), nil
 }
 func (r *commitResolver) Author(ctx context.Context, obj *models.Commit) (*uac.UserInfo, error) {
-	res, err := r.Connections.UAC.GetUser(ctx, &uac.GetUser{
-		UserId: obj.Commit.GetAuthor(),
-	})
+	res, err := dataloaders.GetUserById(ctx, obj.Commit.GetAuthor())
 	if err != nil {
 		r.Logger.Error("failed to fetch author", zap.Error(err))
 		return nil, err

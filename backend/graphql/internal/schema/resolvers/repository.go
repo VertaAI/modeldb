@@ -55,9 +55,12 @@ func (r *repositoryResolver) Owner(ctx context.Context, obj *versioning.Reposito
 }
 
 func (r *repositoryResolver) Collaborators(ctx context.Context, obj *versioning.Repository) ([]schema.Collaborator, error) {
-	return getConvertedCollaborators(r.Resolver, ctx, r.id(obj), func(ctx context.Context, in *uac.GetCollaborator, opts ...grpc.CallOption) (*uac.GetCollaborator_Response, error) {
-		return r.Connections.Collaborator.GetRepositoryCollaborators(ctx, in, opts...)
-	})
+	if r.Connections.HasUac() {
+		return getConvertedCollaborators(r.Resolver, ctx, r.id(obj), func(ctx context.Context, in *uac.GetCollaborator, opts ...grpc.CallOption) (*uac.GetCollaborator_Response, error) {
+			return r.Connections.Collaborator.GetRepositoryCollaborators(ctx, in, opts...)
+		})
+	}
+	return []schema.Collaborator{}, nil
 }
 func (r *repositoryResolver) AllowedActions(ctx context.Context, obj *versioning.Repository) (*schema.AllowedActions, error) {
 	id := r.id(obj)

@@ -16,66 +16,70 @@ import (
 func (r *workspaceResolver) resolveMDBPredicates(ctx context.Context, stringPredicates []*schema.StringPredicate, floatPredicates []*schema.FloatPredicate) ([]*modeldb.KeyValueQuery, error) {
 	predicates := make([]*modeldb.KeyValueQuery, 0)
 
-	for _, pred := range stringPredicates {
+	for i, pred := range stringPredicates {
 		op, ok := modeldb.OperatorEnum_Operator_value[pred.Operator.String()]
 		if !ok {
 			return nil, errors.UnknownOperator(ctx, pred.Operator.String())
 		}
 
 		if pred.Key == "owner" {
-			switch modeldb.OperatorEnum_Operator(op) {
-			case modeldb.OperatorEnum_CONTAIN:
-				res, err := r.Connections.UAC.GetUsersFuzzy(ctx, &uac.GetUsersFuzzy{
-					Username: pred.Value,
-				})
-				if err != nil {
-					r.Logger.Error("failed to get users", zap.Error(err))
-					return nil, err
+			if !r.Connections.HasUac() {
+				stringPredicates[i] = nil
+			} else {
+				switch modeldb.OperatorEnum_Operator(op) {
+				case modeldb.OperatorEnum_CONTAIN:
+					res, err := r.Connections.UAC.GetUsersFuzzy(ctx, &uac.GetUsersFuzzy{
+						Username: pred.Value,
+					})
+					if err != nil {
+						r.Logger.Error("failed to get users", zap.Error(err))
+						return nil, err
+					}
+					if len(res.GetUserInfos()) == 0 {
+						return nil, errors.NoUserFound(ctx)
+					}
+					ids := make([]string, len(res.GetUserInfos()))
+					for i, user := range res.GetUserInfos() {
+						ids[i] = user.GetVertaInfo().GetUserId()
+					}
+					pred.Value = strings.Join(ids, ",")
+					pred.Operator = schema.PredicateOperatorIn
+				case modeldb.OperatorEnum_IN:
+					usernames := strings.Split(pred.Value, ",")
+					res, err := r.Connections.UAC.GetUsers(ctx, &uac.GetUsers{
+						Usernames: usernames,
+					})
+					if err != nil {
+						r.Logger.Error("failed to get users", zap.Error(err))
+						return nil, err
+					}
+					ids := make([]string, len(res.GetUserInfos()))
+					for i, user := range res.GetUserInfos() {
+						ids[i] = user.GetVertaInfo().GetUserId()
+					}
+					pred.Value = strings.Join(ids, ",")
+				case modeldb.OperatorEnum_EQ:
+					fallthrough
+				case modeldb.OperatorEnum_NE:
+					res, err := r.Connections.UAC.GetUser(ctx, &uac.GetUser{
+						Username: pred.Value,
+					})
+					if err != nil {
+						r.Logger.Error("failed to get user", zap.Error(err))
+						return nil, err
+					}
+					pred.Value = res.VertaInfo.GetUserId()
+				case modeldb.OperatorEnum_LTE:
+					fallthrough
+				case modeldb.OperatorEnum_LT:
+					fallthrough
+				case modeldb.OperatorEnum_GTE:
+					fallthrough
+				case modeldb.OperatorEnum_GT:
+					fallthrough
+				case modeldb.OperatorEnum_NOT_CONTAIN:
+					return nil, errors.UnknownOperator(ctx, pred.Operator.String())
 				}
-				if len(res.GetUserInfos()) == 0 {
-					return nil, errors.NoUserFound(ctx)
-				}
-				ids := make([]string, len(res.GetUserInfos()))
-				for i, user := range res.GetUserInfos() {
-					ids[i] = user.GetVertaInfo().GetUserId()
-				}
-				pred.Value = strings.Join(ids, ",")
-				pred.Operator = schema.PredicateOperatorIn
-			case modeldb.OperatorEnum_IN:
-				usernames := strings.Split(pred.Value, ",")
-				res, err := r.Connections.UAC.GetUsers(ctx, &uac.GetUsers{
-					Usernames: usernames,
-				})
-				if err != nil {
-					r.Logger.Error("failed to get users", zap.Error(err))
-					return nil, err
-				}
-				ids := make([]string, len(res.GetUserInfos()))
-				for i, user := range res.GetUserInfos() {
-					ids[i] = user.GetVertaInfo().GetUserId()
-				}
-				pred.Value = strings.Join(ids, ",")
-			case modeldb.OperatorEnum_EQ:
-				fallthrough
-			case modeldb.OperatorEnum_NE:
-				res, err := r.Connections.UAC.GetUser(ctx, &uac.GetUser{
-					Username: pred.Value,
-				})
-				if err != nil {
-					r.Logger.Error("failed to get user", zap.Error(err))
-					return nil, err
-				}
-				pred.Value = res.VertaInfo.GetUserId()
-			case modeldb.OperatorEnum_LTE:
-				fallthrough
-			case modeldb.OperatorEnum_LT:
-				fallthrough
-			case modeldb.OperatorEnum_GTE:
-				fallthrough
-			case modeldb.OperatorEnum_GT:
-				fallthrough
-			case modeldb.OperatorEnum_NOT_CONTAIN:
-				return nil, errors.UnknownOperator(ctx, pred.Operator.String())
 			}
 		}
 	}
