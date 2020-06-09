@@ -11,7 +11,7 @@ import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/
 import { convertServerUser } from 'services/serverModel/User/converters';
 
 import { convertServerShortWorkspaceToClient } from 'services/serverModel/Workspace/converters';
-import * as EntityAlreadyExistError from '../../core/services/shared/EntityAlreadyExistError';
+import * as EntityAlreadyExistError from '../shared/EntityAlreadyExistError';
 import makeLoadDatasetsRequest from './responseRequest/makeLoadDatasetsRequest';
 import { ISorting } from 'core/shared/models/Sorting';
 import {

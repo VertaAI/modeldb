@@ -1,4 +1,4 @@
-import { UnavailableEntityApiErrorType } from 'core/services/shared/UnavailableEntityApiError';
+import { UnavailableEntityApiErrorType } from 'services/shared/UnavailableEntityApiError';
 import { AppError } from 'core/shared/models/Error';
 import {
   IHydratedCommit,
