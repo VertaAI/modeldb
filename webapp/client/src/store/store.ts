@@ -6,31 +6,37 @@ import { ApolloClient } from 'apollo-boost';
 
 import ServiceFactory from 'services/ServiceFactory';
 
-import * as HighLevelSearch from 'core/features/highLevelSearch';
-import * as CompareEntities from 'core/features/compareEntities';
-import * as RepositoryNavigation from 'core/features/versioning/repositoryNavigation';
-import * as ExperimentRunsTableConfig from 'core/features/experimentRunsTableConfig';
+import * as HighLevelSearch from 'features/highLevelSearch';
+import * as CompareEntities from 'features/compareEntities';
+import * as RepositoryNavigation from 'features/versioning/repositoryNavigation';
+import * as ExperimentRunsTableConfig from 'features/experimentRunsTableConfig';
 import * as Filter from 'core/features/filter';
-import * as Layout from 'core/features/Layout';
+import * as Layout from 'features/layout';
 import * as Comment from 'features/comments';
 import * as Workspaces from 'features/workspaces/store';
 
 import {
   IArtifactManagerState,
   artifactManagerReducer,
-} from '../features/artifactManager/store';
-import { IDatasetsState, datasetsReducer } from '../features/datasets/store';
+} from 'features/artifactManager/store';
+import { IDatasetsState, datasetsReducer } from 'features/datasets/store';
 import {
   IDatasetVersionsState,
   datasetVersionsReducer,
-} from '../features/datasetVersions/store';
-import { experimentRunsReducer, IExperimentRunsState } from '../features/experimentRuns/store';
-import { IExperimentsState, experimentsReducer } from '../features/experiments/store';
+} from 'features/datasetVersions/store';
+import {
+  experimentRunsReducer,
+  IExperimentRunsState,
+} from 'features/experimentRuns/store';
+import {
+  IExperimentsState,
+  experimentsReducer,
+} from 'features/experiments/store';
 import {
   IProjectCreationState,
   projectCreationReducer,
-} from '../features/projectCreation/store';
-import { IProjectsState, projectsReducer } from '../features/projects/store';
+} from 'features/projectCreation/store';
+import { IProjectsState, projectsReducer } from 'features/projects/store';
 import * as TagsManagers from 'features/tagsManager';
 import * as DescriptionManager from 'features/descriptionManager';
 

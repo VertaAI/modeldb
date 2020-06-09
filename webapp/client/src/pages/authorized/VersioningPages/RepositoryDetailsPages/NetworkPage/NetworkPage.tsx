@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { NetworkGraph } from 'core/features/versioning/networkGraph';
+import { NetworkGraph } from 'features/versioning/networkGraph';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
 import { IWorkspace } from 'core/shared/models/Workspace';

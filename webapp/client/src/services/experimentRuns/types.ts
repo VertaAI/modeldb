@@ -1,7 +1,7 @@
 import { DataWithPagination } from 'core/shared/models/Pagination';
 import ModelRecord from 'core/shared/models/ModelRecord';
 
-import * as Comments from 'features/comments';
+import * as Comments from 'core/features/comments';
 
 export type ILoadExperimentRunsResult = DataWithPagination<
   ILoadModelRecordResult

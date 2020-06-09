@@ -5,7 +5,7 @@ import * as React from 'react';
 import {
   IColumnConfig,
   IColumnMetaData,
-} from 'core/features/experimentRunsTableConfig';
+} from 'features/experimentRunsTableConfig';
 import { IPagination } from 'core/shared/models/Pagination';
 import { ISorting } from 'core/shared/models/Sorting';
 import withProps from 'core/shared/utils/react/withProps';

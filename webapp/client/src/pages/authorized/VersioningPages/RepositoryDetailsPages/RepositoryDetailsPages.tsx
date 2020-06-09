@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, Switch, Route } from 'react-router';
 
-import { useRepositoryQuery } from 'core/features/versioning/repositories/store/repositoryQuery/repositoryQuery';
+import { useRepositoryQuery } from 'features/versioning/repositories/store/repositoryQuery/repositoryQuery';
 import { matchRemoteData } from 'core/shared/utils/redux/communication/remoteData';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';

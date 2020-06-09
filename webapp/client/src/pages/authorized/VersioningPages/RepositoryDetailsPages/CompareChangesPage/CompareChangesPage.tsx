@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useParams } from 'react-router';
 
-import { CompareChanges } from 'core/features/versioning/compareChanges';
-import withABCommitPointers from 'core/features/versioning/shared/withABCommitPointers';
+import { CompareChanges } from 'features/versioning/compareChanges';
+import withABCommitPointers from 'features/versioning/shared/withABCommitPointers';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import routes, { GetRouteParams } from 'core/shared/routes';
 

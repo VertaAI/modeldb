@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { RepositoriesList } from 'core/features/versioning/repositories/view';
+import { RepositoriesList } from 'features/versioning/repositories/view';
 import Button from 'core/shared/view/elements/Button/Button';
 import routes from 'core/shared/routes';
 import { IApplicationState } from 'store/store';

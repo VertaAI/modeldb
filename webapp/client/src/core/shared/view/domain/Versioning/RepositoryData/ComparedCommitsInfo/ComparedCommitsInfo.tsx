@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { getComparedCommitName } from 'core/features/versioning/compareCommits/view/DiffView/shared/comparedCommitsNames';
-import { diffColors } from 'core/features/versioning/compareCommits/view/DiffView/shared/styles';
+import { getComparedCommitName } from 'features/versioning/compareCommits/view/DiffView/shared/comparedCommitsNames';
+import { diffColors } from 'features/versioning/compareCommits/view/DiffView/shared/styles';
 import { SHA } from 'core/shared/models/Versioning/RepositoryData';
 
 import ShortenedSHA from '../../ShortenedSHA/ShortenedSHA';

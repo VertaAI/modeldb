@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 
-import CompareModels from 'core/features/compareEntities/view/CompareEntities/CompareModels/CompareModels';
+import CompareModels from 'features/compareEntities/view/CompareEntities/CompareModels/CompareModels';
 import routes, { GetRouteParams } from 'core/shared/routes';
 
 import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesLayout';

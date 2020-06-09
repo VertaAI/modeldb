@@ -6,7 +6,7 @@ import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentU
 import {
   IColumnConfig,
   selectColumnConfig,
-} from 'core/features/experimentRunsTableConfig';
+} from 'features/experimentRunsTableConfig';
 import { selectCurrentContextAppliedFilters } from 'core/features/filter';
 import { IFilterData } from 'core/features/filter/Model';
 import { IPagination } from 'core/shared/models/Pagination';

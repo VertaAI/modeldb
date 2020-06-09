@@ -7,7 +7,7 @@ import {
   BreadcrumbsBuilder,
   IBreadcrumbsBuilder as IBreadcrumbsBuilder_,
   IMainNavigationRoute,
-} from 'core/features/Layout';
+} from 'features/layout';
 import routes from 'core/shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';

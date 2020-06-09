@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { CommitsHistory } from 'core/features/versioning/commitsHistory';
+import { CommitsHistory } from 'features/versioning/commitsHistory';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { PageCard } from 'core/shared/view/elements/PageComponents';
 

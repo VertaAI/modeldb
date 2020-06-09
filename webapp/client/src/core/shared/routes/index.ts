@@ -11,7 +11,7 @@ import {
 } from 'core/shared/routes/makeRoute';
 import * as P from 'core/shared/routes/pathBuilder';
 import { IURLWithFilters } from 'core/features/filter/Model';
-import { IURLWithResultsSorting } from 'core/features/highLevelSearch/url';
+import { IURLWithResultsSorting } from 'features/highLevelSearch/url';
 
 import {
   isRouteWithWorkspace,

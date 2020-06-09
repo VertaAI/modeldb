@@ -5,8 +5,8 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import CompareClickAction from 'core/features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
-import ComparedEntitesManager from 'core/features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
+import CompareClickAction from 'features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
+import ComparedEntitesManager from 'features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
 import { selectCurrentContextFilters } from 'core/features/filter';
 import { IFilterData } from 'core/features/filter/Model';
 import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';

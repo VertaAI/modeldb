@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useParams } from 'react-router';
 
-import { Commit } from 'core/features/versioning/viewCommit';
+import { Commit } from 'features/versioning/viewCommit';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import routes, { GetRouteParams } from 'core/shared/routes';
 

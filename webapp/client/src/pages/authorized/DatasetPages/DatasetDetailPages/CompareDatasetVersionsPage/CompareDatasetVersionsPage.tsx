@@ -2,7 +2,7 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 
 import routes, { GetRouteParams } from 'core/shared/routes';
-import CompareDatasetVersions from 'core/features/compareEntities/view/CompareEntities/CompareDatasetVersions/CompareDatasetVersions';
+import CompareDatasetVersions from 'features/compareEntities/view/CompareEntities/CompareDatasetVersions/CompareDatasetVersions';
 
 import DatasetDetailsLayout from '../shared/DatasetDetailsLayout/DatasetDetailsLayout';
 

@@ -39,7 +39,7 @@ import matchType from 'core/shared/utils/matchType';
 import { getServerFilterOperator } from 'core/features/filter/service/serverModel/Filters/Filters';
 
 import * as graphqlTypes from './graphql-types/RepositoriesResult';
-import { paginationSettings } from 'core/features/highLevelSearch/constants';
+import { paginationSettings } from 'features/highLevelSearch/constants';
 
 export type ILoadEntitiesByTypeResult = RecordValues<
   RecordFromUnion<

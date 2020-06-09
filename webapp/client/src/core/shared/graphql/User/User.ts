@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 
 import User from 'core/shared/models/User';
-import { Repositories_workspace_repositories_repositories_collaborators_UserCollaborator_user } from 'core/features/versioning/repositories/store/repositoriesQuery/graphql-types/Repositories';
+import { Repositories_workspace_repositories_repositories_collaborators_UserCollaborator_user } from 'features/versioning/repositories/store/repositoriesQuery/graphql-types/Repositories';
 
 export const convertUserToServer = (
   user: User
