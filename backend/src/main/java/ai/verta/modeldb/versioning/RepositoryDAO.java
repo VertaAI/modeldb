@@ -36,7 +36,8 @@ public interface RepositoryDAO {
       throws ModelDBException;
 
   ListRepositoriesRequest.Response listRepositories(
-      ListRepositoriesRequest request, UserInfo userInfo) throws ModelDBException;
+      ListRepositoriesRequest request, UserInfo userInfo)
+      throws ModelDBException, InvalidProtocolBufferException;
 
   ListTagsRequest.Response listTags(ListTagsRequest request) throws ModelDBException;
 
@@ -62,5 +63,6 @@ public interface RepositoryDAO {
   ListCommitsLogRequest.Response listCommitsLog(ListCommitsLogRequest request)
       throws ModelDBException;
 
-  FindRepositories.Response findRepositories(FindRepositories request) throws ModelDBException;
+  FindRepositories.Response findRepositories(FindRepositories request)
+      throws ModelDBException, InvalidProtocolBufferException;
 }
