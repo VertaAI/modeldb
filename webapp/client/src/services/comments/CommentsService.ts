@@ -1,16 +1,9 @@
 import { BaseDataService } from 'services/BaseDataService';
 
-import { EntityId, IComment } from '../Model';
-import { convertServerComment } from './serverModel/Comments/converters';
+import { EntityId, IComment } from 'core/shared/models/Comment';
+import { convertServerComment } from '../serverModel/Comments/converters';
 
-export type ICommentsService<Comment extends IComment> = Omit<
-  CommentsService<Comment>,
-  keyof BaseDataService
->;
-
-export default class CommentsService<
-  Comment extends IComment
-> extends BaseDataService {
+export default class CommentsService extends BaseDataService {
   constructor() {
     super();
   }
@@ -18,7 +11,7 @@ export default class CommentsService<
   public async addComment(
     entityId: EntityId,
     message: string
-  ): Promise<Comment> {
+  ): Promise<IComment> {
     const response = await this.post({
       url: '/v1/modeldb/comment/addExperimentRunComment',
       data: {
@@ -26,7 +19,7 @@ export default class CommentsService<
         entity_id: entityId,
       },
     });
-    return convertServerComment(response.data.comment) as Comment;
+    return convertServerComment(response.data.comment);
   }
 
   public async deleteComment(entityId: EntityId, id: string): Promise<void> {
@@ -51,7 +44,7 @@ export default class CommentsService<
     });
   }
 
-  public async loadComments(entityId: string): Promise<Comment[]> {
+  public async loadComments(entityId: string): Promise<IComment[]> {
     return this.get({
       url: `/v1/modeldb/comment/getExperimentRunComments`,
       config: { params: { entity_id: entityId } },

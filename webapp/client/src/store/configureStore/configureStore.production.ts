@@ -1,9 +1,9 @@
+import { ApolloClient } from 'apollo-boost';
 import { routerMiddleware } from 'connected-react-router';
 import { History } from 'history';
 import { AnyAction, applyMiddleware, createStore, Store } from 'redux';
 import reduxThunk, { ThunkMiddleware } from 'redux-thunk';
 
-import * as Comments from 'features/comments';
 import ServiceFactory from 'services/ServiceFactory';
 
 import {
@@ -11,7 +11,6 @@ import {
   IApplicationState,
   IThunkActionDependencies,
 } from '../store';
-import { ApolloClient } from 'apollo-boost';
 
 export default function configureStore(
   history: History,
@@ -22,7 +21,6 @@ export default function configureStore(
   const reduxThunkExtraArgument: IThunkActionDependencies = {
     ServiceFactory,
     history,
-    makeCommentsService: Comments.makeCommentsService,
     apolloClient,
   };
 

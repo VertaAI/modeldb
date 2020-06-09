@@ -1,9 +1,9 @@
 import { action } from 'typesafe-actions';
 
 import normalizeError from 'core/shared/utils/normalizeError';
+import { ActionResult } from 'store/store';
 
-import { EntityId, IComment } from '../Model';
-import { ActionResult } from './deps';
+import { EntityId, IComment } from '../../../core/shared/models/Comment';
 import {
   addCommentActionTypes,
   deleteCommentActionTypes,
@@ -29,11 +29,11 @@ export const loadComments = (
 ): ActionResult<void, ILoadCommentsActions> => async (
   dispatch,
   getState,
-  { makeCommentsService }
+  { ServiceFactory }
 ) => {
   dispatch(action(loadCommentsActionTypes.REQUEST, entityId));
 
-  await makeCommentsService({ dispatch, getState })
+  await ServiceFactory.getCommentsService()
     .loadComments(entityId)
     .then(res => {
       dispatch(
@@ -56,11 +56,11 @@ export const addComment = (
 ): ActionResult<void, IAddCommentActions> => async (
   dispatch,
   getState,
-  { makeCommentsService }
+  { ServiceFactory }
 ) => {
   dispatch(action(addCommentActionTypes.REQUEST, entityId));
 
-  await makeCommentsService({ dispatch, getState })
+  await ServiceFactory.getCommentsService()
     .addComment(entityId, message)
     .then(comment => {
       dispatch(action(addCommentActionTypes.SUCCESS, { entityId, comment }));
@@ -76,11 +76,11 @@ export const deleteComment = (
 ): ActionResult<void, IDeleteCommentActions> => async (
   dispatch,
   getState,
-  { makeCommentsService }
+  { ServiceFactory }
 ) => {
   dispatch(action(deleteCommentActionTypes.REQUEST, { entityId, commentId }));
 
-  await makeCommentsService({ dispatch, getState })
+  await ServiceFactory.getCommentsService()
     .deleteComment(entityId, commentId)
     .then(_ => {
       dispatch(
@@ -97,9 +97,9 @@ export const deleteComment = (
     });
 };
 
-export const setEntitiesComments = <Comment extends IComment>(
-  payload: ISetEntitiesComments<Comment>['payload']
-): ISetEntitiesComments<Comment> => ({
+export const setEntitiesComments = (
+  payload: ISetEntitiesComments['payload']
+): ISetEntitiesComments => ({
   type: setEntitiesCommentsActionType.SET_ENTITIES_COMMENTS,
   payload,
 });

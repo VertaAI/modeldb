@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import ModelRecord from 'core/shared/models/ModelRecord';
 import ProjectEntityDescriptionManager from 'features/descriptionManager/view/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
 import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
-import { ShowCommentsButton } from 'features/comments';
+import { ShowCommentsButtonWithAuthor } from 'features/comments';
 import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
 import { Project } from 'core/shared/models/Project';
 import { TextWithCopyTooltip } from 'core/shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
@@ -60,7 +60,7 @@ const SummarySection = ({ modelRecord, project }: ILocalProps) => {
             labelAlign="center"
             withValueTruncation={false}
           >
-            <ShowCommentsButton
+            <ShowCommentsButtonWithAuthor
               entityInfo={{ id: modelRecord.id, name: modelRecord.name }}
               buttonType="badge"
             />

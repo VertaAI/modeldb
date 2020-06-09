@@ -5,12 +5,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { EntityId, IComment } from 'core/features/comments/Model';
+import { EntityId, IComment } from 'core/shared/models/Comment';
 import {
   deleteComment,
   selectIsDeletingComment,
   ICommentsRootState,
-} from 'core/features/comments/store';
+} from 'features/comments/store';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 
 import { IWithCommentSettings } from '../../../types';

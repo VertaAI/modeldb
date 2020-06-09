@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Reducer } from 'redux';
 
-import { EntityId, IComment } from 'core/features/comments/Model';
+import { EntityId, IComment } from 'core/shared/models/Comment';
 
 import {
   addCommentActionTypes,

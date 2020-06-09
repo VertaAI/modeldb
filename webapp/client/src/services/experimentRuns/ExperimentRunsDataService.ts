@@ -1,7 +1,6 @@
 import { JsonConvert } from 'json2typescript';
 import * as R from 'ramda';
 
-import * as Comments from 'features/comments';
 import { BaseDataService } from 'services/BaseDataService';
 import { IArtifact } from 'core/shared/models/Artifact';
 import {
@@ -34,6 +33,7 @@ import {
 } from './types';
 import { IWorkspace } from 'core/shared/models/Workspace';
 import { RepositoriesDataService } from 'services/versioning/repositories';
+import { convertServerComment } from 'services/serverModel/Comments/converters';
 
 export const chartsPageSettings = {
   pageSize: 50,
@@ -336,7 +336,7 @@ const convertServerExperimentRun = async (
   const result: ILoadModelRecordResult = {
     experimentRun: modelRecord,
     comments: (hydrated_experiment_run.comments || []).map((comment: any) =>
-      Comments.convertServerComment(comment)
+      convertServerComment(comment)
     ),
   };
   return result;

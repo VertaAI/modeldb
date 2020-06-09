@@ -3,13 +3,13 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { EntityId } from 'core/features/comments/Model';
+import { EntityId } from 'core/shared/models/Comment';
 import {
   addComment,
   selectIsAddedComment,
   selectIsAddingComment,
   ICommentsRootState,
-} from 'core/features/comments/store';
+} from 'features/comments/store';
 import { validateNotEmpty } from 'core/shared/utils/validators';
 import Button from 'core/shared/view/elements/Button/Button';
 import MuiTextInput from 'core/shared/view/elements/MuiTextInput/MuiTextInput';

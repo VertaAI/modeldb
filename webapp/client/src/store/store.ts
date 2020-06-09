@@ -90,11 +90,7 @@ export const createRootReducer = (history: History) =>
   });
 
 export interface IThunkActionDependencies
-  extends Filter.IThunkActionDependencies,
-    Comment.IThunkActionDependencies<
-      IApplicationState,
-      Comment.Model.IComment
-    > {
+  extends Filter.IThunkActionDependencies {
   ServiceFactory: typeof ServiceFactory;
   history: History;
   apolloClient: ApolloClient<any>;

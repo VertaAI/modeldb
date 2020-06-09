@@ -4,14 +4,14 @@ import { bindActionCreators, Dispatch } from 'redux';
 
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { IComment } from 'core/features/comments/Model';
+import { IComment } from 'core/shared/models/Comment';
 import {
   loadComments,
   resetEntityComments,
   selectEntityComments,
   selectIsLoadingEntityComments,
   ICommentsRootState,
-} from 'core/features/comments/store';
+} from 'features/comments/store';
 
 import {
   IRequiredEntityInfo,

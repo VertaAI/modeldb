@@ -1,9 +1,9 @@
-import axios, { AxiosError } from 'axios';
 import { ApolloClient } from 'apollo-boost';
+import axios, { AxiosError } from 'axios';
 
 import HighLevelSearchService from 'services/highLevelSearch/HighLevelSearchService';
 
-import { RepositoriesDataService } from './versioning/repositories';
+import { CommentsService } from './comments';
 import { DatasetsDataService } from './datasets';
 import { DatasetVersionsDataService } from './datasetVersions';
 import { DescActionDataService } from './descriptionActions';
@@ -11,6 +11,7 @@ import { ExperimentRunsDataService } from './experimentRuns';
 import { ExperimentsDataService } from './experiments';
 import { ProjectDataService } from './projects';
 import { TagActionDataService } from './tagActions';
+import { RepositoriesDataService } from './versioning/repositories';
 
 export default class ServiceFactory {
   public static addReponseErrorInterceptor(
@@ -54,6 +55,10 @@ export default class ServiceFactory {
 
   public static getRepositoriesService() {
     return new RepositoriesDataService();
+  }
+
+  public static getCommentsService() {
+    return new CommentsService();
   }
 
   public static getHighLevelSearchService(apolloClient: ApolloClient<any>) {

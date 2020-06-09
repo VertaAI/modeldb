@@ -1,7 +1,6 @@
-import { DataWithPagination } from 'core/shared/models/Pagination';
+import { IComment } from 'core/shared/models/Comment';
 import ModelRecord from 'core/shared/models/ModelRecord';
-
-import * as Comments from 'core/features/comments';
+import { DataWithPagination } from 'core/shared/models/Pagination';
 
 export type ILoadExperimentRunsResult = DataWithPagination<
   ILoadModelRecordResult
@@ -9,7 +8,7 @@ export type ILoadExperimentRunsResult = DataWithPagination<
 
 export interface ILoadModelRecordResult {
   experimentRun: ModelRecord;
-  comments: Comments.Model.IComment[];
+  comments: IComment[];
 }
 
 export interface ILazyLoadChartData {

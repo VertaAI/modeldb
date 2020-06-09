@@ -8,7 +8,7 @@ import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentU
 import { ICommunication } from 'core/shared/utils/redux/communication';
 import DeleteFAIWithLabel from 'core/shared/view/elements/DeleteFaiWithLabel/DeleteFaiWithLabel';
 import GroupFai from 'core/shared/view/elements/GroupFai/GroupFai';
-import { ShowCommentsButton } from 'features/comments';
+import { ShowCommentsButtonWithAuthor } from 'features/comments';
 import {
   deleteExperimentRun,
   selectDeletingExperimentRun,
@@ -75,7 +75,7 @@ class ActionsColumn extends React.PureComponent<AllProps> {
                 />
               ),
               requiredProps => (
-                <ShowCommentsButton
+                <ShowCommentsButtonWithAuthor
                   buttonType="faiWithLabel"
                   entityInfo={{ id, name }}
                   {...requiredProps}

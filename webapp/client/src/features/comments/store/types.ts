@@ -6,15 +6,15 @@ import {
   makeCommunicationActionTypes,
 } from 'core/shared/utils/redux/communication';
 
-import { EntityId, IComment } from '../Model';
+import { EntityId, IComment } from '../../../core/shared/models/Comment';
 
-export interface ICommentsRootState<Comment extends IComment = IComment> {
-  comments: ICommentsState<Comment>;
+export interface ICommentsRootState {
+  comments: ICommentsState;
 }
 
-export interface ICommentsState<Comment extends IComment = IComment> {
+export interface ICommentsState {
   data: {
-    entitiesComments: IEntitiesComments<Comment>;
+    entitiesComments: IEntitiesComments;
   };
   communications: {
     loadingComments: ICommunicationById<EntityId>;
@@ -23,10 +23,7 @@ export interface ICommentsState<Comment extends IComment = IComment> {
   };
 }
 
-export type IEntitiesComments<Comment extends IComment = IComment> = Record<
-  EntityId,
-  Comment[] | undefined
->;
+export type IEntitiesComments = Record<EntityId, IComment[] | undefined>;
 
 export const loadCommentsActionTypes = makeCommunicationActionTypes({
   REQUEST: '@@comments/LOAD_COMMENTS_REQUEST',
@@ -77,9 +74,9 @@ export interface IResetEntityComments {
 export enum setEntitiesCommentsActionType {
   SET_ENTITIES_COMMENTS = '@@comments/SET_ENTITIES_COMMENTS',
 }
-export interface ISetEntitiesComments<Comment extends IComment> {
+export interface ISetEntitiesComments {
   type: setEntitiesCommentsActionType.SET_ENTITIES_COMMENTS;
-  payload: Array<{ entityId: string; comments: Comment[] }>;
+  payload: Array<{ entityId: string; comments: IComment[] }>;
 }
 
 export type FeatureAction =
@@ -87,4 +84,4 @@ export type FeatureAction =
   | IAddCommentActions
   | IDeleteCommentActions
   | IResetEntityComments
-  | ISetEntitiesComments<IComment>;
+  | ISetEntitiesComments;

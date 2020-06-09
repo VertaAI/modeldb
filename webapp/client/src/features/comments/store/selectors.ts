@@ -1,4 +1,4 @@
-import { EntityId } from 'core/features/comments/Model';
+import { EntityId } from 'core/shared/models/Comment';
 
 import { ICommentsState, ICommentsRootState } from './types';
 

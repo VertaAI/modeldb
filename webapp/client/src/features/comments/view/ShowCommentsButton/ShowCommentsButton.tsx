@@ -1,40 +1,129 @@
+import { bind } from 'decko';
 import * as React from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators, Dispatch } from 'redux';
+import * as R from 'ramda';
 
+import { IComment } from 'core/shared/models/Comment';
 import {
-  ShowCommentsButton,
+  loadComments,
+  selectEntityComments,
+  ICommentsRootState,
+} from 'features/comments/store';
+import FaiWithLabel from 'core/shared/view/elements/FaiWithLabel/FaiWithLabel';
+
+import OverflowingComments from './OverflowingComments/OverflowingComments';
+import styles from './ShowCommentsButton.module.css';
+import {
+  IRequiredEntityInfo,
   IWithAddCommentFormSettings,
   IWithCommentSettings,
-} from 'core/features/comments';
-import { IComment } from 'core/features/comments/Model';
-import { unknownUser } from 'core/shared/models/User';
+} from './types';
+import Badge from './shared/Badge/Badge';
 
-import CommentUserAvatar from './CommentUserAvatar/CommentUserAvatar';
+type ILocalProps = (
+  | {
+      buttonType: 'faiWithLabel';
+      entityInfo: IRequiredEntityInfo;
+      onHover(): void;
+      onUnhover(): void;
+    }
+  | {
+      buttonType: 'badge';
+      entityInfo: IRequiredEntityInfo;
+    }) &
+  IWithAddCommentFormSettings &
+  IWithCommentSettings;
 
-type AllProps = Omit<
-  React.ComponentProps<typeof ShowCommentsButton>,
-  'addCommentFormSettings' | 'commentSettings'
->;
+interface IPropsFromState {
+  comments: IComment[] | undefined;
+}
 
-class ShowCommentsButtonWithAuthorButton extends React.PureComponent<AllProps> {
-  private commentSettings: IWithCommentSettings<IComment>['commentSettings'] = {
-    renderAuthorName: () => unknownUser.username,
-    canCurrentUserDeleteComment: () => true,
-    renderAuthorAvatar: () => <CommentUserAvatar user={unknownUser} />,
-  };
+interface IActionProps {
+  loadComments: typeof loadComments;
+}
 
-  private addCommentFormSettings: IWithAddCommentFormSettings['addCommentFormSettings'] = {
-    renderCurrentUserAvatar: () => <CommentUserAvatar user={unknownUser} />,
+type AllProps = ILocalProps & IPropsFromState & IActionProps;
+
+interface ILocalState {
+  isShowComments: boolean;
+}
+
+class ShowCommentsButton<Comment extends IComment> extends React.PureComponent<
+  AllProps,
+  ILocalState
+> {
+  public state: ILocalState = {
+    isShowComments: false,
   };
 
   public render() {
     return (
-      <ShowCommentsButton
-        {...this.props as any}
-        commentSettings={this.commentSettings}
-        addCommentFormSettings={this.addCommentFormSettings}
-      />
+      <div className={styles.root}>
+        {this.props.buttonType === 'badge' ? (
+          <div className={styles.badge} onClick={this.showComments}>
+            <Badge count={(this.props.comments || []).length} />
+          </div>
+        ) : (
+          <>
+            <FaiWithLabel
+              theme="blue"
+              iconType={'comment'}
+              label={'show comments'}
+              dataTest="show-comments-button"
+              onClick={this.showComments}
+              onHover={this.props.onHover}
+              onUnhover={this.props.onUnhover}
+            />
+            <div className={styles.miniCommentNumber}>
+              {this.props.comments && (
+                <span data-test="show-comments-button-badge">
+                  {this.props.comments.length}
+                </span>
+              )}
+            </div>
+          </>
+        )}
+        {this.state.isShowComments && (
+          <OverflowingComments
+            entityInfo={this.props.entityInfo}
+            addCommentFormSettings={this.props.addCommentFormSettings}
+            commentSettings={this.props.commentSettings}
+            onClose={this.closeComments}
+          />
+        )}
+      </div>
     );
+  }
+
+  @bind
+  private showComments() {
+    this.setState({ isShowComments: true });
+  }
+  @bind
+  private closeComments() {
+    this.setState({ isShowComments: false });
   }
 }
 
-export default ShowCommentsButtonWithAuthorButton;
+const mapStateToProps = (
+  state: ICommentsRootState,
+  localProps: ILocalProps
+): IPropsFromState => {
+  return {
+    comments: selectEntityComments(state, localProps.entityInfo.id),
+  };
+};
+
+const mapDispatchToProps = (dispatch: Dispatch): IActionProps =>
+  bindActionCreators(
+    {
+      loadComments,
+    },
+    dispatch
+  );
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ShowCommentsButton);
