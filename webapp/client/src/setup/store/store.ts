@@ -1,61 +1,45 @@
+import { ApolloClient } from 'apollo-boost';
 import { connectRouter, RouterState } from 'connected-react-router';
 import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
-import { ApolloClient } from 'apollo-boost';
 
 import ServiceFactory from 'services/ServiceFactory';
 
-import * as HighLevelSearch from 'features/highLevelSearch';
-import * as CompareEntities from 'features/compareEntities';
-import * as RepositoryNavigation from 'features/versioning/repositoryNavigation';
-import * as ExperimentRunsTableConfig from 'features/experimentRunsTableConfig';
-import * as Filter from 'features/filter';
-import * as Layout from 'features/layout';
+import * as ArtifactManager from 'features/artifactManager/store';
 import * as Comment from 'features/comments';
-import * as Workspaces from 'features/workspaces/store';
-
-import {
-  IArtifactManagerState,
-  artifactManagerReducer,
-} from 'features/artifactManager/store';
-import { IDatasetsState, datasetsReducer } from 'features/datasets/store';
-import {
-  IDatasetVersionsState,
-  datasetVersionsReducer,
-} from 'features/datasetVersions/store';
-import {
-  experimentRunsReducer,
-  IExperimentRunsState,
-} from 'features/experimentRuns/store';
-import {
-  IExperimentsState,
-  experimentsReducer,
-} from 'features/experiments/store';
-import {
-  IProjectCreationState,
-  projectCreationReducer,
-} from 'features/projectCreation/store';
-import { IProjectsState, projectsReducer } from 'features/projects/store';
-import * as TagsManagers from 'features/tagsManager';
+import * as CompareEntities from 'features/compareEntities';
+import * as Datasets from 'features/datasets/store';
+import * as DatasetVersions from 'features/datasetVersions/store';
 import * as DescriptionManager from 'features/descriptionManager';
+import * as ExperimentRuns from 'features/experimentRuns/store';
+import * as ExperimentRunsTableConfig from 'features/experimentRunsTableConfig';
+import * as Experiments from 'features/experiments/store';
+import * as Filter from 'features/filter';
+import * as HighLevelSearch from 'features/highLevelSearch';
+import * as Layout from 'features/layout';
+import * as ProjectCreation from 'features/projectCreation/store';
+import * as Projects from 'features/projects/store';
+import * as TagsManagers from 'features/tagsManager';
+import * as RepositoryNavigation from 'features/versioning/repositoryNavigation';
+import * as Workspaces from 'features/workspaces/store';
 
 export interface IApplicationState
   extends Filter.IFilterRootState,
     Comment.ICommentsRootState,
     ExperimentRunsTableConfig.IExperimentRunsTableConfigRootState,
     Layout.ILayoutRootState {
-  experiments: IExperimentsState;
+  experiments: Experiments.IExperimentsState;
   compareEntities: CompareEntities.ICompareEntitiesState;
-  experimentRuns: IExperimentRunsState;
-  projectCreation: IProjectCreationState;
-  projects: IProjectsState;
+  experimentRuns: ExperimentRuns.IExperimentRunsState;
+  projectCreation: ProjectCreation.IProjectCreationState;
+  projects: Projects.IProjectsState;
   router: RouterState;
   tagsManager: TagsManagers.ITagsManagerState;
   descriptionManager: DescriptionManager.IDescriptionManagerState;
-  artifactManager: IArtifactManagerState;
-  datasets: IDatasetsState;
-  datasetVersions: IDatasetVersionsState;
+  artifactManager: ArtifactManager.IArtifactManagerState;
+  datasets: Datasets.IDatasetsState;
+  datasetVersions: DatasetVersions.IDatasetVersionsState;
   workspaces: Workspaces.IWorkspaces;
   repositoryNavigation: RepositoryNavigation.types.IRepositoryNavigationState;
   highLevelSearch: HighLevelSearch.types.IHighLevelSearchState;
@@ -68,23 +52,22 @@ export interface IConnectedReduxProps<A extends Action = any> {
 
 export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
-    layout: Layout.layoutReducer,
-    experiments: experimentsReducer,
-    comments: Comment.commentsReducer,
-    compareEntities: CompareEntities.compareModelsReducer,
-    experimentRunsTableConfig:
-      ExperimentRunsTableConfig.experimentRunsTableConfigReducer,
-    experimentRuns: experimentRunsReducer,
-    filters: Filter.filtersReducer,
-    projectCreation: projectCreationReducer,
-    projects: projectsReducer,
+    layout: Layout.reducer,
+    experiments: Experiments.reducer,
+    comments: Comment.reducer,
+    compareEntities: CompareEntities.reducer,
+    experimentRunsTableConfig: ExperimentRunsTableConfig.reducer,
+    experimentRuns: ExperimentRuns.reducer,
+    filters: Filter.reducer,
+    projectCreation: ProjectCreation.reducer,
+    projects: Projects.reducer,
     router: connectRouter(history),
-    tagsManager: TagsManagers.tagActionReducer,
+    tagsManager: TagsManagers.reducer,
     descriptionManager: DescriptionManager.reducer,
-    artifactManager: artifactManagerReducer,
-    datasets: datasetsReducer,
-    datasetVersions: datasetVersionsReducer,
-    workspaces: Workspaces.workspacesReducer,
+    artifactManager: ArtifactManager.reducer,
+    datasets: Datasets.reducer,
+    datasetVersions: DatasetVersions.reducer,
+    workspaces: Workspaces.reducer,
     repositoryNavigation: RepositoryNavigation.reducer,
     highLevelSearch: HighLevelSearch.reducer,
   });

@@ -11,7 +11,7 @@ const experimentRunsTableConfigInitialState: IExperimentRunsTableConfigState = {
   columnConfig: defaultColumnConfig,
 };
 
-export const experimentRunsTableConfigReducer: Reducer<
+export const reducer: Reducer<
   IExperimentRunsTableConfigState,
   IFeatureAction
 > = (state = experimentRunsTableConfigInitialState, action) => {

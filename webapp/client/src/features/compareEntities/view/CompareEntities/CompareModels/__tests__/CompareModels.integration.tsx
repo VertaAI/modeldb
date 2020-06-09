@@ -22,7 +22,7 @@ import User from 'shared/models/User';
 import ExperimentRunsDataService from 'services/experimentRuns/ExperimentRunsDataService';
 import {
   IProjectsState,
-  projectsReducer,
+  reducer,
   loadProjectActionTypes,
 } from 'features/projects/store';
 import makeMountComponentWithPredefinedData from 'shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
@@ -35,7 +35,7 @@ import { makeGithubRemoteRepoUrl } from 'shared/utils/github/github';
 jest.mock('services/experimentRuns/ExperimentRunsDataService');
 
 const getProjectsState = (project: Project): IProjectsState => {
-  return projectsReducer(
+  return reducer(
     undefined,
     action(loadProjectActionTypes.SUCCESS, { project })
   );

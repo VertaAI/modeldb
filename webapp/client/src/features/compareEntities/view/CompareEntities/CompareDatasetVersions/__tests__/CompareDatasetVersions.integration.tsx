@@ -17,7 +17,7 @@ import {
 import DatasetVersionsDataService from 'services/datasetVersions/DatasetVersionsDataService';
 import {
   IDatasetsState,
-  datasetsReducer,
+  reducer,
   loadDatasetActionTypes,
 } from 'features/datasets';
 import makeMountComponentWithPredefinedData from 'shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
@@ -32,7 +32,7 @@ import CompareDatasetVersionsTable from '../CompareDatasetVersionsTable/CompareD
 jest.mock('services/datasetVersions/DatasetVersionsDataService');
 
 const getDatasetsState = (dataset: Dataset): IDatasetsState => {
-  return datasetsReducer(
+  return reducer(
     undefined,
     action(loadDatasetActionTypes.SUCCESS, { dataset })
   );
