@@ -13,7 +13,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "labels_mapping")
-public class LabelsMappingEntity {
+public class LabelsMappingEntity implements LabelsMappingEntityBase {
   public LabelsMappingEntity() {}
 
   public LabelsMappingEntity(IdentificationType id, String label) {
@@ -30,6 +30,11 @@ public class LabelsMappingEntity {
 
   public LabelMappingId getId() {
     return id;
+  }
+
+  @Override
+  public String getLabel() {
+    return id.getLabel();
   }
 
   @Embeddable

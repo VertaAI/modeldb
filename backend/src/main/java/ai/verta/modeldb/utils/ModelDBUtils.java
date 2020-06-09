@@ -26,12 +26,7 @@ import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ShareViaEnum;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.Any;
-import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
-import com.google.protobuf.MessageOrBuilder;
-import com.google.protobuf.Value;
+import com.google.protobuf.*;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -536,6 +531,10 @@ public class ModelDBUtils {
 
   public static String getLocationWithSlashOperator(List<String> locations) {
     return String.join("/", locations);
+  }
+
+  public static String getJoinedLocation(ProtocolStringList location) {
+    return String.join("#", location);
   }
 
   public interface RetryCallInterface<T> {

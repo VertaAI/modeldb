@@ -383,4 +383,23 @@
 			<column name="repository_id" type="int8"/>
 		</addColumn>
 	</changeSet>
+	<changeSet id="add-description-blob-table" author="lezhevg">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="labels_mapping_description"/>
+			</not>
+		</preConditions>
+		<createTable tableName="labels_mapping_description">
+			<column name="repository_id" type="int8">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="commit_sha" type="varchar(256)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="location" type="varchar(256)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="label" type="TEXT"/>
+		</createTable>
+	</changeSet>
 </databaseChangeLog>
