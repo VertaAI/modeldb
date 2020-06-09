@@ -90,7 +90,7 @@ public class DatasetContainer extends BlobContainer {
                 this, ModelDBConstants.ATTRIBUTES, blob.getAttributesList());
         attributeEntities.forEach(
             attributeEntity -> {
-              attributeEntity.setBlob_hash(blobHash);
+              attributeEntity.setEntity_hash(blobHash);
               session.saveOrUpdate(attributeEntity);
             });
       } catch (InvalidProtocolBufferException e) {
