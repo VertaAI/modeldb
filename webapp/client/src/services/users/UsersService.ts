@@ -3,7 +3,7 @@ import * as R from 'ramda';
 
 import { BaseDataService } from 'services/BaseDataService';
 import User, { unknownUser } from 'core/shared/models/User';
-import { convertServerUser } from 'core/services/serverModel/User/converters';
+import { convertServerUser } from 'services/serverModel/User/converters';
 
 export default class UsersService extends BaseDataService {
   constructor() {

@@ -23,7 +23,7 @@ import makeLoadProjectsRequest from './responseRequest/makeLoadProjectsRequest';
 import {
   convertServerPaginationResponse,
   IServerPaginatedResponse,
-} from 'core/services/serverModel/Pagination/Pagination';
+} from 'services/serverModel/Pagination/Pagination';
 
 export default class ProjectDataService extends BaseDataService {
   public async createProject(

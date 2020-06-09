@@ -7,7 +7,7 @@ import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
 import * as Experiment from 'core/shared/models/Experiment';
 import { convertServerCodeVersion } from 'services/serverModel/CodeVersion/converters';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
-import { convertServerUser } from 'core/services/serverModel/User/converters';
+import { convertServerUser } from 'services/serverModel/User/converters';
 import * as EntityAlreadyExistError from '../../core/services/shared/EntityAlreadyExistError';
 
 import { BaseDataService } from 'services/BaseDataService';
@@ -20,7 +20,7 @@ import { ISorting } from 'core/shared/models/Sorting';
 import {
   IServerPaginatedResponse,
   convertServerPaginationResponse,
-} from 'core/services/serverModel/Pagination/Pagination';
+} from 'services/serverModel/Pagination/Pagination';
 
 export default class ExperimentsDataService extends BaseDataService {
   constructor() {

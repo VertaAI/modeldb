@@ -23,7 +23,7 @@ import {
 } from 'services/serverModel/CodeVersion/converters';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
 
-import { convertServerUser } from '../../core/services/serverModel/User/converters';
+import { convertServerUser } from '../serverModel/User/converters';
 import makeLoadExperimentRunsRequest, {
   makeLoadExperimentRunsByWorkspaceRequest,
 } from './responseRequest/makeLoadExperimentRunsRequest';

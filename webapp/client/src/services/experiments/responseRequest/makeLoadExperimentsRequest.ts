@@ -2,8 +2,8 @@ import { IServerFiltersInRequest } from 'core/features/filter/service/serverMode
 import { IFilterData } from 'core/features/filter/Model';
 import { IPagination } from 'core/shared/models/Pagination';
 import { makeAddFiltersToRequestWithDefaultFilters } from 'features/filter/service/serverModel/Filter/converters';
-import { addPaginationToRequest } from 'core/services/serverModel/Pagination/converters';
-import { IServerPaginationInRequest } from 'core/services/serverModel/Pagination/Pagination';
+import { addPaginationToRequest } from 'services/serverModel/Pagination/converters';
+import { IServerPaginationInRequest } from 'services/serverModel/Pagination/Pagination';
 import { IWorkspace } from 'core/shared/models/Workspace';
 import { addWorkspaceName } from 'services/serverModel/Workspace/converters';
 import { ISorting } from 'core/shared/models/Sorting';

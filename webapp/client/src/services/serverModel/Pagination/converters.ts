@@ -15,3 +15,12 @@ export const convertClientPagination = (pagination: IPagination) => {
     page_limit: pagination.pageSize,
   };
 };
+
+export const convertClientPaginationToNamespacedServerPagination = (
+  pagination: Omit<IPagination, 'totalCount'>
+) => {
+  return {
+    'pagination.page_limit': pagination.pageSize,
+    'pagination.page_number': pagination.currentPage + 1,
+  };
+};

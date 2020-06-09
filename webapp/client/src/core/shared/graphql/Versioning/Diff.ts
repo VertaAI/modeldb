@@ -1,4 +1,4 @@
-import { convertServerDiffsToClient } from 'core/services/serverModel/Versioning/CompareCommits/converters';
+import { convertServerDiffsToClient } from 'services/serverModel/Versioning/CompareCommits/converters';
 
 export const convertGraphqlDiffs = (diffs: string[] | null) => {
   return convertServerDiffsToClient(

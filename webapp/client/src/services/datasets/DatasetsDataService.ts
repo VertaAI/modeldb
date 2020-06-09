@@ -8,7 +8,7 @@ import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
 import * as Dataset from 'core/shared/models/Dataset';
 import { IWorkspace } from 'core/shared/models/Workspace';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
-import { convertServerUser } from 'core/services/serverModel/User/converters';
+import { convertServerUser } from 'services/serverModel/User/converters';
 
 import { convertServerShortWorkspaceToClient } from 'services/serverModel/Workspace/converters';
 import * as EntityAlreadyExistError from '../../core/services/shared/EntityAlreadyExistError';
@@ -17,7 +17,7 @@ import { ISorting } from 'core/shared/models/Sorting';
 import {
   convertServerPaginationResponse,
   IServerPaginatedResponse,
-} from 'core/services/serverModel/Pagination/Pagination';
+} from 'services/serverModel/Pagination/Pagination';
 import { unknownUser } from 'core/shared/models/User';
 
 const convertDatasetVisibilityToServer = (

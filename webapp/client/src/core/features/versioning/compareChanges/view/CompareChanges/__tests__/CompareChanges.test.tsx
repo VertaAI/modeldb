@@ -3,8 +3,8 @@ import { ReactWrapper } from 'enzyme';
 import React from 'react';
 import { Switch, Route } from 'react-router';
 
-import { IServerCodeBlobDiff } from 'core/services/serverModel/Versioning/CompareCommits/convertServerCodeDiff';
-import { IServerBlobDiff } from 'core/services/serverModel/Versioning/CompareCommits/ServerDiff';
+import { IServerCodeBlobDiff } from 'services/serverModel/Versioning/CompareCommits/convertServerCodeDiff';
+import { IServerBlobDiff } from 'services/serverModel/Versioning/CompareCommits/ServerDiff';
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import {
   CommitPointer,
