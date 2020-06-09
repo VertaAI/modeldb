@@ -126,8 +126,8 @@ class TestCommit extends FunSuite {
 
     try {
       val newId = f.commit.update("abc/def", f.pathBlob)
-              .flatMap(_.save("Some msg"))
-              .get.id.get
+                          .flatMap(_.save("Some msg"))
+                          .get.id.get
 
       val newCommit = f.repo.getCommitById(newId).get
       val getAttempt = newCommit.get("abc/def").get
