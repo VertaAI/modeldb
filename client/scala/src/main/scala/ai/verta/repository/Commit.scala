@@ -31,7 +31,7 @@ class Commit(
 
   /** Retrieves the blob at path from this commit
    *  @param path location of a blob
-   *  @return the blob. If not existed, fails.
+   *  @return The blob. If not existed, or retrieving blobs from backend fails, return a failure.
    */
   def get(path: String)(implicit ec: ExecutionContext): Try[Blob] =
     getVersioningBlob(path).map(versioningBlobToBlob)
@@ -54,7 +54,7 @@ class Commit(
    *  If path is already in this Commit, it will be updated to the new blob
    *  @param path Location to add blob to
    *  @param blob Instance of Blob subclass.
-   *  @return whether the update attempt succeeds.
+   *  @return The new commit, if succeeds.
    */
   def update(path: String, blob: Blob)(implicit ec: ExecutionContext): Try[Commit] = {
     loadBlobs().map(_ => {
@@ -101,11 +101,11 @@ class Commit(
         case None => commit.parent_shas.get
       }
 
-      Try(ids.map(id => loadBlobsFromId(id)).map(_.get).flatten) match {
+      Try(ids.map(id => loadBlobsFromId(id)).map(_.get).reduce(_ ++ _)) match {
         case Failure(e) => Failure(e)
-        case Success(list) => Success {
+        case Success(map) => Success {
           loadedFromRemote = true
-          blobs = list.toMap
+          blobs = map
         }
       }
     }
@@ -118,15 +118,15 @@ class Commit(
    */
   private def loadBlobsFromId(
     id: String
-  )(implicit ec: ExecutionContext): Try[List[Tuple2[String, VersioningBlob]]] = {
+  )(implicit ec: ExecutionContext): Try[Map[String, VersioningBlob]] = {
     clientSet.versioningService.ListCommitBlobs2(
       commit_sha = id,
       repository_id_repo_id = repo.id
     ) // Try[VersioningListCommitBlobsRequestResponse]
     .map(_.blobs) // Try[Option[List[VersioningBlobExpanded]]]
     .map(ls =>
-      if (ls.isEmpty) List()
-      else ls.get.map(blob => blob.location.get.mkString("/") -> blob.blob.get)
+      if (ls.isEmpty) Map[String, VersioningBlob]()
+      else ls.get.map(blob => blob.location.get.mkString("/") -> blob.blob.get).toMap
     )
   }
 
