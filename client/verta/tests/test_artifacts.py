@@ -114,8 +114,7 @@ class TestArtifacts:
 
             # no committed artifact parts yet
             response = _utils.make_request("GET", get_parts_url, experiment_run._conn, params=get_parts_params)
-            with pytest.raises(requests.HTTPError):
-                _utils.raise_for_http_error(response)
+            assert response.status_code == 404
             assert "Can't find specified artifact" in response.text
 
             # log artifact
@@ -126,7 +125,7 @@ class TestArtifacts:
 
             # artifact parts ModelDB entry exists
             response = _utils.make_request("GET", get_parts_url, experiment_run._conn, params=get_parts_params)
-            _utils.raise_for_http_error(response)
+            _utils.raise_for_http_error(response)  # no error
 
     def test_empty(self, experiment_run, strs):
         """uploading empty data, e.g. an empty file, raises an error"""
