@@ -461,7 +461,7 @@
       ],
       "default": "UNKNOWN"
     },
-    "ModelResourceEnumModelDBServiceResourceTypes": {
+    "ModelDBResourceEnumModelDBServiceResourceTypes": {
       "type": "string",
       "enum": [
         "UNKNOWN",
@@ -693,7 +693,7 @@
       "type": "object",
       "properties": {
         "modeldb_service_resource_type": {
-          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+          "$ref": "#/definitions/ModelDBResourceEnumModelDBServiceResourceTypes"
         }
       }
     },
