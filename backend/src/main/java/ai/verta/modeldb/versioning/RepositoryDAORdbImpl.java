@@ -345,21 +345,21 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     } else {
       repositoryEntity = getRepositoryById(session, request.getId(), true);
       if (!repository.getName().isEmpty()
-              && !repositoryEntity.getName().equals(repository.getName())) {
+          && !repositoryEntity.getName().equals(repository.getName())) {
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
-                session,
-                SHORT_NAME,
-                GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
-                RepositoryEntity.class.getSimpleName(),
-                "repositoryName",
-                repository.getName(),
-                ModelDBConstants.WORKSPACE_ID,
-                repositoryEntity.getWorkspace_id(),
-                WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
-                LOGGER);
+            session,
+            SHORT_NAME,
+            GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
+            RepositoryEntity.class.getSimpleName(),
+            "repositoryName",
+            repository.getName(),
+            ModelDBConstants.WORKSPACE_ID,
+            repositoryEntity.getWorkspace_id(),
+            WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
+            LOGGER);
       }
-        repositoryEntity.update(request);
-      }
+      repositoryEntity.update(request);
+    }
     session.beginTransaction();
     session.saveOrUpdate(repositoryEntity);
     if (create) {
