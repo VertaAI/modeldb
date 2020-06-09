@@ -14,6 +14,7 @@ import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -96,28 +97,27 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       Session session,
       IdentificationType id,
       List<String> labels,
-      Function4<Object, Object, String, Object> processLabel) {
+      Function4<Supplier<Object>, Object, String, Object> processLabel) {
     if (id.getIdType() == VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION) {
       String label = labels.get(0);
-      LabelsMappingDescriptionEntity labelsMappingDescriptionEntity =
-          new LabelsMappingDescriptionEntity(id, label);
-      LabelsMappingDescriptionEntity existingLabelsMappingEntity =
-          session.get(LabelsMappingDescriptionEntity.class, labelsMappingDescriptionEntity.getId());
-      processLabel.apply(labelsMappingDescriptionEntity, existingLabelsMappingEntity, label);
+      LabelsMappingDescriptionEntity.LabelMappingId id0 = LabelsMappingDescriptionEntity.createId(id);
+      LabelsMappingEntity existingLabelsMappingEntity =
+              session.get(LabelsMappingEntity.class, id0);
+      processLabel.apply(() -> new LabelsMappingDescriptionEntity(id0, label), existingLabelsMappingEntity, label);
     } else {
       for (String label : labels) {
-        LabelsMappingEntity labelsMappingEntity = new LabelsMappingEntity(id, label);
+        LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
         LabelsMappingEntity existingLabelsMappingEntity =
-            session.get(LabelsMappingEntity.class, labelsMappingEntity.getId());
-        processLabel.apply(labelsMappingEntity, existingLabelsMappingEntity, label);
+            session.get(LabelsMappingEntity.class, id0);
+        processLabel.apply(() -> new LabelsMappingEntity(id0), existingLabelsMappingEntity, label);
       }
     }
   }
 
   private <T> void saveLabel(
-      Session session, T labelsMappingEntity, T existingLabelsMappingEntity, String label) {
+      Session session, Supplier<T> labelsMappingEntity, T existingLabelsMappingEntity, String label) {
     if (existingLabelsMappingEntity == null) {
-      session.save(labelsMappingEntity);
+      session.save(labelsMappingEntity.get());
     } else {
       Status status =
           Status.newBuilder()
@@ -129,9 +129,9 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   private <T> void deleteLabels(
-      Session session, T labelsMappingEntity, T existingLabelsMappingEntity, String label) {
+      Session session, Supplier<T> labelsMappingEntity, T existingLabelsMappingEntity, String label) {
     if (existingLabelsMappingEntity != null) {
-      session.delete(labelsMappingEntity);
+      session.delete(existingLabelsMappingEntity);
     } else {
       Status status =
           Status.newBuilder()

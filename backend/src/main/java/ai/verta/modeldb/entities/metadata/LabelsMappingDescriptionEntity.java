@@ -12,14 +12,19 @@ import javax.persistence.*;
 public class LabelsMappingDescriptionEntity implements LabelsMappingEntityBase {
   public LabelsMappingDescriptionEntity() {}
 
-  public LabelsMappingDescriptionEntity(IdentificationType id, String label) {
-    this.id = new LabelMappingId(id.getCompositeId());
-  }
-
   @Column(name = "label", columnDefinition = "TEXT")
   private String label;
 
   @EmbeddedId private LabelMappingId id;
+
+  public LabelsMappingDescriptionEntity(LabelMappingId id0, String label) {
+    id = id0;
+    this.label = label;
+  }
+
+  public static LabelMappingId createId(IdentificationType id) {
+    return new LabelMappingId(id.getCompositeId());
+  }
 
   public LabelMappingId getId() {
     return id;
