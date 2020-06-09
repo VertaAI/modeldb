@@ -63,41 +63,48 @@ func (r *repositoryResolver) Collaborators(ctx context.Context, obj *versioning.
 	return []schema.Collaborator{}, nil
 }
 func (r *repositoryResolver) AllowedActions(ctx context.Context, obj *versioning.Repository) (*schema.AllowedActions, error) {
-	id := r.id(obj)
-	res, err := r.Connections.Authorization.GetSelfAllowedActionsBatch(ctx, &uac.GetSelfAllowedActionsBatch{
-		Resources: &uac.Resources{
-			Service:     uac.ServiceEnum_MODELDB_SERVICE,
-			ResourceIds: []string{id},
-			ResourceType: &uac.ResourceType{
-				Resource: &uac.ResourceType_ModeldbServiceResourceType{
-					ModeldbServiceResourceType: common.ModelDBResourceEnum_REPOSITORY,
+	if r.Connections.HasUac() {
+		id := r.id(obj)
+		res, err := r.Connections.Authorization.GetSelfAllowedActionsBatch(ctx, &uac.GetSelfAllowedActionsBatch{
+			Resources: &uac.Resources{
+				Service:     uac.ServiceEnum_MODELDB_SERVICE,
+				ResourceIds: []string{id},
+				ResourceType: &uac.ResourceType{
+					Resource: &uac.ResourceType_ModeldbServiceResourceType{
+						ModeldbServiceResourceType: common.ModelDBResourceEnum_REPOSITORY,
+					},
 				},
 			},
-		},
-	})
-	if err != nil {
-		r.Logger.Error("failed to get allowed actions", zap.Error(err))
-		return nil, err
-	}
+		})
+		if err != nil {
+			r.Logger.Error("failed to get allowed actions", zap.Error(err))
+			return nil, err
+		}
 
-	var ret schema.AllowedActions
+		var ret schema.AllowedActions
 
-	if actions, ok := res.GetActions()[id]; ok {
-		for _, act := range actions.GetActions() {
-			switch act.GetModeldbServiceAction() {
-			case uac.ModelDBActionEnum_CREATE:
-				ret.Create = true
-			case uac.ModelDBActionEnum_DELETE:
-				ret.Delete = true
-			case uac.ModelDBActionEnum_UPDATE:
-				ret.Update = true
-			case uac.ModelDBActionEnum_DEPLOY:
-				ret.Deploy = true
+		if actions, ok := res.GetActions()[id]; ok {
+			for _, act := range actions.GetActions() {
+				switch act.GetModeldbServiceAction() {
+				case uac.ModelDBActionEnum_CREATE:
+					ret.Create = true
+				case uac.ModelDBActionEnum_DELETE:
+					ret.Delete = true
+				case uac.ModelDBActionEnum_UPDATE:
+					ret.Update = true
+				case uac.ModelDBActionEnum_DEPLOY:
+					ret.Deploy = true
+				}
 			}
 		}
-	}
 
-	return &ret, nil
+		return &ret, nil
+	}
+	return &schema.AllowedActions{
+		Create: true,
+		Update: true,
+		Delete: true,
+	}, nil
 }
 func (r *repositoryResolver) Tags(ctx context.Context, obj *versioning.Repository) ([]*models.RepositoryTag, error) {
 	res, err := r.Connections.Versioning.ListTags(ctx, &versioning.ListTagsRequest{
