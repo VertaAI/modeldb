@@ -16,11 +16,18 @@ message IDTypeEnum {
     }
 }
 
+message VersioningCompositeIdentifier {
+    uint64 repo_id = 1;
+    string commit_hash = 2;
+    repeated string location = 3;
+}
+
 message IdentificationType {
     IDTypeEnum.IDType id_type = 1;
     oneof id {
         uint64 int_id = 2;
         string string_id = 3;
+        VersioningCompositeIdentifier versioning_composite_id = 4;
     }
 }
 

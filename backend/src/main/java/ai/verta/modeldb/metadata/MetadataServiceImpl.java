@@ -32,7 +32,9 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
 
       if (request.getId() == null
           || request.getId().getIdTypeValue() == 0
-          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+          || (request.getId().getIntId() == 0
+              && request.getId().getStringId().isEmpty()
+              && !request.getId().hasVersioningCompositeId())) {
         String errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
         LOGGER.warn(errorMessage);
         Status status =
@@ -62,7 +64,9 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       String errorMessage = null;
       if (request.getId() == null
           || request.getId().getIdTypeValue() == 0
-          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+          || (request.getId().getIntId() == 0
+              && request.getId().getStringId().isEmpty()
+              && !request.getId().hasVersioningCompositeId())) {
         errorMessage = "Invalid parameter set in AddLabelsRequest.Id";
       } else if (request.getLabelsList().isEmpty()) {
         errorMessage = "labels not found in AddLabelsRequest request";
@@ -97,10 +101,12 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       String errorMessage = null;
       if (request.getId() == null
           || request.getId().getIdTypeValue() == 0
-          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
-        errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
+          || (request.getId().getIntId() == 0
+              && request.getId().getStringId().isEmpty()
+              && !request.getId().hasVersioningCompositeId())) {
+        errorMessage = "Invalid parameter set in DeleteLabelsRequest.Id";
       } else if (request.getLabelsList().isEmpty()) {
-        errorMessage = "Labels not found in GetLabelsRequest";
+        errorMessage = "Labels not found in DeleteLabelsRequest";
       }
 
       if (errorMessage != null) {
@@ -109,7 +115,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(GetLabelsRequest.Response.getDefaultInstance()))
+                .addDetails(Any.pack(DeleteLabelsRequest.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }

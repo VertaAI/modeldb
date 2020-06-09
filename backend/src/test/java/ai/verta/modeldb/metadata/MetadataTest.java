@@ -224,14 +224,17 @@ public class MetadataTest {
 
     MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
 
-    int repoId = 1;
-    String commitHash = UUID.randomUUID().toString();
-    String blobHash = UUID.randomUUID().toString();
-    String comboId = repoId + "::" + commitHash + "::" + blobHash;
+    VersioningCompositeIdentifier identifier =
+        VersioningCompositeIdentifier.newBuilder()
+            .setRepoId(1)
+            .setCommitHash(UUID.randomUUID().toString())
+            .addLocation("modeldb")
+            .addLocation("test.txt")
+            .build();
     IdentificationType id1 =
         IdentificationType.newBuilder()
             .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-            .setStringId(comboId)
+            .setVersioningCompositeId(identifier)
             .build();
     AddLabelsRequest addLabelsRequest2 =
         AddLabelsRequest.newBuilder().setId(id1).addLabels("Backend").addLabels("Frontend").build();

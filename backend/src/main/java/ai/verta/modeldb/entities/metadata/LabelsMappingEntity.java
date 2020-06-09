@@ -1,9 +1,12 @@
 package ai.verta.modeldb.entities.metadata;
 
 import ai.verta.modeldb.metadata.IdentificationType;
+import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -21,6 +24,9 @@ public class LabelsMappingEntity {
       this.id = new LabelMappingId(String.valueOf(id.getIntId()), id.getIdTypeValue(), label);
     } else if (id.getIdCase().equals(IdentificationType.IdCase.STRING_ID)) {
       this.id = new LabelMappingId(id.getStringId(), id.getIdTypeValue(), label);
+    } else if (id.getIdCase().equals(IdentificationType.IdCase.VERSIONING_COMPOSITE_ID)) {
+      String compositeId = getVersioningCompositeId(id.getVersioningCompositeId());
+      this.id = new LabelMappingId(compositeId, id.getIdTypeValue(), label);
     } else {
       throw new StatusRuntimeException(Status.INVALID_ARGUMENT);
     }
@@ -78,5 +84,23 @@ public class LabelsMappingEntity {
     public int hashCode() {
       return Objects.hash(getEntity_hash(), getEntity_type(), getLabel());
     }
+  }
+
+  public static String getVersioningCompositeId(VersioningCompositeIdentifier identifier) {
+    return identifier.getRepoId()
+        + "::"
+        + identifier.getCommitHash()
+        + "::"
+        + ModelDBUtils.getLocationWithSlashOperator(identifier.getLocationList());
+  }
+
+  public static VersioningCompositeIdentifier getVersioningCompositeIdentifier(
+      String identifierIdStr) {
+    String[] identifierArr = identifierIdStr.split("::");
+    return VersioningCompositeIdentifier.newBuilder()
+        .setRepoId(Long.parseLong(identifierArr[0]))
+        .setCommitHash(identifierArr[1])
+        .addAllLocation(Arrays.asList(identifierArr[2].split("/")))
+        .build();
   }
 }

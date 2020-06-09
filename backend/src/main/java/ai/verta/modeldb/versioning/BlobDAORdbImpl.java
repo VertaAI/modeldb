@@ -2,13 +2,20 @@ package ai.verta.modeldb.versioning;
 
 import static java.util.stream.Collectors.toMap;
 
+import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.metadata.IDTypeEnum;
+import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
@@ -21,6 +28,7 @@ import ai.verta.modeldb.versioning.blob.diff.DiffComputer;
 import ai.verta.modeldb.versioning.blob.diff.DiffMerger;
 import ai.verta.modeldb.versioning.blob.diff.TypeChecker;
 import ai.verta.modeldb.versioning.blob.factory.BlobFactory;
+import ai.verta.uac.ModelResourceEnum;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status;
@@ -56,9 +64,11 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   public static final String TREE = "TREE";
   private final AuthService authService;
+  private final RoleService roleService;
 
-  public BlobDAORdbImpl(AuthService authService) {
+  public BlobDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
+    this.roleService = roleService;
   }
 
   /**
@@ -1145,7 +1155,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   private Map<String, Object> getRootShaListByCommitsOrRepos(
-      Session session, FindRepositoriesBlobs request) {
+      Session session, FindRepositoriesBlobs request, UserInfo currentLoginUserInfo) {
 
     Map<String, Object> parametersMap = new HashMap<>();
 
@@ -1158,6 +1168,8 @@ public class BlobDAORdbImpl implements BlobDAO {
             .append(" ");
 
     StringBuilder joinClause = new StringBuilder();
+    String repoAlias = "repo";
+    joinClause.append(" INNER JOIN ").append(alias).append(".repository ").append(repoAlias);
     joinClause
         .append(" INNER JOIN ")
         .append(InternalFolderElementEntity.class.getSimpleName())
@@ -1165,17 +1177,111 @@ public class BlobDAORdbImpl implements BlobDAO {
         .append(" ON ");
     joinClause.append("folderElm.folder_hash = ").append(alias).append(".rootSha ");
 
+    List<KeyValueQuery> predicates = request.getPredicatesList();
     List<String> whereClauseList = new ArrayList<>();
-    if (!request.getRepoIdsList().isEmpty()) {
-      whereClauseList.add(alias + ".repository.id IN (:repoIds) ");
-      parametersMap.put("repoIds", request.getRepoIdsList());
+    if (predicates != null && !predicates.isEmpty()) {
+      for (int index = 0; index < predicates.size(); index++) {
+        KeyValueQuery predicate = predicates.get(index);
+        String[] names = predicate.getKey().split("\\.");
+        switch (names[0]) {
+          case ModelDBConstants.COMMIT:
+            LOGGER.debug("switch case : commit");
+            whereClauseList.add(alias + "." + names[1] + " = :author");
+            parametersMap.put("author", predicate.getValue().getStringValue());
+            break;
+          case ModelDBConstants.VERSIONING_REPOSITORY:
+            LOGGER.debug("switch case : " + ModelDBConstants.VERSIONING_REPOSITORY);
+            if (names[1].contains(ModelDBConstants.LABEL)) {
+              joinClause
+                  .append(" INNER JOIN ")
+                  .append(LabelsMappingEntity.class.getSimpleName())
+                  .append(" lb ON lb.id.entity_hash = CAST(")
+                  .append(repoAlias)
+                  .append(".id as string) ")
+                  .append(" AND lb.id.entity_type = :entityType")
+                  .append(" AND lb.id.label = :label");
+              parametersMap.put("entityType", IDTypeEnum.IDType.VERSIONING_REPOSITORY.getNumber());
+              parametersMap.put("label", predicate.getValue().getStringValue());
+            }
+            break;
+          case ModelDBConstants.VERSIONING_COMMIT:
+            LOGGER.debug("switch case : " + ModelDBConstants.VERSIONING_COMMIT);
+            if (names[1].contains(ModelDBConstants.LABEL)) {
+              StringBuilder subQueryBuilder =
+                  new StringBuilder("SELECT lb.id.entity_hash FROM ")
+                      .append(LabelsMappingEntity.class.getSimpleName())
+                      .append(" lb WHERE ")
+                      .append(" lb.id.entity_type ");
+              VersioningUtils.setValueWithOperatorInQuery(
+                  subQueryBuilder,
+                  OperatorEnum.Operator.EQ,
+                  IDTypeEnum.IDType.VERSIONING_COMMIT.getNumber(),
+                  parametersMap);
+              subQueryBuilder.append(" AND lb.id.label ");
+              VersioningUtils.setValueWithOperatorInQuery(
+                  subQueryBuilder,
+                  OperatorEnum.Operator.EQ,
+                  predicate.getValue().getStringValue(),
+                  parametersMap);
+              whereClauseList.add(alias + ".commit_hash IN (" + subQueryBuilder.toString() + ") ");
+            }
+            break;
+          case ModelDBConstants.VERSIONING_REPO_COMMIT_BLOB:
+            LOGGER.debug("switch case : " + ModelDBConstants.VERSIONING_REPO_COMMIT_BLOB);
+            if (names[1].contains(ModelDBConstants.LABEL)) {
+              StringBuilder subQueryBuilder =
+                  new StringBuilder("SELECT lb.id.entity_hash FROM ")
+                      .append(LabelsMappingEntity.class.getSimpleName())
+                      .append(" lb WHERE ")
+                      .append(" lb.id.entity_type = :entityType")
+                      .append(" AND lb.id.label = :label");
+              Query labelQuery = session.createQuery(subQueryBuilder.toString());
+              labelQuery.setParameter(
+                  "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB.getNumber());
+              labelQuery.setParameter("label", predicate.getValue().getStringValue());
+              List<String> blobHashes = labelQuery.list();
+              List<String> commitHashes = new ArrayList<>();
+              List<Long> repoIds = new ArrayList<>();
+              blobHashes.forEach(
+                  blobHash -> {
+                    VersioningCompositeIdentifier identifier =
+                        LabelsMappingEntity.getVersioningCompositeIdentifier(blobHash);
+                    commitHashes.add(identifier.getCommitHash());
+                    repoIds.add(identifier.getRepoId());
+                  });
+              whereClauseList.add(alias + ".commit_hash IN (:versioningCommitHashes) ");
+              parametersMap.put("versioningCommitHashes", commitHashes);
+              whereClauseList.add(repoAlias + ".id IN (:versioningRepoIds) ");
+              parametersMap.put("versioningRepoIds", repoIds);
+            }
+            break;
+          default:
+            break;
+        }
+      }
+    }
+
+    List<String> accessibleResourceIds =
+        roleService.getAccessibleResourceIds(
+            null,
+            new CollaboratorUser(authService, currentLoginUserInfo),
+            RepositoryVisibilityEnum.RepositoryVisibility.PRIVATE,
+            ModelResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
+            request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
+
+    if (!accessibleResourceIds.isEmpty()) {
+      whereClauseList.add(repoAlias + ".id IN (:repoIds) ");
+      parametersMap.put(
+          "repoIds",
+          accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()));
     }
     if (!request.getCommitsList().isEmpty()) {
       whereClauseList.add(alias + ".commit_hash IN (:commitHashList)");
       parametersMap.put("commitHashList", request.getCommitsList());
     }
     StringBuilder whereClause = new StringBuilder();
-    setPredicatesWithQueryOperator(whereClause, " AND ", whereClauseList.toArray(new String[0]));
+    VersioningUtils.setPredicatesWithQueryOperator(
+        whereClause, " AND ", whereClauseList.toArray(new String[0]));
 
     // Order by clause
     StringBuilder orderClause =
@@ -1210,6 +1316,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
 
     Query query = session.createQuery(finalQueryBuilder.toString());
+    LOGGER.debug("Find Repository blob final query : {}", query.getQueryString());
     Query countQuery = session.createQuery(countQueryBuilder.toString());
     if (!parametersMap.isEmpty()) {
       parametersMap.forEach(
@@ -1240,11 +1347,6 @@ public class BlobDAORdbImpl implements BlobDAO {
     return responseMap;
   }
 
-  private void setPredicatesWithQueryOperator(
-      StringBuilder queryStringBuilder, String operatorName, String[] predicateClause) {
-    queryStringBuilder.append(String.join(" " + operatorName + " ", predicateClause));
-  }
-
   private Boolean blobTypeExistsInList(List<BlobType> blobTypeList, Blob.ContentCase contentCase)
       throws ModelDBException {
     switch (contentCase) {
@@ -1267,7 +1369,9 @@ public class BlobDAORdbImpl implements BlobDAO {
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
-      Map<String, Object> resultSetMap = getRootShaListByCommitsOrRepos(session, request);
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      Map<String, Object> resultSetMap =
+          getRootShaListByCommitsOrRepos(session, request, currentLoginUserInfo);
 
       Set<String> rootShaList = (Set<String>) resultSetMap.get("result");
       Long totalRecords = (Long) resultSetMap.get("count");
