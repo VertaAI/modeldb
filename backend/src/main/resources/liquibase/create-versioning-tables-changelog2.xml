@@ -373,14 +373,25 @@
 		</addColumn>
 	</changeSet>
 
-	<changeSet id="add-blob-hash-on-attribute" author="anandJ">
+	<changeSet id="add-attributes-to-repository" author="anandJ">
 		<preConditions onFail="MARK_RAN">
 			<not>
-				<columnExists tableName="attribute" columnName="blob_hash"/>
+				<columnExists tableName="attribute" columnName="repository_id"/>
 			</not>
 		</preConditions>
 		<addColumn tableName="attribute">
-			<column name="blob_hash" type="varchar(64)"/>
+			<column name="repository_id" type="int8"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="add-entity-hash-on-attribute" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="attribute" columnName="entity_hash"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="attribute">
+			<column name="entity_hash" type="varchar(64)"/>
 		</addColumn>
 	</changeSet>
 
