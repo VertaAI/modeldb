@@ -17,7 +17,7 @@ import {
   convertProjectVisibilityToServer,
 } from 'services/serverModel/Projects/converters';
 import { ISorting } from 'core/shared/models/Sorting';
-import { BaseDataService } from 'core/services/BaseDataService';
+import { BaseDataService } from 'services/BaseDataService';
 
 import makeLoadProjectsRequest from './responseRequest/makeLoadProjectsRequest';
 import {

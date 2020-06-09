@@ -1,7 +1,7 @@
 import { EntityWithDescription } from 'core/shared/models/Description';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 
-import { BaseDataService } from 'core/services/BaseDataService';
+import { BaseDataService } from 'services/BaseDataService';
 
 export default class DescActionDataService extends BaseDataService {
   constructor() {

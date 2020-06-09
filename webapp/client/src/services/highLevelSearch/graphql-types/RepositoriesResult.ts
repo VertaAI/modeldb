@@ -3,19 +3,22 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { StringPredicate, PaginationQuery } from "./../../../../graphql-types/graphql-global-types";
+import {
+  StringPredicate,
+  PaginationQuery,
+} from '../../../graphql-types/graphql-global-types';
 
 // ====================================================
 // GraphQL query operation: RepositoriesResult
 // ====================================================
 
 export interface RepositoriesResult_workspace_repositories_repositories_owner {
-  __typename: "User";
+  __typename: 'User';
   username: string;
 }
 
 export interface RepositoriesResult_workspace_repositories_repositories {
-  __typename: "Repository";
+  __typename: 'Repository';
   id: string;
   name: string;
   owner: RepositoriesResult_workspace_repositories_repositories_owner;
@@ -25,18 +28,18 @@ export interface RepositoriesResult_workspace_repositories_repositories {
 }
 
 export interface RepositoriesResult_workspace_repositories_pagination {
-  __typename: "PaginationResponse";
+  __typename: 'PaginationResponse';
   totalRecords: number;
 }
 
 export interface RepositoriesResult_workspace_repositories {
-  __typename: "Repositories";
+  __typename: 'Repositories';
   repositories: RepositoriesResult_workspace_repositories_repositories[];
   pagination: RepositoriesResult_workspace_repositories_pagination;
 }
 
 export interface RepositoriesResult_workspace {
-  __typename: "Workspace";
+  __typename: 'Workspace';
   name: string;
   repositories: RepositoriesResult_workspace_repositories;
 }

@@ -1,7 +1,7 @@
 import {
   CustomApiErrorConverter,
   IHttpMethodRequestConfig,
-} from 'core/services/BaseDataService';
+} from 'services/BaseDataService';
 import { HttpError } from 'core/shared/models/Error';
 
 export type UnavailableEntityApiErrorType =

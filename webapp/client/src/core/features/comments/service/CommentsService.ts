@@ -1,4 +1,4 @@
-import { BaseDataService } from 'core/services/BaseDataService';
+import { BaseDataService } from 'services/BaseDataService';
 
 import { EntityId, IComment } from '../Model';
 import { convertServerComment } from './serverModel/Comments/converters';

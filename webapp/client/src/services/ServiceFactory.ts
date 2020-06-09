@@ -1,9 +1,9 @@
 import axios, { AxiosError } from 'axios';
 import { ApolloClient } from 'apollo-boost';
 
-import HighLevelSearchService from 'core/services/highLevelSearch/HighLevelSearchService';
+import HighLevelSearchService from 'services/highLevelSearch/HighLevelSearchService';
 
-import { RepositoriesDataService } from '../core/services/versioning/repositories';
+import { RepositoriesDataService } from './versioning/repositories';
 import { DatasetsDataService } from './datasets';
 import { DatasetVersionsDataService } from './datasetVersions';
 import { DescActionDataService } from './descriptionActions';

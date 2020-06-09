@@ -3,7 +3,7 @@ import {
   CustomApiErrorConverter,
   GetErrorMessage,
   IHttpMethodRequestConfig,
-} from 'core/services/BaseDataService';
+} from 'services/BaseDataService';
 
 // todo find the better name
 export type DeploymentRequestErrorType = 'expectedDeployApiError';

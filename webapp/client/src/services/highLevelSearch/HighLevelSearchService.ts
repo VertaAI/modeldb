@@ -16,7 +16,7 @@ import {
   filterMapEntitiesBySearchFields,
   RepositoryResult,
 } from 'core/shared/models/HighLevelSearch';
-import { BaseDataService } from 'core/services/BaseDataService';
+import { BaseDataService } from 'services/BaseDataService';
 import {
   IPaginationSettings,
   DataWithPagination,

@@ -2,7 +2,7 @@ import { JsonConvert } from 'json2typescript';
 import * as R from 'ramda';
 
 import * as Comments from 'features/comments';
-import { BaseDataService } from 'core/services/BaseDataService';
+import { BaseDataService } from 'services/BaseDataService';
 import { IArtifact } from 'core/shared/models/Artifact';
 import {
   IFilterData,
@@ -33,7 +33,7 @@ import {
   ILazyLoadChartData,
 } from './types';
 import { IWorkspace } from 'core/shared/models/Workspace';
-import { RepositoriesDataService } from 'core/services/versioning/repositories';
+import { RepositoriesDataService } from 'services/versioning/repositories';
 
 export const chartsPageSettings = {
   pageSize: 50,

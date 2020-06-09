@@ -1,7 +1,7 @@
 import {
   CustomApiErrorConverter,
   IHttpMethodRequestConfig,
-} from 'core/services/BaseDataService';
+} from 'services/BaseDataService';
 
 export const entityAlreadyExistsError = 'entityAlreadyExists';
 export type EntityAlreadyExistsErrorType = typeof entityAlreadyExistsError;

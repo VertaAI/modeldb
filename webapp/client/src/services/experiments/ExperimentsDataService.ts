@@ -10,7 +10,7 @@ import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/
 import { convertServerUser } from 'core/services/serverModel/User/converters';
 import * as EntityAlreadyExistError from '../../core/services/shared/EntityAlreadyExistError';
 
-import { BaseDataService } from 'core/services/BaseDataService';
+import { BaseDataService } from 'services/BaseDataService';
 import makeLoadExperimentsRequest, {
   makeGetExperimentsByWorkspaceRequest,
 } from './responseRequest/makeLoadExperimentsRequest';
