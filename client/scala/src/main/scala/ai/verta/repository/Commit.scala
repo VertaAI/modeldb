@@ -141,11 +141,11 @@ class Commit(
         case None => commit.parent_shas.get
       }
 
-      Try(ids.map(id => loadBlobsFromId(id)).map(_.get).flatten) match {
+      Try(ids.map(id => loadBlobsFromId(id)).map(_.get).reduce(_ ++ _)) match {
         case Failure(e) => Failure(e)
-        case Success(list) => Success {
+        case Success(map) => Success {
           loadedFromRemote = true
-          blobs = list.toMap
+          blobs = map
         }
       }
     }
@@ -158,15 +158,15 @@ class Commit(
    */
   private def loadBlobsFromId(
     id: String
-  )(implicit ec: ExecutionContext): Try[List[Tuple2[String, VersioningBlob]]] = {
+  )(implicit ec: ExecutionContext): Try[Map[String, VersioningBlob]] = {
     clientSet.versioningService.ListCommitBlobs2(
       commit_sha = id,
       repository_id_repo_id = repo.id
     ) // Try[VersioningListCommitBlobsRequestResponse]
     .map(_.blobs) // Try[Option[List[VersioningBlobExpanded]]]
     .map(ls =>
-      if (ls.isEmpty) List()
-      else ls.get.map(blob => blob.location.get.mkString("/") -> blob.blob.get)
+      if (ls.isEmpty) Map[String, VersioningBlob]()
+      else ls.get.map(blob => blob.location.get.mkString("/") -> blob.blob.get).toMap
     )
   }
 
