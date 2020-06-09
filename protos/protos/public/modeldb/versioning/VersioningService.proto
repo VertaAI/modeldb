@@ -119,6 +119,7 @@ message Repository {
     string description = 9;
 
     string owner = 10;
+    repeated common.KeyValue attributes = 11;
 }
 
 // For pagination

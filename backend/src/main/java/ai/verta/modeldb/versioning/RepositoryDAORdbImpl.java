@@ -8,6 +8,7 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -144,6 +145,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(".")
           .append(ModelDBConstants.DELETED)
           .append(" = false ")
+          .toString();
+  private static final String GET_REPOSITORY_ATTRIBUTES_QUERY =
+      new StringBuilder("From " + AttributeEntity.class.getSimpleName() + " attr where attr.")
+          .append(ModelDBConstants.KEY)
+          .append(" in (:keys) AND attr.repositoryEntity.")
+          .append(ModelDBConstants.ID)
+          .append(" = :repoId AND attr.field_type = :fieldType")
           .toString();
 
   public RepositoryDAORdbImpl(AuthService authService, RoleService roleService) {
@@ -309,7 +317,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             workspaceDTO.getWorkspaceId(),
             workspaceDTO.getWorkspaceType(),
             LOGGER);
-        repositoryEntity = new RepositoryEntity(request.getRepository(), workspaceDTO);
+        repositoryEntity = new RepositoryEntity(repository, workspaceDTO);
         repositoryEntity.setDeleted(true);
       } else {
         repositoryEntity = getRepositoryById(session, request.getId(), true);
@@ -456,7 +464,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public ListRepositoriesRequest.Response listRepositories(
-      ListRepositoriesRequest request, UserInfo currentLoginUserInfo) throws ModelDBException {
+      ListRepositoriesRequest request, UserInfo currentLoginUserInfo)
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<String> accessibleResourceIds =
           roleService.getAccessibleResourceIds(
@@ -541,8 +550,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       ListRepositoriesRequest.Response.Builder builder =
           ListRepositoriesRequest.Response.newBuilder();
 
-      repositoryEntities.forEach(
-          repositoryEntity -> builder.addRepositories(repositoryEntity.toProto()));
+      for (RepositoryEntity repositoryEntity : repositoryEntities) {
+        builder.addRepositories(repositoryEntity.toProto());
+      }
 
       long totalRecords = RdbmsUtils.count(session, repositoryEntityRoot, criteriaQuery);
       builder.setTotalRecords(totalRecords);
@@ -882,7 +892,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public FindRepositories.Response findRepositories(FindRepositories request)
-      throws ModelDBException {
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       WorkspaceDTO workspaceDTO =
@@ -927,11 +937,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         Long totalRecords =
             (Long) findRepositoriesQuery.getFindRepositoriesCountHQLQuery().uniqueResult();
 
+        List<Repository> repositories = new ArrayList<>();
+        for (RepositoryEntity repositoryEntity : repositoryEntities) {
+          repositories.add(repositoryEntity.toProto());
+        }
+
         return FindRepositories.Response.newBuilder()
-            .addAllRepositories(
-                repositoryEntities.stream()
-                    .map(RepositoryEntity::toProto)
-                    .collect(Collectors.toList()))
+            .addAllRepositories(repositories)
             .setTotalRecords(totalRecords)
             .build();
       } catch (ModelDBException ex) {

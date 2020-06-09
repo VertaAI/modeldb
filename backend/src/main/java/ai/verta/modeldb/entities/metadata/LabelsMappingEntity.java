@@ -13,23 +13,32 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "labels_mapping")
-public class LabelsMappingEntity {
+public class LabelsMappingEntity implements LabelsMappingEntityBase {
   public LabelsMappingEntity() {}
 
-  public LabelsMappingEntity(IdentificationType id, String label) {
+  public LabelsMappingEntity(LabelMappingId id) {
+    this.id = id;
+  }
+
+  @EmbeddedId private LabelMappingId id;
+
+  public static LabelMappingId createId(IdentificationType id, String label) {
     if (id.getIdCase().equals(IdentificationType.IdCase.INT_ID)) {
-      this.id = new LabelMappingId(String.valueOf(id.getIntId()), id.getIdTypeValue(), label);
+      return new LabelMappingId(String.valueOf(id.getIntId()), id.getIdTypeValue(), label);
     } else if (id.getIdCase().equals(IdentificationType.IdCase.STRING_ID)) {
-      this.id = new LabelMappingId(id.getStringId(), id.getIdTypeValue(), label);
+      return new LabelMappingId(id.getStringId(), id.getIdTypeValue(), label);
     } else {
       throw new StatusRuntimeException(Status.INVALID_ARGUMENT);
     }
   }
 
-  @EmbeddedId private LabelMappingId id;
-
   public LabelMappingId getId() {
     return id;
+  }
+
+  @Override
+  public String getLabel() {
+    return id.getLabel();
   }
 
   @Embeddable
