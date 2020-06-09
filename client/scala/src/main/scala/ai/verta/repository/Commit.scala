@@ -129,11 +129,9 @@ object Commit {
   }
 
   /** Retrieve commit's blobs from remote
-   *  If the commit is saved, retrieve the stored blobs; otherwise retrieve the blobs of its parent(s).
    *  @param clientSet client set
    *  @param repo commit's repository
    *  @param versioningCommit versioning commit instance of the commit
-   *  @return The blobs, in the form of map from path to blob.
    */
   private def loadBlobs(
     clientSet: ClientSet,
@@ -150,11 +148,8 @@ object Commit {
     }
 
 
-  /** Retrieve blobs associated to a commit with given id and construct the map
-   *  @param clientSet client set
-   *  @param repo commit's repository
+  /** Retrieve blobs associated to commit with given id and construct the map
    *  @param id id of the commit
-   *  @return The blobs, in the form of map from path to blob.
    */
   private def loadBlobsFromId(
     clientSet: ClientSet,
