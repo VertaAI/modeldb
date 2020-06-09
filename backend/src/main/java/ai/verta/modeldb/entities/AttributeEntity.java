@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.common.KeyValue;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -46,6 +47,8 @@ public class AttributeEntity {
       setDatasetEntity(entity);
     } else if (entity instanceof DatasetVersionEntity) {
       setDatasetVersionEntity(entity);
+    } else if (entity instanceof RepositoryEntity) {
+      setRepositoryEntity(entity);
     }
 
     this.field_type = fieldType;
@@ -88,6 +91,10 @@ public class AttributeEntity {
   @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @JoinColumn(name = "dataset_version_id")
   private DatasetVersionEntity datasetVersionEntity;
+
+  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @JoinColumn(name = "repository_id")
+  private RepositoryEntity repositoryEntity;
 
   @Column(name = "entity_name", length = 50)
   private String entity_name;
@@ -179,6 +186,11 @@ public class AttributeEntity {
   public void setDatasetVersionEntity(Object entity) {
     this.datasetVersionEntity = (DatasetVersionEntity) entity;
     this.entity_name = this.datasetVersionEntity.getClass().getSimpleName();
+  }
+
+  private void setRepositoryEntity(Object entity) {
+    this.repositoryEntity = (RepositoryEntity) entity;
+    this.entity_name = this.repositoryEntity.getClass().getSimpleName();
   }
 
   public String getField_type() {
