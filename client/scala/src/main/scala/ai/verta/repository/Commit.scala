@@ -21,10 +21,11 @@ class Commit(
   private var blobs = Map[String, VersioningBlob]() // mutable map for storing blobs
 
   /** Return the id of the commit */
-  def id = commit.commit_sha.get
+  def id = commit.commit_sha
 
   override def equals(other: Any) = other match {
-    case other: Commit => commit.commit_sha.get == other.commit.commit_sha.get
+    case other: Commit => commit.commit_sha.isDefined && other.commit.commit_sha.isDefined &&
+                          commit.commit_sha.get == other.commit.commit_sha.get
     case _ => false
   }
 
