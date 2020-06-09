@@ -1145,9 +1145,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       if (projectIdFromExperimentMap.size() == 0) {
         errorMessage = "Experiment '" + request.getId() + "' is not associated with any project";
         ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.NOT_FOUND_VALUE,
-            Any.pack(GetUrlForArtifact.getDefaultInstance()));
+            errorMessage, Code.NOT_FOUND_VALUE, Any.pack(GetUrlForArtifact.getDefaultInstance()));
       }
 
       String projectId = projectIdFromExperimentMap.get(request.getId());

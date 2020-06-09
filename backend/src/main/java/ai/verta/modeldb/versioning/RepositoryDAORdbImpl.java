@@ -339,8 +339,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         try {
           createRoleBindingsForRepository(request, userInfo, repository);
         } catch (Exception e) {
-          LOGGER.info("Exception from UAC during Repo role binding creation : {}",e.getMessage());
-          LOGGER.info("Deleting the created repository {}",repository.getId());
+          LOGGER.info("Exception from UAC during Repo role binding creation : {}", e.getMessage());
+          LOGGER.info("Deleting the created repository {}", repository.getId());
           // delete the repo created
           session.beginTransaction();
           session.delete(repository);
