@@ -58,7 +58,7 @@ class Commit(
         case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
       }
 
-      childCommit.blobs = blobs + new Tuple2(path, versioningBlob)
+      childCommit.blobs = blobs + (path -> versioningBlob)
       childCommit.saved = false
       childCommit.loadedFromRemote = true
 
