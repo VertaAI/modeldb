@@ -305,7 +305,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public SetRepository.Response setRepository(
       CommitDAO commitDAO, SetRepository request, UserInfo userInfo, boolean create)
-      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
+      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = setRepository(session, commitDAO, request, userInfo, create);
       return newBuilder().setRepository(repository.toProto()).build();
@@ -408,6 +408,35 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         GLOBAL_SHARING);
   }
 
+  @Override
+  public DeleteRepositoryRequest.Response deleteRepository(
+      DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
+      // Get self allowed resources id where user has delete permission
+      List<String> allowedRepositoryIds =
+          roleService.getAccessibleResourceIdsByActions(
+              ModelDBServiceResourceTypes.REPOSITORY,
+              ModelDBServiceActions.DELETE,
+              Collections.singletonList(String.valueOf(repository.getId())));
+      if (allowedRepositoryIds.isEmpty()) {
+        throw new ModelDBException(
+            "Delete Access Denied for given repository Id : " + request.getRepositoryId(),
+            Code.PERMISSION_DENIED);
+      }
+
+      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
+      return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteRepository(request, commitDAO, experimentRunDAO);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
   public void deleteRepositories(
       Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds) {
     Query deletedRepositoriesQuery = session.createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING);
@@ -441,35 +470,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
     }
     return true;
-  }
-
-  @Override
-  public DeleteRepositoryRequest.Response deleteRepository(
-      DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
-      throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
-      // Get self allowed resources id where user has delete permission
-      List<String> allowedRepositoryIds =
-          roleService.getAccessibleResourceIdsByActions(
-              ModelDBServiceResourceTypes.REPOSITORY,
-              ModelDBServiceActions.DELETE,
-              Collections.singletonList(String.valueOf(repository.getId())));
-      if (allowedRepositoryIds.isEmpty()) {
-        throw new ModelDBException(
-            "Delete Access Denied for given repository Id : " + request.getRepositoryId(),
-            Code.PERMISSION_DENIED);
-      }
-
-      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
-      return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return deleteRepository(request, commitDAO, experimentRunDAO);
-      } else {
-        throw ex;
-      }
-    }
   }
 
   Repository createRepository(
