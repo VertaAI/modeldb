@@ -129,7 +129,7 @@ class TestCommit extends FunSuite {
               .flatMap(_.save("Some msg"))
               .get.id.get
 
-      val newCommit = f.repo.getCommitById(newId)
+      val newCommit = f.repo.getCommitById(newId).get
       val getAttempt = newCommit.get("abc/def").get
       val pathBlob2 = getAttempt match {
         case blob: PathBlob => blob
