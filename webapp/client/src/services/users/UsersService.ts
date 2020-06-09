@@ -2,7 +2,7 @@ import { bind } from 'decko';
 import * as R from 'ramda';
 
 import { BaseDataService } from 'services/BaseDataService';
-import User, { unknownUser } from 'core/shared/models/User';
+import User, { unknownUser } from 'shared/models/User';
 import { convertServerUser } from 'services/serverModel/User/converters';
 
 export default class UsersService extends BaseDataService {

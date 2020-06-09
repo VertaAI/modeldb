@@ -1,12 +1,9 @@
 import { UnavailableEntityApiErrorType } from 'services/shared/UnavailableEntityApiError';
-import { AppError } from 'core/shared/models/Error';
-import {
-  IHydratedCommit,
-  SHA,
-} from 'core/shared/models/Versioning/RepositoryData';
-import { ICommunication } from 'core/shared/utils/redux/communication';
-import { IExperimentRunInfo } from 'core/shared/models/ModelRecord';
-import { Diff } from 'core/shared/models/Versioning/Blob/Diff';
+import { AppError } from 'shared/models/Error';
+import { IHydratedCommit, SHA } from 'shared/models/Versioning/RepositoryData';
+import { ICommunication } from 'shared/utils/redux/communication';
+import { IExperimentRunInfo } from 'shared/models/ModelRecord';
+import { Diff } from 'shared/models/Versioning/Blob/Diff';
 
 export interface IViewCommitState {
   data: {

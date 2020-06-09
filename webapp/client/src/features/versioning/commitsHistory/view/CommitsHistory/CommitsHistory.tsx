@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useLocation } from 'react-router';
 
-import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import DefaultMatchRemoteData from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
+import { IRepository } from 'shared/models/Versioning/Repository';
 
 import parseCommitsHistorySettings from '../../helpers/parseCommitsHistorySettings';
 import styles from './CommitsHistory.module.css';

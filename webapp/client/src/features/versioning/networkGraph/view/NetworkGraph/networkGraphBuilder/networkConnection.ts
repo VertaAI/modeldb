@@ -7,8 +7,8 @@ import {
   INetworkDefaultConnection,
   INetworkMergeConnection,
   INetworkCoordinate,
-} from 'core/shared/models/Versioning/NetworkGraph';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
+} from 'shared/models/Versioning/NetworkGraph';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
 
 type Direction = 'right-top' | 'right-bottom' | 'right';
 

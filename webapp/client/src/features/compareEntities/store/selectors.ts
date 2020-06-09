@@ -1,23 +1,21 @@
 import * as R from 'ramda';
 
-import { Artifact } from 'core/shared/models/Artifact';
-import { IAttribute } from 'core/shared/models/Attribute';
-import { ICodeVersion } from 'core/shared/models/CodeVersion';
+import { Artifact } from 'shared/models/Artifact';
+import { IAttribute } from 'shared/models/Attribute';
+import { ICodeVersion } from 'shared/models/CodeVersion';
 import {
   getKeyValuePairsDiff,
   getObjsPropsDiffByPred,
   getObjsPropsDiff,
-} from 'core/shared/utils/collection';
+} from 'shared/utils/collection';
 import {
   IDatasetVersion,
   IRawDatasetVersion,
   IQueryDatasetVersion,
   IPathBasedDatasetVersion,
   IDatasetPathPartInfo,
-} from 'core/shared/models/DatasetVersion';
-import ModelRecord, {
-  ICodeVersionsFromBlob,
-} from 'core/shared/models/ModelRecord';
+} from 'shared/models/DatasetVersion';
+import ModelRecord, { ICodeVersionsFromBlob } from 'shared/models/ModelRecord';
 import { selectDatasetVersion } from 'features/datasetVersions/store';
 import { selectExperimentRun } from 'features/experimentRuns/store';
 import { IApplicationState } from 'store/store';

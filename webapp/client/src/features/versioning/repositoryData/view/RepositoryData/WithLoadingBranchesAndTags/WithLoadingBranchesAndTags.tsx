@@ -3,8 +3,8 @@ import * as React from 'react';
 import {
   IRepository,
   IBranchesAndTags,
-} from 'core/shared/models/Versioning/Repository';
-import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
+} from 'shared/models/Versioning/Repository';
+import DefaultMatchRemoteData from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
 
 import { useRepositoryBranchesAndTagsQuery } from '../../../store/repositoryBranchesAndTags/useRepositoryBranchesAndTags';
 

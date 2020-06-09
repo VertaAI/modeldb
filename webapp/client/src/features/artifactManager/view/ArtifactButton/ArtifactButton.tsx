@@ -9,19 +9,19 @@ import {
   Artifact,
   checkArtifactWithPath,
   checkArtifactWithDatasetVersion,
-} from 'core/shared/models/Artifact';
-import { artifactErrorMessages } from 'core/shared/utils/customErrorMessages';
+} from 'shared/models/Artifact';
+import { artifactErrorMessages } from 'shared/utils/customErrorMessages';
 import {
   ICommunication,
   initialCommunication,
-} from 'core/shared/utils/redux/communication';
-import Button from 'core/shared/view/elements/Button/Button';
-import ButtonLikeText from 'core/shared/view/elements/ButtonLikeText/ButtonLikeText';
-import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import Popup from 'core/shared/view/elements/Popup/Popup';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import routes, { GetRouteParams } from 'core/shared/routes';
+} from 'shared/utils/redux/communication';
+import Button from 'shared/view/elements/Button/Button';
+import ButtonLikeText from 'shared/view/elements/ButtonLikeText/ButtonLikeText';
+import InlineCommunicationError from 'shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import Popup from 'shared/view/elements/Popup/Popup';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import routes, { GetRouteParams } from 'shared/routes';
 import {
   downloadArtifact,
   reset,
@@ -32,8 +32,8 @@ import {
 } from 'features/artifactManager/store';
 import { checkSupportArtifactPreview } from 'features/artifactManager/store/helpers';
 import { IApplicationState } from 'store/store';
-import { AppError } from 'core/shared/models/Error';
-import LastCommunicationError from 'core/shared/view/elements/LastCommunicationError/LastCommunicationError';
+import { AppError } from 'shared/models/Error';
+import LastCommunicationError from 'shared/view/elements/LastCommunicationError/LastCommunicationError';
 import { ArtifactDatasetVersion } from 'features/artifactManager/store/artifactDatasetVersion';
 
 import DownloadArtifactButton from '../DownloadArtifactButton/DownloadArtifactButton';

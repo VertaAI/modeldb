@@ -1,9 +1,9 @@
 import { action } from 'typesafe-actions';
 
-import normalizeError from 'core/shared/utils/normalizeError';
+import normalizeError from 'shared/utils/normalizeError';
 import { ActionResult } from 'store/store';
 
-import { EntityId, IComment } from '../../../core/shared/models/Comment';
+import { EntityId, IComment } from '../../../shared/models/Comment';
 import {
   addCommentActionTypes,
   deleteCommentActionTypes,

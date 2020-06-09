@@ -1,11 +1,11 @@
 import * as React from 'react';
 
-import { IGitCodeBlob } from 'core/shared/models/Versioning/Blob/CodeBlob';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
-import BranchProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/BranchProp/BranchProp';
-import HashProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/HashProp/HashProp';
-import RepoProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/RepoProp/RepoProp';
-import TagProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/TagProp/TagProp';
+import { IGitCodeBlob } from 'shared/models/Versioning/Blob/CodeBlob';
+import { BlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import BranchProp from 'shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/BranchProp/BranchProp';
+import HashProp from 'shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/HashProp/HashProp';
+import RepoProp from 'shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/RepoProp/RepoProp';
+import TagProp from 'shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/TagProp/TagProp';
 
 import PropertiesTable from '../../shared/PropertiesTable/PropertiesTable';
 

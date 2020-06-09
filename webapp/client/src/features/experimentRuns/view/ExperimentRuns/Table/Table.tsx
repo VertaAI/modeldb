@@ -6,15 +6,15 @@ import {
   IColumnConfig,
   IColumnMetaData,
 } from 'features/experimentRunsTableConfig';
-import { IPagination } from 'core/shared/models/Pagination';
-import { ISorting } from 'core/shared/models/Sorting';
-import withProps from 'core/shared/utils/react/withProps';
-import { TableWrapper } from 'core/shared/view/elements/Table/Plugins';
-import SelectFieldSorting from 'core/shared/view/elements/Table/Plugins/HeaderCell/SelectFieldSorting/SelectFieldSorting';
-import PagingPanel from 'core/shared/view/elements/Table/Plugins/PagingPanel/TablePagingPanel';
-import AppTable from 'core/shared/view/elements/Table/Table';
-import { ColumnDefinition } from 'core/shared/view/elements/Table/types';
-import ModelRecord from 'core/shared/models/ModelRecord';
+import { IPagination } from 'shared/models/Pagination';
+import { ISorting } from 'shared/models/Sorting';
+import withProps from 'shared/utils/react/withProps';
+import { TableWrapper } from 'shared/view/elements/Table/Plugins';
+import SelectFieldSorting from 'shared/view/elements/Table/Plugins/HeaderCell/SelectFieldSorting/SelectFieldSorting';
+import PagingPanel from 'shared/view/elements/Table/Plugins/PagingPanel/TablePagingPanel';
+import AppTable from 'shared/view/elements/Table/Table';
+import { ColumnDefinition } from 'shared/view/elements/Table/types';
+import ModelRecord from 'shared/models/ModelRecord';
 
 import DeletingExperimentRunsManager from './BulkDeletion/DeletingExperimentRunsManager/DeletingExperimentRunsManager';
 import ToggleAllExperimentRunsForBulkDeletion from './BulkDeletion/ToggleAllExperimentRunsForBulkDeletion/ToggleAllExperimentRunsForBulkDeletion';

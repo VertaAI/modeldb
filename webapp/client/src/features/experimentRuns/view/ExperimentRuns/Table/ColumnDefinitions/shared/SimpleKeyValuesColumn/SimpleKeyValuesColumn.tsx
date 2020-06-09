@@ -1,11 +1,11 @@
 import * as React from 'react';
 
-import { makeDefaultMetricFilter } from 'core/shared/models/Filters';
-import { IHyperparameter } from 'core/shared/models/HyperParameters';
-import { IMetric } from 'core/shared/models/Metrics';
-import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
-import Draggable from 'core/shared/view/elements/Draggable/Draggable';
-import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
+import { makeDefaultMetricFilter } from 'shared/models/Filters';
+import { IHyperparameter } from 'shared/models/HyperParameters';
+import { IMetric } from 'shared/models/Metrics';
+import { withScientificNotationOrRounded } from 'shared/utils/formatters/number';
+import Draggable from 'shared/view/elements/Draggable/Draggable';
+import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 
 import { IRow } from '../../types';
 import styles from './SimpleKeyValuesColumn.module.css';

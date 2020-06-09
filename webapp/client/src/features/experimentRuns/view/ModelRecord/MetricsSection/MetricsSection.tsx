@@ -1,10 +1,10 @@
 import * as React from 'react';
 
-import ModelRecord from 'core/shared/models/ModelRecord';
-import vertaDocLinks from 'core/shared/utils/globalConstants/vertaDocLinks';
-import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
-import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
-import ClientSuggestion from 'core/shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
+import ModelRecord from 'shared/models/ModelRecord';
+import vertaDocLinks from 'shared/utils/globalConstants/vertaDocLinks';
+import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
+import { withScientificNotationOrRounded } from 'shared/utils/formatters/number';
+import ClientSuggestion from 'shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
 
 import Section from '../shared/Section/Section';
 import { RecordInfo } from '../shared/RecordInfo/RecordInfo';

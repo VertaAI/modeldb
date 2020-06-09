@@ -1,15 +1,15 @@
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
 import {
   ICommitWithComponent,
   CommitPointer,
-} from 'core/shared/models/Versioning/RepositoryData';
+} from 'shared/models/Versioning/RepositoryData';
 import {
   IBranchesAndTags,
   IRepository,
-} from 'core/shared/models/Versioning/Repository';
-import makeGraphqlMockedResponse from 'core/shared/utils/tests/graphql/makeGraphqlMockedResponse';
-import { getCommitReference } from 'core/shared/graphql/Versioning/CommitReference';
-import { convertUserToServer } from 'core/shared/graphql/User/User';
+} from 'shared/models/Versioning/Repository';
+import makeGraphqlMockedResponse from 'shared/utils/tests/graphql/makeGraphqlMockedResponse';
+import { getCommitReference } from 'shared/graphql/Versioning/CommitReference';
+import { convertUserToServer } from 'shared/graphql/User/User';
 
 import * as BranchesAndTagsQuery from '../../../store/repositoryBranchesAndTags/useRepositoryBranchesAndTags';
 import * as CommitWithComponentQuery from '../../../store/repositoryData/useRepositoryData';

@@ -4,7 +4,7 @@ import {
   IDockerEnvironmentBlob,
   IEnvironmentVariablesBlob,
   IEnvironmentBlobDiff,
-} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
+} from 'shared/models/Versioning/Blob/EnvironmentBlob';
 
 import {
   getCssDiffColor,

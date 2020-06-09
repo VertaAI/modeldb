@@ -3,7 +3,7 @@ import {
   IFilterState,
   manageFiltersTypes,
 } from 'features/filter';
-import { OperatorType, PropertyType } from 'core/shared/models/Filters';
+import { OperatorType, PropertyType } from 'shared/models/Filters';
 
 import dataReducer, { initial } from '../data';
 

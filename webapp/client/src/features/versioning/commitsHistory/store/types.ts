@@ -1,8 +1,8 @@
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
 import {
   IHydratedCommit,
   Branch,
-} from 'core/shared/models/Versioning/RepositoryData';
+} from 'shared/models/Versioning/RepositoryData';
 
 export interface ICommitHistorySettings {
   branch: Branch;

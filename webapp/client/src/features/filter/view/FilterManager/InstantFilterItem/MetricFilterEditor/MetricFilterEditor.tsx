@@ -6,9 +6,9 @@ import {
   OperatorType,
   IMetricFilterData,
   MetricFilterOperator,
-} from 'core/shared/models/Filters';
-import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
-import TextInput from 'core/shared/view/elements/TextInput/TextInput';
+} from 'shared/models/Filters';
+import { withScientificNotationOrRounded } from 'shared/utils/formatters/number';
+import TextInput from 'shared/view/elements/TextInput/TextInput';
 
 import styles from './MetricFilterEditor.module.css';
 import FilterSelect from '../FilterSelect/FilterSelect';

@@ -1,9 +1,9 @@
 import { Reducer } from 'redux';
 import { ActionType, getType } from 'typesafe-actions';
 
-import { substractPaginationTotalCount } from 'core/shared/models/Pagination';
-import { updateById, upsert } from 'core/shared/utils/collection';
-import { Dataset } from 'core/shared/models/Dataset';
+import { substractPaginationTotalCount } from 'shared/models/Pagination';
+import { updateById, upsert } from 'shared/utils/collection';
+import { Dataset } from 'shared/models/Dataset';
 
 import * as actions from '../actions';
 import {

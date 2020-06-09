@@ -1,4 +1,4 @@
-import * as History from 'core/shared/utils/History';
+import * as History from 'shared/utils/History';
 
 type Path = string;
 

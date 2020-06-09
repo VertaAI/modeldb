@@ -3,22 +3,22 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import { CompareCommits } from 'features/versioning/compareCommits';
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   ICommit,
   CommitPointerHelpers,
-} from 'core/shared/models/Versioning/RepositoryData';
-import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
-import Avatar from 'core/shared/view/elements/Avatar/Avatar';
-import Button from 'core/shared/view/elements/Button/Button';
-import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
-import routes from 'core/shared/routes';
+} from 'shared/models/Versioning/RepositoryData';
+import ShortenedSHA from 'shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
+import Avatar from 'shared/view/elements/Avatar/Avatar';
+import Button from 'shared/view/elements/Button/Button';
+import DefaultMatchRemoteData from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
+import routes from 'shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
-import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
+import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
 import { RepositoryNavigation } from 'features/versioning/repositoryNavigation';
-import AssociatedExperimentRuns from 'core/shared/view/domain/Versioning/AssociatedExperimentRuns/AssociatedExperimentRuns';
+import AssociatedExperimentRuns from 'shared/view/domain/Versioning/AssociatedExperimentRuns/AssociatedExperimentRuns';
 
 import styles from './Commit.module.css';
 import { useCommitDetailsQuery } from '../../store/commitDetails/useCommitDetails';

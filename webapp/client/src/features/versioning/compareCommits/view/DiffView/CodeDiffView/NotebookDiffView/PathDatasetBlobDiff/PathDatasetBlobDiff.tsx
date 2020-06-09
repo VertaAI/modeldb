@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { IPathDatasetComponentBlobDiff } from 'core/shared/models/Versioning/Blob/DatasetBlob';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import { IPathDatasetComponentBlobDiff } from 'shared/models/Versioning/Blob/DatasetBlob';
+import { BlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import PathComponentsDiff from '../../../DatasetDiffView/PathComponentsDiff/PathComponentsDiff';
 

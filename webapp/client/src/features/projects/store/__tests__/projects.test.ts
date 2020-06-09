@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 
-import checkURLSearchParams from 'core/shared/utils/tests/checkURLSearchParams';
-import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
-import routes from 'core/shared/routes';
-import setupIntegrationTest from 'core/shared/utils/tests/integrations/setupIntegrationTest';
-import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
+import checkURLSearchParams from 'shared/utils/tests/checkURLSearchParams';
+import flushAllPromises from 'shared/utils/tests/integrations/flushAllPromises';
+import routes from 'shared/routes';
+import setupIntegrationTest from 'shared/utils/tests/integrations/setupIntegrationTest';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 
 import {
   changeProjectsPaginationWithLoading,

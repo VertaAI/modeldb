@@ -3,11 +3,11 @@ import React, { useCallback } from 'react';
 import {
   IPathDatasetComponentBlobDiff,
   IPathDatasetComponentBlob,
-} from 'core/shared/models/Versioning/Blob/DatasetBlob';
-import LastModified from 'core/shared/view/domain/Versioning/Blob/DatasetBlob/LastModified/LastModified';
-import PathSize from 'core/shared/view/domain/Versioning/Blob/DatasetBlob/PathSize/PathSize';
-import GroupedTable from 'core/shared/view/elements/Table/GroupedTable/GroupedTable';
-import { TextWithCopyTooltip } from 'core/shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
+} from 'shared/models/Versioning/Blob/DatasetBlob';
+import LastModified from 'shared/view/domain/Versioning/Blob/DatasetBlob/LastModified/LastModified';
+import PathSize from 'shared/view/domain/Versioning/Blob/DatasetBlob/PathSize/PathSize';
+import GroupedTable from 'shared/view/elements/Table/GroupedTable/GroupedTable';
+import { TextWithCopyTooltip } from 'shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
 
 import { getDatasetDiffCellStyle } from '../shared/helpers/getDatasetDiffCellStyle';
 import { getDatasetDiffGroupStyle } from '../shared/helpers/getDatasetDiffGroupStyle';

@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import ClientSuggestion from 'core/shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
-import { IAttribute } from 'core/shared/models/Attribute';
-import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
+import ClientSuggestion from 'shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
+import { IAttribute } from 'shared/models/Attribute';
+import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 import {
   IModelsDifferentProps,
   EntityType,

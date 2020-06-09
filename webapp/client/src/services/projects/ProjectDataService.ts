@@ -1,22 +1,22 @@
 import * as R from 'ramda';
 import { JsonConvert } from 'json2typescript';
 
-import { IArtifact } from 'core/shared/models/Artifact';
-import { EntityErrorType } from 'core/shared/models/Common';
-import { IFilterData } from 'core/shared/models/Filters';
-import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
-import { Markdown } from 'core/shared/utils/types';
+import { IArtifact } from 'shared/models/Artifact';
+import { EntityErrorType } from 'shared/models/Common';
+import { IFilterData } from 'shared/models/Filters';
+import { DataWithPagination, IPagination } from 'shared/models/Pagination';
+import { Markdown } from 'shared/utils/types';
 import {
   Project,
   IProjectCreationSettings,
   projectAlreadyExistsError,
-} from 'core/shared/models/Project';
-import { IWorkspace } from 'core/shared/models/Workspace';
+} from 'shared/models/Project';
+import { IWorkspace } from 'shared/models/Workspace';
 import {
   convertHydratedProjectToClient,
   convertProjectVisibilityToServer,
 } from 'services/serverModel/Projects/converters';
-import { ISorting } from 'core/shared/models/Sorting';
+import { ISorting } from 'shared/models/Sorting';
 import { BaseDataService } from 'services/BaseDataService';
 
 import makeLoadProjectsRequest from './responseRequest/makeLoadProjectsRequest';

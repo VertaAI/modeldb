@@ -1,20 +1,20 @@
 import * as React from 'react';
 import { act } from 'react-dom/test-utils';
 
-import { flushAllPromisesFor } from 'core/shared/utils/tests/integrations/flushAllPromisesFor';
-import { makeMockServiceMethod } from 'core/shared/utils/tests/integrations/mockServiceMethod';
+import { flushAllPromisesFor } from 'shared/utils/tests/integrations/flushAllPromisesFor';
+import { makeMockServiceMethod } from 'shared/utils/tests/integrations/mockServiceMethod';
 import {
   makeAsyncInputHelpersByName,
   findByDataTestAttribute,
   findByText,
   withAct,
   submitAsyncForm,
-} from 'core/shared/utils/tests/react/helpers';
-import { makeTagsManagerHelpers } from 'core/shared/view/domain/BaseTagsManager/__tests__/helpers';
-import { Dataset, IDatasetCreationSettings } from 'core/shared/models/Dataset';
-import routes from 'core/shared/routes';
+} from 'shared/utils/tests/react/helpers';
+import { makeTagsManagerHelpers } from 'shared/view/domain/BaseTagsManager/__tests__/helpers';
+import { Dataset, IDatasetCreationSettings } from 'shared/models/Dataset';
+import routes from 'shared/routes';
 import DatasetsDataService from 'services/datasets/DatasetsDataService';
-import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import makeMountComponentWithPredefinedData from 'shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
 
 import DatasetCreation from '../DatasetCreation';
 

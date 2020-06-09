@@ -5,9 +5,9 @@ import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { Dispatch, bindActionCreators } from 'redux';
 
-import { IFilterData } from 'core/shared/models/Filters';
-import Droppable from 'core/shared/view/elements/Droppable/Droppable';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
+import { IFilterData } from 'shared/models/Filters';
+import Droppable from 'shared/view/elements/Droppable/Droppable';
+import { Icon } from 'shared/view/elements/Icon/Icon';
 
 import {
   resetCurrentContext,

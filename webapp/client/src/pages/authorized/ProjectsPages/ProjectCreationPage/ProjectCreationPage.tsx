@@ -5,7 +5,7 @@ import {
   AuthorizedLayout,
   BreadcrumbsBuilder,
 } from 'pages/authorized/shared/AuthorizedLayout';
-import routes from 'core/shared/routes';
+import routes from 'shared/routes';
 
 const breadcrumbsBuilder = BreadcrumbsBuilder()
   .then({ type: 'single', route: routes.projects, getName: () => 'Projects' })

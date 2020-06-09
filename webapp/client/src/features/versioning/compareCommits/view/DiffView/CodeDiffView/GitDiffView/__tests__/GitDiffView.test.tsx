@@ -4,7 +4,7 @@ import * as React from 'react';
 import {
   ComparedCommitType,
   elementDiffMakers,
-} from 'core/shared/models/Versioning/Blob/Diff';
+} from 'shared/models/Versioning/Blob/Diff';
 
 import { getCommitColumnInfo } from '../../../shared/ComparePropertiesTable/__tests__/helpers';
 import GitDiffView from '../GitDiffView';

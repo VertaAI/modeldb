@@ -3,8 +3,8 @@ import { createAction } from 'typesafe-actions';
 import { ActionResult } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import { ILoadEntitiesByTypeResult } from 'services/highLevelSearch/HighLevelSearchService';
-import { AppError } from 'core/shared/models/Error';
-import normalizeError from 'core/shared/utils/normalizeError';
+import { AppError } from 'shared/models/Error';
+import normalizeError from 'shared/utils/normalizeError';
 
 import {
   ISearchSettings,
@@ -14,8 +14,8 @@ import {
   changeNameOrTag,
   IResultsSorting,
   changeSorting,
-} from '../../../core/shared/models/HighLevelSearch';
-import * as Suggestions from 'core/shared/models/HighLevelSearch/Suggestions';
+} from '../../../shared/models/HighLevelSearch';
+import * as Suggestions from 'shared/models/HighLevelSearch/Suggestions';
 import {
   updateSearchSettingsQueryParams,
   parseSearchSettingsFromPathname,

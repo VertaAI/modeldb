@@ -2,12 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 
-import { handleCustomErrorWithFallback } from 'core/shared/models/Error';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import { handleCustomErrorWithFallback } from 'shared/models/Error';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import { selectCommunications, DatasetVersion } from 'features/datasetVersions';
 import NotFoundPage from 'pages/authorized/NotFoundPage/NotFoundPage';
 import AuthorizedLayout from 'pages/authorized/shared/AuthorizedLayout/AuthorizedLayout';
-import routes, { GetRouteParams } from 'core/shared/routes';
+import routes, { GetRouteParams } from 'shared/routes';
 import { IApplicationState } from 'store/store';
 
 import DatasetsPagesLayout from '../../shared/DatasetsPagesLayout/DatasetsPagesLayout';

@@ -1,4 +1,4 @@
-import * as Suggestions from 'core/shared/models/HighLevelSearch/Suggestions';
+import * as Suggestions from 'shared/models/HighLevelSearch/Suggestions';
 
 const suggestionsKey: string = 'high-level-search-suggestions';
 export const getSuggestionsFromLocalStorage = () => {

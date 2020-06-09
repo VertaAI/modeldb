@@ -1,10 +1,6 @@
-import {
-  IFilterData,
-  PropertyType,
-  OperatorType,
-} from 'core/shared/models/Filters';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
-import matchBy from 'core/shared/utils/matchBy';
+import { IFilterData, PropertyType, OperatorType } from 'shared/models/Filters';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
+import matchBy from 'shared/utils/matchBy';
 
 export interface IServerFilter {
   key: string;

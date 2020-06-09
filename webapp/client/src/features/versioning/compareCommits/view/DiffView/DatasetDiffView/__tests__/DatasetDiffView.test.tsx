@@ -6,14 +6,14 @@ import {
   IPathDatasetComponentBlob,
   IPathDatasetBlobDiff,
   IPathDatasetBlobDiffData,
-} from 'core/shared/models/Versioning/Blob/DatasetBlob';
+} from 'shared/models/Versioning/Blob/DatasetBlob';
 
 import {
   DiffType,
   elementDiffMakers,
-} from 'core/shared/models/Versioning/Blob/Diff';
-import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitComponentLocation';
-import { Row } from 'core/shared/view/elements/Table/components';
+} from 'shared/models/Versioning/Blob/Diff';
+import { CommitComponentLocation } from 'shared/models/Versioning/CommitComponentLocation';
+import { Row } from 'shared/view/elements/Table/components';
 
 import { DiffColor } from '../../../model';
 import { getDiffColorFromBackgroundColor } from '../../shared/ComparePropertiesTable/__tests__/helpers';

@@ -2,10 +2,10 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import WidgetBulkDeletion from 'core/shared/view/domain/BulkDeletion/WidgetsBulkDeletionComponents/WidgetBulkDeletion/WidgetBulkDeletion';
+import WidgetBulkDeletion from 'shared/view/domain/BulkDeletion/WidgetsBulkDeletionComponents/WidgetBulkDeletion/WidgetBulkDeletion';
 import { IApplicationState } from 'store/store';
 
-import { ICommunication } from 'core/shared/utils/redux/communication';
+import { ICommunication } from 'shared/utils/redux/communication';
 import {
   selectProjectForDeleting,
   unselectProjectForDeleting,

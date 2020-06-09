@@ -4,8 +4,8 @@ import { RouteComponentProps, withRouter, Omit } from 'react-router';
 import { IAuthorizedLayoutLocalProps } from 'pages/authorized/shared/AuthorizedLayout/AuthorizedLayout';
 import PagesTabs, {
   IPagesTabsLocalProps,
-} from 'core/shared/view/pages/PagesTabs/PagesTabs';
-import routes, { GetRouteParams } from 'core/shared/routes';
+} from 'shared/view/pages/PagesTabs/PagesTabs';
+import routes, { GetRouteParams } from 'shared/routes';
 
 import DatasetsPagesLayout from '../../../shared/DatasetsPagesLayout/DatasetsPagesLayout';
 import styles from './DatasetDetailsLayout.module.css';

@@ -1,6 +1,6 @@
 import { ReactWrapper } from 'enzyme';
 
-import { ComparedCommitType } from 'core/shared/models/Versioning/Blob/Diff';
+import { ComparedCommitType } from 'shared/models/Versioning/Blob/Diff';
 
 import { DiffColor } from '../../../../model';
 import { diffColors } from '../../styles';

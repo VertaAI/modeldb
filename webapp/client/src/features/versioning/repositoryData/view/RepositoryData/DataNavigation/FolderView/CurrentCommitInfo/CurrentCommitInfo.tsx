@@ -1,13 +1,13 @@
 import moment from 'moment';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import routes from 'core/shared/routes';
+import routes from 'shared/routes';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
-import Avatar from 'core/shared/view/elements/Avatar/Avatar';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { IHydratedCommit } from 'shared/models/Versioning/RepositoryData';
+import Avatar from 'shared/view/elements/Avatar/Avatar';
 
-import ShortenedSHA from '../../../../../../../../core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
+import ShortenedSHA from '../../../../../../../../shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 import styles from './CurrentCommitInfo.module.css';
 
 interface ILocalProps {

@@ -3,17 +3,17 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { EntityId } from 'core/shared/models/Comment';
+import { EntityId } from 'shared/models/Comment';
 import {
   addComment,
   selectIsAddedComment,
   selectIsAddingComment,
   ICommentsRootState,
 } from 'features/comments/store';
-import { validateNotEmpty } from 'core/shared/utils/validators';
-import Button from 'core/shared/view/elements/Button/Button';
-import MuiTextInput from 'core/shared/view/elements/MuiTextInput/MuiTextInput';
-import InlineErrorView from 'core/shared/view/elements/Errors/InlineErrorView/InlineErrorView';
+import { validateNotEmpty } from 'shared/utils/validators';
+import Button from 'shared/view/elements/Button/Button';
+import MuiTextInput from 'shared/view/elements/MuiTextInput/MuiTextInput';
+import InlineErrorView from 'shared/view/elements/Errors/InlineErrorView/InlineErrorView';
 
 import styles from './AddCommentForm.module.css';
 

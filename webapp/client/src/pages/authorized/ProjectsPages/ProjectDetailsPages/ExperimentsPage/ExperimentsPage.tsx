@@ -1,9 +1,9 @@
 import React from 'react';
 import { useParams } from 'react-router';
-import routes, { GetRouteParams } from 'core/shared/routes';
+import routes, { GetRouteParams } from 'shared/routes';
 
-import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
-import Button from 'core/shared/view/elements/Button/Button';
+import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import Button from 'shared/view/elements/Button/Button';
 
 import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 import ProjectPageTabs from '../shared/ProjectPageTabs/ProjectPageTabs';

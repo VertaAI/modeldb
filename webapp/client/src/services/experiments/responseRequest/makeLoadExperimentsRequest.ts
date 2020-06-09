@@ -1,12 +1,12 @@
 import { IServerFiltersInRequest } from 'services/serverModel/Filters/converters';
-import { IFilterData } from 'core/shared/models/Filters';
-import { IPagination } from 'core/shared/models/Pagination';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination } from 'shared/models/Pagination';
 import { makeAddFiltersToRequest } from 'services/serverModel/Filters/converters';
 import { addPaginationToRequest } from 'services/serverModel/Pagination/converters';
 import { IServerPaginationInRequest } from 'services/serverModel/Pagination/Pagination';
-import { IWorkspace } from 'core/shared/models/Workspace';
+import { IWorkspace } from 'shared/models/Workspace';
 import { addWorkspaceName } from 'services/serverModel/Workspace/converters';
-import { ISorting } from 'core/shared/models/Sorting';
+import { ISorting } from 'shared/models/Sorting';
 import { addSorting } from 'services/serverModel/Sorting/Sorting';
 
 export type IGetExperimentsRequest = {

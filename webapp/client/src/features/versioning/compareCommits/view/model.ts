@@ -9,10 +9,10 @@ import {
   getBData,
   GetElementData,
   getCData,
-} from 'core/shared/models/Versioning/Blob/Diff';
-import { ICommit } from 'core/shared/models/Versioning/RepositoryData';
-import { mapObj, mapObjWithKey } from 'core/shared/utils/collection';
-import matchType from 'core/shared/utils/matchType';
+} from 'shared/models/Versioning/Blob/Diff';
+import { ICommit } from 'shared/models/Versioning/RepositoryData';
+import { mapObj, mapObjWithKey } from 'shared/utils/collection';
+import matchType from 'shared/utils/matchType';
 
 import sortArrayByAnotherArrayKeys from './DiffView/shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
 import { diffColors } from './DiffView/shared/styles';

@@ -1,6 +1,6 @@
-import { IBlob } from 'core/shared/models/Versioning/Blob/Blob';
-import { IDatasetBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
+import { IBlob } from 'shared/models/Versioning/Blob/Blob';
+import { IDatasetBlob } from 'shared/models/Versioning/Blob/DatasetBlob';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
 
 import { convertServerCodeBlobToClient } from './CodeBlob';
 import { convertConfigBlobToClient } from './ConfigBlob';

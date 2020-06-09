@@ -1,5 +1,5 @@
 import { JsonConvert } from 'json2typescript';
-import { Project, ProjectVisibility } from 'core/shared/models/Project';
+import { Project, ProjectVisibility } from 'shared/models/Project';
 import { convertServerCodeVersion } from '../CodeVersion/converters';
 import { convertServerEntityWithLoggedDates } from '../Common/converters';
 import { convertServerShortWorkspaceToClient } from '../Workspace/converters';

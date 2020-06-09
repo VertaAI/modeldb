@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import usePlacerUnderHeader from 'core/shared/view/pages/usePlacerUnderHeader';
+import usePlacerUnderHeader from 'shared/view/pages/usePlacerUnderHeader';
 
 import {
   IRequiredEntityInfo,

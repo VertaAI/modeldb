@@ -2,20 +2,16 @@ import { JsonConvert } from 'json2typescript';
 import * as R from 'ramda';
 
 import { BaseDataService } from 'services/BaseDataService';
-import { IArtifact } from 'core/shared/models/Artifact';
-import {
-  IFilterData,
-  PropertyType,
-  OperatorType,
-} from 'core/shared/models/Filters';
-import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
-import { ISorting } from 'core/shared/models/Sorting';
-import { ShortExperiment } from 'core/shared/models/Experiment';
+import { IArtifact } from 'shared/models/Artifact';
+import { IFilterData, PropertyType, OperatorType } from 'shared/models/Filters';
+import { IPagination, DataWithPagination } from 'shared/models/Pagination';
+import { ISorting } from 'shared/models/Sorting';
+import { ShortExperiment } from 'shared/models/Experiment';
 import ModelRecord, {
   LoadExperimentRunErrorType,
   IVersionedInputs,
-} from 'core/shared/models/ModelRecord';
-import User from 'core/shared/models/User';
+} from 'shared/models/ModelRecord';
+import User from 'shared/models/User';
 import {
   convertServerCodeVersion,
   convertServerCodeVersionsFromBlob,
@@ -31,7 +27,7 @@ import {
   ILoadModelRecordResult,
   ILazyLoadChartData,
 } from './types';
-import { IWorkspace } from 'core/shared/models/Workspace';
+import { IWorkspace } from 'shared/models/Workspace';
 import { RepositoriesDataService } from 'services/versioning/repositories';
 import { convertServerComment } from 'services/serverModel/Comments/converters';
 

@@ -2,7 +2,7 @@ import cn from 'classnames';
 import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 
-import { IconType, Icon } from 'core/shared/view/elements/Icon/Icon';
+import { IconType, Icon } from 'shared/view/elements/Icon/Icon';
 
 import styles from './LayoutLink.module.css';
 

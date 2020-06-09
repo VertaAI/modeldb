@@ -2,10 +2,10 @@ import Paper from '@material-ui/core/Paper';
 import * as R from 'ramda';
 import React, { useMemo } from 'react';
 
-import { mapObj, groupBy } from 'core/shared/utils/collection';
+import { mapObj, groupBy } from 'shared/utils/collection';
 import VerticalTable, {
   IPropDefinition as IRowDefinition,
-} from 'core/shared/view/elements/VerticalTable/VerticalTable';
+} from 'shared/view/elements/VerticalTable/VerticalTable';
 import {
   IModelsDifferentProps,
   EntityType,

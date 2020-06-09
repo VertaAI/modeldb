@@ -2,7 +2,7 @@ import { bind } from 'decko';
 
 import { BaseDataService } from 'services/BaseDataService';
 import { IServerRepository } from 'services/serverModel/Versioning/Repository/Repository';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 
 export default class RepositoriesDataService extends BaseDataService {
   constructor() {

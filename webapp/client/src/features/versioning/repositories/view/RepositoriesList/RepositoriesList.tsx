@@ -1,16 +1,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
-import NoEntitiesStub from 'core/shared/view/elements/NoEntitiesStub/NoEntitiesStub';
-import Pagination from 'core/shared/view/elements/Pagination/Pagination';
+import DefaultMatchRemoteData from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
+import NoEntitiesStub from 'shared/view/elements/NoEntitiesStub/NoEntitiesStub';
+import Pagination from 'shared/view/elements/Pagination/Pagination';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspace } from 'features/workspaces/store';
 
 import RepositoryWidget from '../RepositoryWidget/RepositoryWidget';
 import styles from './RepositoriesList.module.css';
 import { useRepositoriesQuery } from '../../store/repositoriesQuery/repositoriesQuery';
-import Reloading from 'core/shared/view/elements/Reloading/Reloading';
+import Reloading from 'shared/view/elements/Reloading/Reloading';
 
 const mapStateToProps = (state: IApplicationState) => ({
   currentWorkspace: selectCurrentWorkspace(state),

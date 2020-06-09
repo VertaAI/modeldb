@@ -5,22 +5,22 @@ import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
-import { formatBytes } from 'core/shared/utils/mapperConverters/DataSizeConverted';
-import { initialCommunication } from 'core/shared/utils/redux/communication';
-import { matchRemoteData } from 'core/shared/utils/redux/communication/remoteData';
-import removeQuotes from 'core/shared/utils/removeQuotes';
-import DataSourceUri from 'core/shared/view/domain/DatasetVersionProps/QueryDatasetVersionProps/DataSourceUri/DataSourceUri';
-import Attributes from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
-import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
-import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';
-import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
-import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import IdView from 'core/shared/view/elements/IdView/IdView';
-import { PageCard } from 'core/shared/view/elements/PageComponents';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
+import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
+import { formatBytes } from 'shared/utils/mapperConverters/DataSizeConverted';
+import { initialCommunication } from 'shared/utils/redux/communication';
+import { matchRemoteData } from 'shared/utils/redux/communication/remoteData';
+import removeQuotes from 'shared/utils/removeQuotes';
+import DataSourceUri from 'shared/view/domain/DatasetVersionProps/QueryDatasetVersionProps/DataSourceUri/DataSourceUri';
+import Attributes from 'shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
+import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import CopyButton from 'shared/view/elements/CopyButton/CopyButton';
+import DeleteFAI from 'shared/view/elements/DeleteFAI/DeleteFAI';
+import InlineCommunicationError from 'shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import IdView from 'shared/view/elements/IdView/IdView';
+import { PageCard } from 'shared/view/elements/PageComponents';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 import {
   loadDatasetVersion,
   deleteDatasetVersion,
@@ -36,8 +36,8 @@ import {
   IRawDatasetVersionInfo,
   IPathBasedDatasetVersionInfo,
   IQueryDatasetVersionInfo,
-} from 'core/shared/models/DatasetVersion';
-import routes from 'core/shared/routes';
+} from 'shared/models/DatasetVersion';
+import routes from 'shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { IQuickFilter, IFilterData } from 'core/shared/models/Filters';
-import generateId from 'core/shared/utils/generateId';
+import { IQuickFilter, IFilterData } from 'shared/models/Filters';
+import generateId from 'shared/utils/generateId';
 
 import styles from './AddFilter.module.css';
 

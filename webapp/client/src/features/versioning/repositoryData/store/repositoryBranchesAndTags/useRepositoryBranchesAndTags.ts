@@ -4,8 +4,8 @@ import { useQuery } from 'react-apollo';
 import {
   IRepository,
   IBranchesAndTags,
-} from 'core/shared/models/Versioning/Repository';
-import resultToCommunicationWithData from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
+} from 'shared/models/Versioning/Repository';
+import resultToCommunicationWithData from 'shared/utils/graphql/queryResultToCommunicationWithData';
 
 import * as Types from './graphql-types/RepositoryBranchesAndTags';
 

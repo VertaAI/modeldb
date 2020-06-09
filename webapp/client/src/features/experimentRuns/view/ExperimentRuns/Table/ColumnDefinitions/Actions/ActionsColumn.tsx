@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import CompareClickAction from 'features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
-import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
-import { ICommunication } from 'core/shared/utils/redux/communication';
-import DeleteFAIWithLabel from 'core/shared/view/elements/DeleteFaiWithLabel/DeleteFaiWithLabel';
-import GroupFai from 'core/shared/view/elements/GroupFai/GroupFai';
+import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import { ICommunication } from 'shared/utils/redux/communication';
+import DeleteFAIWithLabel from 'shared/view/elements/DeleteFaiWithLabel/DeleteFaiWithLabel';
+import GroupFai from 'shared/view/elements/GroupFai/GroupFai';
 import { ShowCommentsButtonWithAuthor } from 'features/comments';
 import {
   deleteExperimentRun,

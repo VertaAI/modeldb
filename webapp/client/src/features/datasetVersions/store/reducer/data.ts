@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 import { Reducer } from 'redux';
 
-import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
+import { IDatasetVersion } from 'shared/models/DatasetVersion';
 
-import { substractPaginationTotalCount } from 'core/shared/models/Pagination';
-import { updateById, upsert } from 'core/shared/utils/collection';
+import { substractPaginationTotalCount } from 'shared/models/Pagination';
+import { updateById, upsert } from 'shared/utils/collection';
 import {
   IDatasetVersionsState,
   FeatureAction,

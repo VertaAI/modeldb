@@ -1,4 +1,4 @@
-import { ComparedCommitType } from 'core/shared/models/Versioning/Blob/Diff';
+import { ComparedCommitType } from 'shared/models/Versioning/Blob/Diff';
 
 import { getCssDiffColorByCommitType } from '../../model';
 

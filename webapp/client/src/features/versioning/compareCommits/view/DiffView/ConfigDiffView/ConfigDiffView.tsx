@@ -4,16 +4,16 @@ import {
   IConfigBlobDiff,
   IConfigHyperparameterDiff,
   IConfigHyperparameterSetItemDiff,
-} from 'core/shared/models/Versioning/Blob/ConfigBlob';
+} from 'shared/models/Versioning/Blob/ConfigBlob';
 import {
   DiffType,
   ComparedCommitType,
   getCommitDataFromNullableDiffs,
   DataWithDiffTypeFromDiffs,
-} from 'core/shared/models/Versioning/Blob/Diff';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
-import HyperparameterItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
-import HyperparameterSetItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
+} from 'shared/models/Versioning/Blob/Diff';
+import { BlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import HyperparameterItem from 'shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
+import HyperparameterSetItem from 'shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
 
 import { IComparedCommitsInfo, getCssDiffColorByCommitType } from '../../model';
 import { makeHighlightCellBackground } from '../shared/makeHighlightCellBackground';

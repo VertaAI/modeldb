@@ -2,11 +2,11 @@ import * as R from 'ramda';
 import { Reducer } from 'redux';
 import { ActionType, getType } from 'typesafe-actions';
 
-import cloneClassInstance from 'core/shared/utils/cloneClassInstance';
-import { upsert } from 'core/shared/utils/collection';
-import { Project } from 'core/shared/models/Project';
+import cloneClassInstance from 'shared/utils/cloneClassInstance';
+import { upsert } from 'shared/utils/collection';
+import { Project } from 'shared/models/Project';
 
-import { substractPaginationTotalCount } from 'core/shared/models/Pagination';
+import { substractPaginationTotalCount } from 'shared/models/Pagination';
 import * as actions from '../actions';
 import {
   FeatureAction,

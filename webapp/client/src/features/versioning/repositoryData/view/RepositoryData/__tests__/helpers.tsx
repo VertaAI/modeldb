@@ -1,9 +1,9 @@
 import { ReactWrapper } from 'enzyme';
 
-import { findByText } from 'core/shared/utils/tests/react/helpers';
-import { IFolder } from 'core/shared/models/Versioning/RepositoryData';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { IWorkspace } from 'core/shared/models/Workspace';
+import { findByText } from 'shared/utils/tests/react/helpers';
+import { IFolder } from 'shared/models/Versioning/RepositoryData';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { IWorkspace } from 'shared/models/Workspace';
 
 export const findDataLinkHref = (name: string, component: ReactWrapper) =>
   findDataLink(name, component).prop('href');

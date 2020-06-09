@@ -1,11 +1,11 @@
 import gql from 'graphql-tag';
 import { useMutation } from 'react-apollo';
 
-import { getCommitReference } from 'core/shared/graphql/Versioning/CommitReference';
-import { convertGraphqlDiffs } from 'core/shared/graphql/Versioning/Diff';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { CommitPointer } from 'core/shared/models/Versioning/RepositoryData';
-import resultToCommunicationWithData from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
+import { getCommitReference } from 'shared/graphql/Versioning/CommitReference';
+import { convertGraphqlDiffs } from 'shared/graphql/Versioning/Diff';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { CommitPointer } from 'shared/models/Versioning/RepositoryData';
+import resultToCommunicationWithData from 'shared/utils/graphql/queryResultToCommunicationWithData';
 
 import * as MergeConflictsTypes from './graphql-types/MergeConflicts';
 

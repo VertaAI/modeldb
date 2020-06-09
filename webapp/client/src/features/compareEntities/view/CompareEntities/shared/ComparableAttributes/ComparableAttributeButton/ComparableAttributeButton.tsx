@@ -6,9 +6,9 @@ import {
   getDiffValueBorderClassname,
   getDiffValueBgClassname,
 } from 'features/compareEntities/view/CompareEntities/shared/DiffHighlight/DiffHighlight';
-import { IAttribute } from 'core/shared/models/Attribute';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import Popup from 'core/shared/view/elements/Popup/Popup';
+import { IAttribute } from 'shared/models/Attribute';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import Popup from 'shared/view/elements/Popup/Popup';
 import { EntityType } from 'features/compareEntities/store';
 
 import { IComparedAttribute } from '../ComparableAttributes';

@@ -1,11 +1,11 @@
 import { Paper } from '@material-ui/core';
 import React from 'react';
 
-import { ComparedCommitType } from 'core/shared/models/Versioning/Blob/Diff';
+import { ComparedCommitType } from 'shared/models/Versioning/Blob/Diff';
 import VerticalTable, {
   IPropDefinition,
   IColumnData,
-} from 'core/shared/view/elements/VerticalTable/VerticalTable';
+} from 'shared/view/elements/VerticalTable/VerticalTable';
 
 import { IComparedCommitsInfo } from '../../../model';
 import { getColumnComparedCommitsTitles } from '../comparedCommitsNames';

@@ -2,7 +2,7 @@ import {
   getServerFilterValueType,
   getServerFilterOperator,
 } from 'services/serverModel/Filters/Filters';
-import { IFilterData } from 'core/shared/models/Filters';
+import { IFilterData } from 'shared/models/Filters';
 
 export interface IFilterConverter<
   R extends IServerFiltersInRequest,

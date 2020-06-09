@@ -2,15 +2,15 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   CommitPointer,
   RepositoryBranches,
   CommitTag,
-} from 'core/shared/models/Versioning/RepositoryData';
-import BranchesAndTagsList from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
-import routes from 'core/shared/routes';
+} from 'shared/models/Versioning/RepositoryData';
+import BranchesAndTagsList from 'shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
+import routes from 'shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import { DiffType } from 'core/shared/models/Versioning/Blob/Diff';
-import { makeDockerImage } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import { DiffType } from 'shared/models/Versioning/Blob/Diff';
+import { makeDockerImage } from 'shared/models/Versioning/Blob/EnvironmentBlob';
+import { BlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import { IComparedCommitsInfo } from '../../../model';
 import { makeHighlightCellBackground } from '../../shared/makeHighlightCellBackground';

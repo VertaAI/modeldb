@@ -1,11 +1,11 @@
 import gql from 'graphql-tag';
 import { useQuery } from 'react-apollo';
 
-import { USER_FRAGMENT, convertUser } from 'core/shared/graphql/User/User';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { ICommit } from 'core/shared/models/Versioning/RepositoryData';
-import resultToCommunicationWithData from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
-import { convertGraphqlDiffs } from 'core/shared/graphql/Versioning/Diff';
+import { USER_FRAGMENT, convertUser } from 'shared/graphql/User/User';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { ICommit } from 'shared/models/Versioning/RepositoryData';
+import resultToCommunicationWithData from 'shared/utils/graphql/queryResultToCommunicationWithData';
+import { convertGraphqlDiffs } from 'shared/graphql/Versioning/Diff';
 
 import * as Types from './graphql-types/COMMIT_DETAILS';
 import { ICommitDetails } from '../types';

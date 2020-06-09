@@ -3,16 +3,16 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import Artifacts from 'features/artifactManager/view/Artifacts/Artifacts';
-import Observations from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/Observations';
-import Parameters from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Parameters/Parameters';
-import ClientSuggestion from 'core/shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
-import vertaDocLinks from 'core/shared/utils/globalConstants/vertaDocLinks';
-import withProps from 'core/shared/utils/react/withProps';
-import IdView from 'core/shared/view/elements/IdView/IdView';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import TagBlock from 'core/shared/view/elements/TagBlock/TagBlock';
-import ModelRecord from 'core/shared/models/ModelRecord';
-import { Project } from 'core/shared/models/Project';
+import Observations from 'shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/Observations';
+import Parameters from 'shared/view/domain/ModelRecord/ModelRecordProps/Parameters/Parameters';
+import ClientSuggestion from 'shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
+import vertaDocLinks from 'shared/utils/globalConstants/vertaDocLinks';
+import withProps from 'shared/utils/react/withProps';
+import IdView from 'shared/view/elements/IdView/IdView';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import TagBlock from 'shared/view/elements/TagBlock/TagBlock';
+import ModelRecord from 'shared/models/ModelRecord';
+import { Project } from 'shared/models/Project';
 import {
   ComparedEntityIds,
   IModelsDifferentProps,
@@ -41,9 +41,9 @@ import CompareModelsTable, {
   PropDefinition,
   IPropDefinitionRenderProps,
 } from './CompareModelsTable/CompareModelsTable';
-import { NA } from 'core/shared/view/elements/PageComponents';
+import { NA } from 'shared/view/elements/PageComponents';
 import sortArrayByAnotherArrayKeys from 'features/versioning/compareCommits/view/DiffView/shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
-import Reloading from 'core/shared/view/elements/Reloading/Reloading';
+import Reloading from 'shared/view/elements/Reloading/Reloading';
 
 interface ILocalProps {
   comparedModelIds: Required<ComparedEntityIds>;

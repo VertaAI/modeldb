@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { IBlob } from 'core/shared/models/Versioning/Blob/Blob';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
-import { JsonView } from 'core/shared/view/elements/JsonView/JsonView';
+import { IBlob } from 'shared/models/Versioning/Blob/Blob';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
+import { JsonView } from 'shared/view/elements/JsonView/JsonView';
 
 import CodeBlobView from './CodeBlobView/CodeBlobView';
 import ConfigBlobView from './ConfigBlobView/ConfigBlobView';

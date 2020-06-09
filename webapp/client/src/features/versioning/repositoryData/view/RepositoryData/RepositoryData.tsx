@@ -2,14 +2,14 @@ import cn from 'classnames';
 import * as React from 'react';
 import { useLocation } from 'react-router';
 
-import { isHttpNotFoundError } from 'core/shared/models/Error';
+import { isHttpNotFoundError } from 'shared/models/Error';
 import {
   IRepository,
   IBranchesAndTags,
-} from 'core/shared/models/Versioning/Repository';
-import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
-import DefaultMatchRemoteDataWithReloading from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
+} from 'shared/models/Versioning/Repository';
+import InlineCommunicationError from 'shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
+import DefaultMatchRemoteDataWithReloading from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
 
 import DataNavigation from './DataNavigation/DataNavigation';
 import styles from './RepositoryData.module.css';
@@ -17,7 +17,7 @@ import * as RouteHelpers from './routeHelpers';
 import Toolbar from './Toolbar/Toolbar';
 import withLoadingBranchesAndTags from './WithLoadingBranchesAndTags/WithLoadingBranchesAndTags';
 import { useRepositoryDataQuery } from '../../store/repositoryData/useRepositoryData';
-import Reloading from 'core/shared/view/elements/Reloading/Reloading';
+import Reloading from 'shared/view/elements/Reloading/Reloading';
 
 interface ILocalProps extends IBranchesAndTags {
   repository: IRepository;

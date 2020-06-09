@@ -6,15 +6,15 @@ import { Link } from 'react-router-dom';
 
 import DatasetEntityDescriptionManager from 'features/descriptionManager/view/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
 import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
-import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
-import Avatar from 'core/shared/view/elements/Avatar/Avatar';
-import Draggable from 'core/shared/view/elements/Draggable/Draggable';
-import { Dataset, DatasetType } from 'core/shared/models/Dataset';
-import routes from 'core/shared/routes';
+import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import Avatar from 'shared/view/elements/Avatar/Avatar';
+import Draggable from 'shared/view/elements/Draggable/Draggable';
+import { Dataset, DatasetType } from 'shared/models/Dataset';
+import routes from 'shared/routes';
 
 import DatasetBulkDeletion from './DatasetBulkDeletion/DatasetBulkDeletion';
 import styles from './DatasetWidget.module.css';
-import { unknownUser } from 'core/shared/models/User';
+import { unknownUser } from 'shared/models/User';
 
 interface ILocalProps {
   dataset: Dataset;

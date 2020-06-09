@@ -1,9 +1,9 @@
 import * as React from 'react';
 
-import { IPythonEnvironmentBlob } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
-import PythonRequirementEnvironment from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
-import PythonVersion from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
+import { IPythonEnvironmentBlob } from 'shared/models/Versioning/Blob/EnvironmentBlob';
+import { BlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import PythonRequirementEnvironment from 'shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
+import PythonVersion from 'shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
 
 import PropertiesTable from '../../shared/PropertiesTable/PropertiesTable';
 import styles from './PythonEnvironmentBlobView.module.css';

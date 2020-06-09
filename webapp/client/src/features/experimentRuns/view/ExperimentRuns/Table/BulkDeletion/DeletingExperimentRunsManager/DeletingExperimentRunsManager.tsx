@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { ICommunication } from 'core/shared/utils/redux/communication';
+import { ICommunication } from 'shared/utils/redux/communication';
 import {
   selectExperimentRunIdsForDeleting,
   unselectExperimentRunForDeleting,
@@ -12,7 +12,7 @@ import {
 } from 'features/experimentRuns/store';
 import { IApplicationState } from 'store/store';
 
-import TableBulkDeletionManager from 'core/shared/view/domain/BulkDeletion/TableBulkDeletionComponents/TableBulkDeletionManager/TableBulkDeletionManager';
+import TableBulkDeletionManager from 'shared/view/domain/BulkDeletion/TableBulkDeletionComponents/TableBulkDeletionManager/TableBulkDeletionManager';
 
 interface ILocalProps {
   projectId: string;

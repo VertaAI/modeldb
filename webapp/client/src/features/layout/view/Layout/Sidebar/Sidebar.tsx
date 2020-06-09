@@ -1,8 +1,8 @@
 import * as React from 'react';
 
 import { FilterManager, IFilterContext } from 'features/filter';
-import { Icon, IconType } from 'core/shared/view/elements/Icon/Icon';
-import usePlacerUnderHeader from 'core/shared/view/pages/usePlacerUnderHeader';
+import { Icon, IconType } from 'shared/view/elements/Icon/Icon';
+import usePlacerUnderHeader from 'shared/view/pages/usePlacerUnderHeader';
 
 import LayoutLink from './LayoutLink/LayoutLink';
 import styles from './Sidebar.module.css';

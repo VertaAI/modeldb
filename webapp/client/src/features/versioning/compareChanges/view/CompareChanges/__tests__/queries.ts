@@ -1,8 +1,8 @@
-import { SHA } from 'core/shared/models/Versioning/RepositoryData';
-import { getCommitReference } from 'core/shared/graphql/Versioning/CommitReference';
-import makeGraphqlMockedResponse from 'core/shared/utils/tests/graphql/makeGraphqlMockedResponse';
+import { SHA } from 'shared/models/Versioning/RepositoryData';
+import { getCommitReference } from 'shared/graphql/Versioning/CommitReference';
+import makeGraphqlMockedResponse from 'shared/utils/tests/graphql/makeGraphqlMockedResponse';
 import { IServerBlobDiff } from 'services/serverModel/Versioning/CompareCommits/ServerDiff';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 
 import * as CompareChangesQuery from '../../../store/compareChanges/useCompareChanges';
 import * as MergeCommits from '../../../store/mergeCommits/useMergeCommits';

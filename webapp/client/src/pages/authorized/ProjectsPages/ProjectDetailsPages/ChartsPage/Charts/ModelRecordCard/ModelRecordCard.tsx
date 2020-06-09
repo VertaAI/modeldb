@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
-import routes, { GetRouteParams } from 'core/shared/routes';
+import routes, { GetRouteParams } from 'shared/routes';
 
-import { makeDefaultMetricFilter } from 'core/shared/models/Filters';
-import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
-import Draggable from 'core/shared/view/elements/Draggable/Draggable';
-import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
-import TagBlock from 'core/shared/view/elements/TagBlock/TagBlock';
+import { makeDefaultMetricFilter } from 'shared/models/Filters';
+import { withScientificNotationOrRounded } from 'shared/utils/formatters/number';
+import Draggable from 'shared/view/elements/Draggable/Draggable';
+import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
+import TagBlock from 'shared/view/elements/TagBlock/TagBlock';
 
 import closeIcon from './images/close.svg';
 import styles from './ModelRecordCard.module.css';

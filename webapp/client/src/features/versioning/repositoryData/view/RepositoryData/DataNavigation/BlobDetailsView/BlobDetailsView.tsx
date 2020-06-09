@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { DataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import { IHydratedCommit } from 'shared/models/Versioning/RepositoryData';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { DataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 import { IBlobView } from 'features/versioning/repositoryData/store/types';
-import AssociatedExperimentRuns from 'core/shared/view/domain/Versioning/AssociatedExperimentRuns/AssociatedExperimentRuns';
+import AssociatedExperimentRuns from 'shared/view/domain/Versioning/AssociatedExperimentRuns/AssociatedExperimentRuns';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

@@ -1,9 +1,9 @@
 import * as React from 'react';
 
-import { IDatasetBlobDiff } from 'core/shared/models/Versioning/Blob/DatasetBlob';
-import matchBy from 'core/shared/utils/matchBy';
-import matchType from 'core/shared/utils/matchType';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import { IDatasetBlobDiff } from 'shared/models/Versioning/Blob/DatasetBlob';
+import matchBy from 'shared/utils/matchBy';
+import matchType from 'shared/utils/matchType';
+import { BlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import PathComponentsDiff from './PathComponentsDiff/PathComponentsDiff';
 import S3ComponentsDiff from './S3ComponentsDiff/S3ComponentsDiff';

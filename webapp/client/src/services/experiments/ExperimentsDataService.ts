@@ -1,10 +1,10 @@
 import { JsonConvert } from 'json2typescript';
 import * as R from 'ramda';
 
-import { IArtifact } from 'core/shared/models/Artifact';
-import { IFilterData } from 'core/shared/models/Filters';
-import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
-import * as Experiment from 'core/shared/models/Experiment';
+import { IArtifact } from 'shared/models/Artifact';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination, DataWithPagination } from 'shared/models/Pagination';
+import * as Experiment from 'shared/models/Experiment';
 import { convertServerCodeVersion } from 'services/serverModel/CodeVersion/converters';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
 import { convertServerUser } from 'services/serverModel/User/converters';
@@ -15,8 +15,8 @@ import makeLoadExperimentsRequest, {
   makeGetExperimentsByWorkspaceRequest,
 } from './responseRequest/makeLoadExperimentsRequest';
 import { ILoadExperimentsResponse } from './types';
-import { IWorkspace } from 'core/shared/models/Workspace';
-import { ISorting } from 'core/shared/models/Sorting';
+import { IWorkspace } from 'shared/models/Workspace';
+import { ISorting } from 'shared/models/Sorting';
 import {
   IServerPaginatedResponse,
   convertServerPaginationResponse,

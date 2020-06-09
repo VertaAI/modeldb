@@ -15,27 +15,27 @@ import {
   getEntitiesBySearchFields,
   filterMapEntitiesBySearchFields,
   RepositoryResult,
-} from 'core/shared/models/HighLevelSearch';
+} from 'shared/models/HighLevelSearch';
 import { BaseDataService } from 'services/BaseDataService';
 import {
   IPaginationSettings,
   DataWithPagination,
   IPagination,
-} from 'core/shared/models/Pagination';
+} from 'shared/models/Pagination';
 import { ProjectDataService } from 'services/projects';
-import { IWorkspace } from 'core/shared/models/Workspace';
+import { IWorkspace } from 'shared/models/Workspace';
 import {
   makeDefaultTagFilter,
   IStringFilterData,
   makeDefaultNameFilter,
-} from 'core/shared/models/Filters';
+} from 'shared/models/Filters';
 import { ExperimentRunsDataService } from 'services/experimentRuns';
 import { ExperimentsDataService } from 'services/experiments';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
-import { RecordFromUnion, RecordValues } from 'core/shared/utils/types';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
+import { RecordFromUnion, RecordValues } from 'shared/utils/types';
 import { DatasetsDataService } from 'services/datasets';
-import { ISorting } from 'core/shared/models/Sorting';
-import matchType from 'core/shared/utils/matchType';
+import { ISorting } from 'shared/models/Sorting';
+import matchType from 'shared/utils/matchType';
 import { getServerFilterOperator } from 'services/serverModel/Filters/Filters';
 
 import * as graphqlTypes from './graphql-types/RepositoriesResult';

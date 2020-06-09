@@ -1,11 +1,8 @@
 import * as R from 'ramda';
 
-import { ICodeVersion } from 'core/shared/models/CodeVersion';
-import {
-  ICodeVersionsFromBlob,
-  BlobLocation,
-} from 'core/shared/models/ModelRecord';
-import { makeGithubRemoteRepoUrl } from 'core/shared/utils/github/github';
+import { ICodeVersion } from 'shared/models/CodeVersion';
+import { ICodeVersionsFromBlob, BlobLocation } from 'shared/models/ModelRecord';
+import { makeGithubRemoteRepoUrl } from 'shared/utils/github/github';
 
 export const convertServerCodeVersion = (
   serverCodeVersion: any

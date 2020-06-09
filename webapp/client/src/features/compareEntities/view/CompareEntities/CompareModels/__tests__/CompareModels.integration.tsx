@@ -2,35 +2,35 @@ import { ReactWrapper, ShallowWrapper } from 'enzyme';
 import * as React from 'react';
 import { action } from 'typesafe-actions';
 
-import { IArtifact } from 'core/shared/models/Artifact';
-import { IAttribute } from 'core/shared/models/Attribute';
+import { IArtifact } from 'shared/models/Artifact';
+import { IAttribute } from 'shared/models/Attribute';
 import {
   ICodeVersion,
   IGitCodeVersion,
   IGitCodeVersionData,
-} from 'core/shared/models/CodeVersion';
-import { IHyperparameter } from 'core/shared/models/HyperParameters';
-import { IMetric } from 'core/shared/models/Metrics';
-import cloneClassInstance from 'core/shared/utils/cloneClassInstance';
-import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
-import { findByDataTestAttribute } from 'core/shared/utils/tests/react/helpers';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { ShortExperiment } from 'core/shared/models/Experiment';
-import ModelRecord from 'core/shared/models/ModelRecord';
-import { Project } from 'core/shared/models/Project';
-import User from 'core/shared/models/User';
+} from 'shared/models/CodeVersion';
+import { IHyperparameter } from 'shared/models/HyperParameters';
+import { IMetric } from 'shared/models/Metrics';
+import cloneClassInstance from 'shared/utils/cloneClassInstance';
+import flushAllPromises from 'shared/utils/tests/integrations/flushAllPromises';
+import { findByDataTestAttribute } from 'shared/utils/tests/react/helpers';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import { ShortExperiment } from 'shared/models/Experiment';
+import ModelRecord from 'shared/models/ModelRecord';
+import { Project } from 'shared/models/Project';
+import User from 'shared/models/User';
 import ExperimentRunsDataService from 'services/experimentRuns/ExperimentRunsDataService';
 import {
   IProjectsState,
   projectsReducer,
   loadProjectActionTypes,
 } from 'features/projects/store';
-import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import makeMountComponentWithPredefinedData from 'shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
 import diffHighlightStyles from '../../shared/DiffHighlight/DiffHighlight.module.css';
 
 import CompareModels, { ICompareModelsLocalProps } from '../CompareModels';
 import CompareModelsTable from '../CompareModelsTable/CompareModelsTable';
-import { makeGithubRemoteRepoUrl } from 'core/shared/utils/github/github';
+import { makeGithubRemoteRepoUrl } from 'shared/utils/github/github';
 
 jest.mock('services/experimentRuns/ExperimentRunsDataService');
 

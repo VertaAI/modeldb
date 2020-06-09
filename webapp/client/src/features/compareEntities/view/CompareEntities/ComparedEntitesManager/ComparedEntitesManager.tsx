@@ -3,7 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import IdView from 'core/shared/view/elements/IdView/IdView';
+import IdView from 'shared/view/elements/IdView/IdView';
 import {
   ComparedEntityIds,
   selectComparedEntityIds,

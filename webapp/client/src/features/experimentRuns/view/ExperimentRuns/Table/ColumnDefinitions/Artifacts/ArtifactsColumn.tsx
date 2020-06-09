@@ -4,11 +4,11 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import Artifacts from 'features/artifactManager/view/Artifacts/Artifacts';
-import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import {
   ICommunicationById,
   initialCommunication,
-} from 'core/shared/utils/redux/communication';
+} from 'shared/utils/redux/communication';
 import {
   deleteExperimentRunArtifact,
   selectDeletingExperimentRunArtifacts,

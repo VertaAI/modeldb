@@ -1,12 +1,12 @@
-import { AppError } from 'core/shared/models/Error';
+import { AppError } from 'shared/models/Error';
 import {
   ICommunication,
   ICommunicationById,
   MakeCommunicationActions,
   makeCommunicationActionTypes,
-} from 'core/shared/utils/redux/communication';
+} from 'shared/utils/redux/communication';
 
-import { EntityId, IComment } from '../../../core/shared/models/Comment';
+import { EntityId, IComment } from '../../../shared/models/Comment';
 
 export interface ICommentsRootState {
   comments: ICommentsState;

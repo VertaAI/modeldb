@@ -2,7 +2,7 @@ import {
   IGitCodeDiff,
   ICodeBlobDiff,
   INotebookCodeDiff,
-} from 'core/shared/models/Versioning/Blob/CodeBlob';
+} from 'shared/models/Versioning/Blob/CodeBlob';
 
 import { convertServerGitBlob } from '../../RepositoryData/Blob/CodeBlob';
 import {

@@ -2,24 +2,24 @@ import * as React from 'react';
 import { act } from 'react-dom/test-utils';
 import { Route } from 'react-router';
 
-import { flushAllPromisesFor } from 'core/shared/utils/tests/integrations/flushAllPromisesFor';
-import { makeMockServiceMethod } from 'core/shared/utils/tests/integrations/mockServiceMethod';
+import { flushAllPromisesFor } from 'shared/utils/tests/integrations/flushAllPromisesFor';
+import { makeMockServiceMethod } from 'shared/utils/tests/integrations/mockServiceMethod';
 import {
   makeAsyncInputHelpersByName,
   findByDataTestAttribute,
   findByText,
   withAct,
   submitAsyncForm,
-} from 'core/shared/utils/tests/react/helpers';
-import { makeTagsManagerHelpers } from 'core/shared/view/domain/BaseTagsManager/__tests__/helpers';
+} from 'shared/utils/tests/react/helpers';
+import { makeTagsManagerHelpers } from 'shared/view/domain/BaseTagsManager/__tests__/helpers';
 import Experiment, {
   IExperimentCreationSettings,
-} from 'core/shared/models/Experiment';
-import routes from 'core/shared/routes';
+} from 'shared/models/Experiment';
+import routes from 'shared/routes';
 import ExperimentsDataService from 'services/experiments/ExperimentsDataService';
-import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import makeMountComponentWithPredefinedData from 'shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
 
-import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 import ExperimentCreation from '../ExperimentCreation';
 
 // need for testing portals

@@ -2,10 +2,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router';
 
 import { RepositoryData } from 'features/versioning/repositoryData';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
 import { AuthorizedLayout } from 'pages/authorized/shared/AuthorizedLayout';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import { RepositoryNavigation } from 'features/versioning/repositoryNavigation';
 
 import RepositoryDetailsPagesLayout from '../shared/RepositoryDetailsPagesLayout/RepositoryDetailsPagesLayout';

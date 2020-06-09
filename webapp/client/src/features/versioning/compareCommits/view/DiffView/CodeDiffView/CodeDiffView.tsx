@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { ICodeBlobDiff } from 'core/shared/models/Versioning/Blob/CodeBlob';
-import matchBy from 'core/shared/utils/matchBy';
+import { ICodeBlobDiff } from 'shared/models/Versioning/Blob/CodeBlob';
+import matchBy from 'shared/utils/matchBy';
 
 import { IComparedCommitsInfo } from '../../model';
 import GitDiffView from './GitDiffView/GitDiffView';

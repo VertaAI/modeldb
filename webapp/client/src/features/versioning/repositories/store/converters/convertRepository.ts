@@ -1,8 +1,8 @@
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { ICurrentWorkspace } from 'core/shared/models/Workspace';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { ICurrentWorkspace } from 'shared/models/Workspace';
 
 import { Repository_workspace_repository } from '../repositoryQuery/graphql-types/Repository';
-import { convertUser } from 'core/shared/graphql/User/User';
+import { convertUser } from 'shared/graphql/User/User';
 
 export const convertRepository = (
   serverRepository: Repository_workspace_repository,

@@ -2,11 +2,11 @@ import gql from 'graphql-tag';
 import { useMutation } from 'react-apollo';
 import { Visibility } from 'graphql-types/graphql-global-types';
 
-import { mutationResultToCommunication } from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
-import { WORKSPACE_FRAGMENT } from 'core/shared/graphql/Workspace';
+import { mutationResultToCommunication } from 'shared/utils/graphql/queryResultToCommunicationWithData';
+import { WORKSPACE_FRAGMENT } from 'shared/graphql/Workspace';
 
 import * as Types from './graphql-types/CreateRepository';
-import onCompletedUpdate from 'core/shared/utils/graphql/onCompletedUpdate';
+import onCompletedUpdate from 'shared/utils/graphql/onCompletedUpdate';
 
 const CREATE_REPOSITORY = gql`
   mutation CreateRepository(

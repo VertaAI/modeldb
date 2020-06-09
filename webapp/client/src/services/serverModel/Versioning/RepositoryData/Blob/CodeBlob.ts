@@ -2,8 +2,8 @@ import {
   IGitCodeBlob,
   ICodeBlob,
   INotebookCodeBlob,
-} from 'core/shared/models/Versioning/Blob/CodeBlob';
-import { makeGithubRemoteRepoUrl } from 'core/shared/utils/github/github';
+} from 'shared/models/Versioning/Blob/CodeBlob';
+import { makeGithubRemoteRepoUrl } from 'shared/utils/github/github';
 
 import { convertServerDatasetPathComponent } from './DatasetBlob';
 

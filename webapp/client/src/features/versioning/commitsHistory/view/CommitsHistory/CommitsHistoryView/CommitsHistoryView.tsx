@@ -5,13 +5,13 @@ import {
   ICommitHistorySettings,
   ICommitView,
 } from 'features/versioning/commitsHistory/store/types';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import Placeholder from 'shared/view/elements/Placeholder/Placeholder';
 
 import CommitsHistoryBreadcrumbs from './CommitsHistoryBreadcrumbs/CommitsHistoryBreadcrumbs';
 import styles from './CommitsHistoryView.module.css';
 import GroupedCommitsByDate from './GroupedCommitsByDate/GroupedCommitsByDate';
-import { PageHeader } from 'core/shared/view/elements/PageComponents';
+import { PageHeader } from 'shared/view/elements/PageComponents';
 import { RepositoryNavigation } from 'features/versioning/repositoryNavigation';
 
 interface ILocalProps {

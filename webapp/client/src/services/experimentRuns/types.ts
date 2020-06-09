@@ -1,6 +1,6 @@
-import { IComment } from 'core/shared/models/Comment';
-import ModelRecord from 'core/shared/models/ModelRecord';
-import { DataWithPagination } from 'core/shared/models/Pagination';
+import { IComment } from 'shared/models/Comment';
+import ModelRecord from 'shared/models/ModelRecord';
+import { DataWithPagination } from 'shared/models/Pagination';
 
 export type ILoadExperimentRunsResult = DataWithPagination<
   ILoadModelRecordResult

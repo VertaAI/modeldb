@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
-import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
+import { withScientificNotationOrRounded } from 'shared/utils/formatters/number';
 
 const width = 680,
   height = 360,

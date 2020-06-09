@@ -4,15 +4,15 @@ import { connect } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import * as R from 'ramda';
 
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import MuiTextInput from 'core/shared/view/elements/MuiTextInput/MuiTextInput';
-import routes, { GetRouteParams } from 'core/shared/routes';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import MuiTextInput from 'shared/view/elements/MuiTextInput/MuiTextInput';
+import routes, { GetRouteParams } from 'shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import styles from './HeaderSearch.module.css';
 import { defaultFilter } from '../../constants';
-import { defaultResultsSorting } from 'core/shared/models/HighLevelSearch';
+import { defaultResultsSorting } from 'shared/models/HighLevelSearch';
 
 const mapStateToProps = (state: IApplicationState) => ({
   currentWorkspaceName: selectCurrentWorkspaceName(state),

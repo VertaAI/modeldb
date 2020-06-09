@@ -4,18 +4,18 @@ import { useSelector } from 'react-redux';
 
 import CompareCommits from 'features/versioning/compareCommits/view/CompareCommits';
 import { RepositoryNavigation } from 'features/versioning/repositoryNavigation';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   CommitPointer,
   CommitTag,
   RepositoryBranches,
-} from 'core/shared/models/Versioning/RepositoryData';
-import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
-import DefaultMatchRemoteDataWithReloading from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
-import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
-import routes from 'core/shared/routes';
+} from 'shared/models/Versioning/RepositoryData';
+import InlineCommunicationError from 'shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
+import DefaultMatchRemoteDataWithReloading from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
+import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import { hasAccessToAction } from 'shared/models/EntitiesActions';
+import routes from 'shared/routes';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import { useCompareChangesMutation } from '../../store/compareChanges/useCompareChanges';

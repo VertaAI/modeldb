@@ -3,7 +3,7 @@ import {
   networkGraphSettings,
   INetworkConnection,
   INetworkData,
-} from 'core/shared/models/Versioning/NetworkGraph';
+} from 'shared/models/Versioning/NetworkGraph';
 
 import { Network_workspace_repository_network } from './graphql-types/Network';
 

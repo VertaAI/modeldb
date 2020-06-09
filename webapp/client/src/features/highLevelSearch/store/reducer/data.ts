@@ -2,14 +2,14 @@ import { ActionType, createReducer } from 'typesafe-actions';
 import { combineReducers } from 'redux';
 import { RouterAction } from 'connected-react-router';
 
-import { IEntitiesResults } from 'core/shared/models/HighLevelSearch';
-import routes from 'core/shared/routes';
+import { IEntitiesResults } from 'shared/models/HighLevelSearch';
+import routes from 'shared/routes';
 import {
   initialCommunication,
   requestingCommunication,
   successfullCommunication,
-} from 'core/shared/utils/redux/communication';
-import { mapObj } from 'core/shared/utils/collection';
+} from 'shared/utils/redux/communication';
+import { mapObj } from 'shared/utils/collection';
 
 import * as actions from '../actions';
 import { IHighLevelSearchState } from '../types';

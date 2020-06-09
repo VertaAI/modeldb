@@ -1,5 +1,5 @@
-import { EntityWithDescription } from 'core/shared/models/Description';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
+import { EntityWithDescription } from 'shared/models/Description';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
 
 import { BaseDataService } from 'services/BaseDataService';
 

@@ -6,7 +6,7 @@ import {
   IFilterData,
   makeURLFilters,
   URLFiltersParam,
-} from 'core/shared/models/Filters';
+} from 'shared/models/Filters';
 
 import {
   hasContext,

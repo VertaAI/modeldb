@@ -1,14 +1,14 @@
-import { ICommunication } from 'core/shared/utils/redux/communication';
+import { ICommunication } from 'shared/utils/redux/communication';
 import { bind } from 'decko';
 import _ from 'lodash';
 import React from 'react';
 import { connect } from 'react-redux';
 
-import Fai from 'core/shared/view/elements/Fai/Fai';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import ShareLink from 'core/shared/view/elements/ShareLink/ShareLink';
-import { Project } from 'core/shared/models/Project';
+import Fai from 'shared/view/elements/Fai/Fai';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import ShareLink from 'shared/view/elements/ShareLink/ShareLink';
+import { Project } from 'shared/models/Project';
 import { chartsPageSettings } from 'features/experimentRuns/store';
 import { selectProject } from 'features/projects/store';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';

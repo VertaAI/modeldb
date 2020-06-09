@@ -4,14 +4,14 @@ import * as React from 'react';
 import {
   IGitCodeDiff,
   IGitCodeBlob,
-} from 'core/shared/models/Versioning/Blob/CodeBlob';
-import { getABCData } from 'core/shared/models/Versioning/Blob/Diff';
-import { getObjsPropsDiff } from 'core/shared/utils/collection';
-import HashProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/HashProp/HashProp';
-import BranchProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/BranchProp/BranchProp';
-import TagProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/TagProp/TagProp';
-import RepoProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/RepoProp/RepoProp';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+} from 'shared/models/Versioning/Blob/CodeBlob';
+import { getABCData } from 'shared/models/Versioning/Blob/Diff';
+import { getObjsPropsDiff } from 'shared/utils/collection';
+import HashProp from 'shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/HashProp/HashProp';
+import BranchProp from 'shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/BranchProp/BranchProp';
+import TagProp from 'shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/TagProp/TagProp';
+import RepoProp from 'shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/RepoProp/RepoProp';
+import { BlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import { IComparedCommitsInfo } from '../../../model';
 import { makeHighlightCellBackground } from '../../shared/makeHighlightCellBackground';

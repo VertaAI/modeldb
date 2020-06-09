@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
 
-import { makeCommunicationReducerFromEnum } from 'core/shared/utils/redux/communication';
+import { makeCommunicationReducerFromEnum } from 'shared/utils/redux/communication';
 
 import { IDescriptionManagerState, addOrEditDescActionTypes } from '../types';
 

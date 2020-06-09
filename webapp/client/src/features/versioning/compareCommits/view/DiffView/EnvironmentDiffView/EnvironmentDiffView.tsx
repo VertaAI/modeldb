@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import { IEnvironmentBlobDiff } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
-import matchBy from 'core/shared/utils/matchBy';
-import { MultipleBlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import { IEnvironmentBlobDiff } from 'shared/models/Versioning/Blob/EnvironmentBlob';
+import matchBy from 'shared/utils/matchBy';
+import { MultipleBlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import { IComparedCommitsInfo } from '../../model';
 import DockerDiff from './DockerDiff/DockerDiff';

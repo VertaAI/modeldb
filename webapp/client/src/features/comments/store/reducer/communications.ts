@@ -4,7 +4,7 @@ import {
   CommunicationActionsToObj,
   makeCommunicationReducerByIdFromEnum,
   makeCommunicationReducerFromEnum,
-} from 'core/shared/utils/redux/communication';
+} from 'shared/utils/redux/communication';
 
 import {
   addCommentActionTypes,

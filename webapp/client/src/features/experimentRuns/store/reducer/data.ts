@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { substractPaginationTotalCount } from 'core/shared/models/Pagination';
-import cloneClassInstance from 'core/shared/utils/cloneClassInstance';
-import { upsert } from 'core/shared/utils/collection';
-import ModelRecord from 'core/shared/models/ModelRecord';
+import { substractPaginationTotalCount } from 'shared/models/Pagination';
+import cloneClassInstance from 'shared/utils/cloneClassInstance';
+import { upsert } from 'shared/utils/collection';
+import ModelRecord from 'shared/models/ModelRecord';
 
 import { ActionType, getType } from 'typesafe-actions';
 import * as actions from '../actions';

@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 import { Reducer } from 'redux';
 
-import { IFilterData } from 'core/shared/models/Filters';
-import { updateById } from 'core/shared/utils/collection';
-import composeReducers from 'core/shared/utils/redux/composeReducers';
+import { IFilterData } from 'shared/models/Filters';
+import { updateById } from 'shared/utils/collection';
+import composeReducers from 'shared/utils/redux/composeReducers';
 
 import {
   changeContextActionTypes,

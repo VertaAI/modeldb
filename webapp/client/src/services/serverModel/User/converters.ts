@@ -1,4 +1,4 @@
-import User, { CurrentUser, unknownUser } from 'core/shared/models/User';
+import User, { CurrentUser, unknownUser } from 'shared/models/User';
 import { IServerUserInfo } from 'services/serverModel/User/User';
 
 export const convertServerCurrentUser = (serverUser: IServerUserInfo) => {

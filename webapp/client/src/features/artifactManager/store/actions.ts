@@ -1,8 +1,8 @@
 import { action } from 'typesafe-actions';
 
-import { IArtifact } from 'core/shared/models/Artifact';
-import { isFileExtensionImage } from 'core/shared/models/File';
-import normalizeError from 'core/shared/utils/normalizeError';
+import { IArtifact } from 'shared/models/Artifact';
+import { isFileExtensionImage } from 'shared/models/File';
+import normalizeError from 'shared/utils/normalizeError';
 import { ActionResult } from 'store/store';
 
 import { getArtifactPreviewFileExtension } from './helpers';
@@ -22,8 +22,8 @@ import {
   deleteArtifactActionTypes,
   EntityType,
 } from './types';
-import { HttpError } from 'core/shared/models/Error';
-import { IWorkspace } from 'core/shared/models/Workspace';
+import { HttpError } from 'shared/models/Error';
+import { IWorkspace } from 'shared/models/Workspace';
 
 const loadArtifactUrlOrReturnLoaded = (
   entityType: EntityType,

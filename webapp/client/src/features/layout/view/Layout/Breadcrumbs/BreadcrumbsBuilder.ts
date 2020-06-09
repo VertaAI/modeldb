@@ -1,5 +1,5 @@
-import { IRoute } from 'core/shared/routes/makeRoute';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
+import { IRoute } from 'shared/routes/makeRoute';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
 
 interface IBreadcrumbs {
   checkLoaded: () => boolean;
@@ -22,7 +22,7 @@ export interface IBreadcrumbsBuilder {
 }
 
 type IThenBreadcrumItemSetting<T> =
-  | Omit<ICommonBreadcrumItemSetting<T>, 'core/shared/routes'> & {
+  | Omit<ICommonBreadcrumItemSetting<T>, 'routes'> & {
       type: 'alwaysDisplayed';
       route: IRoute<T, any, any>;
     }

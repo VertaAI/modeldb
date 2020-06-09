@@ -5,30 +5,30 @@ import { Switch, Route } from 'react-router';
 
 import { IServerCodeBlobDiff } from 'services/serverModel/Versioning/CompareCommits/convertServerCodeDiff';
 import { IServerBlobDiff } from 'services/serverModel/Versioning/CompareCommits/ServerDiff';
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
 import {
   CommitPointer,
   Branch,
   CommitTag,
   CommitPointerHelpers,
   SHA,
-} from 'core/shared/models/Versioning/RepositoryData';
-import { flushAllPromisesFor } from 'core/shared/utils/tests/integrations/flushAllPromisesFor';
-import waitFor from 'core/shared/utils/tests/integrations/waitFor';
-import { commits } from 'core/shared/utils/tests/mocks/models/Versioning/commitsMocks';
-import { repositories } from 'core/shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
+} from 'shared/models/Versioning/RepositoryData';
+import { flushAllPromisesFor } from 'shared/utils/tests/integrations/flushAllPromisesFor';
+import waitFor from 'shared/utils/tests/integrations/waitFor';
+import { commits } from 'shared/utils/tests/mocks/models/Versioning/commitsMocks';
+import { repositories } from 'shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
 import {
   findByText,
   withAct,
   findByDataTestAttribute,
-} from 'core/shared/utils/tests/react/helpers';
-import { createBranchesAndTagsListHelpers } from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/__tests__/helpers';
-import { shortenSHA } from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { AllEntityAction } from 'core/shared/models/EntitiesActions';
-import routes from 'core/shared/routes';
-import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
+} from 'shared/utils/tests/react/helpers';
+import { createBranchesAndTagsListHelpers } from 'shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/__tests__/helpers';
+import { shortenSHA } from 'shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import { AllEntityAction } from 'shared/models/EntitiesActions';
+import routes from 'shared/routes';
+import makeMountComponentWithPredefinedData from 'shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 
 import CompareChanges from '../CompareChanges';
 
@@ -38,9 +38,9 @@ import {
   makeCompareChangesQuery,
   MakeCompareChangesQuerySettings,
 } from './queries';
-import { createWaitForPred } from 'core/shared/utils/tests/integrations/waitForByPred';
-import { createWaitForExpect } from 'core/shared/utils/tests/integrations/waitForExpect';
-import { getDisplayedNotifications } from 'core/shared/view/elements/Notification/__tests__/helpers';
+import { createWaitForPred } from 'shared/utils/tests/integrations/waitForByPred';
+import { createWaitForExpect } from 'shared/utils/tests/integrations/waitForExpect';
+import { getDisplayedNotifications } from 'shared/view/elements/Notification/__tests__/helpers';
 
 const ownerAllowedActions: any = [];
 

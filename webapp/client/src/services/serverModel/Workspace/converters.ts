@@ -1,9 +1,9 @@
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
 import {
   IWorkspace,
   IShortWorkspace,
   IEntityWithShortWorkspace,
-} from 'core/shared/models/Workspace';
+} from 'shared/models/Workspace';
 import { IServerEntityWithWorkspace } from 'services/serverModel/Workspace/Workspace';
 
 export const addWorkspaceName = <T>(workspaceName: IWorkspace['name']) => (

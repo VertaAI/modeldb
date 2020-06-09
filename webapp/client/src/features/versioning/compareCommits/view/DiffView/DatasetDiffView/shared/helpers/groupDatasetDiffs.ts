@@ -4,7 +4,7 @@ import {
   IObjectToObjectWithDiffColor,
 } from '../../../../model';
 
-import { IElementDiff } from 'core/shared/models/Versioning/Blob/Diff';
+import { IElementDiff } from 'shared/models/Versioning/Blob/Diff';
 
 export const groupDatasetDiffs = <D>(
   diffs: Array<IElementDiff<D>>

@@ -1,4 +1,4 @@
-import { IComment } from 'core/shared/models/Comment';
+import { IComment } from 'shared/models/Comment';
 
 export const convertServerComment = <Comment extends IComment>(
   serverComment: any

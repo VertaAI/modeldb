@@ -3,9 +3,9 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import BulkDeletionManager from 'core/shared/view/domain/BulkDeletion/WidgetsBulkDeletionComponents/BulkDeletionManager/BulkDeletionManager';
-import { ICommunication } from 'core/shared/utils/redux/communication';
-import { IWorkspace } from 'core/shared/models/Workspace';
+import BulkDeletionManager from 'shared/view/domain/BulkDeletion/WidgetsBulkDeletionComponents/BulkDeletionManager/BulkDeletionManager';
+import { ICommunication } from 'shared/utils/redux/communication';
+import { IWorkspace } from 'shared/models/Workspace';
 import {
   selectProjectIdsForDeleting,
   unselectProjectForDeleting,

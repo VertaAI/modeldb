@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useDispatch } from 'react-redux';
 
-import * as Suggestions from 'core/shared/models/HighLevelSearch/Suggestions';
+import * as Suggestions from 'shared/models/HighLevelSearch/Suggestions';
 
 import { getSuggestionsFromLocalStorage } from '../suggestionsFromLocalStorage';
 import * as actions from './actions';

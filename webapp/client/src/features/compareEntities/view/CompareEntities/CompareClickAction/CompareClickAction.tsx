@@ -10,7 +10,7 @@ import {
 } from 'features/compareEntities/store';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import FaiLikeCheckbox from 'core/shared/view/elements/FaiLikeCheckbox/FaiLikeCheckbox';
+import FaiLikeCheckbox from 'shared/view/elements/FaiLikeCheckbox/FaiLikeCheckbox';
 
 interface ILocalProps {
   enitityId: string;

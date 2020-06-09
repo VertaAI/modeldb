@@ -3,7 +3,7 @@ import React from 'react';
 
 import VerticalTable, {
   IPropDefinition,
-} from 'core/shared/view/elements/VerticalTable/VerticalTable';
+} from 'shared/view/elements/VerticalTable/VerticalTable';
 
 interface ILocalProps<T> {
   data: T;

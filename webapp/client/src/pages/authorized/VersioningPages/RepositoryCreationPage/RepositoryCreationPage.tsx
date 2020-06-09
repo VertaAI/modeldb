@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { RepositoryCreationForm } from 'features/versioning/repositories/view';
-import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
+import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
 
 import RepositoriesPagesLayout from '../shared/RepositoriesPagesLayout/RepositoriesPagesLayout';
 

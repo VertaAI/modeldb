@@ -1,22 +1,22 @@
 import * as React from 'react';
 import { act } from 'react-dom/test-utils';
 
-import { flushAllPromisesFor } from 'core/shared/utils/tests/integrations/flushAllPromisesFor';
-import { makeMockServiceMethod } from 'core/shared/utils/tests/integrations/mockServiceMethod';
+import { flushAllPromisesFor } from 'shared/utils/tests/integrations/flushAllPromisesFor';
+import { makeMockServiceMethod } from 'shared/utils/tests/integrations/mockServiceMethod';
 import {
   makeAsyncInputHelpersByName,
   findByDataTestAttribute,
   findByText,
   withAct,
   submitAsyncForm,
-} from 'core/shared/utils/tests/react/helpers';
-import { Project, IProjectCreationSettings } from 'core/shared/models/Project';
-import routes from 'core/shared/routes';
+} from 'shared/utils/tests/react/helpers';
+import { Project, IProjectCreationSettings } from 'shared/models/Project';
+import routes from 'shared/routes';
 import { ProjectDataService } from 'services/projects';
-import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { makeProject } from 'core/shared/utils/tests/mocks/models/projectsMocks';
-import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
-import { makeTagsManagerHelpers } from 'core/shared/view/domain/BaseTagsManager/__tests__/helpers';
+import makeMountComponentWithPredefinedData from 'shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import { makeProject } from 'shared/utils/tests/mocks/models/projectsMocks';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
+import { makeTagsManagerHelpers } from 'shared/view/domain/BaseTagsManager/__tests__/helpers';
 
 import ProjectCreation from '../ProjectCreation';
 

@@ -3,12 +3,12 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 import cn from 'classnames';
 
-import Button from 'core/shared/view/elements/Button/Button';
-import MuiTextInput from 'core/shared/view/elements/MuiTextInput/MuiTextInput';
-import findHighlight from 'core/shared/utils/findHighlight';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import * as Suggestions from 'core/shared/models/HighLevelSearch/Suggestions';
-import matchType from 'core/shared/utils/matchType';
+import Button from 'shared/view/elements/Button/Button';
+import MuiTextInput from 'shared/view/elements/MuiTextInput/MuiTextInput';
+import findHighlight from 'shared/utils/findHighlight';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import * as Suggestions from 'shared/models/HighLevelSearch/Suggestions';
+import matchType from 'shared/utils/matchType';
 import useSuggestionsFromLocalStorage from 'features/highLevelSearch/store/useSuggestionsFromLocalStorage';
 
 import { actions } from '../../../store';

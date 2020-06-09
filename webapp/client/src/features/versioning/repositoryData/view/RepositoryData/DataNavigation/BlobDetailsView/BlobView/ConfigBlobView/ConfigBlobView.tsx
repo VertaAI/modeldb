@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { IConfigBlob } from 'core/shared/models/Versioning/Blob/ConfigBlob';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
-import HyperparameterItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
-import HyperparameterSetItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
+import { IConfigBlob } from 'shared/models/Versioning/Blob/ConfigBlob';
+import { BlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import HyperparameterItem from 'shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
+import HyperparameterSetItem from 'shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
 
 import PropertiesTable from '../shared/PropertiesTable/PropertiesTable';
 

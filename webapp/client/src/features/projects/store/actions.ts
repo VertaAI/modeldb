@@ -1,13 +1,13 @@
 import { History } from 'history';
 import { action, createAction } from 'typesafe-actions';
 
-import { IFilterData } from 'core/shared/models/Filters';
-import normalizeError from 'core/shared/utils/normalizeError';
-import { Markdown } from 'core/shared/utils/types';
-import { Project } from 'core/shared/models/Project';
+import { IFilterData } from 'shared/models/Filters';
+import normalizeError from 'shared/utils/normalizeError';
+import { Markdown } from 'shared/utils/types';
+import { Project } from 'shared/models/Project';
 import { ActionResult } from 'store/store';
 
-import { IWorkspace } from 'core/shared/models/Workspace';
+import { IWorkspace } from 'shared/models/Workspace';
 import { selectCurrentContextFilters } from 'features/filter';
 import { handleDeleteEntities } from 'features/shared/deletion';
 

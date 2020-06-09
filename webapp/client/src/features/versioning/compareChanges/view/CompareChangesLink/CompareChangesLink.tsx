@@ -1,11 +1,11 @@
 import * as React from 'react';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   CommitPointer,
   defaultBranch,
-} from 'core/shared/models/Versioning/RepositoryData';
-import routes from 'core/shared/routes';
+} from 'shared/models/Versioning/RepositoryData';
+import routes from 'shared/routes';
 
 interface ILocalProps {
   repositoryName: IRepository['name'];

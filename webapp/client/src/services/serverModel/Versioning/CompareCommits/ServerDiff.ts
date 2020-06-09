@@ -1,4 +1,4 @@
-import matchBy from 'core/shared/utils/matchBy';
+import matchBy from 'shared/utils/matchBy';
 import {
   IElementDiff,
   DiffType,
@@ -6,9 +6,9 @@ import {
   elementDiffMakers,
   IArrayDiff,
   makeArrayDiff,
-} from 'core/shared/models/Versioning/Blob/Diff';
-import matchType from 'core/shared/utils/matchType';
-import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitComponentLocation';
+} from 'shared/models/Versioning/Blob/Diff';
+import matchType from 'shared/utils/matchType';
+import { CommitComponentLocation } from 'shared/models/Versioning/CommitComponentLocation';
 
 export type IServerBlobDiff<Content> = {
   location: string[];

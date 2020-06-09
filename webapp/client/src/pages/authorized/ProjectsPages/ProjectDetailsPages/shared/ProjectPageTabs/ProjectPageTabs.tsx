@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import PagesTabs from 'core/shared/view/pages/PagesTabs/PagesTabs';
-import routes from 'core/shared/routes';
+import PagesTabs from 'shared/view/pages/PagesTabs/PagesTabs';
+import routes from 'shared/routes';
 
 interface ILocalProps {
   projectId: string;

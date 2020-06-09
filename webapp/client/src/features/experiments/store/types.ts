@@ -1,12 +1,12 @@
-import { AppError } from 'core/shared/models/Error';
-import { IPagination } from 'core/shared/models/Pagination';
+import { AppError } from 'shared/models/Error';
+import { IPagination } from 'shared/models/Pagination';
 import {
   ICommunication,
   MakeCommunicationActions,
   makeCommunicationActionTypes,
   ICommunicationById,
-} from 'core/shared/utils/redux/communication';
-import Experiment from 'core/shared/models/Experiment';
+} from 'shared/utils/redux/communication';
+import Experiment from 'shared/models/Experiment';
 import { EntityAlreadyExistsErrorType } from 'services/shared/EntityAlreadyExistError';
 
 export interface IExperimentsState {

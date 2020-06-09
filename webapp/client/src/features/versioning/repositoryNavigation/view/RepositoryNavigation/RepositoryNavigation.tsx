@@ -1,7 +1,7 @@
 import React from 'react';
 import { useHistory } from 'react-router';
 import { useSelector } from 'react-redux';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
+import { Icon } from 'shared/view/elements/Icon/Icon';
 
 import { selectors } from '../../store';
 import styles from './RepositoryNavigation.module.css';

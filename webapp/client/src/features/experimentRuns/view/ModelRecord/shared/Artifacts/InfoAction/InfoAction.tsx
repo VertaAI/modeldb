@@ -1,19 +1,19 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { Action } from 'core/shared/view/elements/PileWithActions/PileWithActions';
-import PilePopup from 'core/shared/view/elements/PileWithActions/PipePopup/PipePopup';
+import { Action } from 'shared/view/elements/PileWithActions/PileWithActions';
+import PilePopup from 'shared/view/elements/PileWithActions/PipePopup/PipePopup';
 import { checkSupportArtifactPreview } from 'features/artifactManager/store/helpers';
 import {
   IArtifact,
   IArtifactWithDatasetVersion,
   checkArtifactWithDatasetVersion,
-} from 'core/shared/models/Artifact';
-import { IconType } from 'core/shared/view/elements/Icon/Icon';
+} from 'shared/models/Artifact';
+import { IconType } from 'shared/view/elements/Icon/Icon';
 import ArtifactPreview from 'features/artifactManager/view/ArtifactButton/ArtifactPreview/ArtifactPreview';
 import { EntityType } from 'features/artifactManager/store';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import routes from 'core/shared/routes';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import routes from 'shared/routes';
 import { useArtifactDatasetVersion } from 'features/artifactManager/store/artifactDatasetVersion';
 
 export const useInfoAction = ({

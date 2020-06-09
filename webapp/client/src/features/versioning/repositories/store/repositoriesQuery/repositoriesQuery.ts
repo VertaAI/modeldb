@@ -3,16 +3,13 @@ import { useQuery } from 'react-apollo';
 import { useHistory } from 'react-router';
 import { useCallback } from 'react';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { IWorkspace } from 'core/shared/models/Workspace';
-import {
-  IPaginationSettings,
-  IPagination,
-} from 'core/shared/models/Pagination';
-import routes from 'core/shared/routes';
-import resultToCommunicationWithData from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
-import { USER_FRAGMENT } from 'core/shared/graphql/User/User';
-import { WORKSPACE_FRAGMENT } from 'core/shared/graphql/Workspace';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { IWorkspace } from 'shared/models/Workspace';
+import { IPaginationSettings, IPagination } from 'shared/models/Pagination';
+import routes from 'shared/routes';
+import resultToCommunicationWithData from 'shared/utils/graphql/queryResultToCommunicationWithData';
+import { USER_FRAGMENT } from 'shared/graphql/User/User';
+import { WORKSPACE_FRAGMENT } from 'shared/graphql/Workspace';
 
 import * as ServerTypes from './graphql-types/Repositories';
 import { convertRepository } from '../converters/convertRepository';

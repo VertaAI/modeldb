@@ -4,19 +4,19 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { handleCustomErrorWithFallback } from 'core/shared/models/Error';
-import ObservationsModelPage from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/ObservationsModelPage';
-import vertaDocLinks from 'core/shared/utils/globalConstants/vertaDocLinks';
-import { initialCommunication } from 'core/shared/utils/redux/communication';
-import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
+import { handleCustomErrorWithFallback } from 'shared/models/Error';
+import ObservationsModelPage from 'shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/ObservationsModelPage';
+import vertaDocLinks from 'shared/utils/globalConstants/vertaDocLinks';
+import { initialCommunication } from 'shared/utils/redux/communication';
+import DeleteFAI from 'shared/view/elements/DeleteFAI/DeleteFAI';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
 import * as ExperimentRunsStore from 'features/experimentRuns/store';
 import * as ProjectsStore from 'features/projects/store';
 import { IApplicationState } from 'store/store';
-import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
-import ClientSuggestion from 'core/shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
+import { hasAccessToAction } from 'shared/models/EntitiesActions';
+import ClientSuggestion from 'shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
 
 import styles from './ModelRecord.module.css';
 import VersionedInputsSection from './VersionedInputsSection/VersionedInputsSection';
@@ -28,7 +28,7 @@ import ArtifactsSection from './ArtifactsSection/ArtifactsSection';
 import CodeVersionSection from './CodeVersionSection/CodeVersionSection';
 import Artifacts from './shared/Artifacts/Artifacts';
 import AttributesSection from './AttributesSection/AttributesSection';
-import Reloading from 'core/shared/view/elements/Reloading/Reloading';
+import Reloading from 'shared/view/elements/Reloading/Reloading';
 
 interface ILocalProps {
   id: string;

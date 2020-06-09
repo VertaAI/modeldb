@@ -3,8 +3,8 @@ import * as PIXI from 'pixi.js';
 import {
   INetworkPoint,
   INetworkCoordinate,
-} from 'core/shared/models/Versioning/NetworkGraph';
-import { SHA } from 'core/shared/models/Versioning/RepositoryData';
+} from 'shared/models/Versioning/NetworkGraph';
+import { SHA } from 'shared/models/Versioning/RepositoryData';
 
 export const getCommitTooltipGraphics = ({
   commitSha,

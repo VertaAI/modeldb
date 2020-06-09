@@ -1,13 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { IFullCommitComponentLocationComponents } from 'core/shared/models/Versioning/RepositoryData';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { IFullCommitComponentLocationComponents } from 'shared/models/Versioning/RepositoryData';
 import Breadcrumbs, {
   generateBreadcrumbs,
-} from 'core/shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
-import routes from 'core/shared/routes';
+} from 'shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
+import routes from 'shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

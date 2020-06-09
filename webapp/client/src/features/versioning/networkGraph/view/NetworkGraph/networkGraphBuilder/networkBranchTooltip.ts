@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 
-import { INetworkCoordinate } from 'core/shared/models/Versioning/NetworkGraph';
-import { Branch } from 'core/shared/models/Versioning/RepositoryData';
+import { INetworkCoordinate } from 'shared/models/Versioning/NetworkGraph';
+import { Branch } from 'shared/models/Versioning/RepositoryData';
 
 export const getBranchTooltipGraphics = ({
   branch,

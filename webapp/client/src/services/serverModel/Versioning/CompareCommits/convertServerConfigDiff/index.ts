@@ -1,7 +1,7 @@
 import {
   IConfigBlobDiff,
   IConfigBlobDiffData,
-} from 'core/shared/models/Versioning/Blob/ConfigBlob';
+} from 'shared/models/Versioning/Blob/ConfigBlob';
 import {
   convertCongifHyperparameter,
   convertConfigHyperparameterSetItem,

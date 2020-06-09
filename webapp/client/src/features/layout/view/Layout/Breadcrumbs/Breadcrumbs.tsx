@@ -3,8 +3,8 @@ import { UnregisterCallback } from 'history';
 import React from 'react';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
 
 import styles from './Breadcrumbs.module.css';
 import { IBreadcrumbsBuilder } from './BreadcrumbsBuilder';

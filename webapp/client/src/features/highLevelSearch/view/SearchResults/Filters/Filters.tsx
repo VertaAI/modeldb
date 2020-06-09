@@ -7,8 +7,8 @@ import {
   Entities,
   ActiveFilter,
   IEntitiesResults,
-} from 'core/shared/models/HighLevelSearch';
-import matchType from 'core/shared/utils/matchType';
+} from 'shared/models/HighLevelSearch';
+import matchType from 'shared/utils/matchType';
 
 import { actions } from '../../../store';
 import styles from './Filters.module.css';

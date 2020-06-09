@@ -1,15 +1,15 @@
-import { EntityErrorType } from 'core/shared/models/Common';
-import { AppError } from 'core/shared/models/Error';
-import { IPagination } from 'core/shared/models/Pagination';
-import { ISorting } from 'core/shared/models/Sorting';
+import { EntityErrorType } from 'shared/models/Common';
+import { AppError } from 'shared/models/Error';
+import { IPagination } from 'shared/models/Pagination';
+import { ISorting } from 'shared/models/Sorting';
 import {
   ICommunication,
   MakeCommunicationActions,
   makeCommunicationActionTypes,
   makeCommunicationReducerFromEnum,
   ICommunicationById,
-} from 'core/shared/utils/redux/communication';
-import ModelRecord from 'core/shared/models/ModelRecord';
+} from 'shared/utils/redux/communication';
+import ModelRecord from 'shared/models/ModelRecord';
 
 export interface IExperimentRunsState {
   data: {

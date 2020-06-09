@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import PythonVersion from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
-import PythonRequirementEnvironment from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import PythonVersion from 'shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
+import PythonRequirementEnvironment from 'shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
+import { BlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import {
   IPythonEnvironmentDiffViewModel,
@@ -11,7 +11,7 @@ import {
 } from '../utils';
 import { IComparedCommitsInfo, getCssDiffColor } from '../../../model';
 import { makeHighlightCellBackground } from '../../shared/makeHighlightCellBackground';
-import { DiffType } from 'core/shared/models/Versioning/Blob/Diff';
+import { DiffType } from 'shared/models/Versioning/Blob/Diff';
 import ComparePropertiesTable from '../../shared/ComparePropertiesTable/ComparePropertiesTable';
 
 const highlightCellBackground = makeHighlightCellBackground<

@@ -5,9 +5,9 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { Dispatch, bindActionCreators } from 'redux';
 
-import Checkbox from 'core/shared/view/elements/Checkbox/Checkbox';
-import ClickOutsideListener from 'core/shared/view/elements/ClickOutsideListener/ClickOutsideListener';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
+import Checkbox from 'shared/view/elements/Checkbox/Checkbox';
+import ClickOutsideListener from 'shared/view/elements/ClickOutsideListener/ClickOutsideListener';
+import { Icon } from 'shared/view/elements/Icon/Icon';
 
 import {
   IColumnConfig,

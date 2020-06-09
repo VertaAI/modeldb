@@ -4,9 +4,13 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import { IApplicationState } from 'store/store';
-import { addTag, removeTag, selectIsUpdatingTags } from 'features/tagsManager/store';
-import TagsManager from 'core/shared/view/domain/BaseTagsManager/TagsManager';
-import { EntityWithTags } from 'core/shared/models/TagsCRUD';
+import {
+  addTag,
+  removeTag,
+  selectIsUpdatingTags,
+} from 'features/tagsManager/store';
+import TagsManager from 'shared/view/domain/BaseTagsManager/TagsManager';
+import { EntityWithTags } from 'shared/models/TagsCRUD';
 
 interface ILocalProps {
   id: string;

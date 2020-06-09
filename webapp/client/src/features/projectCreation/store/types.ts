@@ -1,14 +1,14 @@
-import { AppError } from 'core/shared/models/Error';
+import { AppError } from 'shared/models/Error';
 import {
   ICommunication,
   MakeCommunicationActions,
   makeCommunicationActionTypes,
-} from 'core/shared/utils/redux/communication';
+} from 'shared/utils/redux/communication';
 import {
   IProjectCreationSettings,
   Project,
   projectAlreadyExistsError,
-} from 'core/shared/models/Project';
+} from 'shared/models/Project';
 
 export interface IProjectCreationState {
   communications: {

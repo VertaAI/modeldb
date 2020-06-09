@@ -4,10 +4,10 @@ import { Dispatch, bindActionCreators } from 'redux';
 
 import Select, {
   IOptionType,
-} from 'core/shared/view/elements/Selects/Select/Select';
+} from 'shared/view/elements/Selects/Select/Select';
 import { actions } from 'features/highLevelSearch/store';
-import { IResultsSorting } from 'core/shared/models/HighLevelSearch';
-import { IconType } from 'core/shared/view/elements/Icon/Icon';
+import { IResultsSorting } from 'shared/models/HighLevelSearch';
+import { IconType } from 'shared/view/elements/Icon/Icon';
 
 interface ILocalProps {
   value: IResultsSorting | undefined;

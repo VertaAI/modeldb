@@ -6,7 +6,7 @@ import {
   INetworkData,
   INetworkPoint,
   CursorType,
-} from 'core/shared/models/Versioning/NetworkGraph';
+} from 'shared/models/Versioning/NetworkGraph';
 import { getConnectionGraphics } from './networkConnection';
 import { getPointGraphics } from './networkPoint';
 

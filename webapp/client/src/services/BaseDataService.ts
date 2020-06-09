@@ -2,8 +2,8 @@ import axios, { AxiosError, AxiosPromise, AxiosRequestConfig } from 'axios';
 import axiosRetry from 'axios-retry';
 import * as R from 'ramda';
 
-import { createCodeErrorFromError, HttpError } from 'core/shared/models/Error';
-import { commonAPIErrorMessages } from 'core/shared/utils/customErrorMessages';
+import { createCodeErrorFromError, HttpError } from 'shared/models/Error';
+import { commonAPIErrorMessages } from 'shared/utils/customErrorMessages';
 
 axiosRetry(axios, {
   retryCondition: error => {

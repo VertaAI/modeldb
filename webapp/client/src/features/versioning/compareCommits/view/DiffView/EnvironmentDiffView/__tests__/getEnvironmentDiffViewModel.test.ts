@@ -1,8 +1,8 @@
-import { IEnvironmentBlobDiff } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
+import { IEnvironmentBlobDiff } from 'shared/models/Versioning/Blob/EnvironmentBlob';
 import {
   elementDiffMakers,
   makeArrayDiff,
-} from 'core/shared/models/Versioning/Blob/Diff';
+} from 'shared/models/Versioning/Blob/Diff';
 
 import { getEnvironmentDiffViewModel } from '../utils';
 

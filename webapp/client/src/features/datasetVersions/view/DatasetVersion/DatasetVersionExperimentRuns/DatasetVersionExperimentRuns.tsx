@@ -3,12 +3,12 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 
-import Table from 'core/shared/view/elements/Table/Table';
-import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';
-import IdView from 'core/shared/view/elements/IdView/IdView';
-import ModelRecord from 'core/shared/models/ModelRecord';
-import { IWorkspace } from 'core/shared/models/Workspace';
-import routes from 'core/shared/routes';
+import Table from 'shared/view/elements/Table/Table';
+import CopyButton from 'shared/view/elements/CopyButton/CopyButton';
+import IdView from 'shared/view/elements/IdView/IdView';
+import ModelRecord from 'shared/models/ModelRecord';
+import { IWorkspace } from 'shared/models/Workspace';
+import routes from 'shared/routes';
 
 import styles from './DatasetVersionExperimentRuns.module.css';
 

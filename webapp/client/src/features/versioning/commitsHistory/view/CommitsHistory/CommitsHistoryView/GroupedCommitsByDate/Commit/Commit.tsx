@@ -5,15 +5,15 @@ import { NavLink } from 'react-router-dom';
 import cn from 'classnames';
 import copy from 'copy-to-clipboard';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { CommitPointerHelpers } from 'core/shared/models/Versioning/RepositoryData';
-import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
-import Avatar from 'core/shared/view/elements/Avatar/Avatar';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import routes from 'core/shared/routes';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { CommitPointerHelpers } from 'shared/models/Versioning/RepositoryData';
+import ShortenedSHA from 'shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
+import Avatar from 'shared/view/elements/Avatar/Avatar';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import routes from 'shared/routes';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
-import Tooltip from 'core/shared/view/elements/Tooltip/Tooltip';
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
+import Tooltip from 'shared/view/elements/Tooltip/Tooltip';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
 import { ICommitView } from 'features/versioning/commitsHistory/store/types';
 
 import styles from './Commit.module.css';

@@ -3,22 +3,22 @@ import { useHistory } from 'react-router';
 
 import DiffView from 'features/versioning/compareCommits/view/DiffView/DiffView';
 import { RepositoryNavigation } from 'features/versioning/repositoryNavigation';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   RepositoryBranches,
   CommitTag,
   CommitPointer,
-} from 'core/shared/models/Versioning/RepositoryData';
-import ComparedCommitsInfo from 'core/shared/view/domain/Versioning/RepositoryData/ComparedCommitsInfo/ComparedCommitsInfo';
-import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
-import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
-import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
-import routes from 'core/shared/routes';
+} from 'shared/models/Versioning/RepositoryData';
+import ComparedCommitsInfo from 'shared/view/domain/Versioning/RepositoryData/ComparedCommitsInfo/ComparedCommitsInfo';
+import DefaultMatchRemoteData from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
+import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
+import Placeholder from 'shared/view/elements/Placeholder/Placeholder';
+import routes from 'shared/routes';
 
 import { useMergeConflictsMutation } from '../../store/mergeConflicts/useMergeConflicts';
 import ABCommitPointersSelect from '../shared/ABCommitPointersSelect/ABCommitPointersSelect';
 import styles from './MergeConflicts.module.css';
-import Button from 'core/shared/view/elements/Button/Button';
+import Button from 'shared/view/elements/Button/Button';
 
 interface ILocalProps {
   repository: IRepository;

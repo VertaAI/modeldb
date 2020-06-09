@@ -1,8 +1,8 @@
 import { History } from 'history';
 import { action } from 'typesafe-actions';
 
-import { IFilterData } from 'core/shared/models/Filters';
-import normalizeError from 'core/shared/utils/normalizeError';
+import { IFilterData } from 'shared/models/Filters';
+import normalizeError from 'shared/utils/normalizeError';
 import { ActionResult } from 'store/store';
 
 import { selectCurrentContextFilters } from 'features/filter';
@@ -38,7 +38,7 @@ import {
   ILoadDatasetVersionExperimentRunsActions,
   loadDatasetVersionExperimentRunsActionTypes,
 } from './types';
-import { WorkspaceName } from 'core/shared/models/Workspace';
+import { WorkspaceName } from 'shared/models/Workspace';
 
 export const loadDatasetVersions = (
   datasetId: string,

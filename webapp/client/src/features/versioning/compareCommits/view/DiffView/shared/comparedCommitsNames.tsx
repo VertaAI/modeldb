@@ -1,7 +1,7 @@
-import { ComparedCommitType } from 'core/shared/models/Versioning/Blob/Diff';
-import { ICommit } from 'core/shared/models/Versioning/RepositoryData';
-import matchType from 'core/shared/utils/matchType';
-import { shortenSHA } from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
+import { ComparedCommitType } from 'shared/models/Versioning/Blob/Diff';
+import { ICommit } from 'shared/models/Versioning/RepositoryData';
+import matchType from 'shared/utils/matchType';
+import { shortenSHA } from 'shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 
 import { IComparedCommitsInfo } from '../../model';
 

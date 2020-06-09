@@ -1,4 +1,4 @@
-import { ICurrentWorkspace } from 'core/shared/models/Workspace';
+import { ICurrentWorkspace } from 'shared/models/Workspace';
 
 export interface IWorkspaces {
   data: {

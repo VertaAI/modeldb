@@ -3,20 +3,20 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import CodeVersion from 'core/shared/view/domain/CodeVersion/CodeVersion';
+import CodeVersion from 'shared/view/domain/CodeVersion/CodeVersion';
 import ProjectEntityDescriptionManager from 'features/descriptionManager/view/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
 import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
-import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
-import { ICommunication } from 'core/shared/utils/redux/communication';
-import Avatar from 'core/shared/view/elements/Avatar/Avatar';
-import Draggable from 'core/shared/view/elements/Draggable/Draggable';
-import Experiment from 'core/shared/models/Experiment';
+import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import { ICommunication } from 'shared/utils/redux/communication';
+import Avatar from 'shared/view/elements/Avatar/Avatar';
+import Draggable from 'shared/view/elements/Draggable/Draggable';
+import Experiment from 'shared/models/Experiment';
 import { selectDeletingExperiment } from 'features/experiments/store';
 import { IConnectedReduxProps, IApplicationState } from 'store/store';
 
 import ExperimentBulkDeletion from './ExperimentBulkDeletion/ExperimentBulkDeletion';
 import styles from './ExperimentWidget.module.css';
-import { unknownUser } from 'core/shared/models/User';
+import { unknownUser } from 'shared/models/User';
 
 interface ILocalProps {
   projectId: string;

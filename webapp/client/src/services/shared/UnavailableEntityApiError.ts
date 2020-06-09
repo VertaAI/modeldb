@@ -2,7 +2,7 @@ import {
   CustomApiErrorConverter,
   IHttpMethodRequestConfig,
 } from 'services/BaseDataService';
-import { HttpError } from 'core/shared/models/Error';
+import { HttpError } from 'shared/models/Error';
 
 export type UnavailableEntityApiErrorType =
   | 'entityNotFoundError'

@@ -2,17 +2,14 @@ import gql from 'graphql-tag';
 import * as R from 'ramda';
 import { useMutation } from 'react-apollo';
 
-import { convertGraphqlDiffs } from 'core/shared/graphql/Versioning/Diff';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import {
-  SHA,
-  CommitPointer,
-} from 'core/shared/models/Versioning/RepositoryData';
-import onCompletedUpdate from 'core/shared/utils/graphql/onCompletedUpdate';
+import { convertGraphqlDiffs } from 'shared/graphql/Versioning/Diff';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { SHA, CommitPointer } from 'shared/models/Versioning/RepositoryData';
+import onCompletedUpdate from 'shared/utils/graphql/onCompletedUpdate';
 import resultToCommunicationWithData, {
   mutationResultToCommunication,
-} from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
-import { initialCommunication } from 'core/shared/utils/redux/communication';
+} from 'shared/utils/graphql/queryResultToCommunicationWithData';
+import { initialCommunication } from 'shared/utils/redux/communication';
 
 import * as MergeCommitsTypes from './graphql-types/MergeCommits';
 import * as UpdateBaseBranchTypes from './graphql-types/UpdateBaseBranch';

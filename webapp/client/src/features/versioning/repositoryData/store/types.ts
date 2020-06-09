@@ -1,6 +1,6 @@
-import { IExperimentRunInfo } from 'core/shared/models/ModelRecord';
-import { IBlob } from 'core/shared/models/Versioning/Blob/Blob';
-import { IFolder } from 'core/shared/models/Versioning/RepositoryData';
+import { IExperimentRunInfo } from 'shared/models/ModelRecord';
+import { IBlob } from 'shared/models/Versioning/Blob/Blob';
+import { IFolder } from 'shared/models/Versioning/RepositoryData';
 
 export type IBlobView = IBlob & { experimentRuns: IExperimentRunInfo[] };
 

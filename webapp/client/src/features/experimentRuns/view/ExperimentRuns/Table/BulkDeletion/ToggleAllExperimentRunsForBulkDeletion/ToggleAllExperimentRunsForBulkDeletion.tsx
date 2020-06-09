@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import ToggleAllRowsForBulkDeletion from 'core/shared/view/domain/BulkDeletion/TableBulkDeletionComponents/ToggleAllRowsForBulkDeletion/ToggleAllRowsForBulkDeletion';
+import ToggleAllRowsForBulkDeletion from 'shared/view/domain/BulkDeletion/TableBulkDeletionComponents/ToggleAllRowsForBulkDeletion/ToggleAllRowsForBulkDeletion';
 import {
   selectAllExperimentRunsForDeleting,
   resetExperimentRunsForDeleting,

@@ -1,6 +1,6 @@
 import { Location } from 'history';
 
-import { IEntitiesResults } from '../../../core/shared/models/HighLevelSearch';
+import { IEntitiesResults } from '../../../shared/models/HighLevelSearch';
 
 export interface IHighLevelSearchState {
   data: {

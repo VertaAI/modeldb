@@ -1,7 +1,7 @@
 import { action } from 'typesafe-actions';
 
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
-import normalizeError from 'core/shared/utils/normalizeError';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
+import normalizeError from 'shared/utils/normalizeError';
 import { ThunkDispatch } from 'redux-thunk';
 import { updateDatasetTags } from 'features/datasets/store';
 import { updateDatasetVersionTags } from 'features/datasetVersions/store';
@@ -11,7 +11,7 @@ import { updateProjectTags } from 'features/projects/store';
 import { ActionResult } from 'store/store';
 
 import { addTagActionTypes, removeTagActionTypes } from './types';
-import { EntityWithTags } from 'core/shared/models/TagsCRUD';
+import { EntityWithTags } from 'shared/models/TagsCRUD';
 
 export const removeTag = (
   id: string,

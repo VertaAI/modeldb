@@ -2,16 +2,16 @@ import React, { useCallback } from 'react';
 import cn from 'classnames';
 import { NavLink } from 'react-router-dom';
 
-import Avatar from 'core/shared/view/elements/Avatar/Avatar';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import Tooltip from 'core/shared/view/elements/Tooltip/Tooltip';
-import ActionIcon from 'core/shared/view/elements/ActionIcon/ActionIcon';
-import routes from 'core/shared/routes';
+import Avatar from 'shared/view/elements/Avatar/Avatar';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import Tooltip from 'shared/view/elements/Tooltip/Tooltip';
+import ActionIcon from 'shared/view/elements/ActionIcon/ActionIcon';
+import routes from 'shared/routes';
 
 import RepositoryLabelsManager from './RepositoryLabelsManager/RepositoryLabelsManager';
 import styles from './RepositoryWidget.module.css';
 import { useDeleteRepositoryMutation } from '../../store/deleteRepository/deleteRepository';
-import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
+import { hasAccessToAction } from 'shared/models/EntitiesActions';
 
 interface ILocalProps {
   onDeleted: (repositoryId: IRepository['id']) => void;

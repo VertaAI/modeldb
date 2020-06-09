@@ -4,11 +4,11 @@ import { bindActionCreators, Dispatch } from 'redux';
 import * as R from 'ramda';
 import { NavLink, useLocation } from 'react-router-dom';
 
-import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
+import DefaultMatchRemoteData from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import { IApplicationState } from 'store/store';
-import { IPagination } from 'core/shared/models/Pagination';
-import { usePrevious } from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
+import { IPagination } from 'shared/models/Pagination';
+import { usePrevious } from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
 
 import { actions, selectors } from '../../store';
 import Filters from './Filters/Filters';

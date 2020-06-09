@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect } from 'react';
 import { useHistory } from 'react-router';
 
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { CommitPointer } from 'core/shared/models/Versioning/RepositoryData';
-import Button from 'core/shared/view/elements/Button/Button';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { CommitPointer } from 'shared/models/Versioning/RepositoryData';
+import Button from 'shared/view/elements/Button/Button';
 import {
   toastError,
   useToastCommunicationError,
-} from 'core/shared/view/elements/Notification/Notification';
-import { IWorkspace } from 'core/shared/models/Workspace';
-import routes from 'core/shared/routes';
+} from 'shared/view/elements/Notification/Notification';
+import { IWorkspace } from 'shared/models/Workspace';
+import routes from 'shared/routes';
 
 import { useMergeCommitsMutation } from '../../../store/mergeCommits/useMergeCommits';
 import { ICommitPointersCommits } from '../../../store/types';

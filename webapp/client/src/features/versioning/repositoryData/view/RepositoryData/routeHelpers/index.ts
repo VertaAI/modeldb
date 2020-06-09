@@ -1,6 +1,6 @@
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   IFullCommitComponentLocationComponents,
   IFolderElement,
@@ -9,10 +9,10 @@ import {
   CommitPointerHelpers,
   Branch,
   defaultCommitPointer,
-} from 'core/shared/models/Versioning/RepositoryData';
-import { IWorkspace } from 'core/shared/models/Workspace';
-import routes, { GetRouteParams } from 'core/shared/routes';
-import { IRepositoryDataWithLocationParams } from 'core/shared/routes/repositoryDataWithLocation';
+} from 'shared/models/Versioning/RepositoryData';
+import { IWorkspace } from 'shared/models/Workspace';
+import routes, { GetRouteParams } from 'shared/routes';
+import { IRepositoryDataWithLocationParams } from 'shared/routes/repositoryDataWithLocation';
 
 export type Options = Omit<IFullCommitComponentLocationComponents, 'type'> & {
   repositoryName: IRepository['name'];

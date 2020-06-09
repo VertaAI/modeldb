@@ -4,13 +4,13 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 import * as R from 'ramda';
 
-import { IComment } from 'core/shared/models/Comment';
+import { IComment } from 'shared/models/Comment';
 import {
   loadComments,
   selectEntityComments,
   ICommentsRootState,
 } from 'features/comments/store';
-import FaiWithLabel from 'core/shared/view/elements/FaiWithLabel/FaiWithLabel';
+import FaiWithLabel from 'shared/view/elements/FaiWithLabel/FaiWithLabel';
 
 import OverflowingComments from './OverflowingComments/OverflowingComments';
 import styles from './ShowCommentsButton.module.css';

@@ -1,16 +1,16 @@
 import { ReactWrapper } from 'enzyme';
 import React from 'react';
 
-import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitComponentLocation';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { IFullCommitComponentLocationComponents } from 'core/shared/models/Versioning/RepositoryData';
-import { repositories } from 'core/shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
-import routes from 'core/shared/routes';
-import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
+import { CommitComponentLocation } from 'shared/models/Versioning/CommitComponentLocation';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { IFullCommitComponentLocationComponents } from 'shared/models/Versioning/RepositoryData';
+import { repositories } from 'shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
+import routes from 'shared/routes';
+import makeMountComponentWithPredefinedData from 'shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 
 import RepositoryBreadcrumbs from '../RepositoryBreadcrumbs';
-import { findByDataTestAttribute } from 'core/shared/utils/tests/react/helpers';
+import { findByDataTestAttribute } from 'shared/utils/tests/react/helpers';
 
 const currentWorkspace = userWorkspacesWithCurrentUser.user;
 const repository: IRepository = repositories[0];

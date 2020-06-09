@@ -2,9 +2,9 @@ import {
   IBlobFolderElement,
   ISubFolderElement,
   IHydratedCommit,
-} from 'core/shared/models/Versioning/RepositoryData';
+} from 'shared/models/Versioning/RepositoryData';
 import { convertServerBlobToClient } from 'services/serverModel/Versioning/RepositoryData/Blob';
-import { convertUser } from 'core/shared/graphql/User/User';
+import { convertUser } from 'shared/graphql/User/User';
 
 import { ICommitComponentView } from '../types';
 import {

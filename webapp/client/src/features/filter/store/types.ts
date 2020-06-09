@@ -2,15 +2,11 @@ import { History } from 'history';
 import { AnyAction, Action } from 'redux';
 import { ThunkDispatch, ThunkAction } from 'redux-thunk';
 
-import {
-  IFilterData,
-  IQuickFilter,
-  PropertyType,
-} from 'core/shared/models/Filters';
+import { IFilterData, IQuickFilter, PropertyType } from 'shared/models/Filters';
 import {
   MakeCommunicationActions,
   makeCommunicationActionTypes,
-} from 'core/shared/utils/redux/communication';
+} from 'shared/utils/redux/communication';
 
 export interface IFilterRootState {
   filters: IFilterState;

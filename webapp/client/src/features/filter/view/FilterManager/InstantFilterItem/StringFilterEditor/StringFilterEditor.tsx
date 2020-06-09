@@ -6,8 +6,8 @@ import {
   IExperimentNameFilterData,
   StringFilterOperator,
   OperatorType,
-} from 'core/shared/models/Filters';
-import TextInput from 'core/shared/view/elements/TextInput/TextInput';
+} from 'shared/models/Filters';
+import TextInput from 'shared/view/elements/TextInput/TextInput';
 
 import FilterSelect from '../FilterSelect/FilterSelect';
 import styles from './StringFilterEditor.module.css';

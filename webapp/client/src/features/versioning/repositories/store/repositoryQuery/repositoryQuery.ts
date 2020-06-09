@@ -1,11 +1,11 @@
 import gql from 'graphql-tag';
 import { useQuery } from 'react-apollo';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { IWorkspace } from 'core/shared/models/Workspace';
-import resultToCommunicationWithData from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
-import { USER_FRAGMENT } from 'core/shared/graphql/User/User';
-import { WORKSPACE_FRAGMENT } from 'core/shared/graphql/Workspace';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { IWorkspace } from 'shared/models/Workspace';
+import resultToCommunicationWithData from 'shared/utils/graphql/queryResultToCommunicationWithData';
+import { USER_FRAGMENT } from 'shared/graphql/User/User';
+import { WORKSPACE_FRAGMENT } from 'shared/graphql/Workspace';
 
 import * as Types from './graphql-types/Repository';
 import { convertRepository } from '../converters/convertRepository';

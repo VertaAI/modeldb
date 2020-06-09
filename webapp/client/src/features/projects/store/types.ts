@@ -1,15 +1,15 @@
-import { EntityErrorType } from 'core/shared/models/Common';
-import { AppError } from 'core/shared/models/Error';
-import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
+import { EntityErrorType } from 'shared/models/Common';
+import { AppError } from 'shared/models/Error';
+import { DataWithPagination, IPagination } from 'shared/models/Pagination';
 import {
   ICommunication,
   ICommunicationById,
   MakeCommunicationActions,
   makeCommunicationActionTypes,
-} from 'core/shared/utils/redux/communication';
-import { Markdown } from 'core/shared/utils/types';
-import { Dataset } from 'core/shared/models/Dataset';
-import { Project } from 'core/shared/models/Project';
+} from 'shared/utils/redux/communication';
+import { Markdown } from 'shared/utils/types';
+import { Dataset } from 'shared/models/Dataset';
+import { Project } from 'shared/models/Project';
 
 export interface IProjectsState {
   data: {

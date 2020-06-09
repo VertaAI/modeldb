@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { IBlob, blobCategories } from 'core/shared/models/Versioning/Blob/Blob';
-import { Diff, DiffType } from 'core/shared/models/Versioning/Blob/Diff';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
-import matchType from 'core/shared/utils/matchType';
+import { IBlob, blobCategories } from 'shared/models/Versioning/Blob/Blob';
+import { Diff, DiffType } from 'shared/models/Versioning/Blob/Diff';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
+import matchType from 'shared/utils/matchType';
 
 import { convertServerCodeDiff } from './convertServerCodeDiff';
 import { convertServerConfigDiff } from './convertServerConfigDiff';

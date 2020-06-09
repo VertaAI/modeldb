@@ -3,7 +3,7 @@ import { ShallowWrapper } from 'enzyme';
 import {
   makeShallowRenderer,
   findByDataTestAttribute,
-} from 'core/shared/utils/tests/react/helpers';
+} from 'shared/utils/tests/react/helpers';
 import { IChartProps, Charts } from '../Charts';
 import {
   projectId,
@@ -39,10 +39,10 @@ import {
   computedNonNumericFields_someHypMissing,
 } from './mocks/someHypMissing';
 
-import { initialCommunication } from 'core/shared/utils/redux/communication';
-import { makeRouterMockProps } from 'core/shared/utils/tests/react/routeComponentProps';
-import routes from 'core/shared/routes';
-import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
+import { initialCommunication } from 'shared/utils/redux/communication';
+import { makeRouterMockProps } from 'shared/utils/tests/react/routeComponentProps';
+import routes from 'shared/routes';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 import {
   chartConfig_onlyMetric,
   computedModelRecords_onlyMetrics,

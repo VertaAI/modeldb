@@ -3,12 +3,12 @@ import {
   ISearchSettings,
   IResultsSorting,
   defaultResultsSorting,
-} from 'core/shared/models/HighLevelSearch';
-import { ISorting } from 'core/shared/models/Sorting';
-import inferType from 'core/shared/utils/inferType';
-import routes, { GetRouteQueryParams } from 'core/shared/routes';
-import { updateQueryParamsForLocation } from 'core/shared/utils/updateQueryParams';
-import exhaustiveStringTuple from 'core/shared/utils/exhaustiveStringTuple';
+} from 'shared/models/HighLevelSearch';
+import { ISorting } from 'shared/models/Sorting';
+import inferType from 'shared/utils/inferType';
+import routes, { GetRouteQueryParams } from 'shared/routes';
+import { updateQueryParamsForLocation } from 'shared/utils/updateQueryParams';
+import exhaustiveStringTuple from 'shared/utils/exhaustiveStringTuple';
 
 import { defaultFilter } from './constants';
 

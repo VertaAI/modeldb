@@ -1,4 +1,4 @@
-import { ISorting } from 'core/shared/models/Sorting';
+import { ISorting } from 'shared/models/Sorting';
 
 export interface IServerSorting {
   ascending: boolean;

@@ -1,12 +1,12 @@
 import gql from 'graphql-tag';
 import { useQuery } from 'react-apollo';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { resultToCommunicationWithSavingDataOnRefetching } from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
-import { IFullCommitComponentLocationComponents } from 'core/shared/models/Versioning/RepositoryData';
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
-import { USER_FRAGMENT } from 'core/shared/graphql/User/User';
-import { getCommitReference } from 'core/shared/graphql/Versioning/CommitReference';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { resultToCommunicationWithSavingDataOnRefetching } from 'shared/utils/graphql/queryResultToCommunicationWithData';
+import { IFullCommitComponentLocationComponents } from 'shared/models/Versioning/RepositoryData';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
+import { USER_FRAGMENT } from 'shared/graphql/User/User';
+import { getCommitReference } from 'shared/graphql/Versioning/CommitReference';
 
 import * as Types from './graphql-types/CommitWithComponent';
 import { convertCommitWithComponent } from './converters';

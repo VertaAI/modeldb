@@ -2,22 +2,22 @@ import * as R from 'ramda';
 import React from 'react';
 
 import * as RouteHelpers from 'features/versioning/repositoryData/view/RepositoryData/routeHelpers';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   IFolder,
   IFolderElement,
   IHydratedCommit,
   IFullCommitComponentLocationComponents,
   emptyFolder,
-} from 'core/shared/models/Versioning/RepositoryData';
-import { DataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
-import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
+} from 'shared/models/Versioning/RepositoryData';
+import { DataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import Placeholder from 'shared/view/elements/Placeholder/Placeholder';
 
 import CurrentCommitInfo from './CurrentCommitInfo/CurrentCommitInfo';
 import FolderElement from './FolderElement/FolderElement';
 import styles from './FolderView.module.css';
 import NavigationItem from './NavigationItem/NavigationItem';
-import { IWorkspace } from 'core/shared/models/Workspace';
+import { IWorkspace } from 'shared/models/Workspace';
 
 interface ILocalProps {
   fullCommitComponentLocationComponents: IFullCommitComponentLocationComponents;

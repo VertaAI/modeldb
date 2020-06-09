@@ -2,7 +2,7 @@ import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 
 import { ExperimentCreation } from 'features/experiments';
-import routes, { GetRouteParams } from 'core/shared/routes';
+import routes, { GetRouteParams } from 'shared/routes';
 
 import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 

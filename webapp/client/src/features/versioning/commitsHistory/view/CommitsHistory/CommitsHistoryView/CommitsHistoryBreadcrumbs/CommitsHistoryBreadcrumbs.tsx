@@ -3,12 +3,12 @@ import { connect } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
 import { ICommitHistorySettings } from 'features/versioning/commitsHistory/store/types';
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import Breadcrumbs, {
   generateBreadcrumbs,
-} from 'core/shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
-import routes from 'core/shared/routes';
+} from 'shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
+import routes from 'shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

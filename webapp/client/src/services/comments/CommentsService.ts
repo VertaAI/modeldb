@@ -1,6 +1,6 @@
 import { BaseDataService } from 'services/BaseDataService';
 
-import { EntityId, IComment } from 'core/shared/models/Comment';
+import { EntityId, IComment } from 'shared/models/Comment';
 import { convertServerComment } from '../serverModel/Comments/converters';
 
 export default class CommentsService extends BaseDataService {

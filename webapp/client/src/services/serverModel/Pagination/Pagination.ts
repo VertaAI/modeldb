@@ -1,4 +1,4 @@
-import { DataWithPagination } from 'core/shared/models/Pagination';
+import { DataWithPagination } from 'shared/models/Pagination';
 
 export interface IServerPaginationInRequest {
   page_number: number;

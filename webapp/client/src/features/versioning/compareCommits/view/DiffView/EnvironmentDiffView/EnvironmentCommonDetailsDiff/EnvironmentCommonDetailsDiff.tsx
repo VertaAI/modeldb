@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import KeyValuePairs from 'core/shared/view/elements/KeyValuePairs/KeyValuePairs';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import KeyValuePairs from 'shared/view/elements/KeyValuePairs/KeyValuePairs';
+import { BlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import { IComparedCommitsInfo } from '../../../model';
 import {
@@ -11,7 +11,7 @@ import {
 } from '../utils';
 import { makeHighlightCellBackground } from '../../shared/makeHighlightCellBackground';
 import styles from './EnvironmentCommonDetailsDiff.module.css';
-import { DiffType } from 'core/shared/models/Versioning/Blob/Diff';
+import { DiffType } from 'shared/models/Versioning/Blob/Diff';
 import ComparePropertiesTable from '../../shared/ComparePropertiesTable/ComparePropertiesTable';
 
 const highlightCellBackground = makeHighlightCellBackground<

@@ -1,6 +1,6 @@
 import { ReactWrapper } from 'enzyme';
 
-import { findByDataTestAttribute } from 'core/shared/utils/tests/react/helpers';
+import { findByDataTestAttribute } from 'shared/utils/tests/react/helpers';
 
 import styles from '../FilterSelect.module.css';
 

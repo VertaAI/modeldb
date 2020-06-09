@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import ModelRecord from 'core/shared/models/ModelRecord';
-import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
+import ModelRecord from 'shared/models/ModelRecord';
+import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 
 import Artifact from './Artifact';
 import styles from './Artifacts.module.css';

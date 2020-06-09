@@ -10,8 +10,8 @@ import {
   resetDatasetVersionsPagination,
   DatasetVersions,
 } from 'features/datasetVersions';
-import { defaultQuickFilters } from 'core/shared/models/Filters';
-import routes, { GetRouteParams } from 'core/shared/routes';
+import { defaultQuickFilters } from 'shared/models/Filters';
+import routes, { GetRouteParams } from 'shared/routes';
 
 import DatasetDetailsLayout from '../shared/DatasetDetailsLayout/DatasetDetailsLayout';
 

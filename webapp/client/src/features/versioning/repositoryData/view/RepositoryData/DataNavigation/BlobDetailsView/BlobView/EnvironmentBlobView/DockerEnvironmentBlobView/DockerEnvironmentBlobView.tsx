@@ -3,9 +3,9 @@ import * as React from 'react';
 import {
   IDockerEnvironmentBlob,
   makeDockerImage,
-} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
-import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
-import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';
+} from 'shared/models/Versioning/Blob/EnvironmentBlob';
+import { BlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import CopyButton from 'shared/view/elements/CopyButton/CopyButton';
 
 import PropertiesTable from '../../shared/PropertiesTable/PropertiesTable';
 import styles from './DockerEnvironmentBlobView.module.css';

@@ -1,15 +1,15 @@
 import * as React from 'react';
 
-import { IEnvironmentBlob } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
-import matchBy from 'core/shared/utils/matchBy';
-import AnsiView from 'core/shared/view/elements/AnsiView/AnsiView';
-import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';
-import KeyValuePairs from 'core/shared/view/elements/KeyValuePairs/KeyValuePairs';
+import { IEnvironmentBlob } from 'shared/models/Versioning/Blob/EnvironmentBlob';
+import matchBy from 'shared/utils/matchBy';
+import AnsiView from 'shared/view/elements/AnsiView/AnsiView';
+import CopyButton from 'shared/view/elements/CopyButton/CopyButton';
+import KeyValuePairs from 'shared/view/elements/KeyValuePairs/KeyValuePairs';
 
 import {
   MultipleBlobDataBox,
   BlobDataBox,
-} from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+} from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 import PropertiesTable from '../shared/PropertiesTable/PropertiesTable';
 import DockerEnvironmentBlobView from './DockerEnvironmentBlobView/DockerEnvironmentBlobView';
 import styles from './EnvironmentBlobView.module.css';

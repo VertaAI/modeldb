@@ -4,20 +4,20 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { validateDescription } from 'core/shared/models/Description';
-import { handleCustomErrorWithFallback } from 'core/shared/models/Error';
-import { validateNotEmpty } from 'core/shared/utils/validators';
-import Button from 'core/shared/view/elements/Button/Button';
-import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
-import InlineErrorView from 'core/shared/view/elements/Errors/InlineErrorView/InlineErrorView';
-import FieldWithTopLabel from 'core/shared/view/elements/FieldWithTopLabel/FieldWithTopLabel';
-import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
-import SelectField from 'core/shared/view/formComponents/formikFields/SelectField/SelectField';
-import TagsField from 'core/shared/view/formComponents/formikFields/TagsFieldWithTopLabel/TagsFieldWithTopLabel';
-import TextInputFieldWithTopLabel from 'core/shared/view/formComponents/formikFields/TextInputFieldWithTopLabel/TextInputFieldWithTopLabel';
-import PresetFormik from 'core/shared/view/formComponents/presetComponents/PresetFormik/PresetFormik';
+import { validateDescription } from 'shared/models/Description';
+import { handleCustomErrorWithFallback } from 'shared/models/Error';
+import { validateNotEmpty } from 'shared/utils/validators';
+import Button from 'shared/view/elements/Button/Button';
+import InlineCommunicationError from 'shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
+import InlineErrorView from 'shared/view/elements/Errors/InlineErrorView/InlineErrorView';
+import FieldWithTopLabel from 'shared/view/elements/FieldWithTopLabel/FieldWithTopLabel';
+import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
+import SelectField from 'shared/view/formComponents/formikFields/SelectField/SelectField';
+import TagsField from 'shared/view/formComponents/formikFields/TagsFieldWithTopLabel/TagsFieldWithTopLabel';
+import TextInputFieldWithTopLabel from 'shared/view/formComponents/formikFields/TextInputFieldWithTopLabel/TextInputFieldWithTopLabel';
+import PresetFormik from 'shared/view/formComponents/presetComponents/PresetFormik/PresetFormik';
 import * as DatasetsStore from 'features/datasets/store';
-import * as Dataset from 'core/shared/models/Dataset';
+import * as Dataset from 'shared/models/Dataset';
 import { IApplicationState } from 'store/store';
 import {
   selectWorkspaces,

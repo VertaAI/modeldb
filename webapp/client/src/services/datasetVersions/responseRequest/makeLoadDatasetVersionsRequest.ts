@@ -1,6 +1,6 @@
 import { IServerFiltersInRequest } from 'services/serverModel/Filters/converters';
-import { IFilterData } from 'core/shared/models/Filters';
-import { IPagination } from 'core/shared/models/Pagination';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination } from 'shared/models/Pagination';
 import { makeAddFiltersToRequest } from 'services/serverModel/Filters/converters';
 import { addPaginationToRequest } from 'services/serverModel/Pagination/converters';
 import { IServerPaginationInRequest } from 'services/serverModel/Pagination/Pagination';

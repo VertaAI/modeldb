@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { INotebookCodeDiff } from 'core/shared/models/Versioning/Blob/CodeBlob';
-import { MultipleBlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import { INotebookCodeDiff } from 'shared/models/Versioning/Blob/CodeBlob';
+import { MultipleBlobDataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import GitDiffView from '../GitDiffView/GitDiffView';
 import styles from './NotebookDiffView.module.css';

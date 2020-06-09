@@ -3,7 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
 
-import Button from 'core/shared/view/elements/Button/Button';
+import Button from 'shared/view/elements/Button/Button';
 import {
   ComparedEntityIds,
   selectComparedEntityIds,

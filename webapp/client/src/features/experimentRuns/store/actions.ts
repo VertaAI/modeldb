@@ -1,10 +1,10 @@
 import { History } from 'history';
 import { action, createAction } from 'typesafe-actions';
 
-import { IFilterData } from 'core/shared/models/Filters';
-import { IPagination } from 'core/shared/models/Pagination';
-import { ISorting } from 'core/shared/models/Sorting';
-import normalizeError from 'core/shared/utils/normalizeError';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination } from 'shared/models/Pagination';
+import { ISorting } from 'shared/models/Sorting';
+import normalizeError from 'shared/utils/normalizeError';
 import { ISetEntitiesComments, setEntitiesComments } from 'features/comments';
 import {
   resetCurrentContextFilters,
@@ -12,7 +12,7 @@ import {
 } from 'features/filter';
 import { ActionResult } from 'store/store';
 
-import ModelRecord from 'core/shared/models/ModelRecord';
+import ModelRecord from 'shared/models/ModelRecord';
 import {
   selectExperimentRunsPagination,
   selectExperimentRunsSorting,

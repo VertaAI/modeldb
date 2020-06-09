@@ -3,7 +3,7 @@ import {
   IConfigHyperparameter,
   IConfigHyperparameterValue,
   IConfigHyperparameterSetItem,
-} from 'core/shared/models/Versioning/Blob/ConfigBlob';
+} from 'shared/models/Versioning/Blob/ConfigBlob';
 
 export const convertCongifHyperparameter = (
   configHyperparameter: any

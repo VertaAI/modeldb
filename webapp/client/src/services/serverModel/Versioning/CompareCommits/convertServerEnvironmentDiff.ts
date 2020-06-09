@@ -6,7 +6,7 @@ import {
   IDockerEnvironmentBlob,
   IDockerEnvironmentBlobDiff,
   IPythonEnvironmentBlobDiff,
-} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
+} from 'shared/models/Versioning/Blob/EnvironmentBlob';
 import {
   IServerBlobDiff,
   IServerElementDiff,

@@ -4,23 +4,20 @@ import { Link } from 'react-router-dom';
 import * as R from 'ramda';
 import moment from 'moment';
 
-import {
-  IResult,
-  EntityResultCommonData,
-} from 'core/shared/models/HighLevelSearch';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
-import findHighlight from 'core/shared/utils/findHighlight';
-import { Icon, IconType } from 'core/shared/view/elements/Icon/Icon';
-import routes from 'core/shared/routes';
-import { IWorkspace } from 'core/shared/models/Workspace';
+import { IResult, EntityResultCommonData } from 'shared/models/HighLevelSearch';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
+import findHighlight from 'shared/utils/findHighlight';
+import { Icon, IconType } from 'shared/view/elements/Icon/Icon';
+import routes from 'shared/routes';
+import { IWorkspace } from 'shared/models/Workspace';
 import {
   makeDefaultExprNameFilter,
   makeURLFilters,
-} from 'core/shared/models/Filters';
-import { NA } from 'core/shared/view/elements/PageComponents';
+} from 'shared/models/Filters';
+import { NA } from 'shared/view/elements/PageComponents';
 
 import styles from './Result.module.css';
-import { unknownUser } from 'core/shared/models/User';
+import { unknownUser } from 'shared/models/User';
 
 interface ILocalProps {
   searchValue: string;

@@ -3,9 +3,9 @@ import { Omit, connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
 
 import { IFilterContext } from 'features/filter';
-import { defaultQuickFilters } from 'core/shared/models/Filters';
-import ModelRecord from 'core/shared/models/ModelRecord';
-import routes, { GetRouteParams } from 'core/shared/routes';
+import { defaultQuickFilters } from 'shared/models/Filters';
+import ModelRecord from 'shared/models/ModelRecord';
+import routes, { GetRouteParams } from 'shared/routes';
 import {
   loadExperimentRuns,
   resetPagination,

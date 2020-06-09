@@ -4,12 +4,12 @@ import ResizeDetector from 'react-resize-detector';
 import { Link } from 'react-router-dom';
 
 import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
-import { makeDefaultExprNameFilter } from 'core/shared/models/Filters';
-import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
-import withProps from 'core/shared/utils/react/withProps';
-import Draggable from 'core/shared/view/elements/Draggable/Draggable';
-import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
-import routes from 'core/shared/routes';
+import { makeDefaultExprNameFilter } from 'shared/models/Filters';
+import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
+import withProps from 'shared/utils/react/withProps';
+import Draggable from 'shared/view/elements/Draggable/Draggable';
+import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
+import routes from 'shared/routes';
 
 import { IRow } from '../types';
 import styles from './SummaryColumn.module.css';

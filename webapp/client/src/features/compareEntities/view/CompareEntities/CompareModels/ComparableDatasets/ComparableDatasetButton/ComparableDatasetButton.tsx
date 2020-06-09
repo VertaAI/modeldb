@@ -9,18 +9,18 @@ import {
   getDiffValueBgClassname,
   getDiffValueBorderClassname,
 } from 'features/compareEntities/view/CompareEntities/shared/DiffHighlight/DiffHighlight';
-import { IArtifact } from 'core/shared/models/Artifact';
+import { IArtifact } from 'shared/models/Artifact';
 import {
   ICommunication,
   initialCommunication,
   ICommunicationById,
-} from 'core/shared/utils/redux/communication';
-import Button from 'core/shared/view/elements/Button/Button';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import Popup from 'core/shared/view/elements/Popup/Popup';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
-import routes, { GetRouteParams } from 'core/shared/routes';
+} from 'shared/utils/redux/communication';
+import Button from 'shared/view/elements/Button/Button';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import Popup from 'shared/view/elements/Popup/Popup';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import { IDatasetVersion } from 'shared/models/DatasetVersion';
+import routes, { GetRouteParams } from 'shared/routes';
 import {
   reset,
   loadDatasetVersion,

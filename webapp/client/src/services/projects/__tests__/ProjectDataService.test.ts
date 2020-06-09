@@ -8,9 +8,9 @@ import {
 import {
   makeDefaultTagFilter,
   makeDefaultStringFilter,
-} from 'core/shared/models/Filters';
-import { IPagination } from 'core/shared/models/Pagination';
-import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
+} from 'shared/models/Filters';
+import { IPagination } from 'shared/models/Pagination';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 
 import ProjectDataService from '../ProjectDataService';
 import { ILoadProjectsRequest } from '../responseRequest/makeLoadProjectsRequest';

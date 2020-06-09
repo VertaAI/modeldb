@@ -1,9 +1,9 @@
 import React from 'react';
 
 import { NetworkGraph } from 'features/versioning/networkGraph';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
-import { IWorkspace } from 'core/shared/models/Workspace';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
+import { IWorkspace } from 'shared/models/Workspace';
 
 import RepositoryDetailsPagesLayout from '../shared/RepositoryDetailsPagesLayout/RepositoryDetailsPagesLayout';
 import styles from './NetworkPage.module.css';

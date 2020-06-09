@@ -1,7 +1,7 @@
 import { action } from 'typesafe-actions';
 
-import { EntityWithDescription } from 'core/shared/models/Description';
-import normalizeError from 'core/shared/utils/normalizeError';
+import { EntityWithDescription } from 'shared/models/Description';
+import normalizeError from 'shared/utils/normalizeError';
 import { updateDatasetDesc } from 'features/datasets/store';
 import { updateDatasetVersionDesc } from 'features/datasetVersions/store';
 import { updateExpRunDesc } from 'features/experimentRuns/store';
@@ -9,7 +9,7 @@ import { updateExperimentDescription } from 'features/experiments/store';
 import { updateProjectDesc } from 'features/projects/store';
 import { ActionResult } from 'store/store';
 
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
 import { addOrEditDescActionTypes } from './types';
 
 export const addOrEditDescription = (

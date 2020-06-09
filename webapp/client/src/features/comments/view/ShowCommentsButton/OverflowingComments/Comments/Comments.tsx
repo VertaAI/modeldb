@@ -2,9 +2,9 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { IComment } from 'core/shared/models/Comment';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import { IComment } from 'shared/models/Comment';
 import {
   loadComments,
   resetEntityComments,

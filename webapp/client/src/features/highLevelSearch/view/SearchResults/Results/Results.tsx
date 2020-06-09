@@ -2,11 +2,11 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { IPagination } from 'core/shared/models/Pagination';
-import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub';
-import Pagination from 'core/shared/view/elements/Pagination/Pagination';
-import { IResult, SearchField } from 'core/shared/models/HighLevelSearch';
-import { IWorkspace } from 'core/shared/models/Workspace';
+import { IPagination } from 'shared/models/Pagination';
+import NoResultsStub from 'shared/view/elements/NoResultsStub/NoResultsStub';
+import Pagination from 'shared/view/elements/Pagination/Pagination';
+import { IResult, SearchField } from 'shared/models/HighLevelSearch';
+import { IWorkspace } from 'shared/models/Workspace';
 
 import { actions } from '../../../store';
 import styles from './Results.module.css';

@@ -1,5 +1,5 @@
 import { IApplicationState } from 'store/store';
-import * as History from 'core/shared/utils/History';
+import * as History from 'shared/utils/History';
 
 import { IRepositoryNavigationState } from './types';
 

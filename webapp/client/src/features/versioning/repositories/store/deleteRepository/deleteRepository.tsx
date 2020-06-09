@@ -2,14 +2,14 @@ import gql from 'graphql-tag';
 import { useMutation } from 'react-apollo';
 import * as React from 'react';
 
-import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
-import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { mutationResultToCommunication } from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
+import { hasAccessToAction } from 'shared/models/EntitiesActions';
+import DeleteFAI from 'shared/view/elements/DeleteFAI/DeleteFAI';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { mutationResultToCommunication } from 'shared/utils/graphql/queryResultToCommunicationWithData';
 
 import * as Types from './graphql-types/DeleteRepository';
-import { toastCommunicationError } from 'core/shared/view/elements/Notification/Notification';
-import onCompletedUpdate from 'core/shared/utils/graphql/onCompletedUpdate';
+import { toastCommunicationError } from 'shared/view/elements/Notification/Notification';
+import onCompletedUpdate from 'shared/utils/graphql/onCompletedUpdate';
 
 const DELETE_REPOSITORY = gql`
   mutation DeleteRepository($id: ID!) {

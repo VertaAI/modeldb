@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import TagsManager from 'core/shared/view/domain/BaseTagsManager/TagsManager';
-import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import TagsManager from 'shared/view/domain/BaseTagsManager/TagsManager';
+import { hasAccessToAction } from 'shared/models/EntitiesActions';
 
 import styles from './RepositoryLabelsManager.module.css';
 import {

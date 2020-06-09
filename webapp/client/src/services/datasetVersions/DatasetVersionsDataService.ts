@@ -1,14 +1,14 @@
 import { BaseDataService } from 'services/BaseDataService';
-import { EntityErrorType } from 'core/shared/models/Common';
-import { IFilterData } from 'core/shared/models/Filters';
-import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
+import { EntityErrorType } from 'shared/models/Common';
+import { IFilterData } from 'shared/models/Filters';
+import { DataWithPagination, IPagination } from 'shared/models/Pagination';
 import {
   IDatasetVersion,
   IPathBasedDatasetVersionInfo,
   IQueryDatasetVersionInfo,
   IRawDatasetVersionInfo,
   DatasetVersionPathLocationTypes,
-} from 'core/shared/models/DatasetVersion';
+} from 'shared/models/DatasetVersion';
 
 import makeLoadDatasetVersionsRequest from './responseRequest/makeLoadDatasetVersionsRequest';
 

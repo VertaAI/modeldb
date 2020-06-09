@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Switch, Route } from 'react-router';
-import routes, { GetRouteParams } from 'core/shared/routes';
+import routes, { GetRouteParams } from 'shared/routes';
 
-import * as B from 'core/shared/models/Versioning/BuildCommitTree';
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
+import * as B from 'shared/models/Versioning/BuildCommitTree';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
 import {
   CommitTag,
   CommitPointerHelpers,
@@ -11,20 +11,20 @@ import {
   CommitPointer,
   IHydratedCommit,
   IFolder,
-} from 'core/shared/models/Versioning/RepositoryData';
-import wait from 'core/shared/utils/tests/integrations/wait';
-import waitFor from 'core/shared/utils/tests/integrations/waitFor';
-import { S3DatasetBlob } from 'core/shared/utils/tests/mocks/models/Versioning/blobMocks';
-import { commits } from 'core/shared/utils/tests/mocks/models/Versioning/commitsMocks';
-import { repositories } from 'core/shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
+} from 'shared/models/Versioning/RepositoryData';
+import wait from 'shared/utils/tests/integrations/wait';
+import waitFor from 'shared/utils/tests/integrations/waitFor';
+import { S3DatasetBlob } from 'shared/utils/tests/mocks/models/Versioning/blobMocks';
+import { commits } from 'shared/utils/tests/mocks/models/Versioning/commitsMocks';
+import { repositories } from 'shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
 import {
   withAct,
   findByDataTestAttribute,
-} from 'core/shared/utils/tests/react/helpers';
-import { createBranchesAndTagsListHelpers } from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/__tests__/helpers';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
+} from 'shared/utils/tests/react/helpers';
+import { createBranchesAndTagsListHelpers } from 'shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/__tests__/helpers';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import makeMountComponentWithPredefinedData from 'shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 
 import RepositoryData from '../RepositoryData';
 import {
@@ -36,7 +36,7 @@ import {
   makeBranchesAndTagsQuery,
   makeCommitWithComponentQuery,
 } from './queries';
-import { createWaitForPred } from '../../../../../../core/shared/utils/tests/integrations/waitForByPred';
+import { createWaitForPred } from '../../../../../../shared/utils/tests/integrations/waitForByPred';
 
 const makeComponent = async ({
   tags,

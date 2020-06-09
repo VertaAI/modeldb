@@ -1,15 +1,15 @@
 import React from 'react';
 import { useHistory } from 'react-router';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   CommitTag,
   CommitPointer,
   RepositoryBranches,
-} from 'core/shared/models/Versioning/RepositoryData';
-import BranchesAndTagsList from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import routes from 'core/shared/routes';
+} from 'shared/models/Versioning/RepositoryData';
+import BranchesAndTagsList from 'shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import routes from 'shared/routes';
 
 import styles from './ABCommitPointersSelect.module.css';
 

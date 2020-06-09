@@ -3,7 +3,7 @@ import {
   getCssDiffColor,
 } from '../../../../model';
 
-import { isKeyOf } from 'core/shared/utils/isKeyOf';
+import { isKeyOf } from 'shared/utils/isKeyOf';
 
 export const getDatasetDiffCellStyle = (columnType: string) => <T>(
   row: IObjectToObjectWithDiffColor<T>

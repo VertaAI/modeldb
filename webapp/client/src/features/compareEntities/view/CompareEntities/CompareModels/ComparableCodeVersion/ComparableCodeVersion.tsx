@@ -5,11 +5,11 @@ import * as React from 'react';
 import {
   ArtifactCodeVersionPile,
   ArtifactCodeVersionFields,
-} from 'core/shared/view/domain/CodeVersion/ArtifactCodeVersion/ArtifactCodeVersion';
+} from 'shared/view/domain/CodeVersion/ArtifactCodeVersion/ArtifactCodeVersion';
 import {
   GitCodeVersionPile,
   GitCodeVersionPopupFields,
-} from 'core/shared/view/domain/CodeVersion/GitCodeVersionButton/GitCodeVersionButton';
+} from 'shared/view/domain/CodeVersion/GitCodeVersionButton/GitCodeVersionButton';
 import {
   getDiffValueBorderClassname,
   getDiffValueBgClassname,
@@ -18,16 +18,16 @@ import {
   ICodeVersion,
   IGitCodeVersion,
   IArtifactCodeVersion,
-} from 'core/shared/models/CodeVersion';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
-import Button from 'core/shared/view/elements/Button/Button';
-import PilePopup from 'core/shared/view/elements/PileWithPopup/PilePopup/PilePopup';
-import PileWithPopup from 'core/shared/view/elements/PileWithPopup/PileWithPopup/PileWithPopup';
+} from 'shared/models/CodeVersion';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
+import Button from 'shared/view/elements/Button/Button';
+import PilePopup from 'shared/view/elements/PileWithPopup/PilePopup/PilePopup';
+import PileWithPopup from 'shared/view/elements/PileWithPopup/PileWithPopup/PileWithPopup';
 import {
   EntityType,
   CodeVersionDiffInfo,
 } from 'features/compareEntities/store';
-import { makeCompareCommitsUrl } from 'core/shared/utils/github/github';
+import { makeCompareCommitsUrl } from 'shared/utils/github/github';
 
 import styles from './ComparableCodeVersion.module.css';
 

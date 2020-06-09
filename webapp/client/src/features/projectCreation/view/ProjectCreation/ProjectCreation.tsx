@@ -3,22 +3,22 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { validateDescription } from 'core/shared/models/Description';
-import { handleCustomErrorWithFallback } from 'core/shared/models/Error';
-import { validateNotEmpty } from 'core/shared/utils/validators';
-import Button from 'core/shared/view/elements/Button/Button';
-import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
-import InlineErrorView from 'core/shared/view/elements/Errors/InlineErrorView/InlineErrorView';
-import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
-import TagsField from 'core/shared/view/formComponents/formikFields/TagsFieldWithTopLabel/TagsFieldWithTopLabel';
-import TextInputFieldWithTopLabel from 'core/shared/view/formComponents/formikFields/TextInputFieldWithTopLabel/TextInputFieldWithTopLabel';
-import PresetFormik from 'core/shared/view/formComponents/presetComponents/PresetFormik/PresetFormik';
+import { validateDescription } from 'shared/models/Description';
+import { handleCustomErrorWithFallback } from 'shared/models/Error';
+import { validateNotEmpty } from 'shared/utils/validators';
+import Button from 'shared/view/elements/Button/Button';
+import InlineCommunicationError from 'shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
+import InlineErrorView from 'shared/view/elements/Errors/InlineErrorView/InlineErrorView';
+import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
+import TagsField from 'shared/view/formComponents/formikFields/TagsFieldWithTopLabel/TagsFieldWithTopLabel';
+import TextInputFieldWithTopLabel from 'shared/view/formComponents/formikFields/TextInputFieldWithTopLabel/TextInputFieldWithTopLabel';
+import PresetFormik from 'shared/view/formComponents/presetComponents/PresetFormik/PresetFormik';
 import {
   createProject,
   selectCommunications,
   resetCreateProjectCommunication,
 } from 'features/projectCreation';
-import { IProjectCreationSettings } from 'core/shared/models/Project';
+import { IProjectCreationSettings } from 'shared/models/Project';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspace } from 'features/workspaces/store';
 

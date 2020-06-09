@@ -1,4 +1,4 @@
-import ModelRecord from 'core/shared/models/ModelRecord';
+import ModelRecord from 'shared/models/ModelRecord';
 
 export type IChartData = ModelRecord[] | null | undefined;
 

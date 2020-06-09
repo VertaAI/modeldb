@@ -3,11 +3,11 @@ import React from 'react';
 import {
   IRepository,
   IBranchesAndTags,
-} from 'core/shared/models/Versioning/Repository';
+} from 'shared/models/Versioning/Repository';
 import {
   CommitPointer,
   CommitPointerHelpers,
-} from 'core/shared/models/Versioning/RepositoryData';
+} from 'shared/models/Versioning/RepositoryData';
 import withLoadingBranchesAndTags from '../repositoryData/view/RepositoryData/WithLoadingBranchesAndTags/WithLoadingBranchesAndTags';
 
 interface IABCommitPointers {

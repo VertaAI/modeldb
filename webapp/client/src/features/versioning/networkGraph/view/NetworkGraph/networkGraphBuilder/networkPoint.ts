@@ -5,7 +5,7 @@ import {
   getNetworkColor,
   networkGraphSettings,
   CursorType,
-} from 'core/shared/models/Versioning/NetworkGraph';
+} from 'shared/models/Versioning/NetworkGraph';
 
 import { getBranchTooltipGraphics } from './networkBranchTooltip';
 import { getCommitTooltipGraphics } from './networkPointTooltip';

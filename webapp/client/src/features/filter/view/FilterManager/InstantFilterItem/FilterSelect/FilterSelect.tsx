@@ -2,7 +2,7 @@ import cn from 'classnames';
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 
 import styles from './FilterSelect.module.css';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
+import { Icon } from 'shared/view/elements/Icon/Icon';
 
 export interface IFilterOption<T> {
   label: string;

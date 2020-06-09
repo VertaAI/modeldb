@@ -1,13 +1,13 @@
-import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   IFullCommitComponentLocationComponents,
   CommitPointerHelpers,
   defaultCommitPointer,
-} from 'core/shared/models/Versioning/RepositoryData';
-import { repositories } from 'core/shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
-import routes, { GetRouteParams } from 'core/shared/routes';
-import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
+} from 'shared/models/Versioning/RepositoryData';
+import { repositories } from 'shared/utils/tests/mocks/models/Versioning/repositoriesMocks';
+import routes, { GetRouteParams } from 'shared/routes';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 
 import * as RouteHelpers from '../index';
 

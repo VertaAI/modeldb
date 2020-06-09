@@ -3,11 +3,11 @@ import { bind } from 'decko';
 import * as R from 'ramda';
 import React, { useMemo } from 'react';
 
-import { mapObj, groupBy } from 'core/shared/utils/collection';
+import { mapObj, groupBy } from 'shared/utils/collection';
 import VerticalTable, {
   IPropDefinition as IRowDefinition,
-} from 'core/shared/view/elements/VerticalTable/VerticalTable';
-import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
+} from 'shared/view/elements/VerticalTable/VerticalTable';
+import { IDatasetVersion } from 'shared/models/DatasetVersion';
 import {
   IDatasetVersionsDifferentProps,
   ComparedDatasetVersions,

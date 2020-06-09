@@ -1,11 +1,11 @@
 import cn from 'classnames';
 import * as React from 'react';
 import { useHistory } from 'react-router';
-import routes from 'core/shared/routes';
+import routes from 'shared/routes';
 import { useSelector } from 'react-redux';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
 import { useDeleteRepository } from 'features/versioning/repositories';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

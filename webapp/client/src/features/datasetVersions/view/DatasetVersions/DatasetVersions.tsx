@@ -8,23 +8,23 @@ import { bindActionCreators, Dispatch } from 'redux';
 import CompareClickAction from 'features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
 import ComparedEntitesManager from 'features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
 import { selectCurrentContextFilters } from 'features/filter';
-import { IFilterData } from 'core/shared/models/Filters';
-import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
-import { formatBytes } from 'core/shared/utils/mapperConverters/DataSizeConverted';
-import withProps from 'core/shared/utils/react/withProps';
-import Attributes from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
-import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
-import DeleteFAIWithLabel from 'core/shared/view/elements/DeleteFaiWithLabel/DeleteFaiWithLabel';
-import Draggable from 'core/shared/view/elements/Draggable/Draggable';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import Fai from 'core/shared/view/elements/Fai/Fai';
-import GroupFai from 'core/shared/view/elements/GroupFai/GroupFai';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import IdView from 'core/shared/view/elements/IdView/IdView';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { TableWrapper } from 'core/shared/view/elements/Table/Plugins';
-import TablePagingPanel from 'core/shared/view/elements/Table/Plugins/PagingPanel/TablePagingPanel';
-import Table from 'core/shared/view/elements/Table/Table';
+import { IFilterData } from 'shared/models/Filters';
+import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
+import { formatBytes } from 'shared/utils/mapperConverters/DataSizeConverted';
+import withProps from 'shared/utils/react/withProps';
+import Attributes from 'shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
+import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import DeleteFAIWithLabel from 'shared/view/elements/DeleteFaiWithLabel/DeleteFaiWithLabel';
+import Draggable from 'shared/view/elements/Draggable/Draggable';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import Fai from 'shared/view/elements/Fai/Fai';
+import GroupFai from 'shared/view/elements/GroupFai/GroupFai';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import IdView from 'shared/view/elements/IdView/IdView';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import { TableWrapper } from 'shared/view/elements/Table/Plugins';
+import TablePagingPanel from 'shared/view/elements/Table/Plugins/PagingPanel/TablePagingPanel';
+import Table from 'shared/view/elements/Table/Table';
 import {
   changeDatasetVersionsPaginationWithLoading,
   deleteDatasetVersion,
@@ -34,8 +34,8 @@ import {
   selectDatasetVersionsPagination,
 } from '../../store';
 import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
-import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
-import routes from 'core/shared/routes';
+import { IDatasetVersion } from 'shared/models/DatasetVersion';
+import routes from 'shared/routes';
 import { IApplicationState } from 'store/store';
 
 import styles from './DatasetVersions.module.css';

@@ -2,10 +2,10 @@ import * as React from 'react';
 
 import { CommitsHistoryLink } from 'features/versioning/commitsHistory';
 import { CompareChangesLink } from 'features/versioning/compareChanges';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { IFullCommitComponentLocationComponents } from 'core/shared/models/Versioning/RepositoryData';
-import Button from 'core/shared/view/elements/Button/Button';
-import * as DataLocation from 'core/shared/models/Versioning/CommitComponentLocation';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { IFullCommitComponentLocationComponents } from 'shared/models/Versioning/RepositoryData';
+import Button from 'shared/view/elements/Button/Button';
+import * as DataLocation from 'shared/models/Versioning/CommitComponentLocation';
 
 import BranchesAndTagsListContainer from './BranchesAndTagsListContainer/BranchesAndTagsListContainer';
 import RepositoryBreadcrumbs from './RepositoryBreadcrumbs/RepositoryBreadcrumbs';

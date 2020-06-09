@@ -1,14 +1,14 @@
-import * as Common from 'core/shared/models/Common';
-import { AppError } from 'core/shared/models/Error';
-import { FileExtensions } from 'core/shared/models/File';
+import * as Common from 'shared/models/Common';
+import { AppError } from 'shared/models/Error';
+import { FileExtensions } from 'shared/models/File';
 import {
   ICommunication,
   MakeCommunicationActions,
   makeCommunicationActionTypes,
   ICommunicationById,
-} from 'core/shared/utils/redux/communication';
-import { URL } from 'core/shared/utils/types';
-import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
+} from 'shared/utils/redux/communication';
+import { URL } from 'shared/utils/types';
+import { IDatasetVersion } from 'shared/models/DatasetVersion';
 
 export interface IArtifactManagerState {
   data: {

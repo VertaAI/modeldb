@@ -7,17 +7,17 @@ import { cleanup } from '@testing-library/react';
 import * as React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { Store } from 'redux';
-import routes from 'core/shared/routes';
+import routes from 'shared/routes';
 
-import { HttpError } from 'core/shared/models/Error';
-import delay from 'core/shared/utils/delay';
-import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
-import { Project } from 'core/shared/models/Project';
+import { HttpError } from 'shared/models/Error';
+import delay from 'shared/utils/delay';
+import flushAllPromises from 'shared/utils/tests/integrations/flushAllPromises';
+import { Project } from 'shared/models/Project';
 import ProjectsPage from 'pages/authorized/ProjectsPages/ProjectsPage/ProjectsPage';
 import { ProjectDataService } from 'services/projects';
-import { makeComponentForIntegratingTest } from 'core/shared/utils/tests/integrations/makeMountComponentForIntegratingTest';
-import { makeProject } from 'core/shared/utils/tests/mocks/models/projectsMocks';
-import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
+import { makeComponentForIntegratingTest } from 'shared/utils/tests/integrations/makeMountComponentForIntegratingTest';
+import { makeProject } from 'shared/utils/tests/mocks/models/projectsMocks';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 
 import ProjectDetailsPage from '../../ProjectDetailsPage';
 

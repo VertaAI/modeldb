@@ -11,10 +11,10 @@ import {
   IMetricFilterData,
   IExperimentNameFilterData,
   IQuickFilter,
-} from 'core/shared/models/Filters';
-import Checkbox from 'core/shared/view/elements/Checkbox/Checkbox';
-import ClickOutsideListener from 'core/shared/view/elements/ClickOutsideListener/ClickOutsideListener';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
+} from 'shared/models/Filters';
+import Checkbox from 'shared/view/elements/Checkbox/Checkbox';
+import ClickOutsideListener from 'shared/view/elements/ClickOutsideListener/ClickOutsideListener';
+import { Icon } from 'shared/view/elements/Icon/Icon';
 
 import FilterSelect from './FilterSelect/FilterSelect';
 import styles from './InstantFilterItem.module.css';

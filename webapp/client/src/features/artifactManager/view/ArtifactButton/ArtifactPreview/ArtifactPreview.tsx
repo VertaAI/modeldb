@@ -3,12 +3,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { IArtifact } from 'core/shared/models/Artifact';
-import { artifactErrorMessages } from 'core/shared/utils/customErrorMessages';
-import { ICommunication } from 'core/shared/utils/redux/communication';
-import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
+import { IArtifact } from 'shared/models/Artifact';
+import { artifactErrorMessages } from 'shared/utils/customErrorMessages';
+import { ICommunication } from 'shared/utils/redux/communication';
+import InlineCommunicationError from 'shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
 import {
   loadArtifactPreview,
   selectLoadingArtifactPreview,

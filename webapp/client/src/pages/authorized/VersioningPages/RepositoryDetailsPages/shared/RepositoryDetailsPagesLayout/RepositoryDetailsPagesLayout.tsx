@@ -1,14 +1,14 @@
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import PagesTabs from 'core/shared/view/pages/PagesTabs/PagesTabs';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import PagesTabs from 'shared/view/pages/PagesTabs/PagesTabs';
 import {
   AuthorizedLayout,
   IAuthorizedLayoutLocalProps,
   BreadcrumbsBuilder,
 } from 'pages/authorized/shared/AuthorizedLayout';
-import routes from 'core/shared/routes';
+import routes from 'shared/routes';
 
 import styles from './RepositoryDetailsPagesLayout.module.css';
 

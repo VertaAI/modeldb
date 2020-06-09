@@ -3,25 +3,25 @@ import { Omit } from 'ramda';
 import * as React from 'react';
 import { action } from 'typesafe-actions';
 
-import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
-import { formatBytes } from 'core/shared/utils/mapperConverters';
-import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
-import { findByDataTestAttribute } from 'core/shared/utils/tests/react/helpers';
-import { Dataset } from 'core/shared/models/Dataset';
+import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
+import { formatBytes } from 'shared/utils/mapperConverters';
+import flushAllPromises from 'shared/utils/tests/integrations/flushAllPromises';
+import { findByDataTestAttribute } from 'shared/utils/tests/react/helpers';
+import { Dataset } from 'shared/models/Dataset';
 import {
   IDatasetVersion,
   IRawDatasetVersion,
   IQueryDatasetVersion,
   IPathBasedDatasetVersion,
-} from 'core/shared/models/DatasetVersion';
+} from 'shared/models/DatasetVersion';
 import DatasetVersionsDataService from 'services/datasetVersions/DatasetVersionsDataService';
 import {
   IDatasetsState,
   datasetsReducer,
   loadDatasetActionTypes,
 } from 'features/datasets';
-import makeMountComponentWithPredefinedData from 'core/shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { makeDataset } from 'core/shared/utils/tests/mocks/models/datasetMocks';
+import makeMountComponentWithPredefinedData from 'shared/utils/tests/integrations/makeMountComponentWithPredefinedData';
+import { makeDataset } from 'shared/utils/tests/mocks/models/datasetMocks';
 
 import diffHighlightStyles from '../../shared/DiffHighlight/DiffHighlight.module.css';
 import CompareDatasetVersions, {

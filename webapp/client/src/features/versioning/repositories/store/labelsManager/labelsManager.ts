@@ -1,11 +1,11 @@
 import gql from 'graphql-tag';
 import { useMutation } from 'react-apollo';
 
-import { mutationResultToCommunication } from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
+import { mutationResultToCommunication } from 'shared/utils/graphql/queryResultToCommunicationWithData';
 
 import * as AddLabelTypes from './graphql-types/AddLabel';
 import * as DeleteLabelTypes from './graphql-types/DeleteLabel';
-import makeTuple from 'core/shared/utils/makeTuple';
+import makeTuple from 'shared/utils/makeTuple';
 
 const ADD_LABEL = gql`
   mutation AddLabel($id: ID!, $label: String!) {

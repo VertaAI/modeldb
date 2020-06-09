@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 
-import { IPathDatasetComponentBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
-import LastModified from 'core/shared/view/domain/Versioning/Blob/DatasetBlob/LastModified/LastModified';
-import PathSize from 'core/shared/view/domain/Versioning/Blob/DatasetBlob/PathSize/PathSize';
-import Table from 'core/shared/view/elements/Table/Table';
-import { TextWithCopyTooltip } from 'core/shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
+import { IPathDatasetComponentBlob } from 'shared/models/Versioning/Blob/DatasetBlob';
+import LastModified from 'shared/view/domain/Versioning/Blob/DatasetBlob/LastModified/LastModified';
+import PathSize from 'shared/view/domain/Versioning/Blob/DatasetBlob/PathSize/PathSize';
+import Table from 'shared/view/elements/Table/Table';
+import { TextWithCopyTooltip } from 'shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
 
 interface ILocalProps {
   data: IPathDatasetComponentBlob[];

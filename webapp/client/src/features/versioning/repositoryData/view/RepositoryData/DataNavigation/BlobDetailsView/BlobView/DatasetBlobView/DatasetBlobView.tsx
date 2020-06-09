@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { IDatasetBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
-import matchBy from 'core/shared/utils/matchBy';
-import matchType from 'core/shared/utils/matchType';
-import BlobTitle from 'core/shared/view/domain/Versioning/Blob/BlobTitle/BlobTitle';
+import { IDatasetBlob } from 'shared/models/Versioning/Blob/DatasetBlob';
+import matchBy from 'shared/utils/matchBy';
+import matchType from 'shared/utils/matchType';
+import BlobTitle from 'shared/view/domain/Versioning/Blob/BlobTitle/BlobTitle';
 
 import PathDatasetComponents from '../shared/PathDatasetComponents/PathDatasetComponents';
 import S3DatasetComponents from '../shared/S3DatasetComponents/S3DatasetComponents';

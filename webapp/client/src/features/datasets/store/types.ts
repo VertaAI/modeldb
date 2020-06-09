@@ -1,13 +1,13 @@
-import { EntityErrorType } from 'core/shared/models/Common';
-import { AppError } from 'core/shared/models/Error';
-import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
+import { EntityErrorType } from 'shared/models/Common';
+import { AppError } from 'shared/models/Error';
+import { DataWithPagination, IPagination } from 'shared/models/Pagination';
 import {
   ICommunication,
   ICommunicationById,
   MakeCommunicationActions,
   makeCommunicationActionTypes,
-} from 'core/shared/utils/redux/communication';
-import { Dataset } from 'core/shared/models/Dataset';
+} from 'shared/utils/redux/communication';
+import { Dataset } from 'shared/models/Dataset';
 import { EntityAlreadyExistsErrorType } from 'services/shared/EntityAlreadyExistError';
 
 export interface IDatasetsState {

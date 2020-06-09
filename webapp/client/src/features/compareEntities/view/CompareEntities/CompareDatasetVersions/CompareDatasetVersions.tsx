@@ -5,26 +5,26 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
 
-import routes, { GetRouteParams } from 'core/shared/routes';
-import DataSourceUri from 'core/shared/view/domain/DatasetVersionProps/QueryDatasetVersionProps/DataSourceUri/DataSourceUri';
-import { IKeyValuePair } from 'core/shared/models/Common';
-import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
-import { formatBytes } from 'core/shared/utils/mapperConverters';
-import withProps from 'core/shared/utils/react/withProps';
-import { initialCommunication } from 'core/shared/utils/redux/communication';
-import { matchRemoteData } from 'core/shared/utils/redux/communication/remoteData';
-import removeQuotes from 'core/shared/utils/removeQuotes';
-import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
-import IdView from 'core/shared/view/elements/IdView/IdView';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
+import routes, { GetRouteParams } from 'shared/routes';
+import DataSourceUri from 'shared/view/domain/DatasetVersionProps/QueryDatasetVersionProps/DataSourceUri/DataSourceUri';
+import { IKeyValuePair } from 'shared/models/Common';
+import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
+import { formatBytes } from 'shared/utils/mapperConverters';
+import withProps from 'shared/utils/react/withProps';
+import { initialCommunication } from 'shared/utils/redux/communication';
+import { matchRemoteData } from 'shared/utils/redux/communication/remoteData';
+import removeQuotes from 'shared/utils/removeQuotes';
+import InlineCommunicationError from 'shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
+import IdView from 'shared/view/elements/IdView/IdView';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 import {
   DatasetVersionPathLocationType,
   IPathBasedDatasetVersionInfo,
   IQueryDatasetVersionInfo,
   IRawDatasetVersionInfo,
   IPathBasedDatasetVersion,
-} from 'core/shared/models/DatasetVersion';
+} from 'shared/models/DatasetVersion';
 import {
   ComparedDatasetVersions,
   ComparedEntityIds,
@@ -51,7 +51,7 @@ import CompareDatasetVersionsTable, {
   PropDefinition,
 } from './CompareDatasetVersionsTable/CompareDatasetVersionsTable';
 import ComparePathInfoTable from './ComparePathInfoTable/ComparePathInfoTable';
-import Reloading from 'core/shared/view/elements/Reloading/Reloading';
+import Reloading from 'shared/view/elements/Reloading/Reloading';
 import DatasetVersionExperimentRuns from 'features/datasetVersions/view/DatasetVersion/DatasetVersionExperimentRuns/DatasetVersionExperimentRuns';
 import { pathLocationLabels } from 'features/datasetVersions/view/shared/constants';
 

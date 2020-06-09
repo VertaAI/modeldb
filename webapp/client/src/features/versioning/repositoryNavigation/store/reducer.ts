@@ -1,7 +1,7 @@
 import { RouterAction, LocationChangeAction } from 'connected-react-router';
-import * as History from 'core/shared/utils/History';
-import routes from 'core/shared/routes';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
+import * as History from 'shared/utils/History';
+import routes from 'shared/routes';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
 
 import { IRepositoryNavigationState, RepositoryHistory } from './types';
 

@@ -3,13 +3,13 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import Button from 'core/shared/view/elements/Button/Button';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import NoEntitiesStub from 'core/shared/view/elements/NoEntitiesStub/NoEntitiesStub';
-import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub';
-import Pagination from 'core/shared/view/elements/Pagination/Pagination';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import Reloading from 'core/shared/view/elements/Reloading/Reloading';
+import Button from 'shared/view/elements/Button/Button';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import NoEntitiesStub from 'shared/view/elements/NoEntitiesStub/NoEntitiesStub';
+import NoResultsStub from 'shared/view/elements/NoResultsStub/NoResultsStub';
+import Pagination from 'shared/view/elements/Pagination/Pagination';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import Reloading from 'shared/view/elements/Reloading/Reloading';
 import {
   changeDatasetsPaginationWithLoading,
   getDefaultDatasetsOptions,
@@ -19,7 +19,7 @@ import {
   selectDatasets,
   selectDatasetsPagination,
 } from 'features/datasets/store';
-import routes from 'core/shared/routes';
+import routes from 'shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   IFolderElement,
   IFullCommitComponentLocationComponents,
-} from 'core/shared/models/Versioning/RepositoryData';
-import matchType from 'core/shared/utils/matchType';
+} from 'shared/models/Versioning/RepositoryData';
+import matchType from 'shared/utils/matchType';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import * as RouteHeplers from '../../../routeHelpers';

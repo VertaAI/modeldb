@@ -2,19 +2,19 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import {
   IColumnConfig,
   selectColumnConfig,
 } from 'features/experimentRunsTableConfig';
 import { selectCurrentContextAppliedFilters } from 'features/filter';
-import { IFilterData } from 'core/shared/models/Filters';
-import { IPagination } from 'core/shared/models/Pagination';
-import { ISorting } from 'core/shared/models/Sorting';
-import { ICommunication } from 'core/shared/utils/redux/communication';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import ModelRecord from 'core/shared/models/ModelRecord';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination } from 'shared/models/Pagination';
+import { ISorting } from 'shared/models/Sorting';
+import { ICommunication } from 'shared/utils/redux/communication';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import ModelRecord from 'shared/models/ModelRecord';
 import {
   selectExperimentRuns,
   selectExperimentRunsPagination,

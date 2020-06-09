@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { IGroupedCommitsByDate } from 'features/versioning/commitsHistory/store/types';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 
 import Commit from './Commit/Commit';
 import styles from './GroupedCommitsByDate.module.css';

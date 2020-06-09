@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { IconType, Icon } from 'core/shared/view/elements/Icon/Icon';
+import { IconType, Icon } from 'shared/view/elements/Icon/Icon';
 
 import styles from './NavigationItem.module.css';
 

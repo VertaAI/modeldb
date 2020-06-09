@@ -2,8 +2,8 @@ import {
   IDatasetBlob,
   IDatasetBlobDiff,
   IDatasetBlobDiffData,
-} from 'core/shared/models/Versioning/Blob/DatasetBlob';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
+} from 'shared/models/Versioning/Blob/DatasetBlob';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
 
 import {
   convertServerDatasetPathComponent,

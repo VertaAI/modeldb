@@ -2,24 +2,24 @@ import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { EntityType } from 'features/artifactManager/store';
-import { IArtifact, checkArtifactWithPath } from 'core/shared/models/Artifact';
+import { IArtifact, checkArtifactWithPath } from 'shared/models/Artifact';
 import useDownloadArtifact from 'features/artifactManager/store/hooks/useDownloadArtifact';
 import {
   toastSuccess,
   toastError,
-} from 'core/shared/view/elements/Notification/Notification';
+} from 'shared/view/elements/Notification/Notification';
 import PileWithActions, {
   Action,
-} from 'core/shared/view/elements/PileWithActions/PileWithActions';
+} from 'shared/view/elements/PileWithActions/PileWithActions';
 import { IApplicationState } from 'store/store';
 import * as ExperimentRunsStore from 'features/experimentRuns/store';
-import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
-import ModelRecord from 'core/shared/models/ModelRecord';
-import { initialCommunication } from 'core/shared/utils/redux/communication';
-import ConfirmAction from 'core/shared/view/elements/ConfirmAction/ConfirmAction';
+import { hasAccessToAction } from 'shared/models/EntitiesActions';
+import ModelRecord from 'shared/models/ModelRecord';
+import { initialCommunication } from 'shared/utils/redux/communication';
+import ConfirmAction from 'shared/view/elements/ConfirmAction/ConfirmAction';
 import { useInfoAction } from './InfoAction/InfoAction';
-import { artifactErrorMessages } from 'core/shared/utils/customErrorMessages';
-import { communicationErrorToString } from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
+import { artifactErrorMessages } from 'shared/utils/customErrorMessages';
+import { communicationErrorToString } from 'shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
 
 const Artifact = ({
   artifact,

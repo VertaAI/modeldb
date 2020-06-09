@@ -1,17 +1,17 @@
 import { shallow } from 'enzyme';
 import * as React from 'react';
 
-import { makeDefaultStringFilter } from 'core/shared/models/Filters';
-import { createCodeError } from 'core/shared/models/Error';
-import { initialCommunication } from 'core/shared/utils/redux/communication';
-import { makeRouterMockProps } from 'core/shared/utils/tests/react/routeComponentProps';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub';
-import Pagination from 'core/shared/view/elements/Pagination/Pagination';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import routes, { GetRouteParams } from 'core/shared/routes';
-import { currentUserProjects } from 'core/shared/utils/tests/mocks/models/projectsMocks';
-import { userWorkspacesWithCurrentUser } from 'core/shared/utils/tests/mocks/models/workspace';
+import { makeDefaultStringFilter } from 'shared/models/Filters';
+import { createCodeError } from 'shared/models/Error';
+import { initialCommunication } from 'shared/utils/redux/communication';
+import { makeRouterMockProps } from 'shared/utils/tests/react/routeComponentProps';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import NoResultsStub from 'shared/view/elements/NoResultsStub/NoResultsStub';
+import Pagination from 'shared/view/elements/Pagination/Pagination';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import routes, { GetRouteParams } from 'shared/routes';
+import { currentUserProjects } from 'shared/utils/tests/mocks/models/projectsMocks';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 
 import { IProjectsAllProps, ProjectsView } from '../Projects';
 import styles from '../Projects.module.css';

@@ -5,11 +5,11 @@ import {
   CursorType,
   INetworkPoint,
   INetworkData,
-} from 'core/shared/models/Versioning/NetworkGraph';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
-import { IWorkspace } from 'core/shared/models/Workspace';
-import routes from 'core/shared/routes';
+} from 'shared/models/Versioning/NetworkGraph';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import DefaultMatchRemoteData from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
+import { IWorkspace } from 'shared/models/Workspace';
+import routes from 'shared/routes';
 
 import { useNetworkQuery } from '../../store/query';
 import styles from './NetworkGraph.module.css';

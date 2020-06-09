@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { ICodeBlob } from 'core/shared/models/Versioning/Blob/CodeBlob';
-import matchBy from 'core/shared/utils/matchBy';
+import { ICodeBlob } from 'shared/models/Versioning/Blob/CodeBlob';
+import matchBy from 'shared/utils/matchBy';
 
 import GitBlobView from './GitBlobView/GitBlobView';
 import NotebookBlobView from './NotebookBlobView/NotebookBlobView';

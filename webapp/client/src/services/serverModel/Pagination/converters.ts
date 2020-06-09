@@ -1,4 +1,4 @@
-import { IPagination } from 'core/shared/models/Pagination';
+import { IPagination } from 'shared/models/Pagination';
 import { IServerPaginationInRequest } from 'services/serverModel/Pagination/Pagination';
 
 export const addPaginationToRequest = <

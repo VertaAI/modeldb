@@ -3,12 +3,12 @@ import { connect } from 'react-redux';
 import { RouteComponentProps, Switch, Route } from 'react-router';
 
 import { useRepositoryQuery } from 'features/versioning/repositories/store/repositoryQuery/repositoryQuery';
-import { matchRemoteData } from 'core/shared/utils/redux/communication/remoteData';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
+import { matchRemoteData } from 'shared/utils/redux/communication/remoteData';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
 import NotFoundPage from 'pages/authorized/NotFoundPage/NotFoundPage';
 import { AuthorizedLayout } from 'pages/authorized/shared/AuthorizedLayout';
-import routes, { GetRouteParams } from 'core/shared/routes';
+import routes, { GetRouteParams } from 'shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspace } from 'features/workspaces/store';
 

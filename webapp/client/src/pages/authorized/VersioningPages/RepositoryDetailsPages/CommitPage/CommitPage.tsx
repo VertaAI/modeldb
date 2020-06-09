@@ -2,8 +2,8 @@ import * as React from 'react';
 import { useParams } from 'react-router';
 
 import { Commit } from 'features/versioning/viewCommit';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import routes, { GetRouteParams } from 'core/shared/routes';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import routes, { GetRouteParams } from 'shared/routes';
 
 import RepositoryDetailsPagesLayout from '../shared/RepositoryDetailsPagesLayout/RepositoryDetailsPagesLayout';
 

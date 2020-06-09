@@ -5,12 +5,12 @@ import ConfigDiffView from '../ConfigDiffView';
 import {
   IConfigHyperparameter,
   IConfigBlob,
-} from 'core/shared/models/Versioning/Blob/ConfigBlob';
+} from 'shared/models/Versioning/Blob/ConfigBlob';
 import {
   ComparedCommitType,
   elementDiffMakers,
-} from 'core/shared/models/Versioning/Blob/Diff';
-import { findByDataTestAttribute } from 'core/shared/utils/tests/react/helpers';
+} from 'shared/models/Versioning/Blob/Diff';
+import { findByDataTestAttribute } from 'shared/utils/tests/react/helpers';
 import { DiffColor } from '../../../model';
 import {
   getCommitColumns,

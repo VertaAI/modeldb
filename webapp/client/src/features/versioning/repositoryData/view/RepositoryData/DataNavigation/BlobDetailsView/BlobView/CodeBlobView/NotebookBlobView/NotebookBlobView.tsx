@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { INotebookCodeBlob } from 'core/shared/models/Versioning/Blob/CodeBlob';
+import { INotebookCodeBlob } from 'shared/models/Versioning/Blob/CodeBlob';
 
 import PathDatasetComponents from '../../shared/PathDatasetComponents/PathDatasetComponents';
 import GitBlobView from '../GitBlobView/GitBlobView';
@@ -8,7 +8,7 @@ import styles from './NotebookBlobView.module.css';
 import {
   BlobDataBox,
   MultipleBlobDataBox,
-} from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+} from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 interface ILocalProps {
   blob: INotebookCodeBlob;

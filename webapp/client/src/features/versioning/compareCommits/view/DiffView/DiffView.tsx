@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { Diff } from 'core/shared/models/Versioning/Blob/Diff';
-import * as CommitComponentLocationHelpers from 'core/shared/models/Versioning/CommitComponentLocation';
-import matchBy from 'core/shared/utils/matchBy';
-import Breadcrumbs from 'core/shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
+import { Diff } from 'shared/models/Versioning/Blob/Diff';
+import * as CommitComponentLocationHelpers from 'shared/models/Versioning/CommitComponentLocation';
+import matchBy from 'shared/utils/matchBy';
+import Breadcrumbs from 'shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
 
 import { IComparedCommitsInfo } from '../model';
 import CodeDiffView from './CodeDiffView/CodeDiffView';

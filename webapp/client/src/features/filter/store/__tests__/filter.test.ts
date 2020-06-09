@@ -2,9 +2,9 @@ import {
   makeDefaultTagFilter,
   IFilterData,
   IStringFilterData,
-} from 'core/shared/models/Filters';
-import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
-import makeSetupIntegrationTest from 'core/shared/utils/tests/integrations/makeSetupIntegrationTest';
+} from 'shared/models/Filters';
+import flushAllPromises from 'shared/utils/tests/integrations/flushAllPromises';
+import makeSetupIntegrationTest from 'shared/utils/tests/integrations/makeSetupIntegrationTest';
 
 import {
   addFilterToCurrentContext,

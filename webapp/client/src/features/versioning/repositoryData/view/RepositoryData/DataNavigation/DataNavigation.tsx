@@ -1,11 +1,11 @@
 import * as React from 'react';
 
-import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   IHydratedCommit,
   IFullCommitComponentLocationComponents,
-} from 'core/shared/models/Versioning/RepositoryData';
-import matchBy from 'core/shared/utils/matchBy';
+} from 'shared/models/Versioning/RepositoryData';
+import matchBy from 'shared/utils/matchBy';
 
 import BlobDetailsView from './BlobDetailsView/BlobDetailsView';
 import styles from './DataNavigation.module.css';
