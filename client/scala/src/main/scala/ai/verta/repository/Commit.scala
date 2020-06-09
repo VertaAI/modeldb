@@ -76,6 +76,39 @@ class Commit(
       createCommit(message = message, blobs = Some(blobsList))
   }
 
+  /** Merges a branch headed by other into this commit
+   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
+   *  @param other Commit to be merged
+   *  @param message Description of the merge. If not provided, a default message will be used
+   *  @return Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository; the merged commit otherwise.
+   *  TODO: is dry run?
+   */
+  def merge(other: Commit, message: Option[String] = None)(implicit ec: ExecutionContext) = {
+    if (!saved)
+      Failure (new IllegalStateException("This commit must be saved"))
+    else if (!other.saved)
+      Failure (new IllegalStateException("Other commit must be saved"))
+    else if (other.repo.id != repo.id)
+      Failure (new IllegalStateException("Two commits must belong to the same repository"))
+    else
+      clientSet.versioningService.MergeRepositoryCommits2(
+        body = VersioningMergeRepositoryCommitsRequest(
+          commit_sha_a = other.id,
+          commit_sha_b = id,
+          content = Some(VersioningCommit(message=message))
+        ),
+        repository_id_repo_id = repo.id
+      ).flatMap(r =>
+      if (r.conflicts.isDefined) Failure(throw new IllegalStateException(
+        List(
+          "Merge conflict.", "Resolution is not currently supported through the client",
+          "Please create a new Commit with the updated blobs.",
+          "See https://docs.verta.ai/en/master/examples/tutorials/merge.html for instructions"
+        ).mkString("\n")
+      ))
+      else versioningCommitToCommit(r.commit.get))
+  }
+
   /** Helper function to create a new commit and assign to current instance.
    */
   private def createCommit(
@@ -91,15 +124,19 @@ class Commit(
           diffs = diffs
         ),
         repository_id_repo_id = repo.id
-      )
-      .flatMap(r => {
-        val newCom = new Commit(clientSet, repo, r.commit.get, commitBranch)
+      ).flatMap(r => versioningCommitToCommit(r.commit.get))
+  }
 
-        if (commitBranch.isDefined)
-          setBranch(r.commit.get, commitBranch.get).map(_ => newCom)
-        else
-          Success(newCom)
-      })
+  /** Helper function to convert the versioning commit instance to commit instance
+   *  Useful for createCommit and merge
+   */
+  private def versioningCommitToCommit(versioningCommit: VersioningCommit)(implicit ec: ExecutionContext) = {
+    val newCom = new Commit(clientSet, repo, versioningCommit, commitBranch)
+
+    if (commitBranch.isDefined)
+      setBranch(versioningCommit, commitBranch.get).map(_ => newCom)
+    else
+      Success(newCom)
   }
 
   /** Convert a location to "repeated string" representation
