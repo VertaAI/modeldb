@@ -11,17 +11,6 @@ import org.scalatest.Assertions._
 import java.io.FileNotFoundException
 
 class TestPathBlob extends FunSuite {
-  /** Verify that a FileMetadata has correct path and does not have invalid parameter
-   *  @param metadata file's metadata
-   *  @param path file's path (to be checked)
-   */
-  def assertMetadata(metadata: FileMetadata, path: String) = {
-    assert(metadata.path.equals(path))
-    assert(metadata.size > 0)
-    assert(metadata.lastModified > 0)
-    assert(metadata.md5.length > 0)
-  }
-
   def fixture =
     new {
       val workingDir = System.getProperty("user.dir")
@@ -33,17 +22,17 @@ class TestPathBlob extends FunSuite {
 
   test("PathBlob should retrieve a file's metadata correctly") {
     val f = fixture
-    var pathBlob = PathBlob(List(f.testfile)).get
+    var pathBlob = PathBlob(f.testfile).get
 
-    assertMetadata(pathBlob.getMetadata(f.testfile).get, f.testfile)
+    TestMetadata.assertMetadata(pathBlob.getMetadata(f.testfile).get, f.testfile)
   }
 
   test("PathBlob should retrieve multiple files correctly") {
     val f = fixture
     var pathBlob = PathBlob(List(f.testfile, f.testfile2)).get
 
-    assertMetadata(pathBlob.getMetadata(f.testfile).get, f.testfile)
-    assertMetadata(pathBlob.getMetadata(f.testfile2).get, f.testfile2)
+    TestMetadata.assertMetadata(pathBlob.getMetadata(f.testfile).get, f.testfile)
+    TestMetadata.assertMetadata(pathBlob.getMetadata(f.testfile2).get, f.testfile2)
   }
 
   test("PathBlob should not store directory") {
@@ -73,5 +62,16 @@ class TestPathBlob extends FunSuite {
     val pathBlob2 = PathBlob(List(f.testfile, f.testfile2)).get
 
     assert(pathBlob1 equals pathBlob2)
+  }
+
+  test("Reducing PathBlobs should retain the contents of both") {
+    val f = fixture
+    val pathBlob = PathBlob(List(f.testfile, f.testfile2)).get
+    val pathBlobCombined = PathBlob.reduce(
+      PathBlob(f.testfile).get,
+      PathBlob(f.testSubdir).get
+    ).get
+
+    assert(pathBlob equals pathBlobCombined)
   }
 }
