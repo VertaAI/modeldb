@@ -384,14 +384,14 @@
 		</addColumn>
 	</changeSet>
 
-	<changeSet id="index-blob-hash-on-attribute" author="anandJ">
+	<changeSet id="index-entity-hash-on-attribute" author="anandJ">
 		<preConditions onFail="MARK_RAN">
 			<not>
-				<indexExists tableName="attribute" indexName="index_blob_hash"/>
+				<indexExists tableName="attribute" indexName="index_entity_hash"/>
 			</not>
 		</preConditions>
-		<createIndex tableName="attribute" indexName="index_blob_hash">
-			<column name="blob_hash"/>
+		<createIndex tableName="attribute" indexName="index_entity_hash">
+			<column name="entity_hash"/>
 		</createIndex>
 	</changeSet>
 </databaseChangeLog>
