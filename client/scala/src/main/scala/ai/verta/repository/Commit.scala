@@ -47,7 +47,7 @@ class Commit(
    *  @param blob Instance of Blob subclass.
    *  @return whether the update attempt succeeds.
    */
-  def update[T <: Blob](path: String, blob: T)(implicit ec: ExecutionContext): Try[Commit] = {
+  def update(path: String, blob: Blob)(implicit ec: ExecutionContext): Try[Commit] = {
     loadBlobs().map(_ => {
       // creating new commit:
       val childCommit = getChild()
