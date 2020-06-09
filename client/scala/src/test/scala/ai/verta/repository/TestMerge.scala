@@ -62,25 +62,30 @@ class TestMerge extends FunSuite {
     }
   }
 
-  test("merge two commits with conflicts") {
-    val f = fixture
-
-    try {
-      val branch1 = f.repo.getCommitByBranch()
-                     .flatMap(_.newBranch("a"))
-                     .flatMap(_.update("abc/cde", f.pathBlob))
-                     .flatMap(_.save("Some message 1")).get
-
-      val branch2 = f.repo.getCommitByBranch()
-                     .flatMap(_.newBranch("b"))
-                     .flatMap(_.update("abc/cde", f.pathBlob2))
-                     .flatMap(_.save("Some message 2")).get
-
-        val mergeAttempt = branch1.merge(branch2, message = Some("Merge test"))
-    } finally {
-      cleanup(f)
-    }
-  }
+  /** TODO: replace pathblob with s3 to test conflict */
+  // test("merge two commits with conflicts") {
+  //   val f = fixture
+  //
+  //   try {
+  //     val branch1 = f.repo.getCommitByBranch()
+  //                    .flatMap(_.newBranch("a"))
+  //                    .flatMap(_.update("abc/cde", f.pathBlob))
+  //                    .flatMap(_.save("Some message 1")).get
+  //
+  //     val branch2 = f.repo.getCommitByBranch()
+  //                    .flatMap(_.newBranch("b"))
+  //                    .flatMap(_.update("abc/cde", f.pathBlob2))
+  //                    .flatMap(_.save("Some message 2")).get
+  //
+  //     val mergeAttempt = branch1.merge(branch2, message = Some("Merge test"))
+  //     assert(mergeAttempt.isFailure)
+  //     assert(mergeAttempt match {
+  //       case Failure(e) => e.getMessage contains "Merge conflict"
+  //     })
+  //   } finally {
+  //     cleanup(f)
+  //   }
+  // }
 
   test("merge unsaved commits should return exception") {
     val f = fixture
