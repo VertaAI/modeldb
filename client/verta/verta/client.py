@@ -3864,8 +3864,10 @@ class ExperimentRun(_ModelDBEntity):
 
         if wait:
             print("waiting for deployment...", end='')
+            sys.stdout.flush()
             while self.get_deployment_status()['status'] not in ("deployed", "error"):
                 print(".", end='')
+                sys.stdout.flush()
                 time.sleep(5)
             print()
             if self.get_deployment_status()['status'] == "error":
@@ -3909,8 +3911,10 @@ class ExperimentRun(_ModelDBEntity):
 
             if wait:
                 print("waiting for undeployment...", end='')
+                sys.stdout.flush()
                 while self.get_deployment_status()['status'] != "not deployed":
                     print(".", end='')
+                    sys.stdout.flush()
                     time.sleep(5)
                 print()
 
