@@ -1,8 +1,8 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.common.KeyValue;
-import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import com.google.protobuf.InvalidProtocolBufferException;
