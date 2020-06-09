@@ -35,15 +35,8 @@ class TestCommit extends FunSuite {
     val f = fixture
 
     try {
-      val originalId = f.commit.id
-      f.commit.update("abc/def", f.pathBlob)
-      assert(f.commit.save("Some message").isSuccess)
-
-      // get the commit that was previously saved:
-      val newCommit = f.repo.getCommitById(f.commit.id).get
-      val originalCommit = f.repo.getCommitById(originalId).get
-      assert(newCommit equals f.commit)
-      assert(!newCommit.equals(originalCommit))
+      val newCommit = f.commit.update("abc/def", f.pathBlob).get
+      val getAttempt = newCommit.get("abc/def").get
 
       // check that the content of the pathblob is not corrupted:
       val getAttempt = newCommit.get("abc/def").get
@@ -86,8 +79,8 @@ class TestCommit extends FunSuite {
     val f = fixture
 
     try {
-      f.commit.update("abc/def", f.pathBlob)
-      val tagAttempt = f.commit.tag("Some tag")
+      val newCommit = f.commit.update("abc/def", f.pathBlob).get
+      val tagAttempt = newCommit.tag("Some tag")
       assert(tagAttempt.isFailure)
       assert(tagAttempt match {
         case Failure(e) => e.getMessage contains "Commit must be saved before it can be tagged"
@@ -101,8 +94,8 @@ class TestCommit extends FunSuite {
     val f = fixture
 
     try {
-      f.commit.update("abc/def", f.pathBlob)
-      val newBranchAttempt = f.commit.newBranch("some-branch")
+      val newCommit = f.commit.update("abc/def", f.pathBlob).get
+      val newBranchAttempt = newCommit.newBranch("some-branch")
       assert(newBranchAttempt.isFailure)
       assert(newBranchAttempt match {
         case Failure(e) => e.getMessage contains "Commit must be saved before it can be attached to a branch"

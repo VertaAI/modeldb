@@ -7,18 +7,18 @@ import ai.verta.blobs.dataset._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
-import scala.collection.mutable.HashMap
+import scala.collection.immutable.Map
 
 /** Commit within a ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
  */
 class Commit(
   private val clientSet: ClientSet, private val repo: Repository,
-  private var commit: VersioningCommit, private val commitBranch: Option[String] = None
+  private val commit: VersioningCommit, private val commitBranch: Option[String] = None
 ) {
   private var saved = true // whether the commit instance is saved to database, or is currently being modified.
   private var loadedFromRemote = false // whether blobs has been retrieved from remote
-  private var blobs = new HashMap[String, VersioningBlob]() // mutable map for storing blobs
+  private var blobs = Map[String, VersioningBlob]() // mutable map for storing blobs
 
   /** Return the id of the commit */
   def id = commit.commit_sha.get
@@ -47,16 +47,21 @@ class Commit(
    *  @param blob Instance of Blob subclass.
    *  @return whether the update attempt succeeds.
    */
-  def update[T <: Blob](path: String, blob: T)(implicit ec: ExecutionContext): Try[Unit] = {
+  def update(path: String, blob: Blob)(implicit ec: ExecutionContext): Try[Commit] = {
     loadBlobs().map(_ => {
-      becomeChild()
+      // creating new commit:
+      val childCommit = getChild()
 
       /** TODO: Add blob subtypes to pattern matching */
       val versioningBlob = blob match {
         case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
       }
 
-      blobs.put(path, versioningBlob)
+      childCommit.blobs = blobs + new Tuple2(path, versioningBlob)
+      childCommit.saved = false
+      childCommit.loadedFromRemote = true
+
+      childCommit
     })
   }
 
@@ -146,7 +151,7 @@ class Commit(
         case Failure(e) => Failure(e)
         case Success(list) => Success {
           loadedFromRemote = true
-          blobs = HashMap(list: _*)
+          blobs = list.toMap
         }
       }
     }
@@ -171,17 +176,15 @@ class Commit(
     )
   }
 
-  /** Become child of current commit (if current commit is saved)
-   *  This helper function is used before modifcation
+  /** Return a child commit child of current commit (if current commit is saved)
+   *  This helper function is used for modifcation
    */
-  private def becomeChild() = {
-    if (saved) {
-      /** TODO: Deal with author, date_created */
-      commit = VersioningCommit(
-        parent_shas = commit.commit_sha.map(List(_))
-      )
-      saved = false
-    }
+  private def getChild() = {
+    /** TODO: Deal with author, date_created */
+    val newCommit = VersioningCommit(
+      parent_shas = if (saved) commit.commit_sha.map(List(_)) else commit.parent_shas
+    )
+    new Commit(clientSet, repo, newCommit, commitBranch)
   }
 
   /** Helper function to convert a VersioningBlob instance to corresponding Blob subclass instance
