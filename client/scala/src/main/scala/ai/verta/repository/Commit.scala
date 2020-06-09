@@ -90,14 +90,18 @@ class Commit(
           diffs = diffs
         ),
         repository_id_repo_id = repo.id
-      ).map(r => if (!r.commit.isEmpty) {
-        commit = r.commit.get
-        init()
-      }).flatMap(_ =>
-        // if there is a branch associated to the commit instance, update the branchs
-        if (commitBranch.isDefined) setBranch(commitBranch.get)
-        else Success(())
       )
+      .flatMap(r => {
+        val newCom = new Commit(clientSet, repo, r.commit.get, commitBranch)
+
+        if (commitBranch.isDefined) {
+          setBranch(r.commit.get, commitBranch.get) match {
+            case Failure(e) => Failure(e)
+            case Success(()) => Success(newCom)
+          }
+        }
+        else Success(newCom)
+      })
   }
 
   /** Convert a location to "repeated string" representation
@@ -128,14 +132,6 @@ class Commit(
     message = Some(message),
     parent_shas = commit.parent_shas
   )
-
-  /** Reset the state of commit
-   */
-  private def init() = {
-    saved = true
-    loadedFromRemote = false
-    blobs = new HashMap[String, VersioningBlob]()
-  }
 
   /** Retrieve commit's blobs from remote
    */
@@ -204,7 +200,7 @@ class Commit(
   def newBranch(branch: String)(implicit ec: ExecutionContext) = {
     if (!saved)
       Failure(new IllegalStateException("Commit must be saved before it can be attached to a branch"))
-    else setBranch(branch).flatMap(_ => repo.getCommitByBranch(branch))
+    else setBranch(commit, branch).flatMap(_ => repo.getCommitByBranch(branch))
   }
 
   /** Assigns a tag to this Commit
@@ -223,9 +219,9 @@ class Commit(
   /** Set the commit of named branch to current commit
    *  @param branch branch
    */
-  private def setBranch(branch: String)(implicit ec: ExecutionContext) = {
+  private def setBranch(versioningCommit: VersioningCommit, branch: String)(implicit ec: ExecutionContext) = {
     clientSet.versioningService.SetBranch2(
-      body = commit.commit_sha.get,
+      body = versioningCommit.commit_sha.get,
       branch = branch,
       repository_id_repo_id = repo.id
     ).map(_ => ())

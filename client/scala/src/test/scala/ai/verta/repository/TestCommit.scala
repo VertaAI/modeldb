@@ -36,7 +36,6 @@ class TestCommit extends FunSuite {
 
     try {
       val newCommit = f.commit.update("abc/def", f.pathBlob).get
-      val getAttempt = newCommit.get("abc/def").get
 
       // check that the content of the pathblob is not corrupted:
       val getAttempt = newCommit.get("abc/def").get
@@ -44,20 +43,6 @@ class TestCommit extends FunSuite {
         case blob: PathBlob => blob
       }
       assert(pathBlob2 equals f.pathBlob)
-    } finally {
-      cleanup(f)
-    }
-  }
-
-  test("Saving unmodified commit should fail") {
-    val f = fixture
-
-    try {
-      val saveAttempt = f.commit.save("Some message")
-      assert(saveAttempt.isFailure)
-      assert(saveAttempt match {
-        case Failure(e) => e.getMessage contains "Commit is already saved"
-      })
     } finally {
       cleanup(f)
     }
@@ -100,6 +85,56 @@ class TestCommit extends FunSuite {
       assert(newBranchAttempt match {
         case Failure(e) => e.getMessage contains "Commit must be saved before it can be attached to a branch"
       })
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("Saving unmodified commit should fail") {
+    val f = fixture
+
+    try {
+      val saveAttempt = f.commit.save("Some message")
+      assert(saveAttempt.isFailure)
+      assert(saveAttempt match {
+        case Failure(e) => e.getMessage contains "Commit is already saved"
+      })
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("Saving a branched commit should update the branch's head") {
+    val f = fixture
+
+    try {
+      val branchedCommit = f.commit.newBranch("some-branch").get
+      val newCommit = branchedCommit.update("abc/def", f.pathBlob)
+                                    .flatMap(_.save("Some msg"))
+                                    .get
+
+      // head of some-branch should be the new commit, not the old one
+      assert(newCommit.equals(f.repo.getCommitByBranch("some-branch").get))
+      assert(!branchedCommit.equals(f.repo.getCommitByBranch("some-branch")))
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("Saving should not corrupt the stored blobs") {
+    val f = fixture
+
+    try {
+      val newId = f.commit.update("abc/def", f.pathBlob)
+              .flatMap(_.save("Some msg"))
+              .get.id.get
+
+      val newCommit = f.repo.getCommitById(newId)
+      val getAttempt = newCommit.get("abc/def").get
+      val pathBlob2 = getAttempt match {
+        case blob: PathBlob => blob
+      }
+      assert(pathBlob2 equals f.pathBlob)
     } finally {
       cleanup(f)
     }
