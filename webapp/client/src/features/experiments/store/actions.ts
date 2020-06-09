@@ -8,7 +8,7 @@ import normalizeError from 'shared/utils/normalizeError';
 import * as Experiment from 'shared/models/Experiment';
 import routes from 'shared/routes';
 import { handleDeleteEntities } from 'features/shared/deletion';
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 import { makeThunkApiRequest } from 'shared/utils/redux/actions';
 
 import { selectExperimentsPagination } from './selectors';

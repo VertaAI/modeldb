@@ -8,7 +8,7 @@ import { IDatasetVersion } from 'shared/models/DatasetVersion';
 import routes, { GetRouteParams } from 'shared/routes';
 import { selectDatasets } from 'features/datasets/store';
 import { selectDatasetVersions } from 'features/datasetVersions/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import {
   AuthorizedLayout,

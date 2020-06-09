@@ -8,7 +8,7 @@ import {
   resetExperimentRunsForDeleting,
   selectIsSelectedAllExperimentRunsForDeleting,
 } from 'features/experimentRuns/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 interface IPropsFromState {
   isSelected: boolean;

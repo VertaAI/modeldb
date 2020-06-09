@@ -15,7 +15,7 @@ import TextInputFieldWithTopLabel from 'shared/view/formComponents/formikFields/
 import PresetFormik from 'shared/view/formComponents/presetComponents/PresetFormik/PresetFormik';
 import * as ExperimentsStore from 'features/experiments/store';
 import * as Experiment from 'shared/models/Experiment';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import styles from './ExperimentCreation.module.css';
 

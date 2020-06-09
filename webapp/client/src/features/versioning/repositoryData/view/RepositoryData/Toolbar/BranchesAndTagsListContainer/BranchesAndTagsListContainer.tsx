@@ -11,7 +11,7 @@ import {
 } from 'shared/models/Versioning/RepositoryData';
 import BranchesAndTagsList from 'shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
 import routes from 'shared/routes';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 interface ILocalProps {

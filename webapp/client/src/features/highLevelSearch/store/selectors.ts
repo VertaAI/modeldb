@@ -1,4 +1,4 @@
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 const selectState = (state: IApplicationState) => state.highLevelSearch;
 

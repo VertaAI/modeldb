@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import DefaultMatchRemoteData from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
 import NoEntitiesStub from 'shared/view/elements/NoEntitiesStub/NoEntitiesStub';
 import Pagination from 'shared/view/elements/Pagination/Pagination';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspace } from 'features/workspaces/store';
 
 import RepositoryWidget from '../RepositoryWidget/RepositoryWidget';

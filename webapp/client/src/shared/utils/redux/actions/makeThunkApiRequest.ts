@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux';
 
 import { AppError } from 'shared/models/Error';
-import { IApplicationState, IThunkActionDependencies } from 'store/store';
+import { IApplicationState, IThunkActionDependencies } from 'setup/store/store';
 
 import makeCommunicationThunk from './makeCommunicationThunk';
 import makeSimpleApiRequest from './makeSimpleApiRequest';

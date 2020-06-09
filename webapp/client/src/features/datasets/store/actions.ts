@@ -9,7 +9,7 @@ import * as Dataset from 'shared/models/Dataset';
 import { IWorkspace } from 'shared/models/Workspace';
 import routes from 'shared/routes';
 import { handleDeleteEntities } from 'features/shared/deletion';
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import { makeThunkApiRequest } from 'shared/utils/redux/actions';
 

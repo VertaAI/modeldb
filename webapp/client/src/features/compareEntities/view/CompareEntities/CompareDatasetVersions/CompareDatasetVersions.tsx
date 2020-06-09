@@ -40,7 +40,7 @@ import {
   loadDatasetVersionExperimentRuns,
   selectDatasetVersionExperimentRuns,
 } from 'features/datasetVersions/store';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import ComparableAttributes from '../shared/ComparableAttributes/ComparableAttributes';

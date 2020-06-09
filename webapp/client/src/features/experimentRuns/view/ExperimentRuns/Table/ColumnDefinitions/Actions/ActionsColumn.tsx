@@ -13,7 +13,7 @@ import {
   deleteExperimentRun,
   selectDeletingExperimentRun,
 } from 'features/experimentRuns/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import { IRow } from '../types';
 import styles from './Actions.module.css';

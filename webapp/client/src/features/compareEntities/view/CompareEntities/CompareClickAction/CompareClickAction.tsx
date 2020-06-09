@@ -8,7 +8,7 @@ import {
   selectEntityForComparing,
   unselectEntityForComparing,
 } from 'features/compareEntities/store';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'setup/store/store';
 
 import FaiLikeCheckbox from 'shared/view/elements/FaiLikeCheckbox/FaiLikeCheckbox';
 

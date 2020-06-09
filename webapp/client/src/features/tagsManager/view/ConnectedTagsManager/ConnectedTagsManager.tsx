@@ -3,7 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import {
   addTag,
   removeTag,

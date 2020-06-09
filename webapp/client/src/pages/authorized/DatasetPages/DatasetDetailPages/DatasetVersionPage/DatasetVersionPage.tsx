@@ -8,7 +8,7 @@ import { selectCommunications, DatasetVersion } from 'features/datasetVersions';
 import NotFoundPage from 'pages/authorized/NotFoundPage/NotFoundPage';
 import AuthorizedLayout from 'pages/authorized/shared/AuthorizedLayout/AuthorizedLayout';
 import routes, { GetRouteParams } from 'shared/routes';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import DatasetsPagesLayout from '../../shared/DatasetsPagesLayout/DatasetsPagesLayout';
 

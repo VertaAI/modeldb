@@ -7,7 +7,7 @@ import * as R from 'ramda';
 import { Icon } from 'shared/view/elements/Icon/Icon';
 import MuiTextInput from 'shared/view/elements/MuiTextInput/MuiTextInput';
 import routes, { GetRouteParams } from 'shared/routes';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import styles from './HeaderSearch.module.css';

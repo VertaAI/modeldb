@@ -1,7 +1,7 @@
 import { action } from 'typesafe-actions';
 
 import normalizeError from 'shared/utils/normalizeError';
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 
 import { EntityId, IComment } from '../../../shared/models/Comment';
 import {

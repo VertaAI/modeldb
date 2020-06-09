@@ -3,7 +3,7 @@ import { action } from 'typesafe-actions';
 import { IArtifact } from 'shared/models/Artifact';
 import { isFileExtensionImage } from 'shared/models/File';
 import normalizeError from 'shared/utils/normalizeError';
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 
 import { getArtifactPreviewFileExtension } from './helpers';
 import { selectArtifactUrl } from './selectors';

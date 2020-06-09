@@ -23,7 +23,7 @@ import {
   changeSortingWithLoadingExperimentRuns,
   selectLoadingExperimentRuns,
 } from 'features/experimentRuns/store';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'setup/store/store';
 
 import DashboardActions from './DashboardActions/DashboardActions';
 import styles from './ExperimentRuns.module.css';

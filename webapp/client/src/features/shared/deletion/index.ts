@@ -3,7 +3,7 @@ import {
   ICommunication,
   initialCommunication,
 } from 'shared/utils/redux/communication';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 export const handleDeleteEntities = ({
   changePagination,

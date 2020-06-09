@@ -7,7 +7,7 @@ import { updateDatasetVersionDesc } from 'features/datasetVersions/store';
 import { updateExpRunDesc } from 'features/experimentRuns/store';
 import { updateExperimentDescription } from 'features/experiments/store';
 import { updateProjectDesc } from 'features/projects/store';
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 
 import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
 import { addOrEditDescActionTypes } from './types';

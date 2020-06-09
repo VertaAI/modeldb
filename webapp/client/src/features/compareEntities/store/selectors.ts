@@ -18,7 +18,7 @@ import {
 import ModelRecord, { ICodeVersionsFromBlob } from 'shared/models/ModelRecord';
 import { selectDatasetVersion } from 'features/datasetVersions/store';
 import { selectExperimentRun } from 'features/experimentRuns/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import {
   ICompareEntitiesState,

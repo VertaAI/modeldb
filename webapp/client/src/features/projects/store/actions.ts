@@ -5,7 +5,7 @@ import { IFilterData } from 'shared/models/Filters';
 import normalizeError from 'shared/utils/normalizeError';
 import { Markdown } from 'shared/utils/types';
 import { Project } from 'shared/models/Project';
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 
 import { IWorkspace } from 'shared/models/Workspace';
 import { selectCurrentContextFilters } from 'features/filter';

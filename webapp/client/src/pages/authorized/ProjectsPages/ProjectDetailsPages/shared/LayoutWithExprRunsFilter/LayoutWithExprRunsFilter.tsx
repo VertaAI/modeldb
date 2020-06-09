@@ -13,7 +13,7 @@ import {
   lazyLoadChartData,
   selectSequentialChartData,
 } from 'features/experimentRuns/store';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'setup/store/store';
 
 import ProjectsPagesLayout from '../../../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 import makeExprRunsFilterContextName from '../makeExprRunsFilterContextName';

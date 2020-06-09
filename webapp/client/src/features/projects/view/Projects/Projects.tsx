@@ -18,7 +18,7 @@ import {
   loadProjects,
 } from 'features/projects/store';
 import routes from 'shared/routes';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import DeletingProjectsManager from './DeletingProjectsManager/DeletingProjectsManager';

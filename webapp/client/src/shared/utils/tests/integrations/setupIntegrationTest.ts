@@ -1,8 +1,8 @@
 import { createBrowserHistory } from 'history';
 import { Store } from 'redux';
 
-import configureStore from 'store/configureStore/configureStore.development';
-import { createRootReducer, IApplicationState } from 'store/store';
+import configureStore from 'setup/store/configureStore/configureStore.development';
+import { createRootReducer, IApplicationState } from 'setup/store/store';
 
 export interface ISetupIntegrationTestSettings {
   initialState?: Partial<IApplicationState>;

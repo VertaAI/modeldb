@@ -9,7 +9,7 @@ import Preloader from 'shared/view/elements/Preloader/Preloader';
 import NotFoundPage from 'pages/authorized/NotFoundPage/NotFoundPage';
 import { AuthorizedLayout } from 'pages/authorized/shared/AuthorizedLayout';
 import routes, { GetRouteParams } from 'shared/routes';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspace } from 'features/workspaces/store';
 
 import CommitPage from './CommitPage/CommitPage';

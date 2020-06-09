@@ -28,7 +28,7 @@ import {
 import Experiment from 'shared/models/Experiment';
 import makeExprRunsFilterContextName from 'pages/authorized/ProjectsPages/ProjectDetailsPages/shared/makeExprRunsFilterContextName';
 import { selectProject } from 'features/projects/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import DeletingExperimentsManager from './DeletingExperimentsManager/DeletingExperimentsManager';
 import styles from './ExperimentsList.module.css';

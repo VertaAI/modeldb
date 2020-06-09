@@ -14,7 +14,7 @@ import Avatar from 'shared/view/elements/Avatar/Avatar';
 import Button from 'shared/view/elements/Button/Button';
 import DefaultMatchRemoteData from 'shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
 import routes from 'shared/routes';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
 import { RepositoryNavigation } from 'features/versioning/repositoryNavigation';

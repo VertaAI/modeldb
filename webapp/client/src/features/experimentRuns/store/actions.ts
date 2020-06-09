@@ -10,7 +10,7 @@ import {
   resetCurrentContextFilters,
   selectCurrentContextAppliedFilters,
 } from 'features/filter';
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 
 import ModelRecord from 'shared/models/ModelRecord';
 import {

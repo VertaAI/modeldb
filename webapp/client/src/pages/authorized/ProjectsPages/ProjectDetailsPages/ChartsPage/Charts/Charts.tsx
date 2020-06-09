@@ -18,7 +18,7 @@ import {
   selectLoadingLazyChartData,
 } from 'features/experimentRuns/store';
 import { selectCurrentContextAppliedFilters } from 'features/filter';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import AggregationChartManager from './AggregationChart/AggregationChartManager';
 import ChartRangeFilter from './ChartRangeFilter/ChartRangeFilterManager';

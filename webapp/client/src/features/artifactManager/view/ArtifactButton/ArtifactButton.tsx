@@ -31,7 +31,7 @@ import {
   getDownloadArtifactsKey,
 } from 'features/artifactManager/store';
 import { checkSupportArtifactPreview } from 'features/artifactManager/store/helpers';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { AppError } from 'shared/models/Error';
 import LastCommunicationError from 'shared/view/elements/LastCommunicationError/LastCommunicationError';
 import { ArtifactDatasetVersion } from 'features/artifactManager/store/artifactDatasetVersion';

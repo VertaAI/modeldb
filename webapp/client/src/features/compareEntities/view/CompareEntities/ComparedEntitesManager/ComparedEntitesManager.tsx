@@ -9,7 +9,7 @@ import {
   selectComparedEntityIds,
   unselectEntityForComparing,
 } from 'features/compareEntities/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import styles from './ComparedEntitesManager.module.css';
 import CompareEntitiesButton from './CompareEntitiesButton/CompareEntitiesButton';

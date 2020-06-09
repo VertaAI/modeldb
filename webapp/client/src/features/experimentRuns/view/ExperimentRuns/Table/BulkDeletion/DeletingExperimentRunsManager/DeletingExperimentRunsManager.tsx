@@ -10,7 +10,7 @@ import {
   selectCommunications,
   resetExperimentRunsForDeleting,
 } from 'features/experimentRuns/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import TableBulkDeletionManager from 'shared/view/domain/BulkDeletion/TableBulkDeletionComponents/TableBulkDeletionManager/TableBulkDeletionManager';
 

@@ -16,7 +16,7 @@ import {
   deleteDataset,
   selectLoadingDataset,
 } from 'features/datasets/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
 import Attributes from 'shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
 import DatasetEntityDescriptionManager from 'features/descriptionManager/view/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';

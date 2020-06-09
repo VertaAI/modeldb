@@ -3,7 +3,7 @@ import { action } from 'typesafe-actions';
 import normalizeError from 'shared/utils/normalizeError';
 import { IProjectCreationSettings } from 'shared/models/Project';
 import routes from 'shared/routes';
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import {

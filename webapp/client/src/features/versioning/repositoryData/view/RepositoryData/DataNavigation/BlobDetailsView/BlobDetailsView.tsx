@@ -7,7 +7,7 @@ import { IRepository } from 'shared/models/Versioning/Repository';
 import { DataBox } from 'shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 import { IBlobView } from 'features/versioning/repositoryData/store/types';
 import AssociatedExperimentRuns from 'shared/view/domain/Versioning/AssociatedExperimentRuns/AssociatedExperimentRuns';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import BlobView from './BlobView/BlobView';

@@ -8,7 +8,7 @@ import { updateDatasetVersionTags } from 'features/datasetVersions/store';
 import { updateExpRunTags } from 'features/experimentRuns/store';
 import { updateExperimentTags } from 'features/experiments/store';
 import { updateProjectTags } from 'features/projects/store';
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 
 import { addTagActionTypes, removeTagActionTypes } from './types';
 import { EntityWithTags } from 'shared/models/TagsCRUD';

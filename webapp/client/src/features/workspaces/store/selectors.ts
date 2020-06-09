@@ -1,6 +1,6 @@
 import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
 import * as Workspace from 'shared/models/Workspace';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { successfullCommunication } from 'shared/utils/redux/communication';
 
 export const selectUserWorkspace = (

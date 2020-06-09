@@ -8,7 +8,7 @@ import {
   unselectDatasetVersionForDeleting,
   selectDatasetVersionIdsForDeleting,
 } from 'features/datasetVersions';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 interface ILocalProps {
   id: string;

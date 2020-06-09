@@ -11,7 +11,7 @@ import {
 
 import { connect } from 'react-redux';
 import routes, { IRoute } from 'shared/routes';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import {
   selectWorkspaceByName,
   selectCurrentWorkspaceName,

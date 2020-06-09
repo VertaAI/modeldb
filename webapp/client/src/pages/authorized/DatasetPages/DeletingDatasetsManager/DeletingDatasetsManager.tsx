@@ -13,7 +13,7 @@ import {
   selectCommunications,
   resetDatasetsForDeleting,
 } from 'features/datasets/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 interface ILocalProps {
   workspaceName: IWorkspace['name'];

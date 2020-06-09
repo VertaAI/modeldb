@@ -1,6 +1,6 @@
 import { createAction } from 'typesafe-actions';
 
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import { ILoadEntitiesByTypeResult } from 'services/highLevelSearch/HighLevelSearchService';
 import { AppError } from 'shared/models/Error';

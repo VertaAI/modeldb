@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { HeaderSearch } from 'features/highLevelSearch';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import logo from './images/Verta_logo.svg';
 import styles from './LayoutHeader.module.css';

@@ -18,7 +18,7 @@ import TextInputFieldWithTopLabel from 'shared/view/formComponents/formikFields/
 import PresetFormik from 'shared/view/formComponents/presetComponents/PresetFormik/PresetFormik';
 import * as DatasetsStore from 'features/datasets/store';
 import * as Dataset from 'shared/models/Dataset';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import {
   selectWorkspaces,
   selectCurrentWorkspaceName,

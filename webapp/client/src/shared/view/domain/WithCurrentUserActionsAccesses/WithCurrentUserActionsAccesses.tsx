@@ -3,7 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import * as EntitiesActions from 'shared/models/EntitiesActions';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import * as Common from 'shared/models/Common';
 import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';

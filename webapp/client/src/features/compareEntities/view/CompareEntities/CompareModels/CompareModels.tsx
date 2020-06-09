@@ -27,7 +27,7 @@ import {
   selectIsLoadingExperimentRun,
 } from 'features/experimentRuns/store';
 import { selectProject } from 'features/projects/store';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'setup/store/store';
 
 import ComparableAttributes from '../shared/ComparableAttributes/ComparableAttributes';
 import {

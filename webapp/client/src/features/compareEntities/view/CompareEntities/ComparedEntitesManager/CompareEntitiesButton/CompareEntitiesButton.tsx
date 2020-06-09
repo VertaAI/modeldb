@@ -9,7 +9,7 @@ import {
   selectComparedEntityIds,
   selectIsEnableEntitiesComparing,
 } from 'features/compareEntities/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 interface ILocalProps {
   containerId: string;

@@ -19,7 +19,7 @@ import {
   resetCreateProjectCommunication,
 } from 'features/projectCreation';
 import { IProjectCreationSettings } from 'shared/models/Project';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspace } from 'features/workspaces/store';
 
 import styles from './ProjectCreation.module.css';

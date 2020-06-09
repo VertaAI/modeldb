@@ -11,7 +11,7 @@ import {
   selectCommunications,
   resetExperimentsForDeleting,
 } from 'features/experiments/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 interface ILocalProps {
   projectId: string;

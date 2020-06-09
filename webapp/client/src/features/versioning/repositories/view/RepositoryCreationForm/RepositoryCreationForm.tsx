@@ -7,7 +7,7 @@ import { validateNotEmpty } from 'shared/utils/validators';
 import Button from 'shared/view/elements/Button/Button';
 import TextInputFieldWithTopLabel from 'shared/view/formComponents/formikFields/TextInputFieldWithTopLabel/TextInputFieldWithTopLabel';
 import PresetFormik from 'shared/view/formComponents/presetComponents/PresetFormik/PresetFormik';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspace } from 'features/workspaces/store';
 import InlineCommunicationError from 'shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
 import { IRepository } from 'shared/models/Versioning/Repository';

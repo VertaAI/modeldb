@@ -3,7 +3,7 @@ import { action } from 'typesafe-actions';
 
 import { IFilterData } from 'shared/models/Filters';
 import normalizeError from 'shared/utils/normalizeError';
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 
 import { selectCurrentContextFilters } from 'features/filter';
 import { handleDeleteEntities } from 'features/shared/deletion';

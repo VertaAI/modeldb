@@ -18,7 +18,7 @@ import {
   ArtifactPreviewFileExtensions,
 } from 'features/artifactManager/store';
 import { getArtifactPreviewFileExtension } from 'features/artifactManager/store/helpers';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import styles from './ArtifactPreview.module.css';
 

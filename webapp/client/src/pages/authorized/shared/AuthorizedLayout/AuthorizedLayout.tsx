@@ -9,7 +9,7 @@ import {
   IMainNavigationRoute,
 } from 'features/layout';
 import routes from 'shared/routes';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 type ILocalProps = Omit<

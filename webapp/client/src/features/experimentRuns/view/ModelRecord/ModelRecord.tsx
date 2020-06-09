@@ -14,7 +14,7 @@ import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
 import Preloader from 'shared/view/elements/Preloader/Preloader';
 import * as ExperimentRunsStore from 'features/experimentRuns/store';
 import * as ProjectsStore from 'features/projects/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { hasAccessToAction } from 'shared/models/EntitiesActions';
 import ClientSuggestion from 'shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
 

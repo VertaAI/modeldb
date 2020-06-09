@@ -12,7 +12,7 @@ import CodeVersion from 'shared/view/domain/CodeVersion/CodeVersion';
 import routes from 'shared/routes';
 import { CommitPointerHelpers } from 'shared/models/Versioning/RepositoryData';
 import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import styles from './CodeVersions.module.css';

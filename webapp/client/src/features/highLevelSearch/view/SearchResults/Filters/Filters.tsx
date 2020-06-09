@@ -12,7 +12,7 @@ import matchType from 'shared/utils/matchType';
 
 import { actions } from '../../../store';
 import styles from './Filters.module.css';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 interface ILocalProps {
   entitiesResults: IEntitiesResults;

@@ -5,7 +5,7 @@ import { isHttpNotFoundError } from 'shared/models/Error';
 import { selectCommunications } from 'features/projects/store';
 import Projects from 'features/projects/view/Projects/Projects';
 import NotFoundPage from 'pages/authorized/NotFoundPage/NotFoundPage';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import ProjectsPagesLayout from '../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 

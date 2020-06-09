@@ -28,7 +28,7 @@ import {
   selectDatasetVersions,
 } from 'features/artifactManager/store';
 import { EntityType } from 'features/compareEntities/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import { IComparedDataset } from '../ComparableDatasets';
 import styles from './ComparableDatasetButton.module.css';

@@ -11,7 +11,7 @@ import ShareLink from 'shared/view/elements/ShareLink/ShareLink';
 import { Project } from 'shared/models/Project';
 import { chartsPageSettings } from 'features/experimentRuns/store';
 import { selectProject } from 'features/projects/store';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'setup/store/store';
 
 import styles from './ChartRangeFilter.module.css';
 

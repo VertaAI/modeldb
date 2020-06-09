@@ -13,7 +13,7 @@ import {
   deleteExperimentRunArtifact,
   selectDeletingExperimentRunArtifacts,
 } from 'features/experimentRuns/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import { IRow } from '../types';
 

@@ -13,7 +13,7 @@ import Draggable from 'shared/view/elements/Draggable/Draggable';
 import { Icon } from 'shared/view/elements/Icon/Icon';
 import { Project } from 'shared/models/Project';
 import routes from 'shared/routes';
-import { IConnectedReduxProps } from 'store/store';
+import { IConnectedReduxProps } from 'setup/store/store';
 
 import ProjectBulkDeletion from './ProjectBulkDeletion/ProjectBulkDeletion';
 import styles from './ProjectWidget.module.css';

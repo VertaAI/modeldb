@@ -8,7 +8,7 @@ import Breadcrumbs, {
   generateBreadcrumbs,
 } from 'shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
 import routes from 'shared/routes';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 const mapStateToProps = (state: IApplicationState) => ({

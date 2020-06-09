@@ -4,7 +4,7 @@ import { bindActionCreators, Dispatch } from 'redux';
 
 import Pile from 'shared/view/elements/PileWithPopup/Pile/Pile';
 import { EntityType } from 'features/artifactManager/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import DownloadArtifactButton from 'features/artifactManager/view/DownloadArtifactButton/DownloadArtifactButton';
 import { checkArtifactWithPath } from 'shared/models/Artifact';

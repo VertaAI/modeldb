@@ -12,7 +12,7 @@ import Avatar from 'shared/view/elements/Avatar/Avatar';
 import Draggable from 'shared/view/elements/Draggable/Draggable';
 import Experiment from 'shared/models/Experiment';
 import { selectDeletingExperiment } from 'features/experiments/store';
-import { IConnectedReduxProps, IApplicationState } from 'store/store';
+import { IConnectedReduxProps, IApplicationState } from 'setup/store/store';
 
 import ExperimentBulkDeletion from './ExperimentBulkDeletion/ExperimentBulkDeletion';
 import styles from './ExperimentWidget.module.css';

@@ -20,7 +20,7 @@ import {
   deleteProject,
   loadProject,
 } from 'features/projects/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 import ProjectPageTabs from '../shared/ProjectPageTabs/ProjectPageTabs';

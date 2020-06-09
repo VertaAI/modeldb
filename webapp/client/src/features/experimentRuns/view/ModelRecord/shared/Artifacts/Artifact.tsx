@@ -11,7 +11,7 @@ import {
 import PileWithActions, {
   Action,
 } from 'shared/view/elements/PileWithActions/PileWithActions';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import * as ExperimentRunsStore from 'features/experimentRuns/store';
 import { hasAccessToAction } from 'shared/models/EntitiesActions';
 import ModelRecord from 'shared/models/ModelRecord';

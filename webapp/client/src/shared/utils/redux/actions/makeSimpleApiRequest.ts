@@ -3,7 +3,7 @@ import { ThunkAction } from 'redux-thunk';
 import { ActionType } from 'typesafe-actions';
 
 import normalizeError from 'shared/utils/normalizeError';
-import { IApplicationState, IThunkActionDependencies } from 'store/store';
+import { IApplicationState, IThunkActionDependencies } from 'setup/store/store';
 
 import { IResetableAsyncAction, GetActionCreatorPayload } from './types';
 
