@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'core/shared/routes';
 
 import { makeDefaultMetricFilter } from 'core/features/filter/Model';
 import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';

@@ -7,7 +7,7 @@ import { IFullCommitComponentLocationComponents } from 'core/shared/models/Versi
 import Breadcrumbs, {
   generateBreadcrumbs,
 } from 'core/shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

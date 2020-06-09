@@ -12,7 +12,7 @@ import {
 } from 'core/shared/utils/tests/react/helpers';
 import { makeTagsManagerHelpers } from 'core/shared/view/domain/BaseTagsManager/__tests__/helpers';
 import { Dataset, IDatasetCreationSettings } from 'core/shared/models/Dataset';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import DatasetsDataService from 'services/datasets/DatasetsDataService';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
 

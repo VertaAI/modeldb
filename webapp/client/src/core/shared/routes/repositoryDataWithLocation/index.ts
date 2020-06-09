@@ -12,8 +12,8 @@ import {
 import makeRoute from 'core/shared/routes/makeRoute';
 import * as P from 'core/shared/routes/pathBuilder';
 import { IWorkspace } from 'core/shared/models/Workspace';
-import routes from 'routes';
-import { parseCurrentWorkspaceName } from 'routes/routeWithWorkspace';
+import routes from 'core/shared/routes';
+import { parseCurrentWorkspaceName } from 'core/shared/routes/routeWithWorkspace';
 
 const routePath = P.makePath(
   P.param('workspaceName')<IWorkspace['name']>(),

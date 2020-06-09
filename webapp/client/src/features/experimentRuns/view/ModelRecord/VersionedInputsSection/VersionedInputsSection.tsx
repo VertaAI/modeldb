@@ -7,7 +7,7 @@ import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitCo
 import { CommitPointerHelpers } from 'core/shared/models/Versioning/RepositoryData';
 import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
 import { IVersionedInputs } from 'core/shared/models/ModelRecord';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import { RecordInfo } from '../shared/RecordInfo/RecordInfo';

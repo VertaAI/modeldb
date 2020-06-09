@@ -1,7 +1,7 @@
 import { bind } from 'decko';
 import * as React from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'core/shared/routes';
 
 import Charts from 'pages/authorized/ProjectsPages/ProjectDetailsPages/ChartsPage/Charts/Charts';
 

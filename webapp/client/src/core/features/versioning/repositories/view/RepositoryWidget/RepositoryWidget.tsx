@@ -6,7 +6,7 @@ import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import Tooltip from 'core/shared/view/elements/Tooltip/Tooltip';
 import ActionIcon from 'core/shared/view/elements/ActionIcon/ActionIcon';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import RepositoryLabelsManager from './RepositoryLabelsManager/RepositoryLabelsManager';
 import styles from './RepositoryWidget.module.css';

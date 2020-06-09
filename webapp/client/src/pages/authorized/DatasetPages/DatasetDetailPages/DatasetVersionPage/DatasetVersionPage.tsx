@@ -7,7 +7,7 @@ import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommuni
 import { selectCommunications, DatasetVersion } from 'features/datasetVersions';
 import NotFoundPage from 'pages/authorized/NotFoundPage/NotFoundPage';
 import AuthorizedLayout from 'pages/authorized/shared/AuthorizedLayout/AuthorizedLayout';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'core/shared/routes';
 import { IApplicationState } from 'store/store';
 
 import DatasetsPagesLayout from '../../shared/DatasetsPagesLayout/DatasetsPagesLayout';

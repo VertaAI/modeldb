@@ -11,7 +11,7 @@ import { Markdown } from 'core/shared/utils/types';
 import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'core/shared/routes';
 import {
   selectLoadingProject,
   selectProject,
@@ -40,7 +40,10 @@ const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) =>
-  bindActionCreators({ updateProjectReadme, loadProject, deleteProject }, dispatch);
+  bindActionCreators(
+    { updateProjectReadme, loadProject, deleteProject },
+    dispatch
+  );
 
 type RouteProps = RouteComponentProps<
   GetRouteParams<typeof routes.projectSummary>
@@ -64,7 +67,7 @@ class ProjectSummaryPage extends React.PureComponent<AllProps> {
     } = this.props;
     return (
       <ProjectsPagesLayout>
-                    <Reloading onReload={this.loadProject}>
+        <Reloading onReload={this.loadProject}>
           <ProjectPageTabs
             projectId={projectId}
             isDisabled={deletingCommunication.isRequesting}

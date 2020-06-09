@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import setupIntegrationTest from 'utils/tests/integrations/setupIntegrationTest';
 

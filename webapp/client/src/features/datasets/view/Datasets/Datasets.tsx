@@ -19,7 +19,7 @@ import {
   selectDatasets,
   selectDatasetsPagination,
 } from 'features/datasets/store';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

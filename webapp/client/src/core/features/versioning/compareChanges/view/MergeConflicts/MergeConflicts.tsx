@@ -13,7 +13,7 @@ import ComparedCommitsInfo from 'core/shared/view/domain/Versioning/RepositoryDa
 import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
 import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import { useMergeConflictsMutation } from '../../store/mergeConflicts/useMergeConflicts';
 import ABCommitPointersSelect from '../shared/ABCommitPointersSelect/ABCommitPointersSelect';

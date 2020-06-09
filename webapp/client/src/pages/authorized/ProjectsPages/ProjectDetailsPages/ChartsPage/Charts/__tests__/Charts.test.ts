@@ -41,7 +41,7 @@ import {
 
 import { initialCommunication } from 'core/shared/utils/redux/communication';
 import { makeRouterMockProps } from 'core/shared/utils/tests/react/routeComponentProps';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 import {
   chartConfig_onlyMetric,

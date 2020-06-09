@@ -9,7 +9,7 @@ import {
   IPaginationSettings,
   IPagination,
 } from 'core/shared/models/Pagination';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import resultToCommunicationWithData from 'core/shared/utils/graphql/queryResultToCommunicationWithData';
 import { USER_FRAGMENT } from 'core/shared/graphql/User/User';
 import { WORKSPACE_FRAGMENT } from 'core/shared/graphql/Workspace';

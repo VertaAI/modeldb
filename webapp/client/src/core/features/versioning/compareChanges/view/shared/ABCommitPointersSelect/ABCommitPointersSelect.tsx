@@ -9,7 +9,7 @@ import {
 } from 'core/shared/models/Versioning/RepositoryData';
 import BranchesAndTagsList from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import styles from './ABCommitPointersSelect.module.css';
 

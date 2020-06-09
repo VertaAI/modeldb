@@ -11,7 +11,7 @@ import {
   DatasetVersions,
 } from 'features/datasetVersions';
 import { defaultQuickFilters } from 'features/filter/Model';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'core/shared/routes';
 
 import DatasetDetailsLayout from '../shared/DatasetDetailsLayout/DatasetDetailsLayout';
 

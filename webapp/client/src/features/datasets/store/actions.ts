@@ -7,7 +7,7 @@ import { AppError } from 'core/shared/models/Error';
 import normalizeError from 'core/shared/utils/normalizeError';
 import * as Dataset from 'core/shared/models/Dataset';
 import { IWorkspace } from 'core/shared/models/Workspace';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { handleDeleteEntities } from 'features/shared/deletion';
 import { ActionResult } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';

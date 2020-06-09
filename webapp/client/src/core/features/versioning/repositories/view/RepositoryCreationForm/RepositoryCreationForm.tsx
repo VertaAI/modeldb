@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { validateNotEmpty } from 'core/shared/utils/validators';
 import Button from 'core/shared/view/elements/Button/Button';
 import TextInputFieldWithTopLabel from 'core/shared/view/formComponents/formikFields/TextInputFieldWithTopLabel/TextInputFieldWithTopLabel';

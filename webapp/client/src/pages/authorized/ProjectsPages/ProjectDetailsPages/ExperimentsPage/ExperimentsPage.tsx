@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'core/shared/routes';
 
 import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import Button from 'core/shared/view/elements/Button/Button';

@@ -6,7 +6,7 @@ import * as R from 'ramda';
 
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import MuiTextInput from 'core/shared/view/elements/MuiTextInput/MuiTextInput';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'core/shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
@@ -24,8 +24,13 @@ const HeaderSearch = ({ currentWorkspaceName }: AllProps) => {
   const [value, changeValue] = React.useState<string>('');
   const history = useHistory();
 
-  const currentQueryParams = routes.highLevelSearch.parseQueryParams(history.location.search) || {};
-  const queryParams = { ...currentQueryParams, q: value, type: currentQueryParams.type || defaultFilter };
+  const currentQueryParams =
+    routes.highLevelSearch.parseQueryParams(history.location.search) || {};
+  const queryParams = {
+    ...currentQueryParams,
+    q: value,
+    type: currentQueryParams.type || defaultFilter,
+  };
 
   const redirectToHighLevelSearchWithValue = () => {
     history.push(

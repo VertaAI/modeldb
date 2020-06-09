@@ -5,7 +5,7 @@ import {
   AuthorizedLayout,
   BreadcrumbsBuilder,
 } from 'pages/authorized/shared/AuthorizedLayout';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 class DatasetCreationPage extends React.Component {
   private breadcrumbsBuilder = BreadcrumbsBuilder()

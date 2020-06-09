@@ -8,7 +8,7 @@ import {
   IAuthorizedLayoutLocalProps,
   BreadcrumbsBuilder,
 } from 'pages/authorized/shared/AuthorizedLayout';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import styles from './RepositoryDetailsPagesLayout.module.css';
 

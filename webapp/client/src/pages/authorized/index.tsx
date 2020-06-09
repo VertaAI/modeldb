@@ -10,7 +10,7 @@ import {
 } from 'react-router-dom';
 
 import { connect } from 'react-redux';
-import routes, { IRoute } from 'routes';
+import routes, { IRoute } from 'core/shared/routes';
 import { IApplicationState } from 'store/store';
 import {
   selectWorkspaceByName,
@@ -25,7 +25,7 @@ import ProjectsPage from './ProjectsPages/ProjectsPage/ProjectsPage';
 import DatasetDetailPages from './DatasetPages/DatasetDetailPages/DatasetDetailPages';
 import DatasetsPage from './DatasetPages/DatasetsPage/DatasetsPage';
 
-import { IRouteWithWorkspace } from 'routes/routeWithWorkspace';
+import { IRouteWithWorkspace } from 'core/shared/routes/routeWithWorkspace';
 import DatasetCreationPage from './DatasetPages/DatasetCreationPage/DatasetCreationPage';
 import ProjectCreationPage from './ProjectsPages/ProjectCreationPage/ProjectCreationPage';
 import ExperimentCreationPage from './ProjectsPages/ProjectDetailsPages/ExperimentCreationPage/ExperimentCreationPage';

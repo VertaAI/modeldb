@@ -9,7 +9,7 @@ import { ShowCommentsButton } from 'features/comments';
 import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
 import { Project } from 'core/shared/models/Project';
 import { TextWithCopyTooltip } from 'core/shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import {
   makeURLFilters,

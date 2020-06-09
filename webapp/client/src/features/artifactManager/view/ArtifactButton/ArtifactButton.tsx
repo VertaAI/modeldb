@@ -21,7 +21,7 @@ import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCom
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import Popup from 'core/shared/view/elements/Popup/Popup';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'core/shared/routes';
 import {
   downloadArtifact,
   reset,

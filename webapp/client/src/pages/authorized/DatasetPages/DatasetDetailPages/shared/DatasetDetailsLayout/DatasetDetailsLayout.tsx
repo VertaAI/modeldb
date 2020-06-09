@@ -5,7 +5,7 @@ import { IAuthorizedLayoutLocalProps } from 'pages/authorized/shared/AuthorizedL
 import PagesTabs, {
   IPagesTabsLocalProps,
 } from 'core/shared/view/pages/PagesTabs/PagesTabs';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'core/shared/routes';
 
 import DatasetsPagesLayout from '../../../shared/DatasetsPagesLayout/DatasetsPagesLayout';
 import styles from './DatasetDetailsLayout.module.css';

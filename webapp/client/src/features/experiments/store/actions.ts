@@ -6,7 +6,7 @@ import { IFilterData } from 'core/features/filter/Model';
 import { AppError } from 'core/shared/models/Error';
 import normalizeError from 'core/shared/utils/normalizeError';
 import * as Experiment from 'core/shared/models/Experiment';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { handleDeleteEntities } from 'features/shared/deletion';
 import { ActionResult } from 'store/store';
 import { makeThunkApiRequest } from 'utils/redux/actions';

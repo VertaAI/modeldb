@@ -8,7 +8,7 @@ import { ExperimentRunsTableConfig } from 'core/features/experimentRunsTableConf
 import Fai from 'core/shared/view/elements/Fai/Fai';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import ShareLink from 'core/shared/view/elements/ShareLink/ShareLink';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { ComparedEntityIds } from 'core/features/compareEntities/store';
 import { resetExperimentRunsSettings } from 'features/experimentRuns/store';
 

@@ -13,7 +13,7 @@ import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/Shorte
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import Button from 'core/shared/view/elements/Button/Button';
 import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';

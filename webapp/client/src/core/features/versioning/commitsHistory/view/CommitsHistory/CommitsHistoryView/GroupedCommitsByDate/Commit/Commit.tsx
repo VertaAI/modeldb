@@ -10,7 +10,7 @@ import { CommitPointerHelpers } from 'core/shared/models/Versioning/RepositoryDa
 import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import Tooltip from 'core/shared/view/elements/Tooltip/Tooltip';
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';

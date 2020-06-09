@@ -6,7 +6,7 @@ import {
 } from 'core/shared/models/HighLevelSearch';
 import { ISorting } from 'core/shared/models/Sorting';
 import inferType from 'core/shared/utils/inferType';
-import routes, { GetRouteQueryParams } from 'routes';
+import routes, { GetRouteQueryParams } from 'core/shared/routes';
 import { updateQueryParamsForLocation } from 'core/shared/utils/updateQueryParams';
 import exhaustiveStringTuple from 'core/shared/utils/exhaustiveStringTuple';
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Switch, Route } from 'react-router';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'core/shared/routes';
 
 import * as B from 'core/shared/models/Versioning/BuildCommitTree';
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';

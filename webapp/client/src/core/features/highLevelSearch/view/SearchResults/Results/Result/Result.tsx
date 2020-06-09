@@ -11,7 +11,7 @@ import {
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import findHighlight from 'core/shared/utils/findHighlight';
 import { Icon, IconType } from 'core/shared/view/elements/Icon/Icon';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { IWorkspace } from 'core/shared/models/Workspace';
 import {
   makeDefaultExprNameFilter,

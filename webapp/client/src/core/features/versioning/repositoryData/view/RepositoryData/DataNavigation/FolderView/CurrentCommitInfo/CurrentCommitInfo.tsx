@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';

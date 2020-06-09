@@ -10,7 +10,7 @@ import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentU
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import Draggable from 'core/shared/view/elements/Draggable/Draggable';
 import { Dataset, DatasetType } from 'core/shared/models/Dataset';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import DatasetBulkDeletion from './DatasetBulkDeletion/DatasetBulkDeletion';
 import styles from './DatasetWidget.module.css';

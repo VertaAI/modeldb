@@ -15,7 +15,7 @@ import DefaultMatchRemoteDataWithReloading from 'core/shared/view/elements/Match
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import { hasAccessToAction } from 'core/shared/models/EntitiesActions';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import { useCompareChangesMutation } from '../../store/compareChanges/useCompareChanges';

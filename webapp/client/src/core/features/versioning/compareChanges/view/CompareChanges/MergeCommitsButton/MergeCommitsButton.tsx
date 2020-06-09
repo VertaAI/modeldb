@@ -10,7 +10,7 @@ import {
   useToastCommunicationError,
 } from 'core/shared/view/elements/Notification/Notification';
 import { IWorkspace } from 'core/shared/models/Workspace';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import { useMergeCommitsMutation } from '../../../store/mergeCommits/useMergeCommits';
 import { ICommitPointersCommits } from '../../../store/types';

@@ -13,7 +13,7 @@ import { IconType } from 'core/shared/view/elements/Icon/Icon';
 import ArtifactPreview from 'features/artifactManager/view/ArtifactButton/ArtifactPreview/ArtifactPreview';
 import { EntityType } from 'features/artifactManager/store';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { useArtifactDatasetVersion } from 'features/artifactManager/store/artifactDatasetVersion';
 
 export const useInfoAction = ({

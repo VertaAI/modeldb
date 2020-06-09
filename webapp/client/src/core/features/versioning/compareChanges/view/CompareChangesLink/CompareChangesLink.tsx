@@ -5,7 +5,7 @@ import {
   CommitPointer,
   defaultBranch,
 } from 'core/shared/models/Versioning/RepositoryData';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 interface ILocalProps {
   repositoryName: IRepository['name'];

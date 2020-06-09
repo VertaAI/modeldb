@@ -5,7 +5,7 @@ import {
   IAuthorizedLayoutLocalProps,
   BreadcrumbsBuilder,
 } from 'pages/authorized/shared/AuthorizedLayout';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 type ILocalProps = IAuthorizedLayoutLocalProps;
 

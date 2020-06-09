@@ -35,7 +35,7 @@ import {
 } from '../../store';
 import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
 import { IDatasetVersion } from 'core/shared/models/DatasetVersion';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { IApplicationState } from 'store/store';
 
 import styles from './DatasetVersions.module.css';

@@ -8,7 +8,7 @@ import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';
 import IdView from 'core/shared/view/elements/IdView/IdView';
 import ModelRecord from 'core/shared/models/ModelRecord';
 import { IWorkspace } from 'core/shared/models/Workspace';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import styles from './DatasetVersionExperimentRuns.module.css';
 

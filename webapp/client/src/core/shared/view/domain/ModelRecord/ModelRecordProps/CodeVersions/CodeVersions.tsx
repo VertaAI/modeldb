@@ -9,7 +9,7 @@ import ModelRecord, {
 } from 'core/shared/models/ModelRecord';
 import { ICodeVersion } from 'core/shared/models/CodeVersion';
 import CodeVersion from 'core/shared/view/domain/CodeVersion/CodeVersion';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { CommitPointerHelpers } from 'core/shared/models/Versioning/RepositoryData';
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IApplicationState } from 'store/store';

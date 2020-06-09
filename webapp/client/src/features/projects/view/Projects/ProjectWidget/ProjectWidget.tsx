@@ -12,7 +12,7 @@ import CopyToClipboard from 'core/shared/view/elements/CopyToClipboard/CopyToCli
 import Draggable from 'core/shared/view/elements/Draggable/Draggable';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import { Project } from 'core/shared/models/Project';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { IConnectedReduxProps } from 'store/store';
 
 import ProjectBulkDeletion from './ProjectBulkDeletion/ProjectBulkDeletion';

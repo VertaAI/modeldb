@@ -15,7 +15,7 @@ import { makeTagsManagerHelpers } from 'core/shared/view/domain/BaseTagsManager/
 import Experiment, {
   IExperimentCreationSettings,
 } from 'core/shared/models/Experiment';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import ExperimentsDataService from 'services/experiments/ExperimentsDataService';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
 

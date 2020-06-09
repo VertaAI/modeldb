@@ -11,8 +11,8 @@ import {
   defaultCommitPointer,
 } from 'core/shared/models/Versioning/RepositoryData';
 import { IWorkspace } from 'core/shared/models/Workspace';
-import routes, { GetRouteParams } from 'routes';
-import { IRepositoryDataWithLocationParams } from 'routes/repositoryDataWithLocation';
+import routes, { GetRouteParams } from 'core/shared/routes';
+import { IRepositoryDataWithLocationParams } from 'core/shared/routes/repositoryDataWithLocation';
 
 export type Options = Omit<IFullCommitComponentLocationComponents, 'type'> & {
   repositoryName: IRepository['name'];

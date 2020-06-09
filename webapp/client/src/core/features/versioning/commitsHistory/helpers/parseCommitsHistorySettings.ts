@@ -1,6 +1,6 @@
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { defaultBranch } from 'core/shared/models/Versioning/RepositoryData';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import { ICommitHistorySettings } from '../store/types';
 

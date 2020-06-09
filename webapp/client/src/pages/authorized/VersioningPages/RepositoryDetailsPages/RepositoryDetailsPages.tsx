@@ -8,7 +8,7 @@ import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommuni
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import NotFoundPage from 'pages/authorized/NotFoundPage/NotFoundPage';
 import { AuthorizedLayout } from 'pages/authorized/shared/AuthorizedLayout';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'core/shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspace } from 'features/workspaces/store';
 

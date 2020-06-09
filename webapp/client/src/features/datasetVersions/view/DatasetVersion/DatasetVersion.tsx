@@ -37,7 +37,7 @@ import {
   IPathBasedDatasetVersionInfo,
   IQueryDatasetVersionInfo,
 } from 'core/shared/models/DatasetVersion';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

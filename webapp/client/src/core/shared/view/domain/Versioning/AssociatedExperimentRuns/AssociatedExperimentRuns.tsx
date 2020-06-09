@@ -8,7 +8,7 @@ import { PageHeader } from 'core/shared/view/elements/PageComponents';
 import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
 import { IExperimentRunInfo } from 'core/shared/models/ModelRecord';
 import { IWorkspace } from 'core/shared/models/Workspace';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import styles from './AssociatedExperimentRuns.module.css';
 

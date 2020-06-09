@@ -9,7 +9,7 @@ import {
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
 import { IWorkspace } from 'core/shared/models/Workspace';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import { useNetworkQuery } from '../../store/query';
 import styles from './NetworkGraph.module.css';

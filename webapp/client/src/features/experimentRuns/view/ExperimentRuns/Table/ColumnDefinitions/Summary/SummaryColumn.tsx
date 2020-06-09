@@ -9,7 +9,7 @@ import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
 import withProps from 'core/shared/utils/react/withProps';
 import Draggable from 'core/shared/view/elements/Draggable/Draggable';
 import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import { IRow } from '../types';
 import styles from './SummaryColumn.module.css';

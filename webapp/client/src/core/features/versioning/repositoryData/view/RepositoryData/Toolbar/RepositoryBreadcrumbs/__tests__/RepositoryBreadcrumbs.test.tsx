@@ -5,7 +5,7 @@ import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitCom
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { IFullCommitComponentLocationComponents } from 'core/shared/models/Versioning/RepositoryData';
 import { repositories } from 'core/shared/utils/tests/mocks/Versioning/repositoriesMocks';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 

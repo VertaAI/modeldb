@@ -4,7 +4,7 @@ import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitCo
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { CommitPointer } from 'core/shared/models/Versioning/RepositoryData';
 import Button from 'core/shared/view/elements/Button/Button';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 interface ILocalProps {
   commitPointer: CommitPointer;

@@ -3,7 +3,7 @@ import { combineReducers } from 'redux';
 import { RouterAction } from 'connected-react-router';
 
 import { IEntitiesResults } from 'core/shared/models/HighLevelSearch';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import {
   initialCommunication,
   requestingCommunication,

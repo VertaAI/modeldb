@@ -22,7 +22,7 @@ export interface IBreadcrumbsBuilder {
 }
 
 type IThenBreadcrumItemSetting<T> =
-  | Omit<ICommonBreadcrumItemSetting<T>, 'routes'> & {
+  | Omit<ICommonBreadcrumItemSetting<T>, 'core/shared/routes'> & {
       type: 'alwaysDisplayed';
       route: IRoute<T, any, any>;
     }

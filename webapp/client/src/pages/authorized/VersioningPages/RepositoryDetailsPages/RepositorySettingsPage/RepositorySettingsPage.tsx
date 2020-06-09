@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import * as React from 'react';
 import { useHistory } from 'react-router';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { useSelector } from 'react-redux';
 
 import { IRepository } from 'core/shared/models/Versioning/Repository';

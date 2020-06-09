@@ -7,7 +7,7 @@ import { cleanup } from '@testing-library/react';
 import * as React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { Store } from 'redux';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 
 import { HttpError } from 'core/shared/models/Error';
 import delay from 'core/shared/utils/delay';

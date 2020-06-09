@@ -17,7 +17,7 @@ import {
   getDefaultProjectsOptions,
   loadProjects,
 } from 'features/projects/store';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 

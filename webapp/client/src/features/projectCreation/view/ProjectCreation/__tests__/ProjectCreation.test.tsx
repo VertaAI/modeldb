@@ -11,7 +11,7 @@ import {
   submitAsyncForm,
 } from 'core/shared/utils/tests/react/helpers';
 import { Project, IProjectCreationSettings } from 'core/shared/models/Project';
-import routes from 'routes';
+import routes from 'core/shared/routes';
 import { ProjectDataService } from 'services/projects';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
 import { makeProject } from 'utils/tests/mocks/models/projectsMocks';
