@@ -24,8 +24,7 @@ class Commit(
   def id = commit.commit_sha
 
   override def equals(other: Any) = other match {
-    case other: Commit => commit.commit_sha.isDefined && other.commit.commit_sha.isDefined &&
-                          commit.commit_sha.get == other.commit.commit_sha.get
+    case other: Commit => id.isDefined && other.id.isDefined && id.get == other.id.get
     case _ => false
   }
 
