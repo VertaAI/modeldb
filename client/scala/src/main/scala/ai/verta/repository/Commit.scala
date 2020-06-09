@@ -31,7 +31,7 @@ class Commit(
 
   /** Retrieves the blob at path from this commit
    *  @param path location of a blob
-   *  @return ModelDB versioning blob. If not existed, return None
+   *  @return The blob. If not existed, or retrieving blobs from backend fails, return a failure.
    */
   def get(path: String)(implicit ec: ExecutionContext): Try[Blob] = {
     loadBlobs().flatMap(_ =>
