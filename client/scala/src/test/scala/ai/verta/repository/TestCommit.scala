@@ -241,7 +241,7 @@ class TestCommit extends FunSuite {
     }
   }
 
-  test("merge unsaved commits should return exception") {
+  test("merge unsaved commits should fail") {
     val f = fixture
 
     try {
