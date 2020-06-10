@@ -138,7 +138,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
     }
   }
 
-  private List<String> getLabels(Session session, IdentificationType id) {
+  @Override
+  public List<String> getLabels(Session session, IdentificationType id) {
     Query<LabelsMappingEntity> query =
         session.createQuery(GET_LABELS_HQL, LabelsMappingEntity.class);
     query.setParameter("entityHash", getEntityHash(id));
@@ -159,7 +160,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
     }
   }
 
-  private String getParameter(Session session, IdentificationType id, String key) {
+  @Override
+  public String getParameter(Session session, IdentificationType id, String key) {
     Query<MetadataParameterMappingEntity> query =
         session.createQuery(GET_PARAMETER_HQL, MetadataParameterMappingEntity.class);
     VersioningCompositeIdentifier compositeId = id.getCompositeId();

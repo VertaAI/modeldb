@@ -264,15 +264,16 @@ public class BlobDAORdbImpl implements BlobDAO {
                     .addAllLocation(locationList)
                     .setRepoId(repository.getId())
                     .setCommitHash(commitHash);
-            List<String> labelsDescription =
-                metadataDAO.getLabels(
+            String labelsDescription =
+                metadataDAO.getParameter(
                     session,
                     IdentificationType.newBuilder()
-                        .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION)
+                        .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
                         .setCompositeId(versioningCompositeIdentifier)
-                        .build());
-            if (labelsDescription.size() > 0) {
-              datasetVersionBuilder.setDescription(labelsDescription.get(0));
+                        .build(),
+                    "description");
+            if (labelsDescription != null) {
+              datasetVersionBuilder.setDescription(labelsDescription);
             }
             List<String> labels =
                 metadataDAO.getLabels(

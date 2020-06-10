@@ -72,7 +72,6 @@ public class CommitDAORdbImpl implements CommitDAO {
       throws ModelDBException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
-      List<PathDatasetComponentBlob> components = new LinkedList<>();
       DatasetBlob.Builder datasetBlobBuilder = DatasetBlob.newBuilder();
       Blob.Builder blobBuilder = Blob.newBuilder();
       blobBuilder.addAllAttributes(datasetVersion.getAttributesList());
@@ -96,7 +95,6 @@ public class CommitDAORdbImpl implements CommitDAO {
             datasetBlobBuilder.setPath(
                 PathDatasetBlob.newBuilder().addAllComponents(result.collect(Collectors.toList())));
           }
-          // pathDatasetVersionInfo.getLocationType()
           break;
         case DATASETVERSIONINFO_NOT_SET:
           throw new ModelDBException("Wrong dataset version type", Code.INVALID_ARGUMENT);
@@ -118,7 +116,8 @@ public class CommitDAORdbImpl implements CommitDAO {
                       RepositoryNamedIdentification.newBuilder()
                           .setName(datasetEntity.getName())
                           .setWorkspaceName(datasetEntity.getWorkspace()))
-                  .build(), false);
+                  .build(),
+              false);
 
       Commit.Builder builder = Commit.newBuilder();
       if (!datasetVersion.getParentId().isEmpty()) {
@@ -140,13 +139,13 @@ public class CommitDAORdbImpl implements CommitDAO {
               .setRepoId(repositoryEntity.getId())
               .setCommitHash(commitEntity.getCommit_hash())
               .addAllLocation(location);
-      metadataDAO.addLabels(session,
-          IdentificationType.newBuilder()
-              .setCompositeId(versioningIdentifier)
-              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION)
-              .build(),
-          Collections.singletonList(datasetVersion.getDescription()));
-      metadataDAO.addLabels(session,
+      metadataDAO.addParameter(
+          session,
+          IdentificationType.newBuilder().setCompositeId(versioningIdentifier).build(),
+          "description",
+          datasetVersion.getDescription());
+      metadataDAO.addLabels(
+          session,
           IdentificationType.newBuilder()
               .setCompositeId(versioningIdentifier)
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
