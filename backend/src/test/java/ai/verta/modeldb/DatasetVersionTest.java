@@ -185,11 +185,22 @@ public class DatasetVersionTest {
     return CreateDatasetVersion.newBuilder()
         .setDatasetId(datasetId)
         .setDescription("this is the description of datsetVersion")
-        .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
-        .setDatasetVersionVisibility(DatasetVisibilityEnum.DatasetVisibility.PRIVATE)
+        .setDatasetVersionVisibility(DatasetVisibility.PRIVATE)
         .addTags("DatasetVersion_tag_x")
         .addTags("DatasetVersion_tag_y")
         .addAllAttributes(attributeList)
+        .setPathDatasetVersionInfo(
+            PathDatasetVersionInfo.newBuilder()
+                .setSize(1)
+                .setLocationType(PathLocationTypeEnum.PathLocationType.S3_FILE_SYSTEM)
+                .setBasePath(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION)
+                .addDatasetPartInfos(
+                    DatasetPartInfo.newBuilder()
+                        .setSize(2)
+                        .setLastModifiedAtSource(Calendar.getInstance().getTimeInMillis())
+                        .setPath("test/versioning/test.txt")
+                        .build())
+                .build())
         .build();
   }
 

@@ -28,7 +28,7 @@ public interface BlobDAO {
       MetadataDAO metadataDAO,
       RepositoryFunction repositoryFunction,
       String commitHash,
-      ProtocolStringList locationList)
+      List<String> locationList)
       throws ModelDBException;
 
   Map<String, BlobExpanded> getCommitBlobMap(

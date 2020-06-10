@@ -132,67 +132,73 @@ public class BlobDAORdbImpl implements BlobDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
-
-      if (commit == null) {
-        throw new ModelDBException("No such commit", Status.Code.NOT_FOUND);
-      }
-
-      if (!VersioningUtils.commitRepositoryMappingExists(session, commitHash, repository.getId())) {
-        throw new ModelDBException("No such commit found in the repository", Status.Code.NOT_FOUND);
-      }
-
-      String folderHash = commit.getRootSha();
-      if (locationList.isEmpty()) { // getting root
-        Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
-        if (folder == null) { // root is empty
-          return GetCommitComponentRequest.Response.newBuilder().build();
-        }
-        return GetCommitComponentRequest.Response.newBuilder().setFolder(folder).build();
-      }
-      for (int index = 0; index < locationList.size(); index++) {
-        String folderLocation = locationList.get(index);
-        String folderQueryHQL =
-            "From "
-                + InternalFolderElementEntity.class.getSimpleName()
-                + " parentIfe WHERE parentIfe.element_name = :location AND parentIfe.folder_hash = :folderHash";
-        Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL);
-        fetchTreeQuery.setParameter("location", folderLocation);
-        fetchTreeQuery.setParameter("folderHash", folderHash);
-        InternalFolderElementEntity elementEntity = fetchTreeQuery.uniqueResult();
-
-        if (elementEntity == null) {
-          LOGGER.warn(
-              "No such folder found : {}. Failed at index {} looking for {}",
-              folderLocation,
-              index,
-              folderLocation);
-          throw new ModelDBException(
-              "No such folder found : " + folderLocation, Status.Code.NOT_FOUND);
-        }
-        if (elementEntity.getElement_type().equals(TREE)) {
-          folderHash = elementEntity.getElement_sha();
-          if (index == locationList.size() - 1) {
-            Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
-            if (folder == null) { // folder is empty
-              return GetCommitComponentRequest.Response.newBuilder().build();
-            }
-            return GetCommitComponentRequest.Response.newBuilder().setFolder(folder).build();
-          }
-        } else {
-          if (index == locationList.size() - 1) {
-            ai.verta.modeldb.versioning.Blob blob = getBlob(session, elementEntity);
-            return GetCommitComponentRequest.Response.newBuilder().setBlob(blob).build();
-          } else {
-            throw new ModelDBException(
-                "No such folder found : " + locationList.get(index + 1), Status.Code.NOT_FOUND);
-          }
-        }
-      }
+      return getCommitComponent(session, repository, commit, locationList);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getCommitComponent(repositoryFunction, commitHash, locationList);
       } else {
         throw ex;
+      }
+    }
+  }
+
+  private GetCommitComponentRequest.Response getCommitComponent(
+      Session session, RepositoryEntity repository, CommitEntity commit, List<String> locationList)
+      throws ModelDBException {
+    if (commit == null) {
+      throw new ModelDBException("No such commit", Status.Code.NOT_FOUND);
+    }
+
+    if (!VersioningUtils.commitRepositoryMappingExists(
+        session, commit.getCommit_hash(), repository.getId())) {
+      throw new ModelDBException("No such commit found in the repository", Status.Code.NOT_FOUND);
+    }
+
+    String folderHash = commit.getRootSha();
+    if (locationList.isEmpty()) { // getting root
+      Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
+      if (folder == null) { // root is empty
+        return GetCommitComponentRequest.Response.newBuilder().build();
+      }
+      return GetCommitComponentRequest.Response.newBuilder().setFolder(folder).build();
+    }
+    for (int index = 0; index < locationList.size(); index++) {
+      String folderLocation = locationList.get(index);
+      String folderQueryHQL =
+          "From "
+              + InternalFolderElementEntity.class.getSimpleName()
+              + " parentIfe WHERE parentIfe.element_name = :location AND parentIfe.folder_hash = :folderHash";
+      Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL);
+      fetchTreeQuery.setParameter("location", folderLocation);
+      fetchTreeQuery.setParameter("folderHash", folderHash);
+      InternalFolderElementEntity elementEntity = fetchTreeQuery.uniqueResult();
+
+      if (elementEntity == null) {
+        LOGGER.warn(
+            "No such folder found : {}. Failed at index {} looking for {}",
+            folderLocation,
+            index,
+            folderLocation);
+        throw new ModelDBException(
+            "No such folder found : " + folderLocation, Status.Code.NOT_FOUND);
+      }
+      if (elementEntity.getElement_type().equals(TREE)) {
+        folderHash = elementEntity.getElement_sha();
+        if (index == locationList.size() - 1) {
+          Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
+          if (folder == null) { // folder is empty
+            return GetCommitComponentRequest.Response.newBuilder().build();
+          }
+          return GetCommitComponentRequest.Response.newBuilder().setFolder(folder).build();
+        }
+      } else {
+        if (index == locationList.size() - 1) {
+          Blob blob = getBlob(session, elementEntity);
+          return GetCommitComponentRequest.Response.newBuilder().setBlob(blob).build();
+        } else {
+          throw new ModelDBException(
+              "No such folder found : " + locationList.get(index + 1), Status.Code.NOT_FOUND);
+        }
       }
     }
     throw new ModelDBException(
@@ -204,126 +210,85 @@ public class BlobDAORdbImpl implements BlobDAO {
       MetadataDAO metadataDAO,
       RepositoryFunction repositoryFunction,
       String commitHash,
-      ProtocolStringList locationList)
+      List<String> locationList)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
-
-      if (commit == null) {
-        throw new ModelDBException("No such commit", Status.Code.NOT_FOUND);
-      }
-
-      if (!VersioningUtils.commitRepositoryMappingExists(session, commitHash, repository.getId())) {
-        throw new ModelDBException("No such commit found in the repository", Status.Code.NOT_FOUND);
-      }
-
-      String folderHash = commit.getRootSha();
-      if (locationList.isEmpty()) {
-        throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
-      }
-      for (int index = 0; index < locationList.size(); index++) {
-        String folderLocation = locationList.get(index);
-        String folderQueryHQL =
-            "From "
-                + InternalFolderElementEntity.class.getSimpleName()
-                + " parentIfe WHERE parentIfe.element_name = :location AND parentIfe.folder_hash = :folderHash";
-        Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL);
-        fetchTreeQuery.setParameter("location", folderLocation);
-        fetchTreeQuery.setParameter("folderHash", folderHash);
-        InternalFolderElementEntity elementEntity = fetchTreeQuery.uniqueResult();
-
-        if (elementEntity == null) {
-          LOGGER.info(
-              "No such folder found : {}. Failed at index {} looking for {}",
-              folderLocation,
-              index,
-              folderLocation);
-          throw new ModelDBException(
-              "No such folder found : " + folderLocation, Status.Code.NOT_FOUND);
+      GetCommitComponentRequest.Response getComponentResponse =
+          getCommitComponent(session, repository, commit, locationList);
+      if (getComponentResponse.hasBlob()) {
+        Blob blob = getComponentResponse.getBlob();
+        DatasetVersion.Builder datasetVersionBuilder = DatasetVersion.newBuilder();
+        datasetVersionBuilder.setId(commitHash);
+        if (commit.getParent_commits().size() != 0) {
+          datasetVersionBuilder.setParentId(
+              commit.getParent_commits().iterator().next().getCommit_hash());
         }
-        if (elementEntity.getElement_type().equals(TREE)) {
-          folderHash = elementEntity.getElement_sha();
-          if (index == locationList.size() - 1) {
-            throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
-          }
+        datasetVersionBuilder.setDatasetId(String.valueOf(repository.getId()));
+        datasetVersionBuilder.setTimeLogged(commit.getDate_created());
+
+        VersioningCompositeIdentifier.Builder versioningCompositeIdentifier =
+            VersioningCompositeIdentifier.newBuilder()
+                .addAllLocation(locationList)
+                .setRepoId(repository.getId())
+                .setCommitHash(commitHash);
+        List<String> labelsDescription =
+            metadataDAO.getLabels(
+                session,
+                IdentificationType.newBuilder()
+                    .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION)
+                    .setCompositeId(versioningCompositeIdentifier)
+                    .build());
+        if (labelsDescription.size() > 0) {
+          datasetVersionBuilder.setDescription(labelsDescription.get(0));
+        }
+        List<String> labels =
+            metadataDAO.getLabels(
+                session,
+                IdentificationType.newBuilder()
+                    .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+                    .setCompositeId(versioningCompositeIdentifier)
+                    .build());
+        if (labels.size() > 0) {
+          datasetVersionBuilder.addAllTags(labels);
+        }
+        datasetVersionBuilder.setDatasetVersionVisibilityValue(
+            repository.getRepository_visibility());
+        datasetVersionBuilder.addAllAttributes(blob.getAttributesList());
+        datasetVersionBuilder.setOwner(commit.getAuthor());
+        DatasetBlob dataset = blob.getDataset();
+        PathDatasetVersionInfo.Builder builderPathDatasetVersion =
+            PathDatasetVersionInfo.newBuilder();
+        List<DatasetPartInfo> components;
+        if (dataset.hasPath()) {
+          builderPathDatasetVersion.setLocationType(
+              PathLocationTypeEnum.PathLocationType.LOCAL_FILE_SYSTEM);
+          components =
+              dataset.getPath().getComponentsList().stream()
+                  .map(this::getPathInfo)
+                  .collect(Collectors.toList());
+        } else if (dataset.hasS3()) {
+          builderPathDatasetVersion.setLocationType(
+              PathLocationTypeEnum.PathLocationType.S3_FILE_SYSTEM);
+          components =
+              dataset.getS3().getComponentsList().stream()
+                  .map(S3DatasetComponentBlob::getPath)
+                  .map(this::getPathInfo)
+                  .collect(Collectors.toList());
         } else {
-          if (index == locationList.size() - 1) {
-            ai.verta.modeldb.versioning.Blob blob = getBlob(session, elementEntity);
-            DatasetVersion.Builder datasetVersionBuilder = DatasetVersion.newBuilder();
-            datasetVersionBuilder.setId(commitHash);
-            if (commit.getParent_commits().size() != 0) {
-              datasetVersionBuilder.setParentId(
-                  commit.getParent_commits().iterator().next().getCommit_hash());
-            }
-            datasetVersionBuilder.setDatasetId(String.valueOf(repository.getId()));
-            datasetVersionBuilder.setTimeLogged(commit.getDate_created());
-
-            VersioningCompositeIdentifier.Builder versioningCompositeIdentifier =
-                VersioningCompositeIdentifier.newBuilder()
-                    .addAllLocation(locationList)
-                    .setRepoId(repository.getId())
-                    .setCommitHash(commitHash);
-            List<String> labelsDescription =
-                metadataDAO.getLabels(
-                    session,
-                    IdentificationType.newBuilder()
-                        .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION)
-                        .setCompositeId(versioningCompositeIdentifier)
-                        .build());
-            if (labelsDescription.size() > 0) {
-              datasetVersionBuilder.setDescription(labelsDescription.get(0));
-            }
-            List<String> labels =
-                metadataDAO.getLabels(
-                    session,
-                    IdentificationType.newBuilder()
-                        .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-                        .setCompositeId(versioningCompositeIdentifier)
-                        .build());
-            if (labels.size() > 0) {
-              datasetVersionBuilder.addAllTags(labels);
-            }
-            datasetVersionBuilder.setDatasetVersionVisibilityValue(
-                repository.getRepository_visibility());
-            datasetVersionBuilder.addAllAttributes(blob.getAttributesList());
-            datasetVersionBuilder.setOwner(commit.getAuthor());
-            DatasetBlob dataset = blob.getDataset();
-            PathDatasetVersionInfo.Builder builderPathDatasetVersion =
-                PathDatasetVersionInfo.newBuilder();
-            List<DatasetPartInfo> components;
-            if (dataset.hasPath()) {
-              builderPathDatasetVersion.setLocationType(
-                  PathLocationTypeEnum.PathLocationType.LOCAL_FILE_SYSTEM);
-              components =
-                  dataset.getPath().getComponentsList().stream()
-                      .map(this::getPathInfo)
-                      .collect(Collectors.toList());
-            } else if (dataset.hasS3()) {
-              builderPathDatasetVersion.setLocationType(
-                  PathLocationTypeEnum.PathLocationType.S3_FILE_SYSTEM);
-              components =
-                  dataset.getS3().getComponentsList().stream()
-                      .map(S3DatasetComponentBlob::getPath)
-                      .map(this::getPathInfo)
-                      .collect(Collectors.toList());
-            } else {
-              LOGGER.error("unexpected error");
-              throw new ModelDBException("Unknown blob type");
-            }
-            Optional<Long> sum =
-                components.stream().map(DatasetPartInfo::getSize).reduce(Long::sum);
-            sum.ifPresent(builderPathDatasetVersion::setSize);
-            datasetVersionBuilder.setPathDatasetVersionInfo(
-                builderPathDatasetVersion
-                    .setBasePath(ModelDBUtils.getLocationWithSlashOperator(locationList))
-                    .addAllDatasetPartInfos(components));
-            DatasetVersion datasetVersion = datasetVersionBuilder.build();
-            return datasetVersion;
-          } else {
-            throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
-          }
+          LOGGER.error("unexpected error");
+          throw new ModelDBException("Unknown blob type");
         }
+        Optional<Long> sum = components.stream().map(DatasetPartInfo::getSize).reduce(Long::sum);
+        sum.ifPresent(builderPathDatasetVersion::setSize);
+        datasetVersionBuilder.setPathDatasetVersionInfo(
+            builderPathDatasetVersion
+                .setBasePath(ModelDBUtils.getLocationWithSlashOperator(locationList))
+                .addAllDatasetPartInfos(components));
+        return datasetVersionBuilder.build();
+      } else {
+        throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -332,8 +297,6 @@ public class BlobDAORdbImpl implements BlobDAO {
         throw ex;
       }
     }
-    throw new ModelDBException(
-        "Unexpected logic issue found when fetching blobs", Status.Code.UNKNOWN);
   }
 
   private DatasetPartInfo getPathInfo(PathDatasetComponentBlob pathDatasetComponentBlob) {

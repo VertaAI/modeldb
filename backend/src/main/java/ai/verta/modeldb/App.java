@@ -487,7 +487,15 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("Dataset serviceImpl initialized");
     wrapService(
         serverBuilder,
-        new DatasetVersionServiceImpl(authService, roleService, datasetDAO, datasetVersionDAO));
+        new DatasetVersionServiceImpl(
+            authService,
+            roleService,
+            datasetDAO,
+            datasetVersionDAO,
+            repositoryDAO,
+            commitDAO,
+            blobDAO,
+            metadataDAO));
     LOGGER.trace("Dataset Version serviceImpl initialized");
     wrapService(
         serverBuilder,

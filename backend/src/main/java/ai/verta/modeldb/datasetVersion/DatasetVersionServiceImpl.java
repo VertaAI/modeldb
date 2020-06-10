@@ -31,9 +31,18 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
+import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.BlobDAO;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.CreateCommitRequest;
+import ai.verta.modeldb.versioning.FileHasher;
+import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.modeldb.versioning.RepositoryFunction;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
@@ -54,16 +63,28 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private RoleService roleService;
   private DatasetDAO datasetDAO;
   private DatasetVersionDAO datasetVersionDAO;
+  private final RepositoryDAO repositoryDAO;
+  private final CommitDAO commitDAO;
+  private final BlobDAO blobDAO;
+  private final MetadataDAO metadataDAO;
 
   public DatasetVersionServiceImpl(
       AuthService authService,
       RoleService roleService,
       DatasetDAO datasetDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      DatasetVersionDAO datasetVersionDAO,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      BlobDAO blobDAO,
+      MetadataDAO metadataDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.datasetDAO = datasetDAO;
     this.datasetVersionDAO = datasetVersionDAO;
+    this.repositoryDAO = repositoryDAO;
+    this.commitDAO = commitDAO;
+    this.blobDAO = blobDAO;
+    this.metadataDAO = metadataDAO;
   }
 
   /**
@@ -89,23 +110,35 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             Any.pack(CreateDatasetVersion.Response.getDefaultInstance()));
       }
 
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET,
-          request.getDatasetId(),
-          ModelDBServiceActions.UPDATE);
-
       Dataset dataset = datasetDAO.getDatasetById(request.getDatasetId());
-      if (dataset.getDatasetType() != request.getDatasetType()) {
-        logAndThrowError(
-            ModelDBMessages.DATASET_VERSION_TYPE_NOT_MATCH_WITH_DATSET_TYPE,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(CreateDatasetVersion.Response.getDefaultInstance()));
-      }
 
       /*Get the user info from the Context*/
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetVersion datasetVersion =
-          datasetVersionDAO.createDatasetVersion(request, dataset, userInfo);
+          datasetVersionDAO.getDatasetVersionFromRequest(authService, request, userInfo);
+      RepositoryIdentification repositoryIdentification =
+          RepositoryIdentification.newBuilder()
+              .setNamedId(
+                  RepositoryNamedIdentification.newBuilder()
+                      .setName(dataset.getName())
+                      .setWorkspaceName(dataset.getWorkspaceId()))
+              .build();
+      RepositoryFunction repositoryFunction =
+          (session) -> repositoryDAO.getRepositoryById(session, repositoryIdentification, true);
+      CreateCommitRequest.Response createCommitResponse =
+          commitDAO.setCommitFromDatasetVersion(
+              datasetVersion,
+              blobDAO,
+              repositoryDAO,
+              metadataDAO,
+              new FileHasher(),
+              repositoryFunction);
+      datasetVersion =
+          blobDAO.convertToDatasetVersion(
+              metadataDAO,
+              repositoryFunction,
+              createCommitResponse.getCommit().getCommitSha(),
+              Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
       responseObserver.onNext(
           CreateDatasetVersion.Response.newBuilder().setDatasetVersion(datasetVersion).build());
       responseObserver.onCompleted();
