@@ -40,10 +40,10 @@ def establish_connection(host=None, email=None, dev_key=None,
         host = config['dev_key']
         print("set host from config")
 
-    # parse `host` into scheme and socket
+    # parse `host` into socket and scheme
     back_end_url = urlparse(host)
-    scheme = back_end_url.scheme or ("https" if ".verta.ai" in socket else "http")
     socket = back_end_url.netloc + back_end_url.path.rstrip('/')
+    scheme = back_end_url.scheme or ("https" if ".verta.ai" in socket else "http")
 
     # set auth HTTP headers
     auth = {_utils._GRPC_PREFIX+'source': "PythonClient"}
