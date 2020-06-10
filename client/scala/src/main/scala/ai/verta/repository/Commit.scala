@@ -75,7 +75,7 @@ class Commit(
   }
 
   /** Remove a blob to this commit at path
-   *  @param path Location to add blob to
+   *  @param path Location of the blob to removed.
    *  @return The new commit with the blob removed, if succeeds.
    */
   def remove(path: String)(implicit ec: ExecutionContext): Try[Commit] = {
