@@ -14,6 +14,7 @@ import "modeldb/versioning/Config.proto";
 import "modeldb/versioning/Dataset.proto";
 import "modeldb/versioning/Enums.proto";
 import "modeldb/versioning/Environment.proto";
+import "common/CommonService.proto";
 
 // Base commit for the versioning system
 // DO NOT USE TO COMPUTE SHA
@@ -96,6 +97,14 @@ message RepositoryVisibilityEnum {
     }
 }
 
+message RepositoryAccessModifierEnum {
+    enum RepositoryAccessModifier {
+        UNKNOWN = 0;// default
+        REGULAR = 1;
+        PROTECTED = 2;
+    }
+}
+
 message Repository {
     uint64 id = 1;
     string name = 2; // Name that can be used in URL, like in GitHub
@@ -106,8 +115,10 @@ message Repository {
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
 
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
-
+    RepositoryAccessModifierEnum.RepositoryAccessModifier repositoryAccessModifier = 8;
+    string description = 9;
     string owner = 10;
+    repeated common.KeyValue attributes = 11;
 }
 
 // For pagination
