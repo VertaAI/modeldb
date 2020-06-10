@@ -68,15 +68,20 @@ class Commit(
 
   /** Saves this commit to ModelDB
    *  @param message description of this commit
+   *  @return The saved commit, if succeeds.
    */
   def save(message: String)(implicit ec: ExecutionContext) = {
     if (saved)
       Failure(new IllegalStateException("Commit is already saved"))
     else
-      createCommit(message = message, blobs = Some(blobsList))
+      blobsList().flatMap(list => createCommit(message = message, blobs = Some(list)))
   }
 
   /** Helper function to create a new commit and assign to current instance.
+   *  @param message the message assigned to the new commit
+   *  @param blobs The list of blobs to assign to the new commit (optional)
+   *  @param commitBase base for the new commit (optional)
+   *  @param diffs a list of diffs (optional)
    */
   private def createCommit(
     message: String,
@@ -114,13 +119,13 @@ class Commit(
    }
 
   /** Convert the dictionary of blobs into list form for API requests
-    *  @return the list required
+    *  @return the list required, if succeeds.
     */
-  private def blobsList: List[VersioningBlobExpanded] = {
-    (for ((path, blob) <- blobs) yield VersioningBlobExpanded(
+  private def blobsList()(implicit ec: ExecutionContext): Try[List[VersioningBlobExpanded]] = {
+    loadBlobs().map(_ => (for ((path, blob) <- blobs) yield VersioningBlobExpanded(
         blob = Some(blob),
         location = Some(pathToLocation(path))
-    )).toList
+    )).toList)
   }
 
   /** Add message to current commit. Done before saving
