@@ -49,10 +49,10 @@ public class AttributeEntity {
       setDatasetEntity(entity);
     } else if (entity instanceof DatasetVersionEntity) {
       setDatasetVersionEntity(entity);
-    } else if (entity instanceof BlobContainer) {
-      this.entity_name = ModelDBConstants.BLOB;
     } else if (entity instanceof RepositoryEntity) {
       setRepositoryEntity(entity);
+    } else if (entity instanceof BlobContainer) {
+      this.entity_name = ModelDBConstants.BLOB;
     }
 
     this.field_type = fieldType;
@@ -100,8 +100,8 @@ public class AttributeEntity {
   @JoinColumn(name = "repository_id")
   private RepositoryEntity repositoryEntity;
 
-  @Column(name = "blob_hash", length = 64)
-  private String blob_hash;
+  @Column(name = "entity_hash", length = 64)
+  private String entity_hash;
 
   @Column(name = "entity_name", length = 50)
   private String entity_name;
@@ -195,14 +195,14 @@ public class AttributeEntity {
     this.entity_name = this.datasetVersionEntity.getClass().getSimpleName();
   }
 
-  public void setBlob_hash(String blob_hash) {
-    this.blob_hash = blob_hash;
-    this.entity_name = ModelDBConstants.BLOB;
-  }
-
   private void setRepositoryEntity(Object entity) {
     this.repositoryEntity = (RepositoryEntity) entity;
     this.entity_name = this.repositoryEntity.getClass().getSimpleName();
+  }
+
+  public void setEntity_hash(String entity_hash) {
+    this.entity_hash = entity_hash;
+    this.entity_name = ModelDBConstants.BLOB;
   }
 
   public String getField_type() {

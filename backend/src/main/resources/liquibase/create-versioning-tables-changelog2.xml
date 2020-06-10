@@ -373,28 +373,6 @@
 		</addColumn>
 	</changeSet>
 
-	<changeSet id="add-blob-hash-on-attribute" author="anandJ">
-		<preConditions onFail="MARK_RAN">
-			<not>
-				<columnExists tableName="attribute" columnName="blob_hash"/>
-			</not>
-		</preConditions>
-		<addColumn tableName="attribute">
-			<column name="blob_hash" type="varchar(64)"/>
-		</addColumn>
-	</changeSet>
-
-	<changeSet id="index-blob-hash-on-attribute" author="anandJ">
-		<preConditions onFail="MARK_RAN">
-			<not>
-				<indexExists tableName="attribute" indexName="index_blob_hash"/>
-			</not>
-		</preConditions>
-		<createIndex tableName="attribute" indexName="index_blob_hash">
-			<column name="blob_hash"/>
-		</createIndex>
-	</changeSet>
-
 	<changeSet id="add-attributes-to-repository" author="anandJ">
 		<preConditions onFail="MARK_RAN">
 			<not>
@@ -405,6 +383,29 @@
 			<column name="repository_id" type="int8"/>
 		</addColumn>
 	</changeSet>
+
+	<changeSet id="add-entity-hash-on-attribute" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="attribute" columnName="entity_hash"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="attribute">
+			<column name="entity_hash" type="varchar(64)"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="index-entity-hash-on-attribute" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<indexExists tableName="attribute" indexName="index_entity_hash"/>
+			</not>
+		</preConditions>
+		<createIndex tableName="attribute" indexName="index_entity_hash">
+			<column name="entity_hash"/>
+		</createIndex>
+	</changeSet>
+
 	<changeSet id="add-description-blob-table" author="lezhevg">
 		<preConditions onFail="MARK_RAN">
 			<not>

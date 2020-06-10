@@ -204,6 +204,28 @@ public class RepositoryTest {
     }
   }
 
+  public static List<KeyValue> getAttributeList() {
+    List<KeyValue> attributeList = new ArrayList<>();
+    Value intValue = Value.newBuilder().setNumberValue(1.1).build();
+    attributeList.add(
+        KeyValue.newBuilder()
+            .setKey("attribute_1" + Calendar.getInstance().getTimeInMillis())
+            .setValue(intValue)
+            .setValueType(ValueTypeEnum.ValueType.NUMBER)
+            .build());
+    Value stringValue =
+        Value.newBuilder()
+            .setStringValue("attributes_value_" + Calendar.getInstance().getTimeInMillis())
+            .build();
+    attributeList.add(
+        KeyValue.newBuilder()
+            .setKey("attribute_2_blob_" + Calendar.getInstance().getTimeInMillis())
+            .setValue(stringValue)
+            .setValueType(ValueTypeEnum.ValueType.BLOB)
+            .build());
+    return attributeList;
+  }
+
   @Test
   public void createDeleteRepositoryNegativeTest() {
     LOGGER.info("Create and delete repository negative test start................................");
@@ -987,28 +1009,6 @@ public class RepositoryTest {
     Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info(
         "Delete Repository contains commit with tags test end................................");
-  }
-
-  public static List<KeyValue> getAttributeList() {
-    List<KeyValue> attributeList = new ArrayList<>();
-    Value intValue = Value.newBuilder().setNumberValue(1.1).build();
-    attributeList.add(
-        KeyValue.newBuilder()
-            .setKey("attribute_1" + Calendar.getInstance().getTimeInMillis())
-            .setValue(intValue)
-            .setValueType(ValueTypeEnum.ValueType.NUMBER)
-            .build());
-    Value stringValue =
-        Value.newBuilder()
-            .setStringValue("attributes_value_" + Calendar.getInstance().getTimeInMillis())
-            .build();
-    attributeList.add(
-        KeyValue.newBuilder()
-            .setKey("attribute_2_blob_" + Calendar.getInstance().getTimeInMillis())
-            .setValue(stringValue)
-            .setValueType(ValueTypeEnum.ValueType.BLOB)
-            .build());
-    return attributeList;
   }
 
   @Test
