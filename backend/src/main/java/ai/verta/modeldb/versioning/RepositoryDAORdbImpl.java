@@ -1,9 +1,10 @@
 package ai.verta.modeldb.versioning;
 
-import static ai.verta.modeldb.versioning.SetRepository.Response.newBuilder;
-
-import ai.verta.modeldb.*;
+import ai.verta.modeldb.CreateJob;
 import ai.verta.modeldb.Dataset;
+import ai.verta.modeldb.KeyValueQuery;
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -308,7 +309,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = setRepository(session, commitDAO, request, userInfo, create);
-      return newBuilder().setRepository(repository.toProto()).build();
+      return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setRepository(commitDAO, request, userInfo, create);
@@ -535,7 +536,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         .setTimeUpdated(repositoryEntity.getDate_updated())
         .setName(repositoryEntity.getName())
         .setOwner(repositoryEntity.getOwner());
-    ListTagsRequest.Response tags = listTags(session, repositoryEntity);
     dataset.addAllAttributes(
         repositoryEntity.getAttributeMapping().stream()
             .map(
@@ -554,6 +554,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   }
                 })
             .collect(Collectors.toList()));
+    ListTagsRequest.Response tags = listTags(session, repositoryEntity);
     dataset.addAllTags(tags.getTagsList());
     return dataset.build();
   }
