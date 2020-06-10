@@ -19,8 +19,8 @@ class TestCommit extends FunSuite {
         val client = new Client(ClientConnection.fromEnvironment())
         val repo = client.getOrCreateRepository("My Repo").get
         val commit = repo.getCommitByBranch().get
-        val pathBlob = PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir/").get
-        val s3Blob = S3(S3Location("s3://verta-scala-demo-super-big").get).get
+        val pathBlob = PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir").get
+        val s3Blob = S3(S3Location("s3://verta-scala-test/testdir/testsubdir/testfile2").get).get
     }
 
   def cleanup(
