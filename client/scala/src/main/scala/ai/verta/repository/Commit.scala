@@ -66,6 +66,79 @@ class Commit(
     })
   }
 
+  /** Saves this commit to ModelDB
+   *  @param message description of this commit
+   *  @return The saved commit, if succeeds.
+   */
+  def save(message: String)(implicit ec: ExecutionContext) = {
+    if (saved)
+      Failure(new IllegalStateException("Commit is already saved"))
+    else
+      blobsList().flatMap(list => createCommit(message = message, blobs = Some(list)))
+  }
+
+  /** Helper function to create a new commit and assign to current instance.
+   *  @param message the message assigned to the new commit
+   *  @param blobs The list of blobs to assign to the new commit (optional)
+   *  @param commitBase base for the new commit (optional)
+   *  @param diffs a list of diffs (optional)
+   *  @return the new commit (if succeeds), set to the current branch's head (if there is a branch)
+   */
+  private def createCommit(
+    message: String,
+    blobs: Option[List[VersioningBlobExpanded]] = None,
+    commitBase: Option[String] = None,
+    diffs: Option[List[VersioningBlobDiff]] = None
+  )(implicit ec: ExecutionContext) = {
+      clientSet.versioningService.CreateCommit2(
+        body = VersioningCreateCommitRequest(
+          commit = Some(addMessage(message)),
+          blobs = blobs,
+          commit_base = commitBase,
+          diffs = diffs
+        ),
+        repository_id_repo_id = repo.id
+      )
+      .flatMap(r => {
+        val newCommit = new Commit(clientSet, repo, r.commit.get, commitBranch)
+
+        // Update branch to child commit
+        if (commitBranch.isDefined)
+          newCommit.newBranch(commitBranch.get)
+        else
+          Success(newCommit)
+      })
+  }
+
+  /** Convert a location to "repeated string" representation
+   *  @param path path
+   *  @return the repeated string representation of the path
+   */
+   private def pathToLocation(path: String): List[String] = {
+     if (path.startsWith("/")) pathToLocation(path.substring(1))
+     else path.split("/").toList
+   }
+
+  /** Convert the dictionary of blobs into list form for API requests
+    *  @return the list required, if succeeds.
+    */
+  private def blobsList()(implicit ec: ExecutionContext): Try[List[VersioningBlobExpanded]] = {
+    loadBlobs().map(_ => (for ((path, blob) <- blobs) yield VersioningBlobExpanded(
+        blob = Some(blob),
+        location = Some(pathToLocation(path))
+    )).toList)
+  }
+
+  /** Add message to current commit. Done before saving
+   *  @param message message
+   */
+  private def addMessage(message: String) = VersioningCommit(
+    /** TODO: Deal with author, date_created */
+    commit_sha = commit.commit_sha,
+    message = Some(message),
+    parent_shas = commit.parent_shas
+  )
+
   /** Retrieve commit's blobs from remote
    *  This is only called when user perform operations involving blobs.
    */
@@ -137,7 +210,11 @@ class Commit(
   def newBranch(branch: String)(implicit ec: ExecutionContext) = {
     if (!saved)
       Failure(new IllegalStateException("Commit must be saved before it can be attached to a branch"))
-    else setBranch(branch).flatMap(_ => repo.getCommitByBranch(branch))
+    else clientSet.versioningService.SetBranch2(
+      body = commit.commit_sha.get,
+      branch = branch,
+      repository_id_repo_id = repo.id
+    ).flatMap(_ => repo.getCommitByBranch(branch))
   }
 
   /** Assigns a tag to this Commit
@@ -150,17 +227,6 @@ class Commit(
         body = commit.commit_sha.get,
         repository_id_repo_id = repo.id,
         tag = tag
-    ).map(_ => ())
-  }
-
-  /** Set the commit of named branch to current commit
-   *  @param branch branch
-   */
-  private def setBranch(branch: String)(implicit ec: ExecutionContext) = {
-    clientSet.versioningService.SetBranch2(
-      body = commit.commit_sha.get,
-      branch = branch,
-      repository_id_repo_id = repo.id
     ).map(_ => ())
   }
 }
