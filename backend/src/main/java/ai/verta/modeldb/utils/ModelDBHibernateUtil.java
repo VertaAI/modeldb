@@ -302,6 +302,7 @@ public class ModelDBHibernateUtil {
   }
 
   public static SessionFactory resetSessionFactory() {
+    isReady = false;
     ModelDBHibernateUtil.sessionFactory = null;
     return getSessionFactory();
   }
@@ -487,17 +488,20 @@ public class ModelDBHibernateUtil {
   }
 
   public static boolean ping() {
-    try (Session session = sessionFactory.openSession()) {
-      final boolean[] valid = {false};
-      session.doWork(
-          connection -> {
-            if (connection.isValid(timeout)) {
-              valid[0] = true;
-            }
-          });
+    if (sessionFactory != null) {
+      try (Session session = sessionFactory.openSession()) {
+        final boolean[] valid = {false};
+        session.doWork(
+            connection -> {
+              if (connection.isValid(timeout)) {
+                valid[0] = true;
+              }
+            });
 
-      return valid[0];
+        return valid[0];
+      }
     }
+    return false;
   }
 
   public static HealthCheckResponse.ServingStatus checkReady() {
