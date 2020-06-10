@@ -13,7 +13,6 @@ message IDTypeEnum {
         VERSIONING_REPOSITORY = 1;
         VERSIONING_COMMIT = 2;
         VERSIONING_REPO_COMMIT_BLOB = 3;
-        VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION = 4;
     }
 }
 
@@ -59,6 +58,35 @@ message DeleteLabelsRequest {
     }
 }
 
+message GetParameterRequest {
+    // If only id_type is provided, gather from all of such sources
+    IdentificationType id = 1;
+    string key = 2;
+
+    message Response {
+        string value = 3;
+    }
+}
+
+message AddParameterRequest {
+    IdentificationType id = 1;
+    string key = 2;
+    string value = 3;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message DeleteParameterRequest {
+    IdentificationType id = 1;
+    string key = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
 service MetadataService {
     rpc GetLabels(GetLabelsRequest) returns (GetLabelsRequest.Response) {
         option (google.api.http) = {
@@ -76,6 +104,26 @@ service MetadataService {
     rpc DeleteLabels(DeleteLabelsRequest) returns (DeleteLabelsRequest.Response) {
         option (google.api.http) = {
             delete: "/v1/metadata/labels"
+            body: "*"
+        };
+    };
+
+    rpc GetParameter(GetParameterRequest) returns (GetParameterRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/parameter"
+        };
+    };
+
+    rpc AddParameter(AddParameterRequest) returns (AddParameterRequest.Response) {
+        option (google.api.http) = {
+            put: "/v1/metadata/parameter"
+            body: "*"
+        };
+    };
+
+    rpc DeleteParameter(DeleteParameterRequest) returns (DeleteParameterRequest.Response) {
+        option (google.api.http) = {
+            delete: "/v1/metadata/parameter"
             body: "*"
         };
     };
