@@ -1,13 +1,14 @@
 package ai.verta.modeldb.authservice;
 
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
@@ -33,7 +34,6 @@ import ai.verta.uac.GetTeamByName;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ListMyOrganizations;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Organization;
 import ai.verta.uac.RemoveResources;
 import ai.verta.uac.ResourceType;
@@ -422,7 +422,7 @@ public class RoleServiceUtils implements RoleService {
                     collaborators.add(collaboratorTeam);
                   } catch (StatusRuntimeException ex) {
                     if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-                      LOGGER.warn(
+                      LOGGER.info(
                           "Current user is not a member of the team : "
                               + teamId
                               + ", "
@@ -440,7 +440,7 @@ public class RoleServiceUtils implements RoleService {
                     collaborators.add(collaboratorOrg);
                   } catch (StatusRuntimeException ex) {
                     if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-                      LOGGER.warn(
+                      LOGGER.info(
                           "Current user is not a member of the organization : "
                               + orgId
                               + ", "
@@ -661,7 +661,7 @@ public class RoleServiceUtils implements RoleService {
 
       return getRoleBindingByNameResponse.getRoleBinding();
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(roleBindingName + " : " + ex.getMessage());
+      LOGGER.info(roleBindingName + " : " + ex.getMessage());
       if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
         return (RoleBinding)
             ModelDBUtils.retryOrThrowException(
@@ -1172,7 +1172,7 @@ public class RoleServiceUtils implements RoleService {
         if (!e.getMessage().contains("Details: Doesn't exist")) {
           throw e;
         }
-        LOGGER.warn("Workspace ({}) not found on UAC", workspaceId);
+        LOGGER.info("Workspace ({}) not found on UAC", workspaceId);
       }
     }
     return workspaceRoleBindingList;

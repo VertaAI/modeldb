@@ -19,13 +19,12 @@ class TestCommit extends FunSuite {
         val client = new Client(ClientConnection.fromEnvironment())
         val repo = client.getOrCreateRepository("My Repo").get
         val commit = repo.getCommitByBranch().get
-        val pathBlob = PathBlob(List(
-          f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir"
-        )).get
+        val pathBlob = PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir/").get
+        val s3Blob = S3(S3Location("s3://verta-scala-demo-super-big").get).get
     }
 
   def cleanup(
-    f: AnyRef{val client: Client; val repo: Repository; val commit: Commit; val pathBlob: PathBlob}
+    f: AnyRef{val client: Client; val repo: Repository; val commit: Commit; val pathBlob: PathBlob; val s3Blob: S3}
   ) = {
     f.client.deleteRepository(f.repo.id)
     f.client.close()
@@ -35,14 +34,21 @@ class TestCommit extends FunSuite {
     val f = fixture
 
     try {
-      val newCommit = f.commit.update("abc/def", f.pathBlob).get
+      val newCommit = f.commit.update("abc/def", f.pathBlob)
+                              .flatMap(_.update("mnp/qrs", f.s3Blob)).get
 
-      // check that the content of the pathblob is not corrupted:
-      val getAttempt = newCommit.get("abc/def").get
-      val pathBlob2 = getAttempt match {
+      // check that the contents of the blobs are not corrupted:
+      val pathBlob2 = newCommit.get("abc/def").get match {
         case blob: PathBlob => blob
+        case blob: S3 => blob
       }
       assert(pathBlob2 equals f.pathBlob)
+
+      val s3Blob2 = newCommit.get("mnp/qrs").get match {
+        case blob: PathBlob => blob
+        case blob: S3 => blob
+      }
+      assert(s3Blob2 equals f.s3Blob)
     } finally {
       cleanup(f)
     }
@@ -90,11 +96,15 @@ class TestCommit extends FunSuite {
     }
   }
 
+
   test("Saving unmodified commit should fail") {
     val f = fixture
 
     try {
-      val saveAttempt = f.commit.save("Some message")
+      val newCommit = f.commit.update("abc/def", f.pathBlob)
+                          .flatMap(_.save("Some msg")).get
+
+      val saveAttempt = newCommit.save("Some message")
       assert(saveAttempt.isFailure)
       assert(saveAttempt match {
         case Failure(e) => e.getMessage contains "Commit is already saved"
@@ -135,6 +145,84 @@ class TestCommit extends FunSuite {
         case blob: PathBlob => blob
       }
       assert(pathBlob2 equals f.pathBlob)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("Remove should discard blob from commit") {
+    val f = fixture
+
+    try {
+      val newCommit = f.commit.update("abc/def", f.pathBlob)
+                              .flatMap(_.update("mnp/qrs", f.pathBlob))
+                              .flatMap(_.remove("abc/def")).get
+
+      val getAttempt = newCommit.get("abc/def")
+      assert(getAttempt.isFailure)
+      assert(getAttempt match {case Failure(e) => e.getMessage contains "No blob was stored at this path."})
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("Remove a non-existing path should fail") {
+    val f = fixture
+
+    try {
+      val removeAttempt = f.commit.remove("abc/def")
+      assert(removeAttempt.isFailure)
+      assert(removeAttempt match {case Failure(e) => e.getMessage contains "No blob was stored at this path."})
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("merge two commits with no conflicts") {
+    val f = fixture
+
+    try {
+        val branch1 = f.repo.getCommitByBranch()
+                       .flatMap(_.newBranch("a"))
+                       .flatMap(_.update("abc/cde", f.pathBlob))
+                       .flatMap(_.save("Some message 1")).get
+
+        val branch2 = f.repo.getCommitByBranch()
+                       .flatMap(_.newBranch("b"))
+                       .flatMap(_.update("def/ghi", f.s3Blob))
+                       .flatMap(_.save("Some message 2")).get
+
+        val mergeAttempt = branch1.merge(branch2, message = Some("Merge test"))
+        assert(mergeAttempt.isSuccess)
+
+        val mergedCommit = mergeAttempt.get
+        assert(mergedCommit.get("abc/cde").isSuccess)
+        assert(mergedCommit.get("def/ghi").isSuccess)
+
+
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("merge unsaved commits should return exception") {
+    val f = fixture
+
+    try {
+      val branch1 = f.repo.getCommitByBranch()
+                     .flatMap(_.newBranch("a"))
+                     .flatMap(_.update("abc/cde", f.pathBlob))
+                     .flatMap(_.save("Some message 1")).get
+
+      val branch2 = f.repo.getCommitByBranch()
+                     .flatMap(_.newBranch("b"))
+                     .flatMap(_.update("def/ghi", f.s3Blob)).get
+
+        val mergeAttempt = branch1.merge(branch2, message = Some("Merge test"))
+        assert(mergeAttempt.isFailure)
+
+        val mergeAttempt2 = branch2.merge(branch1, message = Some("Merge test"))
+        assert(mergeAttempt2.isFailure)
     } finally {
       cleanup(f)
     }
