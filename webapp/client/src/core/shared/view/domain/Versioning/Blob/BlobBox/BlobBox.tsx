@@ -45,7 +45,7 @@ const MultipleBlobDataBox = ({
   children: React.ReactNodeArray | React.ReactFragment;
 }) => {
   return (
-    <div className={styles.root}>
+    <div className={styles.multipleBlobBox}>
       <div className={styles.title}>
         <BlobTitle title={title} />
       </div>

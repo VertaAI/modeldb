@@ -1,0 +1,19 @@
+.root {
+}
+
+.section {
+  padding: 15px 0;
+  border-top: 1px solid var(--border-color1);
+}
+.section:first-child {
+  border-top: none;
+}
+.section:last-child {
+  border-bottom: 1px solid var(--border-color1);
+}
+
+.submit {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}

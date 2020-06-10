@@ -14,7 +14,6 @@ import {
   getElementDiffViewModel,
   IArrayElementDiffViewModel,
 } from '../../model';
-import { ComparedCommitType } from 'core/shared/models/Versioning/Blob/Diff';
 
 export interface IEnvironmentDiffViewModel {
   commonDetails: IEnvironmentCommonDetailsDiffViewModel;
@@ -101,9 +100,20 @@ export const getArrayElemDiffStyles = (
   }
 };
 
-export const needHighlightCellBackground = (arrayViewModel: Array<IArrayElementDiffViewModel<any>> | undefined) => {
+export const needHighlightCellBackground = (
+  arrayViewModel: Array<IArrayElementDiffViewModel<any>> | undefined
+) => {
   if (arrayViewModel && arrayViewModel.length > 0) {
-    return arrayViewModel.every(({ diffColor }) => diffColor === 'green') || arrayViewModel.every(({ diffColor }) => diffColor === 'red');
+    return (
+      arrayViewModel.every(
+        ({ diffColor, hightlightedPart }) =>
+          diffColor === 'bDiff' && hightlightedPart === 'full'
+      ) ||
+      arrayViewModel.every(
+        ({ diffColor, hightlightedPart }) =>
+          diffColor === 'aDiff' && hightlightedPart === 'full'
+      )
+    );
   }
   return false;
 };

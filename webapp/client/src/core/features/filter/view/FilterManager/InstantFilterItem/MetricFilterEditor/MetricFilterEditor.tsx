@@ -1,41 +1,107 @@
+import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { ComparisonType, IMetricFilterData } from 'core/features/filter/Model';
+import {
+  OperatorType,
+  IMetricFilterData,
+  MetricFilterOperator,
+} from 'core/features/filter/Model';
 import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
 import TextInput from 'core/shared/view/elements/TextInput/TextInput';
 
 import styles from './MetricFilterEditor.module.css';
+import FilterSelect from '../FilterSelect/FilterSelect';
 
 interface ILocalProps {
   data: IMetricFilterData;
   onChange: (newData: IMetricFilterData) => void;
+  isReadonly?: boolean;
 }
+
+const operatorOptions = (() => {
+  const map: { [T in MetricFilterOperator]: { value: T; label: string } } = {
+    [OperatorType.MORE]: {
+      value: OperatorType.MORE,
+      label: '>',
+    },
+    [OperatorType.GREATER_OR_EQUALS]: {
+      value: OperatorType.GREATER_OR_EQUALS,
+      label: '>=',
+    },
+    [OperatorType.EQUALS]: {
+      value: OperatorType.EQUALS,
+      label: '=',
+    },
+    [OperatorType.NOT_EQUALS]: {
+      value: OperatorType.NOT_EQUALS,
+      label: '!=',
+    },
+    [OperatorType.LESS]: {
+      value: OperatorType.LESS,
+      label: '<',
+    },
+    [OperatorType.LESS_OR_EQUALS]: {
+      value: OperatorType.LESS_OR_EQUALS,
+      label: '<=',
+    },
+  };
+  return Object.values(map);
+})();
 
 export default class MetricFilterEditor extends React.Component<ILocalProps> {
   public render() {
-    return (
-      <div className={styles.root}>
-        <select
-          defaultValue={this.props.data.comparisonType.toString()}
-          onChange={this.onComparisonChanged}
-        >
-          <option value={ComparisonType.MORE}>&gt;</option>
-          <option value={ComparisonType.GREATER_OR_EQUALS}>&ge;</option>
-          <option value={ComparisonType.EQUALS}>=</option>
-          <option value={ComparisonType.LESS}>&lt;</option>
-          <option value={ComparisonType.LESS_OR_EQUALS}>&le;</option>
-        </select>
+    const { data, isReadonly } = this.props;
 
-        <TextInput
-          size="small"
-          defaultValue={withScientificNotationOrRounded(
-            this.props.data.value
-          ).toString()}
-          dataTest="filter-item-value"
-          onBlur={this.onBlur}
-          onKeyUp={this.onSubmit}
-        />
+    const defaultValue = withScientificNotationOrRounded(
+      this.props.data.value
+    ).toString();
+
+    const canculateInputWidthByText = ({
+      paddingInPx,
+      string,
+    }: {
+      string: string;
+      paddingInPx: number;
+    }) => {
+      const width = string.length > 9 ? string.length * 8 : 80;
+      return `${width + paddingInPx}px`;
+    };
+
+    return (
+      <div
+        className={cn(styles.root, {
+          [styles.readonly]: isReadonly,
+        })}
+      >
+        <div>
+          <FilterSelect
+            options={operatorOptions}
+            currentOption={operatorOptions.find(o => o.value === data.operator)}
+            onChange={({ value }) => this.onComparisonChanged(value)}
+            isReadonly={isReadonly}
+          />
+        </div>
+
+        <div
+          className={styles.input}
+          style={{
+            width: canculateInputWidthByText({
+              string: defaultValue,
+              paddingInPx: 24,
+            }),
+          }}
+        >
+          <TextInput
+            size="small"
+            defaultValue={defaultValue}
+            dataTest="filter-item-value"
+            onBlur={this.onBlur}
+            onKeyUp={this.onSubmit}
+            isDisabled={isReadonly}
+            fullWidth={true}
+          />
+        </div>
       </div>
     );
   }
@@ -48,30 +114,25 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
   }
 
   @bind
-  private onComparisonChanged(event: React.ChangeEvent<HTMLSelectElement>) {
-    const cmp: ComparisonType = Number(event.target.value);
-    const newData = {
+  private onComparisonChanged(operator: MetricFilterOperator) {
+    this.onSave({
       ...this.props.data,
-      comparisonType: cmp,
-    };
-
-    this.onSave(newData);
+      operator,
+    });
   }
 
   @bind
   private onSubmit(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter') {
-      const newData = {
+      this.onSave({
         ...this.props.data,
         value: Number(event.currentTarget.value),
-      };
-      this.onSave(newData);
+      });
     }
   }
 
   @bind
   private onBlur(event: React.ChangeEvent<HTMLInputElement>) {
-    const newData = { ...this.props.data, value: Number(event.target.value) };
-    this.onSave(newData);
+    this.onSave({ ...this.props.data, value: Number(event.target.value) });
   }
 }

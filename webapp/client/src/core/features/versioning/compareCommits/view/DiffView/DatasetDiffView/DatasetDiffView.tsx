@@ -1,11 +1,12 @@
 import * as React from 'react';
 
 import { IDatasetBlobDiff } from 'core/shared/models/Versioning/Blob/DatasetBlob';
+import matchBy from 'core/shared/utils/matchBy';
 import matchType from 'core/shared/utils/matchType';
 import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
-import matchBy from 'core/shared/utils/matchBy';
 
 import PathComponentsDiff from './PathComponentsDiff/PathComponentsDiff';
+import S3ComponentsDiff from './S3ComponentsDiff/S3ComponentsDiff';
 
 const DatasetDiffView = ({ diff }: { diff: IDatasetBlobDiff }) => {
   const title = matchType(
@@ -16,15 +17,14 @@ const DatasetDiffView = ({ diff }: { diff: IDatasetBlobDiff }) => {
     diff.type
   );
 
-  const pathComponentsDiff = matchBy(diff, 'type')({
-    path: pathDiff =>
-      pathDiff.data.components.map(pathComponent => pathComponent),
-    s3: s3Diff => s3Diff.data.components.map(({ path }) => path),
-  });
-
   return (
     <BlobDataBox title={title}>
-      <PathComponentsDiff diff={pathComponentsDiff} />
+      {matchBy(diff, 'type')({
+        path: pathDiff => (
+          <PathComponentsDiff diff={pathDiff.data.components} />
+        ),
+        s3: s3Diff => <S3ComponentsDiff diff={s3Diff.data.components} />,
+      })}
     </BlobDataBox>
   );
 };
