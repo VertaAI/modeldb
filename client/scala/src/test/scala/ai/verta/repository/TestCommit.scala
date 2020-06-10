@@ -215,6 +215,7 @@ class TestCommit extends FunSuite {
         // check that the merging correctly assign the branch head:
         assert(f.repo.getCommitByBranch("a").get equals mergedCommit)
         assert(!(f.repo.getCommitByBranch("b").get equals mergedCommit))
+        assert(f.repo.getCommitByBranch("b").get equals branch2)
     } finally {
       cleanup(f)
     }
