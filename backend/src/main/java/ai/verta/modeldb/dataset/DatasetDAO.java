@@ -6,10 +6,12 @@ import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 import java.util.Map;
+import org.hibernate.Session;
 
 public interface DatasetDAO {
 
@@ -71,6 +73,8 @@ public interface DatasetDAO {
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   Dataset getDatasetById(String datasetId) throws InvalidProtocolBufferException;
+
+  DatasetEntity getDatasetEntity(Session session, String datasetId);
 
   /**
    * Return list of datasets based on FindDatasets queryParameters

@@ -200,7 +200,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   @Override
-  public DatasetVersion convert(
+  public DatasetVersion convertToDatasetVersion(
       MetadataDAO metadataDAO,
       RepositoryFunction repositoryFunction,
       String commitHash,
@@ -250,13 +250,14 @@ public class BlobDAORdbImpl implements BlobDAO {
         } else {
           if (index == locationList.size() - 1) {
             ai.verta.modeldb.versioning.Blob blob = getBlob(session, elementEntity);
-            DatasetVersion.Builder builder = DatasetVersion.newBuilder();
-            builder.setId(commitHash);
+            DatasetVersion.Builder datasetVersionBuiler = DatasetVersion.newBuilder();
+            datasetVersionBuiler.setId(commitHash);
             if (commit.getParent_commits().size() != 0) {
-              builder.setParentId(commit.getParent_commits().iterator().next().getCommit_hash());
+              datasetVersionBuiler.setParentId(
+                  commit.getParent_commits().iterator().next().getCommit_hash());
             }
-            builder.setDatasetId(String.valueOf(repository.getId()));
-            builder.setTimeLogged(commit.getDate_created());
+            datasetVersionBuiler.setDatasetId(String.valueOf(repository.getId()));
+            datasetVersionBuiler.setTimeLogged(commit.getDate_created());
 
             VersioningCompositeIdentifier.Builder versioningCompositeIdentifier =
                 VersioningCompositeIdentifier.newBuilder()
@@ -271,7 +272,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                         .setCompositeId(versioningCompositeIdentifier)
                         .build());
             if (labelsDescription.size() > 0) {
-              builder.setDescription(labelsDescription.get(0));
+              datasetVersionBuiler.setDescription(labelsDescription.get(0));
             }
             List<String> labels =
                 metadataDAO.getLabels(
@@ -281,11 +282,12 @@ public class BlobDAORdbImpl implements BlobDAO {
                         .setCompositeId(versioningCompositeIdentifier)
                         .build());
             if (labels.size() > 0) {
-              builder.addAllTags(labels);
+              datasetVersionBuiler.addAllTags(labels);
             }
-            builder.setDatasetVersionVisibilityValue(repository.getRepository_visibility());
-            builder.addAllAttributes(blob.getAttributesList());
-            builder.setOwner(commit.getAuthor());
+            datasetVersionBuiler.setDatasetVersionVisibilityValue(
+                repository.getRepository_visibility());
+            datasetVersionBuiler.addAllAttributes(blob.getAttributesList());
+            datasetVersionBuiler.setOwner(commit.getAuthor());
             DatasetBlob dataset = blob.getDataset();
             PathDatasetVersionInfo.Builder builderPathDatasetVersion =
                 PathDatasetVersionInfo.newBuilder();
@@ -312,11 +314,11 @@ public class BlobDAORdbImpl implements BlobDAO {
             Optional<Long> sum =
                 components.stream().map(DatasetPartInfo::getSize).reduce(Long::sum);
             sum.ifPresent(builderPathDatasetVersion::setSize);
-            builder.setPathDatasetVersionInfo(
+            datasetVersionBuiler.setPathDatasetVersionInfo(
                 builderPathDatasetVersion
                     .setBasePath(ModelDBUtils.getLocationWithSlashOperator(locationList))
                     .addAllDatasetPartInfos(components));
-            DatasetVersion datasetVersion = builder.build();
+            DatasetVersion datasetVersion = datasetVersionBuiler.build();
             return datasetVersion;
           } else {
             throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
@@ -325,7 +327,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return convert(metadataDAO, repositoryFunction, commitHash, locationList);
+        return convertToDatasetVersion(metadataDAO, repositoryFunction, commitHash, locationList);
       } else {
         throw ex;
       }

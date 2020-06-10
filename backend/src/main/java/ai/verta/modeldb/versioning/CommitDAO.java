@@ -2,9 +2,11 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -17,10 +19,10 @@ public interface CommitDAO {
 
   Response setCommitFromDatasetVersion(
       DatasetVersion datasetVersion,
-      String author,
-      Commit commit,
+      DatasetDAO datasetDAO,
       BlobDAO blobDAO,
-      RepositoryFunction getRepository,
+      RepositoryDAO repositoryDAO,
+      MetadataDAO metadataDAO,
       FileHasher fileHasher)
       throws ModelDBException, NoSuchAlgorithmException;
 
@@ -29,7 +31,8 @@ public interface CommitDAO {
       Commit commit,
       String rootSha,
       String author,
-      RepositoryEntity repositoryEntity)
+      RepositoryEntity repositoryEntity,
+      String commitSha)
       throws ModelDBException, NoSuchAlgorithmException;
 
   CommitPaginationDTO fetchCommitEntityList(
