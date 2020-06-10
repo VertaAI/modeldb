@@ -51,6 +51,35 @@ message DeleteLabelsRequest {
     }
 }
 
+message GetMetadataRequest {
+    // If only id_type is provided, gather from all of such sources
+    IdentificationType id = 1;
+    string type = 2;
+
+    message Response {
+        string value = 3;
+    }
+}
+
+message AddMetadataRequest {
+    IdentificationType id = 1;
+    string key = 2;
+    string value = 3;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message DeleteMetadataRequest {
+    IdentificationType id = 1;
+    string key = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
 service MetadataService {
     rpc GetLabels(GetLabelsRequest) returns (GetLabelsRequest.Response) {
         option (google.api.http) = {
@@ -68,6 +97,26 @@ service MetadataService {
     rpc DeleteLabels(DeleteLabelsRequest) returns (DeleteLabelsRequest.Response) {
         option (google.api.http) = {
             delete: "/v1/metadata/labels"
+            body: "*"
+        };
+    };
+    
+    rpc GetMetadata(GetMetadataRequest) returns (GetMetadataRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/metadata"
+        };
+    };
+
+    rpc AddMetadata(AddMetadataRequest) returns (AddMetadataRequest.Response) {
+        option (google.api.http) = {
+            put: "/v1/metadata/metadata"
+            body: "*"
+        };
+    };
+
+    rpc DeleteMetadata(DeleteMetadataRequest) returns (DeleteMetadataRequest.Response) {
+        option (google.api.http) = {
+            delete: "/v1/metadata/metadata"
             body: "*"
         };
     };
