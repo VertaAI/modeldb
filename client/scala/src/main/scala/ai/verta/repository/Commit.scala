@@ -82,6 +82,7 @@ class Commit(
    *  @param blobs The list of blobs to assign to the new commit (optional)
    *  @param commitBase base for the new commit (optional)
    *  @param diffs a list of diffs (optional)
+   *  @return the new commit (if succeeds), set to the current branch's head (if there is a branch)
    */
   private def createCommit(
     message: String,
