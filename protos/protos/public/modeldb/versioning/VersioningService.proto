@@ -65,6 +65,7 @@ message Blob {
         CodeBlob code = 4;
         ConfigBlob config = 5;
     }
+    repeated common.KeyValue attributes = 10;
 }
 
 message BlobExpanded {
