@@ -1,20 +1,15 @@
 package ai.verta.modeldb.metadata;
 
-import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION;
-
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.entities.metadata.LabelsMappingDescriptionEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
-import ai.verta.modeldb.entities.metadata.LabelsMappingEntityBase;
+import ai.verta.modeldb.entities.metadata.MetadataParameterMappingEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.blob.diff.Function4;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,16 +28,19 @@ public class MetadataDAORdbImpl implements MetadataDAO {
           .append(ModelDBConstants.ENTITY_TYPE)
           .append(" = :entityType")
           .toString();
-  private static final String GET_LABELS_DESCRIPTION_HQL =
-      new StringBuilder("From LabelsMappingDescriptionEntity lm where lm.id.")
+  private static final String GET_PARAMETER_HQL =
+      new StringBuilder("From MetadataParameterMappingEntity pm where pm.id.")
           .append("repositoryId")
           .append(" = :repositoryId")
-          .append(" AND lm.id.")
+          .append(" AND pm.id.")
           .append("commitSha")
           .append(" = :commitSha")
-          .append(" AND lm.id.")
+          .append(" AND pm.id.")
           .append("location")
           .append(" = :location")
+          .append(" AND pm.id.")
+          .append("key")
+          .append(" = :key")
           .toString();
   private static final String DELETE_LABELS_HQL =
       new StringBuilder("DELETE From LabelsMappingEntity lm where lm.")
@@ -85,73 +83,46 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public void addLabels(Session session, IdentificationType id, List<String> labels) {
-    Transaction transaction = session.beginTransaction();
-    processLabels(
-        session,
-        id,
-        labels,
-        (entity, existingEntity, label) -> {
-          saveLabel(session, entity, existingEntity, label);
-          return null;
-        });
-    transaction.commit();
-  }
-
-  private void processLabels(
-      Session session,
-      IdentificationType id,
-      List<String> labels,
-      Function4<Supplier<Object>, Object, String, Object> processLabel) {
-    if (id.getIdType() == VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION) {
-      String label = labels.get(0);
-      LabelsMappingDescriptionEntity.LabelMappingId id0 =
-          LabelsMappingDescriptionEntity.createId(id);
-      LabelsMappingEntity existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
-      processLabel.apply(
-          () -> new LabelsMappingDescriptionEntity(id0, label), existingLabelsMappingEntity, label);
-    } else {
-      for (String label : labels) {
-        LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
-        LabelsMappingEntity existingLabelsMappingEntity =
-            session.get(LabelsMappingEntity.class, id0);
-        processLabel.apply(() -> new LabelsMappingEntity(id0), existingLabelsMappingEntity, label);
+  public boolean addParameter(IdentificationType id, String key, String value) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      addParameter(session, id, key, value);
+      return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addParameter(id, key, value);
+      } else {
+        throw ex;
       }
     }
   }
 
-  private <T> void saveLabel(
-      Session session,
-      Supplier<T> labelsMappingEntity,
-      T existingLabelsMappingEntity,
-      String label) {
-    if (existingLabelsMappingEntity == null) {
-      session.save(labelsMappingEntity.get());
-    } else {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.ALREADY_EXISTS_VALUE)
-              .setMessage("Label '" + label + "' already exists with given ID")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
+  @Override
+  public void addParameter(Session session, IdentificationType id, String key, String value) {
+    Transaction transaction = session.beginTransaction();
+    MetadataParameterMappingEntity.LabelMappingId id0 =
+        MetadataParameterMappingEntity.createId(id, key);
+    session.saveOrUpdate(new MetadataParameterMappingEntity(id0, value));
+    transaction.commit();
   }
 
-  private <T> void deleteLabels(
-      Session session,
-      Supplier<T> labelsMappingEntity,
-      T existingLabelsMappingEntity,
-      String label) {
-    if (existingLabelsMappingEntity != null) {
-      session.delete(existingLabelsMappingEntity);
-    } else {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.NOT_FOUND_VALUE)
-              .setMessage("Label '" + label + "' not found in DB")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+  @Override
+  public void addLabels(Session session, IdentificationType id, List<String> labels) {
+    Transaction transaction = session.beginTransaction();
+    for (String label : labels) {
+      LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
+      LabelsMappingEntity existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
+      if (existingLabelsMappingEntity == null) {
+        session.save(new LabelsMappingEntity(id0));
+      } else {
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.ALREADY_EXISTS_VALUE)
+                .setMessage("Label '" + label + "' already exists with given ID")
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
     }
+    transaction.commit();
   }
 
   @Override
@@ -169,27 +140,36 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public List<String> getLabels(Session session, IdentificationType id) {
-    List<LabelsMappingEntityBase> labelsMappingEntities;
-    if (id.getIdType() == VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION) {
-      Query<LabelsMappingDescriptionEntity> query =
-          session.createQuery(GET_LABELS_DESCRIPTION_HQL, LabelsMappingDescriptionEntity.class);
-      VersioningCompositeIdentifier compositeId = id.getCompositeId();
-      query.setParameter("repositoryId", compositeId.getRepoId());
-      query.setParameter("commitSha", compositeId.getCommitHash());
-      query.setParameter("location", ModelDBUtils.getJoinedLocation(compositeId.getLocationList()));
-      labelsMappingEntities =
-          query.list().stream().map(e -> (LabelsMappingEntityBase) e).collect(Collectors.toList());
-    } else {
-      Query<LabelsMappingEntity> query =
-          session.createQuery(GET_LABELS_HQL, LabelsMappingEntity.class);
-      query.setParameter("entityHash", getEntityHash(id));
-      query.setParameter("entityType", id.getIdTypeValue());
-      labelsMappingEntities =
-          query.list().stream().map(e -> (LabelsMappingEntityBase) e).collect(Collectors.toList());
+    Query<LabelsMappingEntity> query =
+        session.createQuery(GET_LABELS_HQL, LabelsMappingEntity.class);
+    query.setParameter("entityHash", getEntityHash(id));
+    query.setParameter("entityType", id.getIdTypeValue());
+    return query.list().stream().map(LabelsMappingEntity::getValue).collect(Collectors.toList());
+  }
+
+  @Override
+  public String getParameter(IdentificationType id, String key) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      return getParameter(session, id, key);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getParameter(id, key);
+      } else {
+        throw ex;
+      }
     }
-    return labelsMappingEntities.stream()
-        .map(LabelsMappingEntityBase::getLabel)
-        .collect(Collectors.toList());
+  }
+
+  @Override
+  public String getParameter(Session session, IdentificationType id, String key) {
+    Query<MetadataParameterMappingEntity> query =
+        session.createQuery(GET_PARAMETER_HQL, MetadataParameterMappingEntity.class);
+    VersioningCompositeIdentifier compositeId = id.getCompositeId();
+    query.setParameter("repositoryId", compositeId.getRepoId());
+    query.setParameter("commitSha", compositeId.getCommitHash());
+    query.setParameter("location", ModelDBUtils.getJoinedLocation(compositeId.getLocationList()));
+    query.setParameter("key", key);
+    return query.uniqueResultOptional().map(MetadataParameterMappingEntity::getValue).orElse(null);
   }
 
   @Override
@@ -197,19 +177,56 @@ public class MetadataDAORdbImpl implements MetadataDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
-      processLabels(
-          session,
-          id,
-          labels,
-          (entity, existingEntity, label) -> {
-            deleteLabels(session, entity, existingEntity, label);
-            return null;
-          });
+      for (String label : labels) {
+        LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
+        LabelsMappingEntity existingLabelsMappingEntity =
+            session.get(LabelsMappingEntity.class, id0);
+        if (existingLabelsMappingEntity != null) {
+          session.delete(existingLabelsMappingEntity);
+        } else {
+          Status status =
+              Status.newBuilder()
+                  .setCode(Code.NOT_FOUND_VALUE)
+                  .setMessage("Label '" + label + "' not found in DB")
+                  .build();
+          throw StatusProto.toStatusRuntimeException(status);
+        }
+      }
       transaction.commit();
       return true;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteLabels(id, labels);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public boolean deleteParameter(IdentificationType id, String key) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = session.beginTransaction();
+
+      MetadataParameterMappingEntity.LabelMappingId id0 =
+          MetadataParameterMappingEntity.createId(id, key);
+      MetadataParameterMappingEntity existingMetadataMappingEntity =
+          session.get(MetadataParameterMappingEntity.class, id0);
+      if (existingMetadataMappingEntity != null) {
+        session.delete(existingMetadataMappingEntity);
+      } else {
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.NOT_FOUND_VALUE)
+                .setMessage("Label '" + key + "' not found in DB")
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+      transaction.commit();
+      return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteParameter(id, key);
       } else {
         throw ex;
       }

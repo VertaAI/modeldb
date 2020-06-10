@@ -409,10 +409,10 @@
 	<changeSet id="add-description-blob-table" author="lezhevg">
 		<preConditions onFail="MARK_RAN">
 			<not>
-				<tableExists tableName="labels_mapping_description"/>
+				<tableExists tableName="metadata_parameter_mapping"/>
 			</not>
 		</preConditions>
-		<createTable tableName="labels_mapping_description">
+		<createTable tableName="metadata_parameter_mapping">
 			<column name="repository_id" type="int8">
 				<constraints primaryKey="true" nullable="false"/>
 			</column>
@@ -420,6 +420,9 @@
 				<constraints primaryKey="true" nullable="false"/>
 			</column>
 			<column name="location" type="varchar(256)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="key" type="varchar(50)">
 				<constraints primaryKey="true" nullable="false"/>
 			</column>
 			<column name="label" type="TEXT"/>

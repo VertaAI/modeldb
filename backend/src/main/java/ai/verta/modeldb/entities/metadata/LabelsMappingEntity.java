@@ -13,7 +13,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "labels_mapping")
-public class LabelsMappingEntity implements LabelsMappingEntityBase {
+public class LabelsMappingEntity {
   public LabelsMappingEntity() {}
 
   public LabelsMappingEntity(LabelMappingId id) {
@@ -36,8 +36,7 @@ public class LabelsMappingEntity implements LabelsMappingEntityBase {
     return id;
   }
 
-  @Override
-  public String getLabel() {
+  public String getValue() {
     return id.getLabel();
   }
 

@@ -5,34 +5,37 @@ import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.io.Serializable;
 import java.util.Objects;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @Entity
-@Table(name = "labels_mapping_description")
-public class LabelsMappingDescriptionEntity implements LabelsMappingEntityBase {
-  public LabelsMappingDescriptionEntity() {}
+@Table(name = "metadata_parameter_mapping")
+public class MetadataParameterMappingEntity {
+  public MetadataParameterMappingEntity() {}
 
-  @Column(name = "label", columnDefinition = "TEXT")
-  private String label;
+  @Column(name = "value", columnDefinition = "TEXT")
+  private String value;
 
   @EmbeddedId private LabelMappingId id;
 
-  public LabelsMappingDescriptionEntity(LabelMappingId id0, String label) {
+  public MetadataParameterMappingEntity(LabelMappingId id0, String value) {
     id = id0;
-    this.label = label;
+    this.value = value;
   }
 
-  public static LabelMappingId createId(IdentificationType id) {
-    return new LabelMappingId(id.getCompositeId());
+  public static LabelMappingId createId(IdentificationType id, String key) {
+    return new LabelMappingId(id.getCompositeId(), key);
   }
 
   public LabelMappingId getId() {
     return id;
   }
 
-  @Override
-  public String getLabel() {
-    return label;
+  public String getValue() {
+    return value;
   }
 
   @Embeddable
@@ -47,27 +50,36 @@ public class LabelsMappingDescriptionEntity implements LabelsMappingEntityBase {
     @Column(name = "location")
     private String location;
 
+    @Column(name = "key")
+    private String key;
+
     public LabelMappingId() {}
 
-    private LabelMappingId(VersioningCompositeIdentifier compositeId) {
+    private LabelMappingId(VersioningCompositeIdentifier compositeId, String key) {
       repositoryId = compositeId.getRepoId();
       commitSha = compositeId.getCommitHash();
       location = ModelDBUtils.getJoinedLocation(compositeId.getLocationList());
+      this.key = key;
     }
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
       LabelMappingId that = (LabelMappingId) o;
       return Objects.equals(repositoryId, that.repositoryId)
           && Objects.equals(commitSha, that.commitSha)
-          && Objects.equals(location, that.location);
+          && Objects.equals(location, that.location)
+          && Objects.equals(key, that.key);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(repositoryId, commitSha, location);
+      return Objects.hash(repositoryId, commitSha, location, key);
     }
   }
 }
