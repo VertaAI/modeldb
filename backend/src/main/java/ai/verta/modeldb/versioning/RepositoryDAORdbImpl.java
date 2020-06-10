@@ -529,6 +529,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   Dataset convertToDataset(Session session, RepositoryEntity repositoryEntity) {
     Dataset.Builder dataset = Dataset.newBuilder();
     dataset
+        .setId(String.valueOf(repositoryEntity.getId()))
         .setDatasetVisibilityValue(repositoryEntity.getRepository_visibility())
         .setWorkspaceTypeValue(repositoryEntity.getWorkspace_type())
         .setWorkspaceId(repositoryEntity.getWorkspace_id())
