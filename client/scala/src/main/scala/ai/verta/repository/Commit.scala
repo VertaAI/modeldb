@@ -57,20 +57,12 @@ class Commit(
    */
   def update(path: String, blob: Blob)(implicit ec: ExecutionContext): Try[Commit] = {
     loadBlobs().map(_ => {
-      // creating new commit:
-      val childCommit = getChild()
-
       /** TODO: Add blob subtypes to pattern matching */
       val versioningBlob = blob match {
         case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
         case s3: S3 => S3.toVersioningBlob(s3)
       }
-
-      childCommit.blobs = blobs + (path -> versioningBlob)
-      childCommit.saved = false
-      childCommit.loadedFromRemote = true
-
-      childCommit
+      getChild(blobs + (path -> versioningBlob))
     })
   }
 
@@ -78,18 +70,8 @@ class Commit(
    *  @param path Location of the blob to removed.
    *  @return The new commit with the blob removed, if succeeds.
    */
-  def remove(path: String)(implicit ec: ExecutionContext): Try[Commit] = {
-    getVersioningBlob(path).map(_ => {
-      // creating new commit:
-      val childCommit = getChild()
-
-      childCommit.blobs = blobs - path
-      childCommit.saved = false
-      childCommit.loadedFromRemote = true
-
-      childCommit
-    })
-  }
+  def remove(path: String)(implicit ec: ExecutionContext) =
+    getVersioningBlob(path).map(_ => getChild(blobs - path))
 
   /** Saves this commit to ModelDB
    *  @param message description of this commit
@@ -209,12 +191,18 @@ class Commit(
   /** Return a child commit child of current commit (if current commit is saved)
    *  This helper function is used for modifcation
    */
-  private def getChild() = {
+  private def getChild(childBlobs: Map[String, VersioningBlob]) = {
     /** TODO: Deal with author, date_created */
-    val newCommit = VersioningCommit(
+    val newVersioningCommit = VersioningCommit(
       parent_shas = if (saved) commit.commit_sha.map(List(_)) else commit.parent_shas
     )
-    new Commit(clientSet, repo, newCommit, commitBranch)
+
+    val child = new Commit(clientSet, repo, newVersioningCommit, commitBranch)
+    child.blobs = childBlobs
+    child.saved = false
+    child.loadedFromRemote = true
+
+    child
   }
 
   /** Helper function to convert a VersioningBlob instance to corresponding Blob subclass instance
