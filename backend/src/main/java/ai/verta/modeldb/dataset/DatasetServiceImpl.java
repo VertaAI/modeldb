@@ -48,10 +48,14 @@ import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.Repository;
+import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
@@ -73,6 +77,9 @@ import org.apache.logging.log4j.Logger;
 public class DatasetServiceImpl extends DatasetServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetServiceImpl.class);
+  private final RepositoryDAO repositoryDAO;
+  private final CommitDAO commitDAO;
+  private final MetadataDAO metadataDAO;
   private AuthService authService;
   private RoleService roleService;
   private DatasetDAO datasetDAO;
@@ -88,7 +95,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       DatasetVersionDAO datasetVersionDAO,
       ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
-      ExperimentRunDAO experimentRunDAO) {
+      ExperimentRunDAO experimentRunDAO,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      MetadataDAO metadataDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.datasetDAO = datasetDAO;
@@ -96,6 +106,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     this.projectDAO = projectDAO;
     this.experimentDAO = experimentDAO;
     this.experimentRunDAO = experimentRunDAO;
+    this.repositoryDAO = repositoryDAO;
+    this.commitDAO = commitDAO;
+    this.metadataDAO = metadataDAO;
   }
 
   /**
@@ -121,18 +134,24 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, null, ModelDBServiceActions.CREATE);
+          ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
 
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
       Dataset dataset = getDatasetFromRequest(request, userInfo);
       ModelDBUtils.checkPersonalWorkspace(
-          userInfo, dataset.getWorkspaceType(), dataset.getWorkspaceId(), "dataset");
-      Dataset createdDataset = datasetDAO.createDataset(dataset, userInfo);
+          userInfo, dataset.getWorkspaceType(), dataset.getWorkspaceId(), "repository");
+      Repository repository =
+          repositoryDAO.createRepository(commitDAO, metadataDAO, dataset, userInfo);
+      Dataset createdDataset =
+          dataset.toBuilder().setId(String.valueOf(repository.getId())).build();
 
       responseObserver.onNext(
-          CreateDataset.Response.newBuilder().setDataset(createdDataset).build());
+          CreateDataset.Response.newBuilder()
+              .setDataset(createdDataset)
+              .setRepo(repository)
+              .build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
