@@ -1322,7 +1322,8 @@ class Project(_ModelDBEntity):
 
     @staticmethod
     def _create(conn, proj_name, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
-        tags = _utils.as_list_of_str(tags)
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -1473,7 +1474,8 @@ class Experiment(_ModelDBEntity):
 
     @staticmethod
     def _create(conn, proj_id, expt_name, desc=None, tags=None, attrs=None):
-        tags = _utils.as_list_of_str(tags)
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -1992,7 +1994,8 @@ class ExperimentRun(_ModelDBEntity):
 
     @staticmethod
     def _create(conn, proj_id, expt_id, expt_run_name, desc=None, tags=None, attrs=None, date_created=None):
-        tags = _utils.as_list_of_str(tags)
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
