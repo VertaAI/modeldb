@@ -82,7 +82,8 @@ class Commit(
     message: String,
     blobs: Option[List[VersioningBlobExpanded]] = None,
     commitBase: Option[String] = None,
-    diffs: Option[List[VersioningBlobDiff]] = None)(implicit ec: ExecutionContext) = {
+    diffs: Option[List[VersioningBlobDiff]] = None
+  )(implicit ec: ExecutionContext) = {
       clientSet.versioningService.CreateCommit2(
         body = VersioningCreateCommitRequest(
           commit = Some(addMessage(message)),
@@ -95,8 +96,9 @@ class Commit(
       .flatMap(r => {
         val newCom = new Commit(clientSet, repo, r.commit.get, commitBranch)
 
+        // Update branch to child commit
         if (commitBranch.isDefined)
-          setBranch(r.commit.get, commitBranch.get).map(_ => newCom)
+          newCom.newBranch(commitBranch.get)
         else
           Success(newCom)
       })
