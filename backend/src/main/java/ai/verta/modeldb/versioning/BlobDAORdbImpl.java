@@ -1251,7 +1251,7 @@ public class BlobDAORdbImpl implements BlobDAO {
               blobHashes.forEach(
                   blobHash -> {
                     VersioningCompositeIdentifier identifier =
-                        LabelsMappingEntity.getVersioningCompositeIdentifier(blobHash);
+                        LabelsMappingEntity.getVersioningCompositeId(blobHash);
                     commitHashes.add(identifier.getCommitHash());
                     repoIds.add(identifier.getRepoId());
                   });

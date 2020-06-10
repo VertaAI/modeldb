@@ -1,6 +1,7 @@
 package ai.verta.modeldb.metadata;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -38,7 +39,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
           .append(" IN (:labels)")
           .toString();
 
-  private String getEntityHash(IdentificationType id) {
+  private String getEntityHash(IdentificationType id) throws ModelDBException {
     String entityHash;
     switch (id.getIdCase()) {
       case INT_ID:
@@ -49,7 +50,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
         break;
       case VERSIONING_COMPOSITE_ID:
         entityHash =
-            LabelsMappingEntity.getVersioningCompositeId(
+            LabelsMappingEntity.getVersioningCompositeIdString(
                 id.getVersioningCompositeId(), id.getIdType());
       default:
         throw new StatusRuntimeException(io.grpc.Status.INTERNAL);
@@ -58,7 +59,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public boolean addLabels(IdentificationType id, List<String> labels) {
+  public boolean addLabels(IdentificationType id, List<String> labels) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       for (String label : labels) {
@@ -88,7 +89,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public List<String> getLabels(IdentificationType id) {
+  public List<String> getLabels(IdentificationType id) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery(GET_LABELS_HQL);
       query.setParameter("entityHash", getEntityHash(id));
@@ -107,7 +108,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public boolean deleteLabels(IdentificationType id, List<String> labels) {
+  public boolean deleteLabels(IdentificationType id, List<String> labels) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
