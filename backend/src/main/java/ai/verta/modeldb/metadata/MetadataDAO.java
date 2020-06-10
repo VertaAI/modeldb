@@ -6,6 +6,8 @@ import org.hibernate.Session;
 public interface MetadataDAO {
   boolean addLabels(IdentificationType id, List<String> labels);
 
+  void addLabels(Session session, IdentificationType id, List<String> labels);
+
   List<String> getLabels(IdentificationType id);
 
   List<String> getLabels(Session session, IdentificationType id);

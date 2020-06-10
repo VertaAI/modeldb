@@ -140,13 +140,13 @@ public class CommitDAORdbImpl implements CommitDAO {
               .setRepoId(repositoryEntity.getId())
               .setCommitHash(commitEntity.getCommit_hash())
               .addAllLocation(location);
-      metadataDAO.addLabels(
+      metadataDAO.addLabels(session,
           IdentificationType.newBuilder()
               .setCompositeId(versioningIdentifier)
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_DESCRIPTION)
               .build(),
           Collections.singletonList(datasetVersion.getDescription()));
-      metadataDAO.addLabels(
+      metadataDAO.addLabels(session,
           IdentificationType.newBuilder()
               .setCompositeId(versioningIdentifier)
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)

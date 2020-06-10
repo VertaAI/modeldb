@@ -250,14 +250,14 @@ public class BlobDAORdbImpl implements BlobDAO {
         } else {
           if (index == locationList.size() - 1) {
             ai.verta.modeldb.versioning.Blob blob = getBlob(session, elementEntity);
-            DatasetVersion.Builder datasetVersionBuiler = DatasetVersion.newBuilder();
-            datasetVersionBuiler.setId(commitHash);
+            DatasetVersion.Builder datasetVersionBuilder = DatasetVersion.newBuilder();
+            datasetVersionBuilder.setId(commitHash);
             if (commit.getParent_commits().size() != 0) {
-              datasetVersionBuiler.setParentId(
+              datasetVersionBuilder.setParentId(
                   commit.getParent_commits().iterator().next().getCommit_hash());
             }
-            datasetVersionBuiler.setDatasetId(String.valueOf(repository.getId()));
-            datasetVersionBuiler.setTimeLogged(commit.getDate_created());
+            datasetVersionBuilder.setDatasetId(String.valueOf(repository.getId()));
+            datasetVersionBuilder.setTimeLogged(commit.getDate_created());
 
             VersioningCompositeIdentifier.Builder versioningCompositeIdentifier =
                 VersioningCompositeIdentifier.newBuilder()
@@ -272,7 +272,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                         .setCompositeId(versioningCompositeIdentifier)
                         .build());
             if (labelsDescription.size() > 0) {
-              datasetVersionBuiler.setDescription(labelsDescription.get(0));
+              datasetVersionBuilder.setDescription(labelsDescription.get(0));
             }
             List<String> labels =
                 metadataDAO.getLabels(
@@ -282,12 +282,12 @@ public class BlobDAORdbImpl implements BlobDAO {
                         .setCompositeId(versioningCompositeIdentifier)
                         .build());
             if (labels.size() > 0) {
-              datasetVersionBuiler.addAllTags(labels);
+              datasetVersionBuilder.addAllTags(labels);
             }
-            datasetVersionBuiler.setDatasetVersionVisibilityValue(
+            datasetVersionBuilder.setDatasetVersionVisibilityValue(
                 repository.getRepository_visibility());
-            datasetVersionBuiler.addAllAttributes(blob.getAttributesList());
-            datasetVersionBuiler.setOwner(commit.getAuthor());
+            datasetVersionBuilder.addAllAttributes(blob.getAttributesList());
+            datasetVersionBuilder.setOwner(commit.getAuthor());
             DatasetBlob dataset = blob.getDataset();
             PathDatasetVersionInfo.Builder builderPathDatasetVersion =
                 PathDatasetVersionInfo.newBuilder();
@@ -314,11 +314,11 @@ public class BlobDAORdbImpl implements BlobDAO {
             Optional<Long> sum =
                 components.stream().map(DatasetPartInfo::getSize).reduce(Long::sum);
             sum.ifPresent(builderPathDatasetVersion::setSize);
-            datasetVersionBuiler.setPathDatasetVersionInfo(
+            datasetVersionBuilder.setPathDatasetVersionInfo(
                 builderPathDatasetVersion
                     .setBasePath(ModelDBUtils.getLocationWithSlashOperator(locationList))
                     .addAllDatasetPartInfos(components));
-            DatasetVersion datasetVersion = datasetVersionBuiler.build();
+            DatasetVersion datasetVersion = datasetVersionBuilder.build();
             return datasetVersion;
           } else {
             throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);

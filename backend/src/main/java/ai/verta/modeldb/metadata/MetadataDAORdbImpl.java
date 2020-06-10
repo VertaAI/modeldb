@@ -73,16 +73,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   @Override
   public boolean addLabels(IdentificationType id, List<String> labels) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      processLabels(
-          session,
-          id,
-          labels,
-          (entity, existingEntity, label) -> {
-            saveLabel(session, entity, existingEntity, label);
-            return null;
-          });
-      transaction.commit();
+      addLabels(session, id, labels);
       return true;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -91,6 +82,20 @@ public class MetadataDAORdbImpl implements MetadataDAO {
         throw ex;
       }
     }
+  }
+
+  @Override
+  public void addLabels(Session session, IdentificationType id, List<String> labels) {
+    Transaction transaction = session.beginTransaction();
+    processLabels(
+        session,
+        id,
+        labels,
+        (entity, existingEntity, label) -> {
+          saveLabel(session, entity, existingEntity, label);
+          return null;
+        });
+    transaction.commit();
   }
 
   private void processLabels(
