@@ -18,6 +18,10 @@ class Path(_dataset._Dataset):
     """
     Captures metadata about files.
 
+    .. note::
+
+        If relative paths are passed in, they will *not* be converted to absolute paths.
+
     Parameters
     ----------
     paths : list of str
