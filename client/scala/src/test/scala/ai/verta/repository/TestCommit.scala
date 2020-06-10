@@ -198,6 +198,8 @@ class TestCommit extends FunSuite {
         assert(mergeAttempt.isSuccess)
 
         val mergedCommit = mergeAttempt.get
+
+        // check that the merging does not corrupt the commit:
         assert(mergedCommit.get("abc/cde").isSuccess)
         assert(mergedCommit.get("def/ghi").isSuccess)
 
@@ -207,9 +209,12 @@ class TestCommit extends FunSuite {
         val retrievedPathBlob: PathBlob = mergedCommit.get("abc/cde").get match {
           case pathBlob: PathBlob => pathBlob
         }
-
         assert(retrievedS3Blob equals f.s3Blob)
         assert(retrievedPathBlob equals f.pathBlob)
+
+        // check that the merging correctly assign the branch head:
+        assert(f.repo.getCommitByBranch("a").get equals mergedCommit)
+        assert(!(f.repo.getCommitByBranch("b").get equals mergedCommit))
     } finally {
       cleanup(f)
     }
@@ -225,6 +230,7 @@ class TestCommit extends FunSuite {
                        .flatMap(_.save("Some message 1")).get
 
         // touch the file
+        Thread.sleep(2000)
         var file = new File(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir/testfile")
         file.setLastModified(System.currentTimeMillis())
         val newPathBlob = PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir").get

@@ -245,7 +245,7 @@ class Commit(
     if (!saved)
       Failure(new IllegalStateException("This commit must be saved"))
     else if (!other.saved)
-      Failure(new IllegalStateException("Other commit must be saved"))
+      Failure(new IllegalArgumentException("Other commit must be saved"))
     else if (other.repo.id != repo.id)
       Failure(new IllegalArgumentException("Two commits must belong to the same repository"))
     else
