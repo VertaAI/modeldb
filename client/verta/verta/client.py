@@ -668,11 +668,8 @@ class Client(object):
         """
         predicates = []
         if tags is not None:
-            if isinstance(tags, six.string_types):
-                raise TypeError("`tags` must be iterable of str, not {}".format(type(tags)))
+            tags = _utils.as_list_of_str(tags)
             for tag in tags:
-                if not isinstance(tag, six.string_types):
-                    raise TypeError("`tags` must be iterable of str, but found {}".format(type(tag)))
                 predicates.append(
                     _CommonService.KeyValueQuery(key="tags",
                                                  value=_utils.python_to_val_proto(tag),
