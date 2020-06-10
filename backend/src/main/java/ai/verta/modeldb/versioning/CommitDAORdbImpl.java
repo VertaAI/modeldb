@@ -63,9 +63,7 @@ public class CommitDAORdbImpl implements CommitDAO {
   public CreateCommitRequest.Response setCommitFromDatasetVersion(
       DatasetVersion datasetVersion,
       BlobDAO blobDAO,
-      RepositoryDAO repositoryDAO,
       MetadataDAO metadataDAO,
-      FileHasher fileHasher,
       RepositoryFunction repositoryFunction)
       throws ModelDBException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -107,7 +105,7 @@ public class CommitDAORdbImpl implements CommitDAO {
                       .build()));
 
       session.beginTransaction();
-      final String rootSha = blobDAO.setBlobs(session, blobList, fileHasher);
+      final String rootSha = blobDAO.setBlobs(session, blobList, new FileHasher());
 
       Commit.Builder builder = Commit.newBuilder();
       if (!datasetVersion.getParentId().isEmpty()) {
@@ -149,7 +147,7 @@ public class CommitDAORdbImpl implements CommitDAO {
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setCommitFromDatasetVersion(
-            datasetVersion, blobDAO, repositoryDAO, metadataDAO, fileHasher, repositoryFunction);
+            datasetVersion, blobDAO, metadataDAO, repositoryFunction);
       } else {
         throw ex;
       }
@@ -214,6 +212,19 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   @Override
+  public CommitPaginationDTO getRepositoryCommitEntityList(ListCommitsRequest request, Long repoId)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      return fetchCommitEntityList(session, request, repoId);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getRepositoryCommitEntityList(request, repoId);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
   public CommitPaginationDTO fetchCommitEntityList(
       Session session, ListCommitsRequest request, Long repoId) throws ModelDBException {
     StringBuilder commitQueryBuilder =

@@ -38,7 +38,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
-import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -127,12 +126,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           (session) -> repositoryDAO.getRepositoryById(session, repositoryIdentification, true);
       CreateCommitRequest.Response createCommitResponse =
           commitDAO.setCommitFromDatasetVersion(
-              datasetVersion,
-              blobDAO,
-              repositoryDAO,
-              metadataDAO,
-              new FileHasher(),
-              repositoryFunction);
+              datasetVersion, blobDAO, metadataDAO, repositoryFunction);
       datasetVersion =
           blobDAO.convertToDatasetVersion(
               metadataDAO,

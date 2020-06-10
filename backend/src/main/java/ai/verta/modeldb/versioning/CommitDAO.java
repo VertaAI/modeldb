@@ -18,9 +18,7 @@ public interface CommitDAO {
   CreateCommitRequest.Response setCommitFromDatasetVersion(
       DatasetVersion datasetVersion,
       BlobDAO blobDAO,
-      RepositoryDAO repositoryDAO,
       MetadataDAO metadataDAO,
-      FileHasher fileHasher,
       RepositoryFunction repositoryFunction)
       throws ModelDBException, NoSuchAlgorithmException;
 
@@ -33,8 +31,8 @@ public interface CommitDAO {
       String commitSha)
       throws ModelDBException, NoSuchAlgorithmException;
 
-  CommitPaginationDTO fetchCommitEntityList(
-      Session session, ListCommitsRequest request, Long repoId) throws ModelDBException;
+  CommitPaginationDTO getRepositoryCommitEntityList(ListCommitsRequest request, Long repoId)
+      throws ModelDBException;
 
   ListCommitsRequest.Response listCommits(
       ListCommitsRequest request, RepositoryFunction getRepository) throws ModelDBException;

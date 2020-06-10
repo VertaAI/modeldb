@@ -132,7 +132,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
-      return getCommitComponent(session, repository, commit, locationList);
+      return getCommitComponent(session, repository.getId(), commit, locationList);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getCommitComponent(repositoryFunction, commitHash, locationList);
@@ -143,14 +143,13 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   private GetCommitComponentRequest.Response getCommitComponent(
-      Session session, RepositoryEntity repository, CommitEntity commit, List<String> locationList)
+      Session session, Long repoId, CommitEntity commit, List<String> locationList)
       throws ModelDBException {
     if (commit == null) {
       throw new ModelDBException("No such commit", Status.Code.NOT_FOUND);
     }
 
-    if (!VersioningUtils.commitRepositoryMappingExists(
-        session, commit.getCommit_hash(), repository.getId())) {
+    if (!VersioningUtils.commitRepositoryMappingExists(session, commit.getCommit_hash(), repoId)) {
       throw new ModelDBException("No such commit found in the repository", Status.Code.NOT_FOUND);
     }
 
@@ -216,7 +215,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
       GetCommitComponentRequest.Response getComponentResponse =
-          getCommitComponent(session, repository, commit, locationList);
+          getCommitComponent(session, repository.getId(), commit, locationList);
       if (getComponentResponse.hasBlob()) {
         Blob blob = getComponentResponse.getBlob();
         DatasetVersion.Builder datasetVersionBuilder = DatasetVersion.newBuilder();
