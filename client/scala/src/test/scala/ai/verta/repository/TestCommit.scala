@@ -37,7 +37,6 @@ class TestCommit extends FunSuite {
       val newCommit = f.commit.update("abc/def", f.pathBlob)
                               .flatMap(_.update("mnp/qrs", f.s3Blob)).get
 
-
       // check that the contents of the blobs are not corrupted:
       val pathBlob2 = newCommit.get("abc/def").get match {
         case blob: PathBlob => blob
