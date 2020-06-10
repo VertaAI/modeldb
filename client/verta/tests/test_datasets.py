@@ -20,6 +20,9 @@ DEFAULT_S3_TEST_BUCKET = "bucket"
 DEFAULT_S3_TEST_OBJECT = "object"
 DEFAULT_GOOGLE_APPLICATION_CREDENTIALS = "credentials.json"
 
+# for `tags` typecheck tests
+TAG = "my-tag"
+
 
 @pytest.fixture(scope='session')
 def s3_bucket():
@@ -64,6 +67,19 @@ class TestBaseDatasets:
                                _dataset_id=dataset.id)
         assert dataset.id == same_dataset.id
 
+    @pytest.mark.parametrize("tags", [TAG, [TAG]])
+    def test_tags_is_list_of_str(self, client, created_datasets, tags):
+        dataset = client.set_dataset(tags=tags)
+        created_datasets.append(dataset)
+
+        endpoint = "{}://{}/api/v1/modeldb/dataset/getDatasetTags".format(
+            client._conn.scheme,
+            client._conn.socket,
+        )
+        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': dataset.id})
+        verta._internal_utils._utils.raise_for_http_error(response)
+        assert response.json().get('tags', []) == [TAG]
+
 
 class TestBaseDatasetVersions:
     def test_creation_from_scratch(self, client, created_datasets):
@@ -91,6 +107,20 @@ class TestBaseDatasetVersions:
         same_version = DatasetVersion(client._conn, client._conf,
                                       _dataset_version_id=version.id)
         assert version.id == same_version.id
+
+    @pytest.mark.parametrize("tags", [TAG, [TAG]])
+    def test_tags_is_list_of_str(self, client, created_datasets, tags):
+        dataset = client.set_dataset(tags=tags)
+        created_datasets.append(dataset)
+        version = dataset.create_version("conftest.py", tags=tags)
+
+        endpoint = "{}://{}/api/v1/modeldb/dataset-version/getDatasetVersionTags".format(
+            client._conn.scheme,
+            client._conn.socket,
+        )
+        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': version.id})
+        verta._internal_utils._utils.raise_for_http_error(response)
+        assert response.json().get('tags', []) == [TAG]
 
 
 # TODO: not implemented
@@ -155,13 +185,14 @@ class TestClientDatasetFunctions:
         assert dataset.name == same_dataset.name
 
     def test_find_datasets_client_api(self, client, created_datasets):
-        tags = ["test1-{}".format(_utils.now()), "test2-{}".format(_utils.now())]
+        tags = ["test1-{}".format(_utils.now()), "test1-{}".format(_utils.now())]
         dataset1 = client.set_dataset(type="big query", tags=tags)
         created_datasets.append(dataset1)
         assert dataset1._dataset_type == _DatasetService.DatasetTypeEnum.QUERY
         assert dataset1.id
 
-        dataset2 = client.set_dataset(type="s3", tags=["test1"])
+        single_tag = ["test2-{}".format(_utils.now())]
+        dataset2 = client.set_dataset(type="s3", tags=single_tag)
         created_datasets.append(dataset2)
         assert dataset2._dataset_type == _DatasetService.DatasetTypeEnum.PATH
         assert dataset2.id
@@ -181,6 +212,11 @@ class TestClientDatasetFunctions:
         datasets = client.find_datasets(tags=tags)
         assert len(datasets) == 1
         assert datasets[0].id == dataset1.id
+
+        # str arg automatically wrapped into list by client
+        datasets = client.find_datasets(tags=single_tag[0])
+        assert len(datasets) == 1
+        assert datasets[0].id == dataset2.id
 
         datasets = client.find_datasets(name=dataset1.name)
         assert len(datasets) == 1
