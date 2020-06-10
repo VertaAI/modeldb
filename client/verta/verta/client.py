@@ -639,7 +639,8 @@ class Client(object):
     def find_datasets(self,
                       dataset_ids=None, name=None,
                       tags=None,
-                      sort_key=None, ascending=False):
+                      sort_key=None, ascending=False,
+                      workspace=None):
         """
         Gets the Datasets that match the given query parameters. If no parameters
         are specified, we return all datasets.
@@ -656,6 +657,9 @@ class Client(object):
             Key by which the resulting list of datasets should be sorted
         ascending: bool, default: False
             Whether to sort returned datasets in ascending or descending order
+        workspace : str, optional
+            Workspace in which to look for datasets. If not provided, the current user's personal
+            workspace will be used.
 
         Returns
         -------
@@ -676,7 +680,8 @@ class Client(object):
                                              operator=_CommonService.OperatorEnum.EQ))
         Message = _dataset._DatasetService.FindDatasets
         msg = Message(dataset_ids=dataset_ids, predicates=predicates,
-                      ascending=ascending, sort_key=sort_key)
+                      ascending=ascending, sort_key=sort_key,
+                      workspace_name=workspace)
         endpoint = "{}://{}/api/v1/modeldb/dataset/findDatasets"
         return _dataset.DatasetLazyList(self._conn, self._conf, msg, endpoint, "POST")
 
