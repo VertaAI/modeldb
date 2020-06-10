@@ -278,8 +278,8 @@ class Commit(
     val newCommit = new Commit(clientSet, repo, versioningCommit, commitBranch)
 
     if (commitBranch.isDefined)
-      newCom.newBranch(commitBranch.get)
+      newCommit.newBranch(commitBranch.get)
     else
-      Success(newCom)
+      Success(newCommit)
   }
 }
