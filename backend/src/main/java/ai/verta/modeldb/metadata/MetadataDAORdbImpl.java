@@ -99,7 +99,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   @Override
   public void addParameter(Session session, IdentificationType id, String key, String value) {
     Transaction transaction = session.beginTransaction();
-    MetadataParameterMappingEntity.LabelMappingId id0 = MetadataParameterMappingEntity.createId(id, key);
+    MetadataParameterMappingEntity.LabelMappingId id0 =
+        MetadataParameterMappingEntity.createId(id, key);
     session.saveOrUpdate(new MetadataParameterMappingEntity(id0, value));
     transaction.commit();
   }
@@ -109,8 +110,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
     Transaction transaction = session.beginTransaction();
     for (String label : labels) {
       LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
-      LabelsMappingEntity existingLabelsMappingEntity =
-          session.get(LabelsMappingEntity.class, id0);
+      LabelsMappingEntity existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
       if (existingLabelsMappingEntity == null) {
         session.save(new LabelsMappingEntity(id0));
       } else {
@@ -143,9 +143,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
         session.createQuery(GET_LABELS_HQL, LabelsMappingEntity.class);
     query.setParameter("entityHash", getEntityHash(id));
     query.setParameter("entityType", id.getIdTypeValue());
-    return query.list().stream()
-        .map(LabelsMappingEntity::getValue)
-        .collect(Collectors.toList());
+    return query.list().stream().map(LabelsMappingEntity::getValue).collect(Collectors.toList());
   }
 
   @Override
@@ -167,10 +165,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
     VersioningCompositeIdentifier compositeId = id.getCompositeId();
     query.setParameter("repositoryId", compositeId.getRepoId());
     query.setParameter("commitSha", compositeId.getCommitHash());
-    query.setParameter(
-        "location", ModelDBUtils.getJoinedLocation(compositeId.getLocationList()));
-    query.setParameter(
-        "key", key);
+    query.setParameter("location", ModelDBUtils.getJoinedLocation(compositeId.getLocationList()));
+    query.setParameter("key", key);
     return query.uniqueResultOptional().map(MetadataParameterMappingEntity::getValue).orElse(null);
   }
 
@@ -210,19 +206,20 @@ public class MetadataDAORdbImpl implements MetadataDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
-        MetadataParameterMappingEntity.LabelMappingId id0 = MetadataParameterMappingEntity.createId(id, key);
+      MetadataParameterMappingEntity.LabelMappingId id0 =
+          MetadataParameterMappingEntity.createId(id, key);
       MetadataParameterMappingEntity existingMetadataMappingEntity =
-            session.get(MetadataParameterMappingEntity.class, id0);
-        if (existingMetadataMappingEntity != null) {
-          session.delete(existingMetadataMappingEntity);
-        } else {
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.NOT_FOUND_VALUE)
-                  .setMessage("Label '" + key + "' not found in DB")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
-        }
+          session.get(MetadataParameterMappingEntity.class, id0);
+      if (existingMetadataMappingEntity != null) {
+        session.delete(existingMetadataMappingEntity);
+      } else {
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.NOT_FOUND_VALUE)
+                .setMessage("Label '" + key + "' not found in DB")
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
       transaction.commit();
       return true;
     } catch (Exception ex) {

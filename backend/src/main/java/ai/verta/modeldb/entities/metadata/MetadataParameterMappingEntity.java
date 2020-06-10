@@ -71,10 +71,10 @@ public class MetadataParameterMappingEntity {
         return false;
       }
       LabelMappingId that = (LabelMappingId) o;
-      return Objects.equals(repositoryId, that.repositoryId) &&
-          Objects.equals(commitSha, that.commitSha) &&
-          Objects.equals(location, that.location) &&
-          Objects.equals(key, that.key);
+      return Objects.equals(repositoryId, that.repositoryId)
+          && Objects.equals(commitSha, that.commitSha)
+          && Objects.equals(location, that.location)
+          && Objects.equals(key, that.key);
     }
 
     @Override
