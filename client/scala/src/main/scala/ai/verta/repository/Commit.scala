@@ -188,8 +188,10 @@ class Commit(
     )
   }
 
-  /** Return a child commit child of current commit (if current commit is saved)
+  /** Return a child commit child of current commit (if current commit is saved) with the given blobs
    *  This helper function is used for modifcation
+   *  @param childBlobs the blobs of the child commit
+   *  @return the child commit instance
    */
   private def getChild(childBlobs: Map[String, VersioningBlob]) = {
     /** TODO: Deal with author, date_created */
