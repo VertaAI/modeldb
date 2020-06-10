@@ -275,7 +275,7 @@ class Commit(
    *  @return the corresponding commit instance
    */
   private def versioningCommitToCommit(versioningCommit: VersioningCommit)(implicit ec: ExecutionContext) = {
-    val newCom = new Commit(clientSet, repo, versioningCommit, commitBranch)
+    val newCommit = new Commit(clientSet, repo, versioningCommit, commitBranch)
 
     if (commitBranch.isDefined)
       newCom.newBranch(commitBranch.get)
