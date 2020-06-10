@@ -8,6 +8,8 @@ import scala.concurrent.ExecutionContext
 import scala.language.reflectiveCalls
 import scala.util.{Try, Success, Failure}
 
+import java.io.File
+
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
 
@@ -208,6 +210,32 @@ class TestCommit extends FunSuite {
 
         assert(retrievedS3Blob equals f.s3Blob)
         assert(retrievedPathBlob equals f.pathBlob)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("merge conflicting branches should fail") {
+    val f = fixture
+
+    try {
+        val branch1 = f.repo.getCommitByBranch()
+                       .flatMap(_.newBranch("a"))
+                       .flatMap(_.update("abc/cde", f.pathBlob))
+                       .flatMap(_.save("Some message 1")).get
+
+        // touch the file
+        var file = new File(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir/testfile")
+        file.setLastModified(System.currentTimeMillis())
+        val newPathBlob = PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir").get
+        val branch2 = f.repo.getCommitByBranch()
+                       .flatMap(_.newBranch("b"))
+                       .flatMap(_.update("abc/cde", newPathBlob))
+                       .flatMap(_.save("Some message 2")).get
+
+        val mergeAttempt = branch1.merge(branch2, message = Some("Merge test"))
+        assert(mergeAttempt.isFailure)
+        assert(mergeAttempt match {case Failure(e) => e.getMessage contains "Merge conflict"})
     } finally {
       cleanup(f)
     }
