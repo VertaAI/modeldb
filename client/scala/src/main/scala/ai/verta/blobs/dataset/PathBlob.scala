@@ -18,9 +18,7 @@ import scala.annotation.tailrec
  *  }}}
  *  If an invalid path is passed to the constructor, it will return a failure.
  */
-case class PathBlob(private val metadataList: List[Tuple2[String, FileMetadata]]) extends Dataset {
-  protected var contents = HashMap(metadataList: _*)
-
+case class PathBlob(protected val contents: HashMap[String, FileMetadata]) extends Dataset {
   override def equals(other: Any) = other match {
     case other: PathBlob => contents.equals(other.contents)
     case _ => false
@@ -49,7 +47,9 @@ object PathBlob {
 
     metadataLists match {
       case Failure(e) => Failure(e)
-      case Success(list) => Success(new PathBlob(list.flatten.map(metadata => metadata.path -> metadata)))
+      case Success(list) => Success(new PathBlob(
+        HashMap(list.flatten.map(metadata => metadata.path -> metadata): _*)
+      ))
     }
   }
 
@@ -59,12 +59,10 @@ object PathBlob {
    *  @return failure if the two blobs have conflicting entries; the combined blob otherwise.
    */
   def reduce(firstBlob: PathBlob, secondBlob: PathBlob): Try[PathBlob] = {
-    if (firstBlob.notConflicts(secondBlob)) {
-      var retBlob = new PathBlob(List())
-      retBlob.contents = firstBlob.contents ++ secondBlob.contents
-      Success(retBlob)
-    }
-    else Failure(new IllegalArgumentException("The two blobs have conflicting entries"))
+    if (firstBlob.notConflicts(secondBlob))
+      Success(new PathBlob(firstBlob.contents ++ secondBlob.contents))
+    else
+      Failure(new IllegalArgumentException("The two blobs have conflicting entries"))
   }
 
   /** Factory method to convert a versioning path dataset blob instance. Not meant to be used by user
@@ -72,12 +70,10 @@ object PathBlob {
    *  @return equivalent PathBlob instance
    */
   def apply(pathVersioningBlob: VersioningPathDatasetBlob) = {
-    var pathBlob = new PathBlob(List())
-    var metadataList = pathVersioningBlob.components.get.map(
-      comp => comp.path.get -> pathBlob.toMetadata(comp)
+    val metadataList = pathVersioningBlob.components.get.map(
+      comp => comp.path.get -> Dataset.toMetadata(comp)
     )
-    pathBlob.contents = HashMap(metadataList: _*)
-    pathBlob
+    new PathBlob(HashMap(metadataList: _*))
   }
 
   /** Convert a PathBlob instance to a VersioningBlob

@@ -20,9 +20,7 @@ import scala.annotation.tailrec
  *  val s3Blob2: Try[S3] = S3(S3Location("some-path"))
  *  }}}
  */
-case class S3(private val metadataList: List[Tuple2[String, FileMetadata]]) extends Dataset {
-  protected var contents = HashMap(metadataList: _*)
-
+case class S3(protected val contents: HashMap[String, FileMetadata]) extends Dataset {
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"
    *  @return the version id of the file, if the file exists and has a versionId; otherwise None.
@@ -55,21 +53,20 @@ object S3 {
 
     queryAttempt match {
       case Failure(e) => Failure(e)
-      case Success(list) => Success(new S3(list.map(metadata => metadata.path -> metadata)))
+      case Success(list) => Success(new S3(HashMap(list.map(metadata => metadata.path -> metadata): _*)))
     }
   }
 
   /** Factory method to convert a versioning blob instance
    *  @param s3VersioningBlob the versioning blob to convert
    */
-  def apply(s3VersioningBlob: VersioningS3DatasetBlob) {
-    var s3Blob = new S3(List())
+  def apply(s3VersioningBlob: VersioningS3DatasetBlob) = {
     val componentList = s3VersioningBlob.components.get
     val metadataList = componentList.map(
-      comp => comp.path.get.path.get -> s3Blob.toMetadata(comp.path.get, comp.s3_version_id)
+      comp => comp.path.get.path.get -> Dataset.toMetadata(comp.path.get, comp.s3_version_id)
     )
 
-    s3Blob
+    new S3(HashMap(metadataList: _*))
   }
 
   /** Combine two S3 instances
@@ -78,11 +75,8 @@ object S3 {
    *  @return failure if the two blobs have conflicting entries; the combined blob otherwise.
    */
   def reduce(firstBlob: S3, secondBlob: S3): Try[S3] = {
-    if (firstBlob.notConflicts(secondBlob)) {
-      var retBlob = new S3(List())
-      retBlob.contents = firstBlob.contents ++ secondBlob.contents
-      Success(retBlob)
-    }
+    if (firstBlob.notConflicts(secondBlob))
+      Success(new S3(firstBlob.contents ++ secondBlob.contents))
     else Failure(new IllegalArgumentException("The two blobs have conflicting entries"))
   }
 
