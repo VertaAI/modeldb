@@ -60,6 +60,9 @@ public abstract class BlobContainer {
       Session session, TreeElem rootTree, FileHasher fileHasher, Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException;
 
+  public abstract void processAttribute(Session session, Long repoId, String commitHash)
+      throws ModelDBException;
+
   public Blob getBlob() {
     return blobExpanded.getBlob();
   }

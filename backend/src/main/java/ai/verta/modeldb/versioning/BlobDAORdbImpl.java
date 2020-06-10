@@ -82,6 +82,16 @@ public class BlobDAORdbImpl implements BlobDAO {
     return internalFolderElement.getElementSha();
   }
 
+  @Override
+  public void setBlobsAttributes(
+      Session session, Long repoId, String commitHash, List<BlobContainer> blobContainers)
+      throws ModelDBException {
+    for (BlobContainer blobContainer : blobContainers) {
+      // should save attributes of each blob during one session to avoid recurring entities ids
+      blobContainer.processAttribute(session, repoId, commitHash);
+    }
+  }
+
   private ai.verta.modeldb.versioning.Blob getBlob(
       Session session, InternalFolderElementEntity folderElementEntity) throws ModelDBException {
     return BlobFactory.create(folderElementEntity).getBlob(session);

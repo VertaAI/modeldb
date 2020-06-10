@@ -1,6 +1,7 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.entities.versioning.CommitEntity;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
@@ -99,5 +100,10 @@ public class VersioningUtils {
         + " ("
         + revertCommit.getCommitSha().substring(0, 7)
         + ")\"";
+  }
+
+  public static String getVersioningCompositeId(
+      Long repoId, String commitHash, List<String> locations) {
+    return repoId + "::" + commitHash + "::" + ModelDBUtils.getLocationWithSlashOperator(locations);
   }
 }

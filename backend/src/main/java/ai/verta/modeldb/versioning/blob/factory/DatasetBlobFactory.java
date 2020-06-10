@@ -100,11 +100,11 @@ public class DatasetBlobFactory extends BlobFactory {
 
   private List<KeyValue> getAttributes(Session session) throws InvalidProtocolBufferException {
     String getAttributesHQL =
-        "From AttributeEntity kv where kv.blob_hash = :blobHash "
-            + " AND kv.entity_name = :entityName AND kv.field_type = :fieldType AND kv.blob_hash = :blobHash";
+        "From AttributeEntity kv where kv.entity_hash = :entityHash "
+            + " AND kv.entity_name = :entityName AND kv.field_type = :fieldType";
     Query getQuery = session.createQuery(getAttributesHQL);
     getQuery.setParameter("entityName", ModelDBConstants.BLOB);
-    getQuery.setParameter("blobHash", getElementSha());
+    getQuery.setParameter("entityHash", getElementSha());
     getQuery.setParameter("fieldType", ModelDBConstants.ATTRIBUTES);
     List<AttributeEntity> attributeEntities = getQuery.list();
     return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);

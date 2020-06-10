@@ -2354,7 +2354,7 @@ public class CommitTest {
         1,
         listCommitBlobsResponse.getBlobsCount());
     Assert.assertEquals(
-        "blob count not match with expected blob count",
+        "blob attributes count not match with expected blob attributes count",
         createCommitRequest.getBlobs(0).getBlob().getAttributesList(),
         listCommitBlobsResponse.getBlobs(0).getBlob().getAttributesList());
 

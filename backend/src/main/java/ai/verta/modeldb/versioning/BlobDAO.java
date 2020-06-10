@@ -14,6 +14,10 @@ public interface BlobDAO {
   String setBlobs(Session session, List<BlobContainer> blobsList, FileHasher fileHasher)
       throws NoSuchAlgorithmException, ModelDBException;
 
+  void setBlobsAttributes(
+      Session session, Long repoId, String commitHash, List<BlobContainer> blobsList)
+      throws ModelDBException;
+
   GetCommitComponentRequest.Response getCommitComponent(
       RepositoryFunction repositoryFunction, String commitHash, ProtocolStringList locationList)
       throws NoSuchAlgorithmException, ModelDBException;
