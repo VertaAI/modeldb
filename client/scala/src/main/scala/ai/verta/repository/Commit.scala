@@ -100,13 +100,13 @@ class Commit(
         repository_id_repo_id = repo.id
       )
       .flatMap(r => {
-        val newCom = new Commit(clientSet, repo, r.commit.get, commitBranch)
+        val newCommit = new Commit(clientSet, repo, r.commit.get, commitBranch)
 
         // Update branch to child commit
         if (commitBranch.isDefined)
-          newCom.newBranch(commitBranch.get)
+          newCommit.newBranch(commitBranch.get)
         else
-          Success(newCom)
+          Success(newCommit)
       })
   }
 
