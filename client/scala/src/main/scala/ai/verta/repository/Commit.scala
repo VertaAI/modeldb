@@ -209,7 +209,11 @@ class Commit(
   def newBranch(branch: String)(implicit ec: ExecutionContext) = {
     if (!saved)
       Failure(new IllegalStateException("Commit must be saved before it can be attached to a branch"))
-    else setBranch(branch).flatMap(_ => repo.getCommitByBranch(branch))
+    else clientSet.versioningService.SetBranch2(
+      body = commit.commit_sha.get,
+      branch = branch,
+      repository_id_repo_id = repo.id
+    ).flatMap(_ => repo.getCommitByBranch(branch))
   }
 
   /** Assigns a tag to this Commit
@@ -222,18 +226,6 @@ class Commit(
         body = commit.commit_sha.get,
         repository_id_repo_id = repo.id,
         tag = tag
-    ).map(_ => ())
-  }
-
-  /** Set the commit of named branch to current commit
-   *  This is a helper function. Please do not call this directly. Use newBranch instead.
-   *  @param branch branch
-   */
-  private def setBranch(branch: String)(implicit ec: ExecutionContext) = {
-    clientSet.versioningService.SetBranch2(
-      body = commit.commit_sha.get,
-      branch = branch,
-      repository_id_repo_id = repo.id
     ).map(_ => ())
   }
 }
