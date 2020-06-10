@@ -77,7 +77,7 @@ class Commit(
    */
   def save(message: String)(implicit ec: ExecutionContext) = {
     if (saved)
-      Failure(new IllegalStateException("Commit is already saved"))
+      Failure(new IllegalCommitSavedStateException("Commit is already saved"))
     else
       blobsList().flatMap(list => createCommit(message = message, blobs = Some(list)))
   }
@@ -214,7 +214,7 @@ class Commit(
    */
   def newBranch(branch: String)(implicit ec: ExecutionContext) = {
     if (!saved)
-      Failure(new IllegalStateException("Commit must be saved before it can be attached to a branch"))
+      Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be attached to a branch"))
     else clientSet.versioningService.SetBranch2(
       body = commit.commit_sha.get,
       branch = branch,
@@ -227,7 +227,7 @@ class Commit(
    */
   def tag(tag: String)(implicit ec: ExecutionContext) = {
     if (!saved)
-      Failure(new IllegalStateException("Commit must be saved before it can be tagged"))
+      Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be tagged"))
     else clientSet.versioningService.SetTag2(
         body = commit.commit_sha.get,
         repository_id_repo_id = repo.id,
@@ -243,9 +243,9 @@ class Commit(
    */
   def merge(other: Commit, message: Option[String] = None)(implicit ec: ExecutionContext) = {
     if (!saved)
-      Failure(new IllegalStateException("This commit must be saved"))
+      Failure(new IllegalCommitSavedStateException("This commit must be saved"))
     else if (!other.saved)
-      Failure(new IllegalArgumentException("Other commit must be saved"))
+      Failure(new IllegalCommitSavedStateException("Other commit must be saved"))
     else if (other.repo.id != repo.id)
       Failure(new IllegalArgumentException("Two commits must belong to the same repository"))
     else
