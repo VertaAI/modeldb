@@ -1322,6 +1322,7 @@ class Project(_ModelDBEntity):
 
     @staticmethod
     def _create(conn, proj_name, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
+        tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -2392,11 +2393,7 @@ class ExperimentRun(_ModelDBEntity):
             Tags.
 
         """
-        if isinstance(tags, six.string_types):
-            raise TypeError("`tags` must be an iterable of strings")
-        for tag in tags:
-            if not isinstance(tag, six.string_types):
-                raise TypeError("`tags` must be an iterable of strings")
+        tags = _utils.as_list_of_str(tags)
 
         Message = _ExperimentRunService.AddExperimentRunTags
         msg = Message(id=self.id, tags=tags)

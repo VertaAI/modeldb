@@ -150,6 +150,7 @@ class Dataset(object):
 
     @staticmethod
     def _create(conn, dataset_name, dataset_type, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
+        tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -569,6 +570,7 @@ class DatasetVersion(object):
                 parent_id=None,
                 desc=None, tags=None, attrs=None,
                 version=None):
+        tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -632,6 +634,7 @@ class RawDatasetVersion(DatasetVersion):
                             parent_id=None,
                             desc=None, tags=None, attrs=None,
                             version=None):
+        tags = _utils.as_list_of_str(tags)
         Message = _DatasetVersionService.CreateDatasetVersion
         version_msg = _DatasetVersionService.RawDatasetVersionInfo
         converted_dataset_version_info = version_msg(
@@ -659,6 +662,7 @@ class PathDatasetVersion(DatasetVersion):
                             parent_id=None,
                             desc=None, tags=None, attrs=None,
                             version=None):
+        tags = _utils.as_list_of_str(tags)
         Message = _DatasetVersionService.CreateDatasetVersion
         # turn dataset_version_info into proto format
         version_msg = _DatasetVersionService.PathDatasetVersionInfo
@@ -688,6 +692,7 @@ class QueryDatasetVersion(DatasetVersion):
                             parent_id=None,
                             desc=None, tags=None, attrs=None,
                             version=None):
+        tags = _utils.as_list_of_str(tags)
         Message = _DatasetVersionService.CreateDatasetVersion
         version_msg = _DatasetVersionService.QueryDatasetVersionInfo
         converted_dataset_version_info = version_msg(
