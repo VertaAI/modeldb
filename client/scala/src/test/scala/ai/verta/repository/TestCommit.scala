@@ -199,7 +199,15 @@ class TestCommit extends FunSuite {
         assert(mergedCommit.get("abc/cde").isSuccess)
         assert(mergedCommit.get("def/ghi").isSuccess)
 
+        val retrievedS3Blob: S3 = mergedCommit.get("def/ghi").get match {
+          case s3: S3 => s3
+        }
+        val retrievedPathBlob: PathBlob = mergedCommit.get("abc/cde").get match {
+          case pathBlob: PathBlob => pathBlob
+        }
 
+        assert(retrievedS3Blob equals f.s3Blob)
+        assert(retrievedPathBlob equals f.pathBlob)
     } finally {
       cleanup(f)
     }
@@ -220,9 +228,37 @@ class TestCommit extends FunSuite {
 
         val mergeAttempt = branch1.merge(branch2, message = Some("Merge test"))
         assert(mergeAttempt.isFailure)
+        assert(mergeAttempt match {case Failure(e) => e.getMessage contains "Other commit must be saved"})
 
         val mergeAttempt2 = branch2.merge(branch1, message = Some("Merge test"))
         assert(mergeAttempt2.isFailure)
+        assert(mergeAttempt2 match {case Failure(e) => e.getMessage contains "This commit must be saved"})
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("merge commits from different repository should fail") {
+    val f = fixture
+
+    try {
+      val repo2 = f.client.getOrCreateRepository("My Repo 2").get
+
+      val branch1 = repo2.getCommitByBranch()
+                     .flatMap(_.newBranch("a"))
+                     .flatMap(_.update("abc/cde", f.pathBlob))
+                     .flatMap(_.save("Some message 1")).get
+
+      val branch2 = f.repo.getCommitByBranch()
+                     .flatMap(_.newBranch("b"))
+                     .flatMap(_.update("def/ghi", f.s3Blob))
+                     .flatMap(_.save("Some message 2")).get
+
+      val mergeAttempt = branch1.merge(branch2, message = Some("Merge test"))
+      assert(mergeAttempt.isFailure)
+      assert(mergeAttempt match {case Failure(e) => e.getMessage contains "Two commits must belong to the same repository"})
+
+      f.client.deleteRepository(repo2.id)
     } finally {
       cleanup(f)
     }

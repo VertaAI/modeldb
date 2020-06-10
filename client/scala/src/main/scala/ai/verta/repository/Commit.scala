@@ -240,7 +240,6 @@ class Commit(
    *  @param other Commit to be merged
    *  @param message Description of the merge. If not provided, a default message will be used
    *  @return Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository; the merged commit otherwise.
-   *  TODO: is dry run?
    */
   def merge(other: Commit, message: Option[String] = None)(implicit ec: ExecutionContext) = {
     if (!saved)
@@ -251,6 +250,7 @@ class Commit(
       Failure(new IllegalStateException("Two commits must belong to the same repository"))
     else
       clientSet.versioningService.MergeRepositoryCommits2(
+        /** TODO: is dry run? */
         body = VersioningMergeRepositoryCommitsRequest(
           commit_sha_a = other.id,
           commit_sha_b = id,
