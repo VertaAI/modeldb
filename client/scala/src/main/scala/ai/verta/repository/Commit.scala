@@ -247,7 +247,7 @@ class Commit(
     else if (!other.saved)
       Failure(new IllegalStateException("Other commit must be saved"))
     else if (other.repo.id != repo.id)
-      Failure(new IllegalStateException("Two commits must belong to the same repository"))
+      Failure(new IllegalArgumentException("Two commits must belong to the same repository"))
     else
       clientSet.versioningService.MergeRepositoryCommits2(
         /** TODO: is dry run? */
@@ -258,7 +258,7 @@ class Commit(
         ),
         repository_id_repo_id = repo.id
       ).flatMap(r =>
-      if (r.conflicts.isDefined) Failure(throw new IllegalStateException(
+      if (r.conflicts.isDefined) Failure(throw new IllegalArgumentException(
         List(
           "Merge conflict.", "Resolution is not currently supported through the client",
           "Please create a new Commit with the updated blobs.",
