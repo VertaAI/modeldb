@@ -100,7 +100,10 @@ class TestCommit extends FunSuite {
     val f = fixture
 
     try {
-      val saveAttempt = f.commit.save("Some message")
+      val newCommit = f.commit.update("abc/def", f.pathBlob)
+                          .flatMap(_.save("Some msg")).get
+
+      val saveAttempt = newCommit.save("Some message")
       assert(saveAttempt.isFailure)
       assert(saveAttempt match {
         case Failure(e) => e.getMessage contains "Commit is already saved"
