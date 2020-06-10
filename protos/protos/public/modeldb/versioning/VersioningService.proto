@@ -14,7 +14,6 @@ import "modeldb/versioning/Config.proto";
 import "modeldb/versioning/Dataset.proto";
 import "modeldb/versioning/Enums.proto";
 import "modeldb/versioning/Environment.proto";
-import "common/CommonService.proto";
 
 // Base commit for the versioning system
 // DO NOT USE TO COMPUTE SHA
@@ -489,7 +488,7 @@ message FindRepositoriesBlobs {
     //bool ascending = 8;
     //string sort_key = 9;
     repeated KeyValueQuery predicates = 10;
-    
+
     message Response {
         repeated BlobExpanded blobs = 1;
         int64 total_records = 2;

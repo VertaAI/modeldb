@@ -10,6 +10,7 @@ import "modeldb/CommonService.proto";
 import "google/api/annotations.proto";
 import "modeldb/ExperimentService.proto";
 import "modeldb/ExperimentRunService.proto";
+import "modeldb/versioning/VersioningService.proto";
 
 message Dataset {
     string id = 1;//For backend reference
@@ -68,7 +69,7 @@ message GetAllDatasets {
     message Response {
         repeated Dataset datasets = 1;
         uint64 total_records = 2;
-        repeated versioning.Repository repos = 3
+        repeated versioning.Repository repos = 3;
     }
 }
 
@@ -78,7 +79,7 @@ message GetDatasetById {
 
     message Response {
         Dataset dataset = 1;
-        versioning.Repository repos = 3
+        versioning.Repository repos = 3;
     }
 }
 
