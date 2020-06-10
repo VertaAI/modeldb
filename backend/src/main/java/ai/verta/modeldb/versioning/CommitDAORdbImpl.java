@@ -118,7 +118,7 @@ public class CommitDAORdbImpl implements CommitDAO {
                       RepositoryNamedIdentification.newBuilder()
                           .setName(datasetEntity.getName())
                           .setWorkspaceName(datasetEntity.getWorkspace()))
-                  .build());
+                  .build(), false);
 
       Commit.Builder builder = Commit.newBuilder();
       if (!datasetVersion.getParentId().isEmpty()) {
