@@ -31,6 +31,7 @@ import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
+import com.google.protobuf.ProtocolStringList;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
@@ -536,6 +537,10 @@ public class ModelDBUtils {
 
   public static String getLocationWithSlashOperator(List<String> locations) {
     return String.join("/", locations);
+  }
+
+  public static String getJoinedLocation(ProtocolStringList location) {
+    return String.join("#", location);
   }
 
   public interface RetryCallInterface<T> {
