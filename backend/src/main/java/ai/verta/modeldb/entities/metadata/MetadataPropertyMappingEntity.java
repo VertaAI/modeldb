@@ -12,16 +12,16 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "metadata_parameter_mapping")
-public class MetadataParameterMappingEntity {
-  public MetadataParameterMappingEntity() {}
+@Table(name = "metadata_property_mapping")
+public class MetadataPropertyMappingEntity {
+  public MetadataPropertyMappingEntity() {}
 
   @Column(name = "value", columnDefinition = "TEXT")
   private String value;
 
   @EmbeddedId private LabelMappingId id;
 
-  public MetadataParameterMappingEntity(LabelMappingId id0, String value) {
+  public MetadataPropertyMappingEntity(LabelMappingId id0, String value) {
     id = id0;
     this.value = value;
   }
