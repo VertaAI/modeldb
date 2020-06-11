@@ -14,7 +14,11 @@ public interface MetadataDAO {
 
   List<String> getLabels(IdentificationType id);
 
+  List<String> getLabels(Session session, IdentificationType id);
+
   String getProperty(IdentificationType id, String key);
+
+  String getProperty(Session session, IdentificationType id, String key);
 
   boolean deleteLabels(IdentificationType id, List<String> labels);
 
