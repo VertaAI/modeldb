@@ -314,9 +314,10 @@ class TestCommit extends FunSuite {
                            .flatMap(_.update("uvw/wer", f.pathBlob))
                            .flatMap(_.save("some message 4")).get
       val desc = parent3.merge(parent4).get
+      val descDirty = desc.update("some-path", f.pathBlob).get
 
-      val log = desc.log().get
-      assert(log == Stream(desc, parent4, parent3, parent2, parent1))
+      assert(desc.log().get == Stream(desc, parent4, parent3, parent2, parent1))
+      assert(descDirty.log().get == desc.log().get)
     } finally {
       cleanup(f)
     }
