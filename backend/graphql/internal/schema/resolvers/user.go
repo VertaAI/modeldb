@@ -16,9 +16,6 @@ func (r *userResolver) Name(ctx context.Context, obj *ai_verta_uac.UserInfo) (*s
 }
 func (r *userResolver) Picture(ctx context.Context, obj *ai_verta_uac.UserInfo) (*string, error) {
 	img := obj.GetImageUrl()
-	if img == "" {
-		return nil, nil
-	}
 	return &img, nil
 }
 func (r *userResolver) Username(ctx context.Context, obj *ai_verta_uac.UserInfo) (string, error) {

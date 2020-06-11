@@ -239,4 +239,12 @@ public interface DatasetDAO {
 
   List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException;
+
+  /**
+   * Checks if dataset with the id exists with delete flag false
+   *
+   * @param datasetId
+   * @return
+   */
+  boolean datasetExistsInDB(String datasetId);
 }

@@ -2,9 +2,10 @@ package ai.verta.modeldb.experimentRun;
 
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
-import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.ArtifactPart;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
@@ -68,9 +69,6 @@ import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.amazonaws.services.s3.model.PartETag;
@@ -354,7 +352,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         ownerRole,
         new CollaboratorUser(authService, userInfo),
         experimentRun.getId(),
-        ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
+        ModelDBServiceResourceTypes.EXPERIMENT_RUN);
   }
 
   private Set<HyperparameterElementMappingEntity> prepareHyperparameterElemMappings(
@@ -1290,14 +1288,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     // Validate if current user has access to the entity or not
     if (projectIdSet.size() == 1) {
       roleService.isSelfAllowed(
-          ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceResourceTypes.PROJECT,
           modelDBServiceActions,
           new ArrayList<>(projectIdSet).get(0));
       accessibleExperimentRunIds.addAll(requestedExperimentRunIds);
     } else {
       allowedProjectIds =
           roleService.getSelfAllowedResources(
-              ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
+              ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
       // Validate if current user has access to the entity or not
       allowedProjectIds.retainAll(projectIdSet);
       for (Map.Entry<String, String> entry : projectIdExperimentRunIdMap.entrySet()) {
@@ -2287,11 +2285,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private Optional<ArtifactEntity> getExperimentRunArtifact(
-      Session session,
-      String experimentRunId,
-      String key,
-      ModelDBServiceActions modelDBServiceActions)
-      throws InvalidProtocolBufferException {
+      Session session, String experimentRunId, String key) {
     ExperimentRunEntity experimentRunObj = session.get(ExperimentRunEntity.class, experimentRunId);
     if (experimentRunObj == null) {
       LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
@@ -2303,11 +2297,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throw StatusProto.toStatusRuntimeException(status);
     }
 
-    String projectId = experimentRunObj.getProject_id();
-
-    // Validate if current user has access to the entity or not
-    roleService.validateEntityUserWithUserInfo(
-        ModelDBServiceResourceTypes.PROJECT, projectId, modelDBServiceActions);
     Map<String, List<ArtifactEntity>> artifactEntityMap = experimentRunObj.getArtifactEntityMap();
 
     List<ArtifactEntity> result =
@@ -2322,23 +2311,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
       String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
-      throws ModelDBException, InvalidProtocolBufferException {
+      throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ArtifactEntity artifactEntity =
-          getArtifactEntity(session, experimentRunId, key, ModelDBServiceActions.UPDATE);
+      ArtifactEntity artifactEntity = getArtifactEntity(session, experimentRunId, key);
       return getS3PathAndMultipartUploadId(
           session, artifactEntity, partNumber != 0, initializeMultipart);
     }
   }
 
-  public ArtifactEntity getArtifactEntity(
-      Session session,
-      String experimentRunId,
-      String key,
-      ModelDBServiceActions modelDBServiceActions)
-      throws ModelDBException, InvalidProtocolBufferException {
+  public ArtifactEntity getArtifactEntity(Session session, String experimentRunId, String key)
+      throws ModelDBException {
     Optional<ArtifactEntity> artifactEntityOptional =
-        getExperimentRunArtifact(session, experimentRunId, key, modelDBServiceActions);
+        getExperimentRunArtifact(session, experimentRunId, key);
     return artifactEntityOptional.orElseThrow(
         () -> new ModelDBException("Can't find specified artifact", io.grpc.Status.Code.NOT_FOUND));
   }
@@ -2387,12 +2371,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public Response commitArtifactPart(CommitArtifactPart request)
-      throws ModelDBException, InvalidProtocolBufferException {
+  public Response commitArtifactPart(CommitArtifactPart request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ArtifactEntity artifactEntity =
-          getArtifactEntity(
-              session, request.getId(), request.getKey(), ModelDBServiceActions.UPDATE);
+      ArtifactEntity artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
       ArtifactPart artifactPart = request.getArtifactPart();
       ArtifactPartEntity artifactPartEntity =
           new ArtifactPartEntity(
@@ -2406,7 +2387,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public GetCommittedArtifactParts.Response getCommittedArtifactParts(
-      GetCommittedArtifactParts request) throws ModelDBException, InvalidProtocolBufferException {
+      GetCommittedArtifactParts request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Set<ArtifactPartEntity> artifactPartEntities =
           getArtifactPartEntities(session, request.getId(), request.getKey());
@@ -2419,28 +2400,32 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private Set<ArtifactPartEntity> getArtifactPartEntities(
-      Session session, String experimentRunId, String key)
-      throws ModelDBException, InvalidProtocolBufferException {
-    ArtifactEntity artifactEntity =
-        getArtifactEntity(session, experimentRunId, key, ModelDBServiceActions.READ);
+      Session session, String experimentRunId, String key) throws ModelDBException {
+    ArtifactEntity artifactEntity = getArtifactEntity(session, experimentRunId, key);
     return artifactEntity.getArtifactPartEntities();
   }
 
   @Override
   public CommitMultipartArtifact.Response commitMultipartArtifact(
       CommitMultipartArtifact request, CommitMultipartFunction commitMultipartFunction)
-      throws ModelDBException, InvalidProtocolBufferException {
+      throws ModelDBException {
     List<PartETag> partETags;
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ArtifactEntity artifactEntity =
-          getArtifactEntity(
-              session, request.getId(), request.getKey(), ModelDBServiceActions.UPDATE);
+      ArtifactEntity artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
       if (artifactEntity.getUploadId() == null) {
         String message = "Multipart wasn't initialized";
         LOGGER.info(message);
         throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
       }
       Set<ArtifactPartEntity> artifactPartEntities = artifactEntity.getArtifactPartEntities();
+      LOGGER.debug("The list of artifact parts for artifact {}:", artifactEntity.getPath());
+      artifactPartEntities.forEach(
+          artifactPartEntity -> {
+            LOGGER.debug(
+                "Part Number: {}, etag: {}",
+                artifactPartEntity.getPartNumber(),
+                artifactPartEntity.getEtag());
+          });
       partETags =
           artifactPartEntities.stream()
               .map(ArtifactPartEntity::toPartETag)

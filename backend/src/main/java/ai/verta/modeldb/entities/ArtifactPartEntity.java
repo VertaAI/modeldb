@@ -62,4 +62,12 @@ public class ArtifactPartEntity implements Serializable {
   public PartETag toPartETag() {
     return new PartETag((int) partNumber, etag);
   }
+
+  public long getPartNumber() {
+    return partNumber;
+  }
+
+  public String getEtag() {
+    return etag;
+  }
 }

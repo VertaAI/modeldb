@@ -1,7 +1,7 @@
 import { CommunicationActionsToObj } from 'core/shared/utils/redux/communication';
 import { Project } from 'models/Project';
 import { Store } from 'redux';
-import { ILoadProjectActions } from 'store/projects';
+import { ILoadProjectActions } from 'features/projects/store';
 
 const setProjectInStore = async (store: Store, project: Project) => {
   const action: CommunicationActionsToObj<

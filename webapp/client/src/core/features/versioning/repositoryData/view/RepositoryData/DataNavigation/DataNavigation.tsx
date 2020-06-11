@@ -4,19 +4,19 @@ import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IHydratedCommit,
   IFullCommitComponentLocationComponents,
-  ICommitComponent,
 } from 'core/shared/models/Versioning/RepositoryData';
 import matchBy from 'core/shared/utils/matchBy';
 
 import BlobDetailsView from './BlobDetailsView/BlobDetailsView';
 import styles from './DataNavigation.module.css';
 import FolderView from './FolderView/FolderView';
+import { ICommitComponentView } from '../../../store/types';
 
 interface ILocalProps {
   repository: IRepository;
   fullCommitComponentLocationComponents: IFullCommitComponentLocationComponents;
   commit: IHydratedCommit;
-  component: ICommitComponent;
+  component: ICommitComponentView;
 }
 
 const DataNavigation = (props: ILocalProps) => {
@@ -35,7 +35,7 @@ const DataNavigation = (props: ILocalProps) => {
             repository={repository}
             commit={commit}
             location={fullCommitComponentLocationComponents.location}
-            blobData={blob.data}
+            blob={blob}
           />
         ),
         folder: folder => (

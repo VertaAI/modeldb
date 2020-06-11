@@ -1,7 +1,5 @@
 import { PromiseValue } from 'core/shared/utils/types';
-import { IUserWorkspaces } from 'models/Workspace';
 
-import { userWorkspacesWithCurrentUser } from '../mocks/models/workspace';
 import makeMountComponentForIntegratingTest, {
   IOptions as IMakeMountComponentForIntegratingTestOptions,
 } from './makeMountComponentForIntegratingTest';
@@ -32,6 +30,7 @@ const makeMountComponentWithPredefinedData = async (
         }
       },
       updateStoreAfterMount: options.updateStoreAfterMount,
+      apolloMockedProviderProps: options.apolloMockedProviderProps,
     }
   );
   return { ...makeMountComponentForIntegratingTestResult, predefinedData };

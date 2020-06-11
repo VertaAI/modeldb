@@ -10,7 +10,7 @@
 .field {
   display: grid;
   display: grid;
-  grid-template-columns: 1fr 6fr;
+  grid-template-columns: 1.2fr 6fr;
   grid-column-gap: 5px;
   padding: 10px 0px;
   font-size: 13.6px;

@@ -40,7 +40,7 @@ public class AuthServiceUtils implements AuthService {
       LOGGER.info(ModelDBMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
-        LOGGER.warn("user not found {}", userInfo);
+        LOGGER.info("user not found {}", userInfo);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -112,7 +112,7 @@ public class AuthServiceUtils implements AuthService {
       LOGGER.info(ModelDBMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
-        LOGGER.warn("user not found with id {}", vertaId);
+        LOGGER.info("user not found with id {}", vertaId);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)

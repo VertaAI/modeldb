@@ -5,10 +5,8 @@ import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import CodeVersion from 'components/CodeVersion/CodeVersion';
-import ProjectEntityDescriptionManager from 'components/DescriptionManager/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
-import SummaryInfo from 'components/SummaryViewComponents/SummaryInfo/SummaryInfo';
-import ProjectEntityTagsManager from 'components/TagsManager/ProjectEntityTagsManager/ProjectEntityTagsManager';
+import CodeVersion from 'core/shared/view/domain/CodeVersion/CodeVersion';
+import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import { Markdown } from 'core/shared/utils/types';
 import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
@@ -20,13 +18,17 @@ import {
   selectDeletingProject,
   updateProjectReadme,
   deleteProject,
-} from 'store/projects';
+  loadProject,
+} from 'features/projects/store';
 import { IApplicationState } from 'store/store';
 
 import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 import ProjectPageTabs from '../shared/ProjectPageTabs/ProjectPageTabs';
 import MarkdownManager from './MarkdownManager/MarkdownManager';
 import styles from './ProjectSummaryPage.module.css';
+import ProjectEntityDescriptionManager from 'features/descriptionManager/view/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
+import SummaryInfo from 'core/shared/view/elements/SummaryViewComponents/SummaryInfo/SummaryInfo';
+import Reloading from 'core/shared/view/elements/Reloading/Reloading';
 
 const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
   const projectId = localProps.match.params.projectId;
@@ -38,7 +40,7 @@ const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) =>
-  bindActionCreators({ updateProjectReadme, deleteProject }, dispatch);
+  bindActionCreators({ updateProjectReadme, loadProject, deleteProject }, dispatch);
 
 type RouteProps = RouteComponentProps<
   GetRouteParams<typeof routes.projectSummary>
@@ -48,6 +50,9 @@ type AllProps = ReturnType<typeof mapStateToProps> &
   RouteProps;
 
 class ProjectSummaryPage extends React.PureComponent<AllProps> {
+  public componentDidMount() {
+    this.loadProject();
+  }
   public render() {
     const {
       project,
@@ -59,7 +64,7 @@ class ProjectSummaryPage extends React.PureComponent<AllProps> {
     } = this.props;
     return (
       <ProjectsPagesLayout>
-        <>
+                    <Reloading onReload={this.loadProject}>
           <ProjectPageTabs
             projectId={projectId}
             isDisabled={deletingCommunication.isRequesting}
@@ -109,7 +114,6 @@ class ProjectSummaryPage extends React.PureComponent<AllProps> {
                         descriptionManagerElement: (
                           <ProjectEntityDescriptionManager
                             entityId={project.id}
-                            // projectId={project.id}
                             description={project.description}
                             entityType={'project'}
                           />
@@ -154,9 +158,15 @@ class ProjectSummaryPage extends React.PureComponent<AllProps> {
               );
             })()}
           </div>
-        </>
+        </Reloading>
       </ProjectsPagesLayout>
     );
+  }
+
+  @bind
+  private loadProject() {
+    const projectId = this.props.match.params.projectId;
+    this.props.loadProject(projectId);
   }
 
   @bind

@@ -5,5 +5,9 @@ type Workspace {
 
   repositories(next: String, query: RepositoriesQuery): Repositories!
   repository(name: String!): Repository
-  createRepository(name: String!, visibility: Visibility!): Repository
+  createRepository(name: String!, visibility: Visibility!): Repository!
+
+
+  # not sure this is needed now or later, but this feels like it where go
+
 }

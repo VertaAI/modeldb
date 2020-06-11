@@ -147,6 +147,9 @@ public class CommitTest {
     }
     deleteEntitiesCron =
         new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+    deleteEntitiesCron.run();
+    deleteEntitiesCron.run();
+    deleteEntitiesCron.run();
   }
 
   @AfterClass

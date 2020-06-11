@@ -1,90 +1,90 @@
+import * as R from 'ramda';
+
 import generateId from 'core/shared/utils/generateId';
+import { Brand } from 'core/shared/utils/Brand';
 
 export enum PropertyType {
   STRING = 'STRING',
   METRIC = 'METRIC',
-  ID = 'ID',
   EXPERIMENT_NAME = 'EXPERIMENT_NAME',
-  PROJECT_TYPE = 'PROJECT_TYPE',
 }
 
-export enum ComparisonType {
-  MORE,
-  EQUALS,
-  LESS,
-  GREATER_OR_EQUALS,
-  LESS_OR_EQUALS,
-}
+export const OperatorType: { [T in OperatorType]: T } = {
+  MORE: 'MORE',
+  EQUALS: 'EQUALS',
+  NOT_EQUALS: 'NOT_EQUALS',
+  LESS: 'LESS',
+  GREATER_OR_EQUALS: 'GREATER_OR_EQUALS',
+  LESS_OR_EQUALS: 'LESS_OR_EQUALS',
+  LIKE: 'LIKE',
+  NOT_LIKE: 'NOT_LIKE',
+} as const;
+export type OperatorType =
+  | 'MORE'
+  | 'EQUALS'
+  | 'NOT_EQUALS'
+  | 'LESS'
+  | 'GREATER_OR_EQUALS'
+  | 'LESS_OR_EQUALS'
+  | 'LIKE'
+  | 'NOT_LIKE';
+
+export type StringFilterOperator = Extract<
+  OperatorType,
+  'EQUALS' | 'LIKE' | 'NOT_LIKE' | 'NOT_EQUALS'
+>;
 export interface IStringFilterData {
   id: string;
   type: PropertyType.STRING;
   caption?: string; // custom filter caption. If it is blank will be used `name`
   name: string; // property name
   value: string;
-  invert: boolean;
-  isFuzzy: boolean;
+  operator: StringFilterOperator;
+  isActive: boolean;
 }
 
+export type MetricFilterOperator = Exclude<OperatorType, 'LIKE' | 'NOT_LIKE'>;
 export interface IMetricFilterData {
   id: string;
   type: PropertyType.METRIC;
   caption?: string;
   name: string;
   value: number;
-  comparisonType: ComparisonType;
+  operator: MetricFilterOperator;
+  isActive: boolean;
 }
 
-export interface IIdFilterData {
-  id: string;
-  type: PropertyType.ID;
-  caption?: string;
-  name: 'id';
-  value: string[];
-  isEdited: boolean;
-}
-
+export type ExperimentFilterOperator = Extract<
+  OperatorType,
+  'EQUALS' | 'NOT_EQUALS'
+>;
 export interface IExperimentNameFilterData {
   id: string;
   type: PropertyType.EXPERIMENT_NAME;
   caption?: string;
   name: string;
   value: string;
-  invert: boolean;
+  operator: ExperimentFilterOperator;
+  isActive: boolean;
 }
 
 export type IFilterData =
   | IStringFilterData
   | IMetricFilterData
-  | IIdFilterData
   | IExperimentNameFilterData;
-
-export type IInstantFilter = Exclude<IFilterData, IIdFilterData>;
-
-export type IMultipleFilterData = IIdFilterData;
-
-export const makeDefaultIdFilter = (entityId: string): IIdFilterData => {
-  return {
-    id: generateId(),
-    type: PropertyType.ID,
-    caption: 'IDs',
-    name: 'id',
-    value: [entityId],
-    isEdited: true,
-  };
-};
 
 export const makeDefaultStringFilter = (
   name: string,
   value: string,
-  isFuzzy: boolean
+  operator: StringFilterOperator
 ): IStringFilterData => {
   return {
-    isFuzzy,
+    operator,
     id: generateId(),
     type: PropertyType.STRING,
     name,
     value,
-    invert: false,
+    isActive: true,
   };
 };
 
@@ -97,7 +97,8 @@ export const makeDefaultExprNameFilter = (
     type: PropertyType.EXPERIMENT_NAME,
     caption: 'experiment',
     value,
-    invert: false,
+    operator: 'EQUALS',
+    isActive: true,
   };
 };
 
@@ -107,19 +108,33 @@ export const makeDefaultMetricFilter = (
   value: number | string
 ): IMetricFilterData | IStringFilterData => {
   if (typeof value === 'string') {
-    return makeDefaultStringFilter(propertyName, value, false);
+    return makeDefaultStringFilter(propertyName, value, 'EQUALS');
   }
   return {
     id: generateId(),
     value,
     type: PropertyType.METRIC,
     name: propertyName,
-    comparisonType: ComparisonType.GREATER_OR_EQUALS,
+    operator: OperatorType.GREATER_OR_EQUALS,
+    isActive: true,
   };
 };
 
-export const makeDefaultTagFilter = (value: string): IStringFilterData => {
-  return { ...makeDefaultStringFilter('tags', value, false), caption: 'tag' };
+export const makeDefaultNameFilter = (
+  value: string,
+  operator: StringFilterOperator = 'LIKE'
+) => {
+  return makeDefaultStringFilter('name', value, operator);
+};
+
+export const makeDefaultTagFilter = (
+  value: string,
+  operator: StringFilterOperator = 'EQUALS'
+): IStringFilterData => {
+  return {
+    ...makeDefaultStringFilter('tags', value, operator),
+    caption: 'tag',
+  };
 };
 
 export interface IQuickFilter {
@@ -137,7 +152,7 @@ export const makeDefaultFilterDataFromQuickFilter = (
     ...makeDefaultStringFilter(
       quickFilter.propertyName,
       value,
-      quickFilter.isFuzzy
+      quickFilter.isFuzzy ? 'LIKE' : 'EQUALS'
     ),
     caption: quickFilter.caption,
   };
@@ -161,8 +176,23 @@ export const defaultQuickFilters: Record<
   },
   tag: {
     type: PropertyType.STRING,
-    propertyName: 'tags',
+    propertyName: 'tag',
     isFuzzy: false,
-    caption: 'tags',
+    caption: 'tag',
   },
 };
+
+//
+
+declare const URLFiltersSymbol: unique symbol;
+export type URLFilters = Brand<string, 'URLFilters', typeof URLFiltersSymbol>;
+export const makeURLFilters = (filters: IFilterData[]): URLFilters => {
+  return encodeURIComponent(JSON.stringify(filters)) as URLFilters;
+};
+export const convertURLFilters = (urlFilters: URLFilters): IFilterData =>
+  JSON.parse(decodeURIComponent(urlFilters));
+
+export const URLFiltersParam: keyof IURLWithFilters = 'filters';
+export interface IURLWithFilters {
+  filters: URLFilters;
+}

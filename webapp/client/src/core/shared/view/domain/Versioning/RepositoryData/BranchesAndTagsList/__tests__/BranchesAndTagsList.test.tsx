@@ -1,9 +1,7 @@
 import * as React from 'react';
 import { mount } from 'enzyme';
 
-import {
-  CommitPointerHelpers,
-} from 'core/shared/models/Versioning/RepositoryData';
+import { CommitPointerHelpers } from 'core/shared/models/Versioning/RepositoryData';
 
 import BranchesAndTagsList from '../BranchesAndTagsList';
 import { createBranchesAndTagsListHelpers } from './helpers';

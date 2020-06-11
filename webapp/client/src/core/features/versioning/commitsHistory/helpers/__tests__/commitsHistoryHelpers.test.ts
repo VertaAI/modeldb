@@ -9,7 +9,9 @@ import groupCommitsByDatesInDescOrder from '../groupCommitsByDatesInDescOrder';
 describe('(feature commitsHistory) helpers', () => {
   describe('groupCommitsByDatesInDescOrder', () => {
     it('should group commits by date and sort groups in desc order', () => {
-      const today = new Date();
+      const today = moment(new Date())
+        .endOf('day')
+        .toDate();
       const yesterday = moment(today)
         .subtract(1, 'day')
         .toDate();
@@ -22,7 +24,6 @@ describe('(feature commitsHistory) helpers', () => {
           message: 'blabla',
           sha: 'sha-1',
           type: 'withParent',
-          parentShas: ['adf'],
         },
         {
           author: users[0],
@@ -30,7 +31,6 @@ describe('(feature commitsHistory) helpers', () => {
           message: 'blabla',
           sha: 'sha-2',
           type: 'withParent',
-          parentShas: ['adf'],
         },
         {
           author: users[0],
@@ -38,7 +38,6 @@ describe('(feature commitsHistory) helpers', () => {
           message: 'blabla',
           sha: 'sha-3',
           type: 'withParent',
-          parentShas: ['adf'],
         },
       ];
 

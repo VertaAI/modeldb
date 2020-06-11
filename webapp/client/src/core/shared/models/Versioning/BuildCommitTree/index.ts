@@ -8,12 +8,12 @@ import {
   IBlobFolderElement,
 } from 'core/shared/models/Versioning/RepositoryData';
 
-type IOutputData = IOutputBlob<any> | IOutputFolder<any, any>;
+export type IOutputData = IOutputBlob<any> | IOutputFolder<any, any>;
 interface IOutputBlob<Name extends string> {
   type: 'blob';
 
   asFolderElement: IBlobFolderElement;
-  asDataElement: IBlob;
+  asCommitElement: IBlob;
 
   name: Name;
   location: CommitComponentLocation.CommitComponentLocation;
@@ -27,14 +27,14 @@ interface IOutputFolder<
   elements: Elements;
 
   asFolderElement: ISubFolderElement;
-  asDataElement: IFolder;
+  asCommitElement: IFolder;
 
   name: Name;
   location: CommitComponentLocation.CommitComponentLocation;
 }
 interface IRoot<Records extends Record<any, ArrayOutputData<any>>> {
   elements: Records;
-  asDataElement: IFolder;
+  asCommitElement: IFolder;
 }
 
 type ArrayOutputData<T extends IOutputData> = T[];
@@ -44,7 +44,7 @@ export const root = <T extends ArrayOutputData<any>>(
 ): IRoot<{ [K in T[number]['name']]: Extract<T[number], { name: K }> }> => {
   return {
     elements: R.fromPairs(elements.map(e => [e.name, e])) as any,
-    asDataElement: {
+    asCommitElement: {
       type: 'folder',
       blobs: elements
         .filter(e => e.type === 'blob')
@@ -58,7 +58,6 @@ export const root = <T extends ArrayOutputData<any>>(
 
 export const folder = <Name extends string, T extends ArrayOutputData<any>>(
   name: Name,
-  { createdByCommitSha }: { createdByCommitSha: string },
   elements: T
 ): IOutputFolder<
   Name,
@@ -72,10 +71,9 @@ export const folder = <Name extends string, T extends ArrayOutputData<any>>(
 
     asFolderElement: {
       name: name as any,
-      createdByCommitSha,
       type: 'folder',
     },
-    asDataElement: {
+    asCommitElement: {
       type: 'folder',
       blobs: elements
         .filter(e => e.type === 'blob')
@@ -121,15 +119,13 @@ const nestFolderLocation = (
 
 export const blob = <Name extends string>(
   name: Name,
-  { createdByCommitSha }: { createdByCommitSha: string },
   data: IBlob['data']
 ): IOutputBlob<Name> => {
   const location = CommitComponentLocation.makeFromNames([name as any]);
   return {
     name: name as any,
-    asDataElement: { data, type: 'blob' },
+    asCommitElement: { data, type: 'blob' },
     asFolderElement: {
-      createdByCommitSha,
       name: name as any,
       type: 'blob',
     },
