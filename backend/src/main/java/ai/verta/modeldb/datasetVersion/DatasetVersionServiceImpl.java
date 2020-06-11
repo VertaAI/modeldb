@@ -38,6 +38,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
+import ai.verta.modeldb.versioning.DeleteCommitRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -50,7 +51,6 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.util.Collections;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -127,7 +127,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       CreateCommitRequest.Response createCommitResponse =
           commitDAO.setCommitFromDatasetVersion(
               datasetVersion, blobDAO, metadataDAO, repositoryFunction);
-      datasetVersion = datasetVersion.toBuilder().setId(createCommitResponse.getCommit().getCommitSha()).build();
+      datasetVersion =
+          datasetVersion.toBuilder().setId(createCommitResponse.getCommit().getCommitSha()).build();
       responseObserver.onNext(
           CreateDatasetVersion.Response.newBuilder().setDatasetVersion(datasetVersion).build());
       responseObserver.onCompleted();
@@ -204,13 +205,24 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST,
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()));
+      } else if (request.getDatasetId().isEmpty()) {
+        logAndThrowError(
+            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
+            Code.INVALID_ARGUMENT_VALUE,
+            Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus =
-          datasetVersionDAO.deleteDatasetVersions(Collections.singletonList(request.getId()));
+      DeleteCommitRequest deleteCommitRequest =
+          DeleteCommitRequest.newBuilder()
+              .setCommitSha(request.getId())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder()
+                      .setRepoId(Long.parseLong(request.getDatasetId()))
+                      .build())
+              .build();
+      commitDAO.deleteCommit(deleteCommitRequest, repositoryDAO);
 
-      responseObserver.onNext(
-          DeleteDatasetVersion.Response.newBuilder().setStatus(deleteStatus).build());
+      responseObserver.onNext(DeleteDatasetVersion.Response.newBuilder().setStatus(true).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -807,10 +819,21 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         logAndThrowError(
             ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST,
             Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()));
+            Any.pack(DeleteDatasetVersions.Response.getDefaultInstance()));
+      } else if (request.getDatasetId().isEmpty()) {
+        logAndThrowError(
+            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
+            Code.INVALID_ARGUMENT_VALUE,
+            Any.pack(DeleteDatasetVersions.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus = datasetVersionDAO.deleteDatasetVersions(request.getIdsList());
+      boolean deleteStatus =
+          commitDAO.deleteCommits(
+              RepositoryIdentification.newBuilder()
+                  .setRepoId(Long.parseLong(request.getDatasetId()))
+                  .build(),
+              request.getIdsList(),
+              repositoryDAO);
 
       responseObserver.onNext(
           DeleteDatasetVersions.Response.newBuilder().setStatus(deleteStatus).build());
