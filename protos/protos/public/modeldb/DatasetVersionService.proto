@@ -81,7 +81,7 @@ message DatasetPartInfo {
 }
 
 message HydratedDatasetBlob {
-   versioning.Blob blob = 1;
+   versioning.BlobExpanded blob = 1;
    versioning.Commit commit = 2;
    string repository_id = 3;
 }
