@@ -373,6 +373,9 @@ class Commit(object):
                             response = _utils.make_request("PUT", url, self._conn, data=f)
                         _utils.raise_for_http_error(response)
 
+                        # delete staged file
+                        os.remove(filepath)
+
     def _save(self, proto_message):
         data = _utils.proto_to_json(proto_message)
         endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits".format(
