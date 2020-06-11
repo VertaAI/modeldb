@@ -301,7 +301,7 @@ class Commit(
     .map(ls => if (ls.isEmpty) List() else ls.get.map(c => new Commit(clientSet, repo, c))) // Try[List[Commit]]
   }
 
-  /** Reverts all the commits beginning with other up through this Commit
+  /** Reverts other.
    *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
    *  @param other Base for the revert. If not provided, this commit will be reverted
    *  @param message Description of the revert. If not provided, a default message will be used
