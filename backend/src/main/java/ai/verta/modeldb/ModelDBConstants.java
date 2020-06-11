@@ -232,6 +232,7 @@ public interface ModelDBConstants {
   String VERSIONING_REPOSITORY = "VERSIONING_REPOSITORY";
   String VERSIONING_COMMIT = "VERSIONING_COMMIT";
   String VERSIONING_REPO_COMMIT_BLOB = "VERSIONING_REPO_COMMIT_BLOB";
+  String VERSIONING_REPO_COMMIT = "VERSIONING_REPO_COMMIT";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second

@@ -2239,6 +2239,43 @@ public class CommitTest {
           datasetBlob,
           listCommitBlobsResponse.getBlobsList().get(0).getBlob());
 
+      identifier = identifier.toBuilder().clearLocation().build();
+      repoCommitBlobLabelId =
+          repoCommitBlobLabelId
+              .toBuilder()
+              .setVersioningCompositeId(identifier)
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)
+              .build();
+      labelIds.add(repoCommitBlobLabelId);
+      addLabelsRequest =
+          AddLabelsRequest.newBuilder()
+              .setId(repoCommitBlobLabelId)
+              .addLabels("Backend")
+              .addLabels("Frontend")
+              .build();
+      serviceBlockingStub.addLabels(addLabelsRequest);
+
+      findRepositoriesBlobs =
+          FindRepositoriesBlobs.newBuilder()
+              .addPredicates(
+                  KeyValueQuery.newBuilder()
+                      .setKey(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT + "." + "labels")
+                      .setValue(
+                          Value.newBuilder().setStringValue(addLabelsRequest.getLabels(0)).build())
+                      .build())
+              .build();
+
+      listCommitBlobsResponse =
+          versioningServiceBlockingStub.findRepositoriesBlobs(findRepositoriesBlobs);
+      Assert.assertEquals(
+          "blob count not match with expected blob count",
+          1,
+          listCommitBlobsResponse.getBlobsCount());
+      Assert.assertEquals(
+          "blob count not match with expected blob count",
+          datasetBlob,
+          listCommitBlobsResponse.getBlobsList().get(0).getBlob());
+
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
         findRepositoriesBlobs =
             FindRepositoriesBlobs.newBuilder()

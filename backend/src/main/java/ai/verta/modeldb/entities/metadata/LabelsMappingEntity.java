@@ -1,5 +1,7 @@
 package ai.verta.modeldb.entities.metadata;
 
+import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -19,13 +21,14 @@ import javax.persistence.Table;
 public class LabelsMappingEntity {
   public LabelsMappingEntity() {}
 
-  public LabelsMappingEntity(IdentificationType id, String label) {
+  public LabelsMappingEntity(IdentificationType id, String label) throws ModelDBException {
     if (id.getIdCase().equals(IdentificationType.IdCase.INT_ID)) {
       this.id = new LabelMappingId(String.valueOf(id.getIntId()), id.getIdTypeValue(), label);
     } else if (id.getIdCase().equals(IdentificationType.IdCase.STRING_ID)) {
       this.id = new LabelMappingId(id.getStringId(), id.getIdTypeValue(), label);
     } else if (id.getIdCase().equals(IdentificationType.IdCase.VERSIONING_COMPOSITE_ID)) {
-      String compositeId = getVersioningCompositeIdString(id.getVersioningCompositeId());
+      String compositeId =
+          getVersioningCompositeIdString(id.getVersioningCompositeId(), id.getIdType());
       this.id = new LabelMappingId(compositeId, id.getIdTypeValue(), label);
     } else {
       throw new StatusRuntimeException(Status.INVALID_ARGUMENT);
@@ -86,20 +89,35 @@ public class LabelsMappingEntity {
     }
   }
 
-  public static String getVersioningCompositeIdString(VersioningCompositeIdentifier identifier) {
-    return identifier.getRepoId()
-        + "::"
-        + identifier.getCommitHash()
-        + "::"
-        + ModelDBUtils.getLocationWithSlashOperator(identifier.getLocationList());
+  public static String getVersioningCompositeIdString(
+      VersioningCompositeIdentifier identifier, IDTypeEnum.IDType idType) throws ModelDBException {
+    if (idType.equals(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)) {
+      return identifier.getRepoId()
+          + "::"
+          + identifier.getCommitHash()
+          + "::"
+          + ModelDBUtils.getLocationWithSlashOperator(identifier.getLocationList());
+    } else if (idType.equals(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)) {
+      return identifier.getRepoId() + "::" + identifier.getCommitHash();
+    } else {
+      throw new ModelDBException(
+          "Invalid argument found in VersioningCompositeIdentifier", Status.Code.INVALID_ARGUMENT);
+    }
   }
 
   public static VersioningCompositeIdentifier getVersioningCompositeId(String identifierIdStr) {
     String[] identifierArr = identifierIdStr.split("::");
-    return VersioningCompositeIdentifier.newBuilder()
-        .setRepoId(Long.parseLong(identifierArr[0]))
-        .setCommitHash(identifierArr[1])
-        .addAllLocation(Arrays.asList(identifierArr[2].split("/")))
-        .build();
+    if (identifierArr.length == 3) {
+      return VersioningCompositeIdentifier.newBuilder()
+          .setRepoId(Long.parseLong(identifierArr[0]))
+          .setCommitHash(identifierArr[1])
+          .addAllLocation(Arrays.asList(identifierArr[2].split("/")))
+          .build();
+    } else {
+      return VersioningCompositeIdentifier.newBuilder()
+          .setRepoId(Long.parseLong(identifierArr[0]))
+          .setCommitHash(identifierArr[1])
+          .build();
+    }
   }
 }
