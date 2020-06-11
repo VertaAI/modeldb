@@ -316,4 +316,27 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("commit's log should return the right commits in the right order") {
+    val f = fixture
+
+    try {
+      // parent1 - parent2 - parent3---desc
+      //         - parent4  ----------/
+
+      val parent1 = f.commit
+      val parent2 = parent1.update("abc/def", f.pathBlob).flatMap(_.save("some message 2")).get
+      val parent3 = parent2.update("ghi/jkl", f.pathBlob).flatMap(_.save("some message 3")).get
+      val parent4 = parent1.newBranch("new-branch")
+                           .flatMap(_.update("uvw/wer", f.pathBlob))
+                           .flatMap(_.save("some message 4")).get
+      val desc = parent3.merge(parent4).get
+      val descDirty = desc.update("some-path", f.pathBlob).get
+
+      assert(desc.log().get == Stream(desc, parent4, parent3, parent2, parent1))
+      assert(descDirty.log().get == desc.log().get)
+    } finally {
+      cleanup(f)
+    }
+  }
 }
