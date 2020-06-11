@@ -1186,11 +1186,13 @@ public class BlobDAORdbImpl implements BlobDAO {
         switch (names[0]) {
           case ModelDBConstants.COMMIT:
             LOGGER.debug("switch case : commit");
-            whereClauseList.add(alias + "." + names[1] + " = :author");
-            parametersMap.put("author", predicate.getValue().getStringValue());
+            if (names[1].equals("author")) {
+              whereClauseList.add(alias + "." + names[1] + " = :author");
+              parametersMap.put("author", predicate.getValue().getStringValue());
+            }
             break;
-          case ModelDBConstants.VERSIONING_REPOSITORY:
-            LOGGER.debug("switch case : " + ModelDBConstants.VERSIONING_REPOSITORY);
+          case ModelDBConstants.REPOSITORY:
+            LOGGER.debug("switch case : " + ModelDBConstants.REPOSITORY);
             if (names[1].contains(ModelDBConstants.LABEL)) {
               joinClause
                   .append(" INNER JOIN ")
@@ -1213,12 +1215,14 @@ public class BlobDAORdbImpl implements BlobDAO {
                       .append(" lb WHERE ")
                       .append(" lb.id.entity_type ");
               VersioningUtils.setValueWithOperatorInQuery(
+                  index,
                   subQueryBuilder,
                   OperatorEnum.Operator.EQ,
                   IDTypeEnum.IDType.VERSIONING_COMMIT.getNumber(),
                   parametersMap);
               subQueryBuilder.append(" AND lb.id.label ");
               VersioningUtils.setValueWithOperatorInQuery(
+                  index,
                   subQueryBuilder,
                   OperatorEnum.Operator.EQ,
                   predicate.getValue().getStringValue(),
@@ -1245,7 +1249,7 @@ public class BlobDAORdbImpl implements BlobDAO {
               blobHashes.forEach(
                   blobHash -> {
                     VersioningCompositeIdentifier identifier =
-                        LabelsMappingEntity.getVersioningCompositeIdentifier(blobHash);
+                        LabelsMappingEntity.getVersioningCompositeId(blobHash);
                     commitHashes.add(identifier.getCommitHash());
                     repoIds.add(identifier.getRepoId());
                   });
@@ -1280,8 +1284,9 @@ public class BlobDAORdbImpl implements BlobDAO {
       parametersMap.put("commitHashList", request.getCommitsList());
     }
     StringBuilder whereClause = new StringBuilder();
-    VersioningUtils.setPredicatesWithQueryOperator(
-        whereClause, " AND ", whereClauseList.toArray(new String[0]));
+    whereClause.append(
+        VersioningUtils.setPredicatesWithQueryOperator(
+            " AND ", whereClauseList.toArray(new String[0])));
 
     // Order by clause
     StringBuilder orderClause =

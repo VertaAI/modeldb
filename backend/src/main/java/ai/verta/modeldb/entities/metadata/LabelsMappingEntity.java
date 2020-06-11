@@ -25,7 +25,7 @@ public class LabelsMappingEntity {
     } else if (id.getIdCase().equals(IdentificationType.IdCase.STRING_ID)) {
       this.id = new LabelMappingId(id.getStringId(), id.getIdTypeValue(), label);
     } else if (id.getIdCase().equals(IdentificationType.IdCase.VERSIONING_COMPOSITE_ID)) {
-      String compositeId = getVersioningCompositeId(id.getVersioningCompositeId());
+      String compositeId = getVersioningCompositeIdString(id.getVersioningCompositeId());
       this.id = new LabelMappingId(compositeId, id.getIdTypeValue(), label);
     } else {
       throw new StatusRuntimeException(Status.INVALID_ARGUMENT);
@@ -86,7 +86,7 @@ public class LabelsMappingEntity {
     }
   }
 
-  public static String getVersioningCompositeId(VersioningCompositeIdentifier identifier) {
+  public static String getVersioningCompositeIdString(VersioningCompositeIdentifier identifier) {
     return identifier.getRepoId()
         + "::"
         + identifier.getCommitHash()
@@ -94,8 +94,7 @@ public class LabelsMappingEntity {
         + ModelDBUtils.getLocationWithSlashOperator(identifier.getLocationList());
   }
 
-  public static VersioningCompositeIdentifier getVersioningCompositeIdentifier(
-      String identifierIdStr) {
+  public static VersioningCompositeIdentifier getVersioningCompositeId(String identifierIdStr) {
     String[] identifierArr = identifierIdStr.split("::");
     return VersioningCompositeIdentifier.newBuilder()
         .setRepoId(Long.parseLong(identifierArr[0]))

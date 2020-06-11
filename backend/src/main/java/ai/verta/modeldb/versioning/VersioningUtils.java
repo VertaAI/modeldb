@@ -9,7 +9,6 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.security.NoSuchAlgorithmException;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -115,19 +114,34 @@ public class VersioningUtils {
         + ")\"";
   }
 
-  public static void setPredicatesWithQueryOperator(
-      StringBuilder queryStringBuilder, String operatorName, String[] predicateClause) {
-    queryStringBuilder.append(String.join(" " + operatorName + " ", predicateClause));
+  /**
+   * joins the predicate Clauses with the operator name
+   *
+   * @param operatorName : like AND,OR etc.
+   * @param predicateClauses : where clause string like ['repo.id = 123', 'repo.name = xyz']
+   * @return {@link String} : 'repo.id = 123 AND repo.name = xyz'
+   */
+  public static String setPredicatesWithQueryOperator(
+      String operatorName, String[] predicateClauses) {
+    return String.join(" " + operatorName + " ", predicateClauses);
   }
 
+  /**
+   * Set keyValueQuery value in the query builder with requested operator and set query parameters
+   * in parametersMap
+   */
   public static void setQueryParameters(
-      StringBuilder queryBuilder, KeyValueQuery keyValueQuery, Map<String, Object> parametersMap) {
+      int index,
+      StringBuilder queryBuilder,
+      KeyValueQuery keyValueQuery,
+      Map<String, Object> parametersMap) {
     Value value = keyValueQuery.getValue();
     OperatorEnum.Operator operator = keyValueQuery.getOperator();
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
         LOGGER.debug("Called switch case : number_value");
-        setValueWithOperatorInQuery(queryBuilder, operator, value.getNumberValue(), parametersMap);
+        setValueWithOperatorInQuery(
+            index, queryBuilder, operator, value.getNumberValue(), parametersMap);
         break;
       case STRING_VALUE:
         LOGGER.debug("Called switch case : string_value");
@@ -135,6 +149,7 @@ public class VersioningUtils {
           LOGGER.debug("Called switch case : string value exist");
           if (keyValueQuery.getKey().equals(ModelDBConstants.REPOSITORY_VISIBILITY)) {
             setValueWithOperatorInQuery(
+                index,
                 queryBuilder,
                 operator,
                 RepositoryVisibilityEnum.RepositoryVisibility.valueOf(value.getStringValue())
@@ -142,7 +157,7 @@ public class VersioningUtils {
                 parametersMap);
           } else {
             setValueWithOperatorInQuery(
-                queryBuilder, operator, value.getStringValue(), parametersMap);
+                index, queryBuilder, operator, value.getStringValue(), parametersMap);
           }
           break;
         } else {
@@ -155,7 +170,8 @@ public class VersioningUtils {
         }
       case BOOL_VALUE:
         LOGGER.debug("Called switch case : bool_value");
-        setValueWithOperatorInQuery(queryBuilder, operator, value.getStringValue(), parametersMap);
+        setValueWithOperatorInQuery(
+            index, queryBuilder, operator, value.getStringValue(), parametersMap);
         break;
       default:
         Status invalidValueTypeError =
@@ -168,36 +184,43 @@ public class VersioningUtils {
     }
   }
 
+  /**
+   * @param index : predicate index for unique query parameter identity
+   * @param queryBuilder : query builder
+   * @param operator : query operator like GE, LE, EQ, GTE etc.
+   * @param value : query parameter value like repoId(123), repoName(xyz) etc.
+   * @param parametersMap : query parameter identity map.
+   */
   public static void setValueWithOperatorInQuery(
+      int index,
       StringBuilder queryBuilder,
       OperatorEnum.Operator operator,
       Object value,
       Map<String, Object> parametersMap) {
-    long timestamp = Math.round(100.0 * Math.random()) + Calendar.getInstance().getTimeInMillis();
     String key;
     switch (operator.ordinal()) {
       case OperatorEnum.Operator.GT_VALUE:
-        key = "GT_VALUE_" + timestamp;
+        key = "GT_VALUE_" + index;
         queryBuilder.append(" > :").append(key);
         parametersMap.put(key, value);
         break;
       case OperatorEnum.Operator.GTE_VALUE:
-        key = "GTE_VALUE_" + timestamp;
+        key = "GTE_VALUE_" + index;
         queryBuilder.append(" >= :").append(key);
         parametersMap.put(key, value);
         break;
       case OperatorEnum.Operator.LT_VALUE:
-        key = "LT_VALUE_" + timestamp;
+        key = "LT_VALUE_" + index;
         queryBuilder.append(" < :").append(key);
         parametersMap.put(key, value);
         break;
       case OperatorEnum.Operator.LTE_VALUE:
-        key = "LTE_VALUE_" + timestamp;
+        key = "LTE_VALUE_" + index;
         queryBuilder.append(" <= :").append(key);
         parametersMap.put(key, value);
         break;
       case OperatorEnum.Operator.NE_VALUE:
-        key = "NE_VALUE_" + timestamp;
+        key = "NE_VALUE_" + index;
         queryBuilder.append(" <> :").append(key);
         parametersMap.put(key, value);
         break;
@@ -212,12 +235,12 @@ public class VersioningUtils {
             .append(("'%" + Pattern.compile((String) value) + "%'").toLowerCase());
         break;
       case OperatorEnum.Operator.IN_VALUE:
-        key = "IN_VALUE_" + timestamp;
+        key = "IN_VALUE_" + index;
         queryBuilder.append(" IN (:").append(key).append(")");
         parametersMap.put(key, value);
         break;
       default:
-        key = "default_" + timestamp;
+        key = "default_" + index;
         queryBuilder.append(" = :").append(key);
         parametersMap.put(key, value);
     }
