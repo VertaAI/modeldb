@@ -149,15 +149,6 @@ public interface DatasetVersionDAO {
       throws InvalidProtocolBufferException;
 
   /**
-   * Get datasetVersion tags from database
-   *
-   * @param datasetVersionId : datasetVersion.id
-   * @return {@link List<String>} datasetVersion.tags
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
-   */
-  List<String> getDatasetVersionTags(String datasetVersionId) throws InvalidProtocolBufferException;
-
-  /**
    * Delete DatasetVersion Tags in database using datasetVersionId.
    *
    * @param datasetVersionTagList : tag list for deletion

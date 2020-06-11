@@ -1,6 +1,6 @@
 import {
-  GithubRemoteRepoUrl,
   parseGithubRemoteRepoUrl,
+  MaybeGithubRemoteRepoUrl,
 } from 'core/shared/utils/github/github';
 
 import {
@@ -17,27 +17,13 @@ export interface ICodeBlob {
 export interface IGitCodeBlob {
   type: 'git';
   data: {
-    remoteRepoUrl: GitCodeBlobRemoteRepoUrl;
+    remoteRepoUrl: MaybeGithubRemoteRepoUrl;
     commitHash: string | null;
     branch: string | null;
     tag: string | null;
     isDirty: boolean | null;
   };
 }
-
-export const makeGitCodeBlobRemoteRepoUrl = (
-  remoteRepoUrl: string
-): GitCodeBlobRemoteRepoUrl => {
-  try {
-    parseGithubRemoteRepoUrl(remoteRepoUrl);
-    return { type: 'github', value: remoteRepoUrl };
-  } catch (e) {
-    return { type: 'unknown', value: remoteRepoUrl };
-  }
-};
-export type GitCodeBlobRemoteRepoUrl =
-  | { type: 'github'; value: GithubRemoteRepoUrl }
-  | { type: 'unknown'; value: string };
 
 export interface INotebookCodeBlob {
   type: 'notebook';

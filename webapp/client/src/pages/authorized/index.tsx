@@ -15,7 +15,7 @@ import { IApplicationState } from 'store/store';
 import {
   selectWorkspaceByName,
   selectCurrentWorkspaceName,
-} from 'store/workspaces';
+} from 'features/workspaces/store';
 
 import NotFoundPage from './NotFoundPage/NotFoundPage';
 
@@ -23,7 +23,7 @@ import ProjectDetailsPage from './ProjectsPages/ProjectDetailsPages/ProjectDetai
 import ProjectsPage from './ProjectsPages/ProjectsPage/ProjectsPage';
 
 import DatasetDetailPages from './DatasetPages/DatasetDetailPages/DatasetDetailPages';
-import DatasetsPage from './DatasetPages/DatasetsPage';
+import DatasetsPage from './DatasetPages/DatasetsPage/DatasetsPage';
 
 import { IRouteWithWorkspace } from 'routes/routeWithWorkspace';
 import DatasetCreationPage from './DatasetPages/DatasetCreationPage/DatasetCreationPage';
@@ -32,6 +32,7 @@ import ExperimentCreationPage from './ProjectsPages/ProjectDetailsPages/Experime
 import RepositoriesPage from './VersioningPages/RepositoriesPage/RepositoriesPage';
 import RepositoryCreationPage from './VersioningPages/RepositoryCreationPage/RepositoryCreationPage';
 import RepositoryDetailsPages from './VersioningPages/RepositoryDetailsPages/RepositoryDetailsPages';
+import HighLevelSearchPage from './HighLevelSearchPage/HighLevelSearchPage';
 
 interface IRouteDescription<T extends IRoute<any, any>> {
   route: T | T[];
@@ -80,6 +81,10 @@ class Pages extends React.Component<AllProps> {
 
         {this.renderRoutesWithWorkspaces(
           [
+            {
+              route: routes.highLevelSearch,
+              Component: HighLevelSearchPage,
+            },
             {
               route: routes.projects,
               Component: ProjectsPage,
@@ -156,6 +161,14 @@ class Pages extends React.Component<AllProps> {
             },
             {
               route: routes.repositorySettings,
+              Component: RepositoryDetailsPages,
+            },
+            {
+              route: routes.repositoryNetworkGraph,
+              Component: RepositoryDetailsPages,
+            },
+            {
+              route: routes.repositoryMergeConflicts,
               Component: RepositoryDetailsPages,
             },
           ],

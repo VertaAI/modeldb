@@ -2,12 +2,9 @@ package ai.verta.repository
 
 import ai.verta.swagger.client.ClientSet
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningRepository
-import java.net.URLEncoder
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
-
-import java.net.URLEncoder
 
 /** ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Client's getOrCreateRepository
@@ -21,7 +18,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
     clientSet.versioningService.GetCommit2(
       repository_id_repo_id = repo.id.get,
       commit_sha = id
-    ).map(r => new Commit(clientSet, repo, r.commit.get))
+    ).map(r => new Commit(clientSet, this, r.commit.get))
   }
 
   /** Get commit by specified branch
@@ -30,9 +27,9 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
    */
    def getCommitByBranch(branch: String = "master")(implicit ec: ExecutionContext): Try[Commit] = {
      clientSet.versioningService.GetBranch2(
-       branch = urlEncode(branch),
+       branch = branch,
        repository_id_repo_id = repo.id.get
-     ).map(r => new Commit(clientSet, repo, r.commit.get, Some(branch)))
+     ).map(r => new Commit(clientSet, this, r.commit.get, Some(branch)))
    }
 
    /** Get commit by specified tag
@@ -41,9 +38,9 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
     */
    def getCommitByTag(tag: String)(implicit ec: ExecutionContext): Try[Commit] = {
      clientSet.versioningService.GetTag2(
-       tag = urlEncode(tag),
+       tag = tag,
        repository_id_repo_id = repo.id.get
-     ).map(r => new Commit(clientSet, repo, r.commit.get))
+     ).map(r => new Commit(clientSet, this, r.commit.get))
    }
 
    /** Delete a tag from this repository
@@ -52,11 +49,10 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
     def deleteTag(tag: String)(implicit ec: ExecutionContext): Try[Unit] = {
       clientSet.versioningService.DeleteTag2(
           repository_id_repo_id = repo.id.get,
-          tag = urlEncode(tag)
+          tag = tag
       ).map(_ => ())
     }
 
-    private def urlEncode(input: String): String = URLEncoder.encode(input, "UTF-8").replaceAll("\\+", "%20")
 
     override def equals(other: Any) = other match {
       case other: Repository => repo.id.get == other.repo.id.get

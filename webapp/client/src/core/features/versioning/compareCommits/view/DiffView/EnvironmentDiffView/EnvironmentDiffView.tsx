@@ -1,12 +1,12 @@
 import * as React from 'react';
 
 import { IEnvironmentBlobDiff } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
-import { MultipleBlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 import matchBy from 'core/shared/utils/matchBy';
+import { MultipleBlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import { IComparedCommitsInfo } from '../../model';
-import EnvironmentCommonDetailsDiff from './EnvironmentCommonDetailsDiff/EnvironmentCommonDetailsDiff';
 import DockerDiff from './DockerDiff/DockerDiff';
+import EnvironmentCommonDetailsDiff from './EnvironmentCommonDetailsDiff/EnvironmentCommonDetailsDiff';
 import PythonDiff from './PythonDiff/PythonDiff';
 import { getEnvironmentDiffViewModel } from './utils';
 
@@ -24,6 +24,7 @@ const EnvironmentDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
         <EnvironmentCommonDetailsDiff
           diff={environmentDiffViewModel.commonDetails}
           comparedCommitsInfo={comparedCommitsInfo}
+          diffType={diff.diffType}
         />
       )}
       {environmentDiffViewModel.data &&
@@ -31,12 +32,14 @@ const EnvironmentDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
           python: pythonDiff => (
             <PythonDiff
               diff={pythonDiff}
+              diffType={diff.diffType}
               comparedCommitsInfo={comparedCommitsInfo}
             />
           ),
           docker: dockerDiff => (
             <DockerDiff
               diff={dockerDiff}
+              diffType={diff.diffType}
               comparedCommitsInfo={comparedCommitsInfo}
             />
           ),

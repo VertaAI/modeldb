@@ -472,7 +472,9 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("ExperimentRun serviceImpl initialized");
     wrapService(serverBuilder, new JobServiceImpl(authService, jobDAO));
     LOGGER.trace("Job serviceImpl initialized");
-    wrapService(serverBuilder, new CommentServiceImpl(authService, commentDAO));
+    wrapService(
+        serverBuilder,
+        new CommentServiceImpl(authService, commentDAO, experimentRunDAO, roleService));
     LOGGER.trace("Comment serviceImpl initialized");
     wrapService(
         serverBuilder,

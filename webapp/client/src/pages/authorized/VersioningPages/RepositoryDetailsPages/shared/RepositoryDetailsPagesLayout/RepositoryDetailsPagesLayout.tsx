@@ -28,10 +28,18 @@ class RepositoryDetailsPagesLayout extends React.Component<AllProps> {
           <PagesTabs
             tabs={[
               {
-                label: 'Data',
+                label: 'Contents',
                 to: routes.repositoryData.getRedirectPathWithCurrentWorkspace({
                   repositoryName: repository.name,
                 }),
+              },
+              {
+                label: 'Network',
+                to: routes.repositoryNetworkGraph.getRedirectPathWithCurrentWorkspace(
+                  {
+                    repositoryName: repository.name,
+                  }
+                ),
               },
               {
                 label: 'Settings',
@@ -54,11 +62,18 @@ class RepositoryDetailsPagesLayout extends React.Component<AllProps> {
   private getBreadcrumbsBuilder() {
     return BreadcrumbsBuilder()
       .then({
-        routes: [routes.repositories],
+        type: 'single',
+        route: routes.repositories,
         getName: () => 'Repositories',
       })
       .then({
-        routes: [routes.repositoryData, routes.repositorySettings],
+        type: 'multiple',
+        routes: [
+          routes.repositoryData,
+          routes.repositorySettings,
+          routes.repositoryNetworkGraph,
+        ],
+        redirectTo: routes.repositoryData,
         getName: ({ repositoryName }) => repositoryName,
       });
   }

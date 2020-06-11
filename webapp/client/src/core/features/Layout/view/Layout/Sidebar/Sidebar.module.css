@@ -12,8 +12,8 @@
 
 .mainNavigation {
   position: relative;
-  padding-bottom: 32px;
-  margin-bottom: 32px;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
 }
 .mainNavigation:after {
   display: block;
@@ -29,6 +29,7 @@
 
 .filters {
   min-height: 0;
+  overflow-y: auto;
 }
 
 .additionalLinks {

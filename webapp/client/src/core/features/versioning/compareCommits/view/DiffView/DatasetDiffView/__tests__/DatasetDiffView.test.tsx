@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { mount, ReactWrapper } from 'enzyme';
+import * as React from 'react';
 
 import {
   IDatasetBlobDiff,
@@ -8,22 +8,27 @@ import {
   IPathDatasetBlobDiffData,
 } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 
-import DatasetDiffView from '../DatasetDiffView';
-import { findByDataTestAttribute } from 'core/shared/utils/tests/react/helpers';
-import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitComponentLocation';
 import {
   DiffType,
   elementDiffMakers,
 } from 'core/shared/models/Versioning/Blob/Diff';
+import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitComponentLocation';
+import { Row } from 'core/shared/view/elements/Table/components';
+
 import { DiffColor } from '../../../model';
 import { getDiffColorFromBackgroundColor } from '../../shared/ComparePropertiesTable/__tests__/helpers';
+import DatasetDiffView from '../DatasetDiffView';
 
 const makeComponent = ({ diff }: { diff: IDatasetBlobDiff }) => {
   return mount(<DatasetDiffView diff={diff} />);
 };
 
 const findDisplayedPaths = (component: ReactWrapper) => {
-  function getColumn<T>(type: string, getContent: (column: ReactWrapper) => T, component: ReactWrapper): { content: undefined | T; diffColor: undefined | DiffColor } {
+  function getColumn<T>(
+    type: string,
+    getContent: (column: ReactWrapper) => T,
+    component: ReactWrapper<React.ComponentProps<typeof Row>>
+  ): { content: undefined | T; diffColor: undefined | DiffColor } {
     const column = component.find(`[data-type="${type}"]`);
     if (column.length === 0) {
       return { content: undefined, diffColor: undefined };
@@ -31,18 +36,15 @@ const findDisplayedPaths = (component: ReactWrapper) => {
     return {
       content: getContent(column),
       diffColor: getDiffColorFromBackgroundColor(column.prop('style')),
-    }
-  };
+    };
+  }
 
-  return component
-    .find('tr')
-    .slice(1)
-    .map(pathRow => {
-      return {
-        path: getColumn('path', (column) => column.text(), pathRow),
-        md5: getColumn('md5', (column) => column.text(), pathRow),
-      };
-    });
+  return component.find(Row).map(pathRow => {
+    return {
+      path: getColumn('path', column => column.text(), pathRow),
+      md5: getColumn('md5', column => column.text(), pathRow),
+    };
+  });
 };
 
 const pathDatasetComponents: IPathDatasetComponentBlob[] = [
@@ -83,7 +85,7 @@ const makePathDatasetBlobDiff = ({
 };
 
 describe('(compareCommits feature) DatasetDiffView', () => {
-  it('should display paths with green highlithing when diff status is added', () => {
+  it('should display paths with bDiff highlithing when diff status is added', () => {
     const diff = makePathDatasetBlobDiff({
       diffType: 'added',
       components: [
@@ -95,17 +97,17 @@ describe('(compareCommits feature) DatasetDiffView', () => {
 
     expect(findDisplayedPaths(component)).toEqual([
       {
-        path: { content: pathDatasetComponents[0].path, diffColor: 'green' },
-        md5: { content: pathDatasetComponents[0].md5, diffColor: 'green' },
+        path: { content: pathDatasetComponents[0].path, diffColor: 'bDiff' },
+        md5: { content: pathDatasetComponents[0].md5, diffColor: 'bDiff' },
       },
       {
-        path: { content: pathDatasetComponents[1].path, diffColor: 'green' },
-        md5: { content: pathDatasetComponents[1].md5, diffColor: 'green' },
+        path: { content: pathDatasetComponents[1].path, diffColor: 'bDiff' },
+        md5: { content: pathDatasetComponents[1].md5, diffColor: 'bDiff' },
       },
     ]);
   });
 
-  it('should display paths with red highlithing when diff status is deleted', () => {
+  it('should display paths with aDiff highlithing when diff status is deleted', () => {
     const diff: IDatasetBlobDiff = makePathDatasetBlobDiff({
       diffType: 'deleted',
       components: [
@@ -118,18 +120,18 @@ describe('(compareCommits feature) DatasetDiffView', () => {
 
     expect(findDisplayedPaths(component)).toEqual([
       {
-        path: { content: pathDatasetComponents[0].path, diffColor: 'red' },
-        md5: { content: pathDatasetComponents[0].md5, diffColor: 'red' },
+        path: { content: pathDatasetComponents[0].path, diffColor: 'aDiff' },
+        md5: { content: pathDatasetComponents[0].md5, diffColor: 'aDiff' },
       },
       {
-        path: { content: pathDatasetComponents[1].path, diffColor: 'red' },
-        md5: { content: pathDatasetComponents[1].md5, diffColor: 'red' },
+        path: { content: pathDatasetComponents[1].path, diffColor: 'aDiff' },
+        md5: { content: pathDatasetComponents[1].md5, diffColor: 'aDiff' },
       },
     ]);
   });
 
   describe('when modified status', () => {
-    it('should display deleted paths with red highlithing', () => {
+    it('should display deleted paths with aDiff highlithing', () => {
       const diff: IDatasetBlobDiff = makePathDatasetBlobDiff({
         diffType: 'modified',
         components: [
@@ -142,17 +144,17 @@ describe('(compareCommits feature) DatasetDiffView', () => {
 
       expect(findDisplayedPaths(component)).toEqual([
         {
-          path: { content: pathDatasetComponents[0].path, diffColor: 'red' },
-          md5: { content: pathDatasetComponents[0].md5, diffColor: 'red' },
+          path: { content: pathDatasetComponents[0].path, diffColor: 'aDiff' },
+          md5: { content: pathDatasetComponents[0].md5, diffColor: 'aDiff' },
         },
         {
-          path: { content: pathDatasetComponents[1].path, diffColor: 'red' },
-          md5: { content: pathDatasetComponents[1].md5, diffColor: 'red' },
+          path: { content: pathDatasetComponents[1].path, diffColor: 'aDiff' },
+          md5: { content: pathDatasetComponents[1].md5, diffColor: 'aDiff' },
         },
       ]);
     });
 
-    it('should display added paths with green highlithing', () => {
+    it('should display added paths with bDiff highlithing', () => {
       const diff: IDatasetBlobDiff = makePathDatasetBlobDiff({
         diffType: 'modified',
         components: [
@@ -165,17 +167,17 @@ describe('(compareCommits feature) DatasetDiffView', () => {
 
       expect(findDisplayedPaths(component)).toEqual([
         {
-          path: { content: pathDatasetComponents[0].path, diffColor: 'green' },
-          md5: { content: pathDatasetComponents[0].md5, diffColor: 'green' },
+          path: { content: pathDatasetComponents[0].path, diffColor: 'bDiff' },
+          md5: { content: pathDatasetComponents[0].md5, diffColor: 'bDiff' },
         },
         {
-          path: { content: pathDatasetComponents[1].path, diffColor: 'green' },
-          md5: { content: pathDatasetComponents[1].md5, diffColor: 'green' },
+          path: { content: pathDatasetComponents[1].path, diffColor: 'bDiff' },
+          md5: { content: pathDatasetComponents[1].md5, diffColor: 'bDiff' },
         },
       ]);
     });
 
-    it('should display B and A of modified paths and highlight changed properties with green for B and red for A', () => {
+    it('should display B and A of modified paths and highlight changed properties with bDiff for B and aDiff for A', () => {
       const A = {
         ...pathDatasetComponents[0],
         path: 'http://aa.com',
@@ -196,11 +198,11 @@ describe('(compareCommits feature) DatasetDiffView', () => {
       expect(findDisplayedPaths(component)).toEqual([
         {
           path: { content: A.path, diffColor: undefined },
-          md5: { content: A.md5, diffColor: 'red' },
+          md5: { content: A.md5, diffColor: 'aDiff' },
         },
         {
           path: { content: B.path, diffColor: undefined },
-          md5: { content: B.md5, diffColor: 'green' },
+          md5: { content: B.md5, diffColor: 'bDiff' },
         },
       ]);
     });
@@ -228,16 +230,16 @@ describe('(compareCommits feature) DatasetDiffView', () => {
 
       expect(findDisplayedPaths(component)).toEqual([
         {
-          path: { content: pathDatasetComponents[0].path, diffColor: 'red' },
-          md5: { content: pathDatasetComponents[0].md5, diffColor: 'red' },
+          path: { content: pathDatasetComponents[0].path, diffColor: 'aDiff' },
+          md5: { content: pathDatasetComponents[0].md5, diffColor: 'aDiff' },
         },
         {
           path: { content: A.path, diffColor: undefined },
-          md5: { content: A.md5, diffColor: 'red' },
+          md5: { content: A.md5, diffColor: 'aDiff' },
         },
         {
           path: { content: B.path, diffColor: undefined },
-          md5: { content: B.md5, diffColor: 'green' },
+          md5: { content: B.md5, diffColor: 'bDiff' },
         },
       ]);
     });

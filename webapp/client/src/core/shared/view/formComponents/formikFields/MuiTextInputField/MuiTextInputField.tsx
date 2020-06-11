@@ -1,11 +1,8 @@
-import { InputAdornment } from '@material-ui/core';
 import { FieldConfig, Field } from 'formik';
 import * as React from 'react';
 
 import InlineErrorView from 'core/shared/view/elements/Errors/InlineErrorView/InlineErrorView';
 import MuiTextInput from 'core/shared/view/elements/MuiTextInput/MuiTextInput';
-
-import styles from './MuiTextInputField.module.css';
 
 type AllProps = FieldConfig &
   Omit<
@@ -36,20 +33,21 @@ export default class MuiTextInputField extends React.Component<AllProps> {
                   label={this.props.label}
                   dataTest={this.props.dataTest}
                   error={Boolean(this.props.isClerableInput && isShowError)}
-                  InputProps={
+                  resetValueControl={
                     (this.props.isClerableInput &&
                       form.initialValues[this.props.name] !== field.value) ||
                     isShowError
                       ? {
-                          endAdornment: (
-                            <ClearInput
-                              resetField={form.resetForm}
-                              validateField={form.validateForm}
-                            />
-                          ),
+                          onReset: () => {
+                            form.resetForm();
+                            setTimeout(() => {
+                              form.validateForm();
+                            }, 0);
+                          },
                         }
                       : undefined
                   }
+                  placeholder={this.props.placeholder}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                 />
@@ -69,24 +67,3 @@ export default class MuiTextInputField extends React.Component<AllProps> {
     );
   }
 }
-
-const ClearInput = ({
-  resetField,
-  validateField,
-}: {
-  resetField: () => void;
-  validateField: () => void;
-}) => {
-  const onClick = () => {
-    resetField();
-    validateField();
-  };
-
-  return (
-    <InputAdornment position="end">
-      <div className={styles.clearInput} onClick={onClick}>
-        x
-      </div>
-    </InputAdornment>
-  );
-};

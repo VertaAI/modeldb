@@ -1,0 +1,93 @@
+.root {
+  display: flex;
+}
+
+.field {
+  position: relative;
+  flex-grow: 1;
+}
+
+.button {
+  margin-left: 15px;
+}
+
+.icon {
+  font-size: 22px;
+}
+
+:global .MuiAutocomplete-groupLabel {
+  color: #aaaaaa !important;
+  font-size: 12px !important;
+}
+
+.autocomplete {
+}
+
+.autocomplete__optionsList {
+  --horizontal-padding: 18.5px;
+
+  position: absolute;
+  width: 435px;
+  border: 1px solid #ebebeb;
+  border-radius: 2px;
+  background-color: #ffffff;
+  box-shadow: 2px 2px 2px 0 #ebebeb;
+}
+
+.autocomplete__optionsGroupTitle {
+  display: flex;
+  align-items: center;
+  padding: 0 18.5px;
+  height: 32px;
+  color: #aaaaaa;
+  font-size: 12px;
+}
+
+.autocomplete__option {
+  display: grid;
+  grid-template-columns: auto min-content;
+  align-items: center;
+  height: 32px;
+  padding: 0 var(--horizontal-padding);
+  color: #222222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.autocomplete__option.selected {
+  background-color: #ebebeb;
+}
+.autocomplete__option:hover {
+  background-color: #ebebeb;
+  cursor: pointer;
+}
+
+.autocomplete__optionTitle,
+.autocomplete__optionAction {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.autocomplete__optionAction {
+  opacity: 0;
+}
+.autocomplete__option:hover .autocomplete__optionAction {
+  display: flex;
+  align-items: center;
+  opacity: 1;
+}
+.autocomplete__optionActionLabel {
+  color: #aaaaaa;
+  font-size: 12px;
+}
+.autocomplete__optionActionIcon {
+  font-size: 22px;
+  margin-left: 10px;
+}
+.recentSearches .autocomplete__optionActionIcon {
+  color: #aaaaaa;
+}
+.favorites .autocomplete__optionActionIcon {
+  color: #514eb5;
+}

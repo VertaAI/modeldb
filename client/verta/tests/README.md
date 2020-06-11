@@ -1,8 +1,10 @@
 To install the packages needed for developing `verta`, run:
 
-```
+```bash
 cd ..
-pip install -r requirements.txt
+python3 -m venv tests-venv # or use virtualenv in Python 2
+source tests-venv/bin/activate
+python -m pip install -r requirements.txt
 cd tests
 ```
 
@@ -13,11 +15,11 @@ Refer to [this StackOverflow post](https://stackoverflow.com/a/21789908/) for a 
 
 Set the following environment variables:
 
-- `VERTA_HOST`
-- `VERTA_PORT`
+- `VERTA_HOST` e.g. `http://localhost:3000`
 - `VERTA_EMAIL`
-- `VERTA_S3_TEST_BUCKET` (this must exist, the tests will not create it)
-- `VERTA_S3_TEST_OBJECT` (this must exist, the tests will not create it)
+- `VERTA_DEV_KEY`
+- `VERTA_S3_TEST_BUCKET` (specified bucket must exist, the tests will not create it)
+- `VERTA_S3_TEST_OBJECT` (specified object must exist, the tests will not create it)
 
 ---
 

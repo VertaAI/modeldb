@@ -1,10 +1,11 @@
 import * as React from 'react';
 
 import groupCommitsByDatesInDescOrder from 'core/features/versioning/commitsHistory/helpers/groupCommitsByDatesInDescOrder';
-import { ICommitHistorySettings } from 'core/features/versioning/commitsHistory/store/types';
-import { DataWithPagination } from 'core/shared/models/Pagination';
+import {
+  ICommitHistorySettings,
+  ICommitView,
+} from 'core/features/versioning/commitsHistory/store/types';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
-import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
 import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
 
 import CommitsHistoryBreadcrumbs from './CommitsHistoryBreadcrumbs/CommitsHistoryBreadcrumbs';
@@ -16,24 +17,18 @@ import { RepositoryNavigation } from 'core/features/versioning/repositoryNavigat
 interface ILocalProps {
   repository: IRepository;
   settings: ICommitHistorySettings;
-  commitsWithPagination: DataWithPagination<IHydratedCommit>;
+  commits: ICommitView[];
 }
 
 type AllProps = ILocalProps;
 
-const CommitsHistoryView = ({
-  repository,
-  settings,
-  commitsWithPagination,
-}: AllProps) => {
+const CommitsHistoryView = ({ repository, settings, commits }: AllProps) => {
   return (
     <div className={styles.root}>
       <PageHeader
         title={`History for ${repository.name}`}
         withoutSeparator={true}
-        rightContent={
-          <RepositoryNavigation />
-        }
+        rightContent={<RepositoryNavigation />}
       />
       <div className={styles.breadcrumbs}>
         <CommitsHistoryBreadcrumbs
@@ -41,19 +36,17 @@ const CommitsHistoryView = ({
           settings={settings}
         />
       </div>
-      {commitsWithPagination.data.length > 0 ? (
+      {commits.length > 0 ? (
         <div>
           <div className={styles.groups}>
-            {groupCommitsByDatesInDescOrder(commitsWithPagination.data).map(
-              (group, i) => (
-                <div className={styles.group} key={i}>
-                  <GroupedCommitsByDate
-                    data={group}
-                    repositoryName={repository.name}
-                  />
-                </div>
-              )
-            )}
+            {groupCommitsByDatesInDescOrder(commits).map((group, i) => (
+              <div className={styles.group} key={i}>
+                <GroupedCommitsByDate
+                  data={group}
+                  repositoryName={repository.name}
+                />
+              </div>
+            ))}
           </div>
           {/* <div className={styles.pagination}>
             <Pagination

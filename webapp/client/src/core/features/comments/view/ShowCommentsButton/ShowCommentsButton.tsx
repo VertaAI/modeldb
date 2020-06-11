@@ -2,6 +2,7 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
+import * as R from 'ramda';
 
 import { IComment } from 'core/features/comments/Model';
 import {
@@ -9,9 +10,7 @@ import {
   selectEntityComments,
   ICommentsRootState,
 } from 'core/features/comments/store';
-import Fai from 'core/shared/view/elements/Fai/Fai';
 import FaiWithLabel from 'core/shared/view/elements/FaiWithLabel/FaiWithLabel';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
 
 import OverflowingComments from './OverflowingComments/OverflowingComments';
 import styles from './ShowCommentsButton.module.css';
@@ -20,6 +19,7 @@ import {
   IWithAddCommentFormSettings,
   IWithCommentSettings,
 } from './types';
+import Badge from './shared/Badge/Badge';
 
 type ILocalProps = (
   | {
@@ -29,7 +29,7 @@ type ILocalProps = (
       onUnhover(): void;
     }
   | {
-      buttonType: 'fai';
+      buttonType: 'badge';
       entityInfo: IRequiredEntityInfo;
     }) &
   IWithAddCommentFormSettings &
@@ -60,32 +60,30 @@ class ShowCommentsButton<Comment extends IComment> extends React.PureComponent<
   public render() {
     return (
       <div className={styles.root}>
-        {this.props.buttonType === 'fai' ? (
-          <Fai
-            theme="primary"
-            icon={<Icon type="comment" />}
-            variant="outlined"
-            dataTest="show-comments-button"
-            onClick={this.showComments}
-          />
+        {this.props.buttonType === 'badge' ? (
+          <div className={styles.badge} onClick={this.showComments}>
+            <Badge count={(this.props.comments || []).length} />
+          </div>
         ) : (
-          <FaiWithLabel
-            theme="blue"
-            iconType={'comment'}
-            label={'show comments'}
-            dataTest="show-comments-button"
-            onClick={this.showComments}
-            onHover={this.props.onHover}
-            onUnhover={this.props.onUnhover}
-          />
+          <>
+            <FaiWithLabel
+              theme="blue"
+              iconType={'comment'}
+              label={'show comments'}
+              dataTest="show-comments-button"
+              onClick={this.showComments}
+              onHover={this.props.onHover}
+              onUnhover={this.props.onUnhover}
+            />
+            <div className={styles.miniCommentNumber}>
+              {this.props.comments && (
+                <span data-test="show-comments-button-badge">
+                  {this.props.comments.length}
+                </span>
+              )}
+            </div>
+          </>
         )}
-        <div className={styles.miniCommentNumber}>
-          {this.props.comments && (
-            <span data-test="show-comments-button-badge">
-              {this.props.comments.length}
-            </span>
-          )}
-        </div>
         {this.state.isShowComments && (
           <OverflowingComments
             entityInfo={this.props.entityInfo}
