@@ -329,16 +329,37 @@ class TestCommit extends FunSuite {
         val preRevert = f.commit.update("abc/cde", f.pathBlob)
                          .flatMap(_.save("Some message 1"))
                          .flatMap(_.update("def/ghi", f.s3Blob))
-                         // .flatMap(_.remove("abc/cde"))
-                         // .flatMap(_.save("Some message 2"))
-                         .get
+                         .flatMap(_.remove("abc/cde"))
+                         .flatMap(_.save("Some message 2")).get
 
-        println(preRevert.get("abc/cde"))
+        val revCommit = preRevert.revert(message = Some("Revert test")).get
 
-        // val revCommit = preRevert.revert(message = Some("Revert test")).get
+        assert(revCommit.get("abc/cde").isSuccess)
+        assert(revCommit.get("def/ghi").isFailure)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("revert with another commit passed should revert the changes from that commit") {
+    val f = fixture
+
+    try {
+        val firstCommit = f.commit.update("abc/cde", f.pathBlob)
+                           .flatMap(_.save("Some message 1")).get
+
+        val secondCommit = firstCommit.update("def/ghi", f.s3Blob)
+                                      .flatMap(_.save("Some message 2")).get
+
+        val thirdCommit = secondCommit.remove("abc/cde")
+                                      .flatMap(_.update("tuv/wxy", f.pathBlob))
+                                      .flatMap(_.save("Some message 3")).get
+
+        val revCommit = thirdCommit.revert(secondCommit, Some("Revert test")).get
 
         // assert(revCommit.get("abc/cde").isSuccess)
-        // assert(revCommit.get("def/ghi").isFailure)
+        assert(revCommit.get("def/ghi").isFailure)
+        assert(revCommit.get("tuv/wxy").isFailure)
     } finally {
       cleanup(f)
     }
