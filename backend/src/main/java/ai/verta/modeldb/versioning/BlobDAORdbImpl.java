@@ -1,5 +1,6 @@
 package ai.verta.modeldb.versioning;
 
+import static ai.verta.modeldb.ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION;
 import static java.util.stream.Collectors.toMap;
 
 import ai.verta.modeldb.*;
@@ -206,10 +207,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public DatasetVersion convertToDatasetVersion(
-      MetadataDAO metadataDAO,
-      RepositoryFunction repositoryFunction,
-      String commitHash,
-      List<String> locationList)
+      MetadataDAO metadataDAO, RepositoryFunction repositoryFunction, String commitHash)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
@@ -219,6 +217,7 @@ public class BlobDAORdbImpl implements BlobDAO {
             Status.Code.INVALID_ARGUMENT);
       }
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
+      List<String> locationList = Collections.singletonList(DEFAULT_VERSIONING_BLOB_LOCATION);
       GetCommitComponentRequest.Response getComponentResponse =
           getCommitComponent(session, repository.getId(), commit, locationList);
       if (getComponentResponse.hasBlob()) {
@@ -289,7 +288,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         sum.ifPresent(builderPathDatasetVersion::setSize);
         datasetVersionBuilder.setPathDatasetVersionInfo(
             builderPathDatasetVersion
-                .setBasePath(ModelDBUtils.getLocationWithSlashOperator(locationList))
+                .setBasePath(locationList.get(0))
                 .addAllDatasetPartInfos(components));
         return datasetVersionBuilder.build();
       } else {
@@ -297,7 +296,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return convertToDatasetVersion(metadataDAO, repositoryFunction, commitHash, locationList);
+        return convertToDatasetVersion(metadataDAO, repositoryFunction, commitHash);
       } else {
         throw ex;
       }

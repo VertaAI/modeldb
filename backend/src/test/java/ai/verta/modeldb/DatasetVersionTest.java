@@ -225,7 +225,6 @@ public class DatasetVersionTest {
         createDatasetRequest.getName(),
         dataset.getName());
 
-    long version = 1L;
     CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
@@ -235,43 +234,13 @@ public class DatasetVersionTest {
         "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
         datasetVersion1.getDatasetId());
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        version,
-        datasetVersion1.getVersion());
-
-    createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
-    createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
-            .setRawDatasetVersionInfo(
-                RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
-            .build();
-    createDatasetVersionResponse =
-        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
-    DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
-    LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion2);
-    assertEquals(
-        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
-        dataset.getId(),
-        datasetVersion2.getDatasetId());
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        ++version,
-        datasetVersion2.getVersion());
 
     DeleteDatasetVersion deleteDatasetVersionRequest =
-        DeleteDatasetVersion.newBuilder().setId(datasetVersion1.getId()).build();
+        DeleteDatasetVersion.newBuilder()
+            .setDatasetId(dataset.getId())
+            .setId(datasetVersion1.getId())
+            .build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =
-        datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
-    LOGGER.info("DeleteDatasetVersion deleted successfully");
-    LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
-
-    deleteDatasetVersionRequest =
-        DeleteDatasetVersion.newBuilder().setId(datasetVersion2.getId()).build();
-    deleteDatasetVersionResponse =
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
     LOGGER.info("DeleteDatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionResponse.toString());

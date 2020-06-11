@@ -16,7 +16,7 @@ import javax.persistence.Table;
 public class MetadataPropertyMappingEntity {
   public MetadataPropertyMappingEntity() {}
 
-  @Column(name = "value", columnDefinition = "TEXT")
+  @Column(name = "metadata_value", columnDefinition = "TEXT")
   private String value;
 
   @EmbeddedId private LabelMappingId id;
@@ -50,7 +50,7 @@ public class MetadataPropertyMappingEntity {
     @Column(name = "location")
     private String location;
 
-    @Column(name = "key")
+    @Column(name = "metadata_key")
     private String key;
 
     public LabelMappingId() {}

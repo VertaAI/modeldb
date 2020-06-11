@@ -30,7 +30,6 @@ import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.ProtocolStringList;
 import com.google.rpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
@@ -312,7 +311,16 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository =
-          setRepository(session, commitDAO, request, userInfo, null, create);
+          setRepository(
+              session,
+              commitDAO,
+              null,
+              request.getRepository(),
+              request.getId(),
+              null,
+              userInfo,
+              null,
+              create);
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -326,16 +334,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public RepositoryEntity setRepository(
       Session session,
       CommitDAO commitDAO,
-      SetRepository request,
+      MetadataDAO metadataDAO,
+      Repository repository,
+      RepositoryIdentification repoId,
+      List<String> tagList,
       UserInfo userInfo,
       WorkspaceDTO workspaceDTO,
       boolean create)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     RepositoryEntity repositoryEntity;
-    final Repository repository = request.getRepository();
     if (create) {
       if (workspaceDTO == null) {
-        workspaceDTO = verifyAndGetWorkspaceDTO(request.getId(), false, true);
+        workspaceDTO = verifyAndGetWorkspaceDTO(repoId, false, true);
       }
       ModelDBHibernateUtil.checkIfEntityAlreadyExists(
           session,
@@ -350,7 +360,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           LOGGER);
       repositoryEntity = new RepositoryEntity(repository, workspaceDTO);
     } else {
-      repositoryEntity = getRepositoryById(session, request.getId(), true);
+      repositoryEntity = getRepositoryById(session, repoId, true);
       if (!repository.getName().isEmpty()
           && !repositoryEntity.getName().equals(repository.getName())) {
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -365,7 +375,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
             LOGGER);
       }
-      repositoryEntity.update(request);
+      repositoryEntity.update(repository);
     }
     session.beginTransaction();
     session.saveOrUpdate(repositoryEntity);
@@ -383,11 +393,41 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       saveBranch(
           session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repositoryEntity);
+
+      repositoryEntity.setAttributeMapping(
+          repository.getAttributesList().stream()
+              .map(
+                  attribute -> {
+                    try {
+                      return RdbmsUtils.generateAttributeEntity(
+                          repositoryEntity, ModelDBConstants.ATTRIBUTES, attribute);
+                    } catch (InvalidProtocolBufferException e) {
+                      LOGGER.error("Unexpected error occured {}", e.getMessage());
+                      Status status =
+                          Status.newBuilder()
+                              .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                              .setMessage(e.getMessage())
+                              .addDetails(Any.pack(SetRepository.Response.getDefaultInstance()))
+                              .build();
+                      throw StatusProto.toStatusRuntimeException(status);
+                    }
+                  })
+              .collect(Collectors.toList()));
+
+      if (tagList != null && tagList.isEmpty()) {
+        metadataDAO.addLabels(
+            session,
+            IdentificationType.newBuilder()
+                .setIdType(VERSIONING_REPOSITORY)
+                .setIntId(repositoryEntity.getId())
+                .build(),
+            tagList);
+      }
     }
     session.getTransaction().commit();
     if (create) {
       try {
-        createRoleBindingsForRepository(request, userInfo, repositoryEntity);
+        createRoleBindingsForRepository(repository, userInfo, repositoryEntity);
       } catch (Exception e) {
         LOGGER.info("Exception from UAC during Repo role binding creation : {}", e.getMessage());
         LOGGER.info("Deleting the created repository {}", repository.getId());
@@ -403,7 +443,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   private void createRoleBindingsForRepository(
-      SetRepository request, UserInfo userInfo, RepositoryEntity repository) {
+      Repository newRepository, UserInfo userInfo, RepositoryEntity repository) {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
     roleService.createRoleBinding(
         ownerRole,
@@ -416,9 +456,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         String.valueOf(repository.getId()),
         ModelDBConstants.ROLE_REPOSITORY_ADMIN,
         ModelDBServiceResourceTypes.REPOSITORY,
-        request.getRepository().getRepositoryVisibility() != null
-            && request
-                .getRepository()
+        newRepository.getRepositoryVisibility() != null
+            && newRepository
                 .getRepositoryVisibility()
                 .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC),
         GLOBAL_SHARING);
@@ -513,59 +552,40 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(dataset.getWorkspaceId());
     workspaceDTO.setWorkspaceType(dataset.getWorkspaceType());
+    RepositoryIdentification repositoryId =
+        RepositoryIdentification.newBuilder()
+            .setNamedId(
+                RepositoryNamedIdentification.newBuilder()
+                    .setName(dataset.getName())
+                    .setWorkspaceName(dataset.getWorkspaceId())
+                    .build())
+            .build();
     RepositoryEntity repositoryEntity =
         setRepository(
             session,
             commitDAO,
-            SetRepository.newBuilder()
-                .setRepository(
-                    Repository.newBuilder()
-                        .setRepositoryVisibilityValue(dataset.getDatasetVisibilityValue())
-                        .setWorkspaceType(dataset.getWorkspaceType())
-                        .setWorkspaceId(dataset.getWorkspaceId())
-                        .setDateCreated(dataset.getTimeCreated())
-                        .setDateUpdated(dataset.getTimeUpdated())
-                        .setName(dataset.getName())
-                        .setOwner(dataset.getOwner()))
+            metadataDAO,
+            Repository.newBuilder()
+                .setRepositoryVisibilityValue(dataset.getDatasetVisibilityValue())
+                .setWorkspaceType(dataset.getWorkspaceType())
+                .setWorkspaceId(dataset.getWorkspaceId())
+                .setDateCreated(dataset.getTimeCreated())
+                .setDateUpdated(dataset.getTimeUpdated())
+                .setName(dataset.getName())
+                .setOwner(dataset.getOwner())
+                .addAllAttributes(dataset.getAttributesList())
                 .build(),
+            repositoryId,
+            dataset.getTagsList(),
             userInfo,
             workspaceDTO,
             true);
-
-    repositoryEntity.setAttributeMapping(
-        dataset.getAttributesList().stream()
-            .map(
-                attribute -> {
-                  try {
-                    return RdbmsUtils.generateAttributeEntity(
-                        repositoryEntity, ModelDBConstants.ATTRIBUTES, attribute);
-                  } catch (InvalidProtocolBufferException e) {
-                    LOGGER.error("Unexpected error occured {}", e.getMessage());
-                    Status status =
-                        Status.newBuilder()
-                            .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
-                            .setMessage(e.getMessage())
-                            .addDetails(Any.pack(SetRepository.Response.getDefaultInstance()))
-                            .build();
-                    throw StatusProto.toStatusRuntimeException(status);
-                  }
-                })
-            .collect(Collectors.toList()));
-
-    ProtocolStringList tags = dataset.getTagsList();
-    metadataDAO.addLabels(
-        session,
-        IdentificationType.newBuilder()
-            .setIdType(VERSIONING_REPOSITORY)
-            .setIntId(repositoryEntity.getId())
-            .build(),
-        tags);
-
     return repositoryEntity.toProto();
   }
 
   Dataset convertToDataset(
-      Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity) {
+      Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity)
+      throws ModelDBException {
     Dataset.Builder dataset = Dataset.newBuilder();
     dataset
         .setId(String.valueOf(repositoryEntity.getId()))

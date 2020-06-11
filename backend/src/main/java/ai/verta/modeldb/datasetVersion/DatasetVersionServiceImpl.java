@@ -6,7 +6,6 @@ import ai.verta.modeldb.AddDatasetVersionAttributes;
 import ai.verta.modeldb.AddDatasetVersionTags;
 import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.CreateDatasetVersion.Response;
-import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceImplBase;
 import ai.verta.modeldb.DeleteDatasetVersion;
@@ -41,7 +40,6 @@ import ai.verta.modeldb.versioning.DeleteCommitRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
-import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -107,18 +105,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             Any.pack(CreateDatasetVersion.Response.getDefaultInstance()));
       }
 
-      Dataset dataset = datasetDAO.getDatasetById(request.getDatasetId());
-
       /*Get the user info from the Context*/
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetVersion datasetVersion =
           datasetVersionDAO.getDatasetVersionFromRequest(authService, request, userInfo);
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder()
-              .setNamedId(
-                  RepositoryNamedIdentification.newBuilder()
-                      .setName(dataset.getName())
-                      .setWorkspaceName(dataset.getWorkspaceId()))
+              .setRepoId(Long.parseLong(request.getDatasetId()))
               .build();
       RepositoryFunction repositoryFunction =
           (session) -> repositoryDAO.getRepositoryById(session, repositoryIdentification, true);

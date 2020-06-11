@@ -400,10 +400,10 @@
 			<column name="location" type="varchar(256)">
 				<constraints primaryKey="true" nullable="false"/>
 			</column>
-			<column name="key" type="varchar(50)">
+			<column name="metadata_key" type="varchar(50)">
 				<constraints primaryKey="true" nullable="false"/>
 			</column>
-			<column name="label" type="TEXT"/>
+			<column name="metadata_value" type="TEXT"/>
 		</createTable>
 	</changeSet>
 
