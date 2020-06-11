@@ -316,7 +316,7 @@ class TestCommit extends FunSuite {
       val desc = parent3.merge(parent4).get
 
       val log = desc.log().get
-      assert(log == List(desc, parent4, parent3, parent2, parent1))
+      assert(log == Stream(desc, parent4, parent3, parent2, parent1))
     } finally {
       cleanup(f)
     }

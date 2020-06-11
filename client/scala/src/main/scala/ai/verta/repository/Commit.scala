@@ -289,7 +289,7 @@ class Commit(
   /** Return ancestors, starting from this Commit until the root of the Repository
    *  @return a list of ancestors
    */
-  def log()(implicit ec: ExecutionContext): Try[List[Commit]] = {
+  def log()(implicit ec: ExecutionContext): Try[Stream[Commit]] = {
     // if the current commit is not saved (no sha), get the one of its parent
     // (the base of the modification)
     val commitSHA = commit.commit_sha.getOrElse(commit.parent_shas.get.head)
@@ -299,6 +299,9 @@ class Commit(
       commit_sha = commitSHA
     ) // Try[VersioningListCommitsLogRequestResponse]
     .map(_.commits) // Try[Option[List[VersioningCommit]]]
-    .map(ls => if (ls.isEmpty) List() else ls.get.map(c => new Commit(clientSet, repo, c))) // Try[List[Commit]]
+    .map(ls =>
+      if (ls.isEmpty) Stream()
+      else ls.get.toStream.map(c => new Commit(clientSet, repo, c))
+    ) // Try[List[Commit]]
   }
 }
