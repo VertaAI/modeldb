@@ -282,4 +282,20 @@ class Commit(
     else
       Success(newCommit)
   }
+
+  /** Return ancestors, starting from this Commit until the root of the Repository
+   *  @return a list of ancestors
+   */
+  def log()(implicit ec: ExecutionContext): Try[List[Commit]] = {
+    // if the current commit is not saved (no sha), get the one of its parent
+    // (the base of the modification)
+    val commitSHA = commit.commit_sha.getOrElse(commit.parent_shas.get.head)
+
+    clientSet.versioningService.ListCommitsLog4(
+      repository_id_repo_id = repo.id,
+      commit_sha = commitSHA
+    ) // Try[VersioningListCommitsLogRequestResponse]
+    .map(_.commits) // Try[Option[List[VersioningCommit]]]
+    .map(ls => if (ls.isEmpty) List() else ls.get.map(c => new Commit(clientSet, repo, c))) // Try[List[Commit]]
+  }
 }
