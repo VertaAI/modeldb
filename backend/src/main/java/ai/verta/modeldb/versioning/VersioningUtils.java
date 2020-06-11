@@ -185,7 +185,7 @@ public class VersioningUtils {
   }
 
   /**
-   * @param index : predicate index for unique query parameter identity
+   * @param index0 : predicate index for unique query parameter identity
    * @param queryBuilder : query builder
    * @param operator : query operator like GE, LE, EQ, GTE etc.
    * @param value : query parameter value like repoId(123), repoName(xyz) etc.
