@@ -156,11 +156,12 @@ public class RepositoryEntity {
     this.attributeMapping.addAll(attributeMapping);
   }
 
-  public Repository toProto() throws InvalidProtocolBufferException {
+  public Repository toProto(boolean idsOnly) throws InvalidProtocolBufferException {
     final Builder builder =
         Repository.newBuilder()
-            .setId(this.id)
-            .setName(this.name)
+            .setId(this.id);
+    if (!idsOnly) {
+            builder.setName(this.name)
             .setDescription(this.description)
             .setDateCreated(this.date_created)
             .setDateUpdated(this.date_updated)
@@ -176,6 +177,7 @@ public class RepositoryEntity {
     }
     if (owner != null) {
       builder.setOwner(owner);
+    }
     }
     return builder.build();
   }

@@ -59,6 +59,7 @@ public interface ModelDBConstants {
   String ATTRIBUTES = "attributes";
   String DATASET_COLLABORATORS = "dataset_collaborators";
   String DATASETS = "datasets";
+  String REPOSITORIES = "repositories";
   String DATE_CREATED = "date_created";
   String DATE_UPDATED = "date_updated";
   String ENTITY_ID = "entity_id";

@@ -1,7 +1,10 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.Dataset;
+import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
+import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -71,4 +74,8 @@ public interface RepositoryDAO {
 
   FindRepositories.Response findRepositories(FindRepositories request)
       throws ModelDBException, InvalidProtocolBufferException;
+
+  DatasetPaginationDTO findDatasets(MetadataDAO metadataDAO,
+      FindDatasets build, UserInfo userInfo, DatasetVisibility aPrivate)
+      throws InvalidProtocolBufferException;
 }

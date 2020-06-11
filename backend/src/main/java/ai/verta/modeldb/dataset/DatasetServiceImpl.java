@@ -225,6 +225,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .setSortKey(request.getSortKey())
               .setWorkspaceName(request.getWorkspaceName());
 
+
       DatasetPaginationDTO datasetPaginationDTO =
           datasetDAO.findDatasets(findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
 
@@ -233,6 +234,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onNext(
           GetAllDatasets.Response.newBuilder()
               .addAllDatasets(datasetPaginationDTO.getDatasets())
+              .addAllRepos(datasetPaginationDTO.getRepositories())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
               .build());
       responseObserver.onCompleted();
