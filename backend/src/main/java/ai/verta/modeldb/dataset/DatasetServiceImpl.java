@@ -31,6 +31,7 @@ import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.LastExperimentByDatasetId;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.SetDatasetVisibilty;
@@ -55,8 +56,10 @@ import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -68,7 +71,6 @@ import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
@@ -259,8 +261,22 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean deleteStatus = datasetDAO.deleteDatasets(Collections.singletonList(request.getId()));
-      responseObserver.onNext(DeleteDataset.Response.newBuilder().setStatus(deleteStatus).build());
+      long id;
+      try {
+        id = Long.parseLong(request.getId());
+      } catch (NumberFormatException e) {
+        LOGGER.info("Wrong id format: {}", e.getMessage());
+        throw new ModelDBException("Wrong id format, expecting integer: " + request.getId());
+      }
+      DeleteRepositoryRequest.Response response =
+          repositoryDAO.deleteRepository(
+              DeleteRepositoryRequest.newBuilder()
+                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+                  .build(),
+              commitDAO,
+              experimentRunDAO);
+      responseObserver.onNext(
+          DeleteDataset.Response.newBuilder().setStatus(response.getStatus()).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
