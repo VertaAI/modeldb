@@ -670,23 +670,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   }
 
   @Override
-  public List<String> getDatasetVersionTags(String datasetVersionId)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetVersionEntity datasetVersionObj =
-          session.get(DatasetVersionEntity.class, datasetVersionId);
-      LOGGER.debug("DatasetVersion getting successfully");
-      return datasetVersionObj.getProtoObject().getTagsList();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return getDatasetVersionTags(datasetVersionId);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
   public DatasetVersion deleteDatasetVersionTags(
       String datasetVersionId, List<String> datasetVersionTagList, Boolean deleteAll)
       throws InvalidProtocolBufferException {

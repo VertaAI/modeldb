@@ -138,14 +138,6 @@ message GetLatestDatasetVersionByDatasetId {
     }
 }
 
-message GetDatasetVersionById{
-    string id = 1;
-
-    message Response {
-        DatasetVersion dataset_version = 1;
-    }
-}
-
 message FindDatasetVersions {
     string dataset_id = 1;
     repeated string dataset_version_ids = 2;
@@ -273,12 +265,6 @@ service DatasetVersionService {
         };
     };
 
-    rpc getDatasetVersionById (GetDatasetVersionById) returns (GetDatasetVersionById.Response) {
-        option (google.api.http) ={
-            get: "/v1/dataset-version/getDatasetVersionById"
-        };
-    };
-
     // queries
     rpc findDatasetVersions(FindDatasetVersions) returns (FindDatasetVersions.Response){
         option (google.api.http) = {
@@ -298,12 +284,6 @@ service DatasetVersionService {
         option (google.api.http) = {
             post: "/v1/dataset-version/addDatasetVersionTags"
             body: "*"
-        };
-    };
-
-    rpc getDatasetVersionTags(GetTags) returns (GetTags.Response) {
-        option (google.api.http) = {
-            get: "/v1/dataset-version/getDatasetVersionTags"
         };
     };
 
