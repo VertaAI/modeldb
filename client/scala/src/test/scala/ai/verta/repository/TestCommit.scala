@@ -321,4 +321,26 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("revert with no commit passed should revert the latest commit") {
+    val f = fixture
+
+    try {
+        val preRevert = f.commit.update("abc/cde", f.pathBlob)
+                         .flatMap(_.save("Some message 1"))
+                         .flatMap(_.update("def/ghi", f.s3Blob))
+                         // .flatMap(_.remove("abc/cde"))
+                         // .flatMap(_.save("Some message 2"))
+                         .get
+
+        println(preRevert.get("abc/cde"))
+
+        // val revCommit = preRevert.revert(message = Some("Revert test")).get
+
+        // assert(revCommit.get("abc/cde").isSuccess)
+        // assert(revCommit.get("def/ghi").isFailure)
+    } finally {
+      cleanup(f)
+    }
+  }
 }

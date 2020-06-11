@@ -273,7 +273,7 @@ class Commit(
 
   /** Helper function to convert the versioning commit instance to commit instance
    *  If the current instance has a branch associated with it, the new commit will become the head of the branch.
-   *  Useful for createCommit and merge
+   *  Useful for createCommit, merge, and revert
    *  @param versioningCommit the versioning commit instance
    *  @return the corresponding commit instance
    */
@@ -301,4 +301,28 @@ class Commit(
     .map(_.commits) // Try[Option[List[VersioningCommit]]]
     .map(ls => if (ls.isEmpty) List() else ls.get.map(c => new Commit(clientSet, repo, c))) // Try[List[Commit]]
   }
+
+  /** Reverts all the commits beginning with other up through this Commit
+   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
+   *  @param other Base for the revert. If not provided, this commit will be reverted
+   *  @param message Description of the revert. If not provided, a default message will be used
+   *  @return The new commit, with the changes in other reverted, if suceeds. Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository.
+   */
+  def revert(other: Commit = this, message: Option[String] = None)(implicit ec: ExecutionContext) =
+    if (!saved)
+      Failure(new IllegalCommitSavedStateException("This commit must be saved"))
+    else if (!other.saved)
+      Failure(new IllegalCommitSavedStateException("Other commit must be saved"))
+    else if (other.repo.id != repo.id)
+      Failure(new IllegalArgumentException("Two commits must belong to the same repository"))
+    else
+      clientSet.versioningService.RevertRepositoryCommits2(
+        body = VersioningRevertRepositoryCommitsRequest(
+          base_commit_sha = Some(id.get),
+          commit_to_revert_sha = Some(other.id.get),
+          content = Some(VersioningCommit(message=message))
+        ),
+        commit_to_revert_sha = other.id.get,
+        repository_id_repo_id = repo.id
+      ).flatMap(r => versioningCommitToCommit(r.commit.get))
 }
