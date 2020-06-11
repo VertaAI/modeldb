@@ -182,47 +182,32 @@ class Commit(object):
         return response_msg
 
     # TODO: consolidate this with similar method in `ExperimentRun`
-    def _upload_artifact(self, path, s3_obj, part_size=64*(10**6)):
-        if s3_obj.path.internal_versioned_path:
-            s3_loc = dataset._s3.S3Location(s3_obj.path.path, s3_obj.s3_version_id)
-            filepath = os.path.join(dataset._dataset.STAGING_DIR, s3_loc.key)
+    def _upload_artifact(self, path, s3_obj, file_handle, part_size=64*(10**6)):
+        """
+        Uploads `artifact_stream` to ModelDB artifact store.
 
-            with open(filepath, 'rb') as f:
-                file_parts = iter(lambda: f.read(part_size), b'')
-                for part_num, file_part in enumerate(file_parts, start=1):
-                    print("uploading part {}".format(part_num), end='\r')
+        Parameters
+        ----------
+        key : str
+        artifact_stream : file-like
+        part_size : int, default 64 MB
+            If using multipart upload, number of bytes to upload per part.
 
-                    # get presigned URL
-                    url = self._get_url_for_artifact(path, s3_obj.path.path, "PUT", part_num=part_num).url
+        """
+        file_parts = iter(lambda: file_handle.read(part_size), b'')
+        for part_num, file_part in enumerate(file_parts, start=1):
+            print("uploading part {}".format(part_num), end='\r')
 
-                    # upload part
-                    part_stream = six.BytesIO(file_part)
-                    response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-                    _utils.raise_for_http_error(response)
+            # get presigned URL
+            url = self._get_url_for_artifact(path, s3_obj.path.path, "PUT", part_num=part_num).url
 
-                    # commit part
-                    url = "{}://{}/api/v1/modeldb/versioning/commitVersionedBlobArtifactPart".format(
-                        self._conn.scheme,
-                        self._conn.socket,
-                    )
-                    data = {
-                        'repository_id': {'repo_id': self._repo.id},
-                        'commit_sha': self.id,
-                        'location': path_to_location(path),
-                        'path_dataset_component_blob_path': s3_obj.path.path,
-                        'artifact_part': {
-                            'part_number': part_num,
-                            'etag': response.headers['ETag'],
-                        },
-                    }
-                    response = _utils.make_request("POST", url, self._conn, json=data)
-                    _utils.raise_for_http_error(response)
+            # upload part
+            part_stream = six.BytesIO(file_part)
+            response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+            _utils.raise_for_http_error(response)
 
-                print()
-                print("upload complete ({})".format(s3_obj.path.path))
-
-            # commit artifact
-            url = "{}://{}/api/v1/modeldb/versioning/commitMultipartVersionedBlobArtifact".format(
+            # commit part
+            url = "{}://{}/api/v1/modeldb/versioning/commitVersionedBlobArtifactPart".format(
                 self._conn.scheme,
                 self._conn.socket,
             )
@@ -231,12 +216,33 @@ class Commit(object):
                 'commit_sha': self.id,
                 'location': path_to_location(path),
                 'path_dataset_component_blob_path': s3_obj.path.path,
+                'artifact_part': {
+                    'part_number': part_num,
+                    'etag': response.headers['ETag'],
+                },
             }
             response = _utils.make_request("POST", url, self._conn, json=data)
+            _utils.raise_for_http_error(response)
 
-            # delete staged file
-            # os.remove(filepath)
-            # TODO: causes errors if `filepath` is used for multiple components
+        print()
+        print("upload complete ({})".format(s3_obj.path.path))
+
+        # commit artifact
+        url = "{}://{}/api/v1/modeldb/versioning/commitMultipartVersionedBlobArtifact".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+        data = {
+            'repository_id': {'repo_id': self._repo.id},
+            'commit_sha': self.id,
+            'location': path_to_location(path),
+            'path_dataset_component_blob_path': s3_obj.path.path,
+        }
+        response = _utils.make_request("POST", url, self._conn, json=data)
+
+        # delete staged file
+        # os.remove(filepath)
+        # TODO: causes errors if `filepath` is used for multiple components
 
     def _update_blobs_from_commit(self, id_):
         """Fetches commit `id_`'s blobs and stores them as objects in `self._blobs`."""
@@ -458,7 +464,7 @@ class Commit(object):
         self._save(msg)
 
         # upload data if using managed versioning
-        for path, blob in blobs.items():
+        for blob_path, blob in blobs.items():
             if isinstance(blob, dataset._Dataset):
                 if isinstance(blob, dataset.S3):
                     component_blobs = blob._msg.s3.components
@@ -469,7 +475,15 @@ class Commit(object):
                     raise TypeError("Unsupported blob type for managed versioning: {}".format(type(blob)))
 
                 for component_blob in component_blobs:
-                    self._upload_artifact(path, component_blob)
+                    if component_blob.path.internal_versioned_path:
+                        if isinstance(blob, dataset.S3):
+                            _, s3_key = dataset._s3.S3Location._parse_s3_url(component_blob.path.path)
+                            filepath = os.path.join(dataset._dataset.STAGING_DIR, s3_key)
+                        elif isinstance(blob, dataset.Path):
+                            # TODO: reconstruct original filepath using the stripped base path
+                            filepath = component_blob.path.path
+                        with open(filepath, 'rb') as f:
+                            self._upload_artifact(blob_path, component_blob, f)
 
     def _save(self, proto_message):
         data = _utils.proto_to_json(proto_message)
