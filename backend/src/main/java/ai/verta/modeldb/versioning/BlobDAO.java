@@ -25,10 +25,7 @@ public interface BlobDAO {
       throws NoSuchAlgorithmException, ModelDBException;
 
   DatasetVersion convertToDatasetVersion(
-      MetadataDAO metadataDAO,
-      RepositoryFunction repositoryFunction,
-      String commitHash,
-      ProtocolStringList locationList)
+      MetadataDAO metadataDAO, RepositoryFunction repositoryFunction, String commitHash)
       throws ModelDBException;
 
   Map<String, BlobExpanded> getCommitBlobMap(
