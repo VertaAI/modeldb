@@ -28,7 +28,7 @@ class Commit(
   private def saved = id.isDefined
 
   override def equals(other: Any) = other match {
-    case other: Commit => id.isDefined && other.id.isDefined && id.get == other.id.get
+    case other: Commit => saved && other.saved && id.get == other.id.get
     case _ => false
   }
 
