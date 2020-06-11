@@ -392,4 +392,31 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("revert a merge commit should remove changes in the other branch") {
+    val f = fixture
+
+    try {
+      val originalCommit = f.commit.update("a", f.pathBlob)
+                            .flatMap(_.save("Some message")).get
+
+      val firstCommit = originalCommit.newBranch("new-branch-1")
+                           .flatMap(_.update("b", f.pathBlob))
+                           .flatMap(_.save("Some message 1")).get
+
+      val secondCommit = originalCommit.newBranch("new-branch-2")
+                                       .flatMap(_.remove("a"))
+                                       .flatMap(_.update("def/ghi", f.s3Blob))
+                                       .flatMap(_.save("Some message 2")).get
+
+      val mergeCommit = firstCommit.merge(secondCommit, Some("Merge commits")).get
+      val revCommit = mergeCommit.revert().get
+
+      assert(revCommit.get("a").isSuccess)
+      assert(revCommit.get("def/ghi").isFailure)
+      assert(revCommit.get("b").isSuccess)
+    } finally {
+      cleanup(f)
+    }
+  }
 }
