@@ -194,7 +194,7 @@ class Commit(
 
       val child = new Commit(clientSet, repo, newVersioningCommit, commitBranch)
       child.blobs = childBlobs
-      child.loadedFromRemote = true  // child's blobs is already provided
+      child.loadedFromRemote = true  // child's blobs are already provided
 
       child
     }
