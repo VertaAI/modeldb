@@ -1,5 +1,7 @@
 package ai.verta.modeldb.versioning;
 
+import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
+
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.CreateJob;
@@ -17,6 +19,8 @@ import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.metadata.IdentificationType;
+import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -560,6 +564,127 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             .collect(Collectors.toList()));
     ListTagsRequest.Response tags = listTags(session, repositoryEntity);
     dataset.addAllTags(tags.getTagsList());
+    return dataset.build();
+  }
+
+  @Override
+  public Repository createRepository(
+      CommitDAO commitDAO, MetadataDAO metadataDAO, Dataset dataset, UserInfo userInfo)
+      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      return createRepository(session, commitDAO, metadataDAO, dataset, userInfo);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return createRepository(commitDAO, metadataDAO, dataset, userInfo);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  public Repository createRepository(
+      Session session,
+      CommitDAO commitDAO,
+      MetadataDAO metadataDAO,
+      Dataset dataset,
+      UserInfo userInfo)
+      throws NoSuchAlgorithmException, ModelDBException, InvalidProtocolBufferException {
+    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
+    workspaceDTO.setWorkspaceId(dataset.getWorkspaceId());
+    workspaceDTO.setWorkspaceType(dataset.getWorkspaceType());
+    RepositoryEntity repositoryEntity =
+        setRepository(
+            session,
+            commitDAO,
+            SetRepository.newBuilder()
+                .setId(
+                    RepositoryIdentification.newBuilder()
+                        .setNamedId(
+                            RepositoryNamedIdentification.newBuilder()
+                                .setWorkspaceName(dataset.getWorkspaceId())))
+                .setRepository(
+                    Repository.newBuilder()
+                        .setRepositoryVisibilityValue(dataset.getDatasetVisibilityValue())
+                        .setWorkspaceType(dataset.getWorkspaceType())
+                        .setWorkspaceId(dataset.getWorkspaceId())
+                        .setDateCreated(dataset.getTimeCreated())
+                        .setDateUpdated(dataset.getTimeUpdated())
+                        .setName(dataset.getName())
+                        .setOwner(dataset.getOwner()))
+                .build(),
+            userInfo,
+            true);
+
+    repositoryEntity.setAttributeMapping(
+        dataset.getAttributesList().stream()
+            .map(
+                attribute -> {
+                  try {
+                    return RdbmsUtils.generateAttributeEntity(
+                        repositoryEntity, ModelDBConstants.ATTRIBUTES, attribute);
+                  } catch (InvalidProtocolBufferException e) {
+                    LOGGER.error("Unexpected error occured {}", e.getMessage());
+                    Status status =
+                        Status.newBuilder()
+                            .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                            .setMessage(e.getMessage())
+                            .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
+                            .build();
+                    throw StatusProto.toStatusRuntimeException(status);
+                  }
+                })
+            .collect(Collectors.toList()));
+
+    ProtocolStringList tags = dataset.getTagsList();
+    metadataDAO.addLabels(
+        session,
+        IdentificationType.newBuilder()
+            .setIdType(VERSIONING_REPOSITORY)
+            .setIntId(repositoryEntity.getId())
+            .build(),
+        tags);
+
+    return repositoryEntity.toProto();
+  }
+
+  Dataset convertToDataset(
+      Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity) {
+    Dataset.Builder dataset = Dataset.newBuilder();
+    dataset
+        .setId(String.valueOf(repositoryEntity.getId()))
+        .setDatasetVisibilityValue(repositoryEntity.getRepository_visibility())
+        .setWorkspaceTypeValue(repositoryEntity.getWorkspace_type())
+        .setWorkspaceId(repositoryEntity.getWorkspace_id())
+        .setTimeCreated(repositoryEntity.getDate_created())
+        .setTimeUpdated(repositoryEntity.getDate_updated())
+        .setName(repositoryEntity.getName())
+        .setOwner(repositoryEntity.getOwner());
+    dataset.addAllAttributes(
+        repositoryEntity.getAttributeMapping().stream()
+            .map(
+                attributeEntity -> {
+                  try {
+                    return attributeEntity.getProtoObj();
+                  } catch (InvalidProtocolBufferException e) {
+                    LOGGER.error("Unexpected error occured {}", e.getMessage());
+                    Status status =
+                        Status.newBuilder()
+                            .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                            .setMessage(e.getMessage())
+                            .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
+                            .build();
+                    throw StatusProto.toStatusRuntimeException(status);
+                  }
+                })
+            .collect(Collectors.toList()));
+    List<String> tags =
+        metadataDAO.getLabels(
+            session,
+            IdentificationType.newBuilder()
+                .setIdType(VERSIONING_REPOSITORY)
+                .setIntId(repositoryEntity.getId())
+                .build());
+    dataset.addAllTags(tags);
     return dataset.build();
   }
 
