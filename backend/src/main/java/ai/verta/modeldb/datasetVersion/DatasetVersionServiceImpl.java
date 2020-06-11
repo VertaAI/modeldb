@@ -15,9 +15,7 @@ import ai.verta.modeldb.DeleteDatasetVersions;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.GetAllDatasetVersionsByDatasetId;
 import ai.verta.modeldb.GetAttributes;
-import ai.verta.modeldb.GetDatasetVersionById;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
-import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
@@ -266,44 +264,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     throw StatusProto.toStatusRuntimeException(status);
   }
 
-  /**
-   * Fecth datasetVersion correponding to the id. <br>
-   * Required input parameter : id
-   */
-  @Override
-  public void getDatasetVersionById(
-      GetDatasetVersionById request,
-      StreamObserver<GetDatasetVersionById.Response> responseObserver) {
-    QPSCountResource.inc();
-    LOGGER.trace(ModelDBMessages.GET_DATASET_VERSION_MSG);
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      /*Parameter validation*/
-      if (request.getId().isEmpty()) {
-        logAndThrowError(
-            ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(GetDatasetVersionById.Response.getDefaultInstance()));
-      }
-
-      DatasetVersion datasetVersion = datasetVersionDAO.getDatasetVersion(request.getId());
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET,
-          datasetVersion.getDatasetId(),
-          ModelDBServiceActions.READ);
-
-      /*Build response*/
-      responseObserver.onNext(
-          GetDatasetVersionById.Response.newBuilder().setDatasetVersion(datasetVersion).build());
-      responseObserver.onCompleted();
-
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, GetDatasetVersionById.Response.getDefaultInstance());
-    }
-  }
-
   @Override
   public void findDatasetVersions(
       FindDatasetVersions request, StreamObserver<FindDatasetVersions.Response> responseObserver) {
@@ -438,40 +398,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, AddDatasetVersionTags.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
-  public void getDatasetVersionTags(
-      GetTags request, StreamObserver<GetTags.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      // Request Parameter Validation
-      if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST)
-                .addDetails(Any.pack(GetTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      DatasetVersion datasetVersion = datasetVersionDAO.getDatasetVersion(request.getId());
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET,
-          datasetVersion.getDatasetId(),
-          ModelDBServiceActions.READ);
-
-      List<String> tags = datasetVersionDAO.getDatasetVersionTags(request.getId());
-      responseObserver.onNext(GetTags.Response.newBuilder().addAllTags(tags).build());
-      responseObserver.onCompleted();
-
-    } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
     }
   }
 

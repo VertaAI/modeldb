@@ -409,10 +409,10 @@
 	<changeSet id="add-description-blob-table" author="lezhevg">
 		<preConditions onFail="MARK_RAN">
 			<not>
-				<tableExists tableName="metadata_parameter_mapping"/>
+				<tableExists tableName="metadata_property_mapping"/>
 			</not>
 		</preConditions>
-		<createTable tableName="metadata_parameter_mapping">
+		<createTable tableName="metadata_property_mapping">
 			<column name="repository_id" type="int8">
 				<constraints primaryKey="true" nullable="false"/>
 			</column>
