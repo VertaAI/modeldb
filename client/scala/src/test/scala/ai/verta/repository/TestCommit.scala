@@ -368,4 +368,28 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("revert unsaved commit should fail") {
+    val f = fixture
+
+    try {
+        val firstCommit = f.commit.newBranch("new-branch-1")
+                           .flatMap(_.update("abc/cde", f.pathBlob))
+                           .flatMap(_.save("Some message 1")).get
+
+        val secondCommit = f.commit.newBranch("new-branch-2")
+                                   .flatMap(_.update("def/ghi", f.s3Blob)).get
+
+        val revAttempt = firstCommit.revert(secondCommit, Some("Revert test"))
+        assert(revAttempt.isFailure)
+        assert(revAttempt match {case Failure(e) => e.getMessage contains "Other commit must be saved"})
+
+        val revAttempt2 = secondCommit.revert(firstCommit, Some("Revert test"))
+        assert(revAttempt2.isFailure)
+        assert(revAttempt2 match {case Failure(e) => e.getMessage contains "This commit must be saved"})
+
+    } finally {
+      cleanup(f)
+    }
+  }
 }
