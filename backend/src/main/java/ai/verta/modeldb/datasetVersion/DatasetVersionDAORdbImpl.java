@@ -132,29 +132,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   }
 
   @Override
-  public Boolean deleteDatasetVersions(List<String> datasetVersionIds) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      Query deletedDatasetVersionQuery =
-          session.createQuery(UPDATE_DELETED_STATUS_DATASET_VERSION_QUERY_STRING);
-      deletedDatasetVersionQuery.setParameter("deleted", true);
-      deletedDatasetVersionQuery.setParameter("datasetVersionIds", datasetVersionIds);
-      int updatedCount = deletedDatasetVersionQuery.executeUpdate();
-      LOGGER.debug(
-          "Mark DatasetVersions as deleted : {}, count : {}", datasetVersionIds, updatedCount);
-      transaction.commit();
-      LOGGER.debug("DatasetVersion deleted successfully");
-      return true;
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return deleteDatasetVersions(datasetVersionIds);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
   public Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();

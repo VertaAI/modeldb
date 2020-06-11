@@ -48,15 +48,6 @@ public interface DatasetVersionDAO {
       throws InvalidProtocolBufferException;
 
   /**
-   * Delete datasetVersion with ids matching the ids in request
-   *
-   * @param datasetVersionIds : list of datasetVersion.id
-   * @return {@link Boolean} : status
-   */
-  Boolean deleteDatasetVersions(List<String> datasetVersionIds)
-      throws InvalidProtocolBufferException;
-
-  /**
    * Delete all datasetVersions with dataset ids matching the ids in request.
    *
    * @param datasetIds : list of dataset.id

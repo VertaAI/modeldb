@@ -115,6 +115,7 @@ message GetAllDatasetVersionsByDatasetId {
 
 message DeleteDatasetVersion {
     string id = 1;
+    string dataset_id = 2;
 
     message Response {
         bool status = 1;
@@ -123,6 +124,7 @@ message DeleteDatasetVersion {
 
 message DeleteDatasetVersions {
     repeated string ids = 1;
+    string dataset_id = 2;
 
     message Response {
         bool status = 1;
