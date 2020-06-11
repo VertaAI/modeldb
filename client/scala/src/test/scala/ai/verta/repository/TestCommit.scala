@@ -275,9 +275,10 @@ class TestCommit extends FunSuite {
 
   test("merge commits from different repository should fail") {
     val f = fixture
+    val newRepoAttempt = f.client.getOrCreateRepository("My Repo 2")
 
     try {
-      val repo2 = f.client.getOrCreateRepository("My Repo 2").get
+      val repo2 = newRepoAttempt.get
 
       val branch1 = repo2.getCommitByBranch()
                      .flatMap(_.newBranch("a"))
@@ -293,8 +294,8 @@ class TestCommit extends FunSuite {
       assert(mergeAttempt.isFailure)
       assert(mergeAttempt match {case Failure(e) => e.getMessage contains "Two commits must belong to the same repository"})
 
-      f.client.deleteRepository(repo2.id)
     } finally {
+      newRepoAttempt.flatMap(repo => f.client.deleteRepository(repo.id))
       cleanup(f)
     }
   }
