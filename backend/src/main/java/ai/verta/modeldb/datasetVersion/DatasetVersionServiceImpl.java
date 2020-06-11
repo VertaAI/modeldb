@@ -127,12 +127,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       CreateCommitRequest.Response createCommitResponse =
           commitDAO.setCommitFromDatasetVersion(
               datasetVersion, blobDAO, metadataDAO, repositoryFunction);
-      datasetVersion =
-          blobDAO.convertToDatasetVersion(
-              metadataDAO,
-              repositoryFunction,
-              createCommitResponse.getCommit().getCommitSha(),
-              Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
+      datasetVersion = datasetVersion.toBuilder().setId(createCommitResponse.getCommit().getCommitSha()).build();
       responseObserver.onNext(
           CreateDatasetVersion.Response.newBuilder().setDatasetVersion(datasetVersion).build());
       responseObserver.onCompleted();
