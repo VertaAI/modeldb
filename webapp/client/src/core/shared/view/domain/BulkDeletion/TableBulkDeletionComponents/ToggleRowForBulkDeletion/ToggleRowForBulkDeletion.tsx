@@ -17,7 +17,7 @@ class ToggleRowForBulkDeletion extends React.PureComponent<ILocalProps> {
   public render() {
     const { isSelected } = this.props;
     return (
-      <td
+      <div
         className={cn(styles.root, {
           [styles.selected_row_view]: isSelected,
         })}
@@ -29,7 +29,7 @@ class ToggleRowForBulkDeletion extends React.PureComponent<ILocalProps> {
           theme="red"
           onChange={this.onChange}
         />
-      </td>
+      </div>
     );
   }
 

@@ -1,9 +1,11 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.security.NoSuchAlgorithmException;
@@ -34,6 +36,10 @@ public interface RepositoryDAO {
 
   Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException;
+
+  Repository createRepository(
+      CommitDAO commitDAO, MetadataDAO metadataDAO, Dataset dataset, UserInfo userInfo)
+      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException;
 
   ListRepositoriesRequest.Response listRepositories(
       ListRepositoriesRequest request, UserInfo userInfo)

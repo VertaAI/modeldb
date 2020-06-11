@@ -154,6 +154,9 @@ public class CommitTest {
     }
     deleteEntitiesCron =
         new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+    deleteEntitiesCron.run();
+    deleteEntitiesCron.run();
+    deleteEntitiesCron.run();
   }
 
   @AfterClass
@@ -2207,7 +2210,7 @@ public class CommitTest {
       IdentificationType repoCommitBlobLabelId =
           IdentificationType.newBuilder()
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-              .setVersioningCompositeId(identifier)
+              .setCompositeId(identifier)
               .build();
       labelIds.add(repoCommitBlobLabelId);
       addLabelsRequest =
@@ -2243,7 +2246,7 @@ public class CommitTest {
       repoCommitBlobLabelId =
           repoCommitBlobLabelId
               .toBuilder()
-              .setVersioningCompositeId(identifier)
+              .setCompositeId(identifier)
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)
               .build();
       labelIds.add(repoCommitBlobLabelId);

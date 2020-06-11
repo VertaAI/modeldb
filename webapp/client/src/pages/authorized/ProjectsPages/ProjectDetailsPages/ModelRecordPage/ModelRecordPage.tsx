@@ -2,13 +2,13 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 
-import ModelRecord from 'components/ModelRecord/ModelRecord';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import AuthorizedLayout from 'pages/authorized/shared/AuthorizedLayout/AuthorizedLayout';
 import routes, { GetRouteParams } from 'routes';
 
 import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 import styles from './ModelRecordPage.module.css';
+import ModelRecord from 'features/experimentRuns/view/ModelRecord/ModelRecord';
 
 type IUrlProps = GetRouteParams<typeof routes.modelRecord>;
 

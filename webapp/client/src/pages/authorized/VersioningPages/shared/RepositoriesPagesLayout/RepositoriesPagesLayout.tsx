@@ -11,11 +11,13 @@ type ILocalProps = IAuthorizedLayoutLocalProps;
 
 const brearcrumbsBuilder = BreadcrumbsBuilder()
   .then({
-    routes: [routes.repositories],
+    type: 'single',
+    route: routes.repositories,
     getName: () => 'Repositories',
   })
   .then({
-    routes: [routes.createRepository],
+    type: 'single',
+    route: routes.createRepository,
     getName: () => 'New repository',
   });
 

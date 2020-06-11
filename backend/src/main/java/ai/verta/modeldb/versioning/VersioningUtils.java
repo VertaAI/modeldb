@@ -192,11 +192,12 @@ public class VersioningUtils {
    * @param parametersMap : query parameter identity map.
    */
   public static void setValueWithOperatorInQuery(
-      int index,
+      int index0,
       StringBuilder queryBuilder,
       OperatorEnum.Operator operator,
       Object value,
       Map<String, Object> parametersMap) {
+    long index = index0 + Math.round(100.0 * Math.random());
     String key;
     switch (operator.ordinal()) {
       case OperatorEnum.Operator.GT_VALUE:

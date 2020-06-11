@@ -7,7 +7,7 @@ import {
   IFullCommitComponentLocationComponents,
 } from 'core/shared/models/Versioning/RepositoryData';
 import matchType from 'core/shared/utils/matchType';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import * as RouteHeplers from '../../../routeHelpers';
 import NavigationItem from '../NavigationItem/NavigationItem';

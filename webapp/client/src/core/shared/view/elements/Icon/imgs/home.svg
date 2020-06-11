@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="17px" viewBox="0 0 20 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>home-24px</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Navigation" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Intuit-Navigation" transform="translate(-29.000000, -75.000000)">
+            <g id="Left-Nav-Copy" transform="translate(0.000000, 60.000000)">
+                <g id="home-24px" transform="translate(27.000000, 12.000000)">
+                    <polygon id="Path" points="0 0 24 0 24 24 0 24"></polygon>
+                    <path d="M12,5.69 L17,10.19 L17,18 L15,18 L15,12 L9,12 L9,18 L7,18 L7,10.19 L12,5.69 M12,3 L2,12 L5,12 L5,20 L11,20 L11,14 L13,14 L13,20 L19,20 L19,12 L22,12 L12,3 Z" id="Shape" fill="currentColor" fill-rule="nonzero"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

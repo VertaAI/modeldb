@@ -1,5 +1,6 @@
 package ai.verta.modeldb.batchProcess;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -14,8 +15,6 @@ import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.ModelResourceEnum;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import java.util.HashSet;
@@ -115,7 +114,7 @@ public class OwnerRoleBindingUtils {
                     ownerRole,
                     new CollaboratorUser(authService, userInfoValue),
                     experimentEntity.getId(),
-                    ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
+                    ModelDBServiceResourceTypes.EXPERIMENT);
               } catch (Exception e) {
                 e.printStackTrace();
                 LOGGER.error(e.getMessage());
@@ -199,7 +198,7 @@ public class OwnerRoleBindingUtils {
                   ownerRole,
                   new CollaboratorUser(authService, userInfoValue),
                   experimentRunEntity.getId(),
-                  ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
+                  ModelDBServiceResourceTypes.EXPERIMENT_RUN);
             } catch (Exception e) {
               e.printStackTrace();
               LOGGER.error(e.getMessage());
@@ -282,7 +281,7 @@ public class OwnerRoleBindingUtils {
                     ownerRole,
                     new CollaboratorUser(authService, userInfoValue),
                     datasetVersionEntity.getId(),
-                    ModelResourceEnum.ModelDBServiceResourceTypes.DATASET_VERSION);
+                    ModelDBServiceResourceTypes.DATASET_VERSION);
               } catch (Exception e) {
                 e.printStackTrace();
                 LOGGER.error(e.getMessage());

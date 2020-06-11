@@ -17,5 +17,5 @@ class ClientSet(val client: HttpClient) {
   val lineageService = new LineageApi(client, "/api/v1/modeldb")
   val projectService = new ProjectServiceApi(client, "/api/v1/modeldb")
   val versioningService = new VersioningServiceApi(client, "/api/v1/modeldb")
-  val UACService = new UACServiceApi(client, "/api/v1/uac-proxy")
+  val uacService = new UACServiceApi(client, "/api/v1/uac-proxy")
 }

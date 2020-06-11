@@ -34,7 +34,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
           || request.getId().getIdTypeValue() == 0
           || (request.getId().getIntId() == 0
               && request.getId().getStringId().isEmpty()
-              && !request.getId().hasVersioningCompositeId())) {
+              && !request.getId().hasCompositeId())) {
         String errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
         LOGGER.warn(errorMessage);
         Status status =
@@ -66,7 +66,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
           || request.getId().getIdTypeValue() == 0
           || (request.getId().getIntId() == 0
               && request.getId().getStringId().isEmpty()
-              && !request.getId().hasVersioningCompositeId())) {
+              && !request.getId().hasCompositeId())) {
         errorMessage = "Invalid parameter set in AddLabelsRequest.Id";
       } else if (request.getLabelsList().isEmpty()) {
         errorMessage = "labels not found in AddLabelsRequest request";
@@ -103,7 +103,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
           || request.getId().getIdTypeValue() == 0
           || (request.getId().getIntId() == 0
               && request.getId().getStringId().isEmpty()
-              && !request.getId().hasVersioningCompositeId())) {
+              && !request.getId().hasCompositeId())) {
         errorMessage = "Invalid parameter set in DeleteLabelsRequest.Id";
       } else if (request.getLabelsList().isEmpty()) {
         errorMessage = "Labels not found in DeleteLabelsRequest";

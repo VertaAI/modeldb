@@ -234,7 +234,7 @@ public class MetadataTest {
     IdentificationType id1 =
         IdentificationType.newBuilder()
             .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-            .setVersioningCompositeId(identifier)
+            .setCompositeId(identifier)
             .build();
     AddLabelsRequest addLabelsRequest2 =
         AddLabelsRequest.newBuilder().setId(id1).addLabels("Backend").addLabels("Frontend").build();
@@ -269,7 +269,7 @@ public class MetadataTest {
     IdentificationType id1 =
         IdentificationType.newBuilder()
             .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)
-            .setVersioningCompositeId(identifier)
+            .setCompositeId(identifier)
             .build();
     AddLabelsRequest addLabelsRequest2 =
         AddLabelsRequest.newBuilder().setId(id1).addLabels("Backend").addLabels("Frontend").build();

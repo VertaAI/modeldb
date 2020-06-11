@@ -8,7 +8,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -21,24 +20,32 @@ import javax.persistence.Table;
 public class LabelsMappingEntity {
   public LabelsMappingEntity() {}
 
-  public LabelsMappingEntity(IdentificationType id, String label) throws ModelDBException {
+  public LabelsMappingEntity(LabelMappingId id) {
+    this.id = id;
+  }
+
+  @EmbeddedId private LabelMappingId id;
+
+  public static LabelMappingId createId(IdentificationType id, String label)
+      throws ModelDBException {
     if (id.getIdCase().equals(IdentificationType.IdCase.INT_ID)) {
-      this.id = new LabelMappingId(String.valueOf(id.getIntId()), id.getIdTypeValue(), label);
+      return new LabelMappingId(String.valueOf(id.getIntId()), id.getIdTypeValue(), label);
     } else if (id.getIdCase().equals(IdentificationType.IdCase.STRING_ID)) {
-      this.id = new LabelMappingId(id.getStringId(), id.getIdTypeValue(), label);
-    } else if (id.getIdCase().equals(IdentificationType.IdCase.VERSIONING_COMPOSITE_ID)) {
-      String compositeId =
-          getVersioningCompositeIdString(id.getVersioningCompositeId(), id.getIdType());
-      this.id = new LabelMappingId(compositeId, id.getIdTypeValue(), label);
+      return new LabelMappingId(id.getStringId(), id.getIdTypeValue(), label);
+    } else if (id.getIdCase().equals(IdentificationType.IdCase.COMPOSITE_ID)) {
+      String compositeId = getVersioningCompositeIdString(id.getCompositeId(), id.getIdType());
+      return new LabelMappingId(compositeId, id.getIdTypeValue(), label);
     } else {
       throw new StatusRuntimeException(Status.INVALID_ARGUMENT);
     }
   }
 
-  @EmbeddedId private LabelMappingId id;
-
   public LabelMappingId getId() {
     return id;
+  }
+
+  public String getValue() {
+    return id.getLabel();
   }
 
   @Embeddable
@@ -111,7 +118,7 @@ public class LabelsMappingEntity {
       return VersioningCompositeIdentifier.newBuilder()
           .setRepoId(Long.parseLong(identifierArr[0]))
           .setCommitHash(identifierArr[1])
-          .addAllLocation(Arrays.asList(identifierArr[2].split("/")))
+          .addAllLocation(ModelDBUtils.getLocationWithSplitSlashOperator(identifierArr[2]))
           .build();
     } else {
       return VersioningCompositeIdentifier.newBuilder()

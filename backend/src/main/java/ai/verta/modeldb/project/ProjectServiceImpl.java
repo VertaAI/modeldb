@@ -1,13 +1,14 @@
 package ai.verta.modeldb.project;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddProjectAttributes;
 import ai.verta.modeldb.AddProjectTag;
 import ai.verta.modeldb.AddProjectTags;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.Artifact;
-import ai.verta.modeldb.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CreateProject;
 import ai.verta.modeldb.DeepCopyProject;
@@ -62,7 +63,6 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -1451,6 +1451,10 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
       String s3Key = null;
 

@@ -1,17 +1,17 @@
 import { IAttribute } from 'core/shared/models/Attribute';
 import { IEntityWithLogging } from 'core/shared/models/Common';
-
 import { IWorkspace, IEntityWithShortWorkspace } from './Workspace';
 
 export type IDataset = Dataset;
 
-export interface Dataset extends IEntityWithLogging, IEntityWithShortWorkspace {
+export interface Dataset
+  extends IEntityWithLogging,
+    IEntityWithShortWorkspace {
   id: string;
   name: string;
   description: string;
   tags: string[];
   type: DatasetType;
-  isPubliclyVisible: boolean;
   attributes: IAttribute[];
 }
 
@@ -21,6 +21,7 @@ export interface IDatasetCreationSettings {
   tags?: string[];
   description?: string;
   type: DatasetType;
+  workspaceName: IWorkspace['name'];
 }
 
 export const DatasetVisibility = {

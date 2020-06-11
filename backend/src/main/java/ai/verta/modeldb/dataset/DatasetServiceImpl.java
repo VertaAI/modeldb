@@ -1,6 +1,7 @@
 package ai.verta.modeldb.dataset;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddDatasetAttributes;
 import ai.verta.modeldb.AddDatasetTags;
@@ -30,6 +31,7 @@ import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.LastExperimentByDatasetId;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.SetDatasetVisibilty;
@@ -48,12 +50,17 @@ import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
+import ai.verta.modeldb.versioning.Repository;
+import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.ListValue;
@@ -64,7 +71,6 @@ import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
@@ -73,6 +79,9 @@ import org.apache.logging.log4j.Logger;
 public class DatasetServiceImpl extends DatasetServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetServiceImpl.class);
+  private final RepositoryDAO repositoryDAO;
+  private final CommitDAO commitDAO;
+  private final MetadataDAO metadataDAO;
   private AuthService authService;
   private RoleService roleService;
   private DatasetDAO datasetDAO;
@@ -88,7 +97,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       DatasetVersionDAO datasetVersionDAO,
       ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
-      ExperimentRunDAO experimentRunDAO) {
+      ExperimentRunDAO experimentRunDAO,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      MetadataDAO metadataDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.datasetDAO = datasetDAO;
@@ -96,6 +108,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     this.projectDAO = projectDAO;
     this.experimentDAO = experimentDAO;
     this.experimentRunDAO = experimentRunDAO;
+    this.repositoryDAO = repositoryDAO;
+    this.commitDAO = commitDAO;
+    this.metadataDAO = metadataDAO;
   }
 
   /**
@@ -110,7 +125,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getName().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_NAME_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_NAME_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -121,18 +136,24 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, null, ModelDBServiceActions.CREATE);
+          ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
 
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
       Dataset dataset = getDatasetFromRequest(request, userInfo);
       ModelDBUtils.checkPersonalWorkspace(
-          userInfo, dataset.getWorkspaceType(), dataset.getWorkspaceId(), "dataset");
-      Dataset createdDataset = datasetDAO.createDataset(dataset, userInfo);
+          userInfo, dataset.getWorkspaceType(), dataset.getWorkspaceId(), "repository");
+      Repository repository =
+          repositoryDAO.createRepository(commitDAO, metadataDAO, dataset, userInfo);
+      Dataset createdDataset =
+          dataset.toBuilder().setId(String.valueOf(repository.getId())).build();
 
       responseObserver.onNext(
-          CreateDataset.Response.newBuilder().setDataset(createdDataset).build());
+          CreateDataset.Response.newBuilder()
+              .setDataset(createdDataset)
+              .setRepo(repository)
+              .build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -230,7 +251,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -240,8 +261,22 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean deleteStatus = datasetDAO.deleteDatasets(Collections.singletonList(request.getId()));
-      responseObserver.onNext(DeleteDataset.Response.newBuilder().setStatus(deleteStatus).build());
+      long id;
+      try {
+        id = Long.parseLong(request.getId());
+      } catch (NumberFormatException e) {
+        LOGGER.info("Wrong id format: {}", e.getMessage());
+        throw new ModelDBException("Wrong id format, expecting integer: " + request.getId());
+      }
+      DeleteRepositoryRequest.Response response =
+          repositoryDAO.deleteRepository(
+              DeleteRepositoryRequest.newBuilder()
+                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+                  .build(),
+              commitDAO,
+              experimentRunDAO);
+      responseObserver.onNext(
+          DeleteDataset.Response.newBuilder().setStatus(response.getStatus()).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -261,7 +296,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -521,7 +556,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -779,7 +814,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -813,7 +848,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getIdsList().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)

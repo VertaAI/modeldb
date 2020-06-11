@@ -1,12 +1,13 @@
 package ai.verta.modeldb.experimentRun;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddExperimentRunAttributes;
 import ai.verta.modeldb.AddExperimentRunTag;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.Artifact;
-import ai.verta.modeldb.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
 import ai.verta.modeldb.CommitMultipartArtifact;
@@ -77,7 +78,6 @@ import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -1205,6 +1205,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
+
       final String s3Key;
       final String uploadId;
 
@@ -2326,6 +2332,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
       }
 
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
+
       CommitArtifactPart.Response response = experimentRunDAO.commitArtifactPart(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -2352,6 +2363,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       if (errorMessage != null) {
         throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
       }
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       GetCommittedArtifactParts.Response response =
           experimentRunDAO.getCommittedArtifactParts(request);
@@ -2380,6 +2396,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       if (errorMessage != null) {
         throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
       }
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       CommitMultipartArtifact.Response response =
           experimentRunDAO.commitMultipartArtifact(

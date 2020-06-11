@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/dataloaders"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
 	ai_verta_modeldb "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
@@ -22,7 +23,7 @@ func (r *queryResolver) Self(ctx context.Context) (*ai_verta_uac.UserInfo, error
 		}
 		return res, nil
 	}
-	return nil, nil
+	return dataloaders.GetUserById(ctx, "")
 }
 
 func (r *queryResolver) Organizations(ctx context.Context) ([]*ai_verta_uac.Organization, error) {

@@ -30,7 +30,7 @@ export const PageHeader = React.memo(
     size = 'medium',
     withoutSeparator,
   }: {
-    title: string;
+    title: Exclude<React.ReactNode, null | undefined>;
     rightContent?: React.ReactNode;
     size?: 'medium' | 'small';
     withoutSeparator?: boolean;
@@ -44,6 +44,7 @@ export const PageHeader = React.memo(
     >
       <div
         className={cn(styles.pageHeader__title)}
+        data-type="page-header-title"
       >
         {title}
       </div>

@@ -1,10 +1,10 @@
 .root {
-  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 15px;
 }
 
 .description {
-  line-height: 18px;
-  margin-bottom: 12px;
   word-wrap: break-word;
   word-break: break-word;
   hyphens: auto;
@@ -16,9 +16,12 @@
 }
 
 .desc_action_block {
+  opacity: 0;
   display: inline-flex;
-  line-height: 12px;
   margin-left: 10px;
+}
+.root:hover .desc_action_block {
+  opacity: 1;
 }
 
 .desc_readonly {

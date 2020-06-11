@@ -2,6 +2,7 @@ package ai.verta.modeldb.versioning;
 
 import static java.util.stream.Collectors.toMap;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -28,7 +29,6 @@ import ai.verta.modeldb.versioning.blob.diff.DiffComputer;
 import ai.verta.modeldb.versioning.blob.diff.DiffMerger;
 import ai.verta.modeldb.versioning.blob.diff.TypeChecker;
 import ai.verta.modeldb.versioning.blob.factory.BlobFactory;
-import ai.verta.uac.ModelResourceEnum;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status;
@@ -1191,8 +1191,8 @@ public class BlobDAORdbImpl implements BlobDAO {
               parametersMap.put("author", predicate.getValue().getStringValue());
             }
             break;
-          case ModelDBConstants.REPOSITORY:
-            LOGGER.debug("switch case : " + ModelDBConstants.REPOSITORY);
+          case ModelDBConstants.VERSIONING_REPOSITORY:
+            LOGGER.debug("switch case : " + ModelDBConstants.VERSIONING_REPOSITORY);
             if (names[1].contains(ModelDBConstants.LABEL)) {
               joinClause
                   .append(" INNER JOIN ")
@@ -1276,7 +1276,7 @@ public class BlobDAORdbImpl implements BlobDAO {
             null,
             new CollaboratorUser(authService, currentLoginUserInfo),
             RepositoryVisibilityEnum.RepositoryVisibility.PRIVATE,
-            ModelResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
+            ModelDBServiceResourceTypes.REPOSITORY,
             request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
 
     if (!accessibleResourceIds.isEmpty()) {
