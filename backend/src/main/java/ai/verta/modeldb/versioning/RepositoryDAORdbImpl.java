@@ -1,5 +1,7 @@
 package ai.verta.modeldb.versioning;
 
+import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
+
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.CreateJob;
@@ -594,8 +596,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         setRepository(
             session,
             commitDAO,
-            SetRepository.newBuilder().setId(RepositoryIdentification.newBuilder().setNamedId(
-                RepositoryNamedIdentification.newBuilder().setWorkspaceName(dataset.getWorkspaceId())))
+            SetRepository.newBuilder()
+                .setId(
+                    RepositoryIdentification.newBuilder()
+                        .setNamedId(
+                            RepositoryNamedIdentification.newBuilder()
+                                .setWorkspaceName(dataset.getWorkspaceId())))
                 .setRepository(
                     Repository.newBuilder()
                         .setRepositoryVisibilityValue(dataset.getDatasetVisibilityValue())
