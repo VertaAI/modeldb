@@ -48,13 +48,16 @@ func (r *organizationResolver) Teams(ctx context.Context, obj *ai_verta_uac.Orga
 }
 
 func getOrganizationById(logger *zap.Logger, ctx context.Context, connections *connections.Connections, id string) (*ai_verta_uac.Organization, error) {
-	res, err := connections.Organization.GetOrganizationById(
-		ctx,
-		&ai_verta_uac.GetOrganizationById{OrgId: id},
-	)
-	if err != nil {
-		logger.Error("failed to get organization", zap.Error(err))
-		return nil, err
+	if connections.HasUac() {
+		res, err := connections.Organization.GetOrganizationById(
+			ctx,
+			&ai_verta_uac.GetOrganizationById{OrgId: id},
+		)
+		if err != nil {
+			logger.Error("failed to get organization", zap.Error(err))
+			return nil, err
+		}
+		return res.GetOrganization(), nil
 	}
-	return res.GetOrganization(), nil
+	return &ai_verta_uac.Organization{}, nil
 }

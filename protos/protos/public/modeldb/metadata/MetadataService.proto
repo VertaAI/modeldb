@@ -108,22 +108,22 @@ service MetadataService {
         };
     };
 
-    rpc GetParameter(GetParameterRequest) returns (GetParameterRequest.Response) {
+    rpc GetProperty(GetPropertyRequest) returns (GetPropertyRequest.Response) {
         option (google.api.http) = {
-            get: "/v1/metadata/parameter"
+            get: "/v1/metadata/property"
         };
     };
 
-    rpc AddParameter(AddParameterRequest) returns (AddParameterRequest.Response) {
+    rpc AddProperty(AddPropertyRequest) returns (AddPropertyRequest.Response) {
         option (google.api.http) = {
-            put: "/v1/metadata/parameter"
+            put: "/v1/metadata/property"
             body: "*"
         };
     };
 
-    rpc DeleteParameter(DeleteParameterRequest) returns (DeleteParameterRequest.Response) {
+    rpc DeleteProperty(DeletePropertyRequest) returns (DeletePropertyRequest.Response) {
         option (google.api.http) = {
-            delete: "/v1/metadata/parameter"
+            delete: "/v1/metadata/property"
             body: "*"
         };
     };

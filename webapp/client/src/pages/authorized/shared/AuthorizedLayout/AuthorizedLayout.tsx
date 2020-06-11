@@ -10,7 +10,7 @@ import {
 } from 'core/features/Layout';
 import routes from 'routes';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 type ILocalProps = Omit<
   React.ComponentProps<typeof Layout>,

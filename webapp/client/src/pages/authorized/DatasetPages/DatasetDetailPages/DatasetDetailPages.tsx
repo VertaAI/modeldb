@@ -17,9 +17,9 @@ import {
   loadDataset,
   selectDataset,
   selectLoadingDataset,
-} from 'store/datasets';
+} from 'features/datasets/store';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import CompareDatasetVersionsPage from './CompareDatasetVersionsPage/CompareDatasetVersionsPage';
 import DatasetSummaryPage from './DatasetSummaryPage/DatasetSummaryPage';

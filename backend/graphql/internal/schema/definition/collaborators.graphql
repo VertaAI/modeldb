@@ -17,3 +17,8 @@ type TeamCollaborator {
 }
 
 union Collaborator = UserCollaborator | TeamCollaborator
+
+input CollaboratorReference {
+  usernameOrEmail: String
+  teamID: String
+}

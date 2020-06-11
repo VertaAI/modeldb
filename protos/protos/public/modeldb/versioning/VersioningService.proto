@@ -6,6 +6,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 option java_multiple_files = true;
 
 import "google/api/annotations.proto";
+import "common/CommonService.proto";
 import "modeldb/CommonService.proto";
 import "modeldb/ExperimentRunService.proto";
 import "modeldb/versioning/Code.proto";
@@ -111,7 +112,7 @@ message Repository {
     uint64 date_updated = 4;
 
     string workspace_id = 5;
-    WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
+    common.WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
 
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
     RepositoryAccessModifierEnum.RepositoryAccessModifier repositoryAccessModifier = 8;

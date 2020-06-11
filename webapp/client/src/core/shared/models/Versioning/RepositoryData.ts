@@ -50,38 +50,20 @@ export type CommitTag = string;
 export type Branch = string | typeof defaultBranch;
 export type RepositoryBranches = Branch[];
 
-export type ICommit =
-  | {
-      type: 'initial';
-      sha: SHA;
-      message: string;
-      dateCreated: Date;
-      authorId: User['id'];
-    }
-  | {
-      type: 'withParent';
-      sha: SHA;
-      parentShas: [SHA, ...SHA[]];
-      message: string;
-      dateCreated: Date;
-      authorId: User['id'];
-    };
-export type IHydratedCommit =
-  | {
-      type: 'initial';
-      sha: SHA;
-      message: string;
-      dateCreated: Date;
-      author: User;
-    }
-  | {
-      type: 'withParent';
-      sha: SHA;
-      parentShas: [SHA, ...SHA[]];
-      message: string;
-      dateCreated: Date;
-      author: User;
-    };
+export interface ICommit {
+  type: 'initial' | 'withParent';
+  sha: SHA;
+  message: string;
+  dateCreated: Date;
+  authorId: User['id'];
+}
+export interface IHydratedCommit {
+  type: 'initial' | 'withParent';
+  sha: SHA;
+  message: string;
+  dateCreated: Date;
+  author: User;
+}
 
 export type ICommitComponent = IFolder | IBlob;
 
@@ -105,12 +87,10 @@ export type FolderElementName = Brand<
 export interface IBlobFolderElement {
   type: 'blob';
   name: FolderElementName;
-  createdByCommitSha: SHA;
 }
 export interface ISubFolderElement {
   type: 'folder';
   name: FolderElementName;
-  createdByCommitSha: SHA;
 }
 
 export interface ICommitComponentRequest {

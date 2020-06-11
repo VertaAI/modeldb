@@ -20,8 +20,9 @@
 }
 
 .info {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-column-gap: 50px;
 }
 
 .name {
@@ -32,6 +33,10 @@
   word-break: break-word;
   hyphens: auto;
   margin-bottom: 5px;
+}
+
+.labels {
+  margin-top: 15px;
 }
 
 .left {

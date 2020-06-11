@@ -342,7 +342,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           workspaceDTO.getWorkspaceType(),
           LOGGER);
       repositoryEntity = new RepositoryEntity(repository, workspaceDTO);
-      repositoryEntity.setDeleted(true);
     } else {
       repositoryEntity = getRepositoryById(session, request.getId(), true);
       if (!repository.getName().isEmpty()
@@ -379,13 +378,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
     session.getTransaction().commit();
     if (create) {
-      createRoleBindingsForRepository(request, userInfo, repositoryEntity);
-
-      // Update repository deleted status to false after roleBindings created successfully
-      session.beginTransaction();
-      repositoryEntity.setDeleted(false);
-      session.update(repositoryEntity);
-      session.getTransaction().commit();
+      try {
+        createRoleBindingsForRepository(request, userInfo, repository);
+      } catch (Exception e) {
+        LOGGER.info("Exception from UAC during Repo role binding creation : {}", e.getMessage());
+        LOGGER.info("Deleting the created repository {}", repository.getId());
+        // delete the repo created
+        session.beginTransaction();
+        session.delete(repository);
+        session.getTransaction().commit();
+        throw e;
+      }
     }
 
     return repositoryEntity;

@@ -1,0 +1,39 @@
+.root {
+  position: relative;
+  display: inline-block;
+}
+
+.button {
+  height: 28px;
+  min-width: 93px;
+}
+
+.button__content {
+  display: flex;
+  align-items: center;
+}
+
+.button__icon {
+  margin-left: 3px;
+}
+
+.menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  border-radius: 2px;
+  background-color: white;
+  z-index: 1;
+  white-space: pre;
+  box-shadow: 0 2px 18px 0 rgba(0, 0, 0, 0.25), 0 0 1px 0 rgba(0, 0, 0, 0.32);
+}
+
+.menu__item {
+  padding: 12px 17px;
+  font-size: 15px;
+  color: var(--main-text-color1);
+  cursor: pointer;
+}
+.menu__item:hover {
+  background-color: #ebebeb;
+}

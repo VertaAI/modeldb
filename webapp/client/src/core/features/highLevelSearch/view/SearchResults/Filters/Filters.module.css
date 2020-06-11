@@ -1,0 +1,40 @@
+.root {
+  display: flex;
+}
+
+.filter {
+  display: flex;
+  align-items: center;
+  margin-left: 15px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+.filter:hover {
+  border-color: #0bdac0;
+}
+.active {
+  border-color: #0bdac0;
+  cursor: default;
+}
+.filter:first-child {
+  margin-left: 0;
+}
+
+.filter__name {
+  font-size: 15px;
+  color: var(--main-text-color1);
+}
+
+.filter__totalCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 27px;
+  padding: 0 7px;
+  height: 21px;
+  margin-left: 4px;
+  font-size: 12px;
+  border-radius: 10.5px;
+  background-color: #cccccc;
+}

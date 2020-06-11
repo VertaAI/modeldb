@@ -14,6 +14,7 @@ const UnknownDiffView = ({ diff }: { diff: IUnknownBlobDiff }) => {
           added: d => null,
           deleted: d => <JsonView object={d.data.data} />,
           modified: d => <JsonView object={d.data.data} />,
+          conflicted: d => <JsonView object={d.data.data} />,
         })}
       </div>
       <div className={styles.diffRight}>
@@ -21,6 +22,7 @@ const UnknownDiffView = ({ diff }: { diff: IUnknownBlobDiff }) => {
           deleted: d => null,
           added: d => <JsonView object={d.data.data} />,
           modified: d => <JsonView object={d.data.data} />,
+          conflicted: d => <JsonView object={d.data.data} />,
         })}
       </div>
     </div>
