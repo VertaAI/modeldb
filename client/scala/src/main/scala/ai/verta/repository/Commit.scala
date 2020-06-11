@@ -16,15 +16,19 @@ class Commit(
   private val clientSet: ClientSet, private val repo: Repository,
   private val commit: VersioningCommit, private val commitBranch: Option[String] = None
 ) {
-  private var saved = true // whether the commit instance is saved to database, or is currently being modified.
   private var loadedFromRemote = false // whether blobs has been retrieved from remote
   private var blobs = Map[String, VersioningBlob]() // mutable map for storing blobs. Only loaded when used
 
   /** Return the id of the commit */
   def id = commit.commit_sha
 
+  /** Whether the commit instance is saved to database, or is currently being modified.
+   *  A commit is saved if and only if its versioning commit field has a defined ID.
+   */
+  private def saved = id.isDefined
+
   override def equals(other: Any) = other match {
-    case other: Commit => id.isDefined && other.id.isDefined && id.get == other.id.get
+    case other: Commit => saved && other.saved && id.get == other.id.get
     case _ => false
   }
 
@@ -191,7 +195,6 @@ class Commit(
 
       val child = new Commit(clientSet, repo, newVersioningCommit, commitBranch)
       child.blobs = childBlobs
-      child.saved = false
       child.loadedFromRemote = true
 
       child
@@ -281,5 +284,24 @@ class Commit(
       newCommit.newBranch(commitBranch.get)
     else
       Success(newCommit)
+  }
+
+  /** Return ancestors, starting from this Commit until the root of the Repository
+   *  @return a list of ancestors
+   */
+  def log()(implicit ec: ExecutionContext): Try[Stream[Commit]] = {
+    // if the current commit is not saved (no sha), get the one of its parent
+    // (the base of the modification)
+    val commitSHA = commit.commit_sha.getOrElse(commit.parent_shas.get.head)
+
+    clientSet.versioningService.ListCommitsLog4(
+      repository_id_repo_id = repo.id,
+      commit_sha = commitSHA
+    ) // Try[VersioningListCommitsLogRequestResponse]
+    .map(_.commits) // Try[Option[List[VersioningCommit]]]
+    .map(ls =>
+      if (ls.isEmpty) Stream()
+      else ls.get.toStream.map(c => new Commit(clientSet, repo, c))
+    )
   }
 }
