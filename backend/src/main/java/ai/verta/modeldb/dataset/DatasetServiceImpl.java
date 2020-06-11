@@ -71,7 +71,6 @@ import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
@@ -269,11 +268,15 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         LOGGER.info("Wrong id format: {}", e.getMessage());
         throw new ModelDBException("Wrong id format, expecting integer: " + request.getId());
       }
-      DeleteRepositoryRequest.Response response = repositoryDAO
-          .deleteRepository(DeleteRepositoryRequest.newBuilder().setRepositoryId(
-              RepositoryIdentification.newBuilder().setRepoId(id)).build(), commitDAO,
+      DeleteRepositoryRequest.Response response =
+          repositoryDAO.deleteRepository(
+              DeleteRepositoryRequest.newBuilder()
+                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+                  .build(),
+              commitDAO,
               experimentRunDAO);
-      responseObserver.onNext(DeleteDataset.Response.newBuilder().setStatus(response.getStatus()).build());
+      responseObserver.onNext(
+          DeleteDataset.Response.newBuilder().setStatus(response.getStatus()).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
