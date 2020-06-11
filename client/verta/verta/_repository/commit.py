@@ -5,6 +5,7 @@ from __future__ import print_function
 import collections
 from datetime import datetime
 import heapq
+import os
 
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
@@ -335,8 +336,42 @@ class Commit(object):
             Description of this Commit.
 
         """
+        # for managed versioning
+        blobs = self._blobs  # they get erased in _save()
+
         msg = self._to_create_msg(commit_message=message)
         self._save(msg)
+
+        # upload data if using managed versioning
+        for path, blob in blobs.items():
+            print(blob)
+            # if isinstance(blob, dataset._Dataset):
+            if isinstance(blob, dataset.S3):
+                for s3_obj in blob._msg.s3.components:
+                    if s3_obj.path.internal_versioned_path:
+                        print("We're doing it!")
+                        # get URL for upload
+                        data = {
+                            'location': path_to_location(path),
+                            'path_dataset_component_blob_path': s3_obj.path.internal_versioned_path,
+                            'method': "PUT",
+                        }
+                        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/getUrlForBlobVersioned".format(
+                            self._conn.scheme,
+                            self._conn.socket,
+                            self._repo.id,
+                            self.id,
+                        )
+                        response = _utils.make_request("POST", endpoint, self._conn, json=data)
+                        _utils.raise_for_http_error(response)
+                        url = response.json()['url']
+
+                        # upload full artifact
+                        s3_loc = dataset._s3.S3Location(s3_obj.path.path, s3_obj.s3_version_id)
+                        filepath = os.path.join(dataset._dataset.STAGING_DIR, s3_loc.key)
+                        with open(filepath, 'rb') as f:
+                            response = _utils.make_request("PUT", url, self._conn, data=f)
+                        _utils.raise_for_http_error(response)
 
     def _save(self, proto_message):
         data = _utils.proto_to_json(proto_message)

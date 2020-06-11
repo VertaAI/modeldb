@@ -2,11 +2,15 @@
 
 from __future__ import print_function
 
+import os
+
 from ..external import six
 from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
+from .._internal_utils import _artifact_utils
+from .._internal_utils import _connection_utils
 from .._internal_utils import _utils
 
 from . import _dataset
@@ -24,6 +28,8 @@ class S3(_dataset._Dataset):
     paths : list
         List of S3 URLs of the form ``"s3://<bucket-name>"`` or ``"s3://<bucket-name>/<key>"``, or
         objects returned by :meth:`S3.location`.
+    enable_mdb_versioning : bool, default False
+        Whether to upload the data itself to ModelDB to enable managed data versioning.
 
     Examples
     --------
@@ -45,7 +51,7 @@ class S3(_dataset._Dataset):
     """
     _S3_PATH = "s3://{}/{}"
 
-    def __init__(self, paths):
+    def __init__(self, paths, enable_mdb_versioning=False):
         if isinstance(paths, (six.string_types, S3Location)):
             paths = [paths]
 
@@ -72,6 +78,38 @@ class S3(_dataset._Dataset):
 
         s3_metadata = six.viewvalues(obj_paths_to_metadata)
         self._msg.s3.components.extend(s3_metadata)  # pylint: disable=no-member
+
+        # TODO: put this into a separate method to be called when a commit is saved
+        # TODO: make this happen in the above loop to help avoid race condition
+        if enable_mdb_versioning:
+            try:
+                import boto3
+            except ImportError:
+                e = ImportError("Boto 3 is not installed; try `pip install boto3`")
+                six.raise_from(e, None)
+            s3 = boto3.client('s3')
+
+            # create staging dir in home verta dir
+            try:
+                os.makedirs(_dataset.STAGING_DIR)
+            except OSError as e:
+                pass
+
+            # download files to staging dir
+            for s3_obj in self._msg.s3.components:
+                s3_loc = S3Location(s3_obj.path.path, s3_obj.s3_version_id)
+                filepath = os.path.join(_dataset.STAGING_DIR, s3_loc.key)
+                s3.download_file(
+                    Bucket=s3_loc.bucket,
+                    Key=s3_loc.key,
+                    ExtraArgs={'VersionId': s3_loc.version_id} if s3_loc.version_id else None,
+                    Filename=filepath,
+                )
+
+                # add MDB path
+                with open(filepath, 'rb') as f:
+                    artifact_hash = _artifact_utils.calc_sha256(f)
+                s3_obj.path.internal_versioned_path = artifact_hash + '/' + s3_loc.key
 
     def __repr__(self):
         lines = ["S3 Version"]

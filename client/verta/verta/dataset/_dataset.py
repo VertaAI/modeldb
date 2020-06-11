@@ -2,11 +2,17 @@
 
 from __future__ import print_function
 
+import os
+
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
 from .._internal_utils import _utils
 
 from .._repository import blob
+
+
+# temporary for managed versioning
+STAGING_DIR = os.path.join(_utils.HOME_VERTA_DIR, "managed-data")
 
 
 class _Dataset(blob.Blob):
