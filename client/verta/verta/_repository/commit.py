@@ -344,7 +344,6 @@ class Commit(object):
 
         # upload data if using managed versioning
         for path, blob in blobs.items():
-            print(blob)
             # if isinstance(blob, dataset._Dataset):
             if isinstance(blob, dataset.S3):
                 for s3_obj in blob._msg.s3.components:
@@ -353,7 +352,7 @@ class Commit(object):
                         # get URL for upload
                         data = {
                             'location': path_to_location(path),
-                            'path_dataset_component_blob_path': s3_obj.path.internal_versioned_path,
+                            'path_dataset_component_blob_path': s3_obj.path.path,
                             'method': "PUT",
                         }
                         endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/getUrlForBlobVersioned".format(
