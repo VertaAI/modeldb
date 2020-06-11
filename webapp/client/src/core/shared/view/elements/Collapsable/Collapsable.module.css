@@ -1,129 +1,128 @@
 .wrap_collabsible {
-    margin-bottom: 1.2rem 0;
-    user-select: none;
-  }
-  
-  input[type='checkbox'] {
-    display: none;
-  }
-  
-  /* -------- default closed ----------- */
-  .lbl_toggle {
-    display: block;
-    float: right;
-    padding: 6px 12px;
-    text-align: right;
-    color: var(--main-color2);
-    cursor: pointer;
-    transition: all 0.25s ease-out;
-    margin: 0 10px 5px;
-    background: var(--bg-color-charts);
-    border: 1px solid var(--main-color4);
-    border-radius: 4px;
-  }
-  
-  .lbl_toggle:hover {
-    color: var(--main-color2-light);
-  }
-  
-  .lbl_toggle::before {
-    content: ' ';
-    display: inline-block;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-left: 5px solid currentColor;
-    vertical-align: middle;
-    transform: translateY(-2px);
-    transition: transform 0.2s ease-out;
-  }
-  
-  .toggle:checked + .lbl_toggle::before {
-    transform: rotate(90deg) translateX(-3px);
-  }
-  
-  .toggle:checked + .lbl_toggle {
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-  }
-  
-  .collapsible_content {
-    margin: 0 10px;
-    max-height: 0px;
-    overflow: hidden;
-    background-color: var(--bg-color-charts);
-    transition: all 0.45s ease-out;
-    margin-bottom: 5px;
-  }
-  
-  .toggle:checked + .lbl_toggle + .collapsible_content {
-    max-height: 350px;
-  }
-  
-  .content_inner {
-    padding: 10px;
-  }
-  
-  /* -------- default closed end ----------- */
-  
-  /* -------- default open conatiner ----------- */
-  .lbl_toggle_open {
-    display: block;
-    float: right;
-    padding: 6px 12px;
-    text-align: right;
-    color: var(--main-color2);
-    cursor: pointer;
-    transition: all 0.25s ease-out;
-    margin: 0 10px 5px;
-    background: var(--bg-color-charts);
-    border: 1px solid var(--main-color4);
-    border-radius: 4px;
-  }
-  
-  .lbl_toggle_open:hover {
-    color: var(--main-color2-light);
-  }
-  
-  .lbl_toggle_open::before {
-    content: ' ';
-    display: inline-block;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-left: 5px solid currentColor;
-    vertical-align: middle;
-    transform: rotate(90deg) translateX(-3px);
-    transition: transform 0.2s ease-out;
-  }
-  
-  .toggle:checked + .lbl_toggle_open::before {
-    transform: rotate(0deg) translateY(-2px);
-  }
-  
-  .toggle:checked + .lbl_toggle_open {
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-  }
-  .collapsible_content_open {
-    margin: 0 10px;
-    max-height: 350px;
-    overflow: hidden;
-    background-color: var(--bg-color-charts);
-    transition: all 0.45s ease-out;
-    margin-bottom: 5px;
-  }
-  
-  .toggle:checked + .lbl_toggle_open + .collapsible_content_open {
-    max-height: 0px;
-  }
-  
-  .collapsible_content_open .content_inner {
-    padding: 10px;
-  }
-  
-  /* -------- default open container end ----------- */
-  
-  .label_content {
-    margin-left: 5px;
-    user-select: none;
-  }
-  
+  margin-bottom: 1.2rem 0;
+  user-select: none;
+}
+
+input[type='checkbox'] {
+  display: none;
+}
+
+/* -------- default closed ----------- */
+.lbl_toggle {
+  display: block;
+  float: right;
+  padding: 6px 12px;
+  text-align: right;
+  color: var(--main-color2);
+  cursor: pointer;
+  transition: all 0.25s ease-out;
+  margin: 0 10px 5px;
+  background: var(--bg-color-charts);
+  border: 1px solid var(--main-color4);
+  border-radius: 4px;
+}
+
+.lbl_toggle:hover {
+  color: var(--main-color2-light);
+}
+
+.lbl_toggle::before {
+  content: ' ';
+  display: inline-block;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 5px solid currentColor;
+  vertical-align: middle;
+  transform: translateY(-2px);
+  transition: transform 0.2s ease-out;
+}
+
+.toggle:checked + .lbl_toggle::before {
+  transform: rotate(90deg) translateX(-3px);
+}
+
+.toggle:checked + .lbl_toggle {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.collapsible_content {
+  margin: 0 10px;
+  max-height: 0px;
+  overflow: hidden;
+  background-color: var(--bg-color-charts);
+  transition: all 0.45s ease-out;
+  margin-bottom: 5px;
+}
+
+.toggle:checked + .lbl_toggle + .collapsible_content {
+  max-height: 350px;
+}
+
+.content_inner {
+  padding: 10px;
+}
+
+/* -------- default closed end ----------- */
+
+/* -------- default open conatiner ----------- */
+.lbl_toggle_open {
+  display: block;
+  float: right;
+  padding: 6px 12px;
+  text-align: right;
+  color: var(--main-color2);
+  cursor: pointer;
+  transition: all 0.25s ease-out;
+  margin: 0 10px 5px;
+  background: var(--bg-color-charts);
+  border: 1px solid var(--main-color4);
+  border-radius: 4px;
+}
+
+.lbl_toggle_open:hover {
+  color: var(--main-color2-light);
+}
+
+.lbl_toggle_open::before {
+  content: ' ';
+  display: inline-block;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 5px solid currentColor;
+  vertical-align: middle;
+  transform: rotate(90deg) translateX(-3px);
+  transition: transform 0.2s ease-out;
+}
+
+.toggle:checked + .lbl_toggle_open::before {
+  transform: rotate(0deg) translateY(-2px);
+}
+
+.toggle:checked + .lbl_toggle_open {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.collapsible_content_open {
+  margin: 0 10px;
+  max-height: 350px;
+  overflow: hidden;
+  background-color: var(--bg-color-charts);
+  transition: all 0.45s ease-out;
+  margin-bottom: 5px;
+}
+
+.toggle:checked + .lbl_toggle_open + .collapsible_content_open {
+  max-height: 0px;
+}
+
+.collapsible_content_open .content_inner {
+  padding: 10px;
+}
+
+/* -------- default open container end ----------- */
+
+.label_content {
+  margin-left: 5px;
+  user-select: none;
+}

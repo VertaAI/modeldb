@@ -1,6 +1,6 @@
 package ai.verta.modeldb.dto;
 
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 
 public class WorkspaceDTO {
   private String workspaceName;

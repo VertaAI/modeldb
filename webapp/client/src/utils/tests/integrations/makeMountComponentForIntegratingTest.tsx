@@ -3,8 +3,10 @@ import { mount } from 'enzyme';
 import * as React from 'react';
 import { Provider } from 'react-redux';
 import { Store } from 'redux';
-
+import { MockedProvider, MockedProviderProps } from '@apollo/react-testing';
 import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
+import * as apollo from 'core/shared/graphql/apollo/apollo';
+
 import setupIntegrationTest, {
   ISetupIntegrationTestSettings,
 } from './setupIntegrationTest';
@@ -14,6 +16,7 @@ export interface IOptions {
   settings?: ISetupIntegrationTestSettings;
   updateStoreBeforeMount?: (store: Store) => Promise<any>;
   updateStoreAfterMount?: (store: Store) => Promise<any>;
+  apolloMockedProviderProps?: MockedProviderProps;
 }
 
 const makeMountComponentForIntegratingTest = async ({
@@ -21,6 +24,7 @@ const makeMountComponentForIntegratingTest = async ({
   settings,
   updateStoreBeforeMount,
   updateStoreAfterMount,
+  apolloMockedProviderProps = {},
 }: IOptions) => {
   const { store, dispatchSpy, history } = setupIntegrationTest(settings);
 
@@ -31,11 +35,18 @@ const makeMountComponentForIntegratingTest = async ({
 
   const component = mount(
     <div id="root">
-      <Provider store={store}>
-        <ConnectedRouter history={history}>
-          <Component />
-        </ConnectedRouter>
-      </Provider>
+      <MockedProvider
+        {...apolloMockedProviderProps}
+        cache={apollo.makeCache()}
+        defaultOptions={apollo.defaultOptions}
+      >
+        <Provider store={store}>
+          <ConnectedRouter history={history}>
+            <ToastContainer />
+            <Component />
+          </ConnectedRouter>
+        </Provider>
+      </MockedProvider>
     </div>
   );
 
@@ -51,7 +62,8 @@ export default makeMountComponentForIntegratingTest;
 
 // todo remove testing-library
 import { configure } from '@testing-library/dom';
-import { render, fireEvent, waitForElement } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { ToastContainer } from 'react-toastify';
 
 configure({ testIdAttribute: 'data-test' });
 

@@ -1,9 +1,11 @@
 package ai.verta.modeldb.project;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
@@ -15,7 +17,6 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -34,7 +35,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Organization;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
@@ -127,6 +127,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .toString();
   private static final String GET_PROJECT_BY_ID_HQL =
       "From ProjectEntity p where p.id = :id AND p." + ModelDBConstants.DELETED + " = false";
+  private static final String COUNT_PROJECT_BY_ID_HQL =
+      "Select Count(id) From ProjectEntity p where p.deleted = false AND p.id = :projectId";
   private static final String GET_PROJECT_BY_IDS_HQL =
       "From ProjectEntity p where p.id IN (:ids) AND p." + ModelDBConstants.DELETED + " = false";
   private static final String GET_PROJECT_BY_SHORT_NAME_AND_OWNER_HQL =
@@ -796,7 +798,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       query.setParameter("id", id);
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
-        String errorMessage = "Project not found for given ID";
+        String errorMessage = ModelDBMessages.PROJECT_NOT_FOUND_FOR_ID;
         LOGGER.warn(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
@@ -1361,5 +1363,21 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return projectPaginationDTO.getProjects().stream()
         .map(Project::getId)
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean projectExistsInDB(String projectId) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Query query = session.createQuery(COUNT_PROJECT_BY_ID_HQL);
+      query.setParameter("projectId", projectId);
+      Long projectCount = (Long) query.getSingleResult();
+      return projectCount == 1L;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return projectExistsInDB(projectId);
+      } else {
+        throw ex;
+      }
+    }
   }
 }

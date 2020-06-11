@@ -5,7 +5,10 @@ import {
 } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 
-import { convertServerDatasetPathComponent } from '../RepositoryData/Blob/DatasetBlob';
+import {
+  convertServerDatasetPathComponent,
+  convertServerDatasetS3Component,
+} from '../RepositoryData/Blob/DatasetBlob';
 import {
   IServerBlobDiff,
   IServerElementDiff,
@@ -54,12 +57,13 @@ const convertDatasetComponents = (
       );
 
     case 's3':
-      return (serverComponents as IServerS3Component[]).map(d => ({
-        path: convertServerElementDiffToClient(
-          convertServerDatasetPathComponent,
-          d.path
-        ),
-      }));
+      return (serverComponents as IServerS3DatasetComponentBlobDiff[]).map(
+        component =>
+          convertServerElementDiffToClient(
+            convertServerDatasetS3Component,
+            component
+          )
+      );
 
     default:
       exhaustiveCheck(datasetBlobType, '');
@@ -69,7 +73,7 @@ const convertDatasetComponents = (
 export type IServerDatasetDiff = IServerBlobDiff<{
   dataset: {
     s3?: {
-      components: IServerS3Component[];
+      components: IServerS3DatasetComponentBlobDiff[];
     };
     path?: {
       components: IServerPathDatasetComponentBlobDiff[];
@@ -77,18 +81,29 @@ export type IServerDatasetDiff = IServerBlobDiff<{
   };
 }>;
 
-type IServerComponent =
-  | IServerS3Component
-  | IServerPathDatasetComponentBlobDiff;
-
-type IServerS3Component = { path: IServerPathDatasetComponentBlobDiff };
-
-export type IServerPathDatasetComponentBlobDiff = IServerElementDiff<{
+export interface IServerPathDatasetComponent {
   path?: string; // Full path to the file
   size?: number;
   last_modified_at_source?: number;
   sha256?: string;
   md5?: string;
-}>;
+}
+
+interface IServerS3Component {
+  path: IServerPathDatasetComponent;
+  s3_version_id: string;
+}
+
+type IServerComponent =
+  | IServerS3DatasetComponentBlobDiff
+  | IServerPathDatasetComponentBlobDiff;
+
+export type IServerS3DatasetComponentBlobDiff = IServerElementDiff<
+  IServerS3Component
+>;
+
+export type IServerPathDatasetComponentBlobDiff = IServerElementDiff<
+  IServerPathDatasetComponent
+>;
 
 export default convertServerDatasetDiff;

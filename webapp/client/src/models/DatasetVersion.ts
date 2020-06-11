@@ -9,7 +9,7 @@ interface ICommonDatasetVersion<Type extends DatasetType, Info> {
   dateUpdated: Date;
   description: string;
   tags: string[];
-  isPubliclyVisible: boolean;
+  isPubliclyVisible?: boolean;
   attributes: IAttribute[];
   version: number;
   type: Type;

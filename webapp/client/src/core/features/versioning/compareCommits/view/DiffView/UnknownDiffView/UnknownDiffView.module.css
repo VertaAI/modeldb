@@ -1,5 +1,5 @@
 @value colors: "../shared/styles.module.css";
-@value redDiff, greenDiff from colors;
+@value ADiff, BDiff from colors;
 
 .diff {
   display: grid;
@@ -8,9 +8,9 @@
 }
 
 .diffLeft {
-  background-color: redDiff;
+  background-color: ADiff;
 }
 
 .diffRight {
-  background-color: greenDiff;
+  background-color: BDiff;
 }

@@ -219,7 +219,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
 
     clientSet.experimentRunService.logArtifact(ModeldbLogArtifact(
       id = run.id,
-      artifact = Some(ModeldbArtifact(
+      artifact = Some(CommonArtifact(
         key = Some(key),
         path = Some(artifactPath),
         path_only = Some(false),

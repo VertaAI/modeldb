@@ -21,7 +21,14 @@ message IdentificationType {
     oneof id {
         uint64 int_id = 2;
         string string_id = 3;
+        VersioningCompositeIdentifier composite_id = 4;
     }
+}
+
+message VersioningCompositeIdentifier {
+    uint64 repo_id = 4;
+    string commit_hash = 5;
+    repeated string location = 6;
 }
 
 message GetLabelsRequest {
@@ -51,6 +58,35 @@ message DeleteLabelsRequest {
     }
 }
 
+message GetPropertyRequest {
+    // If only id_type is provided, gather from all of such sources
+    IdentificationType id = 1;
+    string key = 2;
+
+    message Response {
+        string value = 3;
+    }
+}
+
+message AddPropertyRequest {
+    IdentificationType id = 1;
+    string key = 2;
+    string value = 3;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message DeletePropertyRequest {
+    IdentificationType id = 1;
+    string key = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
 service MetadataService {
     rpc GetLabels(GetLabelsRequest) returns (GetLabelsRequest.Response) {
         option (google.api.http) = {
@@ -68,6 +104,26 @@ service MetadataService {
     rpc DeleteLabels(DeleteLabelsRequest) returns (DeleteLabelsRequest.Response) {
         option (google.api.http) = {
             delete: "/v1/metadata/labels"
+            body: "*"
+        };
+    };
+
+    rpc GetProperty(GetPropertyRequest) returns (GetPropertyRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/property"
+        };
+    };
+
+    rpc AddProperty(AddPropertyRequest) returns (AddPropertyRequest.Response) {
+        option (google.api.http) = {
+            put: "/v1/metadata/property"
+            body: "*"
+        };
+    };
+
+    rpc DeleteProperty(DeletePropertyRequest) returns (DeletePropertyRequest.Response) {
+        option (google.api.http) = {
+            delete: "/v1/metadata/property"
             body: "*"
         };
     };

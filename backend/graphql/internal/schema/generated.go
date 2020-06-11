@@ -14,6 +14,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
+	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
@@ -302,7 +303,7 @@ type ComplexityRoot struct {
 		ID                func(childComplexity int) int
 		Labels            func(childComplexity int) int
 		Log               func(childComplexity int, commit CommitReference) int
-		Merge             func(childComplexity int, a CommitReference, b CommitReference, message *string) int
+		Merge             func(childComplexity int, a CommitReference, b CommitReference, message *string, isDryRun *bool) int
 		Name              func(childComplexity int) int
 		Network           func(childComplexity int) int
 		Owner             func(childComplexity int) int
@@ -348,6 +349,7 @@ type ComplexityRoot struct {
 		ID       func(childComplexity int) int
 		Name     func(childComplexity int) int
 		Picture  func(childComplexity int) int
+		Roles    func(childComplexity int) int
 		Username func(childComplexity int) int
 	}
 
@@ -367,7 +369,7 @@ type ComplexityRoot struct {
 }
 
 type ArtifactResolver interface {
-	Type(ctx context.Context, obj *modeldb.Artifact) (ArtifactType, error)
+	Type(ctx context.Context, obj *common.Artifact) (ArtifactType, error)
 }
 type CommitResolver interface {
 	ID(ctx context.Context, obj *models.Commit) (string, error)
@@ -430,7 +432,7 @@ type NamedCommitFolderResolver interface {
 }
 type ObservationResolver interface {
 	Attribute(ctx context.Context, obj *modeldb.Observation) (KeyValue, error)
-	Artifact(ctx context.Context, obj *modeldb.Observation) (*modeldb.Artifact, error)
+	Artifact(ctx context.Context, obj *modeldb.Observation) (*common.Artifact, error)
 	Timestamp(ctx context.Context, obj *modeldb.Observation) (*string, error)
 }
 type OrganizationResolver interface {
@@ -484,7 +486,7 @@ type RepositoryResolver interface {
 	Delete(ctx context.Context, obj *versioning.Repository) (bool, error)
 	AddLabels(ctx context.Context, obj *versioning.Repository, labels []string) (*versioning.Repository, error)
 	DeleteLabels(ctx context.Context, obj *versioning.Repository, labels []string) (*versioning.Repository, error)
-	Merge(ctx context.Context, obj *versioning.Repository, a CommitReference, b CommitReference, message *string) (*MergeResult, error)
+	Merge(ctx context.Context, obj *versioning.Repository, a CommitReference, b CommitReference, message *string, isDryRun *bool) (*MergeResult, error)
 }
 type RepositoryBranchResolver interface {
 	Commit(ctx context.Context, obj *models.RepositoryBranch) (*models.Commit, error)
@@ -510,6 +512,7 @@ type UserResolver interface {
 	Name(ctx context.Context, obj *uac.UserInfo) (*string, error)
 
 	Picture(ctx context.Context, obj *uac.UserInfo) (*string, error)
+
 	Username(ctx context.Context, obj *uac.UserInfo) (string, error)
 }
 type UserCollaboratorResolver interface {
@@ -1778,7 +1781,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Repository.Merge(childComplexity, args["a"].(CommitReference), args["b"].(CommitReference), args["message"].(*string)), true
+		return e.complexity.Repository.Merge(childComplexity, args["a"].(CommitReference), args["b"].(CommitReference), args["message"].(*string), args["isDryRun"].(*bool)), true
 
 	case "Repository.name":
 		if e.complexity.Repository.Name == nil {
@@ -1973,6 +1976,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Picture(childComplexity), true
+
+	case "User.roles":
+		if e.complexity.User.Roles == nil {
+			break
+		}
+
+		return e.complexity.User.Roles(childComplexity), true
 
 	case "User.username":
 		if e.complexity.User.Username == nil {
@@ -2188,6 +2198,11 @@ type TeamCollaborator {
 }
 
 union Collaborator = UserCollaborator | TeamCollaborator
+
+input CollaboratorReference {
+  usernameOrEmail: String
+  teamID: String
+}
 type Commit {
   id: String!
   message: String!
@@ -2396,6 +2411,30 @@ type PaginationResponse {
   limit: Int!
   totalRecords: Int!
 }
+
+input StringPredicate {
+  key: String!
+  value: String!
+  operator: PredicateOperator!
+}
+
+input FloatPredicate {
+  key: String!
+  value: Float!
+  operator: PredicateOperator!
+}
+
+enum PredicateOperator {
+  EQ
+  NE
+  GT
+  GTE
+  LT
+  LTE
+  CONTAIN
+  NOT_CONTAIN
+  IN
+}
 type Repository {
     id: ID!
     name: String!
@@ -2423,7 +2462,7 @@ type Repository {
     delete: Boolean!
     addLabels(labels: [String!]!): Repository!
     deleteLabels(labels: [String!]!): Repository!
-    merge(a: CommitReference!, b: CommitReference!, message: String): MergeResult!
+    merge(a: CommitReference!, b: CommitReference!, message: String, isDryRun: Boolean): MergeResult!
 }
 
 input CommitReference {
@@ -2440,6 +2479,9 @@ type Repositories {
 
 input RepositoriesQuery {
   pagination: PaginationQuery
+  stringPredicates: [StringPredicate!]
+  floatPredicates: [FloatPredicate!]
+  ids: [Int!]
 }
 
 type RepositoryTag {
@@ -2474,6 +2516,7 @@ type User {
   name: String
   email: String!
   picture: String
+  roles: [String!]!
   username: String!
 }
 enum Visibility {
@@ -2488,7 +2531,11 @@ type Workspace {
 
   repositories(next: String, query: RepositoriesQuery): Repositories!
   repository(name: String!): Repository
-  createRepository(name: String!, visibility: Visibility!): Repository
+  createRepository(name: String!, visibility: Visibility!): Repository!
+
+
+  # not sure this is needed now or later, but this feels like it where go
+
 }
 `},
 )
@@ -3112,6 +3159,14 @@ func (ec *executionContext) field_Repository_merge_args(ctx context.Context, raw
 		}
 	}
 	args["message"] = arg2
+	var arg3 *bool
+	if tmp, ok := rawArgs["isDryRun"]; ok {
+		arg3, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["isDryRun"] = arg3
 	return args, nil
 }
 
@@ -3393,7 +3448,7 @@ func (ec *executionContext) _AllowedActions_deploy(ctx context.Context, field gr
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Artifact_key(ctx context.Context, field graphql.CollectedField, obj *modeldb.Artifact) (ret graphql.Marshaler) {
+func (ec *executionContext) _Artifact_key(ctx context.Context, field graphql.CollectedField, obj *common.Artifact) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3430,7 +3485,7 @@ func (ec *executionContext) _Artifact_key(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Artifact_path(ctx context.Context, field graphql.CollectedField, obj *modeldb.Artifact) (ret graphql.Marshaler) {
+func (ec *executionContext) _Artifact_path(ctx context.Context, field graphql.CollectedField, obj *common.Artifact) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3467,7 +3522,7 @@ func (ec *executionContext) _Artifact_path(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Artifact_type(ctx context.Context, field graphql.CollectedField, obj *modeldb.Artifact) (ret graphql.Marshaler) {
+func (ec *executionContext) _Artifact_type(ctx context.Context, field graphql.CollectedField, obj *common.Artifact) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3504,7 +3559,7 @@ func (ec *executionContext) _Artifact_type(ctx context.Context, field graphql.Co
 	return ec.marshalNArtifactType2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐArtifactType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Artifact_pathOnly(ctx context.Context, field graphql.CollectedField, obj *modeldb.Artifact) (ret graphql.Marshaler) {
+func (ec *executionContext) _Artifact_pathOnly(ctx context.Context, field graphql.CollectedField, obj *common.Artifact) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -5159,10 +5214,10 @@ func (ec *executionContext) _ExperimentRun_artifacts(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*modeldb.Artifact)
+	res := resTmp.([]*common.Artifact)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNArtifact2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐArtifact(ctx, field.Selections, res)
+	return ec.marshalNArtifact2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋcommonᚐArtifact(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ExperimentRun_datasets(ctx context.Context, field graphql.CollectedField, obj *modeldb.ExperimentRun) (ret graphql.Marshaler) {
@@ -5196,10 +5251,10 @@ func (ec *executionContext) _ExperimentRun_datasets(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*modeldb.Artifact)
+	res := resTmp.([]*common.Artifact)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNArtifact2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐArtifact(ctx, field.Selections, res)
+	return ec.marshalNArtifact2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋcommonᚐArtifact(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ExperimentRun_metrics(ctx context.Context, field graphql.CollectedField, obj *modeldb.ExperimentRun) (ret graphql.Marshaler) {
@@ -6845,10 +6900,10 @@ func (ec *executionContext) _Observation_artifact(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*modeldb.Artifact)
+	res := resTmp.(*common.Artifact)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOArtifact2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐArtifact(ctx, field.Selections, res)
+	return ec.marshalOArtifact2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋcommonᚐArtifact(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Observation_timestamp(ctx context.Context, field graphql.CollectedField, obj *modeldb.Observation) (ret graphql.Marshaler) {
@@ -9276,7 +9331,7 @@ func (ec *executionContext) _Repository_merge(ctx context.Context, field graphql
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Repository().Merge(rctx, obj, args["a"].(CommitReference), args["b"].(CommitReference), args["message"].(*string))
+		return ec.resolvers.Repository().Merge(rctx, obj, args["a"].(CommitReference), args["b"].(CommitReference), args["message"].(*string), args["isDryRun"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10102,6 +10157,43 @@ func (ec *executionContext) _User_picture(ctx context.Context, field graphql.Col
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _User_roles(ctx context.Context, field graphql.CollectedField, obj *uac.UserInfo) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Roles, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2ᚕstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *uac.UserInfo) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -10449,12 +10541,15 @@ func (ec *executionContext) _Workspace_createRepository(ctx context.Context, fie
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*versioning.Repository)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalORepository2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚋversioningᚐRepository(ctx, field.Selections, res)
+	return ec.marshalNRepository2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚋversioningᚐRepository(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -11608,6 +11703,30 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCollaboratorReference(ctx context.Context, obj interface{}) (CollaboratorReference, error) {
+	var it CollaboratorReference
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "usernameOrEmail":
+			var err error
+			it.UsernameOrEmail, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "teamID":
+			var err error
+			it.TeamID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCommitReference(ctx context.Context, obj interface{}) (CommitReference, error) {
 	var it CommitReference
 	var asMap = obj.(map[string]interface{})
@@ -11674,6 +11793,36 @@ func (ec *executionContext) unmarshalInputExperimentsQuery(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputFloatPredicate(ctx context.Context, obj interface{}) (FloatPredicate, error) {
+	var it FloatPredicate
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "key":
+			var err error
+			it.Key, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "value":
+			var err error
+			it.Value, err = ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "operator":
+			var err error
+			it.Operator, err = ec.unmarshalNPredicateOperator2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐPredicateOperator(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPaginationQuery(ctx context.Context, obj interface{}) (PaginationQuery, error) {
 	var it PaginationQuery
 	var asMap = obj.(map[string]interface{})
@@ -11725,6 +11874,54 @@ func (ec *executionContext) unmarshalInputRepositoriesQuery(ctx context.Context,
 		case "pagination":
 			var err error
 			it.Pagination, err = ec.unmarshalOPaginationQuery2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐPaginationQuery(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "stringPredicates":
+			var err error
+			it.StringPredicates, err = ec.unmarshalOStringPredicate2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐStringPredicate(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "floatPredicates":
+			var err error
+			it.FloatPredicates, err = ec.unmarshalOFloatPredicate2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐFloatPredicate(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "ids":
+			var err error
+			it.Ids, err = ec.unmarshalOInt2ᚕint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputStringPredicate(ctx context.Context, obj interface{}) (StringPredicate, error) {
+	var it StringPredicate
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "key":
+			var err error
+			it.Key, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "value":
+			var err error
+			it.Value, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "operator":
+			var err error
+			it.Operator, err = ec.unmarshalNPredicateOperator2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐPredicateOperator(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11837,7 +12034,7 @@ func (ec *executionContext) _AllowedActions(ctx context.Context, sel ast.Selecti
 
 var artifactImplementors = []string{"Artifact"}
 
-func (ec *executionContext) _Artifact(ctx context.Context, sel ast.SelectionSet, obj *modeldb.Artifact) graphql.Marshaler {
+func (ec *executionContext) _Artifact(ctx context.Context, sel ast.SelectionSet, obj *common.Artifact) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.RequestContext, sel, artifactImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -14106,6 +14303,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				res = ec._User_picture(ctx, field, obj)
 				return res
 			})
+		case "roles":
+			out.Values[i] = ec._User_roles(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "username":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -14259,6 +14461,9 @@ func (ec *executionContext) _Workspace(ctx context.Context, sel ast.SelectionSet
 					}
 				}()
 				res = ec._Workspace_createRepository(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		default:
@@ -14540,11 +14745,11 @@ func (ec *executionContext) marshalNAllowedActions2ᚖgithubᚗcomᚋVertaAIᚋm
 	return ec._AllowedActions(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNArtifact2githubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐArtifact(ctx context.Context, sel ast.SelectionSet, v modeldb.Artifact) graphql.Marshaler {
+func (ec *executionContext) marshalNArtifact2githubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋcommonᚐArtifact(ctx context.Context, sel ast.SelectionSet, v common.Artifact) graphql.Marshaler {
 	return ec._Artifact(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNArtifact2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐArtifact(ctx context.Context, sel ast.SelectionSet, v []*modeldb.Artifact) graphql.Marshaler {
+func (ec *executionContext) marshalNArtifact2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋcommonᚐArtifact(ctx context.Context, sel ast.SelectionSet, v []*common.Artifact) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -14568,7 +14773,7 @@ func (ec *executionContext) marshalNArtifact2ᚕᚖgithubᚗcomᚋVertaAIᚋmode
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNArtifact2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐArtifact(ctx, sel, v[i])
+			ret[i] = ec.marshalNArtifact2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋcommonᚐArtifact(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -14581,7 +14786,7 @@ func (ec *executionContext) marshalNArtifact2ᚕᚖgithubᚗcomᚋVertaAIᚋmode
 	return ret
 }
 
-func (ec *executionContext) marshalNArtifact2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐArtifact(ctx context.Context, sel ast.SelectionSet, v *modeldb.Artifact) graphql.Marshaler {
+func (ec *executionContext) marshalNArtifact2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋcommonᚐArtifact(ctx context.Context, sel ast.SelectionSet, v *common.Artifact) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -14973,6 +15178,18 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNFloatPredicate2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐFloatPredicate(ctx context.Context, v interface{}) (FloatPredicate, error) {
+	return ec.unmarshalInputFloatPredicate(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNFloatPredicate2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐFloatPredicate(ctx context.Context, v interface{}) (*FloatPredicate, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNFloatPredicate2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐFloatPredicate(ctx, v)
+	return &res, err
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
@@ -15438,6 +15655,15 @@ func (ec *executionContext) marshalNPaginationResponse2ᚖgithubᚗcomᚋVertaAI
 	return ec._PaginationResponse(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNPredicateOperator2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐPredicateOperator(ctx context.Context, v interface{}) (PredicateOperator, error) {
+	var res PredicateOperator
+	return res, res.UnmarshalGQL(v)
+}
+
+func (ec *executionContext) marshalNPredicateOperator2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐPredicateOperator(ctx context.Context, sel ast.SelectionSet, v PredicateOperator) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNProject2githubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐProject(ctx context.Context, sel ast.SelectionSet, v modeldb.Project) graphql.Marshaler {
 	return ec._Project(ctx, sel, &v)
 }
@@ -15720,6 +15946,18 @@ func (ec *executionContext) marshalNString2ᚕstring(ctx context.Context, sel as
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNStringPredicate2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐStringPredicate(ctx context.Context, v interface{}) (StringPredicate, error) {
+	return ec.unmarshalInputStringPredicate(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNStringPredicate2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐStringPredicate(ctx context.Context, v interface{}) (*StringPredicate, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNStringPredicate2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐStringPredicate(ctx, v)
+	return &res, err
 }
 
 func (ec *executionContext) marshalNTeam2githubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋuacᚐTeam(ctx context.Context, sel ast.SelectionSet, v uac.Team) graphql.Marshaler {
@@ -16022,11 +16260,11 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOArtifact2githubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐArtifact(ctx context.Context, sel ast.SelectionSet, v modeldb.Artifact) graphql.Marshaler {
+func (ec *executionContext) marshalOArtifact2githubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋcommonᚐArtifact(ctx context.Context, sel ast.SelectionSet, v common.Artifact) graphql.Marshaler {
 	return ec._Artifact(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOArtifact2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐArtifact(ctx context.Context, sel ast.SelectionSet, v *modeldb.Artifact) graphql.Marshaler {
+func (ec *executionContext) marshalOArtifact2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋcommonᚐArtifact(ctx context.Context, sel ast.SelectionSet, v *common.Artifact) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -16151,6 +16389,26 @@ func (ec *executionContext) unmarshalOExperimentsQuery2ᚖgithubᚗcomᚋVertaAI
 	return &res, err
 }
 
+func (ec *executionContext) unmarshalOFloatPredicate2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐFloatPredicate(ctx context.Context, v interface{}) ([]*FloatPredicate, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*FloatPredicate, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNFloatPredicate2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐFloatPredicate(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) unmarshalOID2string(ctx context.Context, v interface{}) (string, error) {
 	return graphql.UnmarshalID(v)
 }
@@ -16180,6 +16438,38 @@ func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}
 
 func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
 	return graphql.MarshalInt(v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚕint(ctx context.Context, v interface{}) ([]int, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]int, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕint(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
@@ -16323,6 +16613,26 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return ec.marshalOString2string(ctx, sel, *v)
+}
+
+func (ec *executionContext) unmarshalOStringPredicate2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐStringPredicate(ctx context.Context, v interface{}) ([]*StringPredicate, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*StringPredicate, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNStringPredicate2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐStringPredicate(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) marshalOUser2githubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋuacᚐUserInfo(ctx context.Context, sel ast.SelectionSet, v uac.UserInfo) graphql.Marshaler {

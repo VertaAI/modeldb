@@ -2,8 +2,8 @@ import {
   IGitCodeBlob,
   ICodeBlob,
   INotebookCodeBlob,
-  makeGitCodeBlobRemoteRepoUrl,
 } from 'core/shared/models/Versioning/Blob/CodeBlob';
+import { makeGithubRemoteRepoUrl } from 'core/shared/utils/github/github';
 
 import { convertServerDatasetPathComponent } from './DatasetBlob';
 
@@ -49,7 +49,7 @@ export const convertServerGitBlob = (serverGit: any): IGitCodeBlob => {
       branch: serverGit.branch,
       commitHash: serverGit.hash,
       isDirty: serverGit.is_dirty,
-      remoteRepoUrl: makeGitCodeBlobRemoteRepoUrl(serverGit.repo),
+      remoteRepoUrl: makeGithubRemoteRepoUrl(serverGit.repo),
       tag: serverGit.tag,
     },
   };
