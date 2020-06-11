@@ -24,6 +24,7 @@ class _Dataset(blob.Blob):
         super(_Dataset, self).__init__()
 
         self._msg = _DatasetService.DatasetBlob()
+        self._commit = None  # to be set during commit.get()
 
     @staticmethod
     def _path_component_to_repr_lines(path_component_msg):
