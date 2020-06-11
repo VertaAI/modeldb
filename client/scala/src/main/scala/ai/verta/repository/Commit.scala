@@ -16,12 +16,14 @@ class Commit(
   private val clientSet: ClientSet, private val repo: Repository,
   private val commit: VersioningCommit, private val commitBranch: Option[String] = None
 ) {
-  private var saved = true // whether the commit instance is saved to database, or is currently being modified.
   private var loadedFromRemote = false // whether blobs has been retrieved from remote
   private var blobs = Map[String, VersioningBlob]() // mutable map for storing blobs. Only loaded when used
 
   /** Return the id of the commit */
   def id = commit.commit_sha
+
+  /** Whether the commit instance is saved to database, or is currently being modified. */
+  private def saved = id.isDefined
 
   override def equals(other: Any) = other match {
     case other: Commit => id.isDefined && other.id.isDefined && id.get == other.id.get
@@ -191,7 +193,6 @@ class Commit(
 
       val child = new Commit(clientSet, repo, newVersioningCommit, commitBranch)
       child.blobs = childBlobs
-      child.saved = false
       child.loadedFromRemote = true
 
       child
