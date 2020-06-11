@@ -1,7 +1,7 @@
 import { CommunicationActionsToObj } from 'core/shared/utils/redux/communication';
 import { Dataset } from 'models/Dataset';
 import { Store } from 'redux';
-import { ILoadDatasetActions } from 'store/datasets';
+import { ILoadDatasetActions } from 'features/datasets/store';
 
 const setDatasetInStore = async (store: Store, dataset: Dataset) => {
   const action: CommunicationActionsToObj<

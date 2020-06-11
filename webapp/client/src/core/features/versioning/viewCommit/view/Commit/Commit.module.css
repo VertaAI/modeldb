@@ -5,10 +5,13 @@
 .content {
 }
 
-.commit {
-  border: 1px solid rgba(27, 31, 35, 0.15);
-  border-radius: 3px;
+.browseFiles {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 17px;
+}
 
+.commit {
   --common-padding: 8px;
 }
 
@@ -18,22 +21,26 @@
   grid-column-gap: 5px;
   align-items: center;
   padding: var(--common-padding);
-  background-color: #eaf5ff;
+  background-color: #f7f7ff;
+  border-top: 1px solid #888888;
+  border-left: 1px solid #dedede;
+  border-right: 1px solid #dedede;
+  border-bottom: 1px solid #cccccc;
 }
 
 .commit__message {
   word-break: break-word;
-  font-size: 16px;
-  color: var(--main-text-color1);
-}
-
-.commit__browseFiles {
+  font-size: 14px;
+  font-weight: 500;
+  color: 8px var(--main-text-color1) 11px;
 }
 
 .commit__meta {
   display: flex;
   flex-wrap: wrap;
-  padding: var(--common-padding);
+  padding: 14px var(--common-padding) 10px;
+  border: 1px solid #dedede;
+  border-top: none;
   background-color: #fff;
   font-size: 14px;
 }
@@ -50,9 +57,9 @@
 }
 
 .shaContainer {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 24px;
-  color: #586069;
+  color: #888888;
 }
 
 .author {
@@ -60,20 +67,21 @@
   align-items: center;
 }
 .author__username {
+  font-size: 14px;
   margin-left: 5px;
-  color: #586069;
+  color: var(--main-text-color1);
   font-weight: 500;
 }
 
 .date {
   margin-left: 5px;
-  color: #586069;
-}
-
-.experimentRuns {
-  margin-top: 15px;
+  color: var(--main-text-color3);
 }
 
 .diff {
   margin-top: 15px;
+}
+
+.experimentRuns {
+  margin-top: 32px;
 }

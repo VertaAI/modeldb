@@ -1,73 +1,82 @@
-import * as React from 'react';
+import React, { useCallback } from 'react';
 
 import { IPathDatasetComponentBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
+import LastModified from 'core/shared/view/domain/Versioning/Blob/DatasetBlob/LastModified/LastModified';
 import PathSize from 'core/shared/view/domain/Versioning/Blob/DatasetBlob/PathSize/PathSize';
-
-import styles from './PathDatasetComponents.module.css';
-import Table from './Table/Table';
+import Table from 'core/shared/view/elements/Table/Table';
+import { TextWithCopyTooltip } from 'core/shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
 
 interface ILocalProps {
   data: IPathDatasetComponentBlob[];
 }
 
 const PathDatasetComponents = (props: ILocalProps) => {
+  const getRowKey = useCallback(
+    (row: IPathDatasetComponentBlob) => row.sha256,
+    []
+  );
+
   return (
-    <div className={styles.root}>
-      <Table data={props.data}>
-        <Table.Column
-          title="Path"
-          type="path"
-          width={250}
-          render={({ path }) => (
-            <span className={styles.elem} title={path}>
-              {path}
-            </span>
-          )}
-        />
-        <Table.Column
-          title="Size"
-          type="size"
-          width={120}
-          render={({ size }) => (
-            <PathSize className={styles.elem} size={size} />
-          )}
-        />
-        <Table.Column
-          title="Modified"
-          type="lastModifiedAtSource"
-          width={170}
-          render={({ lastModifiedAtSource }) => (
-            <span
-              className={styles.elem}
-              title={lastModifiedAtSource.toString()}
-            >
-              {lastModifiedAtSource.toLocaleDateString() +
-                ' ' +
-                lastModifiedAtSource.toLocaleTimeString()}
-            </span>
-          )}
-        />
-        <Table.Column
-          title="MD5"
-          type="md5"
-          width={150}
-          render={({ md5 }) => (
-            <span className={styles.elem} title={md5}>
-              {md5}
-            </span>
-          )}
-        />
-        <Table.Column
-          title="SHA256"
-          type="sha256"
-          render={({ sha256 }) => (
-            <span className={styles.elem} title={sha256}>
-              {sha256}
-            </span>
-          )}
-        />
-      </Table>
-    </div>
+    <Table
+      dataRows={props.data}
+      getRowKey={getRowKey}
+      columnDefinitions={[
+        {
+          title: 'Path',
+          type: 'path',
+          render: row => (
+            <TextWithCopyTooltip copyText={row.path}>
+              <span title={row.path}>{row.path}</span>
+            </TextWithCopyTooltip>
+          ),
+          width: '24%',
+          withSort: true,
+          getValue: row => row.path,
+        },
+        {
+          title: 'Size',
+          type: 'size',
+          render: row => <PathSize size={row.size} />,
+          width: '19%',
+          withSort: true,
+          getValue: row => row.size,
+        },
+        {
+          title: 'Last Modified',
+          type: 'lastModifiedAtSource',
+          render: row => (
+            <LastModified lastModifiedAtSource={row.lastModifiedAtSource} />
+          ),
+          width: '19%',
+          withSort: true,
+          getValue: row => row.lastModifiedAtSource.valueOf(),
+        },
+        {
+          title: 'MD5',
+          type: 'md5',
+          render: row => (
+            <TextWithCopyTooltip copyText={row.md5} withEllipsis={true}>
+              <span title={row.md5}>{row.md5}</span>
+            </TextWithCopyTooltip>
+          ),
+          width: '19%',
+          withSort: true,
+          getValue: row => row.md5,
+        },
+        {
+          title: 'SHA256',
+          type: 'sha256',
+          render: row => (
+            <TextWithCopyTooltip copyText={row.sha256} withEllipsis={true}>
+              <span title={row.sha256}>{row.sha256}</span>
+            </TextWithCopyTooltip>
+          ),
+          width: '19%',
+          withSort: true,
+          getValue: row => row.sha256,
+        },
+      ]}
+    />
   );
 };
 

@@ -1,11 +1,12 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.CreateJob;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
@@ -24,7 +25,6 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -344,7 +344,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           workspaceDTO.getWorkspaceType(),
           LOGGER);
       repositoryEntity = new RepositoryEntity(repository, workspaceDTO);
-      repositoryEntity.setDeleted(true);
     } else {
       repositoryEntity = getRepositoryById(session, request.getId(), true);
       if (!repository.getName().isEmpty()
@@ -381,13 +380,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
     session.getTransaction().commit();
     if (create) {
-      createRoleBindingsForRepository(request, userInfo, repositoryEntity);
-
-      // Update repository deleted status to false after roleBindings created successfully
-      session.beginTransaction();
-      repositoryEntity.setDeleted(false);
-      session.update(repositoryEntity);
-      session.getTransaction().commit();
+      try {
+        createRoleBindingsForRepository(request, userInfo, repositoryEntity);
+      } catch (Exception e) {
+        LOGGER.info("Exception from UAC during Repo role binding creation : {}", e.getMessage());
+        LOGGER.info("Deleting the created repository {}", repository.getId());
+        // delete the repo created
+        session.beginTransaction();
+        session.delete(repository);
+        session.getTransaction().commit();
+        throw e;
+      }
     }
 
     return repositoryEntity;

@@ -28,12 +28,19 @@ export type IServerElementDiff<Element> =
       status: 'MODIFIED';
       A: Element;
       B: Element;
+    }
+  | {
+      status: 'CONFLICTED';
+      A: Element;
+      B: Element;
+      C?: Element;
     };
 
 export const DiffStatus = {
   ADDED: 'ADDED',
   DELETED: 'DELETED',
   MODIFIED: 'MODIFIED',
+  CONFLICTED: 'CONFLICTED',
 };
 
 export const convertServerBlobDiffToClient = <
@@ -73,6 +80,12 @@ export const convertServerElementDiffToClient = <
     DELETED: ({ A }) => elementDiffMakers.deleted(convertData(A)),
     MODIFIED: ({ A, B }) =>
       elementDiffMakers.modified(convertData(A), convertData(B)),
+    CONFLICTED: ({ A, B, C }) =>
+      elementDiffMakers.conflicted(
+        convertData(A),
+        convertData(B),
+        C && convertData(C)
+      ),
   });
 };
 export const convertNullableServerElementDiffToClient = <
@@ -121,6 +134,7 @@ export const serverDiffTypeToClient = (
       ADDED: () => 'added',
       DELETED: () => 'deleted',
       MODIFIED: () => 'modified',
+      CONFLICTED: () => 'conflicted',
     },
     serverDiffType
   );

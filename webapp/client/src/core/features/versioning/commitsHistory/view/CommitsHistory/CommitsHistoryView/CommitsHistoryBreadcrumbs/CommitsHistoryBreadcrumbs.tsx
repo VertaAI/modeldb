@@ -10,7 +10,7 @@ import Breadcrumbs, {
 } from 'core/shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
 import routes from 'routes';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 const mapStateToProps = (state: IApplicationState) => ({
   currentWorkspaceName: selectCurrentWorkspaceName(state),

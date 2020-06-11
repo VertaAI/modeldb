@@ -144,7 +144,7 @@ describe('store', () => {
         const editedFilter: IStringFilterData = {
           ...newFilter,
           value: 'edited filter value',
-          invert: true,
+          operator: 'NOT_EQUALS',
         };
         await store.dispatch(addFilterToCurrentContext(newFilter) as any);
         await store.dispatch(editFilterInCurrentContext(editedFilter) as any);
@@ -191,7 +191,7 @@ describe('store', () => {
         const editedFilter: IStringFilterData = {
           ...newFilter,
           value: 'edited filter value',
-          invert: true,
+          operator: 'NOT_EQUALS',
         };
         await store.dispatch(addFilterToCurrentContext(newFilter) as any);
         await store.dispatch(editFilterInCurrentContext(editedFilter) as any);

@@ -1,8 +1,10 @@
 import {
   IFilterData,
   PropertyType,
-  ComparisonType,
+  OperatorType,
 } from 'core/features/filter/Model';
+import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
+import matchBy from 'core/shared/utils/matchBy';
 
 export interface IServerFilter {
   key: string;
@@ -12,56 +14,76 @@ export interface IServerFilter {
 }
 
 export enum ServerFilterOperator {
-  EQ = 0,
-  NE = 1,
-  GT = 2,
-  GTE = 3,
-  LT = 4,
-  LTE = 5,
-  CONTAIN = 6,
-  NOT_CONTAIN = 7,
+  EQ = 'EQ',
+  NE = 'NE',
+  GT = 'GT',
+  GTE = 'GTE',
+  LT = 'LT',
+  LTE = 'LTE',
+  CONTAIN = 'CONTAIN',
+  NOT_CONTAIN = 'NOT_CONTAIN',
 }
 
 export const getServerFilterOperator = (
   filter: IFilterData
 ): ServerFilterOperator => {
-  if (filter.type === PropertyType.METRIC) {
-    switch (filter.comparisonType) {
-      case ComparisonType.EQUALS:
-        return ServerFilterOperator.EQ;
-      case ComparisonType.MORE:
-        return ServerFilterOperator.GT;
-      case ComparisonType.GREATER_OR_EQUALS:
-        return ServerFilterOperator.GTE;
-      case ComparisonType.LESS:
-        return ServerFilterOperator.LT;
-      case ComparisonType.LESS_OR_EQUALS:
-        return ServerFilterOperator.LTE;
-    }
-  }
-  if (filter.type === PropertyType.STRING && filter.isFuzzy) {
-    return filter.invert
-      ? ServerFilterOperator.NOT_CONTAIN
-      : ServerFilterOperator.CONTAIN;
-  }
-  if ('invert' in filter) {
-    return filter.invert ? ServerFilterOperator.NE : ServerFilterOperator.EQ;
-  }
-  return ServerFilterOperator.EQ;
+  return matchBy(filter, 'type')({
+    STRING: stringFilter => {
+      switch (stringFilter.operator) {
+        case OperatorType.EQUALS:
+          return ServerFilterOperator.EQ;
+        case OperatorType.LIKE:
+          return ServerFilterOperator.CONTAIN;
+        case OperatorType.NOT_LIKE:
+          return ServerFilterOperator.NOT_CONTAIN;
+        case OperatorType.NOT_EQUALS:
+          return ServerFilterOperator.NE;
+        default:
+          return exhaustiveCheck(stringFilter.operator, '');
+      }
+    },
+    EXPERIMENT_NAME: experimentFilter => {
+      switch (experimentFilter.operator) {
+        case OperatorType.NOT_EQUALS:
+          return ServerFilterOperator.NE;
+        case OperatorType.EQUALS:
+          return ServerFilterOperator.EQ;
+        default:
+          return exhaustiveCheck(experimentFilter.operator, '');
+      }
+    },
+    METRIC: metricFilter => {
+      switch (metricFilter.operator) {
+        case OperatorType.EQUALS:
+          return ServerFilterOperator.EQ;
+        case OperatorType.MORE:
+          return ServerFilterOperator.GT;
+        case OperatorType.GREATER_OR_EQUALS:
+          return ServerFilterOperator.GTE;
+        case OperatorType.LESS:
+          return ServerFilterOperator.LT;
+        case OperatorType.LESS_OR_EQUALS:
+          return ServerFilterOperator.LTE;
+        case OperatorType.NOT_EQUALS:
+          return ServerFilterOperator.NE;
+        default:
+          return exhaustiveCheck(metricFilter.operator, '');
+      }
+    },
+  });
 };
 
 export enum ServerFilterValueType {
-  STRING = 0,
-  NUMBER = 1,
-  LIST = 2,
-  BLOB = 3,
+  STRING = 'STRING',
+  NUMBER = 'NUMBER',
+  LIST = 'LIST',
+  BLOB = 'BLOB',
 }
 
 export const getServerFilterValueType = (
   type: PropertyType
 ): ServerFilterValueType => {
   switch (type) {
-    case PropertyType.ID:
     case PropertyType.STRING:
     case PropertyType.EXPERIMENT_NAME:
       return ServerFilterValueType.STRING;

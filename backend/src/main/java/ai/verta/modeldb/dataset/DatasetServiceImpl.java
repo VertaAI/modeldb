@@ -1,6 +1,7 @@
 package ai.verta.modeldb.dataset;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddDatasetAttributes;
 import ai.verta.modeldb.AddDatasetTags;
@@ -57,7 +58,6 @@ import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.ListValue;
@@ -123,7 +123,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getName().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_NAME_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_NAME_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -249,7 +249,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -280,7 +280,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -540,7 +540,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -798,7 +798,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -832,7 +832,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getIdsList().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
