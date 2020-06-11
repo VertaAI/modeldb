@@ -62,7 +62,7 @@ export const convertServerEnvironmentDiff = (
               };
               return res;
             }
-            throw new Error('environment data doesn`t exist');
+            return undefined;
           })(),
         };
       },

@@ -49,6 +49,7 @@ export const convertServerDiffToClient = (serverDiff: any): Diff => {
               MODIFIED: () => 'modified',
               DELETED: () => 'deleted',
               ADDED: () => 'added',
+              CONFLICT: () => 'conflicted',
             },
             serverDiff.status
           )
@@ -72,6 +73,18 @@ export const convertServerDiffToClient = (serverDiff: any): Diff => {
             location: serverDiff.location,
             blobA: serverDiff[serverDiffCategory].A,
             blobB: serverDiff[serverDiffCategory].B,
+          } as any;
+        }
+
+        case 'conflicted': {
+          return {
+            diffType,
+            category: 'unknown',
+            type: 'unknown',
+            location: serverDiff.location,
+            blobA: serverDiff[serverDiffCategory].A,
+            blobB: serverDiff[serverDiffCategory].B,
+            blobC: serverDiff[serverDiffCategory].C,
           } as any;
         }
 

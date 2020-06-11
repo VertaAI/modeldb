@@ -18,7 +18,7 @@ import { makeComponentForIntegratingTest } from 'utils/tests/integrations/makeMo
 import { makeDataset } from 'utils/tests/mocks/models/datasetMocks';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 
-import DatasetsPage from '../../../DatasetsPage';
+import DatasetsPage from '../../../DatasetsPage/DatasetsPage';
 import DatasetDetailPages from '../../DatasetDetailPages';
 
 // need for testing portals

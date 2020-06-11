@@ -1,5 +1,9 @@
 import * as React from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+
+import { HeaderSearch } from 'core/features/highLevelSearch';
+import { IApplicationState } from 'store/store';
 
 import logo from './images/Verta_logo.svg';
 import styles from './LayoutHeader.module.css';
@@ -8,7 +12,14 @@ interface ILocalProps {
   rightContent: React.ReactNode;
 }
 
-class LayoutHeader extends React.PureComponent<ILocalProps> {
+const mapStateToProps = (state: IApplicationState) => {
+  return {
+  };
+};
+
+type AllProps = ILocalProps & ReturnType<typeof mapStateToProps>;
+
+class LayoutHeader extends React.PureComponent<AllProps> {
   public render() {
     const { rightContent } = this.props;
     return (
@@ -18,6 +29,9 @@ class LayoutHeader extends React.PureComponent<ILocalProps> {
             <img src={logo} />
           </Link>
         </div>
+        <div className={styles.highLevelSearch}>
+          <HeaderSearch />
+        </div>
         {rightContent && (
           <div className={styles.rightContent}>{rightContent}</div>
         )}
@@ -26,4 +40,4 @@ class LayoutHeader extends React.PureComponent<ILocalProps> {
   }
 }
 
-export default LayoutHeader;
+export default connect(mapStateToProps)(LayoutHeader);

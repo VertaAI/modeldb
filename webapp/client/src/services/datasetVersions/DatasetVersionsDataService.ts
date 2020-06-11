@@ -43,6 +43,7 @@ export default class DatasetVersionsDataService extends BaseDataService {
   }
 
   public async loadDatasetVersion(
+    workspaceName: any,
     datasetVersionId: string,
     datasetId?: string
   ): Promise<IDatasetVersion> {

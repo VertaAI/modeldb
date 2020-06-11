@@ -29,7 +29,11 @@ class DeleteFAIWithLabel extends React.PureComponent<ILocalProps> {
       onDelete,
     } = this.props;
     return (
-      <ConfirmAction confirmText={confirmText}>
+      <ConfirmAction
+        cancelButtonText="Cancel"
+        confirmButtonText="Delete"
+        confirmText={confirmText}
+      >
         {withConfirmAction => (
           <FaiWithLabel
             isDisabled={isDisabled}

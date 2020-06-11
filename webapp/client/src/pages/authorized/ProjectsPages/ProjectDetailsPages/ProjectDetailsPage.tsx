@@ -17,9 +17,10 @@ import {
   loadProject,
   selectLoadingProject,
   selectProject,
-} from 'store/projects';
+  selectLoadingProjectWithMemo,
+} from 'features/projects/store';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import ChartsPage from './ChartsPage/ChartsPage';
 import CompareModelsPage from './CompareModelsPage/CompareModelsPage';
@@ -40,7 +41,7 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
 
 const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
   return {
-    loadingProject: selectLoadingProject(
+    loadingProject: selectLoadingProjectWithMemo(
       state,
       localProps.match.params.projectId
     ),

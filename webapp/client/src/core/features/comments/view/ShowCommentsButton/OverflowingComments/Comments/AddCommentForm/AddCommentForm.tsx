@@ -12,12 +12,12 @@ import {
 } from 'core/features/comments/store';
 import { validateNotEmpty } from 'core/shared/utils/validators';
 import Button from 'core/shared/view/elements/Button/Button';
-import TextInput from 'core/shared/view/elements/TextInput/TextInput';
+import MuiTextInput from 'core/shared/view/elements/MuiTextInput/MuiTextInput';
+import InlineErrorView from 'core/shared/view/elements/Errors/InlineErrorView/InlineErrorView';
 
-import { IWithAddCommentFormSettings } from '../../../types';
 import styles from './AddCommentForm.module.css';
 
-interface ILocalProps extends IWithAddCommentFormSettings {
+interface ILocalProps {
   entityId: EntityId;
 }
 
@@ -71,39 +71,33 @@ class AddCommentForm extends React.PureComponent<AllProps, ILocalState> {
   }
 
   public render() {
-    const { addCommentFormSettings, isAddingNewComment } = this.props;
+    const { isAddingNewComment } = this.props;
     const { newMessage, newMessageError } = this.state;
     return (
       <div className={styles.root}>
-        {addCommentFormSettings && (
-          <div className={styles.leftContent}>
-            {addCommentFormSettings.renderCurrentUserAvatar()}
-          </div>
-        )}
-        <div className={styles.rightContent}>
+        <form onSubmit={this.onAddComment}>
           <div className={styles.input}>
-            <TextInput
+            <MuiTextInput
               value={newMessage}
-              size="small"
+              placeholder="Enter comments here."
               dataTest="comment-input"
-              onChange={this.onChangeNewMessage}
+              onChange={e => this.onChangeNewMessage(e.currentTarget.value)}
             />
             {newMessageError ? (
-              <div className={styles.input_error}>{newMessageError}</div>
+              <InlineErrorView error={newMessageError} />
             ) : null}
           </div>
           <div className={styles.addButton}>
             <Button
-              fullWidth={true}
               isLoading={isAddingNewComment}
               disabled={Boolean(newMessageError)}
+              type="submit"
               dataTest="send-comment-button"
-              onClick={this.onAddComment}
             >
               Comment
             </Button>
           </div>
-        </div>
+        </form>
       </div>
     );
   }
@@ -119,7 +113,8 @@ class AddCommentForm extends React.PureComponent<AllProps, ILocalState> {
   }
 
   @bind
-  private onAddComment() {
+  private onAddComment(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     const newMessageError = validateMessage(this.state.newMessage);
     if (newMessageError) {
       this.setState({ newMessageError });

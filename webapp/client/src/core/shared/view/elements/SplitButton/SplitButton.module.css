@@ -6,6 +6,9 @@
 .toggler {
   width: 44px;
 }
+.loading .toggler {
+  opacity: 0.4;
+}
 
 .primaryAction {
   width: 145px;

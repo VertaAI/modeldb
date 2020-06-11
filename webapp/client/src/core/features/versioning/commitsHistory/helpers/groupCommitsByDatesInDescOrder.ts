@@ -1,12 +1,10 @@
 import moment from 'moment';
 import * as R from 'ramda';
 
-import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
-
-import { IGroupedCommitsByDate } from '../store/types';
+import { IGroupedCommitsByDate, ICommitView } from '../store/types';
 
 const groupCommitsByDatesInDescOrder = (
-  commits: IHydratedCommit[]
+  commits: ICommitView[]
 ): IGroupedCommitsByDate[] => {
   return R.groupWith(
     (c1, c2) => moment(c1.dateCreated).isSame(moment(c2.dateCreated), 'date'),

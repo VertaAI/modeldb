@@ -8,14 +8,12 @@ import { S3DatasetBlob } from 'core/shared/utils/tests/mocks/Versioning/blobMock
 
 import * as B from '../index';
 
-const createdByCommitSha = 'adf';
-
 describe('commitTreeBuilder', () => {
   it('should create the root', () => {
     const root = B.root([
-      B.folder('folder-deep-1', { createdByCommitSha }, [
-        B.folder('folder-deep-2', { createdByCommitSha }, []),
-        B.blob('blob-deep-2', { createdByCommitSha }, S3DatasetBlob),
+      B.folder('folder-deep-1', [
+        B.folder('folder-deep-2', []),
+        B.blob('blob-deep-2', S3DatasetBlob),
       ]),
     ]);
 
@@ -27,21 +25,18 @@ describe('commitTreeBuilder', () => {
       blobs: [
         {
           type: 'blob',
-          createdByCommitSha,
           name: 'blob-deep-2' as any,
         },
       ],
       subFolders: [
         {
           type: 'folder',
-          createdByCommitSha,
           name: 'folder-deep-2' as any,
         },
       ],
     };
-    expect(root.elements['folder-deep-1'].asDataElement).toEqual(rootFolder);
+    expect(root.elements['folder-deep-1'].asCommitElement).toEqual(rootFolder);
     const folderElement: ISubFolderElement = {
-      createdByCommitSha,
       name: 'folder-deep-1' as any,
       type: 'folder',
     };
@@ -56,10 +51,8 @@ describe('commitTreeBuilder', () => {
 
   it('should create elements on the 2 level deep', () => {
     const root = B.root([
-      B.folder('folder-deep-1', { createdByCommitSha }, [
-        B.folder('folder-deep-2', { createdByCommitSha }, [
-          B.folder('folder-deep-3', { createdByCommitSha }, []),
-        ]),
+      B.folder('folder-deep-1', [
+        B.folder('folder-deep-2', [B.folder('folder-deep-3', [])]),
       ]),
     ]);
 
@@ -74,16 +67,13 @@ describe('commitTreeBuilder', () => {
     const folderDeep2: IFolder = {
       type: 'folder',
       blobs: [],
-      subFolders: [
-        { type: 'folder', name: 'folder-deep-3' as any, createdByCommitSha },
-      ],
+      subFolders: [{ type: 'folder', name: 'folder-deep-3' as any }],
     };
     expect(
-      root.elements['folder-deep-1'].elements['folder-deep-2'].asDataElement
+      root.elements['folder-deep-1'].elements['folder-deep-2'].asCommitElement
     ).toEqual(folderDeep2);
     const folderElement: IFolderElement = {
       type: 'folder',
-      createdByCommitSha,
       name: 'folder-deep-2' as any,
     };
     expect(

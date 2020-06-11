@@ -11,7 +11,7 @@ export const findDataLink = (name: string, component: ReactWrapper) => {
   return findByText(name, component).closest('a');
 };
 
-export const viewDataElement = (name: string, component: ReactWrapper) => {
+export const viewCommitComponent = (name: string, component: ReactWrapper) => {
   findDataLink(name, component).simulate('click', {
     button: 0,
   });

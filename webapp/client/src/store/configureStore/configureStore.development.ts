@@ -13,11 +13,13 @@ import {
   IApplicationState,
   IThunkActionDependencies,
 } from '../store';
+import { ApolloClient } from 'apollo-boost';
 
 export default function configureStore(
   history: History,
   initialState: IApplicationState,
-  extraMiddlewares: any[] = []
+  extraMiddlewares: any[] = [],
+  apolloClient: ApolloClient<any>
 ): Store<IApplicationState> {
   const composeEnhancers = composeWithDevTools({});
 
@@ -25,6 +27,7 @@ export default function configureStore(
     ServiceFactory,
     makeCommentsService: Comments.makeCommentsService,
     history,
+    apolloClient,
   };
 
   const store = createStore<IApplicationState, any, any, any>(

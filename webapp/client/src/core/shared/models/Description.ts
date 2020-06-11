@@ -2,7 +2,14 @@ import { validateMaxLength } from 'core/shared/utils/validators';
 
 import * as Common from './Common';
 
-export type EntityWithDescription = Common.EntityType;
+export type EntityWithDescription = Extract<
+  Common.EntityType,
+  | 'project'
+  | 'experiment'
+  | 'experimentRun'
+  | 'dataset'
+  | 'datasetVersion'
+>;
 
 export type Description = string;
 export const validateDescription = validateMaxLength(256);

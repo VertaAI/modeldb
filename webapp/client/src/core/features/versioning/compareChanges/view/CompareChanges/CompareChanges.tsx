@@ -1,106 +1,48 @@
 import cn from 'classnames';
-import * as React from 'react';
-import { connect } from 'react-redux';
-import { useHistory } from 'react-router';
-import { Dispatch, bindActionCreators } from 'redux';
-import routes from 'routes';
+import React from 'react';
+import { useSelector } from 'react-redux';
 
-import { CompareCommits } from 'core/features/versioning/compareCommits';
+import CompareCommits from 'core/features/versioning/compareCommits/view/CompareCommits';
+import { RepositoryNavigation } from 'core/features/versioning/repositoryNavigation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   CommitPointer,
   CommitTag,
   RepositoryBranches,
-  CommitPointerHelpers,
 } from 'core/shared/models/Versioning/RepositoryData';
-import BranchesAndTagsList from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
 import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import DefaultMatchRemoteDataWithReloading from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
-import { IApplicationState } from 'store/store';
-import { RepositoryNavigation } from 'core/features/versioning/repositoryNavigation';
+import Preloader from 'core/shared/view/elements/Preloader/Preloader';
+import { hasAccessToAction } from 'models/EntitiesActions';
+import routes from 'routes';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
-import { actions, selectors } from '../../store';
+import { useCompareChangesMutation } from '../../store/compareChanges/useCompareChanges';
+import ABCommitPointersSelect from '../shared/ABCommitPointersSelect/ABCommitPointersSelect';
 import styles from './CompareChanges.module.css';
-import { useMergeCommitsButton } from './MergeCommitsButton/MergeCommitsButton';
+import MergeCommitsButton from './MergeCommitsButton/MergeCommitsButton';
 
 interface ILocalProps {
   repository: IRepository;
-  commitPointerValueA: CommitPointer['value'];
-  commitPointerValueB: CommitPointer['value'];
-
+  commitPointerA: CommitPointer;
+  commitPointerB: CommitPointer;
   tags: CommitTag[];
   branches: RepositoryBranches;
 }
 
-const mapStateToProps = (state: IApplicationState) => ({
-  loadingCommitPointersCommits: selectors.selectCommunications(state)
-    .loadingCommitPointersCommits,
-  commitPointersCommits: selectors.selectCommitPointersCommits(state),
-});
-
-const mapDispatchToProps = (dispatch: Dispatch) => {
-  return bindActionCreators(
-    {
-      loadCommitPointersCommits: actions.loadCommitPointersCommits,
-    },
-    dispatch
-  );
-};
-
-type AllProps = ILocalProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>;
+type AllProps = ILocalProps;
 
 const CompareChanges = (props: AllProps) => {
-  const {
-    branches,
-    tags,
-    repository,
-    commitPointerValueA,
-    commitPointerValueB,
-    commitPointersCommits,
-    loadCommitPointersCommits,
-    loadingCommitPointersCommits,
-  } = props;
+  const { branches, tags, repository, commitPointerA, commitPointerB } = props;
 
-  const commitPointerA = CommitPointerHelpers.makeCommitPointerFromString(
-    commitPointerValueA,
-    { branches, tags }
-  );
-  const commitPointerB = CommitPointerHelpers.makeCommitPointerFromString(
-    commitPointerValueB,
-    { branches, tags }
-  );
+  const workspaceName = useSelector(selectCurrentWorkspaceName);
 
-  React.useEffect(() => {
-    loadCommitPointersCommits({
-      repositoryId: repository.id,
-      comparedCommitPointersInfo: { commitPointerA, commitPointerB },
-    });
-  }, [repository.id, commitPointerValueA, commitPointerValueB]);
-
-  const history = useHistory();
-  const makeOnChangeCommitPointer = (type: 'A' | 'B') => (
-    newCommitPointer: CommitPointer
-  ) => {
-    const maybeNewCommitPointerA =
-      type === 'A' ? newCommitPointer : commitPointerA;
-    const maybeNewCommitPointerB =
-      type === 'B' ? newCommitPointer : commitPointerB;
-
-    history.push(
-      routes.repositoryCompareChanges.getRedirectPathWithCurrentWorkspace({
-        repositoryName: repository.name,
-        commitPointerAValue: maybeNewCommitPointerA.value,
-        commitPointerBValue: maybeNewCommitPointerB.value,
-      })
-    );
-  };
-
-  const { MergeCommitsButton, mergingCommits } = useMergeCommitsButton();
+  const { communication: loadingData, data } = useCompareChangesMutation({
+    repositoryId: repository.id,
+    commitPointerA,
+    commitPointerB,
+  });
 
   return (
     <PageCard>
@@ -110,17 +52,24 @@ const CompareChanges = (props: AllProps) => {
         rightContent={<RepositoryNavigation />}
       />
       <DefaultMatchRemoteDataWithReloading
-        communication={loadingCommitPointersCommits}
-        data={commitPointersCommits}
+        communication={loadingData}
+        data={data}
       >
-        {(loadedCommitPointersCommits, reloadingCommitPointersCommits) => {
+        {(
+          { commits, diffs, isMergeConflict },
+          reloadingCommitPointersCommits
+        ) => {
+          const shouldMergeButtonBeShown: boolean =
+            hasAccessToAction('update', repository) &&
+            diffs &&
+            diffs.length > 0;
+
           return (
             <div
               className={cn({
-                [styles.reloading]:
-                  reloadingCommitPointersCommits.isRequesting ||
-                  mergingCommits.isRequesting,
+                [styles.reloading]: reloadingCommitPointersCommits.isRequesting,
               })}
+              data-test="compare-changes"
             >
               {reloadingCommitPointersCommits.isRequesting && (
                 <div className={styles.reloadingPreloader}>
@@ -128,38 +77,28 @@ const CompareChanges = (props: AllProps) => {
                 </div>
               )}
               <div className={styles.comparingInfo}>
-                <div className={styles.commitPointer}>
-                  <BranchesAndTagsList
-                    commitPointer={commitPointerA}
-                    branches={branches}
-                    tags={tags}
-                    valueLabel="Base"
-                    onChangeCommitPointer={makeOnChangeCommitPointer('A')}
-                    dataTest="commit-pointer-a"
-                  />
-                </div>
-                &nbsp;
-                <Icon type="arrow-left" />
-                &nbsp;
-                <div className={styles.commitPointer}>
-                  <BranchesAndTagsList
-                    commitPointer={commitPointerB}
-                    branches={branches}
-                    tags={tags}
-                    valueLabel="Compare"
-                    onChangeCommitPointer={makeOnChangeCommitPointer('B')}
-                    dataTest="commit-pointer-b"
-                  />
-                </div>
-                <MergeCommitsButton
-                  base={commitPointerA}
-                  commitPointersCommits={loadedCommitPointersCommits}
+                <ABCommitPointersSelect
                   repository={repository}
-                >
-                  {button =>
-                    button ? <div className={styles.merge}>{button}</div> : null
-                  }
-                </MergeCommitsButton>
+                  commitPointerA={commitPointerA}
+                  commitPointerB={commitPointerB}
+                  route={routes.repositoryCompareChanges}
+                  branches={branches}
+                  tags={tags}
+                />
+
+                {shouldMergeButtonBeShown && (
+                  <div className={styles.button}>
+                    <MergeCommitsButton
+                      isMergeConflict={isMergeConflict}
+                      workspaceName={workspaceName}
+                      base={commitPointerA}
+                      commitPointersCommits={commits}
+                      repository={repository}
+                      initialCommitPointerA={commitPointerA}
+                      initialCommitPointerB={commitPointerB}
+                    />
+                  </div>
+                )}
               </div>
               {reloadingCommitPointersCommits.error ? (
                 <InlineCommunicationError
@@ -168,9 +107,9 @@ const CompareChanges = (props: AllProps) => {
               ) : (
                 <div className={styles.compareCommits}>
                   <CompareCommits
-                    repository={repository}
-                    commitASha={loadedCommitPointersCommits.commitPointerA.sha}
-                    commitBSha={loadedCommitPointersCommits.commitPointerB.sha}
+                    commitASha={commits.commitPointerA.sha}
+                    commitBSha={commits.commitPointerB.sha}
+                    diffs={diffs}
                   />
                 </div>
               )}
@@ -182,7 +121,4 @@ const CompareChanges = (props: AllProps) => {
   );
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(CompareChanges);
+export default CompareChanges;

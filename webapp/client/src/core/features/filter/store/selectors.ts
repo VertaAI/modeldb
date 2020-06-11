@@ -5,9 +5,7 @@ import { IFilterRootState, IFilterState } from './types';
 const selectState = (state: IFilterRootState): IFilterState => state.filters;
 
 export const selectCurrentContextAppliedFilters = (state: IFilterRootState) => {
-  return selectCurrentContextFilters(state).filter(filter =>
-    'isEdited' in filter ? !filter.isEdited : true
-  );
+  return selectCurrentContextFilters(state);
 };
 
 export const selectContextFilters = (state: IFilterRootState, name: string) => {
