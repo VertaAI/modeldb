@@ -312,7 +312,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       CommitDAO commitDAO, SetRepository request, UserInfo userInfo, boolean create)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repository = setRepository(session, commitDAO, request, userInfo, create);
+      RepositoryEntity repository =
+          setRepository(session, commitDAO, request, userInfo, null, create);
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -328,12 +329,15 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       CommitDAO commitDAO,
       SetRepository request,
       UserInfo userInfo,
+      WorkspaceDTO workspaceDTO,
       boolean create)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     RepositoryEntity repositoryEntity;
     final Repository repository = request.getRepository();
     if (create) {
-      WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(request.getId(), false, true);
+      if (workspaceDTO == null) {
+        workspaceDTO = verifyAndGetWorkspaceDTO(request.getId(), false, true);
+      }
       ModelDBHibernateUtil.checkIfEntityAlreadyExists(
           session,
           SHORT_NAME,
@@ -484,55 +488,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     return true;
   }
 
-  Repository createRepository(
-      Session session, CommitDAO commitDAO, Dataset dataset, UserInfo userInfo)
-      throws NoSuchAlgorithmException, ModelDBException, InvalidProtocolBufferException {
-    RepositoryEntity repositoryEntity =
-        setRepository(
-            session,
-            commitDAO,
-            SetRepository.newBuilder()
-                .setRepository(
-                    Repository.newBuilder()
-                        .setRepositoryVisibilityValue(dataset.getDatasetVisibilityValue())
-                        .setWorkspaceType(dataset.getWorkspaceType())
-                        .setWorkspaceId(dataset.getWorkspaceId())
-                        .setDateCreated(dataset.getTimeCreated())
-                        .setDateUpdated(dataset.getTimeUpdated())
-                        .setName(dataset.getName())
-                        .setOwner(dataset.getOwner()))
-                .build(),
-            userInfo,
-            true);
-
-    repositoryEntity.setAttributeMapping(
-        dataset.getAttributesList().stream()
-            .map(
-                attribute -> {
-                  try {
-                    return RdbmsUtils.generateAttributeEntity(
-                        repositoryEntity, ModelDBConstants.ATTRIBUTES, attribute);
-                  } catch (InvalidProtocolBufferException e) {
-                    LOGGER.error("Unexpected error occured {}", e.getMessage());
-                    Status status =
-                        Status.newBuilder()
-                            .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
-                            .setMessage(e.getMessage())
-                            .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
-                            .build();
-                    throw StatusProto.toStatusRuntimeException(status);
-                  }
-                })
-            .collect(Collectors.toList()));
-
-    ProtocolStringList tags = dataset.getTagsList();
-    for (String tag : tags) {
-      setTag(session, repositoryEntity, SetTagRequest.newBuilder().setTag(tag).build());
-    }
-
-    return repositoryEntity.toProto();
-  }
-
   Dataset convertToDataset(Session session, RepositoryEntity repositoryEntity) {
     Dataset.Builder dataset = Dataset.newBuilder();
     dataset
@@ -597,11 +552,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             session,
             commitDAO,
             SetRepository.newBuilder()
-                .setId(
-                    RepositoryIdentification.newBuilder()
-                        .setNamedId(
-                            RepositoryNamedIdentification.newBuilder()
-                                .setWorkspaceName(dataset.getWorkspaceId())))
                 .setRepository(
                     Repository.newBuilder()
                         .setRepositoryVisibilityValue(dataset.getDatasetVisibilityValue())
@@ -613,6 +563,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                         .setOwner(dataset.getOwner()))
                 .build(),
             userInfo,
+            workspaceDTO,
             true);
 
     repositoryEntity.setAttributeMapping(
