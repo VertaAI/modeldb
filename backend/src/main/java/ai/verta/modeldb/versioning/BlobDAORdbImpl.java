@@ -208,6 +208,11 @@ public class BlobDAORdbImpl implements BlobDAO {
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
+      if (!repository.isDataset()) {
+        throw new ModelDBException(
+            "Repository should be created from Dataset to add Dataset Version to it",
+            Status.Code.INVALID_ARGUMENT);
+      }
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
 
       if (commit == null) {

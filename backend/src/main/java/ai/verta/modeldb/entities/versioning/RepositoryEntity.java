@@ -231,4 +231,9 @@ public class RepositoryEntity {
       }
     }
   }
+
+  public boolean isDataset() {
+    //TODO: keep track if it is a dataset https://vertaai.atlassian.net/browse/VR-4571
+    return true;
+  }
 }
