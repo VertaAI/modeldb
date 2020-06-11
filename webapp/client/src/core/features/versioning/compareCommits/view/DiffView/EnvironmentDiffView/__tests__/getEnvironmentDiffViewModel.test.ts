@@ -60,7 +60,7 @@ describe('(feature DiffView) getEnvironmentDiffViewModel', () => {
         expect(viewModel.commonDetails.commandLine.isHidden).toEqual(true);
       });
 
-      it('should display command line in B column with full green highlighting when diff status is added', () => {
+      it('should display command line in B column with full bDiff highlighting when diff status is added', () => {
         const diff: IEnvironmentBlobDiff = {
           category: 'environment',
           type: 'environment',
@@ -77,7 +77,7 @@ describe('(feature DiffView) getEnvironmentDiffViewModel', () => {
           A: undefined,
           B: {
             data: ['blob'],
-            diffColor: 'green',
+            diffColor: 'bDiff',
             hightlightedPart: 'full',
           },
         };
@@ -109,7 +109,7 @@ describe('(feature DiffView) getEnvironmentDiffViewModel', () => {
         );
       });
 
-      it('should display env variables in B column with full green highlighting when diff status is added', () => {
+      it('should display env variables in B column with full bDiff highlighting when diff status is added', () => {
         const diff: IEnvironmentBlobDiff = {
           category: 'environment',
           type: 'environment',
@@ -129,7 +129,7 @@ describe('(feature DiffView) getEnvironmentDiffViewModel', () => {
           B: [
             {
               data: { name: 'lang', value: 'en' },
-              diffColor: 'green',
+              diffColor: 'bDiff',
               hightlightedPart: 'full',
             },
           ],
@@ -146,7 +146,7 @@ describe('(feature DiffView) getEnvironmentDiffViewModel', () => {
         );
       });
 
-      it('should display env variables in A column with full red highlighting when diff status is deleted', () => {
+      it('should display env variables in A column with full aDiff highlighting when diff status is deleted', () => {
         const diff: IEnvironmentBlobDiff = {
           category: 'environment',
           type: 'environment',
@@ -165,7 +165,7 @@ describe('(feature DiffView) getEnvironmentDiffViewModel', () => {
           A: [
             {
               data: { name: 'lang', value: 'en' },
-              diffColor: 'red',
+              diffColor: 'aDiff',
               hightlightedPart: 'full',
             },
           ],
@@ -206,19 +206,19 @@ describe('(feature DiffView) getEnvironmentDiffViewModel', () => {
           A: [
             {
               data: { name: 'lang', value: 'en' },
-              diffColor: 'red',
+              diffColor: 'aDiff',
               hightlightedPart: 'value',
             },
           ],
           B: [
             {
               data: { name: 'lang', value: 'ru' },
-              diffColor: 'green',
+              diffColor: 'bDiff',
               hightlightedPart: 'value',
             },
             {
               data: { name: 'test', value: 'en' },
-              diffColor: 'green',
+              diffColor: 'bDiff',
               hightlightedPart: 'full',
             },
           ],

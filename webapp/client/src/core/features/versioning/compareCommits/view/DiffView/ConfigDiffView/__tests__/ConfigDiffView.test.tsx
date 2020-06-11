@@ -130,7 +130,7 @@ const getPropertyRow = (
 
 describe.skip('(compareCommits feature) ConfigDiffView', () => {
   describe('Hyperparameters', () => {
-    it('should display hyperparameters with green highlithing in the B column when diff status is added', () => {
+    it('should display hyperparameters with bDiff highlithing in the B column when diff status is added', () => {
       const hyperparameters: IConfigHyperparameter[] = [
         { name: 'hyp', value: { type: 'int', value: 123 } },
         { name: 'hyp2', value: { type: 'int', value: 12343 } },
@@ -155,7 +155,7 @@ describe.skip('(compareCommits feature) ConfigDiffView', () => {
         diffColor: undefined,
       });
       expect(getDisplayedHyperparameters('B', component)).toEqual(
-        hyperparametersToDisplayed('green', 'cell', hyperparameters)
+        hyperparametersToDisplayed('bDiff', 'cell', hyperparameters)
       );
     });
 
@@ -181,11 +181,11 @@ describe.skip('(compareCommits feature) ConfigDiffView', () => {
 
       expect(getDisplayedHyperparameters('B', component)).toEqual(0);
       expect(getDisplayedHyperparameters('A', component)).toEqual(
-        hyperparametersToDisplayed('red', 'cell', hyperparameters)
+        hyperparametersToDisplayed('aDiff', 'cell', hyperparameters)
       );
     });
 
-    it('should display hyperparameters with red highlithing in the A column and hyperparameters with green highlithing in the B column when diff status is modified', () => {
+    it('should display hyperparameters with red highlithing in the A column and hyperparameters with bDiff highlithing in the B column when diff status is modified', () => {
       const hyperparametersA: IConfigHyperparameter[] = [
         { name: 'hyp', value: { type: 'int', value: 123 } },
         { name: 'hyp2', value: { type: 'int', value: 12343 } },
@@ -213,13 +213,13 @@ describe.skip('(compareCommits feature) ConfigDiffView', () => {
       const component = makeComponent({ diff: deletedDiff });
 
       expect(getDisplayedHyperparameters('A', component)).toEqual(
-        hyperparametersToDisplayed('red', 'value', [
+        hyperparametersToDisplayed('aDiff', 'value', [
           hyperparametersA[1],
           hyperparametersA[0],
         ])
       );
       expect(getDisplayedHyperparameters('B', component)).toEqual(
-        hyperparametersToDisplayed('green', 'fullItem', [
+        hyperparametersToDisplayed('bDiff', 'fullItem', [
           hyperparametersB[0],
           hyperparametersB[1],
         ])

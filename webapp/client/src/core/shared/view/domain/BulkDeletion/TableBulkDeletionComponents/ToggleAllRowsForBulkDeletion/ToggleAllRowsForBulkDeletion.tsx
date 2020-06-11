@@ -12,17 +12,16 @@ interface ILocalProps {
 class ToggleAllRowsForBulkDeletion extends React.PureComponent<ILocalProps> {
   public render() {
     return (
-      <td
+      <div
         style={{
           backgroundColor: 'var(--main-color3)',
           borderRight: '1px solid #e2e2e2',
           textAlign: 'center',
           verticalAlign: 'center',
-          position: 'sticky',
-          left: '0',
-          top: '0',
           zIndex: 3,
           paddingTop: '18px',
+          width: '58px',
+          height: '100%',
         }}
       >
         <Checkbox
@@ -32,7 +31,7 @@ class ToggleAllRowsForBulkDeletion extends React.PureComponent<ILocalProps> {
           theme="red"
           onChange={this.onChange}
         />
-      </td>
+      </div>
     );
   }
 

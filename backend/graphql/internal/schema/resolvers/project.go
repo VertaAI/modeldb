@@ -30,8 +30,8 @@ func (r *projectResolver) Access(ctx context.Context, obj *ai_verta_modeldb.Proj
 	if r.Connections.HasUac() {
 		self, ok := ctx.Value("uac-self").(*ai_verta_uac.UserInfo)
 		if !ok {
-			r.Logger.Error(errors.FailedToFetchAuth.Error())
-			return "", errors.FailedToFetchAuth
+			r.Logger.Error(errors.FailedToFetchAuth(ctx).Message)
+			return "", errors.FailedToFetchAuth(ctx)
 		}
 		if obj.GetOwner() == self.GetUserId() {
 			return schema.AccessTypeOwner, nil
@@ -59,7 +59,7 @@ func (r *projectResolver) Owner(ctx context.Context, obj *ai_verta_modeldb.Proje
 	return dataloaders.GetUserById(ctx, obj.GetOwner())
 }
 func (r *projectResolver) Attributes(ctx context.Context, obj *ai_verta_modeldb.Project) ([]schema.KeyValue, error) {
-	return keyValueSliceConverter(obj.GetAttributes())
+	return keyValueSliceConverter(ctx, obj.GetAttributes())
 }
 func (r *projectResolver) Collaborators(ctx context.Context, obj *ai_verta_modeldb.Project) ([]schema.Collaborator, error) {
 	if r.Connections.HasUac() {

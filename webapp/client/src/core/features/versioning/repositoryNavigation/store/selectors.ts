@@ -3,7 +3,9 @@ import * as History from 'core/shared/utils/History';
 
 import { IRepositoryNavigationState } from './types';
 
-export const selectState = (state: IApplicationState): IRepositoryNavigationState => {
+export const selectState = (
+  state: IApplicationState
+): IRepositoryNavigationState => {
   return state.repositoryNavigation;
 };
 

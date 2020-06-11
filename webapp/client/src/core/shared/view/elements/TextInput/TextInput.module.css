@@ -6,9 +6,6 @@
   border: var(--input-border);
   border-radius: 2px;
 }
-.theme_dark {
-  border-color: var(--main-text-color2);
-}
 
 .with_icon.input {
   padding-right: 35px;
@@ -33,12 +30,9 @@
   border: none;
 }
 
-.theme_light .field::placeholder {
+.field::placeholder {
+  font-size: 15;
   color: var(--main-text-color3);
-}
-.theme_dark .field::placeholder {
-  font-weight: 500;
-  color: var(--main-text-color1);
 }
 
 .size_small {
@@ -54,15 +48,14 @@
   right: 15px;
   font-size: 18px;
   transform: translateY(-50%);
-}
-.theme_light .icon {
   color: var(--fr-color5);
-}
-.theme_dark .icon {
-  color: var(--main-text-color3);
 }
 
 .disabled {
   opacity: 0.6;
   pointer-events: none;
+}
+
+.fullWidth {
+  width: 100% !important;
 }

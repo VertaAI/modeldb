@@ -3,6 +3,7 @@ import { bind } from 'decko';
 import * as React from 'react';
 
 import styles from './Checkbox.module.css';
+import { Icon } from '../Icon/Icon';
 
 interface ILocalProps {
   value: boolean;
@@ -12,13 +13,23 @@ interface ILocalProps {
   isRounded?: boolean;
   theme?: 'red';
   name?: string;
+  dataTest?: string;
   onChange?(value: boolean): void;
   onChangeWithEvent?(event: any): void;
 }
 
 class Checkbox extends React.PureComponent<ILocalProps> {
   public render() {
-    const { value, size, disabled, id, name, isRounded, theme } = this.props;
+    const {
+      value,
+      dataTest,
+      size,
+      disabled,
+      id,
+      name,
+      isRounded,
+      theme,
+    } = this.props;
     return (
       <label
         className={cn(styles.checkbox, {
@@ -35,9 +46,12 @@ class Checkbox extends React.PureComponent<ILocalProps> {
           disabled={disabled}
           id={id}
           name={name}
+          data-test={dataTest}
           onChange={this.onChange}
         />
-        <span className={styles.checkmark} />
+        <span className={styles.checkmark}>
+          {value && <Icon type="checkmark" />}
+        </span>
       </label>
     );
   }
@@ -45,7 +59,7 @@ class Checkbox extends React.PureComponent<ILocalProps> {
   @bind
   private onChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (this.props.onChange) {
-      this.props.onChange(e.currentTarget.checked);
+      this.props.onChange(e.target.checked);
     }
     if (this.props.onChangeWithEvent) {
       this.props.onChangeWithEvent(e);

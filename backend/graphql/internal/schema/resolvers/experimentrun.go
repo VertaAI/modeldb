@@ -37,11 +37,11 @@ func (r *experimentRunResolver) Owner(ctx context.Context, obj *ai_verta_modeldb
 	return dataloaders.GetUserById(ctx, obj.GetOwner())
 }
 func (r *experimentRunResolver) Attributes(ctx context.Context, obj *ai_verta_modeldb.ExperimentRun) ([]schema.KeyValue, error) {
-	return keyValueSliceConverter(obj.GetAttributes())
+	return keyValueSliceConverter(ctx, obj.GetAttributes())
 }
 func (r *experimentRunResolver) Hyperparameters(ctx context.Context, obj *ai_verta_modeldb.ExperimentRun) ([]schema.KeyValue, error) {
-	return keyValueSliceConverter(obj.GetHyperparameters())
+	return keyValueSliceConverter(ctx, obj.GetHyperparameters())
 }
 func (r *experimentRunResolver) Metrics(ctx context.Context, obj *ai_verta_modeldb.ExperimentRun) ([]schema.KeyValue, error) {
-	return keyValueSliceConverter(obj.GetMetrics())
+	return keyValueSliceConverter(ctx, obj.GetMetrics())
 }

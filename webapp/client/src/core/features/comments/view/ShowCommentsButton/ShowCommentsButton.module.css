@@ -18,3 +18,8 @@
   color: white;
   background-color: var(--bg-color2);
 }
+
+.badge {
+  display: inline-block;
+  cursor: pointer;
+}

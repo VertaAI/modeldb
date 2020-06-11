@@ -11,42 +11,24 @@
   padding: 2px;
 }
 
-.tag_draggable {
-  font-size: 13px;
-  color: rgb(83, 83, 83);
-  font-family: sans-serif;
-  text-decoration: none;
-  border-radius: 5px;
-  border-width: 0 !important;
-  background-color: var(--vgreen-lighter);
-  opacity: 0.95;
-  display: inline-block;
-  min-height: 20px;
-  line-height: 20px;
-  padding: 0px 7px;
-  position: relative;
-  -webkit-transition: color 0.05s;
-  cursor: move;
-  word-break: break-all;
-}
-.tag_draggable:hover {
-  background-color: var(--vgreen-lightest) !important;
+.tag {
+  font-size: 15px;
   color: var(--main-text-color1);
-}
-
-.tag_static {
-  font-size: 13px;
-  color: rgb(83, 83, 83);
-  font-family: sans-serif;
-  text-decoration: none;
-  border-radius: 5px;
+  border-radius: 2px;
   border-width: 0 !important;
-  background-color: var(--vgreen-lighter);
+  background-color: #a4dbd4;
   opacity: 0.95;
   display: inline-block;
   min-height: 20px;
   line-height: 20px;
-  padding: 0px 7px 3px 7px;
+  padding: 3px 7px 3px 7px;
   position: relative;
   word-break: break-all;
+}
+.tag.draggable {
+  transition: color 0.05s;
+  cursor: move;
+}
+.tag.draggable:hover {
+  background-color: #a4dbd473;
 }

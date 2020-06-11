@@ -1,31 +1,18 @@
-import { UnavailableEntityApiErrorType } from 'core/services/shared/UnavailableEntityApiError';
-import { AppError } from 'core/shared/models/Error';
 import {
-  IHydratedCommit,
   CommitPointer,
-  IMergeCommitsError,
+  SHA,
 } from 'core/shared/models/Versioning/RepositoryData';
-import { ICommunication } from 'core/shared/utils/redux/communication';
+import { Diff } from 'core/shared/models/Versioning/Blob/Diff';
 
-export interface ICompareChangesState {
-  data: {
-    commitPointersCommits: ICommitPointersCommits | null;
-  };
-  communications: {
-    loadingCommitPointersCommits: ICommunication<
-      AppError<UnavailableEntityApiErrorType>
-    >;
-    mergingCommits: ICommunication<MergeCommitCommunicationError>;
-  };
+export interface ICompareChangesData {
+  commits: ICommitPointersCommits;
+  diffs: Diff[];
+  isMergeConflict: boolean;
 }
-
-export type MergeCommitCommunicationError =
-  | IMergeCommitsError
-  | { type: 'error'; appError: AppError };
 
 export type ICommitPointersCommits = Record<
   keyof IComparedCommitPointersInfo,
-  IHydratedCommit
+  { sha: SHA }
 >;
 
 export interface IComparedCommitPointersInfo {

@@ -1,17 +1,13 @@
 import * as React from 'react';
 
+import { DiffType } from 'core/shared/models/Versioning/Blob/Diff';
 import { makeDockerImage } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import { IComparedCommitsInfo } from '../../../model';
+import { makeHighlightCellBackground } from '../../shared/makeHighlightCellBackground';
+import ComparePropertiesTable from '../../shared/ComparePropertiesTable/ComparePropertiesTable';
 import { IDockerEnvironmentDiffViewModel } from '../utils';
-import makeComparePropertiesTable, {
-  makeHighlightCellBackground,
-} from '../../shared/ComparePropertiesTable/ComparePropertiesTable';
-
-const tableComponents = makeComparePropertiesTable<
-  IDockerEnvironmentDiffViewModel
->();
 
 const highlightCellBackground = makeHighlightCellBackground<
   IDockerEnvironmentDiffViewModel
@@ -20,29 +16,39 @@ const highlightCellBackground = makeHighlightCellBackground<
 const DockerDiff = ({
   diff,
   comparedCommitsInfo,
+  diffType,
 }: {
+  diffType: DiffType;
   diff: IDockerEnvironmentDiffViewModel;
   comparedCommitsInfo: IComparedCommitsInfo;
 }) => {
   return (
     <BlobDataBox title="Docker details">
-      <tableComponents.Table
+      <ComparePropertiesTable
         A={diff}
         B={diff}
+        C={diffType === 'conflicted' ? diff : undefined}
         comparedCommitsInfo={comparedCommitsInfo}
-      >
-        <tableComponents.PropDefinition
-          title="Docker container"
-          type="docker"
-          getCellStyle={highlightCellBackground(({ data, comparedCommitType }) =>
-            Boolean(data.data[comparedCommitType] && data.data[comparedCommitType]!.diffColor)
-          )}
-          render={({ data, comparedCommitType: type }) => {
-            const docker = data && data.data[type];
-            return docker ? <span>{makeDockerImage(docker.data)}</span> : null;
-          }}
-        />
-      </tableComponents.Table>
+        propDefinitions={[
+          {
+            title: 'Docker container',
+            type: 'docker',
+            getPropCellStyle: highlightCellBackground(
+              ({ data, comparedCommitType }) =>
+                Boolean(
+                  data.data[comparedCommitType] &&
+                    data.data[comparedCommitType]!.diffColor
+                )
+            ),
+            render: ({ data, comparedCommitType: type }) => {
+              const docker = data && data.data[type];
+              return docker ? (
+                <span>{makeDockerImage(docker.data)}</span>
+              ) : null;
+            },
+          },
+        ]}
+      />
     </BlobDataBox>
   );
 };

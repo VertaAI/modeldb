@@ -7,6 +7,7 @@ import (
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/errors"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/pagination"
+	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	ai_verta_modeldb "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
 	"go.uber.org/zap"
@@ -20,7 +21,7 @@ func (r *workspaceResolver) Projects(ctx context.Context, obj *models.Workspace,
 		pageQuery = query.Pagination
 	}
 
-	nextObj, err := pagination.NewNext(r.Logger, next, pageQuery)
+	nextObj, err := pagination.NewNext(r.Logger, ctx, next, pageQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -45,21 +46,35 @@ func (r *workspaceResolver) Projects(ctx context.Context, obj *models.Workspace,
 
 func (r *workspaceResolver) Repositories(ctx context.Context, obj *models.Workspace, next *string, query *schema.RepositoriesQuery) (*schema.Repositories, error) {
 	var pageQuery *schema.PaginationQuery
+	var ids []uint64
+	var predicates []*modeldb.KeyValueQuery
+
 	if query != nil {
 		pageQuery = query.Pagination
+
+		ids = make([]uint64, len(query.Ids))
+		for i, id := range query.Ids {
+			ids[i] = uint64(id)
+		}
+
+		var err error
+		predicates, err = r.resolveMDBPredicates(ctx, query.StringPredicates, query.FloatPredicates)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	nextObj, err := pagination.NewNext(r.Logger, next, pageQuery)
+	nextObj, err := pagination.NewNext(r.Logger, ctx, next, pageQuery)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := r.Connections.Versioning.ListRepositories(ctx, &versioning.ListRepositoriesRequest{
+	res, err := r.Connections.Versioning.FindRepositories(ctx, &versioning.FindRepositories{
+		RepoIds:       ids,
 		WorkspaceName: obj.Name,
-		Pagination: &versioning.Pagination{
-			PageNumber: int32(nextObj.PageNumber),
-			PageLimit:  int32(nextObj.PageLimit),
-		},
+		Predicates:    predicates,
+		PageNumber:    int32(nextObj.PageNumber),
+		PageLimit:     int32(nextObj.PageLimit),
 	})
 	if err != nil {
 		r.Logger.Error("failed to get repositories", zap.Error(err))
@@ -100,8 +115,8 @@ func (r *workspaceResolver) Repository(ctx context.Context, obj *models.Workspac
 
 func (r *workspaceResolver) CreateRepository(ctx context.Context, obj *models.Workspace, name string, visibility schema.Visibility) (*versioning.Repository, error) {
 	if !isMutation(ctx) {
-		r.Logger.Error(errors.CreateOutsideMutation.Error())
-		return nil, errors.CreateOutsideMutation
+		r.Logger.Info(errors.CreateOutsideMutation(ctx).Message)
+		return nil, errors.CreateOutsideMutation(ctx)
 	}
 	repoVisibility := versioning.RepositoryVisibilityEnum_PRIVATE
 	switch visibility {

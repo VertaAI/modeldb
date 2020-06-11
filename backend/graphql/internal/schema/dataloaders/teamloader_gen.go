@@ -6,13 +6,13 @@ import (
 	"sync"
 	"time"
 
-	ai_verta_uac "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
+	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 )
 
 // TeamLoaderConfig captures the config to create a new TeamLoader
 type TeamLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []string) ([]*ai_verta_uac.Team, []error)
+	Fetch func(keys []string) ([]*uac.Team, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -33,7 +33,7 @@ func NewTeamLoader(config TeamLoaderConfig) *TeamLoader {
 // TeamLoader batches and caches requests
 type TeamLoader struct {
 	// this method provides the data for the loader
-	fetch func(keys []string) ([]*ai_verta_uac.Team, []error)
+	fetch func(keys []string) ([]*uac.Team, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -44,7 +44,7 @@ type TeamLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[string]*ai_verta_uac.Team
+	cache map[string]*uac.Team
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
@@ -56,25 +56,25 @@ type TeamLoader struct {
 
 type teamLoaderBatch struct {
 	keys    []string
-	data    []*ai_verta_uac.Team
+	data    []*uac.Team
 	error   []error
 	closing bool
 	done    chan struct{}
 }
 
 // Load a Team by key, batching and caching will be applied automatically
-func (l *TeamLoader) Load(key string) (*ai_verta_uac.Team, error) {
+func (l *TeamLoader) Load(key string) (*uac.Team, error) {
 	return l.LoadThunk(key)()
 }
 
 // LoadThunk returns a function that when called will block waiting for a Team.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *TeamLoader) LoadThunk(key string) func() (*ai_verta_uac.Team, error) {
+func (l *TeamLoader) LoadThunk(key string) func() (*uac.Team, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
-		return func() (*ai_verta_uac.Team, error) {
+		return func() (*uac.Team, error) {
 			return it, nil
 		}
 	}
@@ -85,10 +85,10 @@ func (l *TeamLoader) LoadThunk(key string) func() (*ai_verta_uac.Team, error) {
 	pos := batch.keyIndex(l, key)
 	l.mu.Unlock()
 
-	return func() (*ai_verta_uac.Team, error) {
+	return func() (*uac.Team, error) {
 		<-batch.done
 
-		var data *ai_verta_uac.Team
+		var data *uac.Team
 		if pos < len(batch.data) {
 			data = batch.data[pos]
 		}
@@ -113,14 +113,14 @@ func (l *TeamLoader) LoadThunk(key string) func() (*ai_verta_uac.Team, error) {
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *TeamLoader) LoadAll(keys []string) ([]*ai_verta_uac.Team, []error) {
-	results := make([]func() (*ai_verta_uac.Team, error), len(keys))
+func (l *TeamLoader) LoadAll(keys []string) ([]*uac.Team, []error) {
+	results := make([]func() (*uac.Team, error), len(keys))
 
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
 
-	teams := make([]*ai_verta_uac.Team, len(keys))
+	teams := make([]*uac.Team, len(keys))
 	errors := make([]error, len(keys))
 	for i, thunk := range results {
 		teams[i], errors[i] = thunk()
@@ -131,13 +131,13 @@ func (l *TeamLoader) LoadAll(keys []string) ([]*ai_verta_uac.Team, []error) {
 // LoadAllThunk returns a function that when called will block waiting for a Teams.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *TeamLoader) LoadAllThunk(keys []string) func() ([]*ai_verta_uac.Team, []error) {
-	results := make([]func() (*ai_verta_uac.Team, error), len(keys))
+func (l *TeamLoader) LoadAllThunk(keys []string) func() ([]*uac.Team, []error) {
+	results := make([]func() (*uac.Team, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
-	return func() ([]*ai_verta_uac.Team, []error) {
-		teams := make([]*ai_verta_uac.Team, len(keys))
+	return func() ([]*uac.Team, []error) {
+		teams := make([]*uac.Team, len(keys))
 		errors := make([]error, len(keys))
 		for i, thunk := range results {
 			teams[i], errors[i] = thunk()
@@ -149,7 +149,7 @@ func (l *TeamLoader) LoadAllThunk(keys []string) func() ([]*ai_verta_uac.Team, [
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *TeamLoader) Prime(key string, value *ai_verta_uac.Team) bool {
+func (l *TeamLoader) Prime(key string, value *uac.Team) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
@@ -169,9 +169,9 @@ func (l *TeamLoader) Clear(key string) {
 	l.mu.Unlock()
 }
 
-func (l *TeamLoader) unsafeSet(key string, value *ai_verta_uac.Team) {
+func (l *TeamLoader) unsafeSet(key string, value *uac.Team) {
 	if l.cache == nil {
-		l.cache = map[string]*ai_verta_uac.Team{}
+		l.cache = map[string]*uac.Team{}
 	}
 	l.cache[key] = value
 }

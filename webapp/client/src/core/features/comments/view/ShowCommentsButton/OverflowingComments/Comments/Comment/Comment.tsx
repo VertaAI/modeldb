@@ -11,7 +11,7 @@ import {
   selectIsDeletingComment,
   ICommentsRootState,
 } from 'core/features/comments/store';
-import ButtonLikeText from 'core/shared/view/elements/ButtonLikeText/ButtonLikeText';
+import { Icon } from 'core/shared/view/elements/Icon/Icon';
 
 import { IWithCommentSettings } from '../../../types';
 import styles from './Comment.module.css';
@@ -40,44 +40,35 @@ class Comment extends React.PureComponent<AllProps> {
       : () => true;
 
     return (
-      <div className={styles.root} data-test="comment">
-        <div
-          className={cn(styles.root, { [styles.deleting]: isDeleting })}
-          key={data.id}
-        >
+      <div
+        className={cn(styles.root, {
+          [styles.deleting]: isDeleting,
+          [styles.currentUser]: canCurrentUserDeleteComment({ comment: data }),
+        })}
+        data-test="comment"
+      >
+        <div className={styles.header}>
           {commentSettings && (
-            <div className={styles.leftContent}>
+            <div className={styles.avatar}>
               {commentSettings.renderAuthorAvatar({ comment: data })}
             </div>
           )}
-          <div className={styles.rightContent}>
-            <div className={styles.header}>
-              {commentSettings && (
-                <span className={styles.username} data-test="comment-author">
-                  {commentSettings.renderAuthorName({ comment: data })}
-                </span>
-              )}
-              <span className={styles.time}>
-                {moment(data.dateTime).fromNow()}
-              </span>
-            </div>
-            <div className={styles.message} data-test="comment-message">
-              {data.message}
-            </div>
-            <div className={styles.actions}>
-              <div className={styles.action}>
-                {canCurrentUserDeleteComment({ comment: data }) ? (
-                  <ButtonLikeText
-                    isDisabled={isDeleting}
-                    dataTest="delete-comment-button"
-                    onClick={this.makeOnDeleteComment(data.id)}
-                  >
-                    delete
-                  </ButtonLikeText>
-                ) : null}
-              </div>
-            </div>
-          </div>
+          {commentSettings && (
+            <span className={styles.username} data-test="comment-author">
+              {commentSettings.renderAuthorName({ comment: data })}
+            </span>
+          )}
+          <span className={styles.time}>{moment(data.dateTime).fromNow()}</span>
+          {canCurrentUserDeleteComment({ comment: data }) && (
+            <Icon
+              className={styles.delete}
+              type="trash"
+              onClick={this.makeOnDeleteComment(data.id)}
+            />
+          )}
+        </div>
+        <div className={styles.message} data-test="comment-message">
+          {data.message}
         </div>
       </div>
     );
