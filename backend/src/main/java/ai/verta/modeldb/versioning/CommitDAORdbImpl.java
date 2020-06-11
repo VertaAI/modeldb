@@ -25,6 +25,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import com.google.protobuf.ProtocolStringList;
+import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -118,6 +119,11 @@ public class CommitDAORdbImpl implements CommitDAO {
                           .setWorkspaceName(datasetEntity.getWorkspace()))
                   .build(),
               false);
+      if (!repositoryEntity.isDataset()) {
+        throw new ModelDBException(
+            "Repository should be created from Dataset to add Dataset Version to it",
+            Status.Code.INVALID_ARGUMENT);
+      }
 
       Commit.Builder builder = Commit.newBuilder();
       if (!datasetVersion.getParentId().isEmpty()) {
