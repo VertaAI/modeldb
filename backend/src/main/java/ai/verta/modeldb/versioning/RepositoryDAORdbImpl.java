@@ -414,7 +414,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   })
               .collect(Collectors.toList()));
 
-      if (tagList != null && tagList.isEmpty()) {
+      if (tagList != null && !tagList.isEmpty()) {
         metadataDAO.addLabels(
             session,
             IdentificationType.newBuilder()
