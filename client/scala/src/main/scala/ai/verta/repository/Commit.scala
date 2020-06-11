@@ -302,6 +302,6 @@ class Commit(
     .map(ls =>
       if (ls.isEmpty) Stream()
       else ls.get.toStream.map(c => new Commit(clientSet, repo, c))
-    ) // Try[List[Commit]]
+    )
   }
 }
