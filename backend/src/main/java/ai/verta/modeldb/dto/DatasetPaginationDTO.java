@@ -3,7 +3,6 @@ package ai.verta.modeldb.dto;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.versioning.Repository;
 import java.util.List;
-import java.util.Set;
 
 public class DatasetPaginationDTO {
   private List<Dataset> datasets;

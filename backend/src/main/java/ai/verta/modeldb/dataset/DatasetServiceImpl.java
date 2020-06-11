@@ -147,7 +147,12 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       Repository repository =
           repositoryDAO.createRepository(commitDAO, metadataDAO, dataset, userInfo);
       Dataset createdDataset =
-          dataset.toBuilder().setId(String.valueOf(repository.getId())).build();
+          dataset
+              .toBuilder()
+              .setId(String.valueOf(repository.getId()))
+              .setTimeCreated(repository.getDateCreated())
+              .setTimeUpdated(repository.getDateUpdated())
+              .build();
 
       responseObserver.onNext(
           CreateDataset.Response.newBuilder()
@@ -225,9 +230,16 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .setSortKey(request.getSortKey())
               .setWorkspaceName(request.getWorkspaceName());
 
+      if (findDatasets.getSortKey().equals(ModelDBConstants.TIME_UPDATED)) {
+        findDatasets.setSortKey(ModelDBConstants.DATE_UPDATED);
+      }
+      if (findDatasets.getSortKey().equals(ModelDBConstants.TIME_CREATED)) {
+        findDatasets.setSortKey(ModelDBConstants.DATE_CREATED);
+      }
 
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
+          repositoryDAO.findDatasets(
+              metadataDAO, findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
 
       LOGGER.debug(
           ModelDBMessages.ACCESSIBLE_DATASET_IN_SERVICE, datasetPaginationDTO.getDatasets().size());
@@ -310,10 +322,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.READ);
 
-      Dataset dataset = datasetDAO.getDatasetById(request.getId());
-      responseObserver.onNext(GetDatasetById.Response.newBuilder().setDataset(dataset).build());
+      responseObserver.onNext(repositoryDAO.getDatasetById(metadataDAO, request.getId()));
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -330,10 +341,11 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(request, userInfo, DatasetVisibility.PRIVATE);
+          repositoryDAO.findDatasets(metadataDAO, request, userInfo, DatasetVisibility.PRIVATE);
       responseObserver.onNext(
           FindDatasets.Response.newBuilder()
               .addAllDatasets(datasetPaginationDTO.getDatasets())
+              .addAllRepos(datasetPaginationDTO.getRepositories())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
               .build());
       responseObserver.onCompleted();
@@ -379,7 +391,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       : request.getWorkspaceName());
 
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
+          repositoryDAO.findDatasets(
+              metadataDAO, findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
 
       if (datasetPaginationDTO.getTotalRecords() == 0) {
         Status status =
@@ -391,7 +404,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
       Dataset selfOwnerdataset = null;
+      Repository selfOwneRepository = null;
       List<Dataset> sharedDatasets = new ArrayList<>();
+      List<Repository> sharedRepositories = new ArrayList<>();
 
       for (Dataset dataset : datasetPaginationDTO.getDatasets()) {
         if (userInfo == null
@@ -402,11 +417,24 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         }
       }
 
+      for (Repository repository : datasetPaginationDTO.getRepositories()) {
+        if (userInfo == null
+            || repository.getOwner().equals(authService.getVertaIdFromUserInfo(userInfo))) {
+          selfOwneRepository = repository;
+        } else {
+          sharedRepositories.add(repository);
+        }
+      }
+
       GetDatasetByName.Response.Builder responseBuilder = GetDatasetByName.Response.newBuilder();
       if (selfOwnerdataset != null) {
         responseBuilder.setDatasetByUser(selfOwnerdataset);
       }
+      if (selfOwneRepository != null) {
+        responseBuilder.setRepositoryByUser(selfOwneRepository);
+      }
       responseBuilder.addAllSharedDatasets(sharedDatasets);
+      responseBuilder.addAllSharedRepos(sharedRepositories);
 
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();

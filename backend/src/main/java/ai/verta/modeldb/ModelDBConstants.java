@@ -133,6 +133,7 @@ public interface ModelDBConstants {
   String OBSERVATION_MAPPING = "observationMapping";
   String PROJECT_ID_STR = "projectId";
   String TOTAL_COUNT = "total_count";
+  String TIME_CREATED = "time_created";
   String TIME_UPDATED = "time_updated";
   String TIME_LOGGED = "time_logged";
   String UNSIGNED_USER = "unsigned_user";

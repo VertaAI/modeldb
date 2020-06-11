@@ -157,27 +157,26 @@ public class RepositoryEntity {
   }
 
   public Repository toProto(boolean idsOnly) throws InvalidProtocolBufferException {
-    final Builder builder =
-        Repository.newBuilder()
-            .setId(this.id);
+    final Builder builder = Repository.newBuilder().setId(this.id);
     if (!idsOnly) {
-            builder.setName(this.name)
-            .setDescription(this.description)
-            .setDateCreated(this.date_created)
-            .setDateUpdated(this.date_updated)
-            .setWorkspaceId(this.workspace_id)
-            .setWorkspaceTypeValue(this.workspace_type)
-            .addAllAttributes(
-                RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
-    if (repository_visibility != null) {
-      builder.setRepositoryVisibilityValue(repository_visibility);
-    }
-    if (repositoryAccessModifier != null) {
-      builder.setRepositoryAccessModifierValue(repositoryAccessModifier);
-    }
-    if (owner != null) {
-      builder.setOwner(owner);
-    }
+      builder
+          .setName(this.name)
+          .setDescription(this.description)
+          .setDateCreated(this.date_created)
+          .setDateUpdated(this.date_updated)
+          .setWorkspaceId(this.workspace_id)
+          .setWorkspaceTypeValue(this.workspace_type)
+          .addAllAttributes(
+              RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
+      if (repository_visibility != null) {
+        builder.setRepositoryVisibilityValue(repository_visibility);
+      }
+      if (repositoryAccessModifier != null) {
+        builder.setRepositoryAccessModifierValue(repositoryAccessModifier);
+      }
+      if (owner != null) {
+        builder.setOwner(owner);
+      }
     }
     return builder.build();
   }

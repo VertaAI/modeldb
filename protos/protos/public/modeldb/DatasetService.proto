@@ -91,7 +91,8 @@ message GetDatasetByName {
     message Response {
         Dataset dataset_by_user = 1;
         repeated Dataset shared_datasets = 2; // because of collaboration, this might be multiple datasets w/same name
-        repeated versioning.Repository repos = 3;
+        versioning.Repository repository_by_user = 3;
+        repeated versioning.Repository shared_repos = 4;
     }
 }
 

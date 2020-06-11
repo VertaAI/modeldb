@@ -8,6 +8,7 @@ import ai.verta.modeldb.CreateJob;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
+import ai.verta.modeldb.GetDatasetById;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -69,7 +70,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(RepositoryDAORdbImpl.class);
   private static final String GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
-  public static final String UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO = "Unexpected error on repository entity conversion to proto";
+  public static final String UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO =
+      "Unexpected error on repository entity conversion to proto";
   private final AuthService authService;
   private final RoleService roleService;
 
@@ -402,7 +404,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         LOGGER.info("Deleting the created repository {}", repository.getId());
         // delete the repo created
         session.beginTransaction();
-        session.delete(repository);
+        session.delete(repositoryEntity);
         session.getTransaction().commit();
         throw e;
       }
@@ -574,10 +576,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   Dataset convertToDataset(
-      Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity, boolean idsOnly) {
+      Session session,
+      MetadataDAO metadataDAO,
+      RepositoryEntity repositoryEntity,
+      boolean idsOnly) {
     Dataset.Builder dataset = Dataset.newBuilder();
-    dataset
-        .setId(String.valueOf(repositoryEntity.getId()));
+    dataset.setId(String.valueOf(repositoryEntity.getId()));
 
     if (!idsOnly) {
       dataset
@@ -1133,17 +1137,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public DatasetPaginationDTO findDatasets(
-      MetadataDAO metadataDAO, FindDatasets queryParameters,
+      MetadataDAO metadataDAO,
+      FindDatasets queryParameters,
       UserInfo currentLoginUserInfo,
       DatasetVisibility datasetVisibility)
       throws InvalidProtocolBufferException {
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
-        DatasetPaginationDTO emptyPaginationDTO = new DatasetPaginationDTO();
-        emptyPaginationDTO.setDatasets(Collections.emptyList());
-        emptyPaginationDTO.setRepositories(Collections.emptyList());
-        emptyPaginationDTO.setTotalRecords(0L);
-        List<String> accessibleDatasetIds =
+      DatasetPaginationDTO emptyPaginationDTO = new DatasetPaginationDTO();
+      emptyPaginationDTO.setDatasets(Collections.emptyList());
+      emptyPaginationDTO.setRepositories(Collections.emptyList());
+      emptyPaginationDTO.setTotalRecords(0L);
+      List<String> accessibleDatasetIds =
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
@@ -1177,7 +1182,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         accessibleDatasetIds =
             roleService.getSelfDirectlyAllowedResources(
-                ModelDBServiceResourceTypes.REPOSITORY, ModelDBActionEnum.ModelDBServiceActions.READ);
+                ModelDBServiceResourceTypes.REPOSITORY,
+                ModelDBActionEnum.ModelDBServiceActions.READ);
         if (queryParameters.getDatasetIdsList() != null
             && !queryParameters.getDatasetIdsList().isEmpty()) {
           accessibleDatasetIds.retainAll(queryParameters.getDatasetIdsList());
@@ -1248,7 +1254,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {
-        sortBy = ModelDBConstants.TIME_UPDATED;
+        sortBy = ModelDBConstants.DATE_UPDATED;
       }
 
       Order orderBy =
@@ -1276,22 +1282,25 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       List<RepositoryEntity> repositoryEntities = query.list();
       LOGGER.debug("Repositorys result count : {}", repositoryEntities.size());
-        Map<Long, SimpleEntry<Dataset, Repository>> repositoriesAndDatasetsMap;
-        repositoriesAndDatasetsMap = convertRepositoriesFromRepositoryEntityList(session, metadataDAO, repositoryEntities, queryParameters.getIdsOnly());
+      Map<Long, SimpleEntry<Dataset, Repository>> repositoriesAndDatasetsMap;
+      repositoriesAndDatasetsMap =
+          convertRepositoriesFromRepositoryEntityList(
+              session, metadataDAO, repositoryEntities, queryParameters.getIdsOnly());
 
-        LinkedHashMap<Dataset, Repository> repositoriesAndDatasets = repositoriesAndDatasetsMap.values()
-            .stream().collect(Collectors
-                .toMap(SimpleEntry::getKey,
-                    SimpleEntry::getValue, (a, b) -> a, LinkedHashMap::new));
+      LinkedHashMap<Dataset, Repository> repositoriesAndDatasets =
+          repositoriesAndDatasetsMap.values().stream()
+              .collect(
+                  Collectors.toMap(
+                      SimpleEntry::getKey, SimpleEntry::getValue, (a, b) -> a, LinkedHashMap::new));
 
       long totalRecords = RdbmsUtils.count(session, repositoryRoot, criteriaQuery);
       LOGGER.debug("Repositorys total records count : {}", totalRecords);
 
       DatasetPaginationDTO repositoryDatasetPaginationDTO = new DatasetPaginationDTO();
-        repositoryDatasetPaginationDTO.setDatasets(
-            new LinkedList<>(repositoriesAndDatasets.keySet()));
-        repositoryDatasetPaginationDTO.setRepositories(
-            new LinkedList<>(repositoriesAndDatasets.values()));
+      repositoryDatasetPaginationDTO.setDatasets(
+          new LinkedList<>(repositoriesAndDatasets.keySet()));
+      repositoryDatasetPaginationDTO.setRepositories(
+          new LinkedList<>(repositoriesAndDatasets.values()));
       repositoryDatasetPaginationDTO.setTotalRecords(totalRecords);
       return repositoryDatasetPaginationDTO;
     } catch (Exception ex) {
@@ -1303,17 +1312,50 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
   }
 
-  private Map<Long, SimpleEntry<Dataset, Repository>> convertRepositoriesFromRepositoryEntityList(
-      Session session, MetadataDAO metadataDAO,
-      List<RepositoryEntity> repositoryEntityList, boolean idsOnly) {
-    return repositoryEntityList.stream()
-        .collect(
-            Collectors.toMap(RepositoryEntity::getId, repositoryEntity -> getDatasetRepositorySimpleEntry(session, metadataDAO, idsOnly,
-                repositoryEntity), (a, b) -> a, LinkedHashMap::new));
+  @Override
+  public GetDatasetById.Response getDatasetById(MetadataDAO metadataDAO, String id)
+      throws ModelDBException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      RepositoryEntity repositoryEntity =
+          getRepositoryById(
+              session, RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(id)).build());
+      return GetDatasetById.Response.newBuilder()
+          .setDataset(convertToDataset(session, metadataDAO, repositoryEntity, false))
+          .setRepo(repositoryEntity.toProto(false))
+          .build();
+    } catch (NumberFormatException e) {
+      String message = "Can't find repository, wrong id format: " + id;
+      throw new ModelDBException(message, Code.INVALID_ARGUMENT);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetById(metadataDAO, id);
+      } else {
+        throw ex;
+      }
+    }
   }
 
-  private SimpleEntry<Dataset, Repository> getDatasetRepositorySimpleEntry(Session session,
-      MetadataDAO metadataDAO, boolean idsOnly, RepositoryEntity repositoryEntity) {
+  private Map<Long, SimpleEntry<Dataset, Repository>> convertRepositoriesFromRepositoryEntityList(
+      Session session,
+      MetadataDAO metadataDAO,
+      List<RepositoryEntity> repositoryEntityList,
+      boolean idsOnly) {
+    return repositoryEntityList.stream()
+        .collect(
+            Collectors.toMap(
+                RepositoryEntity::getId,
+                repositoryEntity ->
+                    getDatasetRepositorySimpleEntry(
+                        session, metadataDAO, idsOnly, repositoryEntity),
+                (a, b) -> a,
+                LinkedHashMap::new));
+  }
+
+  private SimpleEntry<Dataset, Repository> getDatasetRepositorySimpleEntry(
+      Session session,
+      MetadataDAO metadataDAO,
+      boolean idsOnly,
+      RepositoryEntity repositoryEntity) {
     try {
       return new SimpleEntry<>(
           convertToDataset(session, metadataDAO, repositoryEntity, idsOnly),
@@ -1329,5 +1371,4 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throw StatusProto.toStatusRuntimeException(status);
     }
   }
-
 }
