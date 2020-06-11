@@ -10,7 +10,6 @@ import "modeldb/CommonService.proto";
 import "google/api/annotations.proto";
 import "modeldb/ExperimentService.proto";
 import "modeldb/ExperimentRunService.proto";
-import "modeldb/versioning/VersioningService.proto";
 
 message Dataset {
     string id = 1;//For backend reference
@@ -25,14 +24,6 @@ message Dataset {
     uint64 time_updated = 10;
     string workspace_id = 11;
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 12;
-}
-
-message DatasetTypeEnum {
-    enum DatasetType{
-        RAW = 0;// default
-        PATH = 1;
-        QUERY = 2;
-    }
 }
 
 message DatasetVisibilityEnum {
@@ -79,7 +70,6 @@ message GetDatasetById {
 
     message Response {
         Dataset dataset = 1;
-        versioning.Repository repos = 3;
     }
 }
 
@@ -90,7 +80,6 @@ message GetDatasetByName {
     message Response {
         Dataset dataset_by_user = 1;
         repeated Dataset shared_datasets = 2; // because of collaboration, this might be multiple datasets w/same name
-        repeated versioning.Repository repos = 3;
     }
 }
 
@@ -125,7 +114,6 @@ message FindDatasets {
     message Response {
         repeated Dataset datasets = 1;
         int64 total_records = 2;
-        repeated versioning.Repository repos = 3;
     }
 }
 
