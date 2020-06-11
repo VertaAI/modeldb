@@ -125,6 +125,62 @@ class Commit(object):
         e = LookupError("Commit does not contain path \"{}\"".format(path))
         six.raise_from(e, None)
 
+    # TODO: consolidate this with similar method in `_ModelDBEntity`
+    def _get_url_for_artifact(self, blob_path, dataset_component_path, method, part_num=0):
+        """
+        Obtains a URL to use for accessing stored artifacts.
+
+        Parameters
+        ----------
+        blob_path : str
+            Path to blob within repo.
+        dataset_component_path : str
+            Filepath in dataset component blob.
+        method : {'GET', 'PUT'}
+            HTTP method to request for the generated URL.
+        part_num : int, optional
+            If using Multipart Upload, number of part to be uploaded.
+
+        Returns
+        -------
+        response_msg : `_VersioningService.GetUrlForBlobVersioned.Response`
+            Backend response.
+
+        """
+        if method.upper() not in ("GET", "PUT"):
+            raise ValueError("`method` must be one of {'GET', 'PUT'}")
+
+        Message = _VersioningService.GetUrlForBlobVersioned
+        msg = Message(
+            location=path_to_location(blob_path),
+            path_dataset_component_blob_path=dataset_component_path,
+            method=method,
+            part_number=part_num,
+        )
+        data = _utils.proto_to_json(msg)
+        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/getUrlForBlobVersioned".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._repo.id,
+            self.id,
+        )
+        response = _utils.make_request("POST", endpoint, self._conn, json=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+
+        url = response_msg.url
+        # accommodate port-forwarded NFS store
+        if 'https://localhost' in url[:20]:
+            url = 'http' + url[5:]
+        if 'localhost%3a' in url[:20]:
+            url = url.replace('localhost%3a', 'localhost:')
+        if 'localhost%3A' in url[:20]:
+            url = url.replace('localhost%3A', 'localhost:')
+        response_msg.url = url
+
+        return response_msg
+
     def _update_blobs_from_commit(self, id_):
         """Fetches commit `id_`'s blobs and stores them as objects in `self._blobs`."""
         endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/blobs".format(
@@ -358,22 +414,8 @@ class Commit(object):
                             for part_num, file_part in enumerate(file_parts, start=1):
                                 print("uploading part {}".format(part_num), end='\r')
 
-                                # get URL for upload
-                                data = {
-                                    'location': path_to_location(path),
-                                    'path_dataset_component_blob_path': s3_obj.path.path,
-                                    'method': "PUT",
-                                    'part_number': part_num,
-                                }
-                                endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/getUrlForBlobVersioned".format(
-                                    self._conn.scheme,
-                                    self._conn.socket,
-                                    self._repo.id,
-                                    self.id,
-                                )
-                                response = _utils.make_request("POST", endpoint, self._conn, json=data)
-                                _utils.raise_for_http_error(response)
-                                url = response.json()['url']
+                                # get presigned URL
+                                url = self._get_url_for_artifact(path, s3_obj.path.path, "PUT", part_num=part_num).url
 
                                 # upload part
                                 part_stream = six.BytesIO(file_part)
@@ -401,7 +443,6 @@ class Commit(object):
                             print()
                             print("upload complete ({})".format(s3_obj.path.path))
 
-                        time.sleep(60)
                         # commit artifact
                         url = "{}://{}/api/v1/modeldb/versioning/commitMultipartVersionedBlobArtifact".format(
                             self._conn.scheme,
