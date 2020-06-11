@@ -346,18 +346,22 @@ class TestCommit extends FunSuite {
 
     try {
         val firstCommit = f.commit.update("abc/cde", f.pathBlob)
+                           .flatMap(_.update("mnp/qrs", f.pathBlob))
                            .flatMap(_.save("Some message 1")).get
 
         val secondCommit = firstCommit.update("def/ghi", f.s3Blob)
+                                      .flatMap(_.update("tuv/wxy", f.pathBlob))
                                       .flatMap(_.save("Some message 2")).get
 
         val thirdCommit = secondCommit.remove("abc/cde")
-                                      .flatMap(_.update("tuv/wxy", f.pathBlob))
                                       .flatMap(_.save("Some message 3")).get
 
         val revCommit = thirdCommit.revert(secondCommit, Some("Revert test")).get
 
-        // assert(revCommit.get("abc/cde").isSuccess)
+        // first and third commit should be retained:
+        assert(revCommit.get("abc/cde").isFailure)
+        assert(revCommit.get("mnp/qrs").isSuccess)
+        // second commit should be reverted:
         assert(revCommit.get("def/ghi").isFailure)
         assert(revCommit.get("tuv/wxy").isFailure)
     } finally {
