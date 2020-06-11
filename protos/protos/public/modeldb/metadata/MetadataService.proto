@@ -58,7 +58,7 @@ message DeleteLabelsRequest {
     }
 }
 
-message GetParameterRequest {
+message GetPropertyRequest {
     // If only id_type is provided, gather from all of such sources
     IdentificationType id = 1;
     string key = 2;
@@ -68,7 +68,7 @@ message GetParameterRequest {
     }
 }
 
-message AddParameterRequest {
+message AddPropertyRequest {
     IdentificationType id = 1;
     string key = 2;
     string value = 3;
@@ -78,7 +78,7 @@ message AddParameterRequest {
     }
 }
 
-message DeleteParameterRequest {
+message DeletePropertyRequest {
     IdentificationType id = 1;
     string key = 2;
 

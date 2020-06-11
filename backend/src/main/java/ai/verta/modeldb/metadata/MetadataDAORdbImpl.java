@@ -2,7 +2,7 @@ package ai.verta.modeldb.metadata;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
-import ai.verta.modeldb.entities.metadata.MetadataParameterMappingEntity;
+import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.rpc.Code;
@@ -28,8 +28,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
           .append(ModelDBConstants.ENTITY_TYPE)
           .append(" = :entityType")
           .toString();
-  private static final String GET_PARAMETER_HQL =
-      new StringBuilder("From MetadataParameterMappingEntity pm where pm.id.")
+  private static final String GET_PROPERTY_HQL =
+      new StringBuilder("From MetadataPropertyMappingEntity pm where pm.id.")
           .append("repositoryId")
           .append(" = :repositoryId")
           .append(" AND pm.id.")
@@ -83,13 +83,13 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public boolean addParameter(IdentificationType id, String key, String value) {
+  public boolean addProperty(IdentificationType id, String key, String value) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      addParameter(session, id, key, value);
+      addProperty(session, id, key, value);
       return true;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return addParameter(id, key, value);
+        return addProperty(id, key, value);
       } else {
         throw ex;
       }
@@ -97,11 +97,11 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public void addParameter(Session session, IdentificationType id, String key, String value) {
+  public void addProperty(Session session, IdentificationType id, String key, String value) {
     Transaction transaction = session.beginTransaction();
-    MetadataParameterMappingEntity.LabelMappingId id0 =
-        MetadataParameterMappingEntity.createId(id, key);
-    session.saveOrUpdate(new MetadataParameterMappingEntity(id0, value));
+    MetadataPropertyMappingEntity.LabelMappingId id0 =
+        MetadataPropertyMappingEntity.createId(id, key);
+    session.saveOrUpdate(new MetadataPropertyMappingEntity(id0, value));
     transaction.commit();
   }
 
@@ -148,27 +148,28 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public String getParameter(IdentificationType id, String key) {
+  public String getProperty(IdentificationType id, String key) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      return getParameter(session, id, key);
+      return getProperty(session, id, key);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return getParameter(id, key);
+        return getProperty(id, key);
       } else {
         throw ex;
       }
     }
   }
 
-  private String getParameter(Session session, IdentificationType id, String key) {
-    Query<MetadataParameterMappingEntity> query =
-        session.createQuery(GET_PARAMETER_HQL, MetadataParameterMappingEntity.class);
+  @Override
+  public String getProperty(Session session, IdentificationType id, String key) {
+    Query<MetadataPropertyMappingEntity> query =
+        session.createQuery(GET_PROPERTY_HQL, MetadataPropertyMappingEntity.class);
     VersioningCompositeIdentifier compositeId = id.getCompositeId();
     query.setParameter("repositoryId", compositeId.getRepoId());
     query.setParameter("commitSha", compositeId.getCommitHash());
     query.setParameter("location", ModelDBUtils.getJoinedLocation(compositeId.getLocationList()));
     query.setParameter("key", key);
-    return query.uniqueResultOptional().map(MetadataParameterMappingEntity::getValue).orElse(null);
+    return query.uniqueResultOptional().map(MetadataPropertyMappingEntity::getValue).orElse(null);
   }
 
   @Override
@@ -203,14 +204,14 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public boolean deleteParameter(IdentificationType id, String key) {
+  public boolean deleteProperty(IdentificationType id, String key) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
-      MetadataParameterMappingEntity.LabelMappingId id0 =
-          MetadataParameterMappingEntity.createId(id, key);
-      MetadataParameterMappingEntity existingMetadataMappingEntity =
-          session.get(MetadataParameterMappingEntity.class, id0);
+      MetadataPropertyMappingEntity.LabelMappingId id0 =
+          MetadataPropertyMappingEntity.createId(id, key);
+      MetadataPropertyMappingEntity existingMetadataMappingEntity =
+          session.get(MetadataPropertyMappingEntity.class, id0);
       if (existingMetadataMappingEntity != null) {
         session.delete(existingMetadataMappingEntity);
       } else {
@@ -225,7 +226,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       return true;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return deleteParameter(id, key);
+        return deleteProperty(id, key);
       } else {
         throw ex;
       }
