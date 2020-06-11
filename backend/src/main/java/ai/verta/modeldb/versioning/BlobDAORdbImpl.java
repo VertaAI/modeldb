@@ -228,7 +228,7 @@ public class BlobDAORdbImpl implements BlobDAO {
             "From "
                 + InternalFolderElementEntity.class.getSimpleName()
                 + " parentIfe WHERE parentIfe.element_name = :location AND parentIfe.folder_hash = :folderHash";
-        Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL);
+        Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL, InternalFolderElementEntity.class);
         fetchTreeQuery.setParameter("location", folderLocation);
         fetchTreeQuery.setParameter("folderHash", folderHash);
         InternalFolderElementEntity elementEntity = fetchTreeQuery.uniqueResult();
@@ -264,16 +264,16 @@ public class BlobDAORdbImpl implements BlobDAO {
                     .addAllLocation(locationList)
                     .setRepoId(repository.getId())
                     .setCommitHash(commitHash);
-            String labelsDescription =
-                metadataDAO.getParameter(
+            String blobDescription =
+                metadataDAO.getProperty(
                     session,
                     IdentificationType.newBuilder()
                         .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
                         .setCompositeId(versioningCompositeIdentifier)
                         .build(),
                     "description");
-            if (labelsDescription != null) {
-              datasetVersionBuilder.setDescription(labelsDescription);
+            if (blobDescription != null) {
+              datasetVersionBuilder.setDescription(blobDescription);
             }
             List<String> labels =
                 metadataDAO.getLabels(
