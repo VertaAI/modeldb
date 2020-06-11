@@ -304,7 +304,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       CommitDAO commitDAO, SetRepository request, UserInfo userInfo, boolean create)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repository = setRepository(session, commitDAO, request, userInfo, create);
+      RepositoryEntity repository =
+          setRepository(session, commitDAO, request, userInfo, null, create);
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -320,13 +321,15 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       CommitDAO commitDAO,
       SetRepository request,
       UserInfo userInfo,
+      WorkspaceDTO workspaceDTO,
       boolean create)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     RepositoryEntity repositoryEntity;
     final Repository repository = request.getRepository();
     if (create) {
-      WorkspaceDTO workspaceDTO;
-      workspaceDTO = verifyAndGetWorkspaceDTO(request.getId(), false, true);
+      if (workspaceDTO == null) {
+        workspaceDTO = verifyAndGetWorkspaceDTO(request.getId(), false, true);
+      }
       ModelDBHibernateUtil.checkIfEntityAlreadyExists(
           session,
           SHORT_NAME,
@@ -351,71 +354,44 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             "repositoryName",
             repository.getName(),
             ModelDBConstants.WORKSPACE_ID,
-            workspaceDTO.getWorkspaceId(),
-            workspaceDTO.getWorkspaceType(),
+            repositoryEntity.getWorkspace_id(),
+            WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
             LOGGER);
-        repositoryEntity = new RepositoryEntity(repository, workspaceDTO);
-        repositoryEntity.setDeleted(true);
-      } else {
-        repositoryEntity = getRepositoryById(session, request.getId(), true);
-        if (!repository.getName().isEmpty()
-            && !repositoryEntity.getName().equals(repository.getName())) {
-          ModelDBHibernateUtil.checkIfEntityAlreadyExists(
+      }
+      repositoryEntity.update(request);
+    }
+    session.beginTransaction();
+    session.saveOrUpdate(repositoryEntity);
+    if (create) {
+      Commit initCommit =
+          Commit.newBuilder().setMessage(ModelDBConstants.INITIAL_COMMIT_MESSAGE).build();
+      CommitEntity commitEntity =
+          commitDAO.saveCommitEntity(
               session,
-              SHORT_NAME,
-              GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
-              RepositoryEntity.class.getSimpleName(),
-              "repositoryName",
-              repository.getName(),
-              ModelDBConstants.WORKSPACE_ID,
-              repositoryEntity.getWorkspace_id(),
-              WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
-              LOGGER);
-        }
-        repositoryEntity.update(request);
-      }
-      session.beginTransaction();
-      session.saveOrUpdate(repositoryEntity);
-      if (create) {
-        Commit initCommit =
-            Commit.newBuilder().setMessage(ModelDBConstants.INITIAL_COMMIT_MESSAGE).build();
-        CommitEntity commitEntity =
-            commitDAO.saveCommitEntity(
-                session,
-                initCommit,
-                FileHasher.getSha(new String()),
-                authService.getVertaIdFromUserInfo(userInfo),
-                repositoryEntity,
-                null);
+              initCommit,
+              FileHasher.getSha(new String()),
+              authService.getVertaIdFromUserInfo(userInfo),
+              repositoryEntity, null);
 
-        saveBranch(
-            session,
-            commitEntity.getCommit_hash(),
-            ModelDBConstants.MASTER_BRANCH,
-            repositoryEntity);
-      }
-      session.getTransaction().commit();
-      if (create) {
-        try {
-          createRoleBindingsForRepository(request, userInfo, repositoryEntity);
-        } catch (Exception e) {
-          LOGGER.info("Exception from UAC during Repo role binding creation : {}", e.getMessage());
-          LOGGER.info("Deleting the created repository {}", repository.getId());
-          // delete the repo created
-          session.beginTransaction();
-          session.delete(repository);
-          session.getTransaction().commit();
-          throw e;
-        }
-      }
-      return SetRepository.Response.newBuilder().setRepository(repositoryEntity.toProto()).build();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return setRepository(commitDAO, request, userInfo, create);
-      } else {
-        throw ex;
+      saveBranch(
+          session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repositoryEntity);
+    }
+    session.getTransaction().commit();
+    if (create) {
+      try {
+        createRoleBindingsForRepository(request, userInfo, repositoryEntity);
+      } catch (Exception e) {
+        LOGGER.info("Exception from UAC during Repo role binding creation : {}", e.getMessage());
+        LOGGER.info("Deleting the created repository {}", repository.getId());
+        // delete the repo created
+        session.beginTransaction();
+        session.delete(repository);
+        session.getTransaction().commit();
+        throw e;
       }
     }
+
+    return repositoryEntity;
   }
 
   private void createRoleBindingsForRepository(
