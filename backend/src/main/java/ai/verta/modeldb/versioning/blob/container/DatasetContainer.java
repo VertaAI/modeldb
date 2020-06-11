@@ -9,7 +9,6 @@ import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.S3DatasetComponentBlobEntity;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.DatasetBlob;
 import ai.verta.modeldb.versioning.FileHasher;
@@ -176,15 +175,16 @@ public class DatasetContainer extends BlobContainer {
   @Override
   public void processAttribute(Session session, Long repoId, String commitHash)
       throws ModelDBException {
-    Blob blob = super.getBlob();
+    BlobExpanded blobExpanded = super.getBlobExpanded();
     try {
       List<AttributeEntity> attributeEntities =
           RdbmsUtils.convertAttributesFromAttributeEntityList(
-              this, ModelDBConstants.ATTRIBUTES, blob.getAttributesList());
+              this, ModelDBConstants.ATTRIBUTES, blobExpanded.getBlob().getAttributesList());
       attributeEntities.forEach(
           attributeEntity -> {
             attributeEntity.setEntity_hash(
-                VersioningUtils.getVersioningCompositeId(repoId, commitHash, getLocationList()));
+                VersioningUtils.getVersioningCompositeId(
+                    repoId, commitHash, blobExpanded.getLocationList()));
             session.saveOrUpdate(attributeEntity);
           });
     } catch (InvalidProtocolBufferException e) {

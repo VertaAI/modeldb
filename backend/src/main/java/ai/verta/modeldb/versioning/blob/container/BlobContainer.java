@@ -1,7 +1,6 @@
 package ai.verta.modeldb.versioning.blob.container;
 
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.TreeElem;
@@ -63,7 +62,7 @@ public abstract class BlobContainer {
   public abstract void processAttribute(Session session, Long repoId, String commitHash)
       throws ModelDBException;
 
-  public Blob getBlob() {
-    return blobExpanded.getBlob();
+  public BlobExpanded getBlobExpanded() {
+    return blobExpanded;
   }
 }
