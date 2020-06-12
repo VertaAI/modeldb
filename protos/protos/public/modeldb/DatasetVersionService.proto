@@ -29,10 +29,9 @@ message DatasetVersion {
         //RawDatasetVersionInfo raw_dataset_version_info = 12;
         PathDatasetVersionInfo path_dataset_version_info = 13;
         //QueryDatasetVersionInfo query_dataset_version_info = 14;
-        versioning.Blob blob = 16;
-
     }
     uint64 time_updated = 15;
+    versioning.Blob blob = 16;
 }
 
 // message QueryDatasetVersionInfo {
