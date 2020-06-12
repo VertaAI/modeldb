@@ -9,6 +9,7 @@ from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
 from ..external import six
 
+from .._internal_utils import _artifact_utils
 from .._internal_utils import _utils
 
 from . import _dataset
@@ -26,6 +27,8 @@ class Path(_dataset._Dataset):
     ----------
     paths : list of str
         List of filepaths or directory paths.
+    enable_mdb_versioning : bool, default False
+        Whether to upload the data itself to ModelDB to enable managed data versioning.
 
     Examples
     --------
@@ -41,12 +44,12 @@ class Path(_dataset._Dataset):
         ])
 
     """
-    def __init__(self, paths):
+    def __init__(self, paths, enable_mdb_versioning=False):
         if isinstance(paths, six.string_types):
             paths = [paths]
         paths = map(os.path.expanduser, paths)
 
-        super(Path, self).__init__()
+        super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
         paths_to_metadata = dict()  # prevent duplicate objects
         for path in paths:
@@ -110,3 +113,16 @@ class Path(_dataset._Dataset):
             for chunk in iter(lambda: f.read(8192), b''):
                 file_hash.update(chunk)
         return file_hash.hexdigest()
+
+    def _prepare_components_to_upload(self):
+        if not self._mdb_versioned:
+            return
+
+        for component_blob in self._component_blobs:
+            component_path = component_blob.path.path
+
+            # TODO: when stripping base path is supported, reconstruct original path here
+            filepath = os.path.abspath(component_path)
+
+            # track which file this component corresponds to
+            self._components_to_upload[component_path] = filepath

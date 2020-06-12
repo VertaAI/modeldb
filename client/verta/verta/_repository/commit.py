@@ -497,9 +497,7 @@ class Commit(object):
         mdb_versioned_blobs = dict()
         for blob_path, blob in self._blobs.items():
             if isinstance(blob, dataset._Dataset) and blob._mdb_versioned:
-                if isinstance(blob, dataset.S3):
-                    blob._download_components_from_S3()
-
+                blob._prepare_components_to_upload()
                 mdb_versioned_blobs[blob_path] = blob
 
         msg = self._to_create_msg(commit_message=message)
