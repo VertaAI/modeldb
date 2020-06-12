@@ -487,16 +487,20 @@ class Commit(object):
             Description of this Commit.
 
         """
-        # for managed versioning
-        # NOTE: this contains all blobs from past commits, which is a major problem
-        # TODO: instead of this, mark the components to be uploaded in the blob obj
-        blobs = self._blobs  # store here b/c they get erased in _save()
+        # prepare ModelDB-versioned blobs, and track for upload after commit save
+        mdb_versioned_blobs = dict()
+        for blob_path, blob in self._blobs.items():
+            if isinstance(blob, dataset._Dataset) and blob._mdb_versioned:
+                if isinstance(blob, dataset.S3):
+                    blob._download_data_from_S3()
+
+                mdb_versioned_blobs[blob_path] = blob
 
         msg = self._to_create_msg(commit_message=message)
         self._save(msg)
 
-        # upload data if using managed versioning
-        for blob_path, blob in blobs.items():
+        # upload ModelDB-versioned blobs
+        for blob_path, blob in mdb_versioned_blobs.items():
             if isinstance(blob, dataset._Dataset):
                 if isinstance(blob, dataset.S3):
                     component_blobs = blob._msg.s3.components
