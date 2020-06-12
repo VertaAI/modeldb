@@ -2,45 +2,37 @@ import { connectRouter, RouterState } from 'connected-react-router';
 import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
+import { ApolloClient } from 'apollo-boost';
 
 import ServiceFactory from 'services/ServiceFactory';
 
-import * as CommitsHistory from 'core/features/versioning/commitsHistory';
-import * as CompareChanges from 'core/features/versioning/compareChanges';
-import * as CompareCommits from 'core/features/versioning/compareCommits';
-import * as ViewCommit from 'core/features/versioning/viewCommit';
-import * as Repositories from 'core/features/versioning/repositories';
-import * as RepositoryData from 'core/features/versioning/repositoryData';
+import * as HighLevelSearch from 'core/features/highLevelSearch';
+import * as CompareEntities from 'core/features/compareEntities';
 import * as RepositoryNavigation from 'core/features/versioning/repositoryNavigation';
 import * as ExperimentRunsTableConfig from 'core/features/experimentRunsTableConfig';
 import * as Filter from 'core/features/filter';
 import * as Layout from 'core/features/Layout';
 import * as Comment from 'features/comments';
-import * as Workspaces from 'store/workspaces';
+import * as Workspaces from 'features/workspaces/store';
 
 import {
   IArtifactManagerState,
   artifactManagerReducer,
-} from './artifactManager';
-import { compareModelsReducer, ICompareEntitiesState } from './compareEntities';
-import { IDatasetsState, datasetsReducer } from './datasets';
+} from '../features/artifactManager/store';
+import { IDatasetsState, datasetsReducer } from '../features/datasets/store';
 import {
   IDatasetVersionsState,
   datasetVersionsReducer,
-} from './datasetVersions';
-import {
-  IDescriptionActionState,
-  descriptionActionReducer,
-} from './descriptionAction';
-import { experimentRunsReducer, IExperimentRunsState } from './experimentRuns';
-import { IExperimentsState, experimentsReducer } from './experiments';
+} from '../features/datasetVersions/store';
+import { experimentRunsReducer, IExperimentRunsState } from '../features/experimentRuns/store';
+import { IExperimentsState, experimentsReducer } from '../features/experiments/store';
 import {
   IProjectCreationState,
   projectCreationReducer,
-} from './projectCreation';
-import { IProjectsState, projectsReducer } from './projects';
-import { IProjectsPageState, projectsPageReducer } from './projectsPage';
-import { ITagActionState, tagActionReducer } from './tagAction';
+} from '../features/projectCreation/store';
+import { IProjectsState, projectsReducer } from '../features/projects/store';
+import * as TagsManagers from 'features/tagsManager';
+import * as DescriptionManager from 'features/descriptionManager';
 
 export interface IApplicationState
   extends Filter.IFilterRootState,
@@ -48,25 +40,19 @@ export interface IApplicationState
     ExperimentRunsTableConfig.IExperimentRunsTableConfigRootState,
     Layout.ILayoutRootState {
   experiments: IExperimentsState;
-  compareEntities: ICompareEntitiesState;
+  compareEntities: CompareEntities.ICompareEntitiesState;
   experimentRuns: IExperimentRunsState;
   projectCreation: IProjectCreationState;
   projects: IProjectsState;
-  projectsPage: IProjectsPageState;
   router: RouterState;
-  tagAction: ITagActionState;
-  descriptionAction: IDescriptionActionState;
+  tagsManager: TagsManagers.ITagsManagerState;
+  descriptionManager: DescriptionManager.IDescriptionManagerState;
   artifactManager: IArtifactManagerState;
   datasets: IDatasetsState;
   datasetVersions: IDatasetVersionsState;
   workspaces: Workspaces.IWorkspaces;
-  repositories: Repositories.types.IRepositoriesState;
-  repositoryData: RepositoryData.types.IRepositoryDataState;
-  commitsHistory: CommitsHistory.types.ICommitsHistoryState;
-  compareCommits: CompareCommits.types.ICompareCommitsState;
-  compareChanges: CompareChanges.types.ICompareChangesState;
-  viewCommit: ViewCommit.types.IViewCommitState;
   repositoryNavigation: RepositoryNavigation.types.IRepositoryNavigationState;
+  highLevelSearch: HighLevelSearch.types.IHighLevelSearchState;
 }
 
 // Additional props for connected React components. This prop is passed by default with `connect()`
@@ -79,28 +65,22 @@ export const createRootReducer = (history: History) =>
     layout: Layout.layoutReducer,
     experiments: experimentsReducer,
     comments: Comment.commentsReducer,
-    compareEntities: compareModelsReducer,
+    compareEntities: CompareEntities.compareModelsReducer,
     experimentRunsTableConfig:
       ExperimentRunsTableConfig.experimentRunsTableConfigReducer,
     experimentRuns: experimentRunsReducer,
     filters: Filter.filtersReducer,
     projectCreation: projectCreationReducer,
     projects: projectsReducer,
-    projectsPage: projectsPageReducer,
     router: connectRouter(history),
-    tagAction: tagActionReducer,
-    descriptionAction: descriptionActionReducer,
+    tagsManager: TagsManagers.tagActionReducer,
+    descriptionManager: DescriptionManager.reducer,
     artifactManager: artifactManagerReducer,
     datasets: datasetsReducer,
     datasetVersions: datasetVersionsReducer,
     workspaces: Workspaces.workspacesReducer,
-    repositories: Repositories.reducer,
-    repositoryData: RepositoryData.reducer,
-    commitsHistory: CommitsHistory.reducer,
-    viewCommit: ViewCommit.reducer,
-    compareCommits: CompareCommits.reducer,
-    compareChanges: CompareChanges.reducer,
     repositoryNavigation: RepositoryNavigation.reducer,
+    highLevelSearch: HighLevelSearch.reducer,
   });
 
 export interface IThunkActionDependencies
@@ -111,6 +91,7 @@ export interface IThunkActionDependencies
     > {
   ServiceFactory: typeof ServiceFactory;
   history: History;
+  apolloClient: ApolloClient<any>;
 }
 
 export type ActionResult<R = void, A extends Action = AnyAction> = ThunkAction<

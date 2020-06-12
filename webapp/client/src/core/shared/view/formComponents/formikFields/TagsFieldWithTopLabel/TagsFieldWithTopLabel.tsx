@@ -1,26 +1,33 @@
 import { FieldArray } from 'formik';
 import * as React from 'react';
 
-import TagsManager from 'core/shared/view/domain/TagsManager/TagsManager';
+import TagsManager from 'core/shared/view/domain/BaseTagsManager/TagsManager';
 import FieldWithTopLabel from 'core/shared/view/elements/FieldWithTopLabel/FieldWithTopLabel';
 
-export default class TagsField extends React.Component<{ name: string }> {
+interface ILocalProps {
+  name: string;
+  label?: string;
+}
+
+export default class TagsField extends React.Component<ILocalProps> {
   private emptyArray = [];
 
   public render() {
     return (
       <FieldArray name={this.props.name}>
         {arrayHelpers => (
-          <FieldWithTopLabel label="Tags">
+          <FieldWithTopLabel label={this.props.label || 'Tags'}>
             <TagsManager
               tags={
                 arrayHelpers.form.values[arrayHelpers.name] || this.emptyArray
               }
+              isAlwaysShowAddTagButton={true}
               isAvailableTagAdding={true}
               isDraggableTags={false}
               isRemovableTags={true}
               isShowPlaceholder={false}
               isUpdating={false}
+              tagWordReplacer={this.props.label}
               onAddTag={tag => arrayHelpers.push(tag)}
               onRemoveTag={deletedTag =>
                 arrayHelpers.remove(

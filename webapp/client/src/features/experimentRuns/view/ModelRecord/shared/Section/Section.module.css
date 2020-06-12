@@ -1,0 +1,26 @@
+.root {
+  margin-top: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  color: var(--main-color6);
+  font-size: 20px;
+  margin-right: 6px;
+}
+
+.title {
+  color: var(--main-text-color1);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.content {
+  padding-top: 18px;
+  padding-bottom: 31px;
+  border-bottom: 1px solid #cccccc;
+}

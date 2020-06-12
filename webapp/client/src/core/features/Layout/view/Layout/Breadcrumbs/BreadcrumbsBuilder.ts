@@ -1,4 +1,5 @@
 import { IRoute } from 'core/shared/routes/makeRoute';
+import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 
 interface IBreadcrumbs {
   checkLoaded: () => boolean;
@@ -22,15 +23,25 @@ export interface IBreadcrumbsBuilder {
 
 type IThenBreadcrumItemSetting<T> =
   | Omit<ICommonBreadcrumItemSetting<T>, 'routes'> & {
-      route: IRoute<T>;
-      isAlwaysDisplayed: true;
+      type: 'alwaysDisplayed';
+      route: IRoute<T, any, any>;
     }
-  | ICommonBreadcrumItemSetting<T> & { isAlwaysDisplayed?: false };
+  | ICommonBreadcrumItemSetting<T> & {
+      type: 'multiple';
+      routes: Array<IRoute<T, any, any>>;
+      redirectTo: IRoute<T, any, any>;
+    }
+  | ICommonBreadcrumItemSetting<T> & {
+      type: 'single';
+      route: IRoute<T, any, any>;
+    };
 
-type IThenOrBreadcrumItemSetting<T> = ICommonBreadcrumItemSetting<T>;
+type IThenOrBreadcrumItemSetting<T> = ICommonBreadcrumItemSetting<T> & {
+  type: 'single';
+  route: IRoute<T, any, any>;
+};
 
 interface ICommonBreadcrumItemSetting<T> {
-  routes: Array<IRoute<T, any>>;
   getName: (params: T) => string;
   checkLoaded?: (params: T) => boolean;
 }
@@ -53,36 +64,43 @@ export default function BreadcrumbsBuilder(
         .map(item => {
           const res = (() => {
             if (item.type === 'then') {
-              if (item.value.isAlwaysDisplayed) {
-                return {
-                  itemSetting: item.value,
-                  appropriateRoute: item.value.route,
-                };
+              switch (item.value.type) {
+                case 'single': {
+                  return {
+                    itemSetting: item.value,
+                    appropriateRoute: item.value.route.getMatch(pathname, false)
+                      ? item.value.route
+                      : undefined,
+                  };
+                }
+                case 'alwaysDisplayed': {
+                  return {
+                    itemSetting: item.value,
+                    appropriateRoute: item.value.route,
+                  };
+                }
+                case 'multiple': {
+                  return {
+                    itemSetting: item.value,
+                    appropriateRoute: item.value.routes.find(({ getMatch }) =>
+                      getMatch(pathname, false)
+                    ),
+                  };
+                }
+                default:
+                  return exhaustiveCheck(item.value, '');
               }
-              return {
-                itemSetting: item.value,
-                appropriateRoute: item.value.routes.find(({ getMatch }) =>
-                  Boolean(getMatch(pathname, false))
-                )!,
-              };
             }
-            const res = item.value.find(_itemSetting => {
-              return Boolean(
-                _itemSetting.routes.find(({ getMatch }) =>
-                  Boolean(getMatch(pathname, false))
-                )
-              );
-            });
 
+            const res = item.value.find(_itemSetting =>
+              _itemSetting.route.getMatch(pathname, false)
+            );
             if (!res) {
               return null;
             }
-
             return {
               itemSetting: res,
-              appropriateRoute: res.routes.find(({ getMatch }) =>
-                Boolean(getMatch(pathname, false))
-              )!,
+              appropriateRoute: res.route,
             };
           })();
 
@@ -95,7 +113,10 @@ export default function BreadcrumbsBuilder(
 
           const breadcrumbItem: IBreadcrumbItem<any> = {
             isActive: appropriateRoute.getMatch(pathname),
-            redirectPath: appropriateRoute.getRedirectPath(params!),
+            redirectPath:
+              item.type === 'then' && item.value.type === 'multiple'
+                ? item.value.redirectTo.getRedirectPath(params)
+                : appropriateRoute.getRedirectPath(params!),
             getName: () => itemSetting.getName(params),
             checkLoaded: () =>
               itemSetting.checkLoaded ? itemSetting.checkLoaded(params) : true,

@@ -1,0 +1,13 @@
+.root {
+  font-size: 15px;
+  white-space: normal;
+  color: #aaaaaa;
+}
+
+.link {
+  text-decoration: none;
+  color: var(--main-color2);
+}
+.link:hover {
+  color: var(--link-color);
+}

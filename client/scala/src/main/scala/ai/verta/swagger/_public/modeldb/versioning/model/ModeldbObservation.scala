@@ -17,7 +17,7 @@ import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorksp
 import ai.verta.swagger.client.objects._
 
 case class ModeldbObservation (
-  artifact: Option[ModeldbArtifact] = None,
+  artifact: Option[CommonArtifact] = None,
   attribute: Option[CommonKeyValue] = None,
   timestamp: Option[BigInt] = None
 ) extends BaseSwagger {
@@ -28,7 +28,7 @@ object ModeldbObservation {
   def toJson(obj: ModeldbObservation): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.artifact.map(x => JField("artifact", ((x: ModeldbArtifact) => ModeldbArtifact.toJson(x))(x))),
+        obj.artifact.map(x => JField("artifact", ((x: CommonArtifact) => CommonArtifact.toJson(x))(x))),
         obj.attribute.map(x => JField("attribute", ((x: CommonKeyValue) => CommonKeyValue.toJson(x))(x))),
         obj.timestamp.map(x => JField("timestamp", JInt(x)))
       ).flatMap(x => x match {
@@ -44,7 +44,7 @@ object ModeldbObservation {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbObservation(
           // TODO: handle required
-          artifact = fieldsMap.get("artifact").map(ModeldbArtifact.fromJson),
+          artifact = fieldsMap.get("artifact").map(CommonArtifact.fromJson),
           attribute = fieldsMap.get("attribute").map(CommonKeyValue.fromJson),
           timestamp = fieldsMap.get("timestamp").map(JsonConverter.fromJsonInteger)
         )

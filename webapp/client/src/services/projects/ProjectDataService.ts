@@ -1,5 +1,5 @@
-import { JsonConvert } from 'json2typescript';
 import * as R from 'ramda';
+import { JsonConvert } from 'json2typescript';
 
 import { IArtifact } from 'core/shared/models/Artifact';
 import { EntityErrorType } from 'core/shared/models/Common';
@@ -16,9 +16,14 @@ import {
   convertHydratedProjectToClient,
   convertProjectVisibilityToServer,
 } from 'services/serverModel/Projects/converters';
-
+import { ISorting } from 'core/shared/models/Sorting';
 import { BaseDataService } from 'core/services/BaseDataService';
+
 import makeLoadProjectsRequest from './responseRequest/makeLoadProjectsRequest';
+import {
+  convertServerPaginationResponse,
+  IServerPaginatedResponse,
+} from 'core/services/serverModel/Pagination/Pagination';
 
 export default class ProjectDataService extends BaseDataService {
   public async createProject(
@@ -64,29 +69,25 @@ export default class ProjectDataService extends BaseDataService {
   public async loadProjects(
     filters: IFilterData[],
     pagination: IPagination | undefined,
-    workspaceName: IWorkspace['name']
+    workspaceName: IWorkspace['name'],
+    sorting?: ISorting | undefined
   ): Promise<DataWithPagination<Project>> {
     const request = await makeLoadProjectsRequest(
       filters,
       pagination,
-      workspaceName
+      workspaceName,
+      sorting
     );
-    const response = await this.post({
+    const response = await this.post<IServerProjectsResponse>({
       url: '/v1/modeldb/hydratedData/findHydratedProjects',
       data: request,
     });
 
-    if (!response.data || !response.data.hydrated_projects) {
-      return { data: [], totalCount: 0 };
-    }
-    const projects: Project[] = response.data.hydrated_projects.map(
-      convertHydratedProjectToClient
+    return convertServerPaginationResponse(
+      convertHydratedProjectToClient,
+      d => d.hydrated_projects,
+      response.data
     );
-
-    return {
-      data: projects,
-      totalCount: Number(response.data.total_records),
-    };
   }
 
   public async loadShortProjectsByIds(
@@ -151,3 +152,8 @@ export default class ProjectDataService extends BaseDataService {
     return response.data.url;
   }
 }
+
+type IServerProjectsResponse = IServerPaginatedResponse<
+  'hydrated_projects',
+  Record<string, any>
+>;

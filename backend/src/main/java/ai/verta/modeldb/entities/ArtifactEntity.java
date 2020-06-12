@@ -1,7 +1,7 @@
 package ai.verta.modeldb.entities;
 
+import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.Artifact;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;

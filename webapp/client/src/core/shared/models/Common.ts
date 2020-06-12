@@ -21,11 +21,18 @@ export type EntityType =
   | 'experiment'
   | 'experimentRun'
   | 'dataset'
-  | 'datasetVersion';
+  | 'datasetVersion'
+  | 'repository'
 export const EntityType: { [K in EntityType]: K } = {
   dataset: 'dataset',
   datasetVersion: 'datasetVersion',
   experiment: 'experiment',
   experimentRun: 'experimentRun',
   project: 'project',
+  repository: 'repository',
 };
+
+export interface IDateRange {
+  from: Date;
+  to: Date;
+}

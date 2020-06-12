@@ -16,12 +16,18 @@
   box-shadow: 0 2px 18px 0 rgba(0, 0, 0, 0.25), 0 0 1px 0 rgba(0, 0, 0, 0.32);
   outline: none;
 }
+.withoutActions {
+  min-height: auto;
+}
 
 .type_info {
   border-top: 2px solid var(--main-color6);
 }
 .type_warning {
   border-top: 2px solid var(--warning-color);
+}
+.type_success {
+  border-top: 2px solid #7bb54f;
 }
 
 .overlay {
@@ -63,10 +69,13 @@
   line-height: 26px;
 }
 
-.warningIcon {
+.icon {
   margin-right: 8px;
-  color: var(--warning-color);
+  color: #514eb5;
   font-size: 22px;
+}
+.warningIcon {
+  color: var(--warning-color);
 }
 
 .content {

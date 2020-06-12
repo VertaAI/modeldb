@@ -2934,7 +2934,8 @@
         "DATA",
         "BLOB",
         "STRING",
-        "CODE"
+        "CODE",
+        "CONTAINER"
       ],
       "default": "IMAGE"
     },
@@ -3001,22 +3002,7 @@
       ],
       "default": "UNKNOWN"
     },
-    "commonKeyValue": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType",
-          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
-        }
-      }
-    },
-    "modeldbArtifact": {
+    "commonArtifact": {
       "type": "object",
       "properties": {
         "key": {
@@ -3040,6 +3026,21 @@
         }
       }
     },
+    "commonKeyValue": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
     "modeldbArtifactPart": {
       "type": "object",
       "properties": {
@@ -3059,7 +3060,7 @@
           "$ref": "#/definitions/modeldbGitSnapshot"
         },
         "code_archive": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         },
         "date_logged": {
           "type": "string",
@@ -3132,13 +3133,13 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "datasets": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "metrics": {
@@ -3229,7 +3230,7 @@
           "$ref": "#/definitions/commonKeyValue"
         },
         "artifact": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         },
         "timestamp": {
           "type": "string",
@@ -3255,6 +3256,20 @@
           }
         }
       }
+    },
+    "modeldbversioningPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     },
     "protobufAny": {
       "type": "object",
@@ -4263,20 +4278,6 @@
           "$ref": "#/definitions/versioningGitCodeDiff"
         }
       }
-    },
-    "versioningPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
     },
     "versioningPathDatasetBlob": {
       "type": "object",

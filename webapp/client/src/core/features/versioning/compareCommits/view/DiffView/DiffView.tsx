@@ -3,6 +3,7 @@ import React from 'react';
 import { Diff } from 'core/shared/models/Versioning/Blob/Diff';
 import * as CommitComponentLocationHelpers from 'core/shared/models/Versioning/CommitComponentLocation';
 import matchBy from 'core/shared/utils/matchBy';
+import Breadcrumbs from 'core/shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
 
 import { IComparedCommitsInfo } from '../model';
 import CodeDiffView from './CodeDiffView/CodeDiffView';
@@ -11,7 +12,6 @@ import DatasetDiffView from './DatasetDiffView/DatasetDiffView';
 import styles from './DiffView.module.css';
 import EnvironmentDiffView from './EnvironmentDiffView/EnvironmentDiffView';
 import UnknownDiffView from './UnknownDiffView/UnknownDiffView';
-import Breadcrumbs from 'core/shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
 
 interface ILocalProps {
   diff: Diff;

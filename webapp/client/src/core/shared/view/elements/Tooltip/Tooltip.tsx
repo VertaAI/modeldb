@@ -4,7 +4,7 @@ import * as React from 'react';
 import './Tooltip.module.css';
 
 interface ILocalProps {
-  content: any;
+  content: React.ReactNode;
   children: React.ReactNode;
   width?: number;
   visible?: boolean;

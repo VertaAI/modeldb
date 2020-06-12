@@ -18,10 +18,10 @@ import {
   IWithCommentSettings,
   IWithAddCommentFormSettings,
 } from '../../types';
-
 import AddCommentForm from './AddCommentForm/AddCommentForm';
 import Comment from './Comment/Comment';
 import styles from './Comments.module.css';
+import Badge from '../../shared/Badge/Badge';
 
 interface ILocalProps
   extends IWithCommentSettings,
@@ -52,28 +52,25 @@ class Comments extends React.PureComponent<AllProps> {
       isLoading,
       entityInfo,
       comments,
-      addCommentFormSettings,
       commentSettings,
       onClose,
     } = this.props;
     return (
       <div className={styles.root} data-test="comments">
         <div className={styles.header}>
-          <div className={styles.headerLabel}>
+          <div className={styles.headerTitle}>
             Comments
             <Icon type="close" className={styles.close} onClick={onClose} />
           </div>
           <div className={styles.headerContent}>
-            <div className={styles.commentNumber}>
-              {isLoading || !comments ? (
-                <Preloader variant="dots" />
-              ) : (
-                comments.length
-              )}
-            </div>
             <div className={styles.entityInfo} data-test="comments-entity-name">
               {entityInfo.name}
             </div>
+            {!isLoading && comments && (
+              <div className={styles.badge}>
+                <Badge count={comments.length} />
+              </div>
+            )}
           </div>
         </div>
         {isLoading || !comments ? (
@@ -93,10 +90,7 @@ class Comments extends React.PureComponent<AllProps> {
                 </div>
               ))}
             </div>
-            <AddCommentForm
-              entityId={entityInfo.id}
-              addCommentFormSettings={addCommentFormSettings}
-            />
+            <AddCommentForm entityId={entityInfo.id} />
           </div>
         )}
       </div>
