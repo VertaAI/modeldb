@@ -182,11 +182,13 @@ class S3(_dataset._Dataset):
 
         # download files to local disk
         for s3_obj in self._msg.s3.components:
-            s3_loc = S3Location(s3_obj.path.path, s3_obj.s3_version_id)
+            s3_path = s3_obj.path.path
+            s3_loc = S3Location(s3_path, s3_obj.s3_version_id)
 
             # download to file in ~/.verta/temp/
             tempdir = os.path.join(_utils.HOME_VERTA_DIR, "temp")
             pathlib2.Path(tempdir).mkdir(parents=True, exist_ok=True)
+            print("downloading {} from S3".format(s3_path))
             with tempfile.NamedTemporaryFile('w+b', dir=tempdir, delete=False) as tempf:
                 s3.download_fileobj(
                     Bucket=s3_loc.bucket,
@@ -194,9 +196,10 @@ class S3(_dataset._Dataset):
                     ExtraArgs={'VersionId': s3_loc.version_id} if s3_loc.version_id else None,
                     Fileobj=tempf,
                 )
+            print("download complete")
 
             # track which downloaded file this component corresponds to
-            self._components_to_upload[s3_obj.path.path] = tempf.name
+            self._components_to_upload[s3_path] = tempf.name
 
             # add MDB path to component blob
             with open(tempf.name, 'rb') as f:

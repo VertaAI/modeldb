@@ -204,6 +204,7 @@ class Commit(object):
 
         # TODO: check if multipart upload ok
 
+        print("uploading {} to ModelDB".format(component_blob.path.path))
         if True:
             # TODO: parallelize this
             file_parts = iter(lambda: file_handle.read(part_size), b'')
@@ -270,7 +271,7 @@ class Commit(object):
             # TODO: upload full artifact
             pass
 
-        print("upload complete ({})".format(component_blob.path.path))
+        print("upload complete")
 
         # TODO: delete staged file
         # NOTE: this can cause errors if `filepath` is also used for other blobs/components
