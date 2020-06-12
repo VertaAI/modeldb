@@ -186,12 +186,16 @@ class Commit(object):
     # TODO: consolidate this with similar method in `ExperimentRun`
     def _upload_artifact(self, blob_path, component_blob, file_handle, part_size=64*(10**6)):
         """
-        Uploads `artifact_stream` to ModelDB artifact store.
+        Uploads `file_handle` to ModelDB artifact store.
 
         Parameters
         ----------
-        key : str
-        artifact_stream : file-like
+        blob_path : str
+            Path to blog withiin repo.
+        component_blob : protobuf Message
+            Dataset component blob.
+        file_handle : file-like
+            Artifact to be uploaded.
         part_size : int, default 64 MB
             If using multipart upload, number of bytes to upload per part.
 
