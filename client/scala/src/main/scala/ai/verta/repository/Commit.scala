@@ -65,7 +65,7 @@ class Commit(
       case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
       case s3: S3 => S3.toVersioningBlob(s3)
     }
-    getChild(blobs + (path -> versioningBlob))
+    loadBlobs().map(_ => getChild(blobs + (path -> versioningBlob)))
   }
 
   /** Remove a blob to this commit at path
@@ -73,7 +73,7 @@ class Commit(
    *  @return The new commit with the blob removed, if succeeds.
    */
   def remove(path: String)(implicit ec: ExecutionContext) =
-    getVersioningBlob(path).flatMap(_ => getChild(blobs - path))
+    getVersioningBlob(path).map(_ => getChild(blobs - path))
 
   /** Saves this commit to ModelDB
    *  @param message description of this commit
@@ -186,8 +186,7 @@ class Commit(
    *  @param childBlobs the blobs of the child commit
    *  @return the child commit instance, if loading blobs succeeds.
    */
-  private def getChild(childBlobs: Map[String, VersioningBlob])(implicit ec: ExecutionContext) =
-    loadBlobs().map(_ => {
+  private def getChild(childBlobs: Map[String, VersioningBlob])(implicit ec: ExecutionContext) = {
       /** TODO: Deal with author, date_created */
       val newVersioningCommit = VersioningCommit(
         parent_shas = if (saved) commit.commit_sha.map(List(_)) else commit.parent_shas
@@ -195,10 +194,10 @@ class Commit(
 
       val child = new Commit(clientSet, repo, newVersioningCommit, commitBranch)
       child.blobs = childBlobs
-      child.loadedFromRemote = true
+      child.loadedFromRemote = true  // child's blobs are already provided
 
       child
-    })
+    }
 
   /** Helper function to convert a VersioningBlob instance to corresponding Blob subclass instance
    *  @param vb the VersioningBlob instance
