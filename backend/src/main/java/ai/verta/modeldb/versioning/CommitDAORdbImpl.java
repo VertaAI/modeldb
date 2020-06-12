@@ -16,7 +16,6 @@ import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataDAO;
-import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
@@ -24,7 +23,13 @@ import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.hibernate.Session;
@@ -130,20 +135,21 @@ public class CommitDAORdbImpl implements CommitDAO {
               datasetVersion.getOwner(),
               repositoryEntity,
               datasetVersion.getId());
-      VersioningCompositeIdentifier.Builder versioningIdentifier =
-          VersioningCompositeIdentifier.newBuilder()
-              .setRepoId(repositoryEntity.getId())
-              .setCommitHash(commitEntity.getCommit_hash())
-              .addAllLocation(location);
+      String compositeId =
+          VersioningUtils.createDatasetVersionBlobCompositeIdString(
+              commitEntity.getCommit_hash(), location);
       metadataDAO.addProperty(
           session,
-          IdentificationType.newBuilder().setCompositeId(versioningIdentifier).build(),
+          IdentificationType.newBuilder()
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+              .setStringId(compositeId)
+              .build(),
           "description",
           datasetVersion.getDescription());
       metadataDAO.addLabels(
           session,
           IdentificationType.newBuilder()
-              .setCompositeId(versioningIdentifier)
+              .setStringId(compositeId)
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
               .build(),
           datasetVersion.getTagsList());

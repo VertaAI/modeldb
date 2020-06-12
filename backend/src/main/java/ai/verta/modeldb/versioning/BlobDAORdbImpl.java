@@ -3,7 +3,12 @@ package ai.verta.modeldb.versioning;
 import static ai.verta.modeldb.ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION;
 import static java.util.stream.Collectors.toMap;
 
-import ai.verta.modeldb.*;
+import ai.verta.modeldb.DatasetPartInfo;
+import ai.verta.modeldb.DatasetVersion;
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.PathDatasetVersionInfo;
+import ai.verta.modeldb.PathLocationTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
@@ -12,7 +17,6 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataDAO;
-import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
@@ -231,17 +235,14 @@ public class BlobDAORdbImpl implements BlobDAO {
         datasetVersionBuilder.setDatasetId(String.valueOf(repository.getId()));
         datasetVersionBuilder.setTimeLogged(commit.getDate_created());
 
-        VersioningCompositeIdentifier.Builder versioningCompositeIdentifier =
-            VersioningCompositeIdentifier.newBuilder()
-                .addAllLocation(locationList)
-                .setRepoId(repository.getId())
-                .setCommitHash(commitHash);
+        String compositeId =
+            VersioningUtils.createDatasetVersionBlobCompositeIdString(commitHash, locationList);
         String blobDescription =
             metadataDAO.getProperty(
                 session,
                 IdentificationType.newBuilder()
                     .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-                    .setCompositeId(versioningCompositeIdentifier)
+                    .setStringId(compositeId)
                     .build(),
                 "description");
         if (blobDescription != null) {
@@ -252,7 +253,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                 session,
                 IdentificationType.newBuilder()
                     .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-                    .setCompositeId(versioningCompositeIdentifier)
+                    .setStringId(compositeId)
                     .build());
         if (labels.size() > 0) {
           datasetVersionBuilder.addAllTags(labels);
