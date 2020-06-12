@@ -102,7 +102,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       message = null;
     }
     if (message != null) {
-      LOGGER.warn(message);
+      LOGGER.info(message);
       throw new ModelDBException(message, Code.INVALID_ARGUMENT);
     }
   }
@@ -131,7 +131,7 @@ public class LineageDAORdbImpl implements LineageDAO {
     if (!isExistsResourcePredicate.test(
         session, lineageEntry.getExternalId(), lineageEntry.getType())) {
       final String message = "External resource with a specified id does not exists";
-      LOGGER.warn(message);
+      LOGGER.info(message);
       throw new ModelDBException(message, Code.INVALID_ARGUMENT);
     }
   }

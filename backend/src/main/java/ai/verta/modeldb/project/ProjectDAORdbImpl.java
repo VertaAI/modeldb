@@ -375,7 +375,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
       if (projectObj == null) {
         String errorMessage = "Project not found for given ID";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -425,7 +425,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
         if (projectObj == null) {
           String errorMessage = "Project not found for given ID: " + projectId;
-          LOGGER.warn(errorMessage);
+          LOGGER.info(errorMessage);
           Status status =
               Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
           throw StatusProto.toStatusRuntimeException(status);
@@ -457,7 +457,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
       if (projectObj == null) {
         String errorMessage = "Project not found for given ID";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -799,7 +799,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
         String errorMessage = ModelDBMessages.PROJECT_NOT_FOUND_FOR_ID;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -1110,7 +1110,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       } catch (ModelDBException ex) {
         if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
-          LOGGER.warn(ex.getMessage());
+          LOGGER.info(ex.getMessage());
           ProjectPaginationDTO projectPaginationDTO = new ProjectPaginationDTO();
           projectPaginationDTO.setProjects(Collections.emptyList());
           projectPaginationDTO.setTotalRecords(0L);
@@ -1191,7 +1191,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
         String errorMessage = "Project not found for given ID: " + projectId;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -1240,7 +1240,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
         String errorMessage = "Project not found for given ID: " + projectId;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -1251,7 +1251,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         return project.getArtifactsList();
       } else {
         String errorMessage = "Artifacts not found in the Project";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
