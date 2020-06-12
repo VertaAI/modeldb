@@ -503,9 +503,10 @@ class Commit(object):
         for blob_path, blob in mdb_versioned_blobs.items():
             for component_blob in blob._component_blobs:
                 if component_blob.path.internal_versioned_path:
-                    downloaded_filepath = blob._components_to_upload[component_blob.path.path]
+                    component_path = component_blob.path.path
+                    downloaded_filepath = blob._components_to_upload[component_path]
                     with open(downloaded_filepath, 'rb') as f:
-                        self._upload_artifact(blob_path, component_blob, f)
+                        self._upload_artifact(blob_path, component_path, f)
 
                     os.remove(downloaded_filepath)
 
