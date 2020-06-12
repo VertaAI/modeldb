@@ -490,7 +490,7 @@ class Commit(object):
         for blob_path, blob in self._blobs.items():
             if isinstance(blob, dataset._Dataset) and blob._mdb_versioned:
                 if isinstance(blob, dataset.S3):
-                    blob._download_data_from_S3()
+                    blob._download_components_from_S3()
 
                 mdb_versioned_blobs[blob_path] = blob
 

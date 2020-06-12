@@ -56,7 +56,7 @@ class S3(_dataset._Dataset):
         if isinstance(paths, (six.string_types, S3Location)):
             paths = [paths]
 
-        super(S3, self).__init__()
+        super(S3, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
         obj_paths_to_metadata = dict()  # prevent duplicate objects
         for path in paths:
@@ -79,10 +79,6 @@ class S3(_dataset._Dataset):
 
         s3_metadata = six.viewvalues(obj_paths_to_metadata)
         self._msg.s3.components.extend(s3_metadata)  # pylint: disable=no-member
-
-        # TODO: move to superclass
-        self._mdb_versioned = enable_mdb_versioning
-        self._components_to_upload = dict()
 
     def __repr__(self):
         lines = ["S3 Version"]
@@ -172,10 +168,9 @@ class S3(_dataset._Dataset):
         """
         return S3Location(path, version_id)
 
-    # TODO: a better method name
-    def _download_data_from_S3(self):
+    def _download_components_from_S3(self):
         if not self._mdb_versioned:
-            raise RuntimeError()  # or maybe don't halt execution, since this is a private method
+            return
 
         try:
             import boto3

@@ -16,11 +16,13 @@ class _Dataset(blob.Blob):
     Base class for dataset versioning. Not for human consumption.
 
     """
-    def __init__(self):
+    def __init__(self, enable_mdb_versioning=False):
         super(_Dataset, self).__init__()
 
         self._msg = _DatasetService.DatasetBlob()
-        self._commit = None  # to be set during commit.get()
+
+        self._mdb_versioned = enable_mdb_versioning
+        self._components_to_upload = dict()
 
     @property
     def _component_blobs(self):
