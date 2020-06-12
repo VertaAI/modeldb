@@ -503,20 +503,17 @@ class Commit(object):
                 elif isinstance(blob, dataset.Path):
                     component_blobs = blob._msg.path.components
                 else:
-                    # this shouldn't happen as long as if branches are kept up-to-date
+                    # this shouldn't happen as long as conditional is kept up-to-date
                     raise TypeError("Unsupported blob type for managed versioning: {}".format(type(blob)))
 
                 for component_blob in component_blobs:
                     if component_blob.path.internal_versioned_path:
-                        if isinstance(blob, dataset.S3):
-                            _, s3_key = dataset._s3.S3Location._parse_s3_url(component_blob.path.path)
-                            filepath = os.path.join(dataset._dataset.STAGING_DIR, s3_key)
-                        elif isinstance(blob, dataset.Path):
-                            # TODO: reconstruct original filepath using the stripped base path
-                            filepath = component_blob.path.path
+                        downloaded_filepath = blob._components_to_upload.get(component_blob.path.path, None)
+                        if downloaded_filepath is not None:
+                            with open(downloaded_filepath, 'rb') as f:
+                                self._upload_artifact(blob_path, component_blob, f)
 
-                        with open(filepath, 'rb') as f:
-                            self._upload_artifact(blob_path, component_blob, f)
+                            os.remove(downloaded_filepath)
 
     def _save(self, proto_message):
         data = _utils.proto_to_json(proto_message)

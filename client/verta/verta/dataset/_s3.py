@@ -3,6 +3,8 @@
 from __future__ import print_function
 
 import os
+import pathlib2
+import tempfile
 
 from ..external import six
 from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
@@ -77,8 +79,10 @@ class S3(_dataset._Dataset):
 
         s3_metadata = six.viewvalues(obj_paths_to_metadata)
         self._msg.s3.components.extend(s3_metadata)  # pylint: disable=no-member
+        self._components_to_upload = dict()
 
-        # TODO: make this happen in the above loop to help avoid race condition
+        # TODO: maybe make this happen in the above loop to help avoid race condition
+        # TODO: or it should happen in commit.save() so that's it's closer to upload time
         if enable_mdb_versioning:
             try:
                 import boto3
@@ -87,25 +91,26 @@ class S3(_dataset._Dataset):
                 six.raise_from(e, None)
             s3 = boto3.client('s3')
 
-            # create staging dir in home verta dir
-            try:
-                os.makedirs(_dataset.STAGING_DIR)
-            except OSError as e:
-                pass
-
-            # download files to staging dir
+            # download files to local disk
             for s3_obj in self._msg.s3.components:
                 s3_loc = S3Location(s3_obj.path.path, s3_obj.s3_version_id)
-                filepath = os.path.join(_dataset.STAGING_DIR, s3_loc.key)
-                s3.download_file(
-                    Bucket=s3_loc.bucket,
-                    Key=s3_loc.key,
-                    ExtraArgs={'VersionId': s3_loc.version_id} if s3_loc.version_id else None,
-                    Filename=filepath,
-                )
+
+                # download to file in ~/.verta/temp/
+                tempdir = os.path.join(_utils.HOME_VERTA_DIR, "temp")
+                pathlib2.Path(tempdir).mkdir(parents=True, exist_ok=True)
+                with tempfile.NamedTemporaryFile('w+b', dir=tempdir, delete=False) as tempf:
+                    s3.download_fileobj(
+                        Bucket=s3_loc.bucket,
+                        Key=s3_loc.key,
+                        ExtraArgs={'VersionId': s3_loc.version_id} if s3_loc.version_id else None,
+                        Fileobj=tempf,
+                    )
+
+                # track which downloaded file this component corresponds to
+                self._components_to_upload[s3_obj.path.path] = tempf.name
 
                 # add MDB path to component blob
-                with open(filepath, 'rb') as f:
+                with open(tempf.name, 'rb') as f:
                     artifact_hash = _artifact_utils.calc_sha256(f)
                 s3_obj.path.internal_versioned_path = artifact_hash + '/' + s3_loc.key
 
