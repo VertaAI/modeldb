@@ -80,18 +80,20 @@ class _Dataset(blob.Blob):
         self._commit = commit
         self._blob_path = blob_path
 
-    def download(self, component_path, download_to):
+    def download(self, component_path, download_to_filepath):
+        # TODO: finish this
         """
 
 
         Parameters
         ----------
         component_path : str
-        download_to : str
-
+            Original path of the
+        download_to_filepath : str
 
         """
         if self._commit is None:
+            # TODO: finish this
             raise RuntimeError(
                 ""
                 " consider using `commit.get()`"
@@ -111,11 +113,11 @@ class _Dataset(blob.Blob):
             response.raw.read = functools.partial(response.raw.read, decode_content=True)
 
             # create parent dirs
-            pathlib2.Path(download_to).parent.mkdir(parents=True, exist_ok=True)  # pylint: disable=no-member
+            pathlib2.Path(download_to_filepath).parent.mkdir(parents=True, exist_ok=True)  # pylint: disable=no-member
 
-            with open(download_to, 'wb') as f:
+            with open(download_to_filepath, 'wb') as f:
                 shutil.copyfileobj(response.raw, f)
         finally:
             response.close()
 
-        print("download complete ({})".format(download_to))
+        print("download complete ({})".format(download_to_filepath))
