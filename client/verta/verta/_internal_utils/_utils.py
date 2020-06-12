@@ -73,6 +73,9 @@ THREAD_LOCALS.active_experiment_run = None
 
 SAVED_MODEL_DIR = "/app/tf_saved_model/"
 
+# TODO: remove this in favor of _config_utils when #635 is merged
+HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
+
 
 class Connection:
     def __init__(self, scheme=None, socket=None, auth=None, max_retries=0, ignore_conn_err=False):
