@@ -152,6 +152,23 @@ class TestCommit extends FunSuite {
     }
   }
 
+  test("Multiple update and remove calls should be possible between savings") {
+    val f = fixture
+
+    try {
+        val commit = f.commit.update("abc/cde", f.pathBlob)
+                         .flatMap(_.save("Some message 1"))
+                         .flatMap(_.update("def/ghi", f.s3Blob))
+                         .flatMap(_.remove("abc/cde"))
+                         .flatMap(_.save("Some message 2")).get
+
+        assert(commit.get("abc/cde").isFailure)
+        assert(commit.get("def/ghi").isSuccess)
+    } finally {
+      cleanup(f)
+    }
+  }
+
   test("Remove should discard blob from commit") {
     val f = fixture
 
