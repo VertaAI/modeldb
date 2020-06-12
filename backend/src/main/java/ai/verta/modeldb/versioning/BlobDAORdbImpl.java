@@ -133,67 +133,72 @@ public class BlobDAORdbImpl implements BlobDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
-
-      if (commit == null) {
-        throw new ModelDBException("No such commit", Status.Code.NOT_FOUND);
-      }
-
-      if (!VersioningUtils.commitRepositoryMappingExists(session, commitHash, repository.getId())) {
-        throw new ModelDBException("No such commit found in the repository", Status.Code.NOT_FOUND);
-      }
-
-      String folderHash = commit.getRootSha();
-      if (locationList.isEmpty()) { // getting root
-        Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
-        if (folder == null) { // root is empty
-          return GetCommitComponentRequest.Response.newBuilder().build();
-        }
-        return GetCommitComponentRequest.Response.newBuilder().setFolder(folder).build();
-      }
-      for (int index = 0; index < locationList.size(); index++) {
-        String folderLocation = locationList.get(index);
-        String folderQueryHQL =
-            "From "
-                + InternalFolderElementEntity.class.getSimpleName()
-                + " parentIfe WHERE parentIfe.element_name = :location AND parentIfe.folder_hash = :folderHash";
-        Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL);
-        fetchTreeQuery.setParameter("location", folderLocation);
-        fetchTreeQuery.setParameter("folderHash", folderHash);
-        InternalFolderElementEntity elementEntity = fetchTreeQuery.uniqueResult();
-
-        if (elementEntity == null) {
-          LOGGER.warn(
-              "No such folder found : {}. Failed at index {} looking for {}",
-              folderLocation,
-              index,
-              folderLocation);
-          throw new ModelDBException(
-              "No such folder found : " + folderLocation, Status.Code.NOT_FOUND);
-        }
-        if (elementEntity.getElement_type().equals(TREE)) {
-          folderHash = elementEntity.getElement_sha();
-          if (index == locationList.size() - 1) {
-            Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
-            if (folder == null) { // folder is empty
-              return GetCommitComponentRequest.Response.newBuilder().build();
-            }
-            return GetCommitComponentRequest.Response.newBuilder().setFolder(folder).build();
-          }
-        } else {
-          if (index == locationList.size() - 1) {
-            ai.verta.modeldb.versioning.Blob blob = getBlob(session, elementEntity);
-            return GetCommitComponentRequest.Response.newBuilder().setBlob(blob).build();
-          } else {
-            throw new ModelDBException(
-                "No such folder found : " + locationList.get(index + 1), Status.Code.NOT_FOUND);
-          }
-        }
-      }
+      return getCommitComponent(session, repository.getId(), commit, locationList);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getCommitComponent(repositoryFunction, commitHash, locationList);
       } else {
         throw ex;
+      }
+    }
+  }
+
+  private GetCommitComponentRequest.Response getCommitComponent(
+      Session session, Long repoId, CommitEntity commit, List<String> locationList)
+      throws ModelDBException {
+    if (commit == null) {
+      throw new ModelDBException("No such commit", Status.Code.NOT_FOUND);
+    }
+
+    if (!VersioningUtils.commitRepositoryMappingExists(session, commit.getCommit_hash(), repoId)) {
+      throw new ModelDBException("No such commit found in the repository", Status.Code.NOT_FOUND);
+    }
+
+    String folderHash = commit.getRootSha();
+    if (locationList.isEmpty()) { // getting root
+      Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
+      if (folder == null) { // root is empty
+        return GetCommitComponentRequest.Response.newBuilder().build();
+      }
+      return GetCommitComponentRequest.Response.newBuilder().setFolder(folder).build();
+    }
+    for (int index = 0; index < locationList.size(); index++) {
+      String folderLocation = locationList.get(index);
+      String folderQueryHQL =
+          "From "
+              + InternalFolderElementEntity.class.getSimpleName()
+              + " parentIfe WHERE parentIfe.element_name = :location AND parentIfe.folder_hash = :folderHash";
+      Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL);
+      fetchTreeQuery.setParameter("location", folderLocation);
+      fetchTreeQuery.setParameter("folderHash", folderHash);
+      InternalFolderElementEntity elementEntity = fetchTreeQuery.uniqueResult();
+
+      if (elementEntity == null) {
+        LOGGER.warn(
+            "No such folder found : {}. Failed at index {} looking for {}",
+            folderLocation,
+            index,
+            folderLocation);
+        throw new ModelDBException(
+            "No such folder found : " + folderLocation, Status.Code.NOT_FOUND);
+      }
+      if (elementEntity.getElement_type().equals(TREE)) {
+        folderHash = elementEntity.getElement_sha();
+        if (index == locationList.size() - 1) {
+          Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
+          if (folder == null) { // folder is empty
+            return GetCommitComponentRequest.Response.newBuilder().build();
+          }
+          return GetCommitComponentRequest.Response.newBuilder().setFolder(folder).build();
+        }
+      } else {
+        if (index == locationList.size() - 1) {
+          Blob blob = getBlob(session, elementEntity);
+          return GetCommitComponentRequest.Response.newBuilder().setBlob(blob).build();
+        } else {
+          throw new ModelDBException(
+              "No such folder found : " + locationList.get(index + 1), Status.Code.NOT_FOUND);
+        }
       }
     }
     throw new ModelDBException(
@@ -212,34 +217,11 @@ public class BlobDAORdbImpl implements BlobDAO {
             Status.Code.INVALID_ARGUMENT);
       }
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
-
-      if (commit == null) {
-        throw new ModelDBException("No such commit", Status.Code.NOT_FOUND);
-      }
-
-      if (!VersioningUtils.commitRepositoryMappingExists(session, commitHash, repository.getId())) {
-        throw new ModelDBException("No such commit found in the repository", Status.Code.NOT_FOUND);
-      }
-
-      String folderHash = commit.getRootSha();
-      String folderQueryHQL =
-          "From "
-              + InternalFolderElementEntity.class.getSimpleName()
-              + " parentIfe WHERE parentIfe.element_name = :location AND parentIfe.folder_hash = :folderHash";
-      Query<InternalFolderElementEntity> fetchTreeQuery =
-          session.createQuery(folderQueryHQL, InternalFolderElementEntity.class);
-      fetchTreeQuery.setParameter("location", DEFAULT_VERSIONING_BLOB_LOCATION);
-      fetchTreeQuery.setParameter("folderHash", folderHash);
-      InternalFolderElementEntity elementEntity = fetchTreeQuery.uniqueResult();
-
-      if (elementEntity == null) {
-        throw new ModelDBException(
-            "No such folder found : " + DEFAULT_VERSIONING_BLOB_LOCATION, Status.Code.INTERNAL);
-      }
-      if (elementEntity.getElement_type().equals(TREE)) {
-        throw new ModelDBException("No such blob found", Status.Code.INTERNAL);
-      } else {
-        ai.verta.modeldb.versioning.Blob blob = getBlob(session, elementEntity);
+      List<String> locationList = Collections.singletonList(DEFAULT_VERSIONING_BLOB_LOCATION);
+      GetCommitComponentRequest.Response getComponentResponse =
+          getCommitComponent(session, repository.getId(), commit, locationList);
+      if (getComponentResponse.hasBlob()) {
+        Blob blob = getComponentResponse.getBlob();
         DatasetVersion.Builder datasetVersionBuilder = DatasetVersion.newBuilder();
         datasetVersionBuilder.setId(commitHash);
         if (commit.getParent_commits().size() != 0) {
@@ -251,7 +233,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
         VersioningCompositeIdentifier.Builder versioningCompositeIdentifier =
             VersioningCompositeIdentifier.newBuilder()
-                .addLocation(DEFAULT_VERSIONING_BLOB_LOCATION)
+                .addAllLocation(locationList)
                 .setRepoId(repository.getId())
                 .setCommitHash(commitHash);
         String blobDescription =
@@ -306,9 +288,11 @@ public class BlobDAORdbImpl implements BlobDAO {
         sum.ifPresent(builderPathDatasetVersion::setSize);
         datasetVersionBuilder.setPathDatasetVersionInfo(
             builderPathDatasetVersion
-                .setBasePath(DEFAULT_VERSIONING_BLOB_LOCATION)
+                .setBasePath(locationList.get(0))
                 .addAllDatasetPartInfos(components));
         return datasetVersionBuilder.build();
+      } else {
+        throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
