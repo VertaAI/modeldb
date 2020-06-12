@@ -202,10 +202,11 @@ class Commit(object):
         """
         file_handle.seek(0)
 
-        # TODO: check if multipart upload ok
+        # check if multipart upload ok
+        url_for_artifact = self._get_url_for_artifact(blob_path, component_blob.path.path, "PUT", part_num=1)
 
         print("uploading {} to ModelDB".format(component_blob.path.path))
-        if True:
+        if url_for_artifact.multipart_upload_ok:
             # TODO: parallelize this
             file_parts = iter(lambda: file_handle.read(part_size), b'')
             for part_num, file_part in enumerate(file_parts, start=1):
@@ -268,8 +269,9 @@ class Commit(object):
             response = _utils.make_request("POST", url, self._conn, json=data)
             _utils.raise_for_http_error(response)
         else:
-            # TODO: upload full artifact
-            pass
+            # upload full artifact
+            response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=file_handle)
+            _utils.raise_for_http_error(response)
 
         print("upload complete")
 
