@@ -453,8 +453,10 @@ class Commit(object):
             self._raise_lookup_error(path)
 
         if isinstance(blob, dataset._Dataset):
-            # for dataset_blob.download()
-            blob._commit = self
+            # for _Dataset.download()
+            blob._set_commit_and_blob_path(self, path)
+
+        return blob
 
     def remove(self, path):
         """

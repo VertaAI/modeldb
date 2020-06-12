@@ -2,7 +2,9 @@
 
 from __future__ import print_function
 
-import os
+import functools
+import pathlib2
+import shutil
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
@@ -23,6 +25,10 @@ class _Dataset(blob.Blob):
 
         self._mdb_versioned = enable_mdb_versioning
         self._components_to_upload = dict()  # component paths to local filepaths
+
+        # to be set during commit.get() to enable download()
+        self._commit = None
+        self._blob_path = None
 
     @property
     def _component_blobs(self):
@@ -58,3 +64,58 @@ class _Dataset(blob.Blob):
             lines.append("    SHA-256 checksum: {}".format(path_component_msg.sha256))
 
         return lines
+
+    def _set_commit_and_blob_path(self, commit, blob_path):
+        """
+        Associate this blob with a commit and path to enable downloads.
+
+        Parameters
+        ----------
+        commit : :class:`verta._repository.commit.Commit`
+            Commit this blob was gotten from.
+        blob_path : str
+            Location of this blob within its Repository.
+
+        """
+        self._commit = commit
+        self._blob_path = blob_path
+
+    def download(self, component_path, download_to):
+        """
+
+
+        Parameters
+        ----------
+        component_path : str
+        download_to : str
+
+
+        """
+        if self._commit is None:
+            raise RuntimeError(
+                ""
+                " consider using `commit.get()`"
+            )
+
+        url = self._commit._get_url_for_artifact(self._blob_path, component_path, "GET").url
+
+        # TODO: retry on broken pipes
+        response = _utils.make_request("GET", url, self._commit._conn, stream=True)
+        try:
+            _utils.raise_for_http_error(response)
+
+            # decode responses that have Content-Encoding
+            #     The raw response stream doesn't automatically decode responses with
+            #     Content-Encoding gzip, deflate, etc. but it can be enabled with an arg to read().
+            #     https://github.com/psf/requests/issues/2155#issuecomment-50771010
+            response.raw.read = functools.partial(response.raw.read, decode_content=True)
+
+            # create parent dirs
+            pathlib2.Path(download_to).parent.mkdir(parents=True, exist_ok=True)  # pylint: disable=no-member
+
+            with open(download_to, 'wb') as f:
+                shutil.copyfileobj(response.raw, f)
+        finally:
+            response.close()
+
+        print("download complete ({})".format(download_to))
