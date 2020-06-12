@@ -8,6 +8,8 @@ import heapq
 import os
 import time
 
+import requests
+
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
 from ..external import six
@@ -182,7 +184,7 @@ class Commit(object):
         return response_msg
 
     # TODO: consolidate this with similar method in `ExperimentRun`
-    def _upload_artifact(self, path, s3_obj, file_handle, part_size=64*(10**6)):
+    def _upload_artifact(self, blob_path, component_blob, file_handle, part_size=64*(10**6)):
         """
         Uploads `artifact_stream` to ModelDB artifact store.
 
@@ -194,51 +196,77 @@ class Commit(object):
             If using multipart upload, number of bytes to upload per part.
 
         """
-        file_parts = iter(lambda: file_handle.read(part_size), b'')
-        for part_num, file_part in enumerate(file_parts, start=1):
-            print("uploading part {}".format(part_num), end='\r')
+        file_handle.seek(0)
 
-            # get presigned URL
-            url = self._get_url_for_artifact(path, s3_obj.path.path, "PUT", part_num=part_num).url
+        # TODO: check if multipart upload ok
 
-            # upload part
-            part_stream = six.BytesIO(file_part)
-            response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-            _utils.raise_for_http_error(response)
+        if True:
+            # TODO: parallelize this
+            file_parts = iter(lambda: file_handle.read(part_size), b'')
+            for part_num, file_part in enumerate(file_parts, start=1):
+                print("uploading part {}".format(part_num), end='\r')
 
-            # commit part
-            url = "{}://{}/api/v1/modeldb/versioning/commitVersionedBlobArtifactPart".format(
+                # get presigned URL
+                url = self._get_url_for_artifact(blob_path, component_blob.path.path, "PUT", part_num=part_num).url
+
+                # wrap file part into bytestream to avoid OverflowError
+                #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
+                #     ``requests`` will overwhelm CPython's SSL lib when it tries to sign the
+                #     payload. But passing a buffered bytestream instead of the raw bytestring
+                #     indicates to ``requests`` that it should perform a streaming upload via
+                #     HTTP/1.1 chunked transfer encoding and avoid this issue.
+                #     https://github.com/psf/requests/issues/2717
+                part_stream = six.BytesIO(file_part)
+
+                # upload part
+                #     Retry connection errors, to make large multipart uploads more robust.
+                for _ in range(3):
+                    try:
+                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+                    except requests.ConnectionError:  # e.g. broken pipe
+                        time.sleep(1)
+                        continue  # try again
+                    else:
+                        break
+                response.raise_for_status()
+
+                # commit part
+                url = "{}://{}/api/v1/modeldb/versioning/commitVersionedBlobArtifactPart".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                )
+                msg = _VersioningService.CommitVersionedBlobArtifactPart(
+                    commit_sha=self.id,
+                    location=path_to_location(blob_path),
+                    path_dataset_component_blob_path=component_blob.path.path,
+                )
+                msg.repository_id.repo_id = self._repo.id
+                msg.artifact_part.part_number = part_num
+                msg.artifact_part.etag = response.headers['ETag']
+                data = _utils.proto_to_json(msg)
+                response = _utils.make_request("POST", url, self._conn, json=data)
+                _utils.raise_for_http_error(response)
+            print()
+
+            # complete upload
+            url = "{}://{}/api/v1/modeldb/versioning/commitMultipartVersionedBlobArtifact".format(
                 self._conn.scheme,
                 self._conn.socket,
             )
-            data = {
-                'repository_id': {'repo_id': self._repo.id},
-                'commit_sha': self.id,
-                'location': path_to_location(path),
-                'path_dataset_component_blob_path': s3_obj.path.path,
-                'artifact_part': {
-                    'part_number': part_num,
-                    'etag': response.headers['ETag'],
-                },
-            }
+            msg = _VersioningService.CommitMultipartVersionedBlobArtifact(
+                commit_sha=self.id,
+                location=path_to_location(blob_path),
+                path_dataset_component_blob_path=component_blob.path.path,
+            )
+            msg.repository_id.repo_id = self._repo.id
+            data = _utils.proto_to_json(msg)
             response = _utils.make_request("POST", url, self._conn, json=data)
             _utils.raise_for_http_error(response)
+        else:
+            # TODO: upload full artifact
+            pass
 
-        print()
-        print("upload complete ({})".format(s3_obj.path.path))
-
-        # commit artifact
-        url = "{}://{}/api/v1/modeldb/versioning/commitMultipartVersionedBlobArtifact".format(
-            self._conn.scheme,
-            self._conn.socket,
-        )
-        data = {
-            'repository_id': {'repo_id': self._repo.id},
-            'commit_sha': self.id,
-            'location': path_to_location(path),
-            'path_dataset_component_blob_path': s3_obj.path.path,
-        }
-        response = _utils.make_request("POST", url, self._conn, json=data)
+        print("upload complete ({})".format(component_blob.path.path))
 
         # delete staged file
         # os.remove(filepath)
