@@ -26,7 +26,7 @@ class _Dataset(blob.Blob):
         self._mdb_versioned = enable_mdb_versioning
         self._components_to_upload = dict()  # component paths to local filepaths
 
-        # to be set during commit.get() to enable download()
+        # to be set during commit.get() to enable download() with ModelDB-managed versioning
         self._commit = None
         self._blob_path = None
 
@@ -80,29 +80,27 @@ class _Dataset(blob.Blob):
         self._commit = commit
         self._blob_path = blob_path
 
-    # TODO: download_to_filepath sounds like a flag
-    def download(self, component_path, download_to_filepath):
-        # TODO: finish this
+    def download(self, component_path, filepath):
         """
-
+        Downloads `component_path` from this dataset if ModelDB-managed versioning was enabled.
 
         Parameters
         ----------
         component_path : str
-            Original path of the
-        download_to_filepath : str
+            Original path of the file in this dataset to download.
+        filepath : str
+            Filepath to download `component_path` to.
 
         """
-        if self._commit is None:
-            # TODO: finish this
+        if self._commit is None and self._blob_path is None:
             raise RuntimeError(
-                ""
-                " consider using `commit.get()`"
+                "this dataset cannot be used for downloads;"
+                " consider using `commit.get()` to obtain a download-capable dataset"
+                " if ModelDB-managed versioning was enabled"
             )
 
         url = self._commit._get_url_for_artifact(self._blob_path, component_path, "GET").url
 
-        # TODO: retry on broken pipes
         response = _utils.make_request("GET", url, self._commit._conn, stream=True)
         try:
             _utils.raise_for_http_error(response)
@@ -114,11 +112,12 @@ class _Dataset(blob.Blob):
             response.raw.read = functools.partial(response.raw.read, decode_content=True)
 
             # create parent dirs
-            pathlib2.Path(download_to_filepath).parent.mkdir(parents=True, exist_ok=True)  # pylint: disable=no-member
+            pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # pylint: disable=no-member
 
-            with open(download_to_filepath, 'wb') as f:
+            # read response stream into file
+            with open(filepath, 'wb') as f:
                 shutil.copyfileobj(response.raw, f)
         finally:
             response.close()
 
-        print("download complete ({})".format(download_to_filepath))
+        print("download complete ({})".format(filepath))
