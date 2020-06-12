@@ -118,6 +118,8 @@ class Path(_dataset._Dataset):
         """
         Tracks files for upload to ModelDB.
 
+        This method does nothing if ModelDB-managed versioning was not enabled.
+
         """
         if not self._mdb_versioned:
             return
