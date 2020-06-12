@@ -334,8 +334,8 @@ class Commit(
    */
   def applyDiff(diff: Diff, message: String)(implicit ec: ExecutionContext) = {
     if (!saved)
-      Failure(new IllegalStateException("Commit must be saved before a diff can be applied"))
+      Failure(new IllegalCommitSavedStateException("Commit must be saved before a diff can be applied"))
     else
       createCommit(message = message, diffs = diff.blobDiffs, commitBase = id)
-    }
+  }
 }
