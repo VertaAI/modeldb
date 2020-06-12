@@ -94,8 +94,10 @@ class _Dataset(blob.Blob):
                 " if ModelDB-managed versioning was enabled"
             )
 
+        # backend will return error if `component_path` not found/versioned
         url = self._commit._get_url_for_artifact(self._blob_path, component_path, "GET").url
 
+        # stream download to avoid overwhelming memory
         response = _utils.make_request("GET", url, self._commit._conn, stream=True)
         try:
             _utils.raise_for_http_error(response)
