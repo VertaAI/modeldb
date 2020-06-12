@@ -80,6 +80,7 @@ class _Dataset(blob.Blob):
         self._commit = commit
         self._blob_path = blob_path
 
+    # TODO: download_to_filepath sounds like a flag
     def download(self, component_path, download_to_filepath):
         # TODO: finish this
         """
