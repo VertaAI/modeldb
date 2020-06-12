@@ -191,7 +191,7 @@ class Commit(object):
         Parameters
         ----------
         blob_path : str
-            Path to blog withiin repo.
+            Path to blog within repo.
         dataset_component_path : str
             Filepath in dataset component blob.
         file_handle : file-like
