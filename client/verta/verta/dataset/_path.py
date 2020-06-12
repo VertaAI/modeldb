@@ -115,6 +115,10 @@ class Path(_dataset._Dataset):
         return file_hash.hexdigest()
 
     def _prepare_components_to_upload(self):
+        """
+        Tracks files for upload to ModelDB.
+
+        """
         if not self._mdb_versioned:
             return
 

@@ -169,6 +169,12 @@ class S3(_dataset._Dataset):
         return S3Location(path, version_id)
 
     def _prepare_components_to_upload(self):
+        """
+        Downloads files from S3 and tracks them for upload to ModelDB.
+
+        This method does nothing if ModelDB-managed versioning was not enabled.
+
+        """
         if not self._mdb_versioned:
             return
 
