@@ -356,19 +356,16 @@ class TestCommit extends FunSuite {
                             .flatMap(_.update("def/ghi", f.pathBlob))
                             .flatMap(_.save("Some message 22")).get
 
-        println(branch2.get("abc/cde"))
-        println(branch1.get("abc/cde"))
         val diff = branch2.diffFrom(Some(branch1)).get
-        println(diff.diffs)
 
         val newBranch1 = branch1.applyDiff(diff, "apply diff").get
         assert(newBranch1.get("wuv/ajf").isFailure)
         assert(newBranch1.get("def/ghi").isSuccess)
 
-        // val retrievedS3Blob: S3 = newBranch1.get("abc/cde").get match {
-        //   case s3: S3 => s3
-        // }
-        // assert(retrievedS3Blob equals f.s3Blob)
+        val retrievedS3Blob: S3 = newBranch1.get("abc/cde").get match {
+          case s3: S3 => s3
+        }
+        assert(retrievedS3Blob equals f.s3Blob)
     } finally {
       cleanup(f)
     }
