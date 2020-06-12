@@ -236,9 +236,9 @@ public class CommitDAORdbImpl implements CommitDAO {
       Session session, ListCommitsRequest request, Long repoId) throws ModelDBException {
     StringBuilder commitQueryBuilder =
         new StringBuilder(
-            "SELECT cm FROM "
+            " FROM "
                 + CommitEntity.class.getSimpleName()
-                + " cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ");
+                + " cm INNER JOIN cm.repository repo WHERE repo.id = :repoId ");
     if (!request.getCommitBase().isEmpty()) {
       CommitEntity baseCommitEntity =
           Optional.ofNullable(session.get(CommitEntity.class, request.getCommitBase()))
@@ -264,7 +264,8 @@ public class CommitDAORdbImpl implements CommitDAO {
     }
 
     Query<CommitEntity> commitEntityQuery =
-        session.createQuery(commitQueryBuilder.append(" ORDER BY cm.date_created DESC").toString());
+        session.createQuery(
+            "SELECT cm " + commitQueryBuilder.toString() + " ORDER BY cm.date_created DESC");
     commitEntityQuery.setParameter("repoId", repoId);
     if (request.hasPagination()) {
       int pageLimit = request.getPagination().getPageLimit();
@@ -272,14 +273,14 @@ public class CommitDAORdbImpl implements CommitDAO {
       commitEntityQuery.setFirstResult(startPosition);
       commitEntityQuery.setMaxResults(pageLimit);
     }
+    List<CommitEntity> commitEntities = commitEntityQuery.list();
 
-    Query countQuery = session.createQuery(commitQueryBuilder.toString());
+    Query countQuery = session.createQuery("SELECT count(cm) " + commitQueryBuilder.toString());
     countQuery.setParameter("repoId", repoId);
-    // TODO: improve query into count query
-    Long totalRecords = (long) countQuery.list().size();
+    Long totalRecords = (long) countQuery.uniqueResult();
 
     CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
-    commitPaginationDTO.setCommitEntities(commitEntityQuery.list());
+    commitPaginationDTO.setCommitEntities(commitEntities);
     commitPaginationDTO.setTotalRecords(totalRecords);
     return commitPaginationDTO;
   }

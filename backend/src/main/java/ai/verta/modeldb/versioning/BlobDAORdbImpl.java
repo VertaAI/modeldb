@@ -207,11 +207,10 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public DatasetVersion convertToDatasetVersion(
-      MetadataDAO metadataDAO, RepositoryFunction repositoryFunction, String commitHash)
+      MetadataDAO metadataDAO, RepositoryEntity repositoryEntity, String commitHash)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repository = repositoryFunction.apply(session);
-      if (!repository.isDataset()) {
+      if (!repositoryEntity.isDataset()) {
         throw new ModelDBException(
             "Repository should be created from Dataset to add Dataset Version to it",
             Status.Code.INVALID_ARGUMENT);
@@ -219,23 +218,23 @@ public class BlobDAORdbImpl implements BlobDAO {
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
       List<String> locationList = Collections.singletonList(DEFAULT_VERSIONING_BLOB_LOCATION);
       GetCommitComponentRequest.Response getComponentResponse =
-          getCommitComponent(session, repository.getId(), commit, locationList);
+          getCommitComponent(session, repositoryEntity.getId(), commit, locationList);
       if (getComponentResponse.hasBlob()) {
         Blob blob = getComponentResponse.getBlob();
         DatasetVersion.Builder datasetVersionBuilder = DatasetVersion.newBuilder();
-        datasetVersionBuilder.setId(commitHash);
+        datasetVersionBuilder.setId(commit.getCommit_hash());
         if (commit.getParent_commits().size() != 0) {
           datasetVersionBuilder.setParentId(
               commit.getParent_commits().iterator().next().getCommit_hash());
         }
-        datasetVersionBuilder.setDatasetId(String.valueOf(repository.getId()));
+        datasetVersionBuilder.setDatasetId(String.valueOf(repositoryEntity.getId()));
         datasetVersionBuilder.setTimeLogged(commit.getDate_created());
 
         VersioningCompositeIdentifier.Builder versioningCompositeIdentifier =
             VersioningCompositeIdentifier.newBuilder()
                 .addAllLocation(locationList)
-                .setRepoId(repository.getId())
-                .setCommitHash(commitHash);
+                .setRepoId(repositoryEntity.getId())
+                .setCommitHash(commit.getCommit_hash());
         String blobDescription =
             metadataDAO.getProperty(
                 session,
@@ -258,7 +257,7 @@ public class BlobDAORdbImpl implements BlobDAO {
           datasetVersionBuilder.addAllTags(labels);
         }
         datasetVersionBuilder.setDatasetVersionVisibilityValue(
-            repository.getRepository_visibility());
+            repositoryEntity.getRepository_visibility());
         datasetVersionBuilder.addAllAttributes(blob.getAttributesList());
         datasetVersionBuilder.setOwner(commit.getAuthor());
         DatasetBlob dataset = blob.getDataset();
@@ -296,7 +295,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return convertToDatasetVersion(metadataDAO, repositoryFunction, commitHash);
+        return convertToDatasetVersion(metadataDAO, repositoryEntity, commitHash);
       } else {
         throw ex;
       }

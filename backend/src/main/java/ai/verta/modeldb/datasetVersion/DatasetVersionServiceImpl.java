@@ -29,14 +29,18 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
+import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.DeleteCommitRequest;
+import ai.verta.modeldb.versioning.ListCommitsRequest;
+import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -47,6 +51,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -119,7 +124,11 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           commitDAO.setCommitFromDatasetVersion(
               datasetVersion, blobDAO, metadataDAO, repositoryFunction);
       datasetVersion =
-          datasetVersion.toBuilder().setId(createCommitResponse.getCommit().getCommitSha()).build();
+          datasetVersion
+              .toBuilder()
+              .setId(createCommitResponse.getCommit().getCommitSha())
+              .setTimeLogged(createCommitResponse.getCommit().getDateCreated())
+              .build();
       responseObserver.onNext(
           CreateDatasetVersion.Response.newBuilder().setDatasetVersion(datasetVersion).build());
       responseObserver.onCompleted();
@@ -150,25 +159,48 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.REPOSITORY,
+          request.getDatasetId(),
+          ModelDBServiceActions.READ);
 
-      /*Get the user info from the Context*/
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
       /*Get Data*/
-      DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.getDatasetVersions(
-              datasetDAO,
-              request.getDatasetId(),
-              request.getPageNumber(),
-              request.getPageLimit(),
-              request.getAscending(),
-              request.getSortKey(),
-              userInfo);
+      RepositoryIdentification repositoryIdentification =
+          RepositoryIdentification.newBuilder()
+              .setRepoId(Long.parseLong(request.getDatasetId()))
+              .build();
+      ListCommitsRequest.Builder listCommitsRequest =
+          ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
+      if (request.getPageLimit() > 0 && request.getPageNumber() > 0) {
+        Pagination pagination =
+            Pagination.newBuilder()
+                .setPageLimit(request.getPageLimit())
+                .setPageNumber(request.getPageNumber())
+                .build();
+        listCommitsRequest.setPagination(pagination);
+      }
+      ListCommitsRequest.Response listCommitsResponse =
+          commitDAO.listCommits(
+              listCommitsRequest.build(),
+              (session -> repositoryDAO.getRepositoryById(session, repositoryIdentification)));
+
+      List<DatasetVersion> datasetVersions = new ArrayList<>();
+      long totalRecords = listCommitsResponse.getTotalRecords();
+      totalRecords = totalRecords > 0 ? totalRecords - 1 : totalRecords;
+
+      RepositoryEntity repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification);
+      for (Commit commit : listCommitsResponse.getCommitsList()) {
+        if (commit.getMessage().equals(ModelDBConstants.INITIAL_COMMIT_MESSAGE)) {
+          continue;
+        }
+        datasetVersions.add(
+            blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, commit.getCommitSha()));
+      }
+
       /*Build response*/
       responseObserver.onNext(
           GetAllDatasetVersionsByDatasetId.Response.newBuilder()
-              .addAllDatasetVersions(datasetVersionDTO.getDatasetVersions())
-              .setTotalRecords(datasetVersionDTO.getTotalRecords())
+              .addAllDatasetVersions(datasetVersions)
+              .setTotalRecords(totalRecords)
               .build());
       responseObserver.onCompleted();
 

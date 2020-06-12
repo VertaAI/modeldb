@@ -206,13 +206,9 @@ public interface DatasetVersionDAO {
             .addAllAttributes(request.getAttributesList());
 
     if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
-      datasetVersionBuilder
-          .setTimeLogged(request.getTimeCreated())
-          .setTimeUpdated(request.getTimeCreated());
+      datasetVersionBuilder.setTimeLogged(request.getTimeCreated());
     } else {
-      datasetVersionBuilder
-          .setTimeLogged(Calendar.getInstance().getTimeInMillis())
-          .setTimeUpdated(Calendar.getInstance().getTimeInMillis());
+      datasetVersionBuilder.setTimeLogged(Calendar.getInstance().getTimeInMillis());
     }
 
     if (!request.getParentId().isEmpty()) {
