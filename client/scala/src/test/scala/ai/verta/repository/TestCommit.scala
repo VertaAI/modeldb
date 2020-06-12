@@ -378,6 +378,10 @@ class TestCommit extends FunSuite {
           case pathBlob: PathBlob => pathBlob
         }
         assert(retrievedPathBlob equals f.pathBlob)
+
+        // check the branching behavior:
+        assert(f.repo.getCommitByBranch("a").get equals newBranch1)
+        assert(f.repo.getCommitByBranch("b").get equals branch2)
     } finally {
       cleanup(f)
     }
