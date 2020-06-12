@@ -70,6 +70,10 @@ class Path(_dataset._Dataset):
 
         return "\n    ".join(lines)
 
+    @property
+    def _component_blobs(self):
+        return self._msg.path.components
+
     @classmethod
     def _get_path_metadata(cls, path):
         if os.path.isdir(path):

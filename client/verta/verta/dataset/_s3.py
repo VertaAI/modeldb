@@ -95,6 +95,10 @@ class S3(_dataset._Dataset):
 
         return "\n    ".join(lines)
 
+    @property
+    def _component_blobs(self):
+        return self._msg.s3.components
+
     @classmethod
     def _get_s3_loc_metadata(cls, s3_loc):
         try:

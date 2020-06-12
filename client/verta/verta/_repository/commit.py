@@ -503,15 +503,7 @@ class Commit(object):
         # upload ModelDB-versioned blobs
         for blob_path, blob in mdb_versioned_blobs.items():
             if isinstance(blob, dataset._Dataset):
-                if isinstance(blob, dataset.S3):
-                    component_blobs = blob._msg.s3.components
-                elif isinstance(blob, dataset.Path):
-                    component_blobs = blob._msg.path.components
-                else:
-                    # this shouldn't happen as long as conditional is kept up-to-date
-                    raise TypeError("Unsupported blob type for managed versioning: {}".format(type(blob)))
-
-                for component_blob in component_blobs:
+                for component_blob in blob._component_blobs:
                     if component_blob.path.internal_versioned_path:
                         downloaded_filepath = blob._components_to_upload.get(component_blob.path.path, None)
                         if downloaded_filepath is not None:
