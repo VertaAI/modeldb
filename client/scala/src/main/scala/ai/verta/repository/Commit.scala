@@ -328,6 +328,9 @@ class Commit(
 
   /** Applies a diff to this Commit.
    *  This method creates a new commit in ModelDB, and assigns a new ID to this object.
+   *  @param diff the Diff instance returned by diffFrom
+   *  @param message the message associated with the new commit
+   *  @return the new Commit instance, if succeeds.
    */
   def applyDiff(diff: Diff, message: String)(implicit ec: ExecutionContext) = {
     if (!saved)
