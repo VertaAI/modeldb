@@ -273,9 +273,6 @@ class Commit(object):
 
         print("upload complete")
 
-        # TODO: delete staged file
-        # NOTE: this can cause errors if `filepath` is also used for other blobs/components
-
     def _update_blobs_from_commit(self, id_):
         """Fetches commit `id_`'s blobs and stores them as objects in `self._blobs`."""
         endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/blobs".format(
