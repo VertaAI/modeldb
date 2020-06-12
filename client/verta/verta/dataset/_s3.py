@@ -180,7 +180,7 @@ class S3(_dataset._Dataset):
         s3 = boto3.client('s3')
 
         # download files to local disk
-        for s3_obj in self._msg.s3.components:
+        for s3_obj in self._component_blobs:
             s3_path = s3_obj.path.path
             s3_loc = S3Location(s3_path, s3_obj.s3_version_id)
 
