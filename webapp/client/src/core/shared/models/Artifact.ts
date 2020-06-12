@@ -8,6 +8,17 @@ export interface IArtifact {
   linkedArtifactId?: string;
   fileExtension?: string;
 }
+
+export interface IArtifactWithDatasetVersion extends IArtifact {
+  linkedArtifactId: string;
+}
+
+export const checkArtifactWithDatasetVersion = (
+  artifact: IArtifact
+): artifact is IArtifactWithDatasetVersion => {
+  return Boolean(artifact.linkedArtifactId);
+};
+
 export interface IArtifactWithPath extends IArtifact {
   pathOnly: false;
 }

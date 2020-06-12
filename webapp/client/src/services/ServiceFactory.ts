@@ -1,8 +1,7 @@
 import axios, { AxiosError } from 'axios';
+import { ApolloClient } from 'apollo-boost';
 
-import { MetaDataService } from 'core/services/versioning/metaData';
-import RepositoryDataService from 'core/services/versioning/repositoryData/RepositoryDataService';
-import CompareCommitsService from 'core/services/versioning/compareCommits/CompareCommitsService';
+import HighLevelSearchService from 'core/services/highLevelSearch/HighLevelSearchService';
 
 import { RepositoriesDataService } from '../core/services/versioning/repositories';
 import { DatasetsDataService } from './datasets';
@@ -57,15 +56,7 @@ export default class ServiceFactory {
     return new RepositoriesDataService();
   }
 
-  public static getRepositoryDataService() {
-    return new RepositoryDataService();
-  }
-
-  public static getMetaDataService() {
-    return new MetaDataService();
-  }
-
-  public static getCompareCommitsService() {
-    return new CompareCommitsService();
+  public static getHighLevelSearchService(apolloClient: ApolloClient<any>) {
+    return new HighLevelSearchService(apolloClient);
   }
 }

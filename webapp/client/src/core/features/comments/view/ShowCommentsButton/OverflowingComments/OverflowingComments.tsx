@@ -1,6 +1,7 @@
-import { bind } from 'decko';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+
+import usePlacerUnderHeader from 'core/shared/view/pages/usePlacerUnderHeader';
 
 import {
   IRequiredEntityInfo,
@@ -21,30 +22,35 @@ type AllProps = ILocalProps;
 
 const appElement = document.getElementById('root')!;
 
-class OverflowingComments extends React.PureComponent<AllProps> {
-  public render() {
-    const { entityInfo, addCommentFormSettings, commentSettings } = this.props;
-    return ReactDOM.createPortal(
-      <div className={styles.root}>
-        <div className={styles.overlay} onClick={this.onClose} />
-        <div className={styles.comments}>
-          <Comments
-            entityInfo={entityInfo}
-            addCommentFormSettings={addCommentFormSettings}
-            commentSettings={commentSettings}
-            onClose={this.onClose}
-          />
-        </div>
-      </div>,
-      appElement
-    );
-  }
+const OverflowingComments = React.memo((props: AllProps) => {
+  const {
+    entityInfo,
+    addCommentFormSettings,
+    commentSettings,
+    onClose,
+  } = props;
+  const { height, horizontalScrollOffset } = usePlacerUnderHeader({
+    position: 'right',
+  });
 
-  @bind
-  private onClose() {
-    this.props.onClose();
-  }
-}
+  return ReactDOM.createPortal(
+    <div
+      className={styles.root}
+      style={{ height, right: horizontalScrollOffset }}
+    >
+      <div className={styles.overlay} onClick={onClose} />
+      <div className={styles.comments}>
+        <Comments
+          entityInfo={entityInfo}
+          addCommentFormSettings={addCommentFormSettings}
+          commentSettings={commentSettings}
+          onClose={onClose}
+        />
+      </div>
+    </div>,
+    appElement
+  );
+});
 
 export type IOverflowingCommentsLocalProps = ILocalProps;
 export default OverflowingComments;

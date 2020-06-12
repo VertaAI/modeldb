@@ -1,7 +1,0 @@
-.root {
-  color: var(--text-color4);
-  cursor: pointer;
-}
-.root:hover {
-  color: var(--text-color3);
-}

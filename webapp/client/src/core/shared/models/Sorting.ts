@@ -1,5 +1,5 @@
 export interface ISorting {
-  columnName: string;
+  columnName?: string;
   fieldName: string;
   direction: 'desc' | 'asc';
 }

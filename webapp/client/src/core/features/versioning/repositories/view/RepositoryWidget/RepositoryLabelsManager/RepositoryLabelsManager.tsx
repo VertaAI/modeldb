@@ -1,89 +1,43 @@
-import React, { useCallback } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators, Dispatch } from 'redux';
+import React from 'react';
 
-import {
-  actions,
-  selectors,
-} from 'core/features/versioning/repositories/store';
-import { IRepository, Label } from 'core/shared/models/Versioning/Repository';
-import TagsManager from 'core/shared/view/domain/TagsManager/TagsManager';
-import { IApplicationState } from 'store/store';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import TagsManager from 'core/shared/view/domain/BaseTagsManager/TagsManager';
+import { hasAccessToAction } from 'models/EntitiesActions';
 
 import styles from './RepositoryLabelsManager.module.css';
-
-const mapStateToProps = (
-  state: IApplicationState,
-  localProps: ILocalProps
-) => ({
-  addingRepositoryLabel: selectors.selectAddingRepositoryLabelCommunication(
-    state,
-    localProps.repository.id
-  ),
-  deletingRepositoryLabel: selectors.selectDeletingRepositoryLabelCommunication(
-    state,
-    localProps.repository.id
-  ),
-});
-
-const mapDispatchToProps = (dispatch: Dispatch) => {
-  return bindActionCreators(
-    {
-      deleteRepositoryLabel: actions.deleteRepositoryLabel,
-      addRepositoryLabel: actions.addRepositoryLabel,
-    },
-    dispatch
-  );
-};
+import {
+  useAddLabelMutation,
+  useDeleteLabelMutation,
+} from '../../../store/labelsManager/labelsManager';
 
 interface ILocalProps {
   repository: IRepository;
 }
 
-type AllProps = ILocalProps &
-  ReturnType<typeof mapDispatchToProps> &
-  ReturnType<typeof mapStateToProps>;
+type AllProps = ILocalProps;
 
-const RepositoryLabelsManager: React.FC<AllProps> = ({
-  deleteRepositoryLabel,
-  addRepositoryLabel,
-  repository,
-  addingRepositoryLabel,
-  deletingRepositoryLabel,
-}) => {
-  const onAddLabel = useCallback(
-    (label: Label) =>
-      addRepositoryLabel({ repositoryId: repository.id, label }),
-    [repository.id, addRepositoryLabel]
-  );
+const RepositoryLabelsManager: React.FC<AllProps> = ({ repository }) => {
+  const [addLabel, addingLabel] = useAddLabelMutation();
+  const [deleteLabel, deletingLabel] = useDeleteLabelMutation();
 
-  const onDeleteLabel = useCallback(
-    (label: Label) =>
-      deleteRepositoryLabel({ repositoryId: repository.id, label }),
-    [repository.id, deleteRepositoryLabel]
-  );
+  const isAvailableEditing = hasAccessToAction('update', repository);
 
   return (
     <div className={styles.root}>
       <TagsManager
         tags={repository.labels}
-        isAvailableTagAdding={true}
         isDraggableTags={false}
-        isRemovableTags={true}
+        isAlwaysShowAddTagButton={false}
+        isAvailableTagAdding={isAvailableEditing}
+        isRemovableTags={isAvailableEditing}
         isShowPlaceholder={repository.labels.length === 0}
-        isUpdating={
-          addingRepositoryLabel.isRequesting ||
-          deletingRepositoryLabel.isRequesting
-        }
-        onAddTag={onAddLabel}
-        onRemoveTag={onDeleteLabel}
+        isUpdating={addingLabel.isRequesting || deletingLabel.isRequesting}
+        onAddTag={label => addLabel({ id: repository.id, label })}
+        onRemoveTag={label => deleteLabel({ id: repository.id, label })}
         tagWordReplacer="Label"
       />
     </div>
   );
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(RepositoryLabelsManager);
+export default RepositoryLabelsManager;

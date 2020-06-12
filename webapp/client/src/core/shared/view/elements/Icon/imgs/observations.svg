@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>show_chart-24px</title>
+    <g id="Runs" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="0-Run-ID-default-1" transform="translate(-359.000000, -1499.000000)">
+            <g id="observations" transform="translate(359.000000, 1499.000000)">
+                <g id="show_chart-24px">
+                    <polygon id="Path" fill="#514EB5" fill-rule="nonzero" points="3.5 18.49 9.5 12.48 13.5 16.48 22 6.92 20.59 5.51 13.5 13.48 9.5 9.48 2 16.99"></polygon>
+                    <polygon id="Path" points="0 0 24 0 24 24 0 24"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

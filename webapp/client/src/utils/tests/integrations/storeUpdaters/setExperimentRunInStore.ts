@@ -1,7 +1,7 @@
 import { CommunicationActionsToObj } from 'core/shared/utils/redux/communication';
 import ModelRecord from 'models/ModelRecord';
 import { Store } from 'redux';
-import { ILoadExperimentRunActions } from 'store/experimentRuns';
+import { ILoadExperimentRunActions } from 'features/experimentRuns/store';
 
 const setExperimentRunInStore = async (
   store: Store,

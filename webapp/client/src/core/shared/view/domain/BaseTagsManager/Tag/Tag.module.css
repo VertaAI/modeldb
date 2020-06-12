@@ -1,0 +1,29 @@
+.root {
+  display: inline-flex;
+  border: none;
+  margin-right: 6px;
+  margin-bottom: var(--tag-margin-bottom);
+}
+
+.updating {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.action_icon {
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.5);
+  margin-left: 5px;
+  pointer-events: all;
+}
+.action_icon:hover {
+  opacity: 0.5;
+}
+
+.tag_action {
+  cursor: pointer !important;
+  pointer-events: none;
+}
+.root:hover .tag_action {
+  display: block;
+}

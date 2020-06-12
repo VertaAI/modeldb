@@ -1,13 +1,28 @@
 .root {
+  display: flex;
 }
 
-.invert {
-  text-align: end;
-  font-size: var(--font-size3);
-  color: var(--text-color3);
-  margin-top: 4px;
+.input div {
+  cursor: pointer;
+  height: 32px;
+  width: 84px;
+  border: 1px solid #ebebeb;
 }
 
-.invert label {
-  margin-left: 4px;
+.operator {
+  width: 55px;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+.readonly .input div {
+  width: auto;
+}
+
+.readonly .operator {
+  width: auto;
+}
+
+.input input {
+  background-color: #ffffff !important;
 }
