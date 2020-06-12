@@ -4,7 +4,6 @@ import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.CreateJob;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
@@ -31,7 +30,6 @@ import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.ProtocolStringList;
 import com.google.rpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
@@ -313,7 +311,16 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository =
-          setRepository(session, commitDAO, request, userInfo, null, create);
+          setRepository(
+              session,
+              commitDAO,
+              null,
+              request.getRepository(),
+              request.getId(),
+              null,
+              userInfo,
+              null,
+              create);
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -327,16 +334,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public RepositoryEntity setRepository(
       Session session,
       CommitDAO commitDAO,
-      SetRepository request,
+      MetadataDAO metadataDAO,
+      Repository repository,
+      RepositoryIdentification repoId,
+      List<String> tagList,
       UserInfo userInfo,
       WorkspaceDTO workspaceDTO,
       boolean create)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     RepositoryEntity repositoryEntity;
-    final Repository repository = request.getRepository();
     if (create) {
       if (workspaceDTO == null) {
-        workspaceDTO = verifyAndGetWorkspaceDTO(request.getId(), false, true);
+        workspaceDTO = verifyAndGetWorkspaceDTO(repoId, false, true);
       }
       ModelDBHibernateUtil.checkIfEntityAlreadyExists(
           session,
@@ -351,7 +360,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           LOGGER);
       repositoryEntity = new RepositoryEntity(repository, workspaceDTO);
     } else {
-      repositoryEntity = getRepositoryById(session, request.getId(), true);
+      repositoryEntity = getRepositoryById(session, repoId, true);
       if (!repository.getName().isEmpty()
           && !repositoryEntity.getName().equals(repository.getName())) {
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -366,7 +375,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
             LOGGER);
       }
-      repositoryEntity.update(request);
+      repositoryEntity.update(repository);
     }
     session.beginTransaction();
     session.saveOrUpdate(repositoryEntity);
@@ -379,15 +388,46 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               initCommit,
               FileHasher.getSha(new String()),
               authService.getVertaIdFromUserInfo(userInfo),
-              repositoryEntity);
+              repositoryEntity,
+              null);
 
       saveBranch(
           session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repositoryEntity);
+
+      repositoryEntity.setAttributeMapping(
+          repository.getAttributesList().stream()
+              .map(
+                  attribute -> {
+                    try {
+                      return RdbmsUtils.generateAttributeEntity(
+                          repositoryEntity, ModelDBConstants.ATTRIBUTES, attribute);
+                    } catch (InvalidProtocolBufferException e) {
+                      LOGGER.error("Unexpected error occured {}", e.getMessage());
+                      Status status =
+                          Status.newBuilder()
+                              .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                              .setMessage(e.getMessage())
+                              .addDetails(Any.pack(SetRepository.Response.getDefaultInstance()))
+                              .build();
+                      throw StatusProto.toStatusRuntimeException(status);
+                    }
+                  })
+              .collect(Collectors.toList()));
+
+      if (tagList != null && !tagList.isEmpty()) {
+        metadataDAO.addLabels(
+            session,
+            IdentificationType.newBuilder()
+                .setIdType(VERSIONING_REPOSITORY)
+                .setIntId(repositoryEntity.getId())
+                .build(),
+            tagList);
+      }
     }
     session.getTransaction().commit();
     if (create) {
       try {
-        createRoleBindingsForRepository(request, userInfo, repositoryEntity);
+        createRoleBindingsForRepository(repository, userInfo, repositoryEntity);
       } catch (Exception e) {
         LOGGER.info("Exception from UAC during Repo role binding creation : {}", e.getMessage());
         LOGGER.info("Deleting the created repository {}", repository.getId());
@@ -403,7 +443,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   private void createRoleBindingsForRepository(
-      SetRepository request, UserInfo userInfo, RepositoryEntity repository) {
+      Repository newRepository, UserInfo userInfo, RepositoryEntity repository) {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
     roleService.createRoleBinding(
         ownerRole,
@@ -416,9 +456,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         String.valueOf(repository.getId()),
         ModelDBConstants.ROLE_REPOSITORY_ADMIN,
         ModelDBServiceResourceTypes.REPOSITORY,
-        request.getRepository().getRepositoryVisibility() != null
-            && request
-                .getRepository()
+        newRepository.getRepositoryVisibility() != null
+            && newRepository
                 .getRepositoryVisibility()
                 .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC),
         GLOBAL_SHARING);
@@ -488,40 +527,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     return true;
   }
 
-  Dataset convertToDataset(Session session, RepositoryEntity repositoryEntity) {
-    Dataset.Builder dataset = Dataset.newBuilder();
-    dataset
-        .setId(String.valueOf(repositoryEntity.getId()))
-        .setDatasetVisibilityValue(repositoryEntity.getRepository_visibility())
-        .setWorkspaceTypeValue(repositoryEntity.getWorkspace_type())
-        .setWorkspaceId(repositoryEntity.getWorkspace_id())
-        .setTimeCreated(repositoryEntity.getDate_created())
-        .setTimeUpdated(repositoryEntity.getDate_updated())
-        .setName(repositoryEntity.getName())
-        .setOwner(repositoryEntity.getOwner());
-    dataset.addAllAttributes(
-        repositoryEntity.getAttributeMapping().stream()
-            .map(
-                attributeEntity -> {
-                  try {
-                    return attributeEntity.getProtoObj();
-                  } catch (InvalidProtocolBufferException e) {
-                    LOGGER.error("Unexpected error occured {}", e.getMessage());
-                    Status status =
-                        Status.newBuilder()
-                            .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
-                            .setMessage(e.getMessage())
-                            .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
-                            .build();
-                    throw StatusProto.toStatusRuntimeException(status);
-                  }
-                })
-            .collect(Collectors.toList()));
-    ListTagsRequest.Response tags = listTags(session, repositoryEntity);
-    dataset.addAllTags(tags.getTagsList());
-    return dataset.build();
-  }
-
   @Override
   public Repository createRepository(
       CommitDAO commitDAO, MetadataDAO metadataDAO, Dataset dataset, UserInfo userInfo)
@@ -537,7 +542,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
   }
 
-  public Repository createRepository(
+  private Repository createRepository(
       Session session,
       CommitDAO commitDAO,
       MetadataDAO metadataDAO,
@@ -547,59 +552,40 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(dataset.getWorkspaceId());
     workspaceDTO.setWorkspaceType(dataset.getWorkspaceType());
+    RepositoryIdentification repositoryId =
+        RepositoryIdentification.newBuilder()
+            .setNamedId(
+                RepositoryNamedIdentification.newBuilder()
+                    .setName(dataset.getName())
+                    .setWorkspaceName(dataset.getWorkspaceId())
+                    .build())
+            .build();
     RepositoryEntity repositoryEntity =
         setRepository(
             session,
             commitDAO,
-            SetRepository.newBuilder()
-                .setRepository(
-                    Repository.newBuilder()
-                        .setRepositoryVisibilityValue(dataset.getDatasetVisibilityValue())
-                        .setWorkspaceType(dataset.getWorkspaceType())
-                        .setWorkspaceId(dataset.getWorkspaceId())
-                        .setDateCreated(dataset.getTimeCreated())
-                        .setDateUpdated(dataset.getTimeUpdated())
-                        .setName(dataset.getName())
-                        .setOwner(dataset.getOwner()))
+            metadataDAO,
+            Repository.newBuilder()
+                .setRepositoryVisibilityValue(dataset.getDatasetVisibilityValue())
+                .setWorkspaceType(dataset.getWorkspaceType())
+                .setWorkspaceId(dataset.getWorkspaceId())
+                .setDateCreated(dataset.getTimeCreated())
+                .setDateUpdated(dataset.getTimeUpdated())
+                .setName(dataset.getName())
+                .setOwner(dataset.getOwner())
+                .addAllAttributes(dataset.getAttributesList())
                 .build(),
+            repositoryId,
+            dataset.getTagsList(),
             userInfo,
             workspaceDTO,
             true);
-
-    repositoryEntity.setAttributeMapping(
-        dataset.getAttributesList().stream()
-            .map(
-                attribute -> {
-                  try {
-                    return RdbmsUtils.generateAttributeEntity(
-                        repositoryEntity, ModelDBConstants.ATTRIBUTES, attribute);
-                  } catch (InvalidProtocolBufferException e) {
-                    LOGGER.error("Unexpected error occured {}", e.getMessage());
-                    Status status =
-                        Status.newBuilder()
-                            .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
-                            .setMessage(e.getMessage())
-                            .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
-                            .build();
-                    throw StatusProto.toStatusRuntimeException(status);
-                  }
-                })
-            .collect(Collectors.toList()));
-
-    ProtocolStringList tags = dataset.getTagsList();
-    metadataDAO.addLabels(
-        session,
-        IdentificationType.newBuilder()
-            .setIdType(VERSIONING_REPOSITORY)
-            .setIntId(repositoryEntity.getId())
-            .build(),
-        tags);
-
     return repositoryEntity.toProto();
   }
 
   Dataset convertToDataset(
-      Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity) {
+      Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity)
+      throws ModelDBException {
     Dataset.Builder dataset = Dataset.newBuilder();
     dataset
         .setId(String.valueOf(repositoryEntity.getId()))
@@ -619,10 +605,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   } catch (InvalidProtocolBufferException e) {
                     LOGGER.error("Unexpected error occured {}", e.getMessage());
                     Status status =
-                        Status.newBuilder()
+                        com.google.rpc.Status.newBuilder()
                             .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
                             .setMessage(e.getMessage())
-                            .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
                             .build();
                     throw StatusProto.toStatusRuntimeException(status);
                   }
@@ -747,7 +732,32 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public SetTagRequest.Response setTag(SetTagRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
-      return setTag(session, repository, request);
+
+      boolean exists =
+          VersioningUtils.commitRepositoryMappingExists(
+              session, request.getCommitSha(), repository.getId());
+      if (!exists) {
+        throw new ModelDBException(
+            "Commit_hash and repository_id mapping not found for repository "
+                + repository.getId()
+                + " commit "
+                + " request.getCommitSha()",
+            Code.NOT_FOUND);
+      }
+
+      Query query = session.createQuery(GET_TAG_HQL);
+      query.setParameter("repositoryId", repository.getId());
+      query.setParameter("tag", request.getTag());
+      TagsEntity tagsEntity = (TagsEntity) query.uniqueResult();
+      if (tagsEntity != null) {
+        throw new ModelDBException("Tag '" + request.getTag() + "' already exists", Code.NOT_FOUND);
+      }
+
+      tagsEntity = new TagsEntity(repository.getId(), request.getCommitSha(), request.getTag());
+      session.beginTransaction();
+      session.save(tagsEntity);
+      session.getTransaction().commit();
+      return SetTagRequest.Response.newBuilder().build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setTag(request);
@@ -755,36 +765,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         throw ex;
       }
     }
-  }
-
-  public SetTagRequest.Response setTag(
-      Session session, RepositoryEntity repository, SetTagRequest request) throws ModelDBException {
-    session.beginTransaction();
-
-    boolean exists =
-        VersioningUtils.commitRepositoryMappingExists(
-            session, request.getCommitSha(), repository.getId());
-    if (!exists) {
-      throw new ModelDBException(
-          "Commit_hash and repository_id mapping not found for repository "
-              + repository.getId()
-              + " commit "
-              + " request.getCommitSha()",
-          Code.NOT_FOUND);
-    }
-
-    Query query = session.createQuery(GET_TAG_HQL);
-    query.setParameter("repositoryId", repository.getId());
-    query.setParameter("tag", request.getTag());
-    TagsEntity tagsEntity = (TagsEntity) query.uniqueResult();
-    if (tagsEntity != null) {
-      throw new ModelDBException("Tag '" + request.getTag() + "' already exists", Code.NOT_FOUND);
-    }
-
-    tagsEntity = new TagsEntity(repository.getId(), request.getCommitSha(), request.getTag());
-    session.save(tagsEntity);
-    session.getTransaction().commit();
-    return SetTagRequest.Response.newBuilder().build();
   }
 
   @Override
@@ -836,9 +816,26 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public ListTagsRequest.Response listTags(ListTagsRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
 
-      return listTags(session, repository);
+      Query query = session.createQuery(GET_TAGS_HQL);
+      query.setParameter("repoId", repository.getId());
+      List<TagsEntity> tagsEntities = query.list();
+
+      if (tagsEntities == null || tagsEntities.isEmpty()) {
+        return ListTagsRequest.Response.newBuilder().setTotalRecords(0).build();
+      }
+
+      session.getTransaction().commit();
+      List<String> tags =
+          tagsEntities.stream()
+              .map(tagsEntity -> tagsEntity.getId().getTag())
+              .collect(Collectors.toList());
+      return ListTagsRequest.Response.newBuilder()
+          .addAllTags(tags)
+          .setTotalRecords(tags.size())
+          .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return listTags(request);
@@ -846,27 +843,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         throw ex;
       }
     }
-  }
-
-  public ListTagsRequest.Response listTags(Session session, RepositoryEntity repository) {
-    session.beginTransaction();
-    Query query = session.createQuery(GET_TAGS_HQL);
-    query.setParameter("repoId", repository.getId());
-    List<TagsEntity> tagsEntities = query.list();
-
-    if (tagsEntities == null || tagsEntities.isEmpty()) {
-      return ListTagsRequest.Response.newBuilder().setTotalRecords(0).build();
-    }
-
-    session.getTransaction().commit();
-    List<String> tags =
-        tagsEntities.stream()
-            .map(tagsEntity -> tagsEntity.getId().getTag())
-            .collect(Collectors.toList());
-    return ListTagsRequest.Response.newBuilder()
-        .addAllTags(tags)
-        .setTotalRecords(tags.size())
-        .build();
   }
 
   @Override
