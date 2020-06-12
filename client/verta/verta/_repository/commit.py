@@ -184,7 +184,7 @@ class Commit(object):
         return response_msg
 
     # TODO: consolidate this with similar method in `ExperimentRun`
-    def _upload_artifact(self, blob_path, component_blob, file_handle, part_size=64*(10**6)):
+    def _upload_artifact(self, blob_path, dataset_component_path, file_handle, part_size=64*(10**6)):
         """
         Uploads `file_handle` to ModelDB artifact store.
 
@@ -192,8 +192,8 @@ class Commit(object):
         ----------
         blob_path : str
             Path to blog withiin repo.
-        component_blob : protobuf Message
-            Dataset component blob.
+        dataset_component_path : str
+            Filepath in dataset component blob.
         file_handle : file-like
             Artifact to be uploaded.
         part_size : int, default 64 MB
@@ -203,9 +203,9 @@ class Commit(object):
         file_handle.seek(0)
 
         # check if multipart upload ok
-        url_for_artifact = self._get_url_for_artifact(blob_path, component_blob.path.path, "PUT", part_num=1)
+        url_for_artifact = self._get_url_for_artifact(blob_path, dataset_component_path, "PUT", part_num=1)
 
-        print("uploading {} to ModelDB".format(component_blob.path.path))
+        print("uploading {} to ModelDB".format(dataset_component_path))
         if url_for_artifact.multipart_upload_ok:
             # TODO: parallelize this
             file_parts = iter(lambda: file_handle.read(part_size), b'')
@@ -213,7 +213,7 @@ class Commit(object):
                 print("uploading part {}".format(part_num), end='\r')
 
                 # get presigned URL
-                url = self._get_url_for_artifact(blob_path, component_blob.path.path, "PUT", part_num=part_num).url
+                url = self._get_url_for_artifact(blob_path, dataset_component_path, "PUT", part_num=part_num).url
 
                 # wrap file part into bytestream to avoid OverflowError
                 #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
@@ -244,7 +244,7 @@ class Commit(object):
                 msg = _VersioningService.CommitVersionedBlobArtifactPart(
                     commit_sha=self.id,
                     location=path_to_location(blob_path),
-                    path_dataset_component_blob_path=component_blob.path.path,
+                    path_dataset_component_blob_path=dataset_component_path,
                 )
                 msg.repository_id.repo_id = self._repo.id
                 msg.artifact_part.part_number = part_num
@@ -262,7 +262,7 @@ class Commit(object):
             msg = _VersioningService.CommitMultipartVersionedBlobArtifact(
                 commit_sha=self.id,
                 location=path_to_location(blob_path),
-                path_dataset_component_blob_path=component_blob.path.path,
+                path_dataset_component_blob_path=dataset_component_path,
             )
             msg.repository_id.repo_id = self._repo.id
             data = _utils.proto_to_json(msg)
