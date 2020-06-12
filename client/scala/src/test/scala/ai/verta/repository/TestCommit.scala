@@ -322,4 +322,38 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test ("diffFrom and applyDiff of 2 different branches should modify one branch to match the other") {
+    val f = fixture
+
+    try {
+        val branch1 = f.repo.getCommitByBranch().flatMap(_.newBranch("a"))
+                            .flatMap(_.update("abc/cde", f.pathBlob))
+                            .flatMap(_.save("Some message 11"))
+                            .flatMap(_.update("wuv/ajf", f.pathBlob))
+                            .flatMap(_.save("Some message 12")).get
+
+        val branch2 = f.repo.getCommitByBranch().flatMap(_.newBranch("b"))
+                            .flatMap(_.update("abc/cde", f.s3Blob))
+                            .flatMap(_.save("Some message 21"))
+                            .flatMap(_.update("def/ghi", f.pathBlob))
+                            .flatMap(_.save("Some message 22")).get
+
+        println(branch2.get("abc/cde"))
+        println(branch1.get("abc/cde"))
+        val diff = branch2.diffFrom(Some(branch1)).get
+        println(diff.diffs)
+
+        val newBranch1 = branch1.applyDiff(diff, "apply diff").get
+        assert(newBranch1.get("wuv/ajf").isFailure)
+        assert(newBranch1.get("def/ghi").isSuccess)
+
+        // val retrievedS3Blob: S3 = newBranch1.get("abc/cde").get match {
+        //   case s3: S3 => s3
+        // }
+        // assert(retrievedS3Blob equals f.s3Blob)
+    } finally {
+      cleanup(f)
+    }
+  }
 }
