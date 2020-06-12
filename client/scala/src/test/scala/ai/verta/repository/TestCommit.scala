@@ -344,28 +344,40 @@ class TestCommit extends FunSuite {
     val f = fixture
 
     try {
-        val branch1 = f.repo.getCommitByBranch().flatMap(_.newBranch("a"))
-                            .flatMap(_.update("abc/cde", f.pathBlob))
-                            .flatMap(_.save("Some message 11"))
-                            .flatMap(_.update("wuv/ajf", f.pathBlob))
-                            .flatMap(_.save("Some message 12")).get
+        val originalCommit = f.commit.update("to-remove", f.pathBlob)
+                              .flatMap(_.update("to-update", f.s3Blob))
+                              .flatMap(_.save("original commit")).get
 
-        val branch2 = f.repo.getCommitByBranch().flatMap(_.newBranch("b"))
-                            .flatMap(_.update("abc/cde", f.s3Blob))
-                            .flatMap(_.save("Some message 21"))
-                            .flatMap(_.update("def/ghi", f.pathBlob))
-                            .flatMap(_.save("Some message 22")).get
+        val branch1 = originalCommit.newBranch("a")
+                                    .flatMap(_.update("abc/cde", f.pathBlob))
+                                    .flatMap(_.save("Some message 11"))
+                                    .flatMap(_.update("wuv/ajf", f.pathBlob))
+                                    .flatMap(_.save("Some message 12")).get
+
+        val branch2 = originalCommit.newBranch("b")
+                                    .flatMap(_.update("abc/cde", f.s3Blob))
+                                    .flatMap(_.remove("to-remove"))
+                                    .flatMap(_.save("Some message 21"))
+                                    .flatMap(_.update("def/ghi", f.pathBlob))
+                                    .flatMap(_.update("to-update", f.pathBlob))
+                                    .flatMap(_.save("Some message 22")).get
 
         val diff = branch2.diffFrom(Some(branch1)).get
 
         val newBranch1 = branch1.applyDiff(diff, "apply diff").get
         assert(newBranch1.get("wuv/ajf").isFailure)
         assert(newBranch1.get("def/ghi").isSuccess)
+        assert(newBranch1.get("to-remove").isFailure)
 
         val retrievedS3Blob: S3 = newBranch1.get("abc/cde").get match {
           case s3: S3 => s3
         }
         assert(retrievedS3Blob equals f.s3Blob)
+
+        val retrievedPathBlob: PathBlob = branch2.get("to-update").get match {
+          case pathBlob: PathBlob => pathBlob
+        }
+        assert(retrievedPathBlob equals f.pathBlob)
     } finally {
       cleanup(f)
     }
