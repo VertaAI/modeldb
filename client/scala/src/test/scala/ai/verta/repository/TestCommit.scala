@@ -386,4 +386,24 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("diffFrom with no commit passed should compute diff with parent") {
+    val f = fixture
+
+    try {
+        val commit = f.commit.update("abc", f.pathBlob)
+                      .flatMap(_.update("def", f.s3Blob))
+                      .flatMap(_.save("original commit")).get
+
+        val diff = commit.diffFrom().get
+        val newCommit = f.commit.newBranch("new-branch")
+                         .flatMap(_.applyDiff(diff, "apply diff")).get
+
+        assert(newCommit.get("abc").isSuccess)
+        assert(newCommit.get("def").isSuccess)
+        assert(f.repo.getCommitByBranch("new-branch").get equals newCommit)
+    } finally {
+      cleanup(f)
+    }
+  }
 }
