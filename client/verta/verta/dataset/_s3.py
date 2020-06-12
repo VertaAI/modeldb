@@ -78,7 +78,6 @@ class S3(_dataset._Dataset):
         s3_metadata = six.viewvalues(obj_paths_to_metadata)
         self._msg.s3.components.extend(s3_metadata)  # pylint: disable=no-member
 
-        # TODO: put this into a separate method to be called when a commit is saved
         # TODO: make this happen in the above loop to help avoid race condition
         if enable_mdb_versioning:
             try:
@@ -105,7 +104,7 @@ class S3(_dataset._Dataset):
                     Filename=filepath,
                 )
 
-                # add MDB path
+                # add MDB path to component blob
                 with open(filepath, 'rb') as f:
                     artifact_hash = _artifact_utils.calc_sha256(f)
                 s3_obj.path.internal_versioned_path = artifact_hash + '/' + s3_loc.key

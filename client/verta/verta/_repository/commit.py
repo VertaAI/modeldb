@@ -272,9 +272,8 @@ class Commit(object):
 
         print("upload complete ({})".format(component_blob.path.path))
 
-        # delete staged file
-        # os.remove(filepath)
-        # TODO: causes errors if `filepath` is used for multiple components
+        # TODO: delete staged file
+        # NOTE: this can cause errors if `filepath` is also used for other blobs/components
 
     def _update_blobs_from_commit(self, id_):
         """Fetches commit `id_`'s blobs and stores them as objects in `self._blobs`."""
@@ -489,8 +488,9 @@ class Commit(object):
 
         """
         # for managed versioning
-        blobs = self._blobs  # they get erased in _save()
-        # TODO: in blob objs, mark the components to be uploaded
+        # NOTE: this contains all blobs from past commits, which is a major problem
+        # TODO: instead of this, mark the components to be uploaded in the blob obj
+        blobs = self._blobs  # store here b/c they get erased in _save()
 
         msg = self._to_create_msg(commit_message=message)
         self._save(msg)
@@ -503,7 +503,7 @@ class Commit(object):
                 elif isinstance(blob, dataset.Path):
                     component_blobs = blob._msg.path.components
                 else:
-                    # this shouldn't happen
+                    # this shouldn't happen as long as if branches are kept up-to-date
                     raise TypeError("Unsupported blob type for managed versioning: {}".format(type(blob)))
 
                 for component_blob in component_blobs:
@@ -514,6 +514,7 @@ class Commit(object):
                         elif isinstance(blob, dataset.Path):
                             # TODO: reconstruct original filepath using the stripped base path
                             filepath = component_blob.path.path
+
                         with open(filepath, 'rb') as f:
                             self._upload_artifact(blob_path, component_blob, f)
 
