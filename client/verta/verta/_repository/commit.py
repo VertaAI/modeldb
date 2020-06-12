@@ -448,9 +448,13 @@ class Commit(object):
         self._lazy_load_blobs()
 
         try:
-            return self._blobs[path]
+            blob = self._blobs[path]
         except KeyError:
             self._raise_lookup_error(path)
+
+        if isinstance(blob, dataset._Dataset):
+            # for dataset_blob.download()
+            blob._commit = self
 
     def remove(self, path):
         """
