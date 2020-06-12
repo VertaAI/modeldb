@@ -22,7 +22,7 @@ class _Dataset(blob.Blob):
         self._msg = _DatasetService.DatasetBlob()
 
         self._mdb_versioned = enable_mdb_versioning
-        self._components_to_upload = dict()
+        self._components_to_upload = dict()  # component paths to local filepaths
 
     @property
     def _component_blobs(self):
