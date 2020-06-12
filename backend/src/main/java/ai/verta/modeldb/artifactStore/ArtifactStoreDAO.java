@@ -17,7 +17,4 @@ public interface ArtifactStoreDAO {
 
   void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
       throws ModelDBException;
-
-  String getPresignedUrlForVersionedBlobMultipart(
-      String internalPath, String method, long partNumber, String uploadId) throws ModelDBException;
 }

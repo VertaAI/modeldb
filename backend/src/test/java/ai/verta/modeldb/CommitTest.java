@@ -1110,6 +1110,16 @@ public class CommitTest {
             .addAllLocation(location4)
             .build();
 
+    String path5 = "versioned_modeldb.txt";
+    List<String> location5 = new ArrayList<>();
+    location5.add("versioned");
+    location5.add("modeldb.json");
+    BlobExpanded blobExpanded5 =
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path5))
+            .addAllLocation(location5)
+            .build();
+
     Commit.Builder commitBuilder =
         Commit.newBuilder()
             .setMessage("this is the test commit message")
@@ -1127,6 +1137,7 @@ public class CommitTest {
             .addBlobs(blobExpanded2)
             .addBlobs(blobExpanded3)
             .addBlobs(blobExpanded4)
+            .addBlobs(blobExpanded5)
             .build();
 
     CreateCommitRequest.Response commitResponse =
@@ -1238,6 +1249,19 @@ public class CommitTest {
       Assert.assertEquals(Code.NOT_FOUND, e.getStatus().getCode());
       e.printStackTrace();
     }
+
+    listCommitBlobsRequest =
+        ListCommitBlobsRequest.newBuilder()
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .addAllLocationPrefix(location5)
+            .build();
+
+    listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        1,
+        listCommitBlobsResponse.getBlobsCount());
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
@@ -2343,10 +2367,14 @@ public class CommitTest {
     GetBranchRequest.Response getBranchResponse =
         versioningServiceBlockingStub.getBranch(getBranchRequest);
 
-    String path = "verta/test/test.txt";
-    String internalPath = "test/internalBlobPaths/blobs/test.txt";
+    String path1 = "verta/test/test1.txt";
+    String path2 = "verta/test/test2.txt";
+    String internalPath1 = "test/internalBlobPaths/blobs/test1.txt";
+    String internalPath2 = "test/internalBlobPaths/blobs/test2.txt";
     List<String> location = new ArrayList<>();
-    location.add("test.txt");
+    location.add("versioned");
+    location.add("s3_versioned");
+    // location.add("test.txt");
 
     Blob blob =
         Blob.newBuilder()
@@ -2359,10 +2387,21 @@ public class CommitTest {
                                     .setS3VersionId("1.0")
                                     .setPath(
                                         PathDatasetComponentBlob.newBuilder()
-                                            .setPath(path)
+                                            .setPath(path1)
                                             .setSize(2)
                                             .setLastModifiedAtSource(time)
-                                            .setInternalVersionedPath(internalPath)
+                                            .setInternalVersionedPath(internalPath1)
+                                            .build())
+                                    .build())
+                            .addComponents(
+                                S3DatasetComponentBlob.newBuilder()
+                                    .setS3VersionId("1.0")
+                                    .setPath(
+                                        PathDatasetComponentBlob.newBuilder()
+                                            .setPath(path2)
+                                            .setSize(2)
+                                            .setLastModifiedAtSource(time)
+                                            .setInternalVersionedPath(internalPath2)
                                             .build())
                                     .build())
                             .build())
@@ -2395,7 +2434,7 @@ public class CommitTest {
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
               .setCommitSha(commitResponse.getCommit().getCommitSha())
               .addAllLocation(location)
-              .setPathDatasetComponentBlobPath(path)
+              .setPathDatasetComponentBlobPath(path1)
               .setMethod(ModelDBConstants.PUT)
               .setPartNumber(1)
               .build();
@@ -2444,7 +2483,7 @@ public class CommitTest {
                   .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
                   .setCommitSha(commitResponse.getCommit().getCommitSha())
                   .addAllLocation(location)
-                  .setPathDatasetComponentBlobPath(path)
+                  .setPathDatasetComponentBlobPath(path1)
                   .setArtifactPart(
                       ArtifactPart.newBuilder()
                           .setEtag(etag1.replaceAll("\"", ""))
@@ -2456,7 +2495,7 @@ public class CommitTest {
                   .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
                   .setCommitSha(commitResponse.getCommit().getCommitSha())
                   .addAllLocation(location)
-                  .setPathDatasetComponentBlobPath(path)
+                  .setPathDatasetComponentBlobPath(path1)
                   .setArtifactPart(
                       ArtifactPart.newBuilder()
                           .setEtag(etag2.replaceAll("\"", ""))
@@ -2468,7 +2507,7 @@ public class CommitTest {
                   .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
                   .setCommitSha(commitResponse.getCommit().getCommitSha())
                   .addAllLocation(location)
-                  .setPathDatasetComponentBlobPath(path)
+                  .setPathDatasetComponentBlobPath(path1)
                   .build());
       CommitMultipartVersionedBlobArtifact.Response commitMultipartArtifact =
           versioningServiceBlockingStub.commitMultipartVersionedBlobArtifact(
@@ -2476,7 +2515,7 @@ public class CommitTest {
                   .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
                   .setCommitSha(commitResponse.getCommit().getCommitSha())
                   .addAllLocation(location)
-                  .setPathDatasetComponentBlobPath(path)
+                  .setPathDatasetComponentBlobPath(path1)
                   .build());
       GetCommittedVersionedBlobArtifactParts.Response committedVersionedBlobArtifactParts =
           versioningServiceBlockingStub.getCommittedVersionedBlobArtifactParts(
@@ -2484,7 +2523,7 @@ public class CommitTest {
                   .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
                   .setCommitSha(commitResponse.getCommit().getCommitSha())
                   .addAllLocation(location)
-                  .setPathDatasetComponentBlobPath(path)
+                  .setPathDatasetComponentBlobPath(path1)
                   .build());
     } finally {
       DeleteCommitRequest deleteCommitRequest =
