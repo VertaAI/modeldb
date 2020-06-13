@@ -386,7 +386,8 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
-    test("diffFrom with no commit passed should compute diff with parent") {
+
+  test("diffFrom with no commit passed should compute diff with parent") {
     val f = fixture
 
     try {
