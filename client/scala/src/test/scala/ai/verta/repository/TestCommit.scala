@@ -152,6 +152,23 @@ class TestCommit extends FunSuite {
     }
   }
 
+  test("Multiple update and remove calls should be possible between savings") {
+    val f = fixture
+
+    try {
+        val commit = f.commit.update("abc/cde", f.pathBlob)
+                         .flatMap(_.save("Some message 1"))
+                         .flatMap(_.update("def/ghi", f.s3Blob))
+                         .flatMap(_.remove("abc/cde"))
+                         .flatMap(_.save("Some message 2")).get
+
+        assert(commit.get("abc/cde").isFailure)
+        assert(commit.get("def/ghi").isSuccess)
+    } finally {
+      cleanup(f)
+    }
+  }
+
   test("Remove should discard blob from commit") {
     val f = fixture
 
@@ -314,9 +331,76 @@ class TestCommit extends FunSuite {
                            .flatMap(_.update("uvw/wer", f.pathBlob))
                            .flatMap(_.save("some message 4")).get
       val desc = parent3.merge(parent4).get
+      val descDirty = desc.update("some-path", f.pathBlob).get
 
-      val log = desc.log().get
-      assert(log == List(desc, parent4, parent3, parent2, parent1))
+      assert(desc.log().get == Stream(desc, parent4, parent3, parent2, parent1))
+      assert(descDirty.log().get == desc.log().get)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test ("diffFrom and applyDiff of 2 different branches should modify one branch to match the other") {
+    val f = fixture
+
+    try {
+        val originalCommit = f.commit.update("to-remove", f.pathBlob)
+                              .flatMap(_.update("to-update", f.s3Blob))
+                              .flatMap(_.save("original commit")).get
+
+        val branch1 = originalCommit.newBranch("a")
+                                    .flatMap(_.update("abc/cde", f.pathBlob))
+                                    .flatMap(_.save("Some message 11"))
+                                    .flatMap(_.update("wuv/ajf", f.pathBlob))
+                                    .flatMap(_.save("Some message 12")).get
+
+        val branch2 = originalCommit.newBranch("b")
+                                    .flatMap(_.update("abc/cde", f.s3Blob))
+                                    .flatMap(_.remove("to-remove"))
+                                    .flatMap(_.save("Some message 21"))
+                                    .flatMap(_.update("def/ghi", f.pathBlob))
+                                    .flatMap(_.update("to-update", f.pathBlob))
+                                    .flatMap(_.save("Some message 22")).get
+
+        val diff = branch2.diffFrom(Some(branch1)).get
+
+        val newBranch1 = branch1.applyDiff(diff, "apply diff").get
+        assert(newBranch1.get("wuv/ajf").isFailure)
+        assert(newBranch1.get("def/ghi").isSuccess)
+        assert(newBranch1.get("to-remove").isFailure)
+
+        val retrievedS3Blob: S3 = newBranch1.get("abc/cde").get match {
+          case s3: S3 => s3
+        }
+        assert(retrievedS3Blob equals f.s3Blob)
+
+        val retrievedPathBlob: PathBlob = branch2.get("to-update").get match {
+          case pathBlob: PathBlob => pathBlob
+        }
+        assert(retrievedPathBlob equals f.pathBlob)
+
+        // check the branching behavior:
+        assert(f.repo.getCommitByBranch("a").get equals newBranch1)
+        assert(f.repo.getCommitByBranch("b").get equals branch2)
+    } finally {
+      cleanup(f)
+    }
+  }
+    test("diffFrom with no commit passed should compute diff with parent") {
+    val f = fixture
+
+    try {
+        val commit = f.commit.update("abc", f.pathBlob)
+                      .flatMap(_.update("def", f.s3Blob))
+                      .flatMap(_.save("original commit")).get
+
+        val diff = commit.diffFrom().get
+        val newCommit = f.commit.newBranch("new-branch")
+                         .flatMap(_.applyDiff(diff, "apply diff")).get
+
+        assert(newCommit.get("abc").isSuccess)
+        assert(newCommit.get("def").isSuccess)
+        assert(f.repo.getCommitByBranch("new-branch").get equals newCommit)
     } finally {
       cleanup(f)
     }
@@ -364,59 +448,59 @@ class TestCommit extends FunSuite {
         // second commit should be reverted:
         assert(revCommit.get("def/ghi").isFailure)
         assert(revCommit.get("tuv/wxy").isFailure)
-    } finally {
-      cleanup(f)
+      } finally {
+        cleanup(f)
+      }
     }
-  }
 
-  test("revert unsaved commit should fail") {
-    val f = fixture
+    test("revert unsaved commit should fail") {
+      val f = fixture
 
-    try {
-        val firstCommit = f.commit.newBranch("new-branch-1")
-                           .flatMap(_.update("abc/cde", f.pathBlob))
-                           .flatMap(_.save("Some message 1")).get
+      try {
+          val firstCommit = f.commit.newBranch("new-branch-1")
+                             .flatMap(_.update("abc/cde", f.pathBlob))
+                             .flatMap(_.save("Some message 1")).get
 
-        val secondCommit = f.commit.newBranch("new-branch-2")
-                                   .flatMap(_.update("def/ghi", f.s3Blob)).get
+          val secondCommit = f.commit.newBranch("new-branch-2")
+                                     .flatMap(_.update("def/ghi", f.s3Blob)).get
 
-        val revAttempt = firstCommit.revert(secondCommit, Some("Revert test"))
-        assert(revAttempt.isFailure)
-        assert(revAttempt match {case Failure(e) => e.getMessage contains "Other commit must be saved"})
+          val revAttempt = firstCommit.revert(secondCommit, Some("Revert test"))
+          assert(revAttempt.isFailure)
+          assert(revAttempt match {case Failure(e) => e.getMessage contains "Other commit must be saved"})
 
-        val revAttempt2 = secondCommit.revert(firstCommit, Some("Revert test"))
-        assert(revAttempt2.isFailure)
-        assert(revAttempt2 match {case Failure(e) => e.getMessage contains "This commit must be saved"})
+          val revAttempt2 = secondCommit.revert(firstCommit, Some("Revert test"))
+          assert(revAttempt2.isFailure)
+          assert(revAttempt2 match {case Failure(e) => e.getMessage contains "This commit must be saved"})
 
-    } finally {
-      cleanup(f)
+      } finally {
+        cleanup(f)
+      }
     }
-  }
 
-  test("revert a merge commit should remove changes in the other branch") {
-    val f = fixture
+    test("revert a merge commit should remove changes in the other branch") {
+      val f = fixture
 
-    try {
-      val originalCommit = f.commit.update("a", f.pathBlob)
-                            .flatMap(_.save("Some message")).get
+      try {
+        val originalCommit = f.commit.update("a", f.pathBlob)
+                              .flatMap(_.save("Some message")).get
 
-      val firstCommit = originalCommit.newBranch("new-branch-1")
-                           .flatMap(_.update("b", f.pathBlob))
-                           .flatMap(_.save("Some message 1")).get
+        val firstCommit = originalCommit.newBranch("new-branch-1")
+                             .flatMap(_.update("b", f.pathBlob))
+                             .flatMap(_.save("Some message 1")).get
 
-      val secondCommit = originalCommit.newBranch("new-branch-2")
-                                       .flatMap(_.remove("a"))
-                                       .flatMap(_.update("def/ghi", f.s3Blob))
-                                       .flatMap(_.save("Some message 2")).get
+        val secondCommit = originalCommit.newBranch("new-branch-2")
+                                         .flatMap(_.remove("a"))
+                                         .flatMap(_.update("def/ghi", f.s3Blob))
+                                         .flatMap(_.save("Some message 2")).get
 
-      val mergeCommit = firstCommit.merge(secondCommit, Some("Merge commits")).get
-      val revCommit = mergeCommit.revert().get
+        val mergeCommit = firstCommit.merge(secondCommit, Some("Merge commits")).get
+        val revCommit = mergeCommit.revert().get
 
-      assert(revCommit.get("a").isSuccess)
-      assert(revCommit.get("def/ghi").isFailure)
-      assert(revCommit.get("b").isSuccess)
-    } finally {
-      cleanup(f)
+        assert(revCommit.get("a").isSuccess)
+        assert(revCommit.get("def/ghi").isFailure)
+        assert(revCommit.get("b").isSuccess)
+      } finally {
+        cleanup(f)
+      }
     }
-  }
 }
