@@ -480,7 +480,7 @@ class Commit(object):
     def save(self, message):
         """
         Saves this commit to ModelDB.
-        
+
         .. note::
 
             If this commit contains new S3 datasets to be versioned by ModelDB, a very large
