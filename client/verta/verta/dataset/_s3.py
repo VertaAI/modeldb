@@ -206,6 +206,15 @@ class S3(_dataset._Dataset):
             s3_obj.path.internal_versioned_path = artifact_hash + '/' + s3_loc.key
 
     def _clean_up_uploaded_components(self):
+        """
+        Deletes temporary files that had been downloaded for ModelDB-managed versioning.
+
+        This method does nothing if ModelDB-managed versioning was not enabled.
+
+        """
+        if not self._mdb_versioned:
+            return
+
         for filepath in self._components_to_upload.values():
             os.remove(filepath)
 
