@@ -133,6 +133,11 @@ class Path(_dataset._Dataset):
             # track which file this component corresponds to
             self._components_to_upload[component_path] = filepath
 
+            # add MDB path to component blob
+            with open(filepath, 'rb') as f:
+                artifact_hash = _artifact_utils.calc_sha256(f)
+            component_blob.internal_versioned_path = artifact_hash + '/' + os.path.basename(filepath)
+
     def _clean_up_uploaded_components(self):
         """
         This method does nothing becaese this dataset's components should not be deleted.
