@@ -64,6 +64,10 @@ class _Dataset(blob.Blob):
         # This shall be implemented by subclasses, but shouldn't halt execution if called.
         return
 
+    def _clean_up_uploaded_components(self):
+        # This shall be implemented by subclasses, but shouldn't halt execution if called.
+        return
+
     def _set_commit_and_blob_path(self, commit, blob_path):
         """
         Associate this blob with a commit and path to enable downloads.
