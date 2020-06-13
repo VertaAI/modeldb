@@ -140,7 +140,7 @@ class Path(_dataset._Dataset):
 
     def _clean_up_uploaded_components(self):
         """
-        This method does nothing becaese this dataset's components should not be deleted.
+        This method does nothing because this dataset's components shouldn't be automatically deleted.
 
         """
         return
