@@ -501,9 +501,9 @@ class Commit(object):
 
         # upload ModelDB-versioned blobs
         for blob_path, blob in mdb_versioned_blobs.items():
-            for component_blob in blob._component_blobs:
-                if component_blob.path.internal_versioned_path:
-                    component_path = component_blob.path.path
+            for component_blob in blob._path_component_blobs:
+                if component_blob.internal_versioned_path:
+                    component_path = component_blob.path
                     downloaded_filepath = blob._components_to_upload[component_path]
                     with open(downloaded_filepath, 'rb') as f:
                         self._upload_artifact(blob_path, component_path, f)
