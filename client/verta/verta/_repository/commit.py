@@ -508,7 +508,7 @@ class Commit(object):
                     with open(downloaded_filepath, 'rb') as f:
                         self._upload_artifact(blob_path, component_path, f)
 
-                    os.remove(downloaded_filepath)
+            blob._clean_up_uploaded_components()
 
     def _save(self, proto_message):
         data = _utils.proto_to_json(proto_message)
