@@ -21,7 +21,16 @@ class _Dataset(blob.Blob):
 
     @property
     def _path_component_blobs(self):
-        """This shall be implemented by subclasses, but shouldn't halt execution if called."""
+        """
+        Returns path components of this dataset.
+
+        Returns
+        -------
+        list of PathDatasetComponentBlob
+            Path components of this dataset.
+
+        """
+        # This shall be implemented by subclasses, but shouldn't halt execution if called.
         return []
 
     @staticmethod
