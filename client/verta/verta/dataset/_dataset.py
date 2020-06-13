@@ -20,7 +20,7 @@ class _Dataset(blob.Blob):
         self._msg = _DatasetService.DatasetBlob()
 
     @property
-    def _component_blobs(self):
+    def _path_component_blobs(self):
         """This shall be implemented by subclasses, but shouldn't halt execution if called."""
         return []
 
