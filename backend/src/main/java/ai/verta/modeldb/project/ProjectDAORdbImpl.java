@@ -49,6 +49,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -129,6 +130,20 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       "From ProjectEntity p where p.id = :id AND p." + ModelDBConstants.DELETED + " = false";
   private static final String COUNT_PROJECT_BY_ID_HQL =
       "Select Count(id) From ProjectEntity p where p.deleted = false AND p.id = :projectId";
+  private static final String NON_DELETED_PROJECT_IDS =
+      "select id  From ProjectEntity p where p.deleted = false";
+  private static final String NON_DELETED_PROJECT_IDS_BY_IDS =
+      NON_DELETED_PROJECT_IDS + " AND p.id in (:" + ModelDBConstants.PROJECT_IDS + ")";
+  private static final String IDS_FILTERED_BY_WORKSPACE =
+      NON_DELETED_PROJECT_IDS_BY_IDS
+          + " AND p."
+          + ModelDBConstants.WORKSPACE
+          + " = :"
+          + ModelDBConstants.WORKSPACE
+          + " AND p."
+          + ModelDBConstants.WORKSPACE_TYPE
+          + " = :"
+          + ModelDBConstants.WORKSPACE_TYPE;
   private static final String GET_PROJECT_BY_IDS_HQL =
       "From ProjectEntity p where p.id IN (:ids) AND p." + ModelDBConstants.DELETED + " = false";
   private static final String GET_PROJECT_BY_SHORT_NAME_AND_OWNER_HQL =
@@ -1353,16 +1368,54 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
   }
 
+  /**
+   * returns a list of projectIds accessible to the user passed as an argument within the workspace
+   * passed as an argument. For no auth returns the list of non deleted projects
+   */
   @Override
   public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException {
-    FindProjects findProjects =
-        FindProjects.newBuilder().setWorkspaceName(workspaceName).setIdsOnly(true).build();
-    ProjectPaginationDTO projectPaginationDTO =
-        findProjects(findProjects, null, currentLoginUserInfo, ProjectVisibility.PRIVATE);
-    return projectPaginationDTO.getProjects().stream()
-        .map(Project::getId)
-        .collect(Collectors.toList());
+    if (!roleService.IsImplemented()) {
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        return session.createQuery(NON_DELETED_PROJECT_IDS).list();
+      }
+    } else {
+
+      // get list of accessible projects
+      @SuppressWarnings("unchecked")
+      List<String> accessibleProjectIds =
+          roleService.getAccessibleResourceIds(
+              null,
+              new CollaboratorUser(authService, currentLoginUserInfo),
+              ProjectVisibility.PRIVATE,
+              ModelDBServiceResourceTypes.PROJECT,
+              Collections.EMPTY_LIST);
+
+      // resolve workspace
+      WorkspaceDTO workspaceDTO =
+          roleService.getWorkspaceDTOByWorkspaceName(currentLoginUserInfo, workspaceName);
+
+      List<String> resultProjects = new LinkedList<String>();
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        @SuppressWarnings("unchecked")
+        Query<String> query = session.createQuery(IDS_FILTERED_BY_WORKSPACE);
+        query.setParameterList(ModelDBConstants.PROJECT_IDS, accessibleProjectIds);
+        query.setParameter(ModelDBConstants.WORKSPACE, workspaceDTO.getWorkspaceId());
+        query.setParameter(ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType());
+        resultProjects = query.list();
+
+        // in personal workspace show projects directly shared
+        if (workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          List<String> directlySharedProjects =
+              roleService.getSelfDirectlyAllowedResources(
+                  ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
+          query = session.createQuery(NON_DELETED_PROJECT_IDS_BY_IDS);
+          query.setParameterList(ModelDBConstants.PROJECT_IDS, directlySharedProjects);
+          resultProjects.addAll(query.list());
+        }
+      }
+      return resultProjects;
+    }
   }
 
   @Override
