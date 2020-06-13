@@ -124,8 +124,8 @@ class Path(_dataset._Dataset):
         if not self._mdb_versioned:
             return
 
-        for component_blob in self._component_blobs:
-            component_path = component_blob.path.path
+        for component_blob in self._path_component_blobs:
+            component_path = component_blob.path
 
             # TODO: when stripping base path is implemented, reconstruct original path here
             filepath = os.path.abspath(component_path)
