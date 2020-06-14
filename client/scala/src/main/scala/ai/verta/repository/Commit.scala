@@ -338,4 +338,56 @@ class Commit(
     else
       createCommit(message = message, diffs = diff.blobDiffs, commitBase = id)
   }
+
+  /** Generates folder names and blob names in this commit by walking through its folder tree.
+   *  @return a stream of Try's of WalkOutput. If the commit is not saved, its only element is a Failure.
+   */
+  def walk()(implicit ec: ExecutionContext) =
+    if (!saved)
+      Stream(Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be walked")))
+    else
+      generateWalk(List(List()))
+
+  private def generateWalk(locations: List[List[String]])(implicit ec: ExecutionContext): Stream[Try[WalkOutput]] = {
+    /**  TODO: modify the WalkOutput so that the folders are mutable */
+    if (locations.isEmpty) Stream()
+    else {
+      val location = locations.head
+
+      val next = clientSet.versioningService.GetCommitComponent2(
+        commit_sha = id.get,
+        repository_id_repo_id = repo.id,
+        location = if (location.length > 0) Some(location) else None
+      ) match {
+        case Failure(e) => Failure(e) -> List()
+        case Success(r) => {
+          val folderPath = location.mkString("/")
+          val responseFolder = r.folder
+
+          val folderNames = responseFolder
+          .flatMap(_.sub_folders) // Option[List[VersioningFolderElement]]
+          .map(_.map(folder => folder.element_name.get))
+          // Option[List[String]]
+          .map(_.sortWith((name1: String, name2: String) => name1 < name2))
+
+          val blobNames = responseFolder
+          .flatMap(_.blobs) // Option[List[VersioningFolderElement]]
+          .map(_.map(folder => folder.element_name.get))
+          // Option[List[String]]
+          .map(_.sortWith((name1: String, name2: String) => name1 < name2))
+
+          // Extend locations to contain new locations:
+          val newLocations = folderNames
+          .map(_.map(folder => location ::: List(folder))) // inefficient
+          // Option[List[List[String]]]
+          // push new location to stack:
+          .getOrElse(Nil) ::: locations.tail
+
+          Success(new WalkOutput(folderPath, folderNames, blobNames)) -> newLocations
+        }
+      }
+
+      next._1 #:: generateWalk(next._2)
+    }
+  }
 }

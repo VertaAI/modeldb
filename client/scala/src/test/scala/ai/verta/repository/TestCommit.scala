@@ -406,4 +406,43 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test ("walk should produce the right order") {
+    val f = fixture
+
+    try {
+      val newCommit = f.commit.update("file1", f.pathBlob)
+                    .flatMap(_.update("a/file2", f.pathBlob))
+                    .flatMap(_.update("a/file3", f.pathBlob))
+                    .flatMap(_.update("a/b/file4", f.pathBlob))
+                    .flatMap(_.update("a/c/file5", f.pathBlob))
+                    .flatMap(_.save("walkzzz")).get
+
+      val walkOutputs = newCommit.walk().iterator
+
+      assert(walkOutputs.hasNext)
+      var next = walkOutputs.next.get
+      assert(next.folderPath.equals(""))
+      assert(next.folderNames.get.length == 1)
+
+      assert(walkOutputs.hasNext)
+      next = walkOutputs.next.get
+      assert(next.folderPath.equals("a"))
+      assert(next.folderNames.get == List("b", "c"))
+
+      assert(walkOutputs.hasNext)
+      next = walkOutputs.next.get
+      assert(next.folderPath.equals("a/b"))
+      assert(next.folderNames.isEmpty)
+
+      assert(walkOutputs.hasNext)
+      next = walkOutputs.next.get
+      assert(next.folderPath.equals("a/c"))
+      assert(next.folderNames.isEmpty)
+
+      assert(!walkOutputs.hasNext)
+    } finally {
+      cleanup(f)
+    }
+  }
 }
