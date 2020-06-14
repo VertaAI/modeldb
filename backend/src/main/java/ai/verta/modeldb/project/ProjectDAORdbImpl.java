@@ -1401,7 +1401,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         Query<String> query = session.createQuery(IDS_FILTERED_BY_WORKSPACE);
         query.setParameterList(ModelDBConstants.PROJECT_IDS, accessibleProjectIds);
         query.setParameter(ModelDBConstants.WORKSPACE, workspaceDTO.getWorkspaceId());
-        query.setParameter(ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType());
+        query.setParameter(
+            ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
         resultProjects = query.list();
 
         // in personal workspace show projects directly shared
