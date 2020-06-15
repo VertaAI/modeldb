@@ -348,6 +348,10 @@ class Commit(
     else
       generateWalk(List(List()))
 
+  /** Helper function to define the stream of walk outputs
+   *  @param locations remaining locations to explore
+   *  @return Stream of Trys of WalkOutputs. If the returned WalkOutput fails, abort the remaining locations.
+   */
   private def generateWalk(locations: List[List[String]])(implicit ec: ExecutionContext): Stream[Try[WalkOutput]] = {
     /**  TODO: modify the WalkOutput so that the folders are mutable */
     if (locations.isEmpty) Stream()
