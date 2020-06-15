@@ -967,11 +967,8 @@ def as_list_of_str(tags):
     if isinstance(tags, six.string_types):
         tags = [tags]
     else:
-        try:
-            tags = list(tags)
-        except TypeError:
-            e = TypeError("`tags` should be list of str, not {}".format(type(tags)))
-            six.raise_from(e, None)
+        if not isinstance(tags, (list, tuple, set)):
+            raise TypeError("`tags` should be list of str, not {}".format(type(tags)))
 
         for tag in tags:
             if not isinstance(tag, six.string_types):
