@@ -207,4 +207,22 @@
                 tableName="labels_mapping"/>
     </changeSet>
 
+    <changeSet author="anandJ" id="create-dataset-repository-mapping-table">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dataset_repository_mapping"/>
+            </not>
+        </preConditions>
+        <createTable tableName="dataset_repository_mapping">
+            <column name="repository_id" type="int8">
+                <constraints referencedColumnNames="id"
+                             referencedTableName="repository"
+                             foreignKeyName="fk_repository_id"
+                             primaryKey="true"
+                             nullable="false"/>
+            </column>
+            <column name="is_dataset_repository" type="boolean"/>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
