@@ -343,11 +343,12 @@ class Commit(
    *  The stream ends at the first failure, or when there are no folders left. If the commit is not saved, its only element is that Failure
    *  @return a stream of Try's of WalkOutput.
    */
-  def walk()(implicit ec: ExecutionContext) =
+  def walk()(implicit ec: ExecutionContext) = {
     if (!saved)
       Stream(Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be walked")))
     else
       continueWalk(List(List()))
+  }
 
   /** Continue the walk from the locations passed
    *  @param locations remaining locations to explore
