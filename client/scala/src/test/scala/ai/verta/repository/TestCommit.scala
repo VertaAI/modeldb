@@ -504,4 +504,23 @@ class TestCommit extends FunSuite {
         cleanup(f)
       }
     }
+
+    test("revert twice should undo the first revert") {
+      val f = fixture
+
+      try {
+        val originalCommit = f.commit.update("a", f.pathBlob)
+                              .flatMap(_.save("Some message")).get
+
+        val updateCommit = originalCommit.update("b", f.pathBlob)
+                                         .flatMap(_.remove("a"))
+                                         .flatMap(_.save("Some message 1")).get
+
+        val revertCommit = updateCommit.revert().flatMap(_.revert()).get
+        assert(revertCommit.get("a").isFailure)
+        assert(revertCommit.get("b").isSuccess)
+      } finally {
+        cleanup(f)
+      }
+    }
 }
