@@ -1,5 +1,6 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.modeldb.AddDatasetTags.Response;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
@@ -8,6 +9,7 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ProtocolStringList;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import org.hibernate.Session;
@@ -71,4 +73,13 @@ public interface RepositoryDAO {
 
   FindRepositories.Response findRepositories(FindRepositories request)
       throws ModelDBException, InvalidProtocolBufferException;
+
+  Response addDatasetTags(MetadataDAO metadataDAO, String id, List<String> tags)
+      throws ModelDBException;
+
+  List<String> getDatasetTags(MetadataDAO metadataDAO, String id) throws ModelDBException;
+
+  Dataset deleteDatasetTags(
+      MetadataDAO metadataDAO, String id, ProtocolStringList tagsList, boolean deleteAll)
+      throws ModelDBException;
 }

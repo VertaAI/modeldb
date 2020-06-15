@@ -266,7 +266,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         id = Long.parseLong(request.getId());
       } catch (NumberFormatException e) {
         LOGGER.info("Wrong id format: {}", e.getMessage());
-        throw new ModelDBException("Wrong id format, expecting integer: " + request.getId());
+        throw new ModelDBException(
+            "Wrong id format, expecting integer: " + request.getId(),
+            io.grpc.Status.Code.INVALID_ARGUMENT);
       }
       DeleteRepositoryRequest.Response response =
           repositoryDAO.deleteRepository(
@@ -534,14 +536,15 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Dataset updatedDataset =
-          datasetDAO.addDatasetTags(
-              request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+      AddDatasetTags.Response updatedDataset =
+          repositoryDAO.addDatasetTags(
+              metadataDAO,
+              request.getId(),
+              ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
 
-      responseObserver.onNext(
-          AddDatasetTags.Response.newBuilder().setDataset(updatedDataset).build());
+      responseObserver.onNext(updatedDataset);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -568,9 +571,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.READ);
 
-      List<String> tags = datasetDAO.getDatasetTags(request.getId());
+      List<String> tags = repositoryDAO.getDatasetTags(metadataDAO, request.getId());
       responseObserver.onNext(GetTags.Response.newBuilder().addAllTags(tags).build());
       responseObserver.onCompleted();
 
@@ -608,11 +611,11 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
       Dataset updatedDataset =
-          datasetDAO.deleteDatasetTags(
-              request.getId(), request.getTagsList(), request.getDeleteAll());
+          repositoryDAO.deleteDatasetTags(
+              metadataDAO, request.getId(), request.getTagsList(), request.getDeleteAll());
 
       responseObserver.onNext(
           DeleteDatasetTags.Response.newBuilder().setDataset(updatedDataset).build());

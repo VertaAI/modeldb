@@ -175,24 +175,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   @Override
   public boolean deleteLabels(IdentificationType id, List<String> labels) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-
-      for (String label : labels) {
-        LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
-        LabelsMappingEntity existingLabelsMappingEntity =
-            session.get(LabelsMappingEntity.class, id0);
-        if (existingLabelsMappingEntity != null) {
-          session.delete(existingLabelsMappingEntity);
-        } else {
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.NOT_FOUND_VALUE)
-                  .setMessage("Label '" + label + "' not found in DB")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
-        }
-      }
-      transaction.commit();
+      deleteLabels(session, id, labels);
       return true;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -201,6 +184,27 @@ public class MetadataDAORdbImpl implements MetadataDAO {
         throw ex;
       }
     }
+  }
+
+  @Override
+  public void deleteLabels(Session session, IdentificationType id, List<String> labels) {
+    Transaction transaction = session.beginTransaction();
+
+    for (String label : labels) {
+      LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
+      LabelsMappingEntity existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
+      if (existingLabelsMappingEntity != null) {
+        session.delete(existingLabelsMappingEntity);
+      } else {
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.NOT_FOUND_VALUE)
+                .setMessage("Label '" + label + "' not found in DB")
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+    }
+    transaction.commit();
   }
 
   @Override

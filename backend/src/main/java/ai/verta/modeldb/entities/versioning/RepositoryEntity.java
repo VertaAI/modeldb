@@ -184,12 +184,15 @@ public class RepositoryEntity {
     final Repository repository = request.getRepository();
     this.name = repository.getName();
     this.description = repository.getDescription();
-    this.date_updated = new Date().getTime();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
     this.repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
     this.workspace_id = repository.getWorkspaceId();
     this.workspace_type = repository.getWorkspaceTypeValue();
     updateAttribute(repository.getAttributesList());
+  }
+
+  public void update() {
+    this.date_updated = new Date().getTime();
   }
 
   public String getOwner() {

@@ -22,5 +22,7 @@ public interface MetadataDAO {
 
   boolean deleteLabels(IdentificationType id, List<String> labels);
 
+  void deleteLabels(Session session, IdentificationType id, List<String> labels);
+
   boolean deleteProperty(IdentificationType id, String key);
 }
