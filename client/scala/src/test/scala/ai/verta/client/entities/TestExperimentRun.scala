@@ -1,5 +1,6 @@
-package ai.verta.client
+package ai.verta.client.entities
 
+import ai.verta.client._
 import ai.verta.repository._
 import ai.verta.blobs._
 import ai.verta.blobs.dataset._
