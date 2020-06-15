@@ -449,4 +449,31 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("removing locations should make continueWalk skip them") {
+    val f = fixture
+
+    try {
+      val newCommit = f.commit.update("file1", f.pathBlob)
+                       .flatMap(_.update("a/file2", f.pathBlob))
+                       .flatMap(_.update("a/file3", f.pathBlob))
+                       .flatMap(_.update("a/b/file4", f.pathBlob))
+                       .flatMap(_.update("a/c/file5", f.pathBlob))
+                       .flatMap(_.save("walkzzz")).get
+
+      val originalWalk = newCommit.walk().tail // skip the first WalkOutput
+      val locations = originalWalk.head.get.remainingLocations.tail // skip "a/b"
+
+      val remainingWalk = newCommit.continueWalk(locations).iterator
+      assert(remainingWalk.hasNext)
+      val next = remainingWalk.next.get
+      assert(next.folderPath.equals("a/c"))
+      assert(next.folderNames.isEmpty)
+      assert(next.blobNames.get == List("file5"))
+
+      assert(!remainingWalk.hasNext)
+    } finally {
+      cleanup(f)
+    }
+  }
 }

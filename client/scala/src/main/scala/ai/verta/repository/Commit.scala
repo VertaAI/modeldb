@@ -346,13 +346,13 @@ class Commit(
     if (!saved)
       Stream(Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be walked")))
     else
-      generateWalk(List(List()))
+      continueWalk(List(List()))
 
-  /** Helper function to define the stream of walk outputs
+  /** Continue the walk from the locations passed
    *  @param locations remaining locations to explore
    *  @return Stream of Trys of WalkOutputs. If the returned WalkOutput fails, abort the remaining locations.
    */
-  private def generateWalk(locations: List[List[String]])(implicit ec: ExecutionContext): Stream[Try[WalkOutput]] = {
+  def continueWalk(locations: List[List[String]])(implicit ec: ExecutionContext): Stream[Try[WalkOutput]] = {
     /**  TODO: modify the WalkOutput so that the folders are mutable */
     if (locations.isEmpty) Stream()
     else {
@@ -387,7 +387,7 @@ class Commit(
           // push new location to stack:
           .getOrElse(Nil) ::: locations.tail
 
-          Success(new WalkOutput(folderPath, folderNames, blobNames)) #:: generateWalk(newLocations)
+          Success(new WalkOutput(folderPath, folderNames, blobNames, newLocations)) #:: continueWalk(newLocations)
         }
       }
     }
