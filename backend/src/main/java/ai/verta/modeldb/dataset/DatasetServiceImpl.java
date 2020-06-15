@@ -9,7 +9,6 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.CreateDataset;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
-import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.DeleteDataset;
 import ai.verta.modeldb.DeleteDatasetAttributes;
@@ -17,7 +16,6 @@ import ai.verta.modeldb.DeleteDatasetTags;
 import ai.verta.modeldb.DeleteDatasets;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.FindExperiments;
@@ -44,7 +42,6 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
-import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -268,7 +265,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         id = Long.parseLong(request.getId());
       } catch (NumberFormatException e) {
         LOGGER.info("Wrong id format: {}", e.getMessage());
-        throw new ModelDBException("Wrong id format, expecting integer: " + request.getId());
+        throw new ModelDBException(
+            "Wrong id format, expecting integer: " + request.getId(),
+            io.grpc.Status.Code.INVALID_ARGUMENT);
       }
       DeleteRepositoryRequest.Response response =
           repositoryDAO.deleteRepository(
@@ -886,14 +885,23 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, request.getDatasetId(), ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.REPOSITORY,
+          request.getDatasetId(),
+          ModelDBServiceActions.READ);
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
+      long id;
+      try {
+        id = Long.parseLong(request.getDatasetId());
+      } catch (NumberFormatException e) {
+        LOGGER.info("Wrong id format: {}", e.getMessage());
+        throw new ModelDBException(
+            "Wrong id format, expecting integer: " + request.getDatasetId(),
+            io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
       RepositoryIdentification repositoryIdentification =
-          RepositoryIdentification.newBuilder()
-              .setRepoId(Long.parseLong(request.getDatasetId()))
-              .build();
+          RepositoryIdentification.newBuilder().setRepoId(id).build();
       ListCommitsRequest.Builder listCommitsRequest =
           ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
       ListCommitsRequest.Response listCommitsResponse =
@@ -982,14 +990,23 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, request.getDatasetId(), ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.REPOSITORY,
+          request.getDatasetId(),
+          ModelDBServiceActions.READ);
 
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      long id;
+      try {
+        id = Long.parseLong(request.getDatasetId());
+      } catch (NumberFormatException e) {
+        LOGGER.info("Wrong id format: {}", e.getMessage());
+        throw new ModelDBException(
+            "Wrong id format, expecting integer: " + request.getDatasetId(),
+            io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
       RepositoryIdentification repositoryIdentification =
-          RepositoryIdentification.newBuilder()
-              .setRepoId(Long.parseLong(request.getDatasetId()))
-              .build();
+          RepositoryIdentification.newBuilder().setRepoId(id).build();
       ListCommitsRequest.Builder listCommitsRequest =
           ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
       ListCommitsRequest.Response listCommitsResponse =
