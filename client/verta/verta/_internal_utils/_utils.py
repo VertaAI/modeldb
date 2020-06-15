@@ -963,12 +963,18 @@ def as_list_of_str(tags):
         If `tags` is neither str nor list of str.
 
     """
+    # TODO: make error messages more general so this can be used for any similar var
     if isinstance(tags, six.string_types):
         tags = [tags]
     else:
+        try:
+            iter(tags)
+        except TypeError:
+            e = TypeError("`tags` must be iterable of str, not {}".format(type(tags)))
+            six.raise_from(e, None)
+
         for tag in tags:
             if not isinstance(tag, six.string_types):
-                # TODO: make this err msg more general so it can be used for any similar var
                 raise TypeError("`tags` must be iterable of str, but found {}".format(type(tag)))
 
     return tags
