@@ -306,6 +306,7 @@ class Commit(
 
   /** Reverts other.
    *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
+   *  Currently reverting a merge commit is not supported. Unexpected behavior might occur.
    *  @param other Base for the revert. If not provided, this commit will be reverted
    *  @param message Description of the revert. If not provided, a default message will be used
    *  @return The new commit, with the changes in other reverted, if suceeds. Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository.
