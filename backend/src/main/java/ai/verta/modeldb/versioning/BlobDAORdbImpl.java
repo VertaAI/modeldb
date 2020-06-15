@@ -3,6 +3,8 @@ package ai.verta.modeldb.versioning;
 import static ai.verta.modeldb.ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION;
 import static java.util.stream.Collectors.toMap;
 
+import ai.verta.common.KeyValue;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
@@ -90,8 +92,18 @@ public class BlobDAORdbImpl implements BlobDAO {
     return internalFolderElement.getElementSha();
   }
 
-  private ai.verta.modeldb.versioning.Blob getBlob(
-      Session session, InternalFolderElementEntity folderElementEntity) throws ModelDBException {
+  @Override
+  public void setBlobsAttributes(
+      Session session, Long repoId, String commitHash, List<BlobContainer> blobContainers)
+      throws ModelDBException {
+    for (BlobContainer blobContainer : blobContainers) {
+      // should save attributes of each blob during one session to avoid recurring entities ids
+      blobContainer.processAttribute(session, repoId, commitHash);
+    }
+  }
+
+  private Blob getBlob(Session session, InternalFolderElementEntity folderElementEntity)
+      throws ModelDBException {
     return BlobFactory.create(folderElementEntity).getBlob(session);
   }
 
@@ -198,6 +210,9 @@ public class BlobDAORdbImpl implements BlobDAO {
       } else {
         if (index == locationList.size() - 1) {
           Blob blob = getBlob(session, elementEntity);
+          List<KeyValue> attributeEntities =
+              VersioningUtils.getAttributes(session, repoId, commit.getCommit_hash(), locationList);
+          blob = blob.toBuilder().addAllAttributes(attributeEntities).build();
           return GetCommitComponentRequest.Response.newBuilder().setBlob(blob).build();
         } else {
           throw new ModelDBException(
@@ -377,7 +392,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         }
       } else {
         if (parentLocation.containsAll(requestedLocation)) {
-          ai.verta.modeldb.versioning.Blob blob = getBlob(session, childElementFolder);
+          Blob blob = getBlob(session, childElementFolder);
           if (blobTypeList != null && !blobTypeList.isEmpty()) {
             if (blobTypeExistsInList(blobTypeList, blob.getContentCase())) {
               setBlobInBlobExpandMap(
@@ -462,7 +477,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     Map<String, Map.Entry<BlobExpanded, String>> finalLocationBlobMap = new LinkedHashMap<>();
     for (InternalFolderElementEntity parentFolderElement : parentFolderElementList) {
       if (!parentFolderElement.getElement_type().equals(TREE)) {
-        ai.verta.modeldb.versioning.Blob blob = getBlob(session, parentFolderElement);
+        Blob blob = getBlob(session, parentFolderElement);
         if (blobTypeList != null && !blobTypeList.isEmpty()) {
           if (blobTypeExistsInList(blobTypeList, blob.getContentCase())) {
             setBlobInBlobExpandMap(
@@ -518,9 +533,20 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
       Map<String, BlobExpanded> locationBlobMap =
           getCommitBlobMap(session, commit.getRootSha(), locationList);
-      return ListCommitBlobsRequest.Response.newBuilder()
-          .addAllBlobs(locationBlobMap.values())
-          .build();
+      Set<BlobExpanded> blobExpandedSet = new HashSet<>();
+      for (String location : locationBlobMap.keySet()) {
+        List<KeyValue> attributes =
+            VersioningUtils.getAttributes(
+                session,
+                repository.getId(),
+                commit.getCommit_hash(),
+                Collections.singletonList(location));
+        BlobExpanded blobExpanded = locationBlobMap.get(location);
+        Blob blob = blobExpanded.getBlob().toBuilder().addAllAttributes(attributes).build();
+        blobExpanded = blobExpanded.toBuilder().setBlob(blob).build();
+        blobExpandedSet.add(blobExpanded);
+      }
+      return ListCommitBlobsRequest.Response.newBuilder().addAllBlobs(blobExpandedSet).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getCommitBlobsList(repositoryFunction, commitHash, locationList);
