@@ -77,8 +77,6 @@ public interface RepositoryDAO {
   Response addDatasetTags(MetadataDAO metadataDAO, String id, List<String> tags)
       throws ModelDBException;
 
-  List<String> getDatasetTags(MetadataDAO metadataDAO, String id) throws ModelDBException;
-
   Dataset deleteDatasetTags(
       MetadataDAO metadataDAO, String id, ProtocolStringList tagsList, boolean deleteAll)
       throws ModelDBException;

@@ -1167,33 +1167,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public List<String> getDatasetTags(MetadataDAO metadataDAO, String id) throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      long idValue;
-      try {
-        idValue = Long.parseLong(id);
-      } catch (NumberFormatException e) {
-        LOGGER.info("Wrong id format: {}", e.getMessage());
-        throw new ModelDBException(
-            "Wrong id format, expecting integer: " + id, Code.INVALID_ARGUMENT);
-      }
-      Builder idBuilder = RepositoryIdentification.newBuilder().setRepoId(idValue);
-      return metadataDAO.getLabels(
-          session,
-          IdentificationType.newBuilder()
-              .setIdType(VERSIONING_REPOSITORY)
-              .setIntId(idValue)
-              .build());
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return getDatasetTags(metadataDAO, id);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
   public Dataset deleteDatasetTags(
       MetadataDAO metadataDAO, String id, ProtocolStringList tagsList, boolean deleteAll)
       throws ModelDBException {

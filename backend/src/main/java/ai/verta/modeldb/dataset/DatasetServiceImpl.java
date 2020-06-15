@@ -558,24 +558,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
-      if (request.getId().isEmpty()) {
-        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST)
-                .addDetails(Any.pack(GetTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.READ);
-
-      List<String> tags = repositoryDAO.getDatasetTags(metadataDAO, request.getId());
-      responseObserver.onNext(GetTags.Response.newBuilder().addAllTags(tags).build());
-      responseObserver.onCompleted();
+      throw new ModelDBException("Not supported", io.grpc.Status.Code.FAILED_PRECONDITION);
 
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
