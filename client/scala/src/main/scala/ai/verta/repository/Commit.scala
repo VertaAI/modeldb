@@ -351,7 +351,7 @@ class Commit(
   }
 
   /** Continue the walk from the locations passed
-   *  @param locations remaining locations to explore
+   *  @param locations remaining locations to explore. Each location is in list of string format.
    *  @return Stream of Trys of WalkOutputs. If the returned WalkOutput fails, abort the remaining locations.
    */
   def continueWalk(locations: List[List[String]])(implicit ec: ExecutionContext): Stream[Try[WalkOutput]] = {
