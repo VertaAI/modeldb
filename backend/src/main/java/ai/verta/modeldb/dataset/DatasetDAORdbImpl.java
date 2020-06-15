@@ -1,7 +1,9 @@
 package ai.verta.modeldb.dataset;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
@@ -10,7 +12,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorOrg;
@@ -25,7 +26,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Organization;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
@@ -90,6 +90,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           .append(ModelDBConstants.ID)
           .append(" IN (:datasetIds)")
           .toString();
+  private static final String COUNT_DATASET_BY_ID_HQL =
+      "Select Count(id) From DatasetEntity d where d.deleted = false AND d.id = :datasetId";;
 
   public DatasetDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
@@ -323,16 +325,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   @Override
   public Dataset getDatasetById(String datasetId) throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
-      if (datasetObj == null) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("dataset with input id not found")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
+      DatasetEntity datasetObj = getDatasetEntity(session, datasetId);
       return datasetObj.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -341,6 +334,21 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         throw ex;
       }
     }
+  }
+
+  @Override
+  public DatasetEntity getDatasetEntity(Session session, String datasetId) {
+    DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
+    if (datasetObj == null) {
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.NOT_FOUND_VALUE)
+              .setMessage("dataset with input id not found")
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+    LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
+    return datasetObj;
   }
 
   @Override
@@ -453,7 +461,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       } catch (ModelDBException ex) {
         if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
-          LOGGER.warn(ex.getMessage());
+          LOGGER.info(ex.getMessage());
           DatasetPaginationDTO datasetPaginationDTO = new DatasetPaginationDTO();
           datasetPaginationDTO.setDatasets(Collections.emptyList());
           datasetPaginationDTO.setTotalRecords(0L);
@@ -606,7 +614,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -718,7 +726,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -997,5 +1005,21 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     return datasetPaginationDTO.getDatasets().stream()
         .map(Dataset::getId)
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean datasetExistsInDB(String datasetId) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Query query = session.createQuery(COUNT_DATASET_BY_ID_HQL);
+      query.setParameter("datasetId", datasetId);
+      Long projectCount = (Long) query.getSingleResult();
+      return projectCount == 1L;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return datasetExistsInDB(datasetId);
+      } else {
+        throw ex;
+      }
+    }
   }
 }

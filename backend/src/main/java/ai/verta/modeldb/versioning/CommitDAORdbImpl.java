@@ -1,8 +1,12 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.DatasetPartInfo;
+import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.PathDatasetVersionInfo;
+import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
@@ -10,19 +14,19 @@ import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
+import ai.verta.modeldb.metadata.IdentificationType;
+import ai.verta.modeldb.metadata.MetadataDAO;
+import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
+import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import com.google.protobuf.ProtocolStringList;
+import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
@@ -33,7 +37,7 @@ public class CommitDAORdbImpl implements CommitDAO {
    * and blobs in top down fashion and generates SHAs in bottom up fashion getRepository : fetches
    * the repository the commit is made on
    */
-  public Response setCommit(
+  public CreateCommitRequest.Response setCommit(
       String author,
       Commit commit,
       BlobFunction setBlobs,
@@ -46,10 +50,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryEntity repositoryEntity = getRepository.apply(session);
 
       CommitEntity commitEntity =
-          saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
+          saveCommitEntity(session, commit, rootSha, author, repositoryEntity, null);
       setBlobsAttributes.apply(session, repositoryEntity.getId(), commitEntity.getCommit_hash());
       session.getTransaction().commit();
-      return Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
+      return CreateCommitRequest.Response.newBuilder()
+          .setCommit(commitEntity.toCommitProto())
+          .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setCommit(author, commit, setBlobs, setBlobsAttributes, getRepository);
@@ -60,18 +66,131 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   @Override
+  public CreateCommitRequest.Response setCommitFromDatasetVersion(
+      DatasetVersion datasetVersion,
+      BlobDAO blobDAO,
+      MetadataDAO metadataDAO,
+      RepositoryFunction repositoryFunction)
+      throws ModelDBException, NoSuchAlgorithmException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      DatasetBlob.Builder datasetBlobBuilder = DatasetBlob.newBuilder();
+      Blob.Builder blobBuilder = Blob.newBuilder();
+      blobBuilder.addAllAttributes(datasetVersion.getAttributesList());
+      switch (datasetVersion.getDatasetVersionInfoCase()) {
+        case RAW_DATASET_VERSION_INFO:
+        case QUERY_DATASET_VERSION_INFO:
+          throw new ModelDBException("Not supported", Code.UNIMPLEMENTED);
+        case PATH_DATASET_VERSION_INFO:
+          PathDatasetVersionInfo pathDatasetVersionInfo =
+              datasetVersion.getPathDatasetVersionInfo();
+          List<DatasetPartInfo> partInfos = pathDatasetVersionInfo.getDatasetPartInfosList();
+          Stream<PathDatasetComponentBlob> result = partInfos.stream().map(this::componentFromPart);
+          if (pathDatasetVersionInfo.getLocationType() == PathLocationType.S3_FILE_SYSTEM) {
+            datasetBlobBuilder.setS3(
+                S3DatasetBlob.newBuilder()
+                    .addAllComponents(
+                        result
+                            .map(path -> S3DatasetComponentBlob.newBuilder().setPath(path).build())
+                            .collect(Collectors.toList())));
+          } else {
+            datasetBlobBuilder.setPath(
+                PathDatasetBlob.newBuilder().addAllComponents(result.collect(Collectors.toList())));
+          }
+          break;
+        case DATASETVERSIONINFO_NOT_SET:
+          throw new ModelDBException("Wrong dataset version type", Code.INVALID_ARGUMENT);
+      }
+      List<String> location =
+          Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION);
+      List<BlobContainer> blobList =
+          Collections.singletonList(
+              BlobContainer.create(
+                  BlobExpanded.newBuilder()
+                      .addAllLocation(location)
+                      .setBlob(blobBuilder.setDataset(datasetBlobBuilder))
+                      .build()));
+
+      session.beginTransaction();
+      final String rootSha = blobDAO.setBlobs(session, blobList, new FileHasher());
+
+      Commit.Builder builder = Commit.newBuilder();
+      if (!datasetVersion.getParentId().isEmpty()) {
+        builder.addParentShas(datasetVersion.getParentId());
+      }
+      builder.setDateCreated(datasetVersion.getTimeLogged());
+      Commit commit = builder.build();
+
+      RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
+      if (!repositoryEntity.isDataset()) {
+        throw new ModelDBException(
+            "Repository should be created from Dataset to add Dataset Version to it",
+            Status.Code.INVALID_ARGUMENT);
+      }
+
+      CommitEntity commitEntity =
+          saveCommitEntity(
+              session,
+              commit,
+              rootSha,
+              datasetVersion.getOwner(),
+              repositoryEntity,
+              datasetVersion.getId());
+      VersioningCompositeIdentifier.Builder versioningIdentifier =
+          VersioningCompositeIdentifier.newBuilder()
+              .setRepoId(repositoryEntity.getId())
+              .setCommitHash(commitEntity.getCommit_hash())
+              .addAllLocation(location);
+      metadataDAO.addProperty(
+          session,
+          IdentificationType.newBuilder().setCompositeId(versioningIdentifier).build(),
+          "description",
+          datasetVersion.getDescription());
+      metadataDAO.addLabels(
+          session,
+          IdentificationType.newBuilder()
+              .setCompositeId(versioningIdentifier)
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+              .build(),
+          datasetVersion.getTagsList());
+      session.getTransaction().commit();
+      return CreateCommitRequest.Response.newBuilder()
+          .setCommit(commitEntity.toCommitProto())
+          .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setCommitFromDatasetVersion(
+            datasetVersion, blobDAO, metadataDAO, repositoryFunction);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  private PathDatasetComponentBlob componentFromPart(DatasetPartInfo part) {
+    return PathDatasetComponentBlob.newBuilder()
+        .setPath(part.getPath())
+        .setSize(part.getSize())
+        .setLastModifiedAtSource(part.getLastModifiedAtSource())
+        .setMd5(part.getChecksum())
+        .build();
+  }
+
+  @Override
   public CommitEntity saveCommitEntity(
       Session session,
       Commit commit,
       String rootSha,
       String author,
-      RepositoryEntity repositoryEntity)
+      RepositoryEntity repositoryEntity,
+      String commitSha)
       throws ModelDBException, NoSuchAlgorithmException {
     long timeCreated = new Date().getTime();
     if (App.getInstance().getStoreClientCreationTimestamp() && commit.getDateCreated() != 0L) {
       timeCreated = commit.getDateCreated();
     }
-    final String commitSha = generateCommitSHA(rootSha, commit, timeCreated);
+    if (commitSha == null) {
+      commitSha = generateCommitSHA(rootSha, commit, timeCreated);
+    }
 
     Map<String, CommitEntity> parentCommitEntities = new HashMap<>();
     if (!commit.getParentShasList().isEmpty()) {
@@ -105,6 +224,19 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   @Override
+  public CommitPaginationDTO getRepositoryCommitEntityList(ListCommitsRequest request, Long repoId)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      return fetchCommitEntityList(session, request, repoId);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getRepositoryCommitEntityList(request, repoId);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
   public CommitPaginationDTO fetchCommitEntityList(
       Session session, ListCommitsRequest request, Long repoId) throws ModelDBException {
     StringBuilder commitQueryBuilder =

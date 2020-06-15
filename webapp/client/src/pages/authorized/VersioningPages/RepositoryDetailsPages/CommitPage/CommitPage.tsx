@@ -6,7 +6,6 @@ import { IRepository } from 'core/shared/models/Versioning/Repository';
 import routes, { GetRouteParams } from 'routes';
 
 import RepositoryDetailsPagesLayout from '../shared/RepositoryDetailsPagesLayout/RepositoryDetailsPagesLayout';
-import styles from './CommitPage.module.css';
 
 interface ILocalProps {
   repository: IRepository;

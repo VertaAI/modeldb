@@ -1,6 +1,7 @@
 import variables_ from './styles.module.css';
 
 export const diffColors = {
-  red: variables_.redDiff,
-  green: variables_.greenDiff,
+  aDiff: variables_.ADiff,
+  bDiff: variables_.BDiff,
+  cDiff: variables_.CDiff,
 };

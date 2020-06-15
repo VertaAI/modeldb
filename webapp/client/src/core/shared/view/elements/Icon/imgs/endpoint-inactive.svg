@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="30px" height="30px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="Deployments,-Endpoints" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="0-Endpoint-list-Final" transform="translate(-783.000000, -469.000000)">
+            <g id="header-bar-in-table" transform="translate(359.000000, 157.000000)">
+                <g id="Row-2" transform="translate(0.000000, 305.000000)">
+                    <g id="Group-5" transform="translate(425.000000, 8.000000)">
+                        <g id="Group-3" fill="#FFFFFF" stroke="#CCCCCC" stroke-width="2">
+                            <circle id="Oval" cx="14" cy="14" r="14"></circle>
+                        </g>
+                        <rect id="Rectangle" fill="#CCCCCC" x="8" y="14" width="13" height="2" rx="1"></rect>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

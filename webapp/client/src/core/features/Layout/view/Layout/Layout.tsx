@@ -19,6 +19,7 @@ type ILocalProps = {
   children: Exclude<React.ReactNode, null | undefined>;
   additionalSidebar?: React.ReactNode;
   rightContent?: React.ReactNode;
+  isMaxWidthForContent?: boolean;
 } & Pick<
   React.ComponentProps<typeof Sidebar>,
   'filterBarSettings' | 'mainNavigationRoutes'
@@ -44,13 +45,16 @@ class AuthorizedLayout extends React.Component<AllProps> {
       mainNavigationRoutes,
       children,
       rightContent,
+      isMaxWidthForContent,
     } = this.props;
     return (
       <div
         className={cn(styles.layout, {
           [styles.collapsedSidebar]: isCollapsedSidebar,
           [styles.withAdditionalSidebar]: Boolean(additionalSidebar),
+          [styles.maxWidthForContent]: Boolean(isMaxWidthForContent),
         })}
+        data-test="authorized-layout"
       >
         <div className={styles.header}>
           <LayoutHeader rightContent={rightContent} />

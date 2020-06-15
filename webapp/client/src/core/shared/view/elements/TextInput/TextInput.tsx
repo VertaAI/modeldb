@@ -7,6 +7,7 @@ import styles from './TextInput.module.css';
 
 interface ILocalProps {
   size: 'small' | 'medium';
+  fullWidth?: boolean;
   name?: string;
   isDisabled?: boolean;
   defaultValue?: string;
@@ -15,7 +16,6 @@ interface ILocalProps {
   icon?: 'search';
   leftContent?: React.ReactNode;
   dataTest?: string;
-  theme?: 'light' | 'dark';
   onChange?(value: string): void;
   onChangeWithEvent?(e: any): void;
   onKeyUp?(e: React.KeyboardEvent<HTMLInputElement>): void;
@@ -43,10 +43,10 @@ class TextInput extends React.PureComponent<ILocalProps, ILocalState> {
       dataTest,
       leftContent,
       name,
-      theme = 'light',
       onKeyUp,
       onClick,
       onInputRef,
+      fullWidth,
     } = this.props;
     const { isFocused } = this.state;
     return (
@@ -56,8 +56,7 @@ class TextInput extends React.PureComponent<ILocalProps, ILocalState> {
           [styles.size_medium]: size === 'medium',
           [styles.with_icon]: Boolean(icon),
           [styles.focused]: Boolean(isFocused),
-          [styles.theme_dark]: theme === 'dark',
-          [styles.theme_light]: theme === 'light',
+          [styles.fullWidth]: Boolean(fullWidth),
         })}
       >
         {leftContent && (

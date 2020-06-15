@@ -384,6 +384,29 @@
 		</addColumn>
 	</changeSet>
 
+	<changeSet id="add-description-blob-table" author="lezhevg">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="metadata_property_mapping"/>
+			</not>
+		</preConditions>
+		<createTable tableName="metadata_property_mapping">
+			<column name="repository_id" type="int8">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="commit_sha" type="varchar(256)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="location" type="varchar(256)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="metadata_key" type="varchar(50)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="metadata_value" type="TEXT"/>
+		</createTable>
+	</changeSet>
+
 	<changeSet id="add-entity-hash-on-attribute" author="anandJ">
 		<preConditions onFail="MARK_RAN">
 			<not>

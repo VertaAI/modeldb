@@ -8,7 +8,6 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
 import ai.verta.modeldb.versioning.RepositoryAccessModifierEnum.RepositoryAccessModifier;
-import ai.verta.modeldb.versioning.SetRepository;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -180,8 +179,7 @@ public class RepositoryEntity {
     return builder.build();
   }
 
-  public void update(SetRepository request) throws InvalidProtocolBufferException {
-    final Repository repository = request.getRepository();
+  public void update(Repository repository) throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
     this.date_updated = new Date().getTime();
@@ -230,5 +228,10 @@ public class RepositoryEntity {
         }
       }
     }
+  }
+
+  public boolean isDataset() {
+    // TODO: keep track if it is a dataset https://vertaai.atlassian.net/browse/VR-4571
+    return true;
   }
 }

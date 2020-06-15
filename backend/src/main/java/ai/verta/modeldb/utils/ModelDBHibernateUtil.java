@@ -2,11 +2,11 @@ package ai.verta.modeldb.utils;
 
 import static ai.verta.modeldb.authservice.AuthServiceChannel.isBackgroundUtilsCall;
 
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.entities.ArtifactEntity;
@@ -48,6 +48,7 @@ import ai.verta.modeldb.entities.environment.EnvironmentVariablesEntity;
 import ai.verta.modeldb.entities.environment.PythonEnvironmentBlobEntity;
 import ai.verta.modeldb.entities.environment.PythonEnvironmentRequirementBlobEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
+import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
@@ -158,7 +159,8 @@ public class ModelDBHibernateUtil {
     NotebookCodeBlobEntity.class,
     BranchEntity.class,
     VersioningModeldbEntityMapping.class,
-    HyperparameterElementMappingEntity.class
+    HyperparameterElementMappingEntity.class,
+    MetadataPropertyMappingEntity.class
   };
 
   private ModelDBHibernateUtil() {}
@@ -302,6 +304,7 @@ public class ModelDBHibernateUtil {
   }
 
   public static SessionFactory resetSessionFactory() {
+    isReady = false;
     ModelDBHibernateUtil.sessionFactory = null;
     return getSessionFactory();
   }
@@ -487,17 +490,20 @@ public class ModelDBHibernateUtil {
   }
 
   public static boolean ping() {
-    try (Session session = sessionFactory.openSession()) {
-      final boolean[] valid = {false};
-      session.doWork(
-          connection -> {
-            if (connection.isValid(timeout)) {
-              valid[0] = true;
-            }
-          });
+    if (sessionFactory != null) {
+      try (Session session = sessionFactory.openSession()) {
+        final boolean[] valid = {false};
+        session.doWork(
+            connection -> {
+              if (connection.isValid(timeout)) {
+                valid[0] = true;
+              }
+            });
 
-      return valid[0];
+        return valid[0];
+      }
     }
+    return false;
   }
 
   public static HealthCheckResponse.ServingStatus checkReady() {

@@ -619,7 +619,7 @@ def unravel_observation(obs_msg):
         value = obs_msg.attribute.value
     elif obs_msg.WhichOneof("oneOf") == "artifact":
         key = obs_msg.artifact.key
-        value = "{} artifact".format(_CommonService.ArtifactTypeEnum.ArtifactType.Name(obs_msg.artifact.artifact_type))
+        value = "{} artifact".format(_CommonCommonService.ArtifactTypeEnum.ArtifactType.Name(obs_msg.artifact.artifact_type))
     return (
         key,
         val_proto_to_python(value),

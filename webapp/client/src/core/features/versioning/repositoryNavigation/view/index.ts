@@ -1,1 +1,3 @@
-export { default as RepositoryNavigation } from './RepositoryNavigation/RepositoryNavigation';
+export {
+  default as RepositoryNavigation,
+} from './RepositoryNavigation/RepositoryNavigation';

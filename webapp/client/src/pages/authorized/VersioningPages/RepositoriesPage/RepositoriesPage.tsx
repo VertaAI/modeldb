@@ -5,7 +5,7 @@ import { RepositoriesList } from 'core/features/versioning/repositories/view';
 import Button from 'core/shared/view/elements/Button/Button';
 import routes from 'routes';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspace } from 'store/workspaces';
+import { selectCurrentWorkspace } from 'features/workspaces/store';
 
 import RepositoriesPagesLayout from '../shared/RepositoriesPagesLayout/RepositoriesPagesLayout';
 import styles from './RepositoriesPage.module.css';

@@ -2,6 +2,7 @@ package errors
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/vektah/gqlparser/gqlerror"
@@ -9,57 +10,64 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// TODO: capture swagger errors too
 func Presenter(ctx context.Context, e error) *gqlerror.Error {
+	// If we already have a gqlerror, just send it over
+	if qlerr, ok := e.(*gqlerror.Error); ok {
+		return qlerr
+	}
+
 	// Check if we have a gRPC error
 	grpcStatus := status.Convert(e)
 	if grpcStatus.Code() != codes.Unknown {
+		var message string
+		var httpCode int
+
 		code := grpcStatus.Code()
-		if code == codes.Canceled {
-			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Request was cancelled")
+		switch code {
+		case codes.Canceled:
+			httpCode = http.StatusGatewayTimeout
+			message = "Request was cancelled"
+		case codes.InvalidArgument:
+			httpCode = http.StatusBadRequest
+			message = "Invalid argument"
+		case codes.DeadlineExceeded:
+			httpCode = http.StatusGatewayTimeout
+			message = "Deadline exceeded"
+		case codes.NotFound:
+			httpCode = http.StatusNotFound
+			message = "Not found"
+		case codes.PermissionDenied:
+			httpCode = http.StatusForbidden
+			message = "Permission denied"
+		case codes.Aborted:
+			httpCode = http.StatusGatewayTimeout
+			message = "Aborted"
+		case codes.Internal:
+			httpCode = http.StatusInternalServerError
+			message = "Internal server error, please report"
+		case codes.Unavailable:
+			httpCode = http.StatusBadGateway
+			message = "Unavailable"
+		case codes.Unauthenticated:
+			httpCode = http.StatusUnauthorized
+			message = "Unauthenticated"
+		case codes.AlreadyExists:
+			httpCode = http.StatusConflict
+			message = "Already exists"
+		default:
+			httpCode = http.StatusInternalServerError
+			message = "Unknown server error, please report"
 		}
-		if code == codes.InvalidArgument {
-			if grpcStatus.Message() != "" {
-				return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Invalid argument: "+grpcStatus.Message())
-			}
-			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Invalid argument")
+
+		return &gqlerror.Error{
+			Message: message,
+			Path:    graphql.GetResolverContext(ctx).Path(),
+			Extensions: map[string]interface{}{
+				"http-code":        httpCode,
+				"original-message": grpcStatus.Message(),
+			},
 		}
-		if code == codes.DeadlineExceeded {
-			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Deadline exceeded")
-		}
-		if code == codes.NotFound {
-			if grpcStatus.Message() != "" {
-				return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Not found: "+grpcStatus.Message())
-			}
-			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Not found")
-		}
-		if code == codes.PermissionDenied {
-			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Permission denied")
-		}
-		if code == codes.Aborted {
-			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Aborted")
-		}
-		if code == codes.Internal {
-			if grpcStatus.Message() != "" {
-				return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Internal server error, please report: "+grpcStatus.Message())
-			}
-			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Internal server error, please report")
-		}
-		if code == codes.Unavailable {
-			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Unavailable")
-		}
-		if code == codes.Unauthenticated {
-			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Unauthenticated")
-		}
-		if code == codes.AlreadyExists {
-			if grpcStatus.Message() != "" {
-				return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Already exists: "+grpcStatus.Message())
-			}
-			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Already exists")
-		}
-		if grpcStatus.Message() != "" {
-			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Unknown server error, please report: "+grpcStatus.Err().Error())
-		}
-		return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Unknown server error, please report")
 	}
 
 	return graphql.DefaultErrorPresenter(ctx, e)

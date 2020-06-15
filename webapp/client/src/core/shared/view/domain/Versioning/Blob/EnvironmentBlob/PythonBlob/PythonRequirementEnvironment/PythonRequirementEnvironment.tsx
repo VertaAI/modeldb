@@ -5,6 +5,8 @@ import {
   versionEnvironmentToString,
 } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 
+import styles from './PythonRequirementEnvironment.module.css';
+
 interface ILocalProps {
   pythonRequirementEnvironment: IPythonRequirementEnvironment;
   rootStyles?: React.CSSProperties;
@@ -17,9 +19,9 @@ const PythonRequirementEnvironment = ({
   valueStyles,
 }: ILocalProps) => {
   return (
-    <div key={library} style={rootStyles}>
-      {library}{' '}
-      <span style={valueStyles}>
+    <div className={styles.root} key={library} style={rootStyles}>
+      <span className={styles.library}>{library} </span>&nbsp;
+      <span className={styles.value} style={valueStyles}>
         {constraint || ''} {version ? versionEnvironmentToString(version) : ''}
       </span>
     </div>

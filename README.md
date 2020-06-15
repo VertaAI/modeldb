@@ -68,7 +68,7 @@ Features:
 * Flexible metadata logging including metrics, artifacts, tags and user information
 * Pluggable storage systems
 * Integration into state-of-the-art frameworks like Tensorflow and PyTorch
-* Battle-tested in productionn environments
+* Battle-tested in production environments
 
 If you are looking for a hosted version of ModelDB, please reach out at modeldb@verta.ai.
 

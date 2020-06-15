@@ -229,6 +229,7 @@ public interface ModelDBConstants {
   String VERSIONING_LOCATION = "versioning_location";
   String REPOSITORY_VISIBILITY = "repository_visibility";
   String REPOSITORY = "repository";
+  String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second

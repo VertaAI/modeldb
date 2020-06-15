@@ -1,5 +1,6 @@
 export type AppError<CustomErrorType extends string | undefined = undefined> =
   | CodeError
+  | AppGraphQLError
   | HttpError<CustomErrorType>;
 
 export function isAppError(error: any): error is AppError<undefined> {
@@ -32,6 +33,19 @@ export class CodeError extends Error {
 
 export function isHttpError(error: any): error is HttpError<undefined> {
   return Boolean(error && 'name' in error && error.name === 'apiError');
+}
+
+export class AppGraphQLError extends Error {
+  public name: 'graphqlError';
+
+  public constructor({ message }: { message: string }) {
+    super(message);
+    this.name = 'graphqlError';
+  }
+
+  public toString() {
+    return this.message;
+  }
 }
 
 export class HttpError<
@@ -103,6 +117,7 @@ export const handleCustomErrorWithFallback = <T extends string, R>(
       return handler ? (handler(apiError) as any) : fallback(error);
     },
     codeError: codeError => fallback(codeError) as any,
+    graphqlError: graphqlError => fallback(graphqlError) as any,
   };
   const handleAppError = appErrorsHandlers[error.name];
   return handleAppError ? handleAppError(error as any) : fallback(error);
