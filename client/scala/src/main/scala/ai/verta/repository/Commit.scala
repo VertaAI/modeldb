@@ -22,6 +22,9 @@ class Commit(
   /** Return the id of the commit */
   def id = commit.commit_sha
 
+  /** Return the id of the commit's repository */
+  def repoId = repo.id
+
   /** Whether the commit instance is saved to database, or is currently being modified.
    *  A commit is saved if and only if its versioning commit field has a defined ID.
    */
