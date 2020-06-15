@@ -1038,7 +1038,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
         resultDatasets = query.list();
 
-        // in personal workspace show projects directly shared
+        // in personal workspace show datasets directly shared
         if (workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
           List<String> directlySharedDatasets =
               roleService.getSelfDirectlyAllowedResources(
