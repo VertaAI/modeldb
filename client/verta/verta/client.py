@@ -642,7 +642,7 @@ class Client(object):
                       sort_key=None, ascending=False,
                       workspace=None):
         """
-        Gets the Datasets that match the given query parameters. If no parameters
+        Gets the Datasets in `workspace` that match the given query parameters. If no parameters
         are specified, we return all datasets.
 
         Parameters
@@ -650,13 +650,13 @@ class Client(object):
         dataset_ids : list of str, optional
             IDs of datasets that we wish to retrieve
         name: str, optional
-            Name of dataset we wish to retrieve. Fuzzy matches supported
+            Name of dataset we wish to retrieve. Fuzzy matches supported.
         tags: list of str, optional
-            List of tags by which we'd like to query datasets
+            List of tags by which we'd like to query datasets.
         sort_key: string, optional
-            Key by which the resulting list of datasets should be sorted
+            Key by which the resulting list of datasets should be sorted.
         ascending: bool, default: False
-            Whether to sort returned datasets in ascending or descending order
+            Whether to sort returned datasets in ascending or descending order.
         workspace : str, optional
             Workspace in which to look for datasets. If not provided, the current user's personal
             workspace will be used.
@@ -677,7 +677,7 @@ class Client(object):
             predicates.append(
                 _CommonService.KeyValueQuery(key="name",
                                              value=_utils.python_to_val_proto(name),
-                                             operator=_CommonService.OperatorEnum.EQ))
+                                             operator=_CommonService.OperatorEnum.CONTAIN))
         Message = _dataset._DatasetService.FindDatasets
         msg = Message(dataset_ids=dataset_ids, predicates=predicates,
                       ascending=ascending, sort_key=sort_key,
