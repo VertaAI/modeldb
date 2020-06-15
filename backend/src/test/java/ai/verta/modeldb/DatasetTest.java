@@ -1838,19 +1838,8 @@ public class DatasetTest {
         "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
         datasetVersion1.getDatasetId());
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        1,
-        datasetVersion1.getVersion());
 
     createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId());
-    createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
-            .setRawDatasetVersionInfo(
-                RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
-            .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
@@ -1859,10 +1848,6 @@ public class DatasetTest {
         "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
         datasetVersion2.getDatasetId());
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        2,
-        datasetVersion2.getVersion());
 
     Artifact artifact =
         Artifact.newBuilder()
@@ -2061,19 +2046,8 @@ public class DatasetTest {
         "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
         datasetVersion1.getDatasetId());
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        1,
-        datasetVersion1.getVersion());
 
     createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId());
-    createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
-            .setRawDatasetVersionInfo(
-                RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
-            .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
@@ -2082,10 +2056,6 @@ public class DatasetTest {
         "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
         datasetVersion2.getDatasetId());
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        2,
-        datasetVersion2.getVersion());
 
     Artifact artifact =
         Artifact.newBuilder()

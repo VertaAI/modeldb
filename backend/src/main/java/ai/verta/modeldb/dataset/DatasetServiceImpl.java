@@ -55,8 +55,10 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
+import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -884,31 +886,34 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
-
-      FindDatasetVersions findDatasetVersions =
-          FindDatasetVersions.newBuilder()
-              .setDatasetId(request.getDatasetId())
-              .setIdsOnly(true)
-              .build();
+          ModelDBServiceResourceTypes.REPOSITORY, request.getDatasetId(), ModelDBServiceActions.READ);
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.findDatasetVersions(datasetDAO, findDatasetVersions, userInfo);
+
+      RepositoryIdentification repositoryIdentification =
+          RepositoryIdentification.newBuilder()
+              .setRepoId(Long.parseLong(request.getDatasetId()))
+              .build();
+      ListCommitsRequest.Builder listCommitsRequest =
+          ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
+      ListCommitsRequest.Response listCommitsResponse =
+          commitDAO.listCommits(
+              listCommitsRequest.build(),
+              (session -> repositoryDAO.getRepositoryById(session, repositoryIdentification)));
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
-      if (datasetVersionDTO != null
-          && datasetVersionDTO.getDatasetVersions() != null
-          && !datasetVersionDTO.getDatasetVersions().isEmpty()) {
-        for (DatasetVersion datasetVersion : datasetVersionDTO.getDatasetVersions()) {
-          datasetVersionIds.add(datasetVersion.getId());
+      List<Commit> commitList = listCommitsResponse.getCommitsList();
+      if (!commitList.isEmpty()) {
+        for (Commit commit : commitList) {
+          datasetVersionIds.add(commit.getCommitSha());
           listValueBuilder.addValues(
-              Value.newBuilder().setStringValue(datasetVersion.getId()).build());
+              Value.newBuilder().setStringValue(commit.getCommitSha()).build());
         }
       }
 
       Experiment lastUpdatedExperiment = null;
       if (!datasetVersionIds.isEmpty()) {
+
         KeyValueQuery keyValueQuery =
             KeyValueQuery.newBuilder()
                 .setKey(ModelDBConstants.DATASETS + "." + ModelDBConstants.LINKED_ARTIFACT_ID)
@@ -977,26 +982,28 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getDatasetId(), ModelDBServiceActions.READ);
 
-      FindDatasetVersions findDatasetVersions =
-          FindDatasetVersions.newBuilder()
-              .setDatasetId(request.getDatasetId())
-              .setIdsOnly(true)
-              .build();
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.findDatasetVersions(datasetDAO, findDatasetVersions, userInfo);
+      RepositoryIdentification repositoryIdentification =
+          RepositoryIdentification.newBuilder()
+              .setRepoId(Long.parseLong(request.getDatasetId()))
+              .build();
+      ListCommitsRequest.Builder listCommitsRequest =
+          ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
+      ListCommitsRequest.Response listCommitsResponse =
+          commitDAO.listCommits(
+              listCommitsRequest.build(),
+              (session -> repositoryDAO.getRepositoryById(session, repositoryIdentification)));
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
-      if (datasetVersionDTO != null
-          && datasetVersionDTO.getDatasetVersions() != null
-          && !datasetVersionDTO.getDatasetVersions().isEmpty()) {
-        for (DatasetVersion datasetVersion : datasetVersionDTO.getDatasetVersions()) {
-          datasetVersionIds.add(datasetVersion.getId());
+      List<Commit> commitList = listCommitsResponse.getCommitsList();
+      if (!commitList.isEmpty()) {
+        for (Commit commit : commitList) {
+          datasetVersionIds.add(commit.getCommitSha());
           listValueBuilder.addValues(
-              Value.newBuilder().setStringValue(datasetVersion.getId()).build());
+              Value.newBuilder().setStringValue(commit.getCommitSha()).build());
         }
       }
 
