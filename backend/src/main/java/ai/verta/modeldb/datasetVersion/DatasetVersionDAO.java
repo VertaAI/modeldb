@@ -207,8 +207,10 @@ public interface DatasetVersionDAO {
 
     if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
       datasetVersionBuilder.setTimeLogged(request.getTimeCreated());
+      datasetVersionBuilder.setTimeUpdated(request.getTimeCreated());
     } else {
       datasetVersionBuilder.setTimeLogged(Calendar.getInstance().getTimeInMillis());
+      datasetVersionBuilder.setTimeUpdated(Calendar.getInstance().getTimeInMillis());
     }
 
     if (!request.getParentId().isEmpty()) {

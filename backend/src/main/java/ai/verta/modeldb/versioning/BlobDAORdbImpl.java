@@ -229,6 +229,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         }
         datasetVersionBuilder.setDatasetId(String.valueOf(repositoryEntity.getId()));
         datasetVersionBuilder.setTimeLogged(commit.getDate_created());
+        datasetVersionBuilder.setTimeUpdated(commit.getDate_updated());
 
         VersioningCompositeIdentifier.Builder versioningCompositeIdentifier =
             VersioningCompositeIdentifier.newBuilder()

@@ -207,4 +207,15 @@
                 tableName="labels_mapping"/>
     </changeSet>
 
+    <changeSet id="add-date-updated-in-commit" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="commit" columnName="date_updated"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="commit">
+            <column name="date_updated" type="int8"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

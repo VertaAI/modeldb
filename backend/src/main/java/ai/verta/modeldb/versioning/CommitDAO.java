@@ -2,7 +2,6 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.metadata.MetadataDAO;
@@ -30,9 +29,6 @@ public interface CommitDAO {
       RepositoryEntity repositoryEntity,
       String commitSha)
       throws ModelDBException, NoSuchAlgorithmException;
-
-  CommitPaginationDTO getRepositoryCommitEntityList(ListCommitsRequest request, Long repoId)
-      throws ModelDBException;
 
   ListCommitsRequest.Response listCommits(
       ListCommitsRequest request, RepositoryFunction getRepository) throws ModelDBException;

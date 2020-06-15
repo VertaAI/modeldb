@@ -18,6 +18,7 @@ import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.QueryDatasetVersionInfo;
@@ -47,6 +48,7 @@ import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
@@ -128,6 +130,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .toBuilder()
               .setId(createCommitResponse.getCommit().getCommitSha())
               .setTimeLogged(createCommitResponse.getCommit().getDateCreated())
+              .setTimeUpdated(createCommitResponse.getCommit().getDateUpdated())
               .build();
       responseObserver.onNext(
           CreateDatasetVersion.Response.newBuilder().setDatasetVersion(datasetVersion).build());
@@ -156,51 +159,15 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(GetAllDatasetVersionsByDatasetId.Response.getDefaultInstance()));
       }
-
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY,
-          request.getDatasetId(),
-          ModelDBServiceActions.READ);
-
-      /*Get Data*/
-      RepositoryIdentification repositoryIdentification =
-          RepositoryIdentification.newBuilder()
-              .setRepoId(Long.parseLong(request.getDatasetId()))
-              .build();
-      ListCommitsRequest.Builder listCommitsRequest =
-          ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
-      if (request.getPageLimit() > 0 && request.getPageNumber() > 0) {
-        Pagination pagination =
-            Pagination.newBuilder()
-                .setPageLimit(request.getPageLimit())
-                .setPageNumber(request.getPageNumber())
-                .build();
-        listCommitsRequest.setPagination(pagination);
-      }
-      ListCommitsRequest.Response listCommitsResponse =
-          commitDAO.listCommits(
-              listCommitsRequest.build(),
-              (session -> repositoryDAO.getRepositoryById(session, repositoryIdentification)));
-
-      List<DatasetVersion> datasetVersions = new ArrayList<>();
-      long totalRecords = listCommitsResponse.getTotalRecords();
-      totalRecords = totalRecords > 0 ? totalRecords - 1 : totalRecords;
-
-      RepositoryEntity repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification);
-      for (Commit commit : listCommitsResponse.getCommitsList()) {
-        if (commit.getMessage().equals(ModelDBConstants.INITIAL_COMMIT_MESSAGE)) {
-          continue;
-        }
-        datasetVersions.add(
-            blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, commit.getCommitSha()));
-      }
+      DatasetVersionDTO datasetVersionDTO =
+          getDatasetVersionDTOByDatasetId(
+              request.getDatasetId(), request.getPageNumber(), request.getPageLimit());
 
       /*Build response*/
       responseObserver.onNext(
           GetAllDatasetVersionsByDatasetId.Response.newBuilder()
-              .addAllDatasetVersions(datasetVersions)
-              .setTotalRecords(totalRecords)
+              .addAllDatasetVersions(datasetVersionDTO.getDatasetVersions())
+              .setTotalRecords(datasetVersionDTO.getTotalRecords())
               .build());
       responseObserver.onCompleted();
 
@@ -208,6 +175,47 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       ModelDBUtils.observeError(
           responseObserver, e, GetAllDatasetVersionsByDatasetId.Response.getDefaultInstance());
     }
+  }
+
+  private DatasetVersionDTO getDatasetVersionDTOByDatasetId(
+      String datasetId, int pageNumber, int pageLimit)
+      throws InvalidProtocolBufferException, ModelDBException {
+    // Validate if current user has access to the entity or not
+    roleService.validateEntityUserWithUserInfo(
+        ModelDBServiceResourceTypes.REPOSITORY, datasetId, ModelDBServiceActions.READ);
+
+    /*Get Data*/
+    RepositoryIdentification repositoryIdentification =
+        RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(datasetId)).build();
+    ListCommitsRequest.Builder listCommitsRequest =
+        ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
+    if (pageLimit > 0 && pageNumber > 0) {
+      Pagination pagination =
+          Pagination.newBuilder().setPageLimit(pageLimit).setPageNumber(pageNumber).build();
+      listCommitsRequest.setPagination(pagination);
+    }
+    ListCommitsRequest.Response listCommitsResponse =
+        commitDAO.listCommits(
+            listCommitsRequest.build(),
+            (session -> repositoryDAO.getRepositoryById(session, repositoryIdentification)));
+
+    List<DatasetVersion> datasetVersions = new ArrayList<>();
+    long totalRecords = listCommitsResponse.getTotalRecords();
+    totalRecords = totalRecords > 0 ? totalRecords - 1 : totalRecords;
+
+    RepositoryEntity repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification);
+    for (Commit commit : listCommitsResponse.getCommitsList()) {
+      if (commit.getMessage().equals(ModelDBConstants.INITIAL_COMMIT_MESSAGE)) {
+        continue;
+      }
+      datasetVersions.add(
+          blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, commit.getCommitSha()));
+    }
+
+    DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
+    datasetVersionDTO.setDatasetVersions(datasetVersions);
+    datasetVersionDTO.setTotalRecords(totalRecords);
+    return datasetVersionDTO;
   }
 
   /**
@@ -271,19 +279,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
       }
 
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
+      // TODO: Implement sort key in future
+      /*String sortKey =
+      request.getSortKey().isEmpty() ? ModelDBConstants.TIME_LOGGED : request.getSortKey();*/
 
-      String sortKey =
-          request.getSortKey().isEmpty() ? ModelDBConstants.TIME_LOGGED : request.getSortKey();
-
-      /*Get the user info from the Context*/
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      /*Get Data*/
       DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.getDatasetVersions(
-              datasetDAO, request.getDatasetId(), 1, 1, request.getAscending(), sortKey, userInfo);
+          getDatasetVersionDTOByDatasetId(request.getDatasetId(), 1, 1);
+
       if (datasetVersionDTO.getDatasetVersions().size() != 1) {
         logAndThrowError(
             "No datasetVersion found for dataset '" + request.getDatasetId(),

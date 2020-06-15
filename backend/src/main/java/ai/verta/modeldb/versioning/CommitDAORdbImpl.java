@@ -113,6 +113,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         builder.addParentShas(datasetVersion.getParentId());
       }
       builder.setDateCreated(datasetVersion.getTimeLogged());
+      builder.setDateUpdated(datasetVersion.getTimeUpdated());
       Commit commit = builder.build();
 
       RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
@@ -204,6 +205,7 @@ public class CommitDAORdbImpl implements CommitDAO {
     Commit internalCommit =
         Commit.newBuilder()
             .setDateCreated(timeCreated)
+            .setDateUpdated(timeCreated)
             .setAuthor(author)
             .setMessage(commit.getMessage())
             .setCommitSha(commitSha)
@@ -216,20 +218,6 @@ public class CommitDAORdbImpl implements CommitDAO {
             rootSha);
     session.saveOrUpdate(commitEntity);
     return commitEntity;
-  }
-
-  @Override
-  public CommitPaginationDTO getRepositoryCommitEntityList(ListCommitsRequest request, Long repoId)
-      throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      return fetchCommitEntityList(session, request, repoId);
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return getRepositoryCommitEntityList(request, repoId);
-      } else {
-        throw ex;
-      }
-    }
   }
 
   public CommitPaginationDTO fetchCommitEntityList(
@@ -265,7 +253,7 @@ public class CommitDAORdbImpl implements CommitDAO {
 
     Query<CommitEntity> commitEntityQuery =
         session.createQuery(
-            "SELECT cm " + commitQueryBuilder.toString() + " ORDER BY cm.date_created DESC");
+            "SELECT cm " + commitQueryBuilder.toString() + " ORDER BY cm.date_updated DESC");
     commitEntityQuery.setParameter("repoId", repoId);
     if (request.hasPagination()) {
       int pageLimit = request.getPagination().getPageLimit();
