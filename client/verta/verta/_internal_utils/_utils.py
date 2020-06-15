@@ -968,13 +968,13 @@ def as_list_of_str(tags):
         tags = [tags]
     else:
         try:
-            iter(tags)
+            tags = list(tags)
         except TypeError:
-            e = TypeError("`tags` must be iterable of str, not {}".format(type(tags)))
+            e = TypeError("`tags` should be list of str, not {}".format(type(tags)))
             six.raise_from(e, None)
 
         for tag in tags:
             if not isinstance(tag, six.string_types):
-                raise TypeError("`tags` must be iterable of str, but found {}".format(type(tag)))
+                raise TypeError("`tags` must be list of str, but found {}".format(type(tag)))
 
     return tags
