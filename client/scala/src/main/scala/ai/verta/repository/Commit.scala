@@ -353,7 +353,6 @@ class Commit(
    *  @return Stream of Trys of WalkOutputs. If the returned WalkOutput fails, abort the remaining locations.
    */
   def continueWalk(locations: List[List[String]])(implicit ec: ExecutionContext): Stream[Try[WalkOutput]] = {
-    /**  TODO: modify the WalkOutput so that the folders are mutable */
     if (locations.isEmpty) Stream()
     else {
       val location = locations.head
