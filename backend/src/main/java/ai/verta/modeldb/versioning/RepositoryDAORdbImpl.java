@@ -1234,7 +1234,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         finalPredicatesList.add(predicate2);
       }
 
-      String entityName = "repositoryEntity";
+      String entityName = ModelDBConstants.REPOSITORY_ENTITY;
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
