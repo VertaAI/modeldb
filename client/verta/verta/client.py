@@ -135,18 +135,18 @@ class Client(object):
 
         if host is None:
             raise ValueError("`host` must be provided")
-        scheme = auth = None
+        auth = {_utils._GRPC_PREFIX+'source': "PythonClient"}
         if email is None and dev_key is None:
             if debug:
                 print("[DEBUG] email and developer key not found; auth disabled")
-            auth = None
         elif email is not None and dev_key is not None:
             if debug:
                 print("[DEBUG] using email: {}".format(email))
                 print("[DEBUG] using developer key: {}".format(dev_key[:8] + re.sub(r"[^-]", '*', dev_key[8:])))
-            auth = {_utils._GRPC_PREFIX+'email': email,
-                    _utils._GRPC_PREFIX+'developer_key': dev_key,
-                    _utils._GRPC_PREFIX+'source': "PythonClient"}
+            auth.update({
+                _utils._GRPC_PREFIX+'email': email,
+                _utils._GRPC_PREFIX+'developer_key': dev_key,
+            })
             # save credentials to env for other Verta Client features
             os.environ['VERTA_EMAIL'] = email
             os.environ['VERTA_DEV_KEY'] = dev_key
@@ -161,8 +161,7 @@ class Client(object):
                           category=FutureWarning)
             socket = "{}:{}".format(socket, port)
         scheme = back_end_url.scheme or ("https" if ".verta.ai" in socket else "http")
-        if auth is not None:
-            auth[_utils._GRPC_PREFIX+'scheme'] = scheme
+        auth[_utils._GRPC_PREFIX+'scheme'] = scheme
 
         # verify connection
         conn = _utils.Connection(scheme, socket, auth, max_retries, ignore_conn_err)
@@ -235,11 +234,12 @@ class Client(object):
             return self.expt.expt_runs
 
     def _get_personal_workspace(self):
-        if self._conn.auth is not None:
+        email = self._conn.auth.get('Grpc-Metadata-email')
+        if email is not None:
             response = _utils.make_request(
                 "GET",
                 "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
-                self._conn, params={'email': self._conn.auth['Grpc-Metadata-email']},
+                self._conn, params={'email': email},
             )
 
             if response.ok:

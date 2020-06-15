@@ -250,9 +250,8 @@ def make_request(method, url, conn, **kwargs):
     if method.upper() not in _VALID_HTTP_METHODS:
         raise ValueError("`method` must be one of {}".format(_VALID_HTTP_METHODS))
 
-    if conn.auth is not None:
-        # add auth to `kwargs['headers']`
-        kwargs.setdefault('headers', {}).update(conn.auth)
+    # add auth to headers
+    kwargs.setdefault('headers', {}).update(conn.auth)
 
     with requests.Session() as s:
         s.mount(url, HTTPAdapter(max_retries=conn.retry))
