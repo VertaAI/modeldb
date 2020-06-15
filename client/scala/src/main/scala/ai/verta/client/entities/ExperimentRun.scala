@@ -72,6 +72,9 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   // TODO: add overwrite
   def metrics()(implicit ec: ExecutionContext) = new Metrics(clientSet, ec, this)
 
+  /** Logs potentially multiple metrics to this Experiment Run.
+   *  @param metrics Metrics
+   */
   def logMetrics(vals: Map[String, Any])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
@@ -81,9 +84,18 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       )).map(_ => {})
   }
 
+  /** Logs a metric to this Experiment Run
+   *  If the metadatum of interest might recur, logObservation() should be used instead
+   *  @param key Name of the metric
+   *  @param value Value of the metric
+   */
   def logMetric(key: String, value: Any)(implicit ec: ExecutionContext) =
     logMetrics(Map(key -> value))
 
+  /** Gets all metrics from this Experiment Run
+   *  @param key Name of the metric
+   *  @return Names and values of all metrics
+   */
   def getMetrics()(implicit ec: ExecutionContext): Try[Map[String, Any]] = {
     clientSet.experimentRunService.getMetrics(
       id = run.id
@@ -96,6 +108,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       })
   }
 
+  /** Gets the metric with name key from this Experiment Run
+   *  @param key Name of the metric
+   *  @return Value of the metric
+   */
   def getMetric(key: String)(implicit ec: ExecutionContext) =
     getMetrics().map(_.get(key))
 
