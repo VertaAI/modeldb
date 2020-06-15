@@ -28,7 +28,7 @@ class Commit(
   /** Whether the commit instance is saved to database, or is currently being modified.
    *  A commit is saved if and only if its versioning commit field has a defined ID.
    */
-  private def saved = id.isDefined
+  def saved = id.isDefined
 
   override def equals(other: Any) = other match {
     case other: Commit => saved && other.saved && id.get == other.id.get

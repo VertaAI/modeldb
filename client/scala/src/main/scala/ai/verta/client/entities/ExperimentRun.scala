@@ -282,21 +282,25 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return whether the log attempt succeeds
    */
   def logCommit(commit: Commit, keyPaths: Option[Map[String, String]] = None)(implicit ec: ExecutionContext) = {
-    // convert the path to correct format for query
-    // split it, then wrapped with VertamodeldbLocation
-    val keyLocationMap = keyPaths.map(
-      _.mapValues(location => VertamodeldbLocation(Some(location.split("/").toList)))
-    )
-
-    clientSet.experimentRunService.logVersionedInput(
-      body = ModeldbLogVersionedInput(
-        id = run.id, versioned_inputs = Some(ModeldbVersioningEntry(
-          commit = commit.id,
-          key_location_map = keyLocationMap,
-          repository_id = Some(commit.repoId)
-        ))
+    if (!commit.saved)
+      Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be associated to a run"))
+    else {
+      // convert the path to correct format for query
+      // split it, then wrapped with VertamodeldbLocation
+      val keyLocationMap = keyPaths.map(
+        _.mapValues(location => VertamodeldbLocation(Some(location.split("/").toList)))
       )
-    )
+
+      clientSet.experimentRunService.logVersionedInput(
+        body = ModeldbLogVersionedInput(
+          id = run.id, versioned_inputs = Some(ModeldbVersioningEntry(
+            commit = commit.id,
+            key_location_map = keyLocationMap,
+            repository_id = Some(commit.repoId)
+          ))
+        )
+      )
+    }
   }
 
   /** Gets the Commit associated with this Experiment Run
