@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import functools
+import os
 import pathlib2
 import shutil
 
@@ -75,7 +76,7 @@ class _Dataset(blob.Blob):
         self._commit = commit
         self._blob_path = blob_path
 
-    def download(self, component_path, filepath):
+    def download(self, component_path, filepath=None):
         """
         Downloads `component_path` from this dataset if ModelDB-managed versioning was enabled.
 
@@ -83,8 +84,9 @@ class _Dataset(blob.Blob):
         ----------
         component_path : str
             Original path of the file in this dataset to download.
-        filepath : str
-            Filepath to download `component_path` to.
+        filepath : str, optional
+            Filepath to download `component_path` to. If not provided, the file will be downloaded
+            to the current directory.
 
         """
         if self._commit is None and self._blob_path is None:
@@ -93,6 +95,8 @@ class _Dataset(blob.Blob):
                 " consider using `commit.get()` to obtain a download-capable dataset"
                 " if ModelDB-managed versioning was enabled"
             )
+        if filepath is None:
+            filepath = os.path.basename(component_path)
 
         # backend will return error if `component_path` not found/versioned
         url = self._commit._get_url_for_artifact(self._blob_path, component_path, "GET").url
