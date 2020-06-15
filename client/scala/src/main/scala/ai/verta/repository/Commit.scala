@@ -347,14 +347,14 @@ class Commit(
     if (!saved)
       Stream(Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be walked")))
     else
-      continueWalk(List(List()))
+      continueWalk(List(PathList(List())))
   }
 
   /** Continue the walk from the locations passed
    *  @param locations remaining locations to explore. Each location is in list of string format.
    *  @return Stream of Trys of WalkOutputs. If the returned WalkOutput fails, abort the remaining locations.
    */
-  def continueWalk(locations: List[List[String]])(implicit ec: ExecutionContext): Stream[Try[WalkOutput]] = {
+  def continueWalk(locations: List[PathList])(implicit ec: ExecutionContext): Stream[Try[WalkOutput]] = {
     if (locations.isEmpty) Stream()
     else {
       val location = locations.head
@@ -362,11 +362,11 @@ class Commit(
       clientSet.versioningService.GetCommitComponent2(
         commit_sha = id.get,
         repository_id_repo_id = repo.id,
-        location = if (location.length > 0) Some(location) else None
+        location = if (location.components.length > 0) Some(location.components) else None
       ) match {
         case Failure(e) => Stream(Failure(e))
         case Success(r) => {
-          val folderPath = location.mkString("/")
+          val folderPath = location.path
           val responseFolder = r.folder
 
           val folderNames = responseFolder
@@ -383,12 +383,11 @@ class Commit(
 
           // Extend locations to contain new locations:
           val newLocations = folderNames
-          .map(_.map(folder => location ::: List(folder))) // inefficient
-          // Option[List[List[String]]]
+          .map(_.map(location.extend)) // Option[List[PathList]]
           // push new location to stack:
           .getOrElse(Nil) ::: locations.tail
 
-          Success(new WalkOutput(folderPath, folderNames, blobNames, newLocations)) #:: continueWalk(newLocations)
+          Success(WalkOutput(folderPath, folderNames, blobNames, newLocations)) #:: continueWalk(newLocations)
         }
       }
     }
