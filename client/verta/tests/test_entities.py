@@ -28,13 +28,22 @@ KWARGS_COMBOS = [dict(zip(KWARGS.keys(), values))
 class TestClient:
     @pytest.mark.oss
     def test_no_auth(self, host):
-        client = verta.Client(host)
+        EMAIL_KEY, DEV_KEY_KEY = "VERTA_EMAIL", "VERTA_DEV_KEY"
+        EMAIL, DEV_KEY = os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
+        try:
+            del os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
 
-        # it's just been revoked
-        client._conn.auth = None
+            client = verta.Client(host)
 
-        assert client.set_project()
-        utils.delete_project(client.proj.id, client._conn)
+            # still has source set
+            assert 'Grpc-Metadata-source' in client._conn.auth
+
+            assert client.set_project()
+
+            utils.delete_project(client.proj.id, client._conn)
+        finally:
+            os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = EMAIL, DEV_KEY
+
 
     @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
     def test_verta_https(self):
