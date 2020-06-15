@@ -311,7 +311,7 @@ class Commit(
    *  @param message Description of the revert. If not provided, a default message will be used
    *  @return The new commit, with the changes in other reverted, if suceeds. Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository.
    */
-  def revert(other: Commit = this, message: Option[String] = None)(implicit ec: ExecutionContext) =
+  def revert(other: Commit = this, message: Option[String] = None)(implicit ec: ExecutionContext) = {
     if (!saved)
       Failure(new IllegalCommitSavedStateException("This commit must be saved"))
     else if (!other.saved)
@@ -328,6 +328,7 @@ class Commit(
         commit_to_revert_sha = other.id.get,
         repository_id_repo_id = repo.id
       ).flatMap(r => versioningCommitToCommit(r.commit.get))
+    }
 
   /** Returns the diff from reference to self
    *  @param reference Commit to be compared to. If not provided, first parent will be used.
