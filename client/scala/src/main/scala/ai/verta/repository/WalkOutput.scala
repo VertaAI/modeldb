@@ -5,7 +5,7 @@ package ai.verta.repository
  *  @param folderNames names of subfolders in current folder
  *  @param blobNames names of blobs in current folder
  *  @param remainingLocations list of remaining locations
-*/
+ */
 class WalkOutput(
   val folderPath: String,
   val folderNames: Option[List[String]],
