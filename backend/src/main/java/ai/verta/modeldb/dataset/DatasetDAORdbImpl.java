@@ -1014,7 +1014,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       }
     } else {
 
-      // get list of accessible projects
+      // get list of accessible datasets
       @SuppressWarnings("unchecked")
       List<String> accessibleDatasetIds =
           roleService.getAccessibleResourceIds(
