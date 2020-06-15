@@ -1154,6 +1154,17 @@ public class BlobDAORdbImpl implements BlobDAO {
     return blobContainerList;
   }
 
+  /**
+   * This method find the blobs supported based on the following conditions
+   *
+   * <p>commit.author, VERSIONING_COMMIT.label, VERSIONING_REPO_COMMIT_BLOB.label,
+   * VERSIONING_REPO_COMMIT.label, repoIds, commitHashList
+   *
+   * @param session :hibernate session
+   * @param request : FindRepositoriesBlobs request
+   * @param currentLoginUserInfo : current login userInfo
+   * @return {@link Map} : "result", "count" as a key
+   */
   private Map<String, Object> getRootShaListByCommitsOrRepos(
       Session session, FindRepositoriesBlobs request, UserInfo currentLoginUserInfo) {
 
@@ -1187,23 +1198,14 @@ public class BlobDAORdbImpl implements BlobDAO {
           case ModelDBConstants.COMMIT:
             LOGGER.debug("switch case : commit");
             if (names[1].equals("author")) {
-              whereClauseList.add(alias + "." + names[1] + " = :author");
-              parametersMap.put("author", predicate.getValue().getStringValue());
-            }
-            break;
-          case ModelDBConstants.VERSIONING_REPOSITORY:
-            LOGGER.debug("switch case : " + ModelDBConstants.VERSIONING_REPOSITORY);
-            if (names[1].contains(ModelDBConstants.LABEL)) {
-              joinClause
-                  .append(" INNER JOIN ")
-                  .append(LabelsMappingEntity.class.getSimpleName())
-                  .append(" lb ON lb.id.entity_hash = CAST(")
-                  .append(repoAlias)
-                  .append(".id as string) ")
-                  .append(" AND lb.id.entity_type = :entityType")
-                  .append(" AND lb.id.label = :label");
-              parametersMap.put("entityType", IDTypeEnum.IDType.VERSIONING_REPOSITORY.getNumber());
-              parametersMap.put("label", predicate.getValue().getStringValue());
+              StringBuilder authorBuilder = new StringBuilder(alias + "." + names[1]);
+              VersioningUtils.setValueWithOperatorInQuery(
+                  index,
+                  authorBuilder,
+                  predicate.getOperator(),
+                  predicate.getValue().getStringValue(),
+                  parametersMap);
+              whereClauseList.add(authorBuilder.toString());
             }
             break;
           case ModelDBConstants.VERSIONING_COMMIT:
@@ -1239,7 +1241,14 @@ public class BlobDAORdbImpl implements BlobDAO {
                       .append(LabelsMappingEntity.class.getSimpleName())
                       .append(" lb WHERE ")
                       .append(" lb.id.entity_type = :entityType")
-                      .append(" AND lb.id.label = :label");
+                      .append(" AND lb.id.label ");
+              Map<String, Object> innerQueryParametersMap = new HashMap<>();
+              VersioningUtils.setValueWithOperatorInQuery(
+                  index,
+                  subQueryBuilder,
+                  predicate.getOperator(),
+                  predicate.getValue().getStringValue(),
+                  innerQueryParametersMap);
               Query labelQuery = session.createQuery(subQueryBuilder.toString());
               if (names[0].equals(ModelDBConstants.VERSIONING_REPO_COMMIT_BLOB)) {
                 labelQuery.setParameter(
@@ -1248,7 +1257,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                 labelQuery.setParameter(
                     "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT.getNumber());
               }
-              labelQuery.setParameter("label", predicate.getValue().getStringValue());
+              innerQueryParametersMap.forEach(labelQuery::setParameter);
               List<String> blobHashes = labelQuery.list();
               List<String> commitHashes = new ArrayList<>();
               List<Long> repoIds = new ArrayList<>();
