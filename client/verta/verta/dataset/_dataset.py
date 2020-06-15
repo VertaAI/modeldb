@@ -2,10 +2,8 @@
 
 from __future__ import print_function
 
-import functools
 import os
 import pathlib2
-import shutil
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
@@ -76,7 +74,7 @@ class _Dataset(blob.Blob):
         self._commit = commit
         self._blob_path = blob_path
 
-    def download(self, component_path, filepath=None):
+    def download(self, component_path, filepath=None, chunk_size=32*(10**3)):
         """
         Downloads `component_path` from this dataset if ModelDB-managed versioning was enabled.
 
@@ -87,6 +85,8 @@ class _Dataset(blob.Blob):
         filepath : str, optional
             Filepath to download `component_path` to. If not provided, the file will be downloaded
             to the current directory.
+        chunk_size : int, default 32 kB
+            Number of bytes to download at a time.
 
         """
         if self._commit is None and self._blob_path is None:
@@ -106,18 +106,13 @@ class _Dataset(blob.Blob):
         try:
             _utils.raise_for_http_error(response)
 
-            # decode responses that have Content-Encoding
-            #     The raw response stream doesn't automatically decode responses with
-            #     Content-Encoding gzip, deflate, etc. but it can be enabled with an arg to read().
-            #     https://github.com/psf/requests/issues/2155#issuecomment-50771010
-            response.raw.read = functools.partial(response.raw.read, decode_content=True)
-
             # create parent dirs
             pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # pylint: disable=no-member
 
             # read response stream into file
             with open(filepath, 'wb') as f:
-                shutil.copyfileobj(response.raw, f)
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    f.write(chunk)
         finally:
             response.close()
 
