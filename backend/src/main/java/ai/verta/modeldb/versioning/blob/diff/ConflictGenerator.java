@@ -62,11 +62,11 @@ public class ConflictGenerator {
       Blob parentBlob)
       throws ModelDBException {
     if (locSpecificBlobDiffA.size() != 1) {
-      LOGGER.warn("expecting diffs of same size");
+      LOGGER.info("expecting diffs of same size");
       throw new ModelDBException("different size of diff not expected", Code.INTERNAL);
     }
     if (locSpecificBlobDiffA.size() != locSpecificBlobDiffB.size()) {
-      LOGGER.warn("currently supporting diff of size 1");
+      LOGGER.info("currently supporting diff of size 1");
       throw new ModelDBException("different size of diff not expected", Code.INTERNAL);
     }
     AutogenBlobDiff diff = AutogenBlobDiff.fromProto(blobDiff);
