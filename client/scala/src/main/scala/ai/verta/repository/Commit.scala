@@ -340,7 +340,7 @@ class Commit(
   }
 
   /** Generates folder names and blob names in this commit by walking through its folder tree.
-   *  @return a stream of Try's of WalkOutput. If the commit is not saved, its only element is a Failure.
+   *  @return a stream of Try's of WalkOutput, which ends at the first failure. If the commit is not saved, its only element is that Failure.
    */
   def walk()(implicit ec: ExecutionContext) =
     if (!saved)
