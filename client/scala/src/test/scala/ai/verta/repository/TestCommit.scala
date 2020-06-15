@@ -523,4 +523,24 @@ class TestCommit extends FunSuite {
         cleanup(f)
       }
     }
+
+    test("revert should affect the correct branch") {
+      val f = fixture
+
+      try {
+        val originalCommit = f.commit.update("a", f.pathBlob)
+                              .flatMap(_.save("Some message"))
+                              .flatMap(_.update("b", f.pathBlob))
+                              .flatMap(_.save("Some message 1")).get
+
+
+        val newBranch = originalCommit.newBranch("new-branch").get
+        val revertCommit = newBranch.revert().get
+
+        assert(f.repo.getCommitByBranch().get equals originalCommit) // master shouldn't be affect by revert
+        assert(f.repo.getCommitByBranch("new-branch").get equals revertCommit)
+      } finally {
+        cleanup(f)
+      }
+    }
 }
