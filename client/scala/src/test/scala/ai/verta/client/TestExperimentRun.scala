@@ -16,15 +16,11 @@ class TestExperimentRun extends FunSuite {
 
   def fixture =
     new {
-        val client = new Client(ClientConnection.fromEnvironment())
-        val repo = client.getOrCreateRepository("My Repo").get
-        val commit = repo.getCommitByBranch().get
-        val pathBlob = PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir").get
+      val client = new Client(ClientConnection.fromEnvironment())
+      val repo = client.getOrCreateRepository("My Repo").get
     }
 
-  def cleanup(
-    f: AnyRef{val client: Client; val repo: Repository; val commit: Commit; val pathBlob: PathBlob}
-  ) = {
+  def cleanup(f: AnyRef{val client: Client; val repo: Repository}) = {
     f.client.deleteRepository(f.repo.id)
     f.client.close()
   }
@@ -33,27 +29,30 @@ class TestExperimentRun extends FunSuite {
     val f = fixture
 
     try {
+      val commit = f.repo.getCommitByBranch().get
+      val pathBlob = PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir").get
+
       val expRun = f.client.getOrCreateProject("scala test")
         .flatMap(_.getOrCreateExperiment("experiment"))
         .flatMap(_.getOrCreateExperimentRun()).get
 
-      val logAttempt = expRun.logCommit(f.commit)
+      val logAttempt = expRun.logCommit(commit)
       assert(logAttempt.isSuccess)
 
       val expRunCommit = expRun.getCommit().get
       val retrievedCommit = f.client.getRepository(expRunCommit.repoId)
                              .flatMap(_.getCommitById(expRunCommit.commitSHA)).get
 
-      assert(retrievedCommit equals f.commit)
+      assert(retrievedCommit equals commit)
 
-      val newCommit = f.commit.update("abc/def", f.pathBlob)
-                       .flatMap(_.save("Add a blob")).get
+      val newCommit = commit.update("abc/def", pathBlob)
+                            .flatMap(_.save("Add a blob")).get
       expRun.logCommit(newCommit, Some(Map[String, String]("mnp/qrs" -> "abc/def")))
       val newExpRunCommit = expRun.getCommit().get
       val newRetrievedCommit =  f.client.getRepository(newExpRunCommit.repoId)
                                  .flatMap(_.getCommitById(newExpRunCommit.commitSHA)).get
       assert(newCommit equals newRetrievedCommit)
-      assert(!newRetrievedCommit.equals(f.commit))
+      assert(!newRetrievedCommit.equals(commit))
       assert(newExpRunCommit.keyPaths.get equals Map[String, String]("mnp/qrs" -> "abc/def"))
     } finally {
       cleanup(f)
