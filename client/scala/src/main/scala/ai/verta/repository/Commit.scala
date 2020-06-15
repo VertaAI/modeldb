@@ -354,12 +354,12 @@ class Commit(
     else {
       val location = locations.head
 
-      val next = clientSet.versioningService.GetCommitComponent2(
+      clientSet.versioningService.GetCommitComponent2(
         commit_sha = id.get,
         repository_id_repo_id = repo.id,
         location = if (location.length > 0) Some(location) else None
       ) match {
-        case Failure(e) => Failure(e) -> List()
+        case Failure(e) => Stream(Failure(e))
         case Success(r) => {
           val folderPath = location.mkString("/")
           val responseFolder = r.folder
@@ -383,11 +383,9 @@ class Commit(
           // push new location to stack:
           .getOrElse(Nil) ::: locations.tail
 
-          Success(new WalkOutput(folderPath, folderNames, blobNames)) -> newLocations
+          Success(new WalkOutput(folderPath, folderNames, blobNames)) #:: generateWalk(newLocations)
         }
       }
-
-      next._1 #:: generateWalk(next._2)
     }
   }
 }
