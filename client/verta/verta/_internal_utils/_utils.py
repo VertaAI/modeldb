@@ -23,7 +23,7 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 from ..external import six
 from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
-from .._protos.public.modeldb import CommonService_pb2 as _CommonService
+from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 try:
     import pandas as pd
