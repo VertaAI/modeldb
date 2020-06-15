@@ -29,10 +29,8 @@ class TestClient:
     @pytest.mark.oss
     def test_no_auth(self, host):
         EMAIL_KEY, DEV_KEY_KEY = "VERTA_EMAIL", "VERTA_DEV_KEY"
-        EMAIL, DEV_KEY = os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
+        EMAIL, DEV_KEY = os.environ.pop(EMAIL_KEY, None), os.environ.pop(DEV_KEY_KEY, None)
         try:
-            del os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
-
             client = verta.Client(host)
 
             # still has source set
@@ -42,7 +40,10 @@ class TestClient:
 
             utils.delete_project(client.proj.id, client._conn)
         finally:
-            os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = EMAIL, DEV_KEY
+            if EMAIL is not None:
+                os.environ[EMAIL_KEY] = EMAIL
+            if DEV_KEY is not None:
+                os.environ[DEV_KEY_KEY] = DEV_KEY
 
 
     @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
