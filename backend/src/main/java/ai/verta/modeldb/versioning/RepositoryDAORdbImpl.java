@@ -1137,12 +1137,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       idBuilder.setRepoId(idValue);
       RepositoryEntity repositoryEntity = getRepositoryById(session, idBuilder.build(), true);
       repositoryEntity.update();
-      List<String> tagsOld = metadataDAO.getLabels(
-          session,
-          IdentificationType.newBuilder()
-              .setIdType(VERSIONING_REPOSITORY)
-              .setIntId(idValue)
-              .build());
+      List<String> tagsOld =
+          metadataDAO.getLabels(
+              session,
+              IdentificationType.newBuilder()
+                  .setIdType(VERSIONING_REPOSITORY)
+                  .setIntId(idValue)
+                  .build());
       List<String> uniqueTags = new ArrayList<>(tags);
       uniqueTags.removeAll(tagsOld);
       metadataDAO.addLabels(
