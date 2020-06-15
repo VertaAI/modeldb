@@ -62,6 +62,10 @@ public class CodeContainer extends BlobContainer {
     rootTree.push(getLocationList(), blobHash, blobType);
   }
 
+  @Override
+  public void processAttribute(Session session, Long repoId, String commitHash)
+      throws ModelDBException {}
+
   private GitCodeBlobEntity saveBlob(
       Session session, GitCodeBlob gitCodeBlob, Set<String> blobHashes)
       throws NoSuchAlgorithmException {

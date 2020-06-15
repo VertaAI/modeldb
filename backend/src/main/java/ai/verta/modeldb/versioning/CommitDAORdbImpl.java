@@ -38,7 +38,11 @@ public class CommitDAORdbImpl implements CommitDAO {
    * the repository the commit is made on
    */
   public CreateCommitRequest.Response setCommit(
-      String author, Commit commit, BlobFunction setBlobs, RepositoryFunction getRepository)
+      String author,
+      Commit commit,
+      BlobFunction setBlobs,
+      BlobFunction.BlobFunctionAttribute setBlobsAttributes,
+      RepositoryFunction getRepository)
       throws ModelDBException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
@@ -47,13 +51,14 @@ public class CommitDAORdbImpl implements CommitDAO {
 
       CommitEntity commitEntity =
           saveCommitEntity(session, commit, rootSha, author, repositoryEntity, null);
+      setBlobsAttributes.apply(session, repositoryEntity.getId(), commitEntity.getCommit_hash());
       session.getTransaction().commit();
       return CreateCommitRequest.Response.newBuilder()
           .setCommit(commitEntity.toCommitProto())
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return setCommit(author, commit, setBlobs, getRepository);
+        return setCommit(author, commit, setBlobs, setBlobsAttributes, getRepository);
       } else {
         throw ex;
       }

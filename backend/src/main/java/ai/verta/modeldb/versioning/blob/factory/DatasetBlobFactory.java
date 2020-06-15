@@ -1,20 +1,15 @@
 package ai.verta.modeldb.versioning.blob.factory;
 
-import ai.verta.common.KeyValue;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.S3DatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
-import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.DatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.S3DatasetBlob;
 import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.util.List;
@@ -45,13 +40,7 @@ public class DatasetBlobFactory extends BlobFactory {
         datasetBlobBuilder.setPath(pathBlob);
         break;
     }
-    Blob.Builder blobBuilder = Blob.newBuilder().setDataset(datasetBlobBuilder);
-    try {
-      blobBuilder.addAllAttributes(getAttributes(session));
-    } catch (InvalidProtocolBufferException e) {
-      throw new ModelDBException(e);
-    }
-    return blobBuilder.build();
+    return Blob.newBuilder().setDataset(datasetBlobBuilder).build();
   }
 
   private static S3DatasetBlob getS3Blob(Session session, String blobHash) throws ModelDBException {
@@ -96,17 +85,5 @@ public class DatasetBlobFactory extends BlobFactory {
     } else {
       return null;
     }
-  }
-
-  private List<KeyValue> getAttributes(Session session) throws InvalidProtocolBufferException {
-    String getAttributesHQL =
-        "From AttributeEntity kv where kv.blob_hash = :blobHash "
-            + " AND kv.entity_name = :entityName AND kv.field_type = :fieldType AND kv.blob_hash = :blobHash";
-    Query getQuery = session.createQuery(getAttributesHQL);
-    getQuery.setParameter("entityName", ModelDBConstants.BLOB);
-    getQuery.setParameter("blobHash", getElementSha());
-    getQuery.setParameter("fieldType", ModelDBConstants.ATTRIBUTES);
-    List<AttributeEntity> attributeEntities = getQuery.list();
-    return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
   }
 }
