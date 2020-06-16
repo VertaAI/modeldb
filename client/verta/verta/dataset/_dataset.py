@@ -19,6 +19,20 @@ class _Dataset(blob.Blob):
 
         self._msg = _DatasetService.DatasetBlob()
 
+    @property
+    def _path_component_blobs(self):
+        """
+        Returns path components of this dataset.
+
+        Returns
+        -------
+        list of PathDatasetComponentBlob
+            Path components of this dataset.
+
+        """
+        # This shall be implemented by subclasses, but shouldn't halt execution if called.
+        return []
+
     @staticmethod
     def _path_component_to_repr_lines(path_component_msg):
         """
