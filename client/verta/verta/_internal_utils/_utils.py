@@ -3,6 +3,7 @@
 import datetime
 import glob
 import inspect
+import itertools
 import json
 import numbers
 import os
@@ -260,15 +261,18 @@ def make_request(method, url, conn, **kwargs):
             request = requests.Request(method, url, **kwargs).prepare()
 
             response = s.send(request, allow_redirects=False)
-            # TODO: also check initial response
+            # store initial response to add back into final history
+            initial_response = response
             # manually inspect redirects to stop on 302s
-            for response in s.resolve_redirects(response, request):
+            for response in itertools.chain([response], s.resolve_redirects(response, request)):
                 if response.status_code == 302:
                     # TODO: break if conn.ignore_conn_err
                     raise RuntimeError(
                         "received status 302 from {},"
                         " which is not supported by the Client".format(response.url)
                     )
+            # insert initial response back into history
+            response.history.insert(0, initial_response)
         except (requests.exceptions.BaseHTTPError,
                 requests.exceptions.RequestException) as e:
             if not conn.ignore_conn_err:
