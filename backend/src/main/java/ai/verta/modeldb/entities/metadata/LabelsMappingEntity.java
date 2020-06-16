@@ -1,10 +1,6 @@
 package ai.verta.modeldb.entities.metadata;
 
-import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
-import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.io.Serializable;
@@ -26,15 +22,11 @@ public class LabelsMappingEntity {
 
   @EmbeddedId private LabelMappingId id;
 
-  public static LabelMappingId createId(IdentificationType id, String label)
-      throws ModelDBException {
+  public static LabelMappingId createId(IdentificationType id, String label) {
     if (id.getIdCase().equals(IdentificationType.IdCase.INT_ID)) {
       return new LabelMappingId(String.valueOf(id.getIntId()), id.getIdTypeValue(), label);
     } else if (id.getIdCase().equals(IdentificationType.IdCase.STRING_ID)) {
       return new LabelMappingId(id.getStringId(), id.getIdTypeValue(), label);
-    } else if (id.getIdCase().equals(IdentificationType.IdCase.COMPOSITE_ID)) {
-      String compositeId = getVersioningCompositeIdString(id.getCompositeId(), id.getIdType());
-      return new LabelMappingId(compositeId, id.getIdTypeValue(), label);
     } else {
       throw new StatusRuntimeException(Status.INVALID_ARGUMENT);
     }
@@ -93,38 +85,6 @@ public class LabelsMappingEntity {
     @Override
     public int hashCode() {
       return Objects.hash(getEntity_hash(), getEntity_type(), getLabel());
-    }
-  }
-
-  public static String getVersioningCompositeIdString(
-      VersioningCompositeIdentifier identifier, IDTypeEnum.IDType idType) throws ModelDBException {
-    if (idType.equals(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)) {
-      return identifier.getRepoId()
-          + "::"
-          + identifier.getCommitHash()
-          + "::"
-          + ModelDBUtils.getLocationWithSlashOperator(identifier.getLocationList());
-    } else if (idType.equals(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)) {
-      return identifier.getRepoId() + "::" + identifier.getCommitHash();
-    } else {
-      throw new ModelDBException(
-          "Invalid argument found in VersioningCompositeIdentifier", Status.Code.INVALID_ARGUMENT);
-    }
-  }
-
-  public static VersioningCompositeIdentifier getVersioningCompositeId(String identifierIdStr) {
-    String[] identifierArr = identifierIdStr.split("::");
-    if (identifierArr.length == 3) {
-      return VersioningCompositeIdentifier.newBuilder()
-          .setRepoId(Long.parseLong(identifierArr[0]))
-          .setCommitHash(identifierArr[1])
-          .addAllLocation(ModelDBUtils.getLocationWithSplitSlashOperator(identifierArr[2]))
-          .build();
-    } else {
-      return VersioningCompositeIdentifier.newBuilder()
-          .setRepoId(Long.parseLong(identifierArr[0]))
-          .setCommitHash(identifierArr[1])
-          .build();
     }
   }
 }

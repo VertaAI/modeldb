@@ -8,7 +8,6 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
 import ai.verta.modeldb.versioning.RepositoryAccessModifierEnum.RepositoryAccessModifier;
-import ai.verta.modeldb.versioning.SetRepository;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +24,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
@@ -36,7 +36,8 @@ public class RepositoryEntity {
 
   public RepositoryEntity() {}
 
-  public RepositoryEntity(Repository repository, WorkspaceDTO workspaceDTO)
+  public RepositoryEntity(
+      Repository repository, WorkspaceDTO workspaceDTO, boolean isDatasetRepository)
       throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
@@ -56,6 +57,10 @@ public class RepositoryEntity {
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, repository.getAttributesList()));
+
+    if (isDatasetRepository) {
+      this.datasetRepositoryMappingEntity = new DatasetRepositoryMappingEntity(this);
+    }
   }
 
   @Id
@@ -104,6 +109,9 @@ public class RepositoryEntity {
   @LazyCollection(LazyCollectionOption.FALSE)
   @OrderBy("id")
   private List<AttributeEntity> attributeMapping;
+
+  @OneToOne(mappedBy = "repositoryEntity", cascade = CascadeType.ALL)
+  private DatasetRepositoryMappingEntity datasetRepositoryMappingEntity;
 
   public Long getId() {
     return id;
@@ -179,8 +187,7 @@ public class RepositoryEntity {
     return builder.build();
   }
 
-  public void update(SetRepository request) throws InvalidProtocolBufferException {
-    final Repository repository = request.getRepository();
+  public void update(Repository repository) throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
@@ -233,5 +240,9 @@ public class RepositoryEntity {
         }
       }
     }
+  }
+
+  public boolean isDataset() {
+    return datasetRepositoryMappingEntity != null;
   }
 }

@@ -32,9 +32,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
 
       if (request.getId() == null
           || request.getId().getIdTypeValue() == 0
-          || (request.getId().getIntId() == 0
-              && request.getId().getStringId().isEmpty()
-              && !request.getId().hasCompositeId())) {
+          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         String errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
         LOGGER.warn(errorMessage);
         Status status =
@@ -64,9 +62,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       String errorMessage = null;
       if (request.getId() == null
           || request.getId().getIdTypeValue() == 0
-          || (request.getId().getIntId() == 0
-              && request.getId().getStringId().isEmpty()
-              && !request.getId().hasCompositeId())) {
+          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         errorMessage = "Invalid parameter set in AddLabelsRequest.Id";
       } else if (request.getLabelsList().isEmpty()) {
         errorMessage = "labels not found in AddLabelsRequest request";
@@ -101,9 +97,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       String errorMessage = null;
       if (request.getId() == null
           || request.getId().getIdTypeValue() == 0
-          || (request.getId().getIntId() == 0
-              && request.getId().getStringId().isEmpty()
-              && !request.getId().hasCompositeId())) {
+          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         errorMessage = "Invalid parameter set in DeleteLabelsRequest.Id";
       } else if (request.getLabelsList().isEmpty()) {
         errorMessage = "Labels not found in DeleteLabelsRequest";
@@ -120,7 +114,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean status = metadataDAO.deleteLabels(request.getId(), request.getLabelsList());
+      boolean status = metadataDAO.deleteLabels(request.getId(), request.getLabelsList(), false);
       responseObserver.onNext(DeleteLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {

@@ -1,8 +1,10 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.common.KeyValue;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
@@ -49,6 +51,8 @@ public class AttributeEntity {
       setDatasetVersionEntity(entity);
     } else if (entity instanceof RepositoryEntity) {
       setRepositoryEntity(entity);
+    } else if (entity instanceof BlobContainer) {
+      this.entity_name = ModelDBConstants.BLOB;
     }
 
     this.field_type = fieldType;
@@ -95,6 +99,9 @@ public class AttributeEntity {
   @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @JoinColumn(name = "repository_id")
   private RepositoryEntity repositoryEntity;
+
+  @Column(name = "entity_hash")
+  private String entity_hash;
 
   @Column(name = "entity_name", length = 50)
   private String entity_name;
@@ -191,6 +198,11 @@ public class AttributeEntity {
   private void setRepositoryEntity(Object entity) {
     this.repositoryEntity = (RepositoryEntity) entity;
     this.entity_name = this.repositoryEntity.getClass().getSimpleName();
+  }
+
+  public void setEntity_hash(String entity_hash) {
+    this.entity_hash = entity_hash;
+    this.entity_name = ModelDBConstants.BLOB;
   }
 
   public String getField_type() {

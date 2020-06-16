@@ -17,7 +17,6 @@ import ai.verta.modeldb.metadata.DeleteLabelsRequest;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
-import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -217,7 +216,10 @@ public class CommitTest {
     switch (contentCase) {
       case DATASET:
         DatasetBlob datasetBlob = DatasetBlob.newBuilder().setPath(getPathDatasetBlob()).build();
-        return Blob.newBuilder().setDataset(datasetBlob).build();
+        return Blob.newBuilder()
+            .setDataset(datasetBlob)
+            .addAllAttributes(RepositoryTest.getAttributeList())
+            .build();
       case CODE:
         return getCodeBlobFromPath("abc");
       case ENVIRONMENT:
@@ -2201,16 +2203,12 @@ public class CommitTest {
       List<String> locations = new ArrayList<>();
       locations.add("modeldb");
       locations.add("test.txt");
-      VersioningCompositeIdentifier identifier =
-          VersioningCompositeIdentifier.newBuilder()
-              .setRepoId(id)
-              .setCommitHash(datasetCommit.getCommitSha())
-              .addAllLocation(locations)
-              .build();
+      String compositeId =
+          VersioningUtils.getVersioningCompositeId(id, datasetCommit.getCommitSha(), locations);
       IdentificationType repoCommitBlobLabelId =
           IdentificationType.newBuilder()
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-              .setCompositeId(identifier)
+              .setStringId(compositeId)
               .build();
       labelIds.add(repoCommitBlobLabelId);
       addLabelsRequest =
@@ -2242,11 +2240,10 @@ public class CommitTest {
           datasetBlob,
           listCommitBlobsResponse.getBlobsList().get(0).getBlob());
 
-      identifier = identifier.toBuilder().clearLocation().build();
       repoCommitBlobLabelId =
           repoCommitBlobLabelId
               .toBuilder()
-              .setCompositeId(identifier)
+              .setStringId(id + "::" + datasetCommit.getCommitSha())
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)
               .build();
       labelIds.add(repoCommitBlobLabelId);
@@ -2495,5 +2492,55 @@ public class CommitTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Delete commit with tags test end................................");
+  }
+
+  @Test
+  public void createBlobWithAttributeTest() throws ModelDBException, NoSuchAlgorithmException {
+    LOGGER.info("Create blob with attributes test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    CreateCommitRequest createCommitRequest =
+        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+
+    ListCommitBlobsRequest listCommitBlobsRequest =
+        ListCommitBlobsRequest.newBuilder()
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .build();
+
+    ListCommitBlobsRequest.Response listCommitBlobsResponse =
+        versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        1,
+        listCommitBlobsResponse.getBlobsCount());
+    Assert.assertEquals(
+        "blob attributes count not match with expected blob attributes count",
+        createCommitRequest.getBlobs(0).getBlob().getAttributesList(),
+        listCommitBlobsResponse.getBlobs(0).getBlob().getAttributesList());
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+    LOGGER.info("Create blob with attributes test end................................");
   }
 }

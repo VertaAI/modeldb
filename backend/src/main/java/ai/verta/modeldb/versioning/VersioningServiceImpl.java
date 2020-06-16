@@ -267,6 +267,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               authService.getVertaIdFromUserInfo(currentLoginUserInfo),
               request.getCommit(),
               (session) -> blobDAO.setBlobs(session, blobContainers, fileHasher),
+              (session, repoId, commitHash) ->
+                  blobDAO.setBlobsAttributes(session, repoId, commitHash, blobContainers),
               repositoryFunction);
 
       responseObserver.onNext(response);

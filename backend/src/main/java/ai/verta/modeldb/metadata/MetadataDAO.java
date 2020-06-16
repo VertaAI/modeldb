@@ -22,9 +22,11 @@ public interface MetadataDAO {
 
   String getProperty(Session session, IdentificationType id, String key);
 
-  boolean deleteLabels(IdentificationType id, List<String> labels) throws ModelDBException;
+  boolean deleteLabels(IdentificationType id, List<String> labels, boolean deleteAll)
+      throws ModelDBException;
 
-  void deleteLabels(Session session, IdentificationType id, List<String> labels)
+  boolean deleteLabels(
+      Session session, IdentificationType id, List<String> labels, boolean deleteAll)
       throws ModelDBException;
 
   boolean deleteProperty(IdentificationType id, String key);

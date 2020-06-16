@@ -1,6 +1,6 @@
 package ai.verta.modeldb.versioning;
 
-import ai.verta.modeldb.AddDatasetTags.Response;
+import ai.verta.modeldb.AddDatasetTags;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
@@ -13,7 +13,6 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.ProtocolStringList;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import org.hibernate.Session;
@@ -30,6 +29,9 @@ public interface RepositoryDAO {
       throws ModelDBException;
 
   RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
+      throws ModelDBException;
+
+  RepositoryEntity getRepositoryById(RepositoryIdentification id, boolean checkWrite)
       throws ModelDBException;
 
   SetRepository.Response setRepository(
@@ -78,11 +80,11 @@ public interface RepositoryDAO {
   FindRepositories.Response findRepositories(FindRepositories request)
       throws ModelDBException, InvalidProtocolBufferException;
 
-  Response addDatasetTags(MetadataDAO metadataDAO, String id, List<String> tags)
+  AddDatasetTags.Response addDatasetTags(MetadataDAO metadataDAO, String id, List<String> tags)
       throws ModelDBException;
 
   Dataset deleteDatasetTags(
-      MetadataDAO metadataDAO, String id, ProtocolStringList tagsList, boolean deleteAll)
+      MetadataDAO metadataDAO, String id, List<String> tagsList, boolean deleteAll)
       throws ModelDBException;
 
   DatasetPaginationDTO findDatasets(

@@ -30,15 +30,15 @@ public class DatasetBlobFactory extends BlobFactory {
     DatasetBlob.Builder datasetBlobBuilder = DatasetBlob.newBuilder();
     switch (getElementType()) {
       case S_3_DATASET_BLOB:
-        return Blob.newBuilder()
-            .setDataset(datasetBlobBuilder.setS3(getS3Blob(session, getElementSha())))
-            .build();
+        datasetBlobBuilder.setS3(getS3Blob(session, getElementSha()));
+        break;
       case PATH_DATASET_BLOB:
         final PathDatasetBlob pathBlob = getPathBlob(session, getElementSha());
         if (pathBlob == null) {
           throw new ModelDBException("Path blob not found", Code.INTERNAL);
         }
-        return Blob.newBuilder().setDataset(datasetBlobBuilder.setPath(pathBlob)).build();
+        datasetBlobBuilder.setPath(pathBlob);
+        break;
     }
     return Blob.newBuilder().setDataset(datasetBlobBuilder).build();
   }

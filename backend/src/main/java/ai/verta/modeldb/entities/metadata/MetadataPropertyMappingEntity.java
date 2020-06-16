@@ -1,8 +1,8 @@
 package ai.verta.modeldb.entities.metadata;
 
 import ai.verta.modeldb.metadata.IdentificationType;
-import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.VersioningUtils;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.Column;
@@ -16,7 +16,7 @@ import javax.persistence.Table;
 public class MetadataPropertyMappingEntity {
   public MetadataPropertyMappingEntity() {}
 
-  @Column(name = "value", columnDefinition = "TEXT")
+  @Column(name = "metadata_value", columnDefinition = "TEXT")
   private String value;
 
   @EmbeddedId private LabelMappingId id;
@@ -27,7 +27,7 @@ public class MetadataPropertyMappingEntity {
   }
 
   public static LabelMappingId createId(IdentificationType id, String key) {
-    return new LabelMappingId(id.getCompositeId(), key);
+    return new LabelMappingId(id.getStringId(), key);
   }
 
   public LabelMappingId getId() {
@@ -50,15 +50,18 @@ public class MetadataPropertyMappingEntity {
     @Column(name = "location")
     private String location;
 
-    @Column(name = "key")
+    @Column(name = "metadata_key")
     private String key;
 
     public LabelMappingId() {}
 
-    private LabelMappingId(VersioningCompositeIdentifier compositeId, String key) {
-      repositoryId = compositeId.getRepoId();
-      commitSha = compositeId.getCommitHash();
-      location = ModelDBUtils.getJoinedLocation(compositeId.getLocationList());
+    private LabelMappingId(String compositeId, String key) {
+      String[] compositeIdArr = VersioningUtils.getDatasetVersionBlobCompositeIdString(compositeId);
+      repositoryId = Long.parseLong(compositeIdArr[0]);
+      commitSha = compositeIdArr[1];
+      location =
+          ModelDBUtils.getJoinedLocation(
+              ModelDBUtils.getLocationWithSplitSlashOperator(compositeIdArr[2]));
       this.key = key;
     }
 

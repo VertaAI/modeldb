@@ -115,6 +115,7 @@ message GetAllDatasetVersionsByDatasetId {
 
 message DeleteDatasetVersion {
     string id = 1;
+    string dataset_id = 2;
 
     message Response {
         bool status = 1;
@@ -123,6 +124,7 @@ message DeleteDatasetVersion {
 
 message DeleteDatasetVersions {
     repeated string ids = 1;
+    string dataset_id = 2;
 
     message Response {
         bool status = 1;
@@ -169,6 +171,7 @@ message UpdateDatasetVersionDescription {
 message AddDatasetVersionTags {
     string id = 1;
     repeated string tags = 2;
+    string dataset_id = 3;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -179,6 +182,7 @@ message DeleteDatasetVersionTags {
     string id = 1;
     repeated string tags = 2;
     bool delete_all = 3;
+    string dataset_id = 4;
 
     message Response {
         DatasetVersion dataset_version = 1;

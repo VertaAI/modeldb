@@ -14,6 +14,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceBlockingStub;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.VersioningUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -21,6 +22,8 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -224,17 +227,15 @@ public class MetadataTest {
 
     MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
 
-    VersioningCompositeIdentifier identifier =
-        VersioningCompositeIdentifier.newBuilder()
-            .setRepoId(1)
-            .setCommitHash(UUID.randomUUID().toString())
-            .addLocation("modeldb")
-            .addLocation("test.txt")
-            .build();
+    List<String> locations = new ArrayList<>();
+    locations.add("modeldb");
+    locations.add("test.txt");
+    String compositeId =
+        VersioningUtils.getVersioningCompositeId(1L, UUID.randomUUID().toString(), locations);
     IdentificationType id1 =
         IdentificationType.newBuilder()
             .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-            .setCompositeId(identifier)
+            .setStringId(compositeId)
             .build();
     AddLabelsRequest addLabelsRequest2 =
         AddLabelsRequest.newBuilder().setId(id1).addLabels("Backend").addLabels("Frontend").build();
@@ -261,15 +262,11 @@ public class MetadataTest {
 
     MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
 
-    VersioningCompositeIdentifier identifier =
-        VersioningCompositeIdentifier.newBuilder()
-            .setRepoId(1)
-            .setCommitHash(UUID.randomUUID().toString())
-            .build();
+    String compositeId = 1L + "::" + UUID.randomUUID().toString();
     IdentificationType id1 =
         IdentificationType.newBuilder()
             .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)
-            .setCompositeId(identifier)
+            .setStringId(compositeId)
             .build();
     AddLabelsRequest addLabelsRequest2 =
         AddLabelsRequest.newBuilder().setId(id1).addLabels("Backend").addLabels("Frontend").build();
