@@ -117,7 +117,7 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.GetCommitRequest.Response)
         commit_msg = response_msg.commit
         return cls(conn, repo, commit_msg, **kwargs)
@@ -184,16 +184,16 @@ class Commit(object):
         return response_msg
 
     # TODO: consolidate this with similar method in `ExperimentRun`
-    def _upload_artifact(self, blob_path, component_blob, file_handle, part_size=64*(10**6)):
+    def _upload_artifact(self, blob_path, dataset_component_path, file_handle, part_size=64*(10**6)):
         """
         Uploads `file_handle` to ModelDB artifact store.
 
         Parameters
         ----------
         blob_path : str
-            Path to blog withiin repo.
-        component_blob : protobuf Message
-            Dataset component blob.
+            Path to blob within repo.
+        dataset_component_path : str
+            Filepath in dataset component blob.
         file_handle : file-like
             Artifact to be uploaded.
         part_size : int, default 64 MB
@@ -203,9 +203,9 @@ class Commit(object):
         file_handle.seek(0)
 
         # check if multipart upload ok
-        url_for_artifact = self._get_url_for_artifact(blob_path, component_blob.path.path, "PUT", part_num=1)
+        url_for_artifact = self._get_url_for_artifact(blob_path, dataset_component_path, "PUT", part_num=1)
 
-        print("uploading {} to ModelDB".format(component_blob.path.path))
+        print("uploading {} to ModelDB".format(dataset_component_path))
         if url_for_artifact.multipart_upload_ok:
             # TODO: parallelize this
             file_parts = iter(lambda: file_handle.read(part_size), b'')
@@ -213,7 +213,7 @@ class Commit(object):
                 print("uploading part {}".format(part_num), end='\r')
 
                 # get presigned URL
-                url = self._get_url_for_artifact(blob_path, component_blob.path.path, "PUT", part_num=part_num).url
+                url = self._get_url_for_artifact(blob_path, dataset_component_path, "PUT", part_num=part_num).url
 
                 # wrap file part into bytestream to avoid OverflowError
                 #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
@@ -244,7 +244,7 @@ class Commit(object):
                 msg = _VersioningService.CommitVersionedBlobArtifactPart(
                     commit_sha=self.id,
                     location=path_to_location(blob_path),
-                    path_dataset_component_blob_path=component_blob.path.path,
+                    path_dataset_component_blob_path=dataset_component_path,
                 )
                 msg.repository_id.repo_id = self._repo.id
                 msg.artifact_part.part_number = part_num
@@ -262,7 +262,7 @@ class Commit(object):
             msg = _VersioningService.CommitMultipartVersionedBlobArtifact(
                 commit_sha=self.id,
                 location=path_to_location(blob_path),
-                path_dataset_component_blob_path=component_blob.path.path,
+                path_dataset_component_blob_path=dataset_component_path,
             )
             msg.repository_id.repo_id = self._repo.id
             data = _utils.proto_to_json(msg)
@@ -286,7 +286,7 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.ListCommitBlobsRequest.Response)
         self._blobs.update({
             '/'.join(blob_msg.location): blob_msg_to_object(blob_msg.blob)
@@ -387,7 +387,7 @@ class Commit(object):
             response = _utils.make_request("GET", endpoint, self._conn, params=data)
             _utils.raise_for_http_error(response)
 
-            response_msg = _utils.json_to_proto(response.json(), msg.Response)
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
             folder_msg = response_msg.folder
 
             folder_path = '/'.join(location)
@@ -515,7 +515,7 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-        response_msg = _utils.json_to_proto(response.json(), proto_message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), proto_message.Response)
 
         self._become_saved_child(response_msg.commit.commit_sha)
 
@@ -569,7 +569,7 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.ListCommitsLogRequest.Response)
         commits = response_msg.commits
 
@@ -655,7 +655,7 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.ComputeRepositoryDiffRequest.Response)
         return diff_module.Diff(response_msg.diffs)
 
@@ -739,7 +739,7 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
 
         self._become_saved_child(response_msg.commit.commit_sha)
 
@@ -842,7 +842,7 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
 
         # raise for conflict
         if response_msg.conflicts:

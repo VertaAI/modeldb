@@ -303,4 +303,39 @@ class Commit(
       else ls.get.toStream.map(c => new Commit(clientSet, repo, c))
     )
   }
+
+  /** Returns the diff from reference to self
+   *  @param reference Commit to be compared to. If not provided, first parent will be used.
+   *  @return Failure if this commit or reference has not yet been saved, or if they do not belong to the same repository; otherwise diff object.
+   */
+  def diffFrom(reference: Option[Commit] = None)(implicit ec: ExecutionContext) = {
+    if (!saved)
+      Failure(new IllegalCommitSavedStateException("Commit must be saved before a diff can be calculated"))
+    else if (reference.isDefined && !reference.get.saved)
+      Failure(new IllegalCommitSavedStateException("Reference must be saved before a diff can be calculated"))
+    else if (reference.isDefined && reference.get.repo.id != repo.id)
+      Failure(new IllegalArgumentException("Reference and this commit must belong to the same repository"))
+    else {
+      clientSet.versioningService.ComputeRepositoryDiff2(
+        repository_id_repo_id = repo.id,
+        commit_a = Some(
+          if (reference.isDefined) reference.get.id.get else commit.parent_shas.get.head
+        ),
+        commit_b = Some(commit.commit_sha.get)
+      ).map(r => new Diff(r.diffs))
+    }
+  }
+
+  /** Applies a diff to this Commit.
+   *  This method creates a new commit in ModelDB, and assigns a new ID to this object.
+   *  @param diff the Diff instance returned by diffFrom
+   *  @param message the message associated with the new commit
+   *  @return the new Commit instance, if succeeds.
+   */
+  def applyDiff(diff: Diff, message: String)(implicit ec: ExecutionContext) = {
+    if (!saved)
+      Failure(new IllegalCommitSavedStateException("Commit must be saved before a diff can be applied"))
+    else
+      createCommit(message = message, diffs = diff.blobDiffs, commitBase = id)
+  }
 }

@@ -282,7 +282,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       if (datasetVersionObj == null || datasetVersionObj.getDeleted()) {
-        LOGGER.warn(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
+        LOGGER.info(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -492,7 +492,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       } catch (ModelDBException ex) {
         if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
-          LOGGER.warn(ex.getMessage());
+          LOGGER.info(ex.getMessage());
           DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
           datasetVersionDTO.setDatasetVersions(Collections.emptyList());
           datasetVersionDTO.setTotalRecords(0L);
@@ -633,7 +633,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       if (datasetVersionObj == null) {
-        LOGGER.warn(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
+        LOGGER.info(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -756,7 +756,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       if (datasetVersionObj == null) {
-        LOGGER.warn(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
+        LOGGER.info(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)

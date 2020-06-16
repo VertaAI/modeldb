@@ -556,7 +556,7 @@ public class ModelDBHibernateUtil {
 
     if (count > 0) {
       // Throw error if it is an insert request and project with same name already exists
-      logger.warn(entityName + " with name {} already exists", name);
+      logger.info(entityName + " with name {} already exists", name);
       Status status =
           Status.newBuilder()
               .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -670,7 +670,7 @@ public class ModelDBHibernateUtil {
                     CompletableFuture<Void> combinedFuture =
                         CompletableFuture.allOf(completableFutures);
                     combinedFuture.get();
-                    LOGGER.warn("Finished all the future tasks");
+                    LOGGER.info("Finished all the future tasks");
                   }
                 } catch (InterruptedException | ExecutionException e) {
                   LOGGER.warn(
