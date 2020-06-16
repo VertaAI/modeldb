@@ -99,6 +99,10 @@ class _Dataset(blob.Blob):
         if filepath is None:
             filepath = os.path.basename(component_path)
 
+        # TODO: remove this check when the os.rename() step is fixed to sidestep collisions
+        if os.path.exists(filepath):
+            raise OSError("{} already exists".format(filepath))
+
         # backend will return error if `component_path` not found/versioned
         url = self._commit._get_url_for_artifact(self._blob_path, component_path, "GET").url
 
@@ -110,14 +114,12 @@ class _Dataset(blob.Blob):
             # create parent dirs
             pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # pylint: disable=no-member
 
-            # read response stream into temp file
             print("downloading {} from ModelDB".format(component_path))
             try:
+                # read response stream into temp file
                 with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
                     for chunk in response.iter_content(chunk_size=chunk_size):
                         tempf.write(chunk)
-                    tempf.flush()  # flush object buffer
-                    os.fsync(tempf.fileno())  # flush OS buffer
             except Exception as e:
                 # delete partially-downloaded file
                 os.remove(tempf.name)
