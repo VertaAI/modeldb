@@ -18,11 +18,18 @@ import scala.util.{Failure, Success, Try}
 class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: ModeldbExperimentRun) extends Taggable {
   def tags()(implicit ec: ExecutionContext) = new Tags(clientSet, ec, this)
 
+  /** Gets all tags from this Experiment Run
+   *  @return list of all the tags of this run, if succeeds
+   */
   override def getTags()(implicit ec: ExecutionContext): Try[List[String]] = {
     clientSet.experimentRunService.getExperimentRunTags(run.id)
       .map(r => r.tags.getOrElse(Nil))
   }
 
+  /** Delete multiple tags of this Experiment Run
+   *  @param tags tags
+   *  @return whether the attempt succeeds
+   */
   override def delTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
     clientSet.experimentRunService.deleteExperimentRunTags(ModeldbDeleteExperimentRunTags(
       id = run.id,
@@ -31,6 +38,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       .map(_ => {})
   }
 
+  /** Logs multiple tags to this Experiment Run
+   *  @param tags tags
+   *  @return whether the attempt succeeds
+   */
   override def addTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
     clientSet.experimentRunService.addExperimentRunTags(ModeldbAddExperimentRunTags(
       id = run.id,
