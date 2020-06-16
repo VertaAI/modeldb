@@ -24,6 +24,9 @@ KWARGS_COMBOS = [dict(zip(KWARGS.keys(), values))
                  in itertools.product(*KWARGS.values())
                  if values.count(None) != len(values)]
 
+# for `tags` typecheck tests
+TAG = "my-tag"
+
 
 class TestClient:
     @pytest.mark.oss
@@ -224,6 +227,18 @@ class TestProject:
         with pytest.raises(ValueError):
             client.set_project(id="nonexistent_id")
 
+    @pytest.mark.parametrize("tags", [TAG, [TAG]])
+    def test_tags_is_list_of_str(self, client, tags):
+        proj = client.set_project(tags=tags)
+
+        endpoint = "{}://{}/api/v1/modeldb/project/getProjectTags".format(
+            client._conn.scheme,
+            client._conn.socket,
+        )
+        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': proj.id})
+        verta._internal_utils._utils.raise_for_http_error(response)
+        assert response.json().get('tags', []) == [TAG]
+
 
 class TestExperiment:
     def test_set_experiment_warning(self, client):
@@ -266,6 +281,19 @@ class TestExperiment:
     def test_no_project_error(self, client):
         with pytest.raises(AttributeError):
             client.set_experiment()
+
+    @pytest.mark.parametrize("tags", [TAG, [TAG]])
+    def test_tags_is_list_of_str(self, client, tags):
+        client.set_project()
+        expt = client.set_experiment(tags=tags)
+
+        endpoint = "{}://{}/api/v1/modeldb/experiment/getExperimentTags".format(
+            client._conn.scheme,
+            client._conn.socket,
+        )
+        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': expt.id})
+        verta._internal_utils._utils.raise_for_http_error(response)
+        assert response.json().get('tags', []) == [TAG]
 
 
 class TestExperimentRun:
@@ -312,6 +340,20 @@ class TestExperimentRun:
     def test_no_experiment_error(self, client):
         with pytest.raises(AttributeError):
             client.set_experimennt_run()
+
+    @pytest.mark.parametrize("tags", [TAG, [TAG]])
+    def test_tags_is_list_of_str(self, client, tags):
+        client.set_project()
+        client.set_experiment()
+        run = client.set_experiment_run(tags=tags)
+
+        endpoint = "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunTags".format(
+            client._conn.scheme,
+            client._conn.socket,
+        )
+        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': run.id})
+        verta._internal_utils._utils.raise_for_http_error(response)
+        assert response.json().get('tags', []) == [TAG]
 
     def test_clone(self, experiment_run):
         expt_run = experiment_run

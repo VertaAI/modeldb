@@ -940,3 +940,37 @@ def is_org(workspace_name, conn):
     )
 
     return response.status_code != 404
+
+
+def as_list_of_str(tags):
+    """
+    Ensures that `tags` is a list of str.
+
+    Parameters
+    ----------
+    tags : str or list of str
+        If list of str, return unchanged. If str, return wrapped in a list.
+
+    Returns
+    -------
+    tags : list of str
+        Tags.
+
+    Raises
+    ------
+    TypeError
+        If `tags` is neither str nor list of str.
+
+    """
+    # TODO: make error messages more general so this can be used for any similar var
+    if isinstance(tags, six.string_types):
+        tags = [tags]
+    else:
+        if not isinstance(tags, (list, tuple, set)):
+            raise TypeError("`tags` should be list of str, not {}".format(type(tags)))
+
+        for tag in tags:
+            if not isinstance(tag, six.string_types):
+                raise TypeError("`tags` must be list of str, but found {}".format(type(tag)))
+
+    return tags

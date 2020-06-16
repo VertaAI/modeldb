@@ -668,12 +668,15 @@ class Client(object):
         """
         predicates = []
         if tags is not None:
+            tags = _utils.as_list_of_str(tags)
             for tag in tags:
                 predicates.append(
                     _CommonService.KeyValueQuery(key="tags",
                                                  value=_utils.python_to_val_proto(tag),
                                                  operator=_CommonService.OperatorEnum.EQ))
         if name is not None:
+            if not isinstance(name, six.string_types):
+                raise TypeError("`name` must be str, not {}".format(type(name)))
             predicates.append(
                 _CommonService.KeyValueQuery(key="name",
                                              value=_utils.python_to_val_proto(name),
@@ -1316,6 +1319,8 @@ class Project(_ModelDBEntity):
 
     @staticmethod
     def _create(conn, proj_name, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -1466,6 +1471,8 @@ class Experiment(_ModelDBEntity):
 
     @staticmethod
     def _create(conn, proj_id, expt_name, desc=None, tags=None, attrs=None):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -1984,6 +1991,8 @@ class ExperimentRun(_ModelDBEntity):
 
     @staticmethod
     def _create(conn, proj_id, expt_id, expt_run_name, desc=None, tags=None, attrs=None, date_created=None):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -2386,11 +2395,7 @@ class ExperimentRun(_ModelDBEntity):
             Tags.
 
         """
-        if isinstance(tags, six.string_types):
-            raise TypeError("`tags` must be an iterable of strings")
-        for tag in tags:
-            if not isinstance(tag, six.string_types):
-                raise TypeError("`tags` must be an iterable of strings")
+        tags = _utils.as_list_of_str(tags)
 
         Message = _ExperimentRunService.AddExperimentRunTags
         msg = Message(id=self.id, tags=tags)
