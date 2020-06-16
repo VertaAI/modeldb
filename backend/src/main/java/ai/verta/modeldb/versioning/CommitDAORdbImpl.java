@@ -16,7 +16,6 @@ import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataDAO;
-import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
@@ -24,7 +23,13 @@ import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.hibernate.Session;
@@ -38,7 +43,11 @@ public class CommitDAORdbImpl implements CommitDAO {
    * the repository the commit is made on
    */
   public CreateCommitRequest.Response setCommit(
-      String author, Commit commit, BlobFunction setBlobs, RepositoryFunction getRepository)
+      String author,
+      Commit commit,
+      BlobFunction setBlobs,
+      BlobFunction.BlobFunctionAttribute setBlobsAttributes,
+      RepositoryFunction getRepository)
       throws ModelDBException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
@@ -46,14 +55,15 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryEntity repositoryEntity = getRepository.apply(session);
 
       CommitEntity commitEntity =
-          saveCommitEntity(session, commit, rootSha, author, repositoryEntity, null);
+          saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
+      setBlobsAttributes.apply(session, repositoryEntity.getId(), commitEntity.getCommit_hash());
       session.getTransaction().commit();
       return CreateCommitRequest.Response.newBuilder()
           .setCommit(commitEntity.toCommitProto())
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return setCommit(author, commit, setBlobs, getRepository);
+        return setCommit(author, commit, setBlobs, setBlobsAttributes, getRepository);
       } else {
         throw ex;
       }
@@ -124,27 +134,24 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
 
       CommitEntity commitEntity =
-          saveCommitEntity(
-              session,
-              commit,
-              rootSha,
-              datasetVersion.getOwner(),
-              repositoryEntity,
-              datasetVersion.getId());
-      VersioningCompositeIdentifier.Builder versioningIdentifier =
-          VersioningCompositeIdentifier.newBuilder()
-              .setRepoId(repositoryEntity.getId())
-              .setCommitHash(commitEntity.getCommit_hash())
-              .addAllLocation(location);
+          saveCommitEntity(session, commit, rootSha, datasetVersion.getOwner(), repositoryEntity);
+      blobDAO.setBlobsAttributes(
+          session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList);
+      String compositeId =
+          VersioningUtils.getVersioningCompositeId(
+              repositoryEntity.getId(), commitEntity.getCommit_hash(), location);
       metadataDAO.addProperty(
           session,
-          IdentificationType.newBuilder().setCompositeId(versioningIdentifier).build(),
+          IdentificationType.newBuilder()
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+              .setStringId(compositeId)
+              .build(),
           "description",
           datasetVersion.getDescription());
       metadataDAO.addLabels(
           session,
           IdentificationType.newBuilder()
-              .setCompositeId(versioningIdentifier)
+              .setStringId(compositeId)
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
               .build(),
           datasetVersion.getTagsList());
@@ -177,15 +184,11 @@ public class CommitDAORdbImpl implements CommitDAO {
       Commit commit,
       String rootSha,
       String author,
-      RepositoryEntity repositoryEntity,
-      String commitSha)
+      RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException {
     long timeCreated = new Date().getTime();
     if (App.getInstance().getStoreClientCreationTimestamp() && commit.getDateCreated() != 0L) {
       timeCreated = commit.getDateCreated();
-    }
-    if (commitSha == null) {
-      commitSha = generateCommitSHA(rootSha, commit, timeCreated);
     }
 
     Map<String, CommitEntity> parentCommitEntities = new HashMap<>();
@@ -208,7 +211,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             .setDateUpdated(timeCreated)
             .setAuthor(author)
             .setMessage(commit.getMessage())
-            .setCommitSha(commitSha)
+            .setCommitSha(generateCommitSHA(rootSha, commit, timeCreated))
             .build();
     CommitEntity commitEntity =
         new CommitEntity(
@@ -580,17 +583,16 @@ public class CommitDAORdbImpl implements CommitDAO {
       CommitEntity commitEntity =
           getCommitEntity(session, datasetVersionId, (session1 -> repositoryEntity));
 
-      VersioningCompositeIdentifier compositeIdentifier =
-          VersioningCompositeIdentifier.newBuilder()
-              .setRepoId(repositoryEntity.getId())
-              .setCommitHash(commitEntity.getCommit_hash())
-              .addLocation(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION)
-              .build();
+      String compositeId =
+          VersioningUtils.getVersioningCompositeId(
+              repositoryEntity.getId(),
+              commitEntity.getCommit_hash(),
+              Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
 
       IdentificationType identificationType =
           IdentificationType.newBuilder()
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-              .setCompositeId(compositeIdentifier)
+              .setStringId(compositeId)
               .build();
       if (addTags) {
         metadataDAO.addLabels(identificationType, ModelDBUtils.checkEntityTagsLength(tagsList));

@@ -395,8 +395,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               initCommit,
               FileHasher.getSha(new String()),
               authService.getVertaIdFromUserInfo(userInfo),
-              repositoryEntity,
-              null);
+              repositoryEntity);
 
       saveBranch(
           session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repositoryEntity);

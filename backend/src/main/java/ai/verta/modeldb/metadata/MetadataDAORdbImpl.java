@@ -6,6 +6,7 @@ import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.VersioningUtils;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -53,10 +54,6 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       case STRING_ID:
         entityHash = id.getStringId();
         break;
-      case COMPOSITE_ID:
-        entityHash =
-            LabelsMappingEntity.getVersioningCompositeIdString(id.getCompositeId(), id.getIdType());
-        break;
       default:
         throw new StatusRuntimeException(io.grpc.Status.INTERNAL);
     }
@@ -64,7 +61,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public boolean addLabels(IdentificationType id, List<String> labels) throws ModelDBException {
+  public boolean addLabels(IdentificationType id, List<String> labels) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       addLabels(session, id, labels);
@@ -103,8 +100,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public void addLabels(Session session, IdentificationType id, List<String> labels)
-      throws ModelDBException {
+  public void addLabels(Session session, IdentificationType id, List<String> labels) {
     for (String label : labels) {
       LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
       LabelsMappingEntity existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
@@ -161,10 +157,16 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   public String getProperty(Session session, IdentificationType id, String key) {
     Query<MetadataPropertyMappingEntity> query =
         session.createQuery(GET_PROPERTY_HQL, MetadataPropertyMappingEntity.class);
-    VersioningCompositeIdentifier compositeId = id.getCompositeId();
-    query.setParameter("repositoryId", compositeId.getRepoId());
-    query.setParameter("commitSha", compositeId.getCommitHash());
-    query.setParameter("location", ModelDBUtils.getJoinedLocation(compositeId.getLocationList()));
+    String[] compositeIdArr =
+        VersioningUtils.getDatasetVersionBlobCompositeIdString(id.getStringId());
+    Long repositoryId = Long.parseLong(compositeIdArr[0]);
+    String commitSha = compositeIdArr[1];
+    String location =
+        ModelDBUtils.getJoinedLocation(
+            ModelDBUtils.getLocationWithSplitSlashOperator(compositeIdArr[2]));
+    query.setParameter("repositoryId", repositoryId);
+    query.setParameter("commitSha", commitSha);
+    query.setParameter("location", location);
     query.setParameter("key", key);
     return query.uniqueResultOptional().map(MetadataPropertyMappingEntity::getValue).orElse(null);
   }

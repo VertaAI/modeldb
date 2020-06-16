@@ -100,7 +100,7 @@ public class AttributeEntity {
   @JoinColumn(name = "repository_id")
   private RepositoryEntity repositoryEntity;
 
-  @Column(name = "entity_hash", length = 64)
+  @Column(name = "entity_hash")
   private String entity_hash;
 
   @Column(name = "entity_name", length = 50)

@@ -11,7 +11,11 @@ import org.hibernate.Session;
 
 public interface CommitDAO {
   CreateCommitRequest.Response setCommit(
-      String author, Commit commit, BlobFunction setBlobs, RepositoryFunction getRepository)
+      String author,
+      Commit commit,
+      BlobFunction setBlobs,
+      BlobFunction.BlobFunctionAttribute setBlobsAttributes,
+      RepositoryFunction getRepository)
       throws ModelDBException, NoSuchAlgorithmException;
 
   CreateCommitRequest.Response setCommitFromDatasetVersion(
@@ -26,8 +30,7 @@ public interface CommitDAO {
       Commit commit,
       String rootSha,
       String author,
-      RepositoryEntity repositoryEntity,
-      String commitSha)
+      RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException;
 
   ListCommitsRequest.Response listCommits(

@@ -1,6 +1,13 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.common.KeyValue;
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
+import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.RdbmsUtils;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
@@ -99,5 +106,32 @@ public class VersioningUtils {
         + " ("
         + revertCommit.getCommitSha().substring(0, 7)
         + ")\"";
+  }
+
+  public static String getVersioningCompositeId(
+      Long repoId, String commitHash, List<String> locations) {
+    return repoId + "::" + commitHash + "::" + ModelDBUtils.getLocationWithSlashOperator(locations);
+  }
+
+  public static String[] getDatasetVersionBlobCompositeIdString(String compositeId) {
+    return compositeId.split("::");
+  }
+
+  public static List<KeyValue> getAttributes(
+      Session session, Long repoId, String commitHash, List<String> locations)
+      throws ModelDBException {
+    try {
+      String getAttributesHQL =
+          "From AttributeEntity kv where kv.entity_hash = :entityHash "
+              + " AND kv.entity_name = :entityName AND kv.field_type = :fieldType ORDER BY kv.id";
+      Query getQuery = session.createQuery(getAttributesHQL);
+      getQuery.setParameter("entityName", ModelDBConstants.BLOB);
+      getQuery.setParameter("entityHash", getVersioningCompositeId(repoId, commitHash, locations));
+      getQuery.setParameter("fieldType", ModelDBConstants.ATTRIBUTES);
+      List<AttributeEntity> attributeEntities = getQuery.list();
+      return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
+    } catch (InvalidProtocolBufferException e) {
+      throw new ModelDBException(e);
+    }
   }
 }
