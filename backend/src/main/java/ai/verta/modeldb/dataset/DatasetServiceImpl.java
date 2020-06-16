@@ -267,7 +267,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         LOGGER.info("Wrong id format: {}", e.getMessage());
         throw new ModelDBException(
             "Wrong id format, expecting integer: " + request.getId(),
-            io.grpc.Status.Code.INVALID_ARGUMENT);
+            Code.INVALID_ARGUMENT);
       }
       DeleteRepositoryRequest.Response response =
           repositoryDAO.deleteRepository(
@@ -898,7 +898,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         LOGGER.info("Wrong id format: {}", e.getMessage());
         throw new ModelDBException(
             "Wrong id format, expecting integer: " + request.getDatasetId(),
-            io.grpc.Status.Code.INVALID_ARGUMENT);
+            Code.INVALID_ARGUMENT);
       }
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder().setRepoId(id).build();
