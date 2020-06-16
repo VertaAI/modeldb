@@ -144,7 +144,7 @@ public class ModelDBUtils {
     if (entityName != null && entityName.length() > ModelDBConstants.NAME_LENGTH) {
       String errorMessage =
           "Entity name can not be more than " + ModelDBConstants.NAME_LENGTH + " characters";
-      LOGGER.warn(errorMessage);
+      LOGGER.info(errorMessage);
       Status status =
           Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE).setMessage(errorMessage).build();
       throw StatusProto.toStatusRuntimeException(status);
@@ -156,7 +156,7 @@ public class ModelDBUtils {
     for (String tag : tags) {
       if (tag.isEmpty()) {
         String errorMessage = "Invalid tag found, Tag shouldn't be empty";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -169,7 +169,7 @@ public class ModelDBUtils {
                 + ModelDBConstants.TAG_LENGTH
                 + " characters. Limit exceeded tag is: "
                 + tag;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -254,7 +254,7 @@ public class ModelDBUtils {
               if (userInfoValue != null) {
                 collaborator1 = new CollaboratorUser(authService, userInfoValue);
               } else {
-                LOGGER.warn("skipping " + collaborator.getVertaId() + " because it is not found");
+                LOGGER.info("skipping " + collaborator.getVertaId() + " because it is not found");
               }
               break;
             case ORGANIZATION:
@@ -290,7 +290,7 @@ public class ModelDBUtils {
                     + collaborator.getVertaId()
                     + " because the current user doesn't have access to it");
           } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
-            LOGGER.warn("skipping " + collaborator.getVertaId() + " because it is not found");
+            LOGGER.info("skipping " + collaborator.getVertaId() + " because it is not found");
           } else {
             LOGGER.error(ex.getMessage(), ex);
             throw ex;
@@ -439,7 +439,7 @@ public class ModelDBUtils {
       // SocketException'
       if (throwable instanceof SocketException) {
         String errorMessage = "Database Connection not found: ";
-        LOGGER.warn(errorMessage + "{}", e.getMessage());
+        LOGGER.info(errorMessage + "{}", e.getMessage());
         status =
             Status.newBuilder()
                 .setCode(Code.UNAVAILABLE_VALUE)

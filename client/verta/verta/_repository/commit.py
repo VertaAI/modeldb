@@ -528,14 +528,14 @@ class Commit(object):
 
     def revert(self, other=None, message=None):
         """
-        Reverts all the Commits beginning with `other` up through this Commit.
+        Reverts `other`.
 
         This method creates a new Commit in ModelDB, and assigns a new ID to this object.
 
         Parameters
         ----------
         other : :class:`Commit`, optional
-            Base for the revert. If not provided, this Commit will be reverted.
+            Commit to be reverted. If not provided, this Commit will be reverted.
         message : str, optional
             Description of the revert. If not provided, a default message will be used.
 

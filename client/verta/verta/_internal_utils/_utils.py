@@ -23,7 +23,7 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 from ..external import six
 from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
-from .._protos.public.modeldb import CommonService_pb2 as _CommonService
+from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 try:
     import pandas as pd
@@ -250,9 +250,8 @@ def make_request(method, url, conn, **kwargs):
     if method.upper() not in _VALID_HTTP_METHODS:
         raise ValueError("`method` must be one of {}".format(_VALID_HTTP_METHODS))
 
-    if conn.auth is not None:
-        # add auth to `kwargs['headers']`
-        kwargs.setdefault('headers', {}).update(conn.auth)
+    # add auth to headers
+    kwargs.setdefault('headers', {}).update(conn.auth)
 
     with requests.Session() as s:
         s.mount(url, HTTPAdapter(max_retries=conn.retry))
@@ -941,3 +940,37 @@ def is_org(workspace_name, conn):
     )
 
     return response.status_code != 404
+
+
+def as_list_of_str(tags):
+    """
+    Ensures that `tags` is a list of str.
+
+    Parameters
+    ----------
+    tags : str or list of str
+        If list of str, return unchanged. If str, return wrapped in a list.
+
+    Returns
+    -------
+    tags : list of str
+        Tags.
+
+    Raises
+    ------
+    TypeError
+        If `tags` is neither str nor list of str.
+
+    """
+    # TODO: make error messages more general so this can be used for any similar var
+    if isinstance(tags, six.string_types):
+        tags = [tags]
+    else:
+        if not isinstance(tags, (list, tuple, set)):
+            raise TypeError("`tags` should be list of str, not {}".format(type(tags)))
+
+        for tag in tags:
+            if not isinstance(tag, six.string_types):
+                raise TypeError("`tags` must be list of str, but found {}".format(type(tag)))
+
+    return tags
