@@ -212,7 +212,7 @@ class LazyList(object):
             )
         raise_for_http_error(response)
 
-        response_msg = json_to_proto(response.json(), msg.Response)
+        response_msg = json_to_proto(body_to_json(response), msg.Response)
         return response_msg
 
     def _get_ids(self, response_msg):
@@ -290,7 +290,7 @@ def raise_for_http_error(response):
         response.raise_for_status()
     except requests.HTTPError as e:
         try:
-            reason = response.json()['message']
+            reason = body_to_json(response)['message']
         except (ValueError,  # not JSON response
                 KeyError):  # no 'message' from back end
             six.raise_from(e, None)  # use default reason
@@ -304,6 +304,39 @@ def raise_for_http_error(response):
                 cause = "Unexpected"
             message = "{} {} Error: {} for url: {}".format(response.status_code, cause, reason, response.url)
             six.raise_from(requests.HTTPError(message, response=response), None)
+
+
+def body_to_json(response):
+    """
+    Returns the JSON-encoded contents of `response`, raising a detailed error on failure.
+
+    Parameters
+    ----------
+    response : :class:`requests.Response`
+        HTTP response.
+
+    Returns
+    -------
+    contents : dict
+        JSON-encoded contents of `response`.
+
+    Raises
+    ------
+    ValueError
+        If `response`'s contents are not JSON-encoded.
+
+    """
+    try:
+        return response.json()
+    except ValueError:  # not JSON response
+        msg = '\n'.join([
+            "expected JSON response from {}, but instead got:".format(response.url),
+            response.text or "<empty response>",
+            "",
+            "Please notify the Verta development team.",
+        ])
+        msg = six.ensure_str(msg)
+        six.raise_from(ValueError(msg), None)
 
 
 def is_hidden(path):  # to avoid "./".startswith('.')
@@ -897,7 +930,7 @@ def get_notebook_filepath():
             response = requests.get(urljoin(server['url'], 'api/sessions'),
                                     params={'token': server.get('token', '')})
             if response.ok:
-                for session in response.json():
+                for session in body_to_json(response):
                     if session['kernel']['id'] == kernel_id:
                         relative_path = session['notebook']['path']
                         return os.path.join(server['notebook_dir'], relative_path)

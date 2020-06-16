@@ -244,7 +244,7 @@ class Client(object):
 
             if response.ok:
                 try:
-                    response_json = response.json()
+                    response_json = _utils.body_to_json(response)
                 except ValueError:  # not JSON response
                     pass
                 else:
@@ -806,7 +806,7 @@ class _ModelDBEntity(object):
                                        self._conn, json=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
 
         url = response_msg.url
         # accommodate port-forwarded NFS store
@@ -1141,7 +1141,7 @@ class _ModelDBEntity(object):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         code_ver_msg = response_msg.code_version
         which_code = code_ver_msg.WhichOneof('code')
         if which_code == 'git_snapshot':
@@ -1253,7 +1253,7 @@ class Project(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.project.name
 
     @property
@@ -1278,11 +1278,11 @@ class Project(_ModelDBEntity):
                                            conn, params=data)
 
             if response.ok:
-                response_msg = _utils.json_to_proto(response.json(), Message.Response)
+                response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
                 return response_msg.project
             else:
-                if ((response.status_code == 403 and response.json()['code'] == 7)
-                        or (response.status_code == 404 and response.json()['code'] == 5)):
+                if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                        or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
                     return None
                 else:
                     _utils.raise_for_http_error(response)
@@ -1295,7 +1295,7 @@ class Project(_ModelDBEntity):
                                            conn, params=data)
 
             if response.ok:
-                response_json = response.json()
+                response_json = _utils.body_to_json(response)
                 response_msg = _utils.json_to_proto(response_json, Message.Response)
                 if workspace is None or response_json.get('project_by_user'):
                     # user's personal workspace
@@ -1309,8 +1309,8 @@ class Project(_ModelDBEntity):
 
                 return proj
             else:
-                if ((response.status_code == 403 and response.json()['code'] == 7)
-                        or (response.status_code == 404 and response.json()['code'] == 5)):
+                if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                        or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
                     return None
                 else:
                     _utils.raise_for_http_error(response)
@@ -1343,7 +1343,7 @@ class Project(_ModelDBEntity):
                                        conn, json=data)
 
         if response.ok:
-            response_msg = _utils.json_to_proto(response.json(), Message.Response)
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
             return response_msg.project
         else:
             _utils.raise_for_http_error(response)
@@ -1420,7 +1420,7 @@ class Experiment(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.experiment.name
 
     @property
@@ -1454,7 +1454,7 @@ class Experiment(_ModelDBEntity):
             raise ValueError("insufficient arguments")
 
         if response.ok:
-            response_msg = _utils.json_to_proto(response.json(), Message.Response)
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
             expt = response_msg.experiment
 
             if not expt.id:  # 200, but empty message
@@ -1463,8 +1463,8 @@ class Experiment(_ModelDBEntity):
 
             return expt
         else:
-            if ((response.status_code == 403 and response.json()['code'] == 7)
-                    or (response.status_code == 404 and response.json()['code'] == 5)):
+            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
                 return None
             else:
                 _utils.raise_for_http_error(response)
@@ -1486,7 +1486,7 @@ class Experiment(_ModelDBEntity):
                                        conn, json=data)
 
         if response.ok:
-            response_msg = _utils.json_to_proto(response.json(), Message.Response)
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
             return response_msg.experiment
         else:
             _utils.raise_for_http_error(response)
@@ -1874,7 +1874,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         run_msg = response_msg.experiment_run
         return '\n'.join((
             "name: {}".format(run_msg.name),
@@ -1900,7 +1900,7 @@ class ExperimentRun(_ModelDBEntity):
         )
         _utils.raise_for_http_error(response)
 
-        proj_id = response.json()['experiment_run']['project_id']
+        proj_id = _utils.body_to_json(response)['experiment_run']['project_id']
         response = _utils.make_request(
             "GET",
             "{}://{}/api/v1/modeldb/project/getProjectById".format(self._conn.scheme, self._conn.socket),
@@ -1908,7 +1908,7 @@ class ExperimentRun(_ModelDBEntity):
         )
         _utils.raise_for_http_error(response)
 
-        project_json = response.json()['project']
+        project_json = _utils.body_to_json(response)['project']
         if 'workspace_id' not in project_json:
             # workspace is OSS default
             return _OSS_DEFAULT_WORKSPACE
@@ -1932,10 +1932,10 @@ class ExperimentRun(_ModelDBEntity):
             _utils.raise_for_http_error(response)
 
             # workspace is user
-            return response.json()['verta_info']['username']
+            return _utils.body_to_json(response)['verta_info']['username']
         else:
             # workspace is organization
-            return response.json()['organization']['name']
+            return _utils.body_to_json(response)['organization']['name']
 
     @property
     def name(self):
@@ -1947,7 +1947,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.experiment_run.name
 
     @staticmethod
@@ -1974,7 +1974,7 @@ class ExperimentRun(_ModelDBEntity):
             raise ValueError("insufficient arguments")
 
         if response.ok:
-            response_msg = _utils.json_to_proto(response.json(), Message.Response)
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
             expt_run = response_msg.experiment_run
 
             if not expt_run.id:  # 200, but empty message
@@ -1983,8 +1983,8 @@ class ExperimentRun(_ModelDBEntity):
 
             return expt_run
         else:
-            if ((response.status_code == 403 and response.json()['code'] == 7)
-                    or (response.status_code == 404 and response.json()['code'] == 5)):
+            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
                 return None
             else:
                 _utils.raise_for_http_error(response)
@@ -2007,7 +2007,7 @@ class ExperimentRun(_ModelDBEntity):
                                        conn, json=data)
 
         if response.ok:
-            response_msg = _utils.json_to_proto(response.json(), Message.Response)
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
             return response_msg.experiment_run
         else:
             _utils.raise_for_http_error(response)
@@ -2231,7 +2231,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         artifact = {artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
         if artifact is None:
             raise KeyError("no artifact found with key {}".format(key))
@@ -2277,7 +2277,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         dataset = {dataset.key: dataset for dataset in response_msg.datasets}.get(key)
         if dataset is None:
             # may be old artifact-based dataset
@@ -2357,7 +2357,7 @@ class ExperimentRun(_ModelDBEntity):
                                            self._conn.scheme, self._conn.socket), self._conn, json=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         new_run_msg = response_msg.experiment_run
         print("created new ExperimentRun: {}".format(new_run_msg.name))
         new_run = ExperimentRun(self._conn, self._conf, _expt_run_id=new_run_msg.id)
@@ -2423,7 +2423,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.tags
 
     def log_attribute(self, key, value):
@@ -2509,7 +2509,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         attributes = _utils.unravel_key_values(response_msg.attributes)
         try:
             return attributes[key]
@@ -2534,7 +2534,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return _utils.unravel_key_values(response_msg.attributes)
 
     def log_metric(self, key, value):
@@ -2622,7 +2622,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         metrics = _utils.unravel_key_values(response_msg.metrics)
         try:
             return metrics[key]
@@ -2647,7 +2647,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return _utils.unravel_key_values(response_msg.metrics)
 
     def log_hyperparameter(self, key, value):
@@ -2733,7 +2733,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         hyperparameters = _utils.unravel_key_values(response_msg.hyperparameters)
         try:
             return hyperparameters[key]
@@ -2758,7 +2758,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return _utils.unravel_key_values(response_msg.hyperparameters)
 
     def log_dataset(self, key, dataset, overwrite=False):
@@ -3080,7 +3080,7 @@ class ExperimentRun(_ModelDBEntity):
                                            "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
                                            self._conn, params={'id': self.id})
             _utils.raise_for_http_error(response)
-            existing_artifact_keys = {artifact['key'] for artifact in response.json()['experiment_run'].get('artifacts', [])}
+            existing_artifact_keys = {artifact['key'] for artifact in _utils.body_to_json(response)['experiment_run'].get('artifacts', [])}
             unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
             if unlogged_artifact_keys:
                 raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
@@ -3392,7 +3392,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         if len(response_msg.observations) == 0:
             raise KeyError("no observation found with key {}".format(key))
         else:
@@ -3417,7 +3417,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return _utils.unravel_observations(response_msg.experiment_run.observations)
 
     def log_requirements(self, requirements, overwrite=False):
@@ -3747,7 +3747,7 @@ class ExperimentRun(_ModelDBEntity):
                                        "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
                                        self._conn, params={'id': self.id})
         _utils.raise_for_http_error(response)
-        existing_artifact_keys = {artifact['key'] for artifact in response.json()['experiment_run'].get('artifacts', [])}
+        existing_artifact_keys = {artifact['key'] for artifact in _utils.body_to_json(response)['experiment_run'].get('artifacts', [])}
         unlogged_artifact_keys = set(keys) - existing_artifact_keys
         if unlogged_artifact_keys:
             raise ValueError("`keys` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
@@ -3758,7 +3758,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params={'id': self.id})
         _utils.raise_for_http_error(response)
         paths = {artifact['key']: artifact['path']
-                 for artifact in response.json()['artifacts']}
+                 for artifact in _utils.body_to_json(response)['artifacts']}
 
         artifacts = dict()
         for key in keys:
@@ -3799,7 +3799,7 @@ class ExperimentRun(_ModelDBEntity):
         )
         _utils.raise_for_http_error(response)
 
-        status = response.json()
+        status = _utils.body_to_json(response)
         if 'api' in status:
             status.update({'url': "{}://{}{}".format(self._conn.scheme, self._conn.socket, status.pop('api'))})
             status.update({'token': status.pop('token', None)})
@@ -3858,7 +3858,7 @@ class ExperimentRun(_ModelDBEntity):
                 self._conn, params={'id': self.id})
             _utils.raise_for_http_error(response)
 
-            data.update({'url_path': "{}/{}".format(response.json()['experiment_run']['project_id'], path)})
+            data.update({'url_path': "{}/{}".format(_utils.body_to_json(response)['experiment_run']['project_id'], path)})
         if no_token:
             data.update({'token': ""})
         elif token is not None:
@@ -4018,7 +4018,7 @@ class ExperimentRun(_ModelDBEntity):
         response = _utils.make_request("GET", endpoint, self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
         repo = _repository.Repository(self._conn, response_msg.versioned_inputs.repository_id)
         commit_id = response_msg.versioned_inputs.commit
         commit = commit_module.Commit._from_id(self._conn, repo, commit_id)
