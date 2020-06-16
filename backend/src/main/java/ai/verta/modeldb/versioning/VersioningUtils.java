@@ -123,7 +123,7 @@ public class VersioningUtils {
     try {
       String getAttributesHQL =
           "From AttributeEntity kv where kv.entity_hash = :entityHash "
-              + " AND kv.entity_name = :entityName AND kv.field_type = :fieldType";
+              + " AND kv.entity_name = :entityName AND kv.field_type = :fieldType ORDER BY kv.id";
       Query getQuery = session.createQuery(getAttributesHQL);
       getQuery.setParameter("entityName", ModelDBConstants.BLOB);
       getQuery.setParameter("entityHash", getVersioningCompositeId(repoId, commitHash, locations));

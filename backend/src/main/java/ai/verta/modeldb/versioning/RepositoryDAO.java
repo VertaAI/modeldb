@@ -26,6 +26,8 @@ public interface RepositoryDAO {
   RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
       throws ModelDBException;
 
+  RepositoryEntity getRepositoryById(RepositoryIdentification id) throws ModelDBException;
+
   SetRepository.Response setRepository(
       CommitDAO commitDAO, SetRepository request, UserInfo userInfo, boolean create)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException;
