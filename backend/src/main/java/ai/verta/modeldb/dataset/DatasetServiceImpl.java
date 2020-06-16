@@ -1,6 +1,5 @@
 package ai.verta.modeldb.dataset;
 
-import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddDatasetAttributes;
@@ -713,39 +712,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      // Request Parameter Validation
-      String errorMessage = null;
-      if (request.getId().isEmpty()
-          && request.getAttributeKeysList().isEmpty()
-          && !request.getGetAll()) {
-        errorMessage = "Dataset ID and Dataset attribute keys not found in GetAttributes request";
-      } else if (request.getId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
-      } else if (request.getAttributeKeysList().isEmpty() && !request.getGetAll()) {
-        errorMessage = "Dataset attribute keys not found in GetAttributes request";
-      }
-
-      if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.READ);
-
-      List<KeyValue> attributes =
-          datasetDAO.getDatasetAttributes(
-              request.getId(), request.getAttributeKeysList(), request.getGetAll());
-      responseObserver.onNext(
-          GetAttributes.Response.newBuilder().addAllAttributes(attributes).build());
-      responseObserver.onCompleted();
+      throw new ModelDBException("Not supported", io.grpc.Status.Code.FAILED_PRECONDITION);
 
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, GetAttributes.Response.getDefaultInstance());
