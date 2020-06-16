@@ -272,8 +272,7 @@ def make_request(method, url, conn, **kwargs):
                             " which is not supported by the Client".format(response.url)
                         )
                     else:
-                        # TODO: make it so this actually falls through
-                        break  # fall through to fabricate 200 response
+                        return fabricate_200()
             if response is not initial_response:
                 # insert initial response back into history, b/c `resolve_redirects()` removed it
                 response.history.insert(0, initial_response)
@@ -286,11 +285,25 @@ def make_request(method, url, conn, **kwargs):
             if response.ok or not conn.ignore_conn_err:
                 return response
             # else fall through to fabricate 200 response
-        # fabricate 200 response
-        response = requests.Response()
-        response.status_code = 200  # success
-        response._content = six.ensure_binary("{}")  # empty contents
-        return response
+        return fabricate_200()
+
+
+def fabricate_200():
+    """
+    Returns an HTTP response with ``status_code`` 200 and empty JSON contents.
+
+    This is used when the Client has ``ignore_conn_err=True``, so that backend responses can be
+    spoofed to minimize execution-halting errors.
+
+    Returns
+    -------
+    :class:`requests.Response`
+
+    """
+    response = requests.Response()
+    response.status_code = 200  # success
+    response._content = six.ensure_binary("{}")  # empty contents
+    return response
 
 
 def raise_for_http_error(response):
