@@ -266,8 +266,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       } catch (NumberFormatException e) {
         LOGGER.info("Wrong id format: {}", e.getMessage());
         throw new ModelDBException(
-            "Wrong id format, expecting integer: " + request.getId(),
-            Code.INVALID_ARGUMENT);
+            "Wrong id format, expecting integer: " + request.getId(), Code.INVALID_ARGUMENT);
       }
       DeleteRepositoryRequest.Response response =
           repositoryDAO.deleteRepository(
@@ -897,8 +896,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       } catch (NumberFormatException e) {
         LOGGER.info("Wrong id format: {}", e.getMessage());
         throw new ModelDBException(
-            "Wrong id format, expecting integer: " + request.getDatasetId(),
-            Code.INVALID_ARGUMENT);
+            "Wrong id format, expecting integer: " + request.getDatasetId(), Code.INVALID_ARGUMENT);
       }
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder().setRepoId(id).build();
@@ -1002,8 +1000,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       } catch (NumberFormatException e) {
         LOGGER.info("Wrong id format: {}", e.getMessage());
         throw new ModelDBException(
-            "Wrong id format, expecting integer: " + request.getDatasetId(),
-            Code.INVALID_ARGUMENT);
+            "Wrong id format, expecting integer: " + request.getDatasetId(), Code.INVALID_ARGUMENT);
       }
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder().setRepoId(id).build();

@@ -34,7 +34,6 @@ public class ModelDBException extends Exception {
     this.code = Code.valueOf(code.name());
   }
 
-
   public Code getCode() {
     return code;
   }
