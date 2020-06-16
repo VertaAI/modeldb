@@ -339,4 +339,71 @@ class TestCommit extends FunSuite {
       cleanup(f)
     }
   }
+
+  test ("diffFrom and applyDiff of 2 different branches should modify one branch to match the other") {
+    val f = fixture
+
+    try {
+        val originalCommit = f.commit.update("to-remove", f.pathBlob)
+                              .flatMap(_.update("to-update", f.s3Blob))
+                              .flatMap(_.save("original commit")).get
+
+        val branch1 = originalCommit.newBranch("a")
+                                    .flatMap(_.update("abc/cde", f.pathBlob))
+                                    .flatMap(_.save("Some message 11"))
+                                    .flatMap(_.update("wuv/ajf", f.pathBlob))
+                                    .flatMap(_.save("Some message 12")).get
+
+        val branch2 = originalCommit.newBranch("b")
+                                    .flatMap(_.update("abc/cde", f.s3Blob))
+                                    .flatMap(_.remove("to-remove"))
+                                    .flatMap(_.save("Some message 21"))
+                                    .flatMap(_.update("def/ghi", f.pathBlob))
+                                    .flatMap(_.update("to-update", f.pathBlob))
+                                    .flatMap(_.save("Some message 22")).get
+
+        val diff = branch2.diffFrom(Some(branch1)).get
+
+        val newBranch1 = branch1.applyDiff(diff, "apply diff").get
+        assert(newBranch1.get("wuv/ajf").isFailure)
+        assert(newBranch1.get("def/ghi").isSuccess)
+        assert(newBranch1.get("to-remove").isFailure)
+
+        val retrievedS3Blob: S3 = newBranch1.get("abc/cde").get match {
+          case s3: S3 => s3
+        }
+        assert(retrievedS3Blob equals f.s3Blob)
+
+        val retrievedPathBlob: PathBlob = branch2.get("to-update").get match {
+          case pathBlob: PathBlob => pathBlob
+        }
+        assert(retrievedPathBlob equals f.pathBlob)
+
+        // check the branching behavior:
+        assert(f.repo.getCommitByBranch("a").get equals newBranch1)
+        assert(f.repo.getCommitByBranch("b").get equals branch2)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("diffFrom with no commit passed should compute diff with parent") {
+    val f = fixture
+
+    try {
+        val commit = f.commit.update("abc", f.pathBlob)
+                      .flatMap(_.update("def", f.s3Blob))
+                      .flatMap(_.save("original commit")).get
+
+        val diff = commit.diffFrom().get
+        val newCommit = f.commit.newBranch("new-branch")
+                         .flatMap(_.applyDiff(diff, "apply diff")).get
+
+        assert(newCommit.get("abc").isSuccess)
+        assert(newCommit.get("def").isSuccess)
+        assert(f.repo.getCommitByBranch("new-branch").get equals newCommit)
+    } finally {
+      cleanup(f)
+    }
+  }
 }
