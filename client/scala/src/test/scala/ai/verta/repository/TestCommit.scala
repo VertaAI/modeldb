@@ -423,26 +423,32 @@ class TestCommit extends FunSuite {
       assert(walkOutputs.hasNext)
       var next = walkOutputs.next.get
       assert(next.folderPath.equals(""))
-      assert(next.folderNames.get.length == 1)
+      assert(next.folderNames.get == List("a"))
+      assert(next.subfolderPaths.get == List("a"))
       assert(next.blobNames.get == List("file1"))
+      assert(next.blobPaths.get == List("file1"))
 
       assert(walkOutputs.hasNext)
       next = walkOutputs.next.get
       assert(next.folderPath.equals("a"))
       assert(next.folderNames.get == List("b", "c"))
+      assert(next.subfolderPaths.get == List("a/b", "a/c"))
       assert(next.blobNames.get == List("file2", "file3"))
+      assert(next.blobPaths.get == List("a/file2", "a/file3"))
 
       assert(walkOutputs.hasNext)
       next = walkOutputs.next.get
       assert(next.folderPath.equals("a/b"))
       assert(next.folderNames.isEmpty)
       assert(next.blobNames.get == List("file4"))
+      assert(next.blobPaths.get == List("a/b/file4"))
 
       assert(walkOutputs.hasNext)
       next = walkOutputs.next.get
       assert(next.folderPath.equals("a/c"))
       assert(next.folderNames.isEmpty)
       assert(next.blobNames.get == List("file5"))
+      assert(next.blobPaths.get == List("a/c/file5"))
 
       assert(!walkOutputs.hasNext)
     } finally {
@@ -468,8 +474,6 @@ class TestCommit extends FunSuite {
       assert(remainingWalk.hasNext)
       val next = remainingWalk.next.get
       assert(next.folderPath.equals("a/c"))
-      assert(next.folderNames.isEmpty)
-      assert(next.blobNames.get == List("file5"))
 
       assert(!remainingWalk.hasNext)
     } finally {
