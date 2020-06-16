@@ -17,7 +17,6 @@ import ai.verta.modeldb.GetAllDatasetVersionsByDatasetId;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.PathDatasetVersionInfo;
@@ -110,6 +109,10 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(CreateDatasetVersion.Response.getDefaultInstance()));
+      } else if (request.getParentId().isEmpty()) {
+        throw new ModelDBException(
+            "Parent datasetVersion id not found in the CreateDatasetVersion",
+            io.grpc.Status.Code.INVALID_ARGUMENT);
       }
 
       /*Get the user info from the Context*/
@@ -205,7 +208,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
     RepositoryEntity repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification);
     for (Commit commit : listCommitsResponse.getCommitsList()) {
-      if (commit.getMessage().equals(ModelDBConstants.INITIAL_COMMIT_MESSAGE)) {
+      if (commit.getParentShasList().isEmpty()) {
         continue;
       }
       datasetVersions.add(
