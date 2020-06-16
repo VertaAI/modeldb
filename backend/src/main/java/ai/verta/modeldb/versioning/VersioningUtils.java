@@ -113,6 +113,10 @@ public class VersioningUtils {
     return repoId + "::" + commitHash + "::" + ModelDBUtils.getLocationWithSlashOperator(locations);
   }
 
+  public static String[] getDatasetVersionBlobCompositeIdString(String compositeId) {
+    return compositeId.split("::");
+  }
+
   public static List<KeyValue> getAttributes(
       Session session, Long repoId, String commitHash, List<String> locations)
       throws ModelDBException {

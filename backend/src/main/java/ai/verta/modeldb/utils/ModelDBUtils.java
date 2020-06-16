@@ -31,7 +31,6 @@ import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
-import com.google.protobuf.ProtocolStringList;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
@@ -544,7 +543,7 @@ public class ModelDBUtils {
     return Arrays.asList(locationsString.split("/"));
   }
 
-  public static String getJoinedLocation(ProtocolStringList location) {
+  public static String getJoinedLocation(List<String> location) {
     return String.join("#", location);
   }
 
