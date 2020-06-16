@@ -110,15 +110,11 @@ public class VersioningUtils {
 
   public static String getVersioningCompositeId(
       Long repoId, String commitHash, List<String> locations) {
-    if (repoId != null && !commitHash.contains(repoId + "::")) {
-      return repoId
-          + "::"
-          + commitHash
-          + "::"
-          + ModelDBUtils.getLocationWithSlashOperator(locations);
-    } else {
-      return createDatasetVersionBlobCompositeIdString(commitHash, locations);
-    }
+    return repoId + "::" + commitHash + "::" + ModelDBUtils.getLocationWithSlashOperator(locations);
+  }
+
+  public static String[] getDatasetVersionBlobCompositeIdString(String compositeId) {
+    return compositeId.split("::");
   }
 
   public static List<KeyValue> getAttributes(
@@ -137,18 +133,5 @@ public class VersioningUtils {
     } catch (InvalidProtocolBufferException e) {
       throw new ModelDBException(e);
     }
-  }
-
-  public static String createRepoCommitCompositeIdString(Long repoId, String commitHash) {
-    return repoId + "::" + commitHash;
-  }
-
-  public static String createDatasetVersionBlobCompositeIdString(
-      String commitHash, List<String> locations) {
-    return commitHash + "::" + ModelDBUtils.getLocationWithSlashOperator(locations);
-  }
-
-  public static String[] getDatasetVersionBlobCompositeIdString(String compositeId) {
-    return compositeId.split("::");
   }
 }

@@ -10,13 +10,11 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
-import ai.verta.modeldb.versioning.VersioningUtils;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status;
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -199,9 +197,6 @@ public interface DatasetVersionDAO {
       throws ModelDBException {
     DatasetVersion.Builder datasetVersionBuilder =
         DatasetVersion.newBuilder()
-            .setId(
-                VersioningUtils.createRepoCommitCompositeIdString(
-                    Long.parseLong(request.getDatasetId()), UUID.randomUUID().toString()))
             .setDatasetId(request.getDatasetId())
             .setDescription(request.getDescription())
             .addAllTags(request.getTagsList())

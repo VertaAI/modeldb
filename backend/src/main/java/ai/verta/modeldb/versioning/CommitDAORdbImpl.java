@@ -55,7 +55,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryEntity repositoryEntity = getRepository.apply(session);
 
       CommitEntity commitEntity =
-          saveCommitEntity(session, commit, rootSha, author, repositoryEntity, null);
+          saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
       setBlobsAttributes.apply(session, repositoryEntity.getId(), commitEntity.getCommit_hash());
       session.getTransaction().commit();
       return CreateCommitRequest.Response.newBuilder()
@@ -133,18 +133,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
 
       CommitEntity commitEntity =
-          saveCommitEntity(
-              session,
-              commit,
-              rootSha,
-              datasetVersion.getOwner(),
-              repositoryEntity,
-              datasetVersion.getId());
+          saveCommitEntity(session, commit, rootSha, datasetVersion.getOwner(), repositoryEntity);
       blobDAO.setBlobsAttributes(
           session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList);
       String compositeId =
-          VersioningUtils.createDatasetVersionBlobCompositeIdString(
-              commitEntity.getCommit_hash(), location);
+          VersioningUtils.getVersioningCompositeId(
+              repositoryEntity.getId(), commitEntity.getCommit_hash(), location);
       metadataDAO.addProperty(
           session,
           IdentificationType.newBuilder()
@@ -189,15 +183,11 @@ public class CommitDAORdbImpl implements CommitDAO {
       Commit commit,
       String rootSha,
       String author,
-      RepositoryEntity repositoryEntity,
-      String commitSha)
+      RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException {
     long timeCreated = new Date().getTime();
     if (App.getInstance().getStoreClientCreationTimestamp() && commit.getDateCreated() != 0L) {
       timeCreated = commit.getDateCreated();
-    }
-    if (commitSha == null) {
-      commitSha = generateCommitSHA(rootSha, commit, timeCreated);
     }
 
     Map<String, CommitEntity> parentCommitEntities = new HashMap<>();
@@ -219,7 +209,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             .setDateCreated(timeCreated)
             .setAuthor(author)
             .setMessage(commit.getMessage())
-            .setCommitSha(commitSha)
+            .setCommitSha(generateCommitSHA(rootSha, commit, timeCreated))
             .build();
     CommitEntity commitEntity =
         new CommitEntity(

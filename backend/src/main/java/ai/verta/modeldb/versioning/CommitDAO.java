@@ -31,8 +31,7 @@ public interface CommitDAO {
       Commit commit,
       String rootSha,
       String author,
-      RepositoryEntity repositoryEntity,
-      String commitSha)
+      RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException;
 
   CommitPaginationDTO getRepositoryCommitEntityList(ListCommitsRequest request, Long repoId)

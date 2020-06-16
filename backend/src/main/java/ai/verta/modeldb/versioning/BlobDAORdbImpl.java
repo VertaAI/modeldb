@@ -251,7 +251,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         datasetVersionBuilder.setTimeLogged(commit.getDate_created());
 
         String compositeId =
-            VersioningUtils.createDatasetVersionBlobCompositeIdString(commitHash, locationList);
+            VersioningUtils.getVersioningCompositeId(repository.getId(), commitHash, locationList);
         String blobDescription =
             metadataDAO.getProperty(
                 session,
