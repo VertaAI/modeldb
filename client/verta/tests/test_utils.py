@@ -13,6 +13,34 @@ import pytest
 from . import utils
 
 
+class TestMakeRequest:
+    def test_301_continue(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/redirect-to",
+            client._conn,
+            params={
+                'url': "http://httpbin.org/get",
+                'status_code': 301,
+            },
+        )
+
+        assert response.history[0].status_code == 301
+        assert response.status_code == 200
+
+    def test_302_stop(self, client):
+        with pytest.raises(RuntimeError) as excinfo:
+            _utils.make_request(
+                "GET",
+                "http://httpbin.org/redirect-to",
+                client._conn,
+                params={
+                    'url': "http://httpbin.org/get",
+                    'status_code': 302,
+                },
+            )
+        assert str(excinfo.value).strip().startswith("received status 302")
+
 class TestToBuiltin:
     def test_string(self):
         val = "banana"
