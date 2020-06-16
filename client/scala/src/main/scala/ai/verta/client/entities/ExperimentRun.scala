@@ -26,7 +26,8 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       .map(r => r.tags.getOrElse(Nil))
   }
 
-  /** Delete multiple tags of this Experiment Run
+  /** Delete multiple tags of this Experiment Run.
+   *  If the run does not have any tag in the list, that tag will be ignored
    *  @param tags tags
    *  @return whether the attempt succeeds
    */

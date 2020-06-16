@@ -85,4 +85,28 @@ class TestExperimentRun extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("getTags should correctly retrieve the added tags") {
+    val f = fixture
+
+    try {
+      assert(f.expRun.getTags.get equals Nil)
+      assert(f.expRun.addTags(List("some-tag", "other-tag")).isSuccess)
+      assert(f.expRun.getTags.get equals List("some-tag", "other-tag"))
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("getTags output should not contain deleted tags") {
+    val f = fixture
+
+    try {
+      f.expRun.addTags(List("some-tag", "other-tag", "to-remove-tag-1", "to-remove-tag-2"))
+      f.expRun.delTags(List("to-remove-tag-1", "to-remove-tag-2", "non-existing-tag"))
+      assert(f.expRun.getTags.get equals List("some-tag", "other-tag"))
+    } finally {
+      cleanup(f)
+    }
+  }
 }
