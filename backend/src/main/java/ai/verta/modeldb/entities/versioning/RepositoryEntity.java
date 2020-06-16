@@ -58,8 +58,9 @@ public class RepositoryEntity {
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, repository.getAttributesList()));
 
-    this.datasetRepositoryMappingEntity =
-        new DatasetRepositoryMappingEntity(this, isDatasetRepository);
+    if (isDatasetRepository) {
+      this.datasetRepositoryMappingEntity = new DatasetRepositoryMappingEntity(this);
+    }
   }
 
   @Id
@@ -239,6 +240,6 @@ public class RepositoryEntity {
   }
 
   public boolean isDataset() {
-    return datasetRepositoryMappingEntity.getIsDatasetRepository();
+    return datasetRepositoryMappingEntity != null;
   }
 }

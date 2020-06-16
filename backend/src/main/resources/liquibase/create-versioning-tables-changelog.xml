@@ -232,7 +232,6 @@
                              primaryKey="true"
                              nullable="false"/>
             </column>
-            <column name="is_dataset_repository" type="boolean"/>
         </createTable>
     </changeSet>
 
