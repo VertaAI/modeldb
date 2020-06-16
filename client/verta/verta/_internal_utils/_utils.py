@@ -329,13 +329,14 @@ def body_to_json(response):
     try:
         return response.json()
     except ValueError:  # not JSON response
-        e = ValueError('\n'.join([
+        msg = '\n'.join([
             "expected JSON response from {}, but instead got:".format(response.url),
             response.text or "<empty response>",
             "",
             "Please notify the Verta development team.",
-        ]))
-        six.raise_from(e, None)
+        ])
+        msg = six.ensure_str(msg)
+        six.raise_from(ValueError(msg), None)
 
 
 def is_hidden(path):  # to avoid "./".startswith('.')
