@@ -7,6 +7,7 @@ import sys
 
 import verta
 from verta._internal_utils import _utils
+from verta._internal_utils import _file_utils
 from verta._internal_utils import _pip_requirements_utils
 
 import pytest
@@ -220,3 +221,21 @@ class TestPipRequirementsUtils:
             _pip_requirements_utils.SPACY_MODEL_REGEX.match,
             _pip_requirements_utils.get_pip_freeze(),
         ))
+
+
+class TestIncrementFilepath:
+    @pytest.mark.parametrize(
+        "input_filepath, expected_filepath",
+        [
+            ("data.csv", "data 1.csv"),
+            ("data 1.csv", "data 2.csv"),
+            ("my data.csv", "my data 1.csv"),
+            ("my data 1.csv", "my data 2.csv"),
+            ("archive.tar.gz", "archive.tar 1.gz"),
+            ("archive.tar 1.gz", "archive.tar 2.gz"),
+            ("my archive.tar.gz", "my archive.tar 1.gz"),
+            ("my archive.tar 1.gz", "my archive.tar 2.gz"),
+        ],
+    )
+    def test_increment(self, input_filepath, expected_filepath):
+        assert expected_filepath == _file_utils.increment_filepath(input_filepath)
