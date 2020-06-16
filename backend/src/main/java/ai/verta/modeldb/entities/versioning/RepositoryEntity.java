@@ -24,6 +24,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
@@ -35,7 +36,8 @@ public class RepositoryEntity {
 
   public RepositoryEntity() {}
 
-  public RepositoryEntity(Repository repository, WorkspaceDTO workspaceDTO)
+  public RepositoryEntity(
+      Repository repository, WorkspaceDTO workspaceDTO, boolean isDatasetRepository)
       throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
@@ -55,6 +57,10 @@ public class RepositoryEntity {
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, repository.getAttributesList()));
+
+    if (isDatasetRepository) {
+      this.datasetRepositoryMappingEntity = new DatasetRepositoryMappingEntity(this);
+    }
   }
 
   @Id
@@ -103,6 +109,9 @@ public class RepositoryEntity {
   @LazyCollection(LazyCollectionOption.FALSE)
   @OrderBy("id")
   private List<AttributeEntity> attributeMapping;
+
+  @OneToOne(mappedBy = "repositoryEntity", cascade = CascadeType.ALL)
+  private DatasetRepositoryMappingEntity datasetRepositoryMappingEntity;
 
   public Long getId() {
     return id;
@@ -231,7 +240,6 @@ public class RepositoryEntity {
   }
 
   public boolean isDataset() {
-    // TODO: keep track if it is a dataset https://vertaai.atlassian.net/browse/VR-4571
-    return true;
+    return datasetRepositoryMappingEntity != null;
   }
 }

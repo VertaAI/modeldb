@@ -414,7 +414,7 @@
 			</not>
 		</preConditions>
 		<addColumn tableName="attribute">
-			<column name="entity_hash" type="varchar(64)"/>
+			<column name="entity_hash" type="varchar(255)"/>
 		</addColumn>
 	</changeSet>
 

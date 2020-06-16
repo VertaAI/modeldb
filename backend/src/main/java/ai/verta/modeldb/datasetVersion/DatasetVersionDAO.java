@@ -15,7 +15,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status;
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -198,7 +197,6 @@ public interface DatasetVersionDAO {
       throws ModelDBException {
     DatasetVersion.Builder datasetVersionBuilder =
         DatasetVersion.newBuilder()
-            .setId(UUID.randomUUID().toString())
             .setDatasetId(request.getDatasetId())
             .setDescription(request.getDescription())
             .addAllTags(request.getTagsList())
@@ -207,8 +205,10 @@ public interface DatasetVersionDAO {
 
     if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
       datasetVersionBuilder.setTimeLogged(request.getTimeCreated());
+      datasetVersionBuilder.setTimeUpdated(request.getTimeCreated());
     } else {
       datasetVersionBuilder.setTimeLogged(Calendar.getInstance().getTimeInMillis());
+      datasetVersionBuilder.setTimeUpdated(Calendar.getInstance().getTimeInMillis());
     }
 
     if (!request.getParentId().isEmpty()) {
