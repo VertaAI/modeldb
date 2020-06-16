@@ -99,6 +99,11 @@ class _Dataset(blob.Blob):
         chunk_size : int, default 32 kB
             Number of bytes to download at a time.
 
+        Returns
+        -------
+        filepath : str
+            Filepath where `component_path` was downloaded to.
+
         """
         if self._commit is None and self._blob_path is None:
             raise RuntimeError(
@@ -149,4 +154,4 @@ class _Dataset(blob.Blob):
         finally:
             response.close()
 
-        print("download complete ({})".format(filepath))
+        return os.path.abspath(filepath)
