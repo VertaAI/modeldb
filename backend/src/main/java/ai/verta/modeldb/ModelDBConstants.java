@@ -59,6 +59,7 @@ public interface ModelDBConstants {
   String ATTRIBUTES = "attributes";
   String DATASET_COLLABORATORS = "dataset_collaborators";
   String DATASETS = "datasets";
+  String REPOSITORIES = "repositories";
   String DATE_CREATED = "date_created";
   String DATE_UPDATED = "date_updated";
   String ENTITY_ID = "entity_id";
@@ -132,6 +133,7 @@ public interface ModelDBConstants {
   String OBSERVATION_MAPPING = "observationMapping";
   String PROJECT_ID_STR = "projectId";
   String TOTAL_COUNT = "total_count";
+  String TIME_CREATED = "time_created";
   String TIME_UPDATED = "time_updated";
   String TIME_LOGGED = "time_logged";
   String UNSIGNED_USER = "unsigned_user";
@@ -175,6 +177,7 @@ public interface ModelDBConstants {
   String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
   String POSTGRES_DB_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
+  String REPOSITORY_ENTITY = "repositoryEntity";
 
   enum UserIdentifier {
     VERTA_ID,
@@ -211,7 +214,7 @@ public interface ModelDBConstants {
       "https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry";
 
   // Versioning constant
-  String BLOB = "Blob";
+  String BLOB = "blob";
   String BLOBS = "blobs";
   String SUBTREES = "subtrees";
   String REPOSITORY_ID = "repository_id";
@@ -229,6 +232,10 @@ public interface ModelDBConstants {
   String VERSIONING_LOCATION = "versioning_location";
   String REPOSITORY_VISIBILITY = "repository_visibility";
   String REPOSITORY = "repository";
+  String VERSIONING_REPOSITORY = "VERSIONING_REPOSITORY";
+  String VERSIONING_COMMIT = "VERSIONING_COMMIT";
+  String VERSIONING_REPO_COMMIT_BLOB = "VERSIONING_REPO_COMMIT_BLOB";
+  String VERSIONING_REPO_COMMIT = "VERSIONING_REPO_COMMIT";
   String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
 
   // Cron job constant

@@ -1844,10 +1844,11 @@ public class DatasetTest {
         versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset.getId())
+        datasetVersionTest
+            .getDatasetVersionRequest(dataset.getId())
             .toBuilder()
-        .setParentId(getBranchResponse.getCommit().getCommitSha())
-        .build();
+            .setParentId(getBranchResponse.getCommit().getCommitSha())
+            .build();
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
@@ -1857,10 +1858,12 @@ public class DatasetTest {
         dataset.getId(),
         datasetVersion1.getDatasetId());
 
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId())
+    createDatasetVersionRequest =
+        datasetVersionTest
+            .getDatasetVersionRequest(dataset.getId())
             .toBuilder()
-        .setParentId(getBranchResponse.getCommit().getCommitSha())
-        .build();
+            .setParentId(getBranchResponse.getCommit().getCommitSha())
+            .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
@@ -2071,10 +2074,11 @@ public class DatasetTest {
         versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset.getId())
+        datasetVersionTest
+            .getDatasetVersionRequest(dataset.getId())
             .toBuilder()
-        .setParentId(getBranchResponse.getCommit().getCommitSha())
-        .build();
+            .setParentId(getBranchResponse.getCommit().getCommitSha())
+            .build();
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
@@ -2084,10 +2088,12 @@ public class DatasetTest {
         dataset.getId(),
         datasetVersion1.getDatasetId());
 
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId())
+    createDatasetVersionRequest =
+        datasetVersionTest
+            .getDatasetVersionRequest(dataset.getId())
             .toBuilder()
-        .setParentId(getBranchResponse.getCommit().getCommitSha())
-        .build();
+            .setParentId(getBranchResponse.getCommit().getCommitSha())
+            .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();

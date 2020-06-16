@@ -165,17 +165,16 @@ public class RepositoryEntity {
   }
 
   public Repository toProto() throws InvalidProtocolBufferException {
-    final Builder builder =
-        Repository.newBuilder()
-            .setId(this.id)
-            .setName(this.name)
-            .setDescription(this.description)
-            .setDateCreated(this.date_created)
-            .setDateUpdated(this.date_updated)
-            .setWorkspaceId(this.workspace_id)
-            .setWorkspaceTypeValue(this.workspace_type)
-            .addAllAttributes(
-                RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
+    final Builder builder = Repository.newBuilder().setId(this.id);
+    builder
+        .setName(this.name)
+        .setDescription(this.description)
+        .setDateCreated(this.date_created)
+        .setDateUpdated(this.date_updated)
+        .setWorkspaceId(this.workspace_id)
+        .setWorkspaceTypeValue(this.workspace_type)
+        .addAllAttributes(
+            RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
     if (repository_visibility != null) {
       builder.setRepositoryVisibilityValue(repository_visibility);
     }
@@ -191,12 +190,16 @@ public class RepositoryEntity {
   public void update(Repository repository) throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
-    this.date_updated = new Date().getTime();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
     this.repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
     this.workspace_id = repository.getWorkspaceId();
     this.workspace_type = repository.getWorkspaceTypeValue();
+    update();
     updateAttribute(repository.getAttributesList());
+  }
+
+  public void update() {
+    this.date_updated = new Date().getTime();
   }
 
   public String getOwner() {

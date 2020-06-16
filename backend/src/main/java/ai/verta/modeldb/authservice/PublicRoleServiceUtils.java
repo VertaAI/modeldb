@@ -49,7 +49,7 @@ public class PublicRoleServiceUtils implements RoleService {
             this,
             new RepositoryDAORdbImpl(authService, this),
             new CommitDAORdbImpl(),
-            new BlobDAORdbImpl(authService));
+            new BlobDAORdbImpl(authService, this));
     this.projectDAO = new ProjectDAORdbImpl(authService, this, experimentDAO, experimentRunDAO);
     this.datasetDAO = new DatasetDAORdbImpl(authService, this);
   }
