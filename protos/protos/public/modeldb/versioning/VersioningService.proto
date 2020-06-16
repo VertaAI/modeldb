@@ -30,6 +30,8 @@ message Commit {
     string author = 4;
 
     string commit_sha = 5;
+    // Updated Date while create tags & attribute for the commit.
+    uint64 date_updated = 6;
 }
 
 // Data structure used to compute the SHA of a folder

@@ -114,7 +114,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean status = metadataDAO.deleteLabels(request.getId(), request.getLabelsList());
+      boolean status = metadataDAO.deleteLabels(request.getId(), request.getLabelsList(), false);
       responseObserver.onNext(DeleteLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
