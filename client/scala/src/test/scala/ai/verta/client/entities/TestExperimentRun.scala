@@ -86,6 +86,20 @@ class TestExperimentRun extends FunSuite {
     }
   }
 
+  test("metrics map should behave like other metric methods") {
+    val f = fixture
+
+    try {
+      val metrics = f.expRun.metrics()
+      metrics += ("some-metric" -> 0.5)
+      assert(metrics.get("some-metric").get == 0.5)
+      assert(f.expRun.getMetric("some-metric").get.get equals 0.5)
+      assert(metrics.get("other-metric").isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
+
   test("getTags should correctly retrieve the added tags") {
     val f = fixture
 
@@ -105,6 +119,24 @@ class TestExperimentRun extends FunSuite {
       f.expRun.addTags(List("some-tag", "other-tag", "to-remove-tag-1", "to-remove-tag-2"))
       f.expRun.delTags(List("to-remove-tag-1", "to-remove-tag-2", "non-existing-tag"))
       assert(f.expRun.getTags.get equals List("some-tag", "other-tag"))
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("tags set should behave like other tag methods") {
+    val f = fixture
+
+    try {
+      val tags = f.expRun.tags()
+      tags += "some-tag"
+      tags += "other-tag"
+      assert(tags.contains("some-tag") && tags.contains("other-tag"))
+      assert(f.expRun.getTags.get equals List("some-tag", "other-tag"))
+
+      tags.remove("other-tag")
+      assert(!tags.contains("other-tag"))
+      assert(f.expRun.getTags.get equals List("some-tag"))
     } finally {
       cleanup(f)
     }

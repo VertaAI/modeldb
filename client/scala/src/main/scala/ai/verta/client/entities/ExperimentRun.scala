@@ -16,7 +16,7 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success, Try}
 
 class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: ModeldbExperimentRun) extends Taggable {
-  /** Return a map-like object of type Tags, representing the tags associated with ExperimentRun
+  /** Return a set-like object of type Tags, representing the tags associated with ExperimentRun
    *  Provide an alternative interface to get/del/add Tags methods
    *  @return the tags map
    */
