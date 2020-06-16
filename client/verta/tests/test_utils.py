@@ -14,6 +14,22 @@ from . import utils
 
 
 class TestMakeRequest:
+    def test_200_no_history(self, client):
+        """
+        The util injects the initial response into the final history after resolving redirects.
+
+        If no redirects occurred, the history should be empty.
+
+        """
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/status/200",
+            client._conn,
+        )
+
+        assert not response.history
+        assert response.status_code == 200
+
     def test_301_continue(self, client):
         response = _utils.make_request(
             "GET",
@@ -25,6 +41,7 @@ class TestMakeRequest:
             },
         )
 
+        assert len(response.history) == 1
         assert response.history[0].status_code == 301
         assert response.status_code == 200
 
