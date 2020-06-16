@@ -257,7 +257,18 @@ def make_request(method, url, conn, **kwargs):
     with requests.Session() as s:
         s.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
-            response = s.request(method, url, **kwargs)
+            request = requests.Request(method, url, **kwargs).prepare()
+
+            response = s.send(request, allow_redirects=False)
+            # TODO: also check initial response
+            # manually inspect redirects to stop on 302s
+            for response in s.resolve_redirects(response, request):
+                if response.status_code == 302:
+                    # TODO: break if conn.ignore_conn_err
+                    raise RuntimeError(
+                        "received status 302 from {},"
+                        " which is not supported by the Client".format(response.url)
+                    )
         except (requests.exceptions.BaseHTTPError,
                 requests.exceptions.RequestException) as e:
             if not conn.ignore_conn_err:
@@ -265,7 +276,7 @@ def make_request(method, url, conn, **kwargs):
         else:
             if response.ok or not conn.ignore_conn_err:
                 return response
-        # fabricate response
+        # fabricate successful response
         response = requests.Response()
         response.status_code = 200  # success
         response._content = six.ensure_binary("{}")  # empty contents
