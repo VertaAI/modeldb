@@ -10,7 +10,6 @@ import "modeldb/CommonService.proto";
 import "google/api/annotations.proto";
 import "modeldb/ExperimentService.proto";
 import "modeldb/ExperimentRunService.proto";
-import "modeldb/versioning/VersioningService.proto";
 
 message Dataset {
     string id = 1;//For backend reference
@@ -55,7 +54,6 @@ message CreateDataset {
 
     message Response {
         Dataset dataset = 1;
-        versioning.Repository repo = 2;
     }
 }
 
@@ -70,7 +68,6 @@ message GetAllDatasets {
     message Response {
         repeated Dataset datasets = 1;
         uint64 total_records = 2;
-        repeated versioning.Repository repos = 3;
     }
 }
 
@@ -80,7 +77,6 @@ message GetDatasetById {
 
     message Response {
         Dataset dataset = 1;
-        versioning.Repository repo = 2;
     }
 }
 
@@ -91,8 +87,6 @@ message GetDatasetByName {
     message Response {
         Dataset dataset_by_user = 1;
         repeated Dataset shared_datasets = 2; // because of collaboration, this might be multiple datasets w/same name
-        versioning.Repository repository_by_user = 3;
-        repeated versioning.Repository shared_repos = 4;
     }
 }
 
@@ -127,7 +121,6 @@ message FindDatasets {
     message Response {
         repeated Dataset datasets = 1;
         int64 total_records = 2;
-        repeated versioning.Repository repos = 3;
     }
 }
 

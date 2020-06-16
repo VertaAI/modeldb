@@ -155,10 +155,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .build();
 
       responseObserver.onNext(
-          CreateDataset.Response.newBuilder()
-              .setDataset(createdDataset)
-              .setRepo(repository)
-              .build());
+          CreateDataset.Response.newBuilder().setDataset(createdDataset).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -246,7 +243,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onNext(
           GetAllDatasets.Response.newBuilder()
               .addAllDatasets(datasetPaginationDTO.getDatasets())
-              .addAllRepos(datasetPaginationDTO.getRepositories())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
               .build());
       responseObserver.onCompleted();
@@ -345,7 +341,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onNext(
           FindDatasets.Response.newBuilder()
               .addAllDatasets(datasetPaginationDTO.getDatasets())
-              .addAllRepos(datasetPaginationDTO.getRepositories())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
               .build());
       responseObserver.onCompleted();
@@ -404,9 +399,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
       Dataset selfOwnerdataset = null;
-      Repository selfOwneRepository = null;
       List<Dataset> sharedDatasets = new ArrayList<>();
-      List<Repository> sharedRepositories = new ArrayList<>();
 
       for (Dataset dataset : datasetPaginationDTO.getDatasets()) {
         if (userInfo == null
@@ -417,24 +410,11 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         }
       }
 
-      for (Repository repository : datasetPaginationDTO.getRepositories()) {
-        if (userInfo == null
-            || repository.getOwner().equals(authService.getVertaIdFromUserInfo(userInfo))) {
-          selfOwneRepository = repository;
-        } else {
-          sharedRepositories.add(repository);
-        }
-      }
-
       GetDatasetByName.Response.Builder responseBuilder = GetDatasetByName.Response.newBuilder();
       if (selfOwnerdataset != null) {
         responseBuilder.setDatasetByUser(selfOwnerdataset);
       }
-      if (selfOwneRepository != null) {
-        responseBuilder.setRepositoryByUser(selfOwneRepository);
-      }
       responseBuilder.addAllSharedDatasets(sharedDatasets);
-      responseBuilder.addAllSharedRepos(sharedRepositories);
 
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();

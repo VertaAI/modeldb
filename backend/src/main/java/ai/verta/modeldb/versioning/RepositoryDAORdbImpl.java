@@ -184,7 +184,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public Response getRepository(GetRepositoryRequest request) throws Exception {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepositoryById(session, request.getId());
-      return Response.newBuilder().setRepository(repository.toProto(false)).build();
+      return Response.newBuilder().setRepository(repository.toProto()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getRepository(request);
@@ -325,7 +325,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository =
           setRepository(session, commitDAO, request, userInfo, null, create);
-      return SetRepository.Response.newBuilder().setRepository(repository.toProto(false)).build();
+      return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setRepository(commitDAO, request, userInfo, create);
@@ -572,7 +572,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             .build(),
         tags);
 
-    return repositoryEntity.toProto(false);
+    return repositoryEntity.toProto();
   }
 
   Dataset convertToDataset(
@@ -711,7 +711,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           ListRepositoriesRequest.Response.newBuilder();
 
       for (RepositoryEntity repositoryEntity : repositoryEntities) {
-        builder.addRepositories(repositoryEntity.toProto(false));
+        builder.addRepositories(repositoryEntity.toProto());
       }
 
       long totalRecords = RdbmsUtils.count(session, repositoryEntityRoot, criteriaQuery);
@@ -1108,7 +1108,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
         List<Repository> repositories = new ArrayList<>();
         for (RepositoryEntity repositoryEntity : repositoryEntities) {
-          repositories.add(repositoryEntity.toProto(false));
+          repositories.add(repositoryEntity.toProto());
         }
 
         return FindRepositories.Response.newBuilder()
@@ -1321,7 +1321,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               session, RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(id)).build());
       return GetDatasetById.Response.newBuilder()
           .setDataset(convertToDataset(session, metadataDAO, repositoryEntity, false))
-          .setRepo(repositoryEntity.toProto(false))
           .build();
     } catch (NumberFormatException e) {
       String message = "Can't find repository, wrong id format: " + id;
@@ -1359,7 +1358,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try {
       return new SimpleEntry<>(
           convertToDataset(session, metadataDAO, repositoryEntity, idsOnly),
-          repositoryEntity.toProto(idsOnly));
+          repositoryEntity.toProto());
     } catch (InvalidProtocolBufferException e) {
       LOGGER.error(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
       Status status =
