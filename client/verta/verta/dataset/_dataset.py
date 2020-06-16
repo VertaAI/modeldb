@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import os
 import pathlib2
+import tempfile
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
@@ -109,10 +110,23 @@ class _Dataset(blob.Blob):
             # create parent dirs
             pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # pylint: disable=no-member
 
-            # read response stream into file
-            with open(filepath, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=chunk_size):
-                    f.write(chunk)
+            # read response stream into temp file
+            print("downloading {} from ModelDB".format(component_path))
+            try:
+                with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
+                    for chunk in response.iter_content(chunk_size=chunk_size):
+                        tempf.write(chunk)
+                    tempf.flush()  # flush object buffer
+                    os.fsync(tempf.fileno())  # flush OS buffer
+            except Exception as e:
+                # delete partially-downloaded file
+                os.remove(tempf.name)
+                raise e
+            else:
+                # move written contents to `filepath`
+                # TODO: prevent collision if `filepath` already exists
+                os.rename(tempf.name, filepath)
+                print("download complete; file written to {}".format(filepath))
         finally:
             response.close()
 
