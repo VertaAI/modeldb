@@ -157,17 +157,16 @@ public class RepositoryEntity {
   }
 
   public Repository toProto() throws InvalidProtocolBufferException {
-    final Builder builder =
-        Repository.newBuilder()
-            .setId(this.id)
-            .setName(this.name)
-            .setDescription(this.description)
-            .setDateCreated(this.date_created)
-            .setDateUpdated(this.date_updated)
-            .setWorkspaceId(this.workspace_id)
-            .setWorkspaceTypeValue(this.workspace_type)
-            .addAllAttributes(
-                RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
+    final Builder builder = Repository.newBuilder().setId(this.id);
+    builder
+        .setName(this.name)
+        .setDescription(this.description)
+        .setDateCreated(this.date_created)
+        .setDateUpdated(this.date_updated)
+        .setWorkspaceId(this.workspace_id)
+        .setWorkspaceTypeValue(this.workspace_type)
+        .addAllAttributes(
+            RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
     if (repository_visibility != null) {
       builder.setRepositoryVisibilityValue(repository_visibility);
     }

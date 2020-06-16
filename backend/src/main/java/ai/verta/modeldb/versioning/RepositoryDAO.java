@@ -2,7 +2,11 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.AddDatasetTags.Response;
 import ai.verta.modeldb.Dataset;
+import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
+import ai.verta.modeldb.FindDatasets;
+import ai.verta.modeldb.GetDatasetById.Response;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -80,4 +84,11 @@ public interface RepositoryDAO {
   Dataset deleteDatasetTags(
       MetadataDAO metadataDAO, String id, ProtocolStringList tagsList, boolean deleteAll)
       throws ModelDBException;
+  
+  DatasetPaginationDTO findDatasets(
+      MetadataDAO metadataDAO, FindDatasets build, UserInfo userInfo, DatasetVisibility aPrivate)
+      throws InvalidProtocolBufferException;
+
+  Response getDatasetById(MetadataDAO metadataDAO, String id)
+      throws ModelDBException, InvalidProtocolBufferException;
 }
