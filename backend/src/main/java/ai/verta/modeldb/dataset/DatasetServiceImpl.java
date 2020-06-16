@@ -9,7 +9,6 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.CreateDataset;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
-import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.DeleteDataset;
 import ai.verta.modeldb.DeleteDatasetAttributes;
@@ -17,7 +16,6 @@ import ai.verta.modeldb.DeleteDatasetTags;
 import ai.verta.modeldb.DeleteDatasets;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.FindExperiments;
@@ -44,7 +42,6 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
-import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -55,8 +52,10 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
+import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -266,7 +265,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         id = Long.parseLong(request.getId());
       } catch (NumberFormatException e) {
         LOGGER.info("Wrong id format: {}", e.getMessage());
-        throw new ModelDBException("Wrong id format, expecting integer: " + request.getId());
+        throw new ModelDBException(
+            "Wrong id format, expecting integer: " + request.getId(), Code.INVALID_ARGUMENT);
       }
       DeleteRepositoryRequest.Response response =
           repositoryDAO.deleteRepository(
@@ -884,31 +884,42 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
-
-      FindDatasetVersions findDatasetVersions =
-          FindDatasetVersions.newBuilder()
-              .setDatasetId(request.getDatasetId())
-              .setIdsOnly(true)
-              .build();
+          ModelDBServiceResourceTypes.REPOSITORY,
+          request.getDatasetId(),
+          ModelDBServiceActions.READ);
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.findDatasetVersions(datasetDAO, findDatasetVersions, userInfo);
+
+      long id;
+      try {
+        id = Long.parseLong(request.getDatasetId());
+      } catch (NumberFormatException e) {
+        LOGGER.info("Wrong id format: {}", e.getMessage());
+        throw new ModelDBException(
+            "Wrong id format, expecting integer: " + request.getDatasetId(), Code.INVALID_ARGUMENT);
+      }
+      RepositoryIdentification repositoryIdentification =
+          RepositoryIdentification.newBuilder().setRepoId(id).build();
+      ListCommitsRequest.Builder listCommitsRequest =
+          ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
+      ListCommitsRequest.Response listCommitsResponse =
+          commitDAO.listCommits(
+              listCommitsRequest.build(),
+              (session -> repositoryDAO.getRepositoryById(session, repositoryIdentification)));
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
-      if (datasetVersionDTO != null
-          && datasetVersionDTO.getDatasetVersions() != null
-          && !datasetVersionDTO.getDatasetVersions().isEmpty()) {
-        for (DatasetVersion datasetVersion : datasetVersionDTO.getDatasetVersions()) {
-          datasetVersionIds.add(datasetVersion.getId());
+      List<Commit> commitList = listCommitsResponse.getCommitsList();
+      if (!commitList.isEmpty()) {
+        for (Commit commit : commitList) {
+          datasetVersionIds.add(commit.getCommitSha());
           listValueBuilder.addValues(
-              Value.newBuilder().setStringValue(datasetVersion.getId()).build());
+              Value.newBuilder().setStringValue(commit.getCommitSha()).build());
         }
       }
 
       Experiment lastUpdatedExperiment = null;
       if (!datasetVersionIds.isEmpty()) {
+
         KeyValueQuery keyValueQuery =
             KeyValueQuery.newBuilder()
                 .setKey(ModelDBConstants.DATASETS + "." + ModelDBConstants.LINKED_ARTIFACT_ID)
@@ -977,26 +988,36 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.REPOSITORY,
+          request.getDatasetId(),
+          ModelDBServiceActions.READ);
 
-      FindDatasetVersions findDatasetVersions =
-          FindDatasetVersions.newBuilder()
-              .setDatasetId(request.getDatasetId())
-              .setIdsOnly(true)
-              .build();
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.findDatasetVersions(datasetDAO, findDatasetVersions, userInfo);
+      long id;
+      try {
+        id = Long.parseLong(request.getDatasetId());
+      } catch (NumberFormatException e) {
+        LOGGER.info("Wrong id format: {}", e.getMessage());
+        throw new ModelDBException(
+            "Wrong id format, expecting integer: " + request.getDatasetId(), Code.INVALID_ARGUMENT);
+      }
+      RepositoryIdentification repositoryIdentification =
+          RepositoryIdentification.newBuilder().setRepoId(id).build();
+      ListCommitsRequest.Builder listCommitsRequest =
+          ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
+      ListCommitsRequest.Response listCommitsResponse =
+          commitDAO.listCommits(
+              listCommitsRequest.build(),
+              (session -> repositoryDAO.getRepositoryById(session, repositoryIdentification)));
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
-      if (datasetVersionDTO != null
-          && datasetVersionDTO.getDatasetVersions() != null
-          && !datasetVersionDTO.getDatasetVersions().isEmpty()) {
-        for (DatasetVersion datasetVersion : datasetVersionDTO.getDatasetVersions()) {
-          datasetVersionIds.add(datasetVersion.getId());
+      List<Commit> commitList = listCommitsResponse.getCommitsList();
+      if (!commitList.isEmpty()) {
+        for (Commit commit : commitList) {
+          datasetVersionIds.add(commit.getCommitSha());
           listValueBuilder.addValues(
-              Value.newBuilder().setStringValue(datasetVersion.getId()).build());
+              Value.newBuilder().setStringValue(commit.getCommitSha()).build());
         }
       }
 
