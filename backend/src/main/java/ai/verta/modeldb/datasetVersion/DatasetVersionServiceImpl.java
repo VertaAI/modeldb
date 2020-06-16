@@ -42,7 +42,6 @@ import ai.verta.modeldb.versioning.DeleteCommitRequest;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.RepositoryDAO;
-import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
@@ -123,18 +122,14 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           RepositoryIdentification.newBuilder()
               .setRepoId(Long.parseLong(request.getDatasetId()))
               .build();
-      RepositoryFunction repositoryFunction =
-          (session) -> repositoryDAO.getRepositoryById(session, repositoryIdentification, true);
+      RepositoryEntity repositoryEntity =
+          repositoryDAO.getRepositoryById(repositoryIdentification, true);
       CreateCommitRequest.Response createCommitResponse =
           commitDAO.setCommitFromDatasetVersion(
-              datasetVersion, blobDAO, metadataDAO, repositoryFunction);
+              datasetVersion, blobDAO, metadataDAO, repositoryEntity);
       datasetVersion =
-          datasetVersion
-              .toBuilder()
-              .setId(createCommitResponse.getCommit().getCommitSha())
-              .setTimeLogged(createCommitResponse.getCommit().getDateCreated())
-              .setTimeUpdated(createCommitResponse.getCommit().getDateUpdated())
-              .build();
+          blobDAO.convertToDatasetVersion(
+              metadataDAO, repositoryEntity, createCommitResponse.getCommit().getCommitSha());
       responseObserver.onNext(
           CreateDatasetVersion.Response.newBuilder().setDatasetVersion(datasetVersion).build());
       responseObserver.onCompleted();
@@ -183,9 +178,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private DatasetVersionDTO getDatasetVersionDTOByDatasetId(
       String datasetId, int pageNumber, int pageLimit)
       throws InvalidProtocolBufferException, ModelDBException {
-    // Validate if current user has access to the entity or not
-    roleService.validateEntityUserWithUserInfo(
-        ModelDBServiceResourceTypes.REPOSITORY, datasetId, ModelDBServiceActions.READ);
 
     /*Get Data*/
     RepositoryIdentification repositoryIdentification =
@@ -206,7 +198,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     long totalRecords = listCommitsResponse.getTotalRecords();
     totalRecords = totalRecords > 0 ? totalRecords - 1 : totalRecords;
 
-    RepositoryEntity repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification);
+    RepositoryEntity repositoryEntity =
+        repositoryDAO.getRepositoryById(repositoryIdentification, false);
     for (Commit commit : listCommitsResponse.getCommitsList()) {
       if (commit.getParentShasList().isEmpty()) {
         continue;
@@ -446,17 +439,12 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY,
-          request.getDatasetId(),
-          ModelDBServiceActions.UPDATE);
-
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder()
               .setRepoId(Long.parseLong(request.getDatasetId()))
               .build();
-      RepositoryEntity repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification);
+      RepositoryEntity repositoryEntity =
+          repositoryDAO.getRepositoryById(repositoryIdentification, true);
       commitDAO.addDeleteDatasetVersionTags(
           metadataDAO, true, repositoryEntity, request.getId(), request.getTagsList(), false);
 
@@ -507,17 +495,12 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY,
-          request.getDatasetId(),
-          ModelDBServiceActions.UPDATE);
-
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder()
               .setRepoId(Long.parseLong(request.getDatasetId()))
               .build();
-      RepositoryEntity repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification);
+      RepositoryEntity repositoryEntity =
+          repositoryDAO.getRepositoryById(repositoryIdentification, true);
       commitDAO.addDeleteDatasetVersionTags(
           metadataDAO,
           false,

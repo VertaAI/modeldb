@@ -15,13 +15,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status;
 import java.util.Calendar;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 
 public interface DatasetVersionDAO {
-
-  Logger LOGGER = LogManager.getLogger(DatasetVersionDAO.class);
 
   /**
    * Paginated endpoint to get all dataset versions logged under a dataset with id matching the id

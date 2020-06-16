@@ -22,7 +22,7 @@ public interface CommitDAO {
       DatasetVersion datasetVersion,
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
-      RepositoryFunction repositoryFunction)
+      RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException;
 
   CommitEntity saveCommitEntity(

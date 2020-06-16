@@ -75,7 +75,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       DatasetVersion datasetVersion,
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
-      RepositoryFunction repositoryFunction)
+      RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetBlob.Builder datasetBlobBuilder = DatasetBlob.newBuilder();
@@ -126,7 +126,6 @@ public class CommitDAORdbImpl implements CommitDAO {
       builder.setDateUpdated(datasetVersion.getTimeUpdated());
       Commit commit = builder.build();
 
-      RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
       if (!repositoryEntity.isDataset()) {
         throw new ModelDBException(
             "Repository should be created from Dataset to add Dataset Version to it",
@@ -161,8 +160,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return setCommitFromDatasetVersion(
-            datasetVersion, blobDAO, metadataDAO, repositoryFunction);
+        return setCommitFromDatasetVersion(datasetVersion, blobDAO, metadataDAO, repositoryEntity);
       } else {
         throw ex;
       }

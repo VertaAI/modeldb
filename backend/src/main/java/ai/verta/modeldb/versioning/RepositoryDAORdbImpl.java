@@ -295,9 +295,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public RepositoryEntity getRepositoryById(RepositoryIdentification id) throws ModelDBException {
+  public RepositoryEntity getRepositoryById(RepositoryIdentification id, boolean checkWrite)
+      throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      return getRepositoryById(session, id, false);
+      return getRepositoryById(session, id, checkWrite);
     }
   }
 

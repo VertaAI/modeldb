@@ -17,7 +17,6 @@ import ai.verta.modeldb.metadata.DeleteLabelsRequest;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
-import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -2204,16 +2203,12 @@ public class CommitTest {
       List<String> locations = new ArrayList<>();
       locations.add("modeldb");
       locations.add("test.txt");
-      VersioningCompositeIdentifier identifier =
-          VersioningCompositeIdentifier.newBuilder()
-              .setRepoId(id)
-              .setCommitHash(datasetCommit.getCommitSha())
-              .addAllLocation(locations)
-              .build();
+      String compositeId =
+          VersioningUtils.getVersioningCompositeId(id, datasetCommit.getCommitSha(), locations);
       IdentificationType repoCommitBlobLabelId =
           IdentificationType.newBuilder()
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-              .setCompositeId(identifier)
+              .setStringId(compositeId)
               .build();
       labelIds.add(repoCommitBlobLabelId);
       addLabelsRequest =
@@ -2245,11 +2240,10 @@ public class CommitTest {
           datasetBlob,
           listCommitBlobsResponse.getBlobsList().get(0).getBlob());
 
-      identifier = identifier.toBuilder().clearLocation().build();
       repoCommitBlobLabelId =
           repoCommitBlobLabelId
               .toBuilder()
-              .setCompositeId(identifier)
+              .setStringId(id + "::" + datasetCommit.getCommitSha())
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)
               .build();
       labelIds.add(repoCommitBlobLabelId);
