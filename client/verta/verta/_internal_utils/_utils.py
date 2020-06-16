@@ -259,12 +259,14 @@ def make_request(method, url, conn, **kwargs):
         s.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
             request = requests.Request(method, url, **kwargs).prepare()
-
             response = s.send(request, allow_redirects=False)
+
             # store initial response to add back into final history
             initial_response = response
+
             # manually inspect redirects to stop on 302s
-            for response in itertools.chain([response], s.resolve_redirects(response, request)):
+            responses = itertools.chain([initial_response], s.resolve_redirects(initial_response, request))
+            for response in responses:
                 if response.status_code == 302:
                     if not conn.ignore_conn_err:
                         raise RuntimeError(
@@ -273,6 +275,7 @@ def make_request(method, url, conn, **kwargs):
                         )
                     else:
                         return fabricate_200()
+
             if response is not initial_response:
                 # insert initial response back into history, b/c `resolve_redirects()` removed it
                 response.history.insert(0, initial_response)
