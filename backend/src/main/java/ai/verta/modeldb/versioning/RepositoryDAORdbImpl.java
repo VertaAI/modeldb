@@ -327,7 +327,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               null,
               userInfo,
               null,
-              create);
+              create,
+              false);
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -347,7 +348,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       List<String> tagList,
       UserInfo userInfo,
       WorkspaceDTO workspaceDTO,
-      boolean create)
+      boolean create,
+      boolean isDatasetRepository)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     RepositoryEntity repositoryEntity;
     if (create) {
@@ -365,7 +367,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           workspaceDTO.getWorkspaceId(),
           workspaceDTO.getWorkspaceType(),
           LOGGER);
-      repositoryEntity = new RepositoryEntity(repository, workspaceDTO);
+      repositoryEntity = new RepositoryEntity(repository, workspaceDTO, isDatasetRepository);
     } else {
       repositoryEntity = getRepositoryById(session, repoId, true);
       if (!repository.getName().isEmpty()
@@ -585,6 +587,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             dataset.getTagsList(),
             userInfo,
             workspaceDTO,
+            true,
             true);
     return repositoryEntity.toProto();
   }

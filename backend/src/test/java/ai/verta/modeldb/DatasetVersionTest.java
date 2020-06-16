@@ -216,6 +216,8 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -227,8 +229,23 @@ public class DatasetVersionTest {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    createDatasetVersionRequest =
+        createDatasetVersionRequest
+            .toBuilder()
+            .setParentId(getBranchResponse.getCommit().getCommitSha())
+            .build();
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
