@@ -134,7 +134,7 @@ class TestExperimentRun extends FunSuite {
       assert(tags.contains("some-tag") && tags.contains("other-tag"))
       assert(f.expRun.getTags.get equals List("some-tag", "other-tag"))
 
-      tags.remove("other-tag")
+      tags -= "other-tag"
       assert(!tags.contains("other-tag"))
       assert(f.expRun.getTags.get equals List("some-tag"))
     } finally {
