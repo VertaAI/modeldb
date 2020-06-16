@@ -20,6 +20,9 @@ import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.GetBranchRequest;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.DeleteOrganization;
@@ -1827,9 +1830,24 @@ public class DatasetTest {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset.getId());
+        datasetVersionTest.getDatasetVersionRequest(dataset.getId())
+            .toBuilder()
+        .setParentId(getBranchResponse.getCommit().getCommitSha())
+        .build();
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
@@ -1839,7 +1857,10 @@ public class DatasetTest {
         dataset.getId(),
         datasetVersion1.getDatasetId());
 
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId());
+    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId())
+            .toBuilder()
+        .setParentId(getBranchResponse.getCommit().getCommitSha())
+        .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
@@ -2036,8 +2057,24 @@ public class DatasetTest {
         createDatasetRequest.getName(),
         dataset.getName());
 
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset.getId());
+        datasetVersionTest.getDatasetVersionRequest(dataset.getId())
+            .toBuilder()
+        .setParentId(getBranchResponse.getCommit().getCommitSha())
+        .build();
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
@@ -2047,7 +2084,10 @@ public class DatasetTest {
         dataset.getId(),
         datasetVersion1.getDatasetId());
 
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId());
+    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId())
+            .toBuilder()
+        .setParentId(getBranchResponse.getCommit().getCommitSha())
+        .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
