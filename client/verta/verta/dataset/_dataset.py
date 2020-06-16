@@ -9,6 +9,7 @@ import tempfile
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
 from .._internal_utils import _utils
+from .._internal_utils import _file_utils
 
 from .._repository import blob
 
@@ -105,11 +106,7 @@ class _Dataset(blob.Blob):
                 " consider using `commit.get()` to obtain a download-capable dataset"
                 " if ModelDB-managed versioning was enabled"
             )
-        if filepath is None:
-            filepath = os.path.basename(component_path)
-
-        # TODO: remove this check when the os.rename() step is fixed to sidestep collisions
-        if os.path.exists(filepath):
+        if filepath is not None and os.path.exists(filepath):
             raise OSError("{} already exists".format(filepath))
 
         # backend will return error if `component_path` not found/versioned
@@ -120,24 +117,35 @@ class _Dataset(blob.Blob):
         try:
             _utils.raise_for_http_error(response)
 
-            # create parent dirs
-            pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # pylint: disable=no-member
-
             print("downloading {} from ModelDB".format(component_path))
             try:
                 # read response stream into temp file
                 with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
                     for chunk in response.iter_content(chunk_size=chunk_size):
                         tempf.write(chunk)
+
+                # check for a unique `filepath`
+                if filepath is None:
+                    # default to filename from `component_path` in cwd
+                    filepath = os.path.basename(component_path)
+
+                    # avoid collisions with existing files
+                    while os.path.exists(filepath):
+                        filepath = _file_utils.increment_filepath(filepath)
+                else:
+                    if os.path.exists(filepath):  # file was created while we were downloading
+                        raise OSError("{} already exists".format(filepath))
+                    else:
+                        # create parent dirs
+                        pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+
+                # move written contents to `filepath`
+                os.rename(tempf.name, filepath)
+                print("download complete; file written to {}".format(filepath))
             except Exception as e:
                 # delete partially-downloaded file
                 os.remove(tempf.name)
                 raise e
-            else:
-                # move written contents to `filepath`
-                # TODO: prevent collision if `filepath` already exists
-                os.rename(tempf.name, filepath)
-                print("download complete; file written to {}".format(filepath))
         finally:
             response.close()
 
