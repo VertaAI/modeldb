@@ -4,19 +4,14 @@ import static ai.verta.modeldb.ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION
 import static java.util.stream.Collectors.toMap;
 
 import ai.verta.common.KeyValue;
-import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.KeyValueQuery;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.PathLocationTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.collaborator.CollaboratorUser;
-import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
+import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
@@ -1298,7 +1293,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   /**
    * This method find the blobs supported based on the following conditions
    *
-   * <p>commit.author, VERSIONING_COMMIT.label, VERSIONING_REPO_COMMIT_BLOB.label,
+   * <p>commit.author, commit.label, VERSIONING_REPO_COMMIT_BLOB.label,
    * VERSIONING_REPO_COMMIT.label, repoIds, commitHashList
    *
    * @param session :hibernate session
@@ -1306,8 +1301,23 @@ public class BlobDAORdbImpl implements BlobDAO {
    * @param currentLoginUserInfo : current login userInfo
    * @return {@link Map} : "result", "count" as a key
    */
-  private Map<String, Object> getRootShaListByCommitsOrRepos(
-      Session session, FindRepositoriesBlobs request, UserInfo currentLoginUserInfo) {
+  /*private Map<String, Object> getRootShaListByCommitsOrRepos(
+      Session session,
+      FindRepositoriesBlobs request,
+      UserInfo currentLoginUserInfo) {
+    WorkspaceDTO workspaceDTO =
+            roleService.getWorkspaceDTOByWorkspaceName(
+                    currentLoginUserInfo, request.getWorkspaceName());
+
+    List<String> accessibleResourceIds =
+            roleService.getAccessibleResourceIds(
+                    null,
+                    new CollaboratorUser(authService, currentLoginUserInfo),
+                    RepositoryVisibilityEnum.RepositoryVisibility.PRIVATE,
+                    ModelDBServiceResourceTypes.REPOSITORY,
+                    request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
+
+    List<String> commitHashList = new ArrayList<>(request.getCommitsList());
 
     Map<String, Object> parametersMap = new HashMap<>();
 
@@ -1335,22 +1345,9 @@ public class BlobDAORdbImpl implements BlobDAO {
       for (int index = 0; index < predicates.size(); index++) {
         KeyValueQuery predicate = predicates.get(index);
         String[] names = predicate.getKey().split("\\.");
-        switch (names[0]) {
+        switch (names[0].toLowerCase()) {
           case ModelDBConstants.COMMIT:
             LOGGER.debug("switch case : commit");
-            if (names[1].equals("author")) {
-              StringBuilder authorBuilder = new StringBuilder(alias + "." + names[1]);
-              VersioningUtils.setValueWithOperatorInQuery(
-                  index,
-                  authorBuilder,
-                  predicate.getOperator(),
-                  predicate.getValue().getStringValue(),
-                  parametersMap);
-              whereClauseList.add(authorBuilder.toString());
-            }
-            break;
-          case ModelDBConstants.VERSIONING_COMMIT:
-            LOGGER.debug("switch case : " + ModelDBConstants.VERSIONING_COMMIT);
             if (names[1].contains(ModelDBConstants.LABEL)) {
               StringBuilder subQueryBuilder =
                   new StringBuilder("SELECT lb.id.entity_hash FROM ")
@@ -1371,6 +1368,15 @@ public class BlobDAORdbImpl implements BlobDAO {
                   predicate.getValue().getStringValue(),
                   parametersMap);
               whereClauseList.add(alias + ".commit_hash IN (" + subQueryBuilder.toString() + ") ");
+            } else {
+              StringBuilder authorBuilder = new StringBuilder(alias + "." + names[1]);
+              VersioningUtils.setValueWithOperatorInQuery(
+                      index,
+                      authorBuilder,
+                      predicate.getOperator(),
+                      predicate.getValue().getStringValue(),
+                      parametersMap);
+              whereClauseList.add(authorBuilder.toString());
             }
             break;
           case ModelDBConstants.VERSIONING_REPO_COMMIT_BLOB:
@@ -1401,41 +1407,68 @@ public class BlobDAORdbImpl implements BlobDAO {
               innerQueryParametersMap.forEach(labelQuery::setParameter);
               List<String> blobHashes = labelQuery.list();
               List<String> commitHashes = new ArrayList<>();
-              List<Long> repoIds = new ArrayList<>();
+              List<String> repoIds = new ArrayList<>();
               blobHashes.forEach(
                   blobHash -> {
                     String[] compositeIdArr =
                         VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
                     commitHashes.add(compositeIdArr[1]);
-                    repoIds.add(Long.parseLong(compositeIdArr[0]));
+                    repoIds.add(compositeIdArr[0]);
                   });
-              whereClauseList.add(alias + ".commit_hash IN (:versioningCommitHashes) ");
-              parametersMap.put("versioningCommitHashes", commitHashes);
-              whereClauseList.add(repoAlias + ".id IN (:versioningRepoIds) ");
-              parametersMap.put("versioningRepoIds", repoIds);
+              if (!commitHashes.isEmpty()) {
+                commitHashList.addAll(commitHashes);
+              }
+              if (!repoIds.isEmpty()) {
+                accessibleResourceIds.retainAll(repoIds);
+              }
             }
             break;
           default:
+            StringBuilder authorBuilder = new StringBuilder(alias + "." + names[0]);
+            VersioningUtils.setValueWithOperatorInQuery(
+                    index,
+                    authorBuilder,
+                    predicate.getOperator(),
+                    predicate.getValue().getStringValue(),
+                    parametersMap);
+            whereClauseList.add(authorBuilder.toString());
             break;
         }
       }
     }
 
-    List<String> accessibleResourceIds =
-        roleService.getAccessibleResourceIds(
-            null,
-            new CollaboratorUser(authService, currentLoginUserInfo),
-            RepositoryVisibilityEnum.RepositoryVisibility.PRIVATE,
-            ModelDBServiceResourceTypes.REPOSITORY,
-            request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
+    if (workspaceDTO != null
+            && workspaceDTO.getWorkspaceId() != null
+            && !workspaceDTO.getWorkspaceId().isEmpty()) {
+      whereClauseList.add(
+              repoAlias + "." + ModelDBConstants.WORKSPACE_ID + " = :" + ModelDBConstants.WORKSPACE_ID);
+      parametersMap.put(ModelDBConstants.WORKSPACE_ID, workspaceDTO.getWorkspaceId());
+      whereClauseList.add(
+              repoAlias
+                      + "."
+                      + ModelDBConstants.WORKSPACE_TYPE
+                      + " = :"
+                      + ModelDBConstants.WORKSPACE_TYPE);
+      parametersMap.put(
+              ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
+    }
 
     if (!accessibleResourceIds.isEmpty()) {
       whereClauseList.add(repoAlias + ".id IN (:repoIds) ");
       parametersMap.put(
           "repoIds",
           accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+    } else {
+      String errorMessage =
+          "Access is denied. User is unauthorized for given resource IDs : "
+              + accessibleResourceIds;
+      ModelDBUtils.logAndThrowError(
+          errorMessage,
+          Code.PERMISSION_DENIED_VALUE,
+          Any.pack(FindRepositoriesBlobs.getDefaultInstance()));
     }
-    if (!request.getCommitsList().isEmpty()) {
+
+    if (!commitHashList.isEmpty()) {
       whereClauseList.add(alias + ".commit_hash IN (:commitHashList)");
       parametersMap.put("commitHashList", request.getCommitsList());
     }
@@ -1506,7 +1539,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     responseMap.put("result", new HashSet<>(resultSet));
     responseMap.put("count", countQuery.uniqueResult());
     return responseMap;
-  }
+  }*/
 
   private Boolean blobTypeExistsInList(List<BlobType> blobTypeList, Blob.ContentCase contentCase)
       throws ModelDBException {
@@ -1526,16 +1559,19 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   @Override
-  public FindRepositoriesBlobs.Response findRepositoriesBlobs(FindRepositoriesBlobs request)
-      throws ModelDBException {
+  public FindRepositoriesBlobs.Response findRepositoriesBlobs(
+      CommitDAO commitDAO, FindRepositoriesBlobs request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-      Map<String, Object> resultSetMap =
-          getRootShaListByCommitsOrRepos(session, request, currentLoginUserInfo);
+      CommitPaginationDTO commitPaginationDTO =
+          commitDAO.findCommits(session, request, currentLoginUserInfo, false, true);
 
-      Set<String> rootShaList = (Set<String>) resultSetMap.get("result");
-      Long totalRecords = (Long) resultSetMap.get("count");
+      Set<String> rootShaList =
+          commitPaginationDTO.getCommitEntities().stream()
+              .map(CommitEntity::getRootSha)
+              .collect(Collectors.toSet());
+      Long totalRecords = commitPaginationDTO.getTotalRecords();
 
       Set<BlobExpanded> blobExpandedSet = new LinkedHashSet<>();
       for (String rootSha : rootShaList) {
@@ -1552,7 +1588,7 @@ public class BlobDAORdbImpl implements BlobDAO {
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return findRepositoriesBlobs(request);
+        return findRepositoriesBlobs(commitDAO, request);
       } else {
         throw ex;
       }

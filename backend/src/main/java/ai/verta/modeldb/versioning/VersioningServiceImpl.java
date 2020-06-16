@@ -661,7 +661,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
 
-        FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(request);
+        FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(commitDAO, request);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }

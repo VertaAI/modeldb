@@ -394,7 +394,7 @@ public class App implements ApplicationContextAware {
       RoleService roleService) {
 
     // --------------- Start Initialize DAO --------------------------
-    CommitDAO commitDAO = new CommitDAORdbImpl();
+    CommitDAO commitDAO = new CommitDAORdbImpl(authService, roleService);
     RepositoryDAO repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
     BlobDAO blobDAO = new BlobDAORdbImpl(authService, roleService);
 

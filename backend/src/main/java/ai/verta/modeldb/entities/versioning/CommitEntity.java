@@ -79,6 +79,10 @@ public class CommitEntity {
     return commit_hash;
   }
 
+  public void setCommit_hash(String commit_hash) {
+    this.commit_hash = commit_hash;
+  }
+
   public String getMessage() {
     return message;
   }
@@ -109,6 +113,10 @@ public class CommitEntity {
 
   public String getRootSha() {
     return rootSha;
+  }
+
+  public void setRootSha(String rootSha) {
+    this.rootSha = rootSha;
   }
 
   public Set<CommitEntity> getChild_commits() {

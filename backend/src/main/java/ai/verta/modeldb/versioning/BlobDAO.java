@@ -57,6 +57,6 @@ public interface BlobDAO {
       RepositoryDAO repositoryDAO, RevertRepositoryCommitsRequest request)
       throws ModelDBException, NoSuchAlgorithmException;
 
-  FindRepositoriesBlobs.Response findRepositoriesBlobs(FindRepositoriesBlobs request)
-      throws ModelDBException;
+  FindRepositoriesBlobs.Response findRepositoriesBlobs(
+      CommitDAO commitDAO, FindRepositoriesBlobs request) throws ModelDBException;
 }

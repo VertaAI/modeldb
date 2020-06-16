@@ -15,6 +15,9 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.GetBranchRequest;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
@@ -52,6 +55,7 @@ public class FindDatasetEntitiesTest {
   // all service stubs
   private static DatasetServiceBlockingStub datasetServiceStub;
   private static DatasetVersionServiceBlockingStub datasetVersionServiceStub;
+  private static VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub;
 
   // Dataset Entities
   private static Dataset dataset1;
@@ -111,6 +115,7 @@ public class FindDatasetEntitiesTest {
     // Create all service blocking stub
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
+    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
 
     // Create all entities
     createDatasetEntities();
@@ -259,8 +264,16 @@ public class FindDatasetEntitiesTest {
   private static void createDatasetVersionEntities() {
     DatasetVersionTest datasetVersionTest = new DatasetVersionTest();
 
-    long version = 1L;
-
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset1.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
     // Create two datasetVersion of above dataset
     CreateDatasetVersion createDatasetVersionRequest =
         datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
@@ -277,6 +290,7 @@ public class FindDatasetEntitiesTest {
     createDatasetVersionRequest =
         createDatasetVersionRequest
             .toBuilder()
+            .setParentId(getBranchResponse.getCommit().getCommitSha())
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -286,10 +300,6 @@ public class FindDatasetEntitiesTest {
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        version,
-        datasetVersion1.getVersion());
 
     // datasetVersion2 of above dataset
     createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
@@ -306,23 +316,17 @@ public class FindDatasetEntitiesTest {
     createDatasetVersionRequest =
         createDatasetVersionRequest
             .toBuilder()
+            .setParentId(datasetVersion1.getId())
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
             .addTags("Tag_3")
             .addTags("Tag_4")
-            .setRawDatasetVersionInfo(
-                RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        ++version,
-        datasetVersion2.getVersion());
 
     // datasetVersion3 of above dataset
     createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
@@ -339,6 +343,7 @@ public class FindDatasetEntitiesTest {
     createDatasetVersionRequest =
         createDatasetVersionRequest
             .toBuilder()
+            .setParentId(datasetVersion2.getId())
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -349,10 +354,6 @@ public class FindDatasetEntitiesTest {
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     datasetVersion3 = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        ++version,
-        datasetVersion3.getVersion());
 
     // datasetVersion4 of above dataset
     createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
@@ -369,24 +370,18 @@ public class FindDatasetEntitiesTest {
     createDatasetVersionRequest =
         createDatasetVersionRequest
             .toBuilder()
+            .setParentId(datasetVersion3.getId())
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_5")
             .addTags("Tag_7")
             .addTags("Tag_8")
-            .setRawDatasetVersionInfo(
-                RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .setDatasetVersionVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     datasetVersion4 = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        ++version,
-        datasetVersion4.getVersion());
 
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
     datasetVersionMap.put(datasetVersion2.getId(), datasetVersion2);
@@ -1048,6 +1043,7 @@ public class FindDatasetEntitiesTest {
 
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addDatasetVersionIds(datasetVersion1.getId())
             .addAllPredicates(predicates)
             // .setIdsOnly(true)
@@ -1063,6 +1059,7 @@ public class FindDatasetEntitiesTest {
     // If key is not set in predicate
     findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addDatasetVersionIds(datasetVersion1.getId())
             .addPredicates(
                 KeyValueQuery.newBuilder()
@@ -1104,6 +1101,7 @@ public class FindDatasetEntitiesTest {
 
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addDatasetVersionIds(datasetVersion1.getId())
             .addPredicates(keyValueQuery)
             .build();
@@ -1135,7 +1133,10 @@ public class FindDatasetEntitiesTest {
             .build();
 
     FindDatasetVersions findDatasetVersions =
-        FindDatasetVersions.newBuilder().addPredicates(keyValueQuery).build();
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
 
     FindDatasetVersions.Response response =
         datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
@@ -1197,6 +1198,7 @@ public class FindDatasetEntitiesTest {
 
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addAllDatasetVersionIds(datasetVersionMap.keySet())
             .addAllPredicates(predicates)
             .setIdsOnly(true)
@@ -1251,6 +1253,7 @@ public class FindDatasetEntitiesTest {
 
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addAllDatasetVersionIds(datasetVersionMap.keySet())
             .addAllPredicates(predicates)
             .build();
@@ -1290,6 +1293,7 @@ public class FindDatasetEntitiesTest {
 
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addAllDatasetVersionIds(datasetVersionMap.keySet())
             .addPredicates(keyValueQuery)
             .build();
@@ -1332,6 +1336,7 @@ public class FindDatasetEntitiesTest {
     for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       FindDatasetVersions findDatasetVersions =
           FindDatasetVersions.newBuilder()
+              .setDatasetId(dataset1.getId())
               .addAllDatasetVersionIds(datasetVersionMap.keySet())
               .addPredicates(keyValueQuery2)
               .setPageLimit(pageLimit)
@@ -1404,6 +1409,7 @@ public class FindDatasetEntitiesTest {
 
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addAllDatasetVersionIds(datasetVersionMap.keySet())
             .addPredicates(keyValueQuery2)
             .setAscending(false)
@@ -1445,6 +1451,7 @@ public class FindDatasetEntitiesTest {
 
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addAllDatasetVersionIds(datasetVersionMap.keySet())
             .addPredicates(keyValueQueryTag1)
             .addPredicates(keyValueQueryTag2)
@@ -1484,6 +1491,7 @@ public class FindDatasetEntitiesTest {
 
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addAllDatasetVersionIds(datasetVersionMap.keySet())
             .addPredicates(keyValueQueryAttribute_1)
             .setAscending(false)
@@ -1510,6 +1518,7 @@ public class FindDatasetEntitiesTest {
             .build();
     findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addAllDatasetVersionIds(datasetVersionMap.keySet())
             .addPredicates(keyValueQueryAttribute_1)
             .addPredicates(keyValueQueryAccuracy)
@@ -1537,6 +1546,7 @@ public class FindDatasetEntitiesTest {
 
     findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addAllDatasetVersionIds(datasetVersionMap.keySet())
             .addPredicates(keyValueQueryAttribute_1)
             .setAscending(false)
@@ -1603,6 +1613,7 @@ public class FindDatasetEntitiesTest {
             .build();
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
             .addPredicates(keyValueQuery)
             .setAscending(false)
             .setIdsOnly(false)
@@ -1632,7 +1643,8 @@ public class FindDatasetEntitiesTest {
   public void findDatasetVersionsByWorkspaceTest() {
     LOGGER.info("FindDatasetVersions by workspace test start................................");
 
-    FindDatasetVersions findDatasetVersions = FindDatasetVersions.newBuilder().build();
+    FindDatasetVersions findDatasetVersions =
+        FindDatasetVersions.newBuilder().setDatasetId(dataset1.getId()).build();
 
     FindDatasetVersions.Response response =
         datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
@@ -1647,7 +1659,10 @@ public class FindDatasetEntitiesTest {
         response.getTotalRecords());
 
     findDatasetVersions =
-        FindDatasetVersions.newBuilder().addDatasetVersionIds(datasetVersion1.getId()).build();
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addDatasetVersionIds(datasetVersion1.getId())
+            .build();
 
     response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
     LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsCount());
