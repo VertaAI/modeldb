@@ -306,6 +306,38 @@ def raise_for_http_error(response):
             six.raise_from(requests.HTTPError(message, response=response), None)
 
 
+def body_to_json(response):
+    """
+    Returns the JSON-encoded contents of `response`, raising a detailed error on failure.
+
+    Parameters
+    ----------
+    response : :class:`requests.Response`
+        HTTP response.
+
+    Returns
+    -------
+    contents : dict
+        JSON-encoded contents of `response`.
+
+    Raises
+    ------
+    ValueError
+        If `response`'s contents are not JSON-encoded.
+
+    """
+    try:
+        return response.json()
+    except ValueError:  # not JSON response
+        e = ValueError('\n'.join([
+            "expected JSON response from {}, but instead got:".format(response.url),
+            response.text or "<empty response>",
+            "",
+            "Please notify the Verta development team.",
+        ]))
+        six.raise_from(e, None)
+
+
 def is_hidden(path):  # to avoid "./".startswith('.')
     return os.path.basename(path.rstrip('/')).startswith('.') and path != "."
 
