@@ -565,4 +565,49 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
     }
   }
+
+  @Override
+  public void addDeleteDatasetVersionTags(
+      MetadataDAO metadataDAO,
+      boolean addTags,
+      RepositoryEntity repositoryEntity,
+      String datasetVersionId,
+      List<String> tagsList,
+      boolean deleteAll)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      CommitEntity commitEntity =
+          getCommitEntity(session, datasetVersionId, (session1 -> repositoryEntity));
+
+      VersioningCompositeIdentifier compositeIdentifier =
+          VersioningCompositeIdentifier.newBuilder()
+              .setRepoId(repositoryEntity.getId())
+              .setCommitHash(commitEntity.getCommit_hash())
+              .addLocation(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION)
+              .build();
+
+      IdentificationType identificationType =
+          IdentificationType.newBuilder()
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+              .setCompositeId(compositeIdentifier)
+              .build();
+      if (addTags) {
+        metadataDAO.addLabels(identificationType, ModelDBUtils.checkEntityTagsLength(tagsList));
+      } else {
+        metadataDAO.deleteLabels(
+            identificationType, ModelDBUtils.checkEntityTagsLength(tagsList), deleteAll);
+      }
+      commitEntity.setDate_updated(new Date().getTime());
+      session.update(commitEntity);
+      session.getTransaction().commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        addDeleteDatasetVersionTags(
+            metadataDAO, addTags, repositoryEntity, datasetVersionId, tagsList, deleteAll);
+      } else {
+        throw ex;
+      }
+    }
+  }
 }
