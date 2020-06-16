@@ -188,6 +188,7 @@ public class RepositoryEntity {
     this.repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
     this.workspace_id = repository.getWorkspaceId();
     this.workspace_type = repository.getWorkspaceTypeValue();
+    update();
     updateAttribute(repository.getAttributesList());
   }
 
