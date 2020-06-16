@@ -46,6 +46,7 @@ class TestExperimentRun extends FunSuite {
 
       assert(retrievedCommit equals commit)
 
+      // update the logged commit:
       val newCommit = commit.update("abc/def", pathBlob)
                             .flatMap(_.save("Add a blob")).get
       expRun.logCommit(newCommit, Some(Map[String, String]("mnp/qrs" -> "abc/def")))
