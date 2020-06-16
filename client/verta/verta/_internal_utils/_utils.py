@@ -266,22 +266,27 @@ def make_request(method, url, conn, **kwargs):
             # manually inspect redirects to stop on 302s
             for response in itertools.chain([response], s.resolve_redirects(response, request)):
                 if response.status_code == 302:
-                    # TODO: break without error if conn.ignore_conn_err
-                    raise RuntimeError(
-                        "received status 302 from {},"
-                        " which is not supported by the Client".format(response.url)
-                    )
-            # insert initial response back into history, b/c `resolve_redirects()` removes
+                    if not conn.ignore_conn_err:
+                        raise RuntimeError(
+                            "received status 302 from {},"
+                            " which is not supported by the Client".format(response.url)
+                        )
+                    else:
+                        # TODO: make it so this actually falls through
+                        break  # fall through to fabricate 200 response
             if response is not initial_response:
+                # insert initial response back into history, b/c `resolve_redirects()` removed it
                 response.history.insert(0, initial_response)
         except (requests.exceptions.BaseHTTPError,
                 requests.exceptions.RequestException) as e:
             if not conn.ignore_conn_err:
                 raise e
+            # else fall through to fabricate 200 response
         else:
             if response.ok or not conn.ignore_conn_err:
                 return response
-        # fabricate successful response
+            # else fall through to fabricate 200 response
+        # fabricate 200 response
         response = requests.Response()
         response.status_code = 200  # success
         response._content = six.ensure_binary("{}")  # empty contents
