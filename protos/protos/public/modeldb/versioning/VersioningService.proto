@@ -473,6 +473,7 @@ message FindRepositoriesBlobs {
     //In future requirement
     //bool ascending = 8;
     //string sort_key = 9;
+    repeated KeyValueQuery predicates = 10;
 
     message Response {
         repeated BlobExpanded blobs = 1;

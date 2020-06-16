@@ -1,6 +1,7 @@
 package ai.verta.modeldb.metadata;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -53,7 +54,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
           .append(" IN (:labels)")
           .toString();
 
-  private String getEntityHash(IdentificationType id) {
+  private String getEntityHash(IdentificationType id) throws ModelDBException {
     String entityHash;
     switch (id.getIdCase()) {
       case INT_ID:
@@ -62,6 +63,10 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       case STRING_ID:
         entityHash = id.getStringId();
         break;
+      case COMPOSITE_ID:
+        entityHash =
+            LabelsMappingEntity.getVersioningCompositeIdString(id.getCompositeId(), id.getIdType());
+        break;
       default:
         throw new StatusRuntimeException(io.grpc.Status.INTERNAL);
     }
@@ -69,7 +74,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public boolean addLabels(IdentificationType id, List<String> labels) {
+  public boolean addLabels(IdentificationType id, List<String> labels) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       addLabels(session, id, labels);
       return true;
@@ -106,7 +111,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public void addLabels(Session session, IdentificationType id, List<String> labels) {
+  public void addLabels(Session session, IdentificationType id, List<String> labels)
+      throws ModelDBException {
     Transaction transaction = session.beginTransaction();
     for (String label : labels) {
       LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
@@ -126,7 +132,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public List<String> getLabels(IdentificationType id) {
+  public List<String> getLabels(IdentificationType id) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       return getLabels(session, id);
     } catch (Exception ex) {
@@ -139,7 +145,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public List<String> getLabels(Session session, IdentificationType id) {
+  public List<String> getLabels(Session session, IdentificationType id) throws ModelDBException {
     Query<LabelsMappingEntity> query =
         session.createQuery(GET_LABELS_HQL, LabelsMappingEntity.class);
     query.setParameter("entityHash", getEntityHash(id));
@@ -173,7 +179,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public boolean deleteLabels(IdentificationType id, List<String> labels) {
+  public boolean deleteLabels(IdentificationType id, List<String> labels) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 

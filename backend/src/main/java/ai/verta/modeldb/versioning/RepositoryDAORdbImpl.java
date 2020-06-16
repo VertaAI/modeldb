@@ -576,10 +576,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   Dataset convertToDataset(
-      Session session,
-      MetadataDAO metadataDAO,
-      RepositoryEntity repositoryEntity,
-      boolean idsOnly) {
+      Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity, boolean idsOnly)
+      throws ModelDBException {
     Dataset.Builder dataset = Dataset.newBuilder();
     dataset.setId(String.valueOf(repositoryEntity.getId()));
 
@@ -1359,7 +1357,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       return new SimpleEntry<>(
           convertToDataset(session, metadataDAO, repositoryEntity, idsOnly),
           repositoryEntity.toProto());
-    } catch (InvalidProtocolBufferException e) {
+    } catch (InvalidProtocolBufferException | ModelDBException e) {
       LOGGER.error(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
       Status status =
           Status.newBuilder()

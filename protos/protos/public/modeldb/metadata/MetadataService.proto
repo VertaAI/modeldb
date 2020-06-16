@@ -13,6 +13,7 @@ message IDTypeEnum {
         VERSIONING_REPOSITORY = 1;
         VERSIONING_COMMIT = 2;
         VERSIONING_REPO_COMMIT_BLOB = 3;
+        VERSIONING_REPO_COMMIT = 4;
     }
 }
 

@@ -214,6 +214,7 @@ public interface ModelDBConstants {
       "https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry";
 
   // Versioning constant
+  String BLOB = "blob";
   String BLOBS = "blobs";
   String SUBTREES = "subtrees";
   String REPOSITORY_ID = "repository_id";
@@ -231,6 +232,10 @@ public interface ModelDBConstants {
   String VERSIONING_LOCATION = "versioning_location";
   String REPOSITORY_VISIBILITY = "repository_visibility";
   String REPOSITORY = "repository";
+  String VERSIONING_REPOSITORY = "VERSIONING_REPOSITORY";
+  String VERSIONING_COMMIT = "VERSIONING_COMMIT";
+  String VERSIONING_REPO_COMMIT_BLOB = "VERSIONING_REPO_COMMIT_BLOB";
+  String VERSIONING_REPO_COMMIT = "VERSIONING_REPO_COMMIT";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second

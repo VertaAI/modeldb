@@ -2,13 +2,21 @@ package ai.verta.modeldb.versioning;
 
 import static java.util.stream.Collectors.toMap;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.metadata.IDTypeEnum;
+import ai.verta.modeldb.metadata.VersioningCompositeIdentifier;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
@@ -56,9 +64,11 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   public static final String TREE = "TREE";
   private final AuthService authService;
+  private final RoleService roleService;
 
-  public BlobDAORdbImpl(AuthService authService) {
+  public BlobDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
+    this.roleService = roleService;
   }
 
   /**
@@ -1144,8 +1154,19 @@ public class BlobDAORdbImpl implements BlobDAO {
     return blobContainerList;
   }
 
+  /**
+   * This method find the blobs supported based on the following conditions
+   *
+   * <p>commit.author, VERSIONING_COMMIT.label, VERSIONING_REPO_COMMIT_BLOB.label,
+   * VERSIONING_REPO_COMMIT.label, repoIds, commitHashList
+   *
+   * @param session :hibernate session
+   * @param request : FindRepositoriesBlobs request
+   * @param currentLoginUserInfo : current login userInfo
+   * @return {@link Map} : "result", "count" as a key
+   */
   private Map<String, Object> getRootShaListByCommitsOrRepos(
-      Session session, FindRepositoriesBlobs request) {
+      Session session, FindRepositoriesBlobs request, UserInfo currentLoginUserInfo) {
 
     Map<String, Object> parametersMap = new HashMap<>();
 
@@ -1158,6 +1179,8 @@ public class BlobDAORdbImpl implements BlobDAO {
             .append(" ");
 
     StringBuilder joinClause = new StringBuilder();
+    String repoAlias = "repo";
+    joinClause.append(" INNER JOIN ").append(alias).append(".repository ").append(repoAlias);
     joinClause
         .append(" INNER JOIN ")
         .append(InternalFolderElementEntity.class.getSimpleName())
@@ -1165,17 +1188,120 @@ public class BlobDAORdbImpl implements BlobDAO {
         .append(" ON ");
     joinClause.append("folderElm.folder_hash = ").append(alias).append(".rootSha ");
 
+    List<KeyValueQuery> predicates = request.getPredicatesList();
     List<String> whereClauseList = new ArrayList<>();
-    if (!request.getRepoIdsList().isEmpty()) {
-      whereClauseList.add(alias + ".repository.id IN (:repoIds) ");
-      parametersMap.put("repoIds", request.getRepoIdsList());
+    if (predicates != null && !predicates.isEmpty()) {
+      for (int index = 0; index < predicates.size(); index++) {
+        KeyValueQuery predicate = predicates.get(index);
+        String[] names = predicate.getKey().split("\\.");
+        switch (names[0]) {
+          case ModelDBConstants.COMMIT:
+            LOGGER.debug("switch case : commit");
+            if (names[1].equals("author")) {
+              StringBuilder authorBuilder = new StringBuilder(alias + "." + names[1]);
+              VersioningUtils.setValueWithOperatorInQuery(
+                  index,
+                  authorBuilder,
+                  predicate.getOperator(),
+                  predicate.getValue().getStringValue(),
+                  parametersMap);
+              whereClauseList.add(authorBuilder.toString());
+            }
+            break;
+          case ModelDBConstants.VERSIONING_COMMIT:
+            LOGGER.debug("switch case : " + ModelDBConstants.VERSIONING_COMMIT);
+            if (names[1].contains(ModelDBConstants.LABEL)) {
+              StringBuilder subQueryBuilder =
+                  new StringBuilder("SELECT lb.id.entity_hash FROM ")
+                      .append(LabelsMappingEntity.class.getSimpleName())
+                      .append(" lb WHERE ")
+                      .append(" lb.id.entity_type ");
+              VersioningUtils.setValueWithOperatorInQuery(
+                  index,
+                  subQueryBuilder,
+                  OperatorEnum.Operator.EQ,
+                  IDTypeEnum.IDType.VERSIONING_COMMIT.getNumber(),
+                  parametersMap);
+              subQueryBuilder.append(" AND lb.id.label ");
+              VersioningUtils.setValueWithOperatorInQuery(
+                  index,
+                  subQueryBuilder,
+                  OperatorEnum.Operator.EQ,
+                  predicate.getValue().getStringValue(),
+                  parametersMap);
+              whereClauseList.add(alias + ".commit_hash IN (" + subQueryBuilder.toString() + ") ");
+            }
+            break;
+          case ModelDBConstants.VERSIONING_REPO_COMMIT_BLOB:
+          case ModelDBConstants.VERSIONING_REPO_COMMIT:
+            LOGGER.debug("switch case : Blob");
+            if (names[1].contains(ModelDBConstants.LABEL)) {
+              StringBuilder subQueryBuilder =
+                  new StringBuilder("SELECT lb.id.entity_hash FROM ")
+                      .append(LabelsMappingEntity.class.getSimpleName())
+                      .append(" lb WHERE ")
+                      .append(" lb.id.entity_type = :entityType")
+                      .append(" AND lb.id.label ");
+              Map<String, Object> innerQueryParametersMap = new HashMap<>();
+              VersioningUtils.setValueWithOperatorInQuery(
+                  index,
+                  subQueryBuilder,
+                  predicate.getOperator(),
+                  predicate.getValue().getStringValue(),
+                  innerQueryParametersMap);
+              Query labelQuery = session.createQuery(subQueryBuilder.toString());
+              if (names[0].equals(ModelDBConstants.VERSIONING_REPO_COMMIT_BLOB)) {
+                labelQuery.setParameter(
+                    "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB.getNumber());
+              } else {
+                labelQuery.setParameter(
+                    "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT.getNumber());
+              }
+              innerQueryParametersMap.forEach(labelQuery::setParameter);
+              List<String> blobHashes = labelQuery.list();
+              List<String> commitHashes = new ArrayList<>();
+              List<Long> repoIds = new ArrayList<>();
+              blobHashes.forEach(
+                  blobHash -> {
+                    VersioningCompositeIdentifier identifier =
+                        LabelsMappingEntity.getVersioningCompositeId(blobHash);
+                    commitHashes.add(identifier.getCommitHash());
+                    repoIds.add(identifier.getRepoId());
+                  });
+              whereClauseList.add(alias + ".commit_hash IN (:versioningCommitHashes) ");
+              parametersMap.put("versioningCommitHashes", commitHashes);
+              whereClauseList.add(repoAlias + ".id IN (:versioningRepoIds) ");
+              parametersMap.put("versioningRepoIds", repoIds);
+            }
+            break;
+          default:
+            break;
+        }
+      }
+    }
+
+    List<String> accessibleResourceIds =
+        roleService.getAccessibleResourceIds(
+            null,
+            new CollaboratorUser(authService, currentLoginUserInfo),
+            RepositoryVisibilityEnum.RepositoryVisibility.PRIVATE,
+            ModelDBServiceResourceTypes.REPOSITORY,
+            request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
+
+    if (!accessibleResourceIds.isEmpty()) {
+      whereClauseList.add(repoAlias + ".id IN (:repoIds) ");
+      parametersMap.put(
+          "repoIds",
+          accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()));
     }
     if (!request.getCommitsList().isEmpty()) {
       whereClauseList.add(alias + ".commit_hash IN (:commitHashList)");
       parametersMap.put("commitHashList", request.getCommitsList());
     }
     StringBuilder whereClause = new StringBuilder();
-    setPredicatesWithQueryOperator(whereClause, " AND ", whereClauseList.toArray(new String[0]));
+    whereClause.append(
+        VersioningUtils.setPredicatesWithQueryOperator(
+            " AND ", whereClauseList.toArray(new String[0])));
 
     // Order by clause
     StringBuilder orderClause =
@@ -1210,6 +1336,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
 
     Query query = session.createQuery(finalQueryBuilder.toString());
+    LOGGER.debug("Find Repository blob final query : {}", query.getQueryString());
     Query countQuery = session.createQuery(countQueryBuilder.toString());
     if (!parametersMap.isEmpty()) {
       parametersMap.forEach(
@@ -1240,11 +1367,6 @@ public class BlobDAORdbImpl implements BlobDAO {
     return responseMap;
   }
 
-  private void setPredicatesWithQueryOperator(
-      StringBuilder queryStringBuilder, String operatorName, String[] predicateClause) {
-    queryStringBuilder.append(String.join(" " + operatorName + " ", predicateClause));
-  }
-
   private Boolean blobTypeExistsInList(List<BlobType> blobTypeList, Blob.ContentCase contentCase)
       throws ModelDBException {
     switch (contentCase) {
@@ -1267,7 +1389,9 @@ public class BlobDAORdbImpl implements BlobDAO {
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
-      Map<String, Object> resultSetMap = getRootShaListByCommitsOrRepos(session, request);
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      Map<String, Object> resultSetMap =
+          getRootShaListByCommitsOrRepos(session, request, currentLoginUserInfo);
 
       Set<String> rootShaList = (Set<String>) resultSetMap.get("result");
       Long totalRecords = (Long) resultSetMap.get("count");
