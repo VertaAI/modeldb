@@ -4,6 +4,7 @@ import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.AddDatasetTags;
 import ai.verta.modeldb.CreateJob;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
@@ -18,6 +19,7 @@ import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
+import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -29,6 +31,7 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
+import ai.verta.modeldb.versioning.RepositoryIdentification.Builder;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -1134,6 +1137,50 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
+  public AddDatasetTags.Response addDatasetTags(
+      MetadataDAO metadataDAO, String id, List<String> tags) throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      long idValue;
+      try {
+        idValue = Long.parseLong(id);
+      } catch (NumberFormatException e) {
+        LOGGER.info("Wrong id format: {}", e.getMessage());
+        throw new ModelDBException(
+            "Wrong id format, expecting integer: " + id, Code.INVALID_ARGUMENT);
+      }
+      Builder idBuilder = RepositoryIdentification.newBuilder().setRepoId(idValue);
+      idBuilder.setRepoId(idValue);
+      RepositoryEntity repositoryEntity = getRepositoryById(session, idBuilder.build(), true);
+      repositoryEntity.update();
+      List<String> tagsOld =
+          metadataDAO.getLabels(
+              session,
+              IdentificationType.newBuilder()
+                  .setIdType(VERSIONING_REPOSITORY)
+                  .setIntId(idValue)
+                  .build());
+      List<String> uniqueTags = new ArrayList<>(tags);
+      uniqueTags.removeAll(tagsOld);
+      metadataDAO.addLabels(
+          session,
+          IdentificationType.newBuilder()
+              .setIdType(VERSIONING_REPOSITORY)
+              .setIntId(idValue)
+              .build(),
+          uniqueTags);
+
+      return AddDatasetTags.Response.newBuilder()
+          .setDataset(convertToDataset(session, metadataDAO, repositoryEntity))
+          .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addDatasetTags(metadataDAO, id, tags);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
   public DatasetPaginationDTO findDatasets(
       MetadataDAO metadataDAO,
       FindDatasets queryParameters,
@@ -1311,6 +1358,62 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
+  public Dataset deleteDatasetTags(
+      MetadataDAO metadataDAO, String id, ProtocolStringList tagsList, boolean deleteAll)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      long idValue;
+      try {
+        idValue = Long.parseLong(id);
+      } catch (NumberFormatException e) {
+        LOGGER.info("Wrong id format: {}", e.getMessage());
+        throw new ModelDBException(
+            "Wrong id format, expecting integer: " + id, Code.INVALID_ARGUMENT);
+      }
+      Builder idBuilder = RepositoryIdentification.newBuilder().setRepoId(idValue);
+      idBuilder.setRepoId(idValue);
+      RepositoryEntity repositoryEntity = getRepositoryById(session, idBuilder.build(), true);
+      repositoryEntity.update();
+      if (deleteAll) {
+        StringBuilder stringQueryBuilder =
+            new StringBuilder("delete from ")
+                .append(LabelsMappingEntity.class.getSimpleName())
+                .append(" lm WHERE ");
+        stringQueryBuilder
+            .append(" lm.")
+            .append(ModelDBConstants.ID)
+            .append(".")
+            .append(ModelDBConstants.ENTITY_HASH)
+            .append(" = :entityHash AND lm.id.")
+            .append(ModelDBConstants.ENTITY_TYPE)
+            .append(" = :entityType");
+        Query<LabelsMappingEntity> query =
+            session.createQuery(stringQueryBuilder.toString(), LabelsMappingEntity.class);
+        query.setParameter(ModelDBConstants.ENTITY_HASH, id);
+        query.setParameter(
+            ModelDBConstants.ENTITY_TYPE, IdentificationType.IdCase.INT_ID.getNumber());
+        query.executeUpdate();
+
+      } else {
+        metadataDAO.deleteLabels(
+            session,
+            IdentificationType.newBuilder()
+                .setIdType(VERSIONING_REPOSITORY)
+                .setIntId(idValue)
+                .build(),
+            tagsList);
+      }
+
+      return convertToDataset(session, metadataDAO, repositoryEntity);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetTags(metadataDAO, id, tagsList, deleteAll);
+      } else {
+        throw ex;
+      }
+    }
+  }
+    
   public GetDatasetById.Response getDatasetById(MetadataDAO metadataDAO, String id)
       throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {

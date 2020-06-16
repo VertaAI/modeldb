@@ -276,7 +276,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         id = Long.parseLong(request.getId());
       } catch (NumberFormatException e) {
         LOGGER.info("Wrong id format: {}", e.getMessage());
-        throw new ModelDBException("Wrong id format, expecting integer: " + request.getId());
+        throw new ModelDBException(
+            "Wrong id format, expecting integer: " + request.getId(),
+            io.grpc.Status.Code.INVALID_ARGUMENT);
       }
       DeleteRepositoryRequest.Response response =
           repositoryDAO.deleteRepository(
@@ -544,14 +546,15 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Dataset updatedDataset =
-          datasetDAO.addDatasetTags(
-              request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+      AddDatasetTags.Response updatedDataset =
+          repositoryDAO.addDatasetTags(
+              metadataDAO,
+              request.getId(),
+              ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
 
-      responseObserver.onNext(
-          AddDatasetTags.Response.newBuilder().setDataset(updatedDataset).build());
+      responseObserver.onNext(updatedDataset);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -565,24 +568,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
-      if (request.getId().isEmpty()) {
-        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST)
-                .addDetails(Any.pack(GetTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.READ);
-
-      List<String> tags = datasetDAO.getDatasetTags(request.getId());
-      responseObserver.onNext(GetTags.Response.newBuilder().addAllTags(tags).build());
-      responseObserver.onCompleted();
+      throw new ModelDBException("Not supported", io.grpc.Status.Code.FAILED_PRECONDITION);
 
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
@@ -618,11 +604,11 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
       Dataset updatedDataset =
-          datasetDAO.deleteDatasetTags(
-              request.getId(), request.getTagsList(), request.getDeleteAll());
+          repositoryDAO.deleteDatasetTags(
+              metadataDAO, request.getId(), request.getTagsList(), request.getDeleteAll());
 
       responseObserver.onNext(
           DeleteDatasetTags.Response.newBuilder().setDataset(updatedDataset).build());
