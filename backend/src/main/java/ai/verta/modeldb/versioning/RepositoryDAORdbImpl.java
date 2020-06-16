@@ -579,47 +579,45 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   Dataset convertToDataset(
-      Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity, boolean idsOnly)
+      Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity)
       throws ModelDBException {
     Dataset.Builder dataset = Dataset.newBuilder();
     dataset.setId(String.valueOf(repositoryEntity.getId()));
 
-    if (!idsOnly) {
-      dataset
-          .setDatasetVisibilityValue(repositoryEntity.getRepository_visibility())
-          .setWorkspaceTypeValue(repositoryEntity.getWorkspace_type())
-          .setWorkspaceId(repositoryEntity.getWorkspace_id())
-          .setTimeCreated(repositoryEntity.getDate_created())
-          .setTimeUpdated(repositoryEntity.getDate_updated())
-          .setName(repositoryEntity.getName())
-          .setOwner(repositoryEntity.getOwner());
-      dataset.addAllAttributes(
-          repositoryEntity.getAttributeMapping().stream()
-              .map(
-                  attributeEntity -> {
-                    try {
-                      return attributeEntity.getProtoObj();
-                    } catch (InvalidProtocolBufferException e) {
-                      LOGGER.error("Unexpected error occured {}", e.getMessage());
-                      Status status =
-                          Status.newBuilder()
-                              .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
-                              .setMessage(e.getMessage())
-                              .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
-                              .build();
-                      throw StatusProto.toStatusRuntimeException(status);
-                    }
-                  })
-              .collect(Collectors.toList()));
-      List<String> tags =
-          metadataDAO.getLabels(
-              session,
-              IdentificationType.newBuilder()
-                  .setIdType(VERSIONING_REPOSITORY)
-                  .setIntId(repositoryEntity.getId())
-                  .build());
-      dataset.addAllTags(tags);
-    }
+    dataset
+        .setDatasetVisibilityValue(repositoryEntity.getRepository_visibility())
+        .setWorkspaceTypeValue(repositoryEntity.getWorkspace_type())
+        .setWorkspaceId(repositoryEntity.getWorkspace_id())
+        .setTimeCreated(repositoryEntity.getDate_created())
+        .setTimeUpdated(repositoryEntity.getDate_updated())
+        .setName(repositoryEntity.getName())
+        .setOwner(repositoryEntity.getOwner());
+    dataset.addAllAttributes(
+        repositoryEntity.getAttributeMapping().stream()
+            .map(
+                attributeEntity -> {
+                  try {
+                    return attributeEntity.getProtoObj();
+                  } catch (InvalidProtocolBufferException e) {
+                    LOGGER.error("Unexpected error occured {}", e.getMessage());
+                    Status status =
+                        Status.newBuilder()
+                            .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                            .setMessage(e.getMessage())
+                            .addDetails(Any.pack(CreateJob.Response.getDefaultInstance()))
+                            .build();
+                    throw StatusProto.toStatusRuntimeException(status);
+                  }
+                })
+            .collect(Collectors.toList()));
+    List<String> tags =
+        metadataDAO.getLabels(
+            session,
+            IdentificationType.newBuilder()
+                .setIdType(VERSIONING_REPOSITORY)
+                .setIntId(repositoryEntity.getId())
+                .build());
+    dataset.addAllTags(tags);
     return dataset.build();
   }
 
@@ -1413,7 +1411,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
     }
   }
-    
+
   public GetDatasetById.Response getDatasetById(MetadataDAO metadataDAO, String id)
       throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -1421,7 +1419,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           getRepositoryById(
               session, RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(id)).build());
       return GetDatasetById.Response.newBuilder()
-          .setDataset(convertToDataset(session, metadataDAO, repositoryEntity, false))
+          .setDataset(convertToDataset(session, metadataDAO, repositoryEntity))
           .build();
     } catch (NumberFormatException e) {
       String message = "Can't find repository, wrong id format: " + id;
@@ -1458,8 +1456,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       RepositoryEntity repositoryEntity) {
     try {
       return new SimpleEntry<>(
-          convertToDataset(session, metadataDAO, repositoryEntity, idsOnly),
-          repositoryEntity.toProto());
+          convertToDataset(session, metadataDAO, repositoryEntity), repositoryEntity.toProto());
     } catch (InvalidProtocolBufferException | ModelDBException e) {
       LOGGER.error(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
       Status status =

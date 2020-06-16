@@ -193,7 +193,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public void deleteLabels(Session session, IdentificationType id, List<String> labels) {
+  public void deleteLabels(Session session, IdentificationType id, List<String> labels)
+      throws ModelDBException {
     Transaction transaction = session.beginTransaction();
 
     for (String label : labels) {
