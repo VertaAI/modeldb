@@ -500,7 +500,7 @@
 
     <changeSet id="copy_temp_to_new_artifact_part_table" author="anandJ">
         <sql>
-            INSERT INTO artifact_part SELECT CAST(artifact_id AS CHAR) artifact_id, part_number, etag,"0"  FROM artifact_part_temp;
+            INSERT INTO artifact_part SELECT CAST(artifact_id AS CHAR) artifact_id, part_number, etag, '0'  FROM artifact_part_temp;
         </sql>
     </changeSet>
 
