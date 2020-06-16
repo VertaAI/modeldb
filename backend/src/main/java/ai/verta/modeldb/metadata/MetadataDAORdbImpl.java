@@ -44,16 +44,6 @@ public class MetadataDAORdbImpl implements MetadataDAO {
           .append("key")
           .append(" = :key")
           .toString();
-  private static final String DELETE_LABELS_HQL =
-      new StringBuilder("DELETE From LabelsMappingEntity lm where lm.")
-          .append(ModelDBConstants.ENTITY_HASH)
-          .append(" = :entityHash ")
-          .append(" AND lm.")
-          .append(ModelDBConstants.ENTITY_TYPE)
-          .append(" = :entityType AND lm.")
-          .append(ModelDBConstants.LABEL)
-          .append(" IN (:labels)")
-          .toString();
 
   private String getEntityHash(IdentificationType id) throws ModelDBException {
     String entityHash;
@@ -116,13 +106,6 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       LabelsMappingEntity existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
       if (existingLabelsMappingEntity == null) {
         session.save(new LabelsMappingEntity(id0));
-      } else {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ALREADY_EXISTS_VALUE)
-                .setMessage("Label '" + label + "' already exists with given ID")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
       }
     }
   }
@@ -142,11 +125,19 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public List<String> getLabels(Session session, IdentificationType id) throws ModelDBException {
+    List<LabelsMappingEntity> labelsMappingEntities = getLabelsMappingEntities(session, id);
+    return labelsMappingEntities.stream()
+        .map(LabelsMappingEntity::getValue)
+        .collect(Collectors.toList());
+  }
+
+  private List<LabelsMappingEntity> getLabelsMappingEntities(Session session, IdentificationType id)
+      throws ModelDBException {
     Query<LabelsMappingEntity> query =
         session.createQuery(GET_LABELS_HQL, LabelsMappingEntity.class);
     query.setParameter("entityHash", getEntityHash(id));
     query.setParameter("entityType", id.getIdTypeValue());
-    return query.list().stream().map(LabelsMappingEntity::getValue).collect(Collectors.toList());
+    return query.list();
   }
 
   @Override
@@ -181,30 +172,38 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public boolean deleteLabels(IdentificationType id, List<String> labels) {
+  public boolean deleteLabels(IdentificationType id, List<String> labels, boolean deleteAll)
+      throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
-      for (String label : labels) {
-        LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
-        LabelsMappingEntity existingLabelsMappingEntity =
-            session.get(LabelsMappingEntity.class, id0);
-        if (existingLabelsMappingEntity != null) {
-          session.delete(existingLabelsMappingEntity);
-        } else {
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.NOT_FOUND_VALUE)
-                  .setMessage("Label '" + label + "' not found in DB")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
+      if (deleteAll) {
+        List<LabelsMappingEntity> labelsMappingEntities = getLabelsMappingEntities(session, id);
+        for (LabelsMappingEntity labelsMappingEntity : labelsMappingEntities) {
+          session.delete(labelsMappingEntity);
+        }
+      } else {
+        for (String label : labels) {
+          LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
+          LabelsMappingEntity existingLabelsMappingEntity =
+              session.get(LabelsMappingEntity.class, id0);
+          if (existingLabelsMappingEntity != null) {
+            session.delete(existingLabelsMappingEntity);
+          } else {
+            Status status =
+                Status.newBuilder()
+                    .setCode(Code.NOT_FOUND_VALUE)
+                    .setMessage("Label '" + label + "' not found in DB")
+                    .build();
+            throw StatusProto.toStatusRuntimeException(status);
+          }
         }
       }
       transaction.commit();
       return true;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return deleteLabels(id, labels);
+        return deleteLabels(id, labels, deleteAll);
       } else {
         throw ex;
       }

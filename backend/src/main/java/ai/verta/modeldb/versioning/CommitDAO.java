@@ -2,7 +2,6 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.metadata.MetadataDAO;
@@ -31,12 +30,8 @@ public interface CommitDAO {
       Commit commit,
       String rootSha,
       String author,
-      RepositoryEntity repositoryEntity,
-      String commitSha)
+      RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException;
-
-  CommitPaginationDTO getRepositoryCommitEntityList(ListCommitsRequest request, Long repoId)
-      throws ModelDBException;
 
   ListCommitsRequest.Response listCommits(
       ListCommitsRequest request, RepositoryFunction getRepository) throws ModelDBException;
@@ -55,4 +50,13 @@ public interface CommitDAO {
 
   DeleteCommitRequest.Response deleteCommit(
       DeleteCommitRequest request, RepositoryDAO repositoryDAO) throws ModelDBException;
+
+  void addDeleteDatasetVersionTags(
+      MetadataDAO metadataDAO,
+      boolean addTags,
+      RepositoryEntity repositoryEntity,
+      String datasetVersionId,
+      List<String> tagsList,
+      boolean deleteAll)
+      throws ModelDBException;
 }

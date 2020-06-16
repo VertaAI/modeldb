@@ -282,6 +282,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     return getRepositoryById(session, id, false);
   }
 
+  @Override
+  public RepositoryEntity getRepositoryById(RepositoryIdentification id) throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      return getRepositoryById(session, id, false);
+    }
+  }
+
   private Optional<RepositoryEntity> getRepositoryById(Session session, long id) {
     Query query = session.createQuery(GET_REPOSITORY_BY_ID_HQL);
     query.setParameter("repoId", id);
@@ -390,8 +397,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               initCommit,
               FileHasher.getSha(new String()),
               authService.getVertaIdFromUserInfo(userInfo),
-              repositoryEntity,
-              null);
+              repositoryEntity);
 
       saveBranch(
           session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repositoryEntity);
