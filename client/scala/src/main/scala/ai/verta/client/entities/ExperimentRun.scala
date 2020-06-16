@@ -18,7 +18,7 @@ import scala.util.{Failure, Success, Try}
 class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: ModeldbExperimentRun) extends Taggable {
   /** Return a set-like object of type Tags, representing the tags associated with ExperimentRun
    *  Provide an alternative interface to get/del/add Tags methods
-   *  @return the tags map
+   *  @return the tags set
    */
   def tags()(implicit ec: ExecutionContext) = new Tags(clientSet, ec, this)
 
@@ -88,7 +88,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   // TODO: add overwrite
   /** Return a map-like object of type Metrics, representing the metrics associated with ExperimentRun
    *  Provide an alternative interface to get/log metrics
-   *  @return the tags map
+   *  @return the metrics map
    */
   def metrics()(implicit ec: ExecutionContext) = new Metrics(clientSet, ec, this)
 
