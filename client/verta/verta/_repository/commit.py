@@ -113,7 +113,7 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.GetCommitRequest.Response)
         commit_msg = response_msg.commit
         return cls(conn, repo, commit_msg, **kwargs)
@@ -134,7 +134,7 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.ListCommitBlobsRequest.Response)
         self._blobs.update({
             '/'.join(blob_msg.location): blob_msg_to_object(blob_msg.blob)
@@ -235,7 +235,7 @@ class Commit(object):
             response = _utils.make_request("GET", endpoint, self._conn, params=data)
             _utils.raise_for_http_error(response)
 
-            response_msg = _utils.json_to_proto(response.json(), msg.Response)
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
             folder_msg = response_msg.folder
 
             folder_path = '/'.join(location)
@@ -347,7 +347,7 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-        response_msg = _utils.json_to_proto(response.json(), proto_message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), proto_message.Response)
 
         self._become_saved_child(response_msg.commit.commit_sha)
 
@@ -401,7 +401,7 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.ListCommitsLogRequest.Response)
         commits = response_msg.commits
 
@@ -487,7 +487,7 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.ComputeRepositoryDiffRequest.Response)
         return diff_module.Diff(response_msg.diffs)
 
@@ -571,7 +571,7 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
 
         self._become_saved_child(response_msg.commit.commit_sha)
 
@@ -674,7 +674,7 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
 
         # raise for conflict
         if response_msg.conflicts:
