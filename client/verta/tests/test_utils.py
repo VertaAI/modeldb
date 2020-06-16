@@ -58,6 +58,24 @@ class TestMakeRequest:
             )
         assert str(excinfo.value).strip().startswith("received status 302")
 
+    @pytest.mark.parametrize("status_code", [302, 400, 500])
+    def test_ignore_conn_err(self, client, status_code):
+        previous_setting = client.ignore_conn_err
+
+        client.ignore_conn_err = True
+        try:
+            response = _utils.make_request(
+                "GET",
+                "http://httpbin.org/status/{}".format(status_code),
+                client._conn,
+            )
+
+            assert response.status_code == 200
+            assert response.json() == {}
+        finally:
+            client.ignore_conn_err = previous_setting
+
+
 class TestToBuiltin:
     def test_string(self):
         val = "banana"
