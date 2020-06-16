@@ -693,7 +693,7 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("rental_TEXT_train_data.csv")
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
+            // .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     CreateDataset.Response createDatasetResponse =
@@ -735,7 +735,7 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("rental_TEXT_train_data.csv")
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
+            // .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     CreateDataset.Response createDatasetResponse =
@@ -820,7 +820,7 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("rental_TEXT_train_data.csv")
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
+            // .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     CreateDataset.Response createDatasetResponse =
@@ -885,7 +885,7 @@ public class CollaboratorTest {
       CreateDataset createDatasetRequest =
           CreateDataset.newBuilder()
               .setName("rental_TEXT_train_data" + index + ".csv")
-              .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
+              // .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
               .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
               .build();
       CreateDataset.Response createDatasetResponse =

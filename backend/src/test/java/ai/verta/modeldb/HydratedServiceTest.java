@@ -4459,7 +4459,7 @@ public class HydratedServiceTest {
             .addTags("Tag_4")
             .setRawDatasetVersionInfo(
                 RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
+            // .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
@@ -4524,7 +4524,7 @@ public class HydratedServiceTest {
             .addTags("Tag_8")
             .setRawDatasetVersionInfo(
                 RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
+            // .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .setDatasetVersionVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     createDatasetVersionResponse =
