@@ -336,6 +336,8 @@ class Commit(
     if (!saved)
       Failure(new IllegalCommitSavedStateException("Commit must be saved before a diff can be applied"))
     else
-      loadBlobs().map(_ => getChild(blobs)).flatMap(_.createCommit(message = message, diffs = diff.blobDiffs, commitBase = id))
+      loadBlobs().map(_ => getChild(blobs)).flatMap(_.createCommit(
+        message = message, diffs = diff.blobDiffs, commitBase = id
+      ))
   }
 }
