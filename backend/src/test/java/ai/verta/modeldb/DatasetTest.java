@@ -225,7 +225,6 @@ public class DatasetTest {
 
     return CreateDataset.newBuilder()
         .setName(datasetName)
-        .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
         .setDatasetVisibility(DatasetVisibility.PRIVATE)
         .addTags("tag_x")
         .addTags("tag_y")

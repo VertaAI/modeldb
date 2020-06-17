@@ -18,20 +18,12 @@ message Dataset {
     string description = 4;
     repeated string tags = 5;
     DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 6;
-    DatasetTypeEnum.DatasetType dataset_type = 7;
+    //DatasetTypeEnum.DatasetType dataset_type = 7;
     repeated common.KeyValue attributes = 8;
     uint64 time_created = 9;
     uint64 time_updated = 10;
     string workspace_id = 11;
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 12;
-}
-
-message DatasetTypeEnum {
-    enum DatasetType{
-        RAW = 0;// default
-        PATH = 1;
-        QUERY = 2;
-    }
 }
 
 message DatasetVisibilityEnum {
@@ -48,7 +40,7 @@ message CreateDataset {
     repeated string tags = 3;
     repeated common.KeyValue attributes = 4;
     DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 5;
-    DatasetTypeEnum.DatasetType dataset_type = 6;
+    //DatasetTypeEnum.DatasetType dataset_type = 6;
     string workspace_name = 7;
     uint64 time_created = 8;
 

@@ -21,7 +21,7 @@ message DatasetVersion {
     string description = 5;
     repeated string tags = 6;
     DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 7;
-    DatasetTypeEnum.DatasetType dataset_type = 8;// this acts as a quick check on which type of DataSetInfo to look at for more details.
+    //DatasetTypeEnum.DatasetType dataset_type = 8;// this acts as a quick check on which type of DataSetInfo to look at for more details.
     repeated common.KeyValue attributes = 9;
     string owner = 10;
     uint64 version = 11;
@@ -85,7 +85,7 @@ message CreateDatasetVersion {
     string description = 4;
     repeated string tags = 5;
     DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 6;
-    DatasetTypeEnum.DatasetType dataset_type = 7;// this acts as a quick check on which type of DataSetInfo to look at for more details.
+    //DatasetTypeEnum.DatasetType dataset_type = 7;// this acts as a quick check on which type of DataSetInfo to look at for more details.
     repeated common.KeyValue attributes = 8;
     uint64 version = 9;
     oneof dataset_version_info {

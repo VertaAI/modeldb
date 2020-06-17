@@ -29,7 +29,6 @@ public class DatasetEntity {
     setDescription(dataset.getDescription());
     setTags(RdbmsUtils.convertTagListFromTagMappingList(this, dataset.getTagsList()));
     setDataset_visibility(dataset.getDatasetVisibilityValue());
-    setDataset_type(dataset.getDatasetTypeValue());
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, dataset.getAttributesList()));
@@ -213,7 +212,6 @@ public class DatasetEntity {
         .setDescription(getDescription())
         .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))
         .setDatasetVisibilityValue(getDataset_visibility())
-        .setDatasetTypeValue(getDataset_type())
         .addAllAttributes(
             RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))
         .setTimeCreated(getTime_created())
