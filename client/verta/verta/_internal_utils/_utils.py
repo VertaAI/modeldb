@@ -277,7 +277,6 @@ def make_request(method, url, conn, **kwargs):
                         return fabricate_200()
 
                 history.append(response)
-
             # set full history
             response.history = history[:-1]  # last element is this response, so drop it
         except (requests.exceptions.BaseHTTPError,
