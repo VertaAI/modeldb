@@ -211,6 +211,5 @@ class _Dataset(blob.Blob):
             finally:
                 response.close()
 
-        # TODO: return dir when user passed dir containing one file
-        # TODO: in test, assert equal to `download_to_path` if provided
+        # TODO: return dir, not path, when user passed dir containing one file
         return os.path.abspath(os.path.commonprefix(list(components_to_download.values())))

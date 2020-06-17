@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 import verta.dataset
@@ -164,6 +166,36 @@ class TestS3:
         dataset_ver = verta.dataset.S3("s3://verta-starter")
 
         assert dataset_ver.__repr__()
+
+    def test_mngd_ver_file(self, commit, in_tempdir):
+        blob_path = "data"
+        filename = "tiny1.bin"
+        s3_key = "s3://verta-versioned-bucket/tiny-files/{}".format(filename)
+
+        dataset = verta.dataset.S3(s3_key, enable_mdb_versioning=True)
+
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        # download to implicit path
+        filepath = dataset.download(s3_key)
+        assert os.path.isfile(filepath)
+        assert os.path.abspath(filename) == filepath
+
+        # download to implicit path without collision
+        filepath2 = dataset.download(s3_key)
+        assert os.path.isfile(filepath)
+        assert filepath2 != filepath
+
+        # download to explicit path with overwrite
+        last_updated = os.path.getmtime(filepath)
+        filepath3 = dataset.download(s3_key, filepath)
+        assert filepath3 == filepath
+        assert os.path.getmtime(filepath) > last_updated
+
+
+    # TODO: folder test
 
 
 class TestPath:
