@@ -76,6 +76,43 @@ class TestMakeRequest:
             client.ignore_conn_err = previous_setting
 
 
+class TestBodyToJson:
+    def test_json_response(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/json",
+            client._conn,
+        )
+
+        assert isinstance(_utils.body_to_json(response), dict)
+
+    def test_empty_response_error(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/status/200",
+            client._conn,
+        )
+
+        with pytest.raises(ValueError) as excinfo:
+            _utils.body_to_json(response)
+        msg = str(excinfo.value).strip()
+        assert msg.startswith("expected JSON response")
+        assert "<empty response>" in msg
+
+    def test_html_response_error(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/html",
+            client._conn,
+        )
+
+        with pytest.raises(ValueError) as excinfo:
+            _utils.body_to_json(response)
+        msg = str(excinfo.value).strip()
+        assert msg.startswith("expected JSON response")
+        assert "<!DOCTYPE html>" in msg
+
+
 class TestToBuiltin:
     def test_string(self):
         val = "banana"
