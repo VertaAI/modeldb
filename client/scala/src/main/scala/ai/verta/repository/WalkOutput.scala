@@ -13,20 +13,5 @@ final case class WalkOutput(
   val blobNames: Option[List[String]],
   val remainingLocations: List[PathList]
 ) {
-  /** Full path to the blobs.
-   *  User can use elements of this list to get blobs from commit.
-   */
-  def blobPaths = blobNames.map(_.map(fullPath))
 
-  /** Full path to the subfolders.
-   */
-  def subfolderPaths = folderNames.map(_.map(fullPath))
-
-  /** Extend a relative path inside the folder into full path
-   *  Use to calculate full paths of blobs and subfolders
-   */
-  private def fullPath(path: String) = {
-    if (folderPath.length > 0) f"${folderPath}/${path}"
-    else path
-  }
 }

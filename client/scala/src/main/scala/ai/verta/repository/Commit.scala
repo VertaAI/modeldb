@@ -339,55 +339,75 @@ class Commit(
       createCommit(message = message, diffs = diff.blobDiffs, commitBase = id)
   }
 
-  /** Generates a stream folder names and blob names in this commit by walking through its folder tree.
+  /** Generates a stream of outputs in this commit by walking through its folder tree.
    *  The stream ends at the first failure, or when there are no folders left. If the commit is not saved, its only element is that Failure
+   *  @param walker the FolderWalker to process the folders in the folder tree.
    *  @return a stream of Try's of WalkOutput.
    */
-  def walk()(implicit ec: ExecutionContext) = {
+  def walk[T](walker: FolderWalker[T])(implicit ec: ExecutionContext): Stream[Try[T]] = {
     if (!saved)
       Stream(Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be walked")))
     else
-      continueWalk(List(PathList(List())))
+      continueWalk(getFolder(PathList(Nil)).get, walker)
   }
 
-  /** Continue the walk from the locations passed
-   *  @param locations remaining locations to explore. Each location is in list of string format.
-   *  @return Stream of Trys of WalkOutputs. If the returned WalkOutput fails, abort the remaining locations.
+  /** Get the folder corresponding to a path in list form
+   *  @param location location
+   *  @return the folder, if succeeds
    */
-  def continueWalk(locations: List[PathList])(implicit ec: ExecutionContext): Stream[Try[WalkOutput]] = {
-    if (locations.isEmpty) Stream()
-    else {
-      val location = locations.head
+  def getFolder(location: PathList)(implicit ec: ExecutionContext): Try[Folder] = {
+    clientSet.versioningService.GetCommitComponent2(
+      commit_sha = id.get,
+      repository_id_repo_id = repo.id,
+      location = if (location.components.length > 0) Some(location.components) else None
+    ).flatMap(r => {
+        val folderPath = location.path
+        val responseFolder = r.folder
 
-      clientSet.versioningService.GetCommitComponent2(
-        commit_sha = id.get,
-        repository_id_repo_id = repo.id,
-        location = if (location.components.length > 0) Some(location.components) else None
-      ) match {
-        case Failure(e) => Stream(Failure(e))
-        case Success(r) => {
-          val folderPath = location.path
-          val responseFolder = r.folder
+        val folderNames = responseFolder
+        .flatMap(_.sub_folders) // Option[List[VersioningFolderElement]]
+        .map(_.map(folder => folder.element_name.get))
+        // Option[List[String]]
+        .map(_.sortWith((name1: String, name2: String) => name1 < name2))
 
-          val folderNames = responseFolder
-          .flatMap(_.sub_folders) // Option[List[VersioningFolderElement]]
-          .map(_.map(folder => folder.element_name.get))
-          // Option[List[String]]
-          .map(_.sortWith((name1: String, name2: String) => name1 < name2))
+        val blobNames = responseFolder
+        .flatMap(_.blobs) // Option[List[VersioningFolderElement]]
+        .map(_.map(folder => folder.element_name.get))
+        // Option[List[String]]
+        .map(_.sortWith((name1: String, name2: String) => name1 < name2))
 
-          val blobNames = responseFolder
-          .flatMap(_.blobs) // Option[List[VersioningFolderElement]]
-          .map(_.map(folder => folder.element_name.get))
-          // Option[List[String]]
-          .map(_.sortWith((name1: String, name2: String) => name1 < name2))
+        Success(Folder(folderPath, blobNames.getOrElse(Nil), folderNames.getOrElse(Nil)))
+      })
+  }
 
-          // Extend locations to contain new locations:
-          val newLocations = folderNames
-          .map(_.map(location.extend)) // Option[List[PathList]]
-          // push new location to stack:
-          .getOrElse(Nil) ::: locations.tail
+  /** Continue the walk from a folder.
+   *  @param folder current folder being explored.
+   *  @param walker a FolderWalker instance to process the returned folder
+   *  @return Stream of Trys. If the returned WalkOutput fails, abort the remaining locations.
+   */
+  def continueWalk[T](folder: Folder, walker: FolderWalker[T])(implicit ec: ExecutionContext): Stream[Try[T]] = {
+    // process the folder and walker:
+    val replacedWalker = walker.replace(folder)
+    val filteredFolder = replacedWalker.filterFolder(folder)
 
-          Success(WalkOutput(folderPath, folderNames, blobNames, newLocations)) #:: continueWalk(newLocations)
+    val subfolders: Try[List[Folder]] =
+      Try(filteredFolder.subfolderPaths.map(folder => getFolder(PathList(folder.split("/").toList))).map(_.get))
+    val blobs: Try[List[Blob]] =
+      Try(filteredFolder.blobPaths.map(get).map(_.get))
+
+    subfolders match {
+      case Failure(e) => Stream(Failure(e))
+      case Success(sf) => {
+        blobs match {
+          case Failure(e) => Stream(Failure(e))
+          case Success(bl) => {
+            val blobResults: Stream[Try[T]] =
+              filteredFolder.blobs.zip(bl).toStream.map(pair => Success(replacedWalker.visitBlob(pair._1, pair._2)))
+            val subfolderResults: Stream[Try[T]] =
+              filteredFolder.subfolders.zip(sf).toStream.map(pair => Success(replacedWalker.visitFolder(pair._1, pair._2)))
+
+            blobResults #::: subfolderResults #::: sf.toStream.flatMap(continueWalk(_, replacedWalker))
+          }
         }
       }
     }

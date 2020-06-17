@@ -407,9 +407,8 @@ class TestCommit extends FunSuite {
     }
   }
 
-  test ("walk should produce the right order") {
+  test("walk should visit all the blobs and folders in the correct order") {
     val f = fixture
-
     try {
       val newCommit = f.commit.update("file1", f.pathBlob)
                     .flatMap(_.update("a/file2", f.pathBlob))
@@ -417,48 +416,18 @@ class TestCommit extends FunSuite {
                     .flatMap(_.update("a/b/file4", f.pathBlob))
                     .flatMap(_.update("a/c/file5", f.pathBlob))
                     .flatMap(_.save("walkzzz")).get
+      val allBlobs = newCommit.walk(CommitLister()).map(_.get).filter(_.isDefined).toList.map(_.get)
+      assert(allBlobs equals List("file1", "a/file2", "a/file3", "a/b/file4", "a/c/file5"))
 
-      val walkOutputs = newCommit.walk().iterator
-
-      assert(walkOutputs.hasNext)
-      var next = walkOutputs.next.get
-      assert(next.folderPath.equals(""))
-      assert(next.folderNames.get == List("a"))
-      assert(next.subfolderPaths.get == List("a"))
-      assert(next.blobNames.get == List("file1"))
-      assert(next.blobPaths.get == List("file1"))
-
-      assert(walkOutputs.hasNext)
-      next = walkOutputs.next.get
-      assert(next.folderPath.equals("a"))
-      assert(next.folderNames.get == List("b", "c"))
-      assert(next.subfolderPaths.get == List("a/b", "a/c"))
-      assert(next.blobNames.get == List("file2", "file3"))
-      assert(next.blobPaths.get == List("a/file2", "a/file3"))
-
-      assert(walkOutputs.hasNext)
-      next = walkOutputs.next.get
-      assert(next.folderPath.equals("a/b"))
-      assert(next.folderNames.isEmpty)
-      assert(next.blobNames.get == List("file4"))
-      assert(next.blobPaths.get == List("a/b/file4"))
-
-      assert(walkOutputs.hasNext)
-      next = walkOutputs.next.get
-      assert(next.folderPath.equals("a/c"))
-      assert(next.folderNames.isEmpty)
-      assert(next.blobNames.get == List("file5"))
-      assert(next.blobPaths.get == List("a/c/file5"))
-
-      assert(!walkOutputs.hasNext)
+      val numFolders = newCommit.walk(FolderCounter()).map(_.get).sum
+      assert(numFolders equals 3)
     } finally {
       cleanup(f)
     }
   }
 
-  test("removing locations should make continueWalk skip them") {
+  test("filtering folder should skip the their subtree") {
     val f = fixture
-
     try {
       val newCommit = f.commit.update("file1", f.pathBlob)
                        .flatMap(_.update("a/file2", f.pathBlob))
@@ -467,15 +436,9 @@ class TestCommit extends FunSuite {
                        .flatMap(_.update("a/c/file5", f.pathBlob))
                        .flatMap(_.save("walkzzz")).get
 
-      val originalWalk = newCommit.walk().tail // skip the first WalkOutput
-      val locations = originalWalk.head.get.remainingLocations.tail // skip "a/b"
+     val blobs = newCommit.walk(FilterWalker()).map(_.get).filter(_.isDefined).toList.map(_.get)
+     assert(blobs equals List("file1", "a/file2", "a/file3", "a/c/file5"))
 
-      val remainingWalk = newCommit.continueWalk(locations).iterator
-      assert(remainingWalk.hasNext)
-      val next = remainingWalk.next.get
-      assert(next.folderPath.equals("a/c"))
-
-      assert(!remainingWalk.hasNext)
     } finally {
       cleanup(f)
     }
