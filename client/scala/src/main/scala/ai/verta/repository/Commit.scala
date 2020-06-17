@@ -409,17 +409,15 @@ class Commit(
         val folderPath = location.path
         val responseFolder = r.folder
 
-        val folderNames = responseFolder
-        .flatMap(_.sub_folders) // Option[List[VersioningFolderElement]]
-        .map(_.map(folder => folder.element_name.get))
-        // Option[List[String]]
-        .map(_.sorted)
+        val folderNames = responseFolder.flatMap(_.sub_folders) // Option[List[VersioningFolderElement]]
+                                        .map(_.map(folder => folder.element_name.get))
+                                        // Option[List[String]]
+                                        .map(_.sorted)
 
-        val blobNames = responseFolder
-        .flatMap(_.blobs) // Option[List[VersioningFolderElement]]
-        .map(_.map(folder => folder.element_name.get))
-        // Option[List[String]]
-        .map(_.sorted)
+        val blobNames = responseFolder.flatMap(_.blobs) // Option[List[VersioningFolderElement]]
+                                      .map(_.map(folder => folder.element_name.get))
+                                      // Option[List[String]]
+                                      .map(_.sorted)
 
         Success(Folder(folderPath, blobNames.getOrElse(Nil), folderNames.getOrElse(Nil)))
       })
@@ -451,7 +449,7 @@ class Commit(
             val subfolderResults: Stream[Try[T]] =
               filteredFolder.subfolders.zip(sf).toStream.map(pair => Success(replacedWalker.visitFolder(pair._1, pair._2)))
 
-            blobResults #::: subfolderResults #::: sf.toStream.flatMap(continueWalk(_, replacedWalker))
+            blobResults #::: subfolderResults #::: sf.toStream.flatMap(folder => continueWalk(folder, replacedWalker))
           }
         }
       }
