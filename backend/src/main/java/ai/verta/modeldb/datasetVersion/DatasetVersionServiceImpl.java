@@ -30,7 +30,6 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
-import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
@@ -56,7 +55,6 @@ import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -378,10 +376,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       List<DatasetVersion> datasetVersions =
           new ArrayList<>(
               convertRepoDatasetVersions(
-                  repositoryIdentification,
-                  commitPaginationDTO.getCommitEntities().stream()
-                      .map(CommitEntity::toCommitProto)
-                      .collect(Collectors.toList())));
+                  repositoryIdentification, commitPaginationDTO.getCommits()));
       responseObserver.onNext(
           FindDatasetVersions.Response.newBuilder()
               .addAllDatasetVersions(datasetVersions)

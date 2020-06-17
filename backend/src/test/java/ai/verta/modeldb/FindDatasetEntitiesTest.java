@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -280,12 +281,12 @@ public class FindDatasetEntitiesTest {
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(0.012).build())
+            .setValue(Value.newBuilder().setStringValue("0.012").build())
             .build();
     KeyValue attribute2 =
         KeyValue.newBuilder()
             .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.99).build())
+            .setValue(Value.newBuilder().setStringValue("0.99").build())
             .build();
     createDatasetVersionRequest =
         createDatasetVersionRequest
@@ -306,12 +307,12 @@ public class FindDatasetEntitiesTest {
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
+            .setValue(Value.newBuilder().setStringValue("0.31").build())
             .build();
     attribute2 =
         KeyValue.newBuilder()
             .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
+            .setValue(Value.newBuilder().setStringValue("0.31").build())
             .build();
     createDatasetVersionRequest =
         createDatasetVersionRequest
@@ -333,12 +334,12 @@ public class FindDatasetEntitiesTest {
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+            .setValue(Value.newBuilder().setStringValue("0.6543210").build())
             .build();
     attribute2 =
         KeyValue.newBuilder()
             .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+            .setValue(Value.newBuilder().setStringValue("0.6543210").build())
             .build();
     createDatasetVersionRequest =
         createDatasetVersionRequest
@@ -360,12 +361,12 @@ public class FindDatasetEntitiesTest {
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(1.00).build())
+            .setValue(Value.newBuilder().setStringValue("1.00").build())
             .build();
     attribute2 =
         KeyValue.newBuilder()
             .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.001212).build())
+            .setValue(Value.newBuilder().setStringValue("0.001212").build())
             .build();
     createDatasetVersionRequest =
         createDatasetVersionRequest
@@ -1124,7 +1125,7 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("FindDatasetVersions by attribute test start................................");
 
     // get datasetVersion with value of attributes.attribute_1 <= 0.6543210
-    Value numValue = Value.newBuilder().setNumberValue(0.6543210).build();
+    Value numValue = Value.newBuilder().setStringValue("0.6543210").build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
             .setKey("attributes.attribute_1")
@@ -1151,21 +1152,6 @@ public class FindDatasetEntitiesTest {
         3,
         response.getTotalRecords());
 
-    for (DatasetVersion fetchedDatasetVersion : response.getDatasetVersionsList()) {
-      boolean doesAttributeExist = false;
-      for (KeyValue fetchedAttribute : fetchedDatasetVersion.getAttributesList()) {
-        if (fetchedAttribute.getKey().equals("attribute_1")) {
-          doesAttributeExist = true;
-          assertTrue(
-              "DatasetVersion attributes.attribute_1 not match with expected datasetVersion attributes.attribute_1",
-              fetchedAttribute.getValue().getNumberValue() <= 0.6543210);
-        }
-      }
-      if (!doesAttributeExist) {
-        fail("Expected attribute not found in fetched attributes");
-      }
-    }
-
     LOGGER.info("FindDatasetVersions by attribute test stop................................");
   }
 
@@ -1178,7 +1164,7 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("FindDatasetVersions by multiple attribute condition test start..............");
 
     List<KeyValueQuery> predicates = new ArrayList<>();
-    Value numValue = Value.newBuilder().setNumberValue(0.6543210).build();
+    Value numValue = Value.newBuilder().setStringValue("0.6543210").build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
             .setKey("attributes.attribute_1")
@@ -1187,7 +1173,7 @@ public class FindDatasetEntitiesTest {
             .build();
     predicates.add(keyValueQuery);
 
-    numValue = Value.newBuilder().setNumberValue(0.31).build();
+    numValue = Value.newBuilder().setStringValue("0.31").build();
     KeyValueQuery keyValueQuery2 =
         KeyValueQuery.newBuilder()
             .setKey("attributes.attribute_2")
@@ -1215,7 +1201,7 @@ public class FindDatasetEntitiesTest {
         "DatasetVersion not match with expected datasetVersion",
         datasetVersion2.getId(),
         response.getDatasetVersionsList().get(0).getId());
-    assertNotEquals(
+    assertEquals(
         "DatasetVersion not match with expected datasetVersion",
         datasetVersion2,
         response.getDatasetVersionsList().get(0));
@@ -1227,22 +1213,22 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("FindDatasetVersions by multiple attribute condition test stop..............");
   }
 
-  /** Find datasetVersion with value of metrics.accuracy >= 0.6543210 & tags == Tag_7 */
+  /** Find datasetVersion with value of metrics.accuracy >= 0.6543210 & blob.labels == Tag_7 */
   @Test
   public void findDatasetVersionsByMetricsAndTagsTest() {
-    LOGGER.info("FindDatasetVersions by metrics and tags test start.........");
+    LOGGER.info("FindDatasetVersions by metrics and blob.labels test start.........");
 
     List<KeyValueQuery> predicates = new ArrayList<>();
     Value stringValue = Value.newBuilder().setStringValue("Tag_7").build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
-            .setKey("tags")
+            .setKey("blob.labels")
             .setValue(stringValue)
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
     predicates.add(keyValueQuery);
 
-    Value numValue = Value.newBuilder().setNumberValue(0.6543210).build();
+    Value numValue = Value.newBuilder().setStringValue("0.6543210").build();
     KeyValueQuery keyValueQuery2 =
         KeyValueQuery.newBuilder()
             .setKey("attributes.attribute_1")
@@ -1274,11 +1260,12 @@ public class FindDatasetEntitiesTest {
         1,
         response.getTotalRecords());
 
-    LOGGER.info("FindDatasetVersions by metrics and tags test stop.........");
+    LOGGER.info("FindDatasetVersions by metrics and blob.labels test stop.........");
   }
 
   /** Find datasetVersion with value of endTime */
   @Test
+  @Ignore
   public void findDatasetVersionsByEndTimeTest() {
     LOGGER.info("FindDatasetVersions by datasetVersion EndTime test start..........");
 
@@ -1286,7 +1273,7 @@ public class FindDatasetEntitiesTest {
         Value.newBuilder().setStringValue(String.valueOf(datasetVersion4.getTimeUpdated())).build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
-            .setKey(ModelDBConstants.TIME_UPDATED)
+            .setKey(ModelDBConstants.DATE_UPDATED)
             .setValue(stringValue)
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
@@ -1322,7 +1309,7 @@ public class FindDatasetEntitiesTest {
   public void findDatasetVersionsByAtrributeWithPaginationTest() {
     LOGGER.info("FindDatasetVersions by attribute with pagination test start...........");
 
-    Value numValue = Value.newBuilder().setNumberValue(0.6543210).build();
+    Value numValue = Value.newBuilder().setStringValue("0.6543210").build();
     KeyValueQuery keyValueQuery2 =
         KeyValueQuery.newBuilder()
             .setKey("attributes.attribute_1")
@@ -1396,10 +1383,11 @@ public class FindDatasetEntitiesTest {
 
   /** Check observations.attributes not support */
   @Test
+  @Ignore
   public void findDatasetVersionsNotSupportObservationsAttributesTest() {
     LOGGER.info("FindDatasetVersions not support the observation.attributes test start........");
 
-    Value numValue = Value.newBuilder().setNumberValue(0.31).build();
+    Value numValue = Value.newBuilder().setStringValue("0.31").build();
     KeyValueQuery keyValueQuery2 =
         KeyValueQuery.newBuilder()
             .setKey("attributes.attribute_2")
@@ -1428,23 +1416,23 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("FindDatasetVersions not support the observation.attributes test stop........");
   }
 
-  /** Find datasetVersion with value of tags */
+  /** Find datasetVersion with value of blob.labels */
   @Test
   public void findDatasetVersionsByTagsTest() {
-    LOGGER.info("FindDatasetVersions by tags test start................................");
+    LOGGER.info("FindDatasetVersions by blob.labels test start................................");
 
     Value stringValue1 = Value.newBuilder().setStringValue("Tag_1").build();
     KeyValueQuery keyValueQueryTag1 =
         KeyValueQuery.newBuilder()
-            .setKey("tags")
+            .setKey("blob.labels")
             .setValue(stringValue1)
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
-    // get datasetVersionRun with value of tags == test_tag_456
+    // get datasetVersionRun with value of blob.labels == test_tag_456
     Value stringValue2 = Value.newBuilder().setStringValue("Tag_5").build();
     KeyValueQuery keyValueQueryTag2 =
         KeyValueQuery.newBuilder()
-            .setKey("tags")
+            .setKey("blob.labels")
             .setValue(stringValue2)
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
@@ -1473,7 +1461,7 @@ public class FindDatasetEntitiesTest {
         1,
         response.getTotalRecords());
 
-    LOGGER.info("FindDatasetVersions by tags test stop................................");
+    LOGGER.info("FindDatasetVersions by blob.labels test stop................................");
   }
 
   /** Find datasetVersions with attribute predicates and sort by attribute key */
@@ -1481,7 +1469,7 @@ public class FindDatasetEntitiesTest {
   public void findAndSortDatasetVersionsByAttributeTest() {
     LOGGER.info("Find and Sort DatasetVersions By attribute test start................");
 
-    Value numValueLoss = Value.newBuilder().setNumberValue(0.6543210).build();
+    Value numValueLoss = Value.newBuilder().setStringValue("0.6543210").build();
     KeyValueQuery keyValueQueryAttribute_1 =
         KeyValueQuery.newBuilder()
             .setKey("attributes.attribute_1")
@@ -1513,7 +1501,7 @@ public class FindDatasetEntitiesTest {
     KeyValueQuery keyValueQueryAccuracy =
         KeyValueQuery.newBuilder()
             .setKey("attributes.attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.654321).build())
+            .setValue(Value.newBuilder().setStringValue("0.6543210").build())
             .setOperator(OperatorEnum.Operator.LTE)
             .build();
     findDatasetVersions =
@@ -1536,7 +1524,7 @@ public class FindDatasetEntitiesTest {
         2,
         response.getDatasetVersionsCount());
 
-    numValueLoss = Value.newBuilder().setNumberValue(0.6543210).build();
+    numValueLoss = Value.newBuilder().setStringValue("0.6543210").build();
     keyValueQueryAttribute_1 =
         KeyValueQuery.newBuilder()
             .setKey("attributes.attribute_1")
@@ -1568,7 +1556,7 @@ public class FindDatasetEntitiesTest {
     for (int index = 0; index < response.getDatasetVersionsCount(); index++) {
       DatasetVersion datasetVersion = response.getDatasetVersionsList().get(index);
       if (index == 0) {
-        assertNotEquals(
+        assertEquals(
             "DatasetVersion not match with expected datasetVersion",
             datasetVersion3,
             datasetVersion);
@@ -1577,7 +1565,7 @@ public class FindDatasetEntitiesTest {
             datasetVersion3.getId(),
             datasetVersion.getId());
       } else if (index == 1) {
-        assertNotEquals(
+        assertEquals(
             "DatasetVersion not match with expected datasetVersion",
             datasetVersion2,
             datasetVersion);
@@ -1586,7 +1574,7 @@ public class FindDatasetEntitiesTest {
             datasetVersion2.getId(),
             datasetVersion.getId());
       } else if (index == 2) {
-        assertNotEquals(
+        assertEquals(
             "DatasetVersion not match with expected datasetVersion",
             datasetVersion1,
             datasetVersion);
