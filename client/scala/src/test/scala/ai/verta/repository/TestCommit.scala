@@ -471,6 +471,9 @@ class TestCommit extends FunSuite {
         // second commit should be reverted:
         assert(revCommit.get("def/ghi").isFailure)
         assert(revCommit.get("tuv/wxy").isFailure)
+
+        // log should contain the correct commits:
+        assert(revCommit.log().get.toList equals List(revCommit, thirdCommit, secondCommit, firstCommit, f.commit))
       } finally {
         cleanup(f)
       }
@@ -541,6 +544,33 @@ class TestCommit extends FunSuite {
         val revertCommit = updateCommit.revert().flatMap(_.revert()).get
         assert(revertCommit.get("a").isFailure)
         assert(revertCommit.get("b").isSuccess)
+      } finally {
+        cleanup(f)
+      }
+    }
+
+    test("revert applyDiff should undo the the changes") {
+      val f = fixture
+
+      try {
+        val branchA = f.commit.newBranch("branch-a")
+                              .flatMap(_.update("some-path-1", f.pathBlob))
+                              .flatMap(_.save("add the blobs")).get
+
+        val branchB = f.commit.newBranch("branch-b")
+                              .flatMap(_.update("some-path-2", f.pathBlob))
+                              .flatMap(_.save("add the blobs")).get
+
+        val newB = branchB.applyDiff(branchA.diffFrom(Some(branchB)).get, "diff").get
+        val revertCommit = newB.revert().get
+
+        // changes induced by revert should be undone
+        assert(revertCommit.get("some-path-2").isSuccess)
+        assert(revertCommit.get("some-path-1").isFailure)
+
+        // correct log:
+        val log = revertCommit.log().get.toList
+        assert(log equals List(revertCommit, newB, branchB, f.commit))
       } finally {
         cleanup(f)
       }
