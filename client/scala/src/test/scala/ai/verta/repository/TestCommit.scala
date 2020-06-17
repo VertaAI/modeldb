@@ -411,21 +411,19 @@ class TestCommit extends FunSuite {
     val f = fixture
 
     try {
-      val originalCommit = f.repo.getCommitByBranch()
+      val branchA = f.commit.newBranch("branch-a")
+                            .flatMap(_.update("some-path-1", f.pathBlob))
+                            .flatMap(_.update("some-path-2", f.pathBlob))
+                            .flatMap(_.save("add the blobs")).get
 
-      val branchA = originalCommit.flatMap(_.newBranch("branch-a"))
-                        .flatMap(_.update("some-path-1", f.pathBlob))
-                        .flatMap(_.update("some-path-2", f.pathBlob))
-                        .flatMap(_.save("add the blobs")).get
-
-      val branchB = originalCommit.flatMap(_.newBranch("branch-b"))
-                        .flatMap(_.update("some-path-3", f.pathBlob))
-                        .flatMap(_.update("some-path-4", f.pathBlob))
-                        .flatMap(_.save("add the blobs")).get
+      val branchB = f.commit.newBranch("branch-b")
+                            .flatMap(_.update("some-path-3", f.pathBlob))
+                            .flatMap(_.update("some-path-4", f.pathBlob))
+                            .flatMap(_.save("add the blobs")).get
 
       val newB = branchB.applyDiff(branchA.diffFrom(Some(branchB)).get, "diff").get
       val log = newB.log().get.toList
-      assert(log equals List(newB, branchB, originalCommit.get))
+      assert(log equals List(newB, branchB, f.commit))
     } finally {
       cleanup(f)
     }
