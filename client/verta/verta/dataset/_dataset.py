@@ -85,6 +85,47 @@ class _Dataset(blob.Blob):
         self._commit = commit
         self._blob_path = blob_path
 
+    def _get_components_to_download(self, component_path, download_to_path=None):
+        """
+
+
+        Parameters
+        ----------
+        component_path : str
+        download_to_path : str, optional
+
+        Returns
+        -------
+        components_to_download : dict
+            Map of component paths to local destination paths
+
+        """
+        component_path_as_dir = component_path if component_path.endswith('/') else component_path+'/'
+        components_to_download = dict()
+
+        for component_blob in self._path_component_blobs:
+            if component_blob.path == component_path:  # exact match with file
+                if download_to_path is None:
+                    # default to filename from `component_path` in cwd
+                    local_path = os.path.basename(component_path)
+
+                return {component_blob.path: local_path}
+            elif component_blob.path.startswith(component_path_as_dir):
+                if download_to_path is None:
+                    # default to path relative to parent of `component_path`
+                    #     For example:
+                    #     component_blob.path = "coworker/downloads/data/info.csv"
+                    #     component_path      = "coworker/downloads"
+                    #     local_path          =          "downloads/data/info.csv"
+                    local_path = os.path.relpath(component_blob.path, pathlib2.Path(component_path).parent)
+
+                components_to_download[component_blob.path] = local_path
+
+        if not components_to_download:
+            raise KeyError("no components found for path {}".format(component_path))
+
+        return components_to_download
+
     def download(self, component_path, download_to_path=None, chunk_size=32*(10**3)):
         """
         Downloads `component_path` from this dataset if ModelDB-managed versioning was enabled.
@@ -92,7 +133,7 @@ class _Dataset(blob.Blob):
         Parameters
         ----------
         component_path : str
-            Original path of the file in this dataset to download.
+            Original path of the file or directory in this dataset to download.
         download_to_path : str, optional
             Path to download to. If not provided, the file(s) will be downloaded into a new path in
             the current directory. If provided and the path already exists, it will be overwritten.
@@ -113,44 +154,44 @@ class _Dataset(blob.Blob):
                 " if ModelDB-managed versioning was enabled"
             )
 
-        # backend will return error if `component_path` not found/versioned
-        url = self._commit._get_url_for_artifact(self._blob_path, component_path, "GET").url
+        components_to_download = self._get_components_to_download(component_path, download_to_path)
+        for component_path, download_to_path in components_to_download.items():
+            url = self._commit._get_url_for_artifact(self._blob_path, component_path, "GET").url
 
-        # stream download to avoid overwhelming memory
-        response = _utils.make_request("GET", url, self._commit._conn, stream=True)
-        try:
-            _utils.raise_for_http_error(response)
-
-            print("downloading {} from ModelDB".format(component_path))
-            tempf = None  # declare first in case NamedTemporaryFile init fails
+            # stream download to avoid overwhelming memory
+            response = _utils.make_request("GET", url, self._commit._conn, stream=True)
             try:
-                # read response stream into temp file
-                with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
-                    for chunk in response.iter_content(chunk_size=chunk_size):
-                        tempf.write(chunk)
+                _utils.raise_for_http_error(response)
 
-                # prepare destination path
-                if download_to_path is None:
-                    # default to filename from `component_path` in cwd
-                    download_to_path = os.path.basename(component_path)
+                print("downloading {} from ModelDB".format(component_path))
+                tempf = None  # declare first in case NamedTemporaryFile init fails
+                try:
+                    # read response stream into temp file
+                    with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
+                        for chunk in response.iter_content(chunk_size=chunk_size):
+                            tempf.write(chunk)
 
-                    # avoid collisions with existing files
-                    while os.path.exists(download_to_path):
-                        download_to_path = _file_utils.increment_filepath(download_to_path)
+                    # prepare destination path
+                    if download_to_path is None:
+                        # avoid collisions with existing files
+                        while os.path.exists(download_to_path):
+                            download_to_path = _file_utils.increment_filepath(download_to_path)
+                    else:
+                        # create parent dirs
+                        pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+
+                    # move written contents to `filepath`
+                    os.rename(tempf.name, download_to_path)
+                except Exception as e:
+                    # delete partially-downloaded file
+                    if tempf is not None:
+                        os.remove(tempf.name)
+                    raise e
                 else:
-                    # create parent dirs
-                    pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+                    print("download complete; file written to {}".format(download_to_path))
+            finally:
+                response.close()
 
-                # move written contents to `filepath`
-                os.rename(tempf.name, download_to_path)
-            except Exception as e:
-                # delete partially-downloaded file
-                if tempf is not None:
-                    os.remove(tempf.name)
-                raise e
-            else:
-                print("download complete; file written to {}".format(download_to_path))
-        finally:
-            response.close()
-
-        return os.path.abspath(download_to_path)
+        # TODO: return dir when user passed dir containing one file
+        # TODO: in test, assert equal to `download_to_path` if provided
+        return os.path.abspath(os.path.commonprefix(components_to_download.values()))
