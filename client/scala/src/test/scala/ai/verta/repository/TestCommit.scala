@@ -421,6 +421,9 @@ class TestCommit extends FunSuite {
 
       val numFolders = newCommit.walk(FolderCounter()).map(_.get).sum
       assert(numFolders equals 3)
+
+      val numBlobs = newCommit.walk(BlobCounter()).map(_.get).sum
+      assert(numFolders equals 5)
     } finally {
       cleanup(f)
     }
