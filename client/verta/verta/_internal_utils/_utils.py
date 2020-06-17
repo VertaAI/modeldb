@@ -267,8 +267,6 @@ def make_request(method, url, conn, **kwargs):
             history = []  # track history because `requests` doesn't since we're redirecting manually
             responses = itertools.chain([response], s.resolve_redirects(response, request))
             for response in responses:
-                history.append(response)
-
                 if response.status_code == 302:
                     if not conn.ignore_conn_err:
                         raise RuntimeError(
@@ -277,6 +275,8 @@ def make_request(method, url, conn, **kwargs):
                         )
                     else:
                         return fabricate_200()
+
+                history.append(response)
 
             # set full history
             response.history = history[:-1]  # last element is this response, so drop it
