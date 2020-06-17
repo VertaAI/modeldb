@@ -413,13 +413,13 @@ class Commit(
         .flatMap(_.sub_folders) // Option[List[VersioningFolderElement]]
         .map(_.map(folder => folder.element_name.get))
         // Option[List[String]]
-        .map(_.sortWith((name1: String, name2: String) => name1 < name2))
+        .map(_.sorted)
 
         val blobNames = responseFolder
         .flatMap(_.blobs) // Option[List[VersioningFolderElement]]
         .map(_.map(folder => folder.element_name.get))
         // Option[List[String]]
-        .map(_.sortWith((name1: String, name2: String) => name1 < name2))
+        .map(_.sorted)
 
         Success(Folder(folderPath, blobNames.getOrElse(Nil), folderNames.getOrElse(Nil)))
       })

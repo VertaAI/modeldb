@@ -3,7 +3,7 @@ package ai.verta.repository
 /** A class to represent a path in the list of strings format
  *  @param components a list of components of the path
  */
-final case class PathList(val components: List[String]) {
+case class PathList(val components: List[String]) {
   /** Return the path in a single string format, with components separated by '/' */
   def path: String = components.mkString("/")
 
