@@ -28,7 +28,7 @@ class Commit(
   /** Whether the commit instance is saved to database, or is currently being modified.
    *  A commit is saved if and only if its versioning commit field has a defined ID.
    */
-  def saved = id.isDefined
+  private def saved = id.isDefined
 
   override def equals(other: Any) = other match {
     case other: Commit => saved && other.saved && id.get == other.id.get
@@ -366,7 +366,7 @@ class Commit(
    *  @param message error message if this commit is not saved
    *  @return Failure if the commit is not saved. Success otherwise
    */
-  private def checkSaved(message: String): Try[Unit] = {
+  def checkSaved(message: String): Try[Unit] = {
     if (!saved)
       Failure(new IllegalCommitSavedStateException(message))
     else
