@@ -543,4 +543,56 @@ class TestCommit extends FunSuite {
         cleanup(f)
       }
     }
+
+    test("walk should visit all the blobs and folders in the correct order") {
+      val f = fixture
+
+      try {
+        val newCommit = f.commit.update("file1", f.pathBlob)
+                                .flatMap(_.update("a/file2", f.pathBlob))
+                                .flatMap(_.update("a/file3", f.pathBlob))
+                                .flatMap(_.update("a/b/file4", f.pathBlob))
+                                .flatMap(_.update("a/c/file5", f.pathBlob))
+                                .flatMap(_.save("walkzzz")).get
+        val allBlobs = newCommit.walk(CommitLister()).map(_.get).filter(_.isDefined).toList.map(_.get)
+        assert(allBlobs equals List("file1", "a/file2", "a/file3", "a/b/file4", "a/c/file5"))
+
+        val numFolders = newCommit.walk(FolderCounter()).map(_.get).sum
+        assert(numFolders equals 3)
+
+        val numBlobs = newCommit.walk(BlobCounter()).map(_.get).sum
+        assert(numBlobs equals 5)
+      } finally {
+        cleanup(f)
+      }
+    }
+
+    test("filtering folder should skip the their subtree") {
+      val f = fixture
+
+      try {
+        val newCommit = f.commit.update("file1", f.pathBlob)
+                                .flatMap(_.update("a/file2", f.pathBlob))
+                                .flatMap(_.update("a/file3", f.pathBlob))
+                                .flatMap(_.update("a/b/file4", f.pathBlob))
+                                .flatMap(_.update("a/c/file5", f.pathBlob))
+                                .flatMap(_.save("walkzzz")).get
+
+       val blobs = newCommit.walk(FilterWalker()).map(_.get).filter(_.isDefined).toList.map(_.get)
+       assert(blobs equals List("file1", "a/file2", "a/file3", "a/c/file5"))
+
+      } finally {
+        cleanup(f)
+      }
+    }
+
+    test("walk on empty commit should produce an empty stream") {
+      val f = fixture
+
+      try {
+        assert(f.commit.walk(FolderCounter()).isEmpty)
+      } finally {
+        cleanup(f)
+      }
+    }
 }
