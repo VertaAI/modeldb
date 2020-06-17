@@ -207,7 +207,7 @@ class _Dataset(blob.Blob):
                         os.remove(tempf.name)
                     raise e
                 else:
-                    print("download complete; file written to {}".format(components_to_download[path]))
+                    print("download complete; file written to {}".format(local_path))
             finally:
                 response.close()
 
