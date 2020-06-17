@@ -122,7 +122,7 @@ class _Dataset(blob.Blob):
             _utils.raise_for_http_error(response)
 
             print("downloading {} from ModelDB".format(component_path))
-            tempf = None
+            tempf = None  # declare first in case NamedTemporaryFile init fails
             try:
                 # read response stream into temp file
                 with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
