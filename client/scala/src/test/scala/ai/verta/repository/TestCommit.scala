@@ -564,7 +564,7 @@ class TestCommit extends FunSuite {
         val newB = branchB.applyDiff(branchA.diffFrom(Some(branchB)).get, "diff").get
         val revertCommit = newB.revert().get
 
-        // changes induced by revert should be undone
+        // changes induced by applyDiff should be undone
         assert(revertCommit.get("some-path-2").isSuccess)
         assert(revertCommit.get("some-path-1").isFailure)
 
