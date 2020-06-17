@@ -21,6 +21,7 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -222,13 +223,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-      if (request.getBlobsCount() == 0) {
-        if (request.getCommitBase().isEmpty() || request.getDiffsCount() == 0) {
-          throw new ModelDBException(
-              "Blob list should not be empty or commit base and diffs should be specified",
-              Code.INVALID_ARGUMENT);
-        }
-      } else if (request.getCommit().getParentShasList().isEmpty()) {
+      if (request.getCommit().getParentShasList().isEmpty()) {
         throw new ModelDBException(
             "Parent commits not found in the CreateCommitRequest", Code.INVALID_ARGUMENT);
       } else if (request.getBlobsCount() > 0
@@ -247,7 +242,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId(), true);
       if (request.getBlobsCount() != 0) {
         blobContainers = validateBlobs(request);
-      } else {
+      } else if (request.getDiffsCount() != 0) {
         List<AutogenBlobDiff> diffs = validateBlobDiffs(request);
         blobContainers =
             blobDAO.convertBlobDiffsToBlobs(
@@ -255,6 +250,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                 repositoryFunction,
                 (session, repository) ->
                     commitDAO.getCommitEntity(session, request.getCommitBase(), repository));
+      } else {
+        blobContainers = Collections.emptyList();
       }
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
 
