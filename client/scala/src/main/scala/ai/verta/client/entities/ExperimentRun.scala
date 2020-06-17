@@ -334,7 +334,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
           ))
         )
       )
-    })
+    }).map(_ => ())
   }
 
   /** Gets the Commit associated with this Experiment Run
@@ -350,7 +350,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
           _.map(pair => (pair._1, pair._2.location.get.mkString("/")))
         )
 
-        Success(new ExperimentRunCommit(versioningEntry.commit.get, versioningEntry.repository_id.get, keyPaths))
+        Success(ExperimentRunCommit(versioningEntry.commit.get, versioningEntry.repository_id.get, keyPaths))
       }
     )
   }
