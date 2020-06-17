@@ -57,7 +57,7 @@ class Path(_dataset._Dataset):
             })
 
         metadata = six.viewvalues(paths_to_metadata)
-        self._path_component_blobs.extend(metadata)
+        self._msg.path.components.extend(metadata)
 
     def __repr__(self):
         # TODO: consolidate with S3 since they're almost identical now
