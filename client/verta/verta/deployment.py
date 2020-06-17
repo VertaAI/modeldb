@@ -140,7 +140,7 @@ class DeployedModel:
     def _set_token_and_url(self):
         response = self._session.get(self._status_url)
         _utils.raise_for_http_error(response)
-        status = response.json()
+        status = _utils.body_to_json(response)
         if status['status'] == 'error':
             raise RuntimeError(status['message'])
         elif status['status'] != 'deployed':
@@ -212,10 +212,10 @@ class DeployedModel:
             response = self._predict(x, compress)
 
             if response.ok:
-                return response.json()
+                return _utils.body_to_json(response)
             elif response.status_code == 502:  # bad gateway; possibly error from the model back end
                 try:
-                    data = response.json()
+                    data = _utils.body_to_json(response)
                 except ValueError:  # not JSON response; 502 not from model back end
                     pass
                 else:  # from model back end; contains message (maybe)

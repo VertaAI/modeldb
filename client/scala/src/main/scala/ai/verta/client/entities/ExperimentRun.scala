@@ -17,13 +17,25 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success, Try}
 
 class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: ModeldbExperimentRun) extends Taggable {
+  /** Return a set-like object of type Tags, representing the tags associated with ExperimentRun
+   *  Provide an alternative interface to get/del/add Tags methods
+   *  @return the tags set
+   */
   def tags()(implicit ec: ExecutionContext) = new Tags(clientSet, ec, this)
 
+  /** Gets all tags from this Experiment Run
+   *  @return list of all the tags of this run, if succeeds
+   */
   override def getTags()(implicit ec: ExecutionContext): Try[List[String]] = {
     clientSet.experimentRunService.getExperimentRunTags(run.id)
       .map(r => r.tags.getOrElse(Nil))
   }
 
+  /** Delete multiple tags of this Experiment Run.
+   *  If the run does not have any tag in the list, that tag will be ignored
+   *  @param tags tags
+   *  @return whether the attempt succeeds
+   */
   override def delTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
     clientSet.experimentRunService.deleteExperimentRunTags(ModeldbDeleteExperimentRunTags(
       id = run.id,
@@ -32,6 +44,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       .map(_ => {})
   }
 
+  /** Logs multiple tags to this Experiment Run
+   *  @param tags tags
+   *  @return whether the attempt succeeds
+   */
   override def addTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
     clientSet.experimentRunService.addExperimentRunTags(ModeldbAddExperimentRunTags(
       id = run.id,
@@ -71,8 +87,15 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
     getHyperparameters().map(_.get(key))
 
   // TODO: add overwrite
+  /** Return a map-like object of type Metrics, representing the metrics associated with ExperimentRun
+   *  Provide an alternative interface to get/log metrics
+   *  @return the metrics map
+   */
   def metrics()(implicit ec: ExecutionContext) = new Metrics(clientSet, ec, this)
 
+  /** Logs potentially multiple metrics to this Experiment Run.
+   *  @param metrics Metrics
+   */
   def logMetrics(vals: Map[String, Any])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
@@ -82,9 +105,18 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       )).map(_ => {})
   }
 
+  /** Logs a metric to this Experiment Run
+   *  If the metadatum of interest might recur, logObservation() should be used instead
+   *  @param key Name of the metric
+   *  @param value Value of the metric
+   */
   def logMetric(key: String, value: Any)(implicit ec: ExecutionContext) =
     logMetrics(Map(key -> value))
 
+  /** Gets all metrics from this Experiment Run
+   *  @param key Name of the metric
+   *  @return Names and values of all metrics
+   */
   def getMetrics()(implicit ec: ExecutionContext): Try[Map[String, Any]] = {
     clientSet.experimentRunService.getMetrics(
       id = run.id
@@ -97,6 +129,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       })
   }
 
+  /** Gets the metric with name key from this Experiment Run
+   *  @param key Name of the metric
+   *  @return Value of the metric
+   */
   def getMetric(key: String)(implicit ec: ExecutionContext) =
     getMetrics().map(_.get(key))
 
