@@ -85,7 +85,7 @@ class _Dataset(blob.Blob):
         self._commit = commit
         self._blob_path = blob_path
 
-    def download(self, component_path, filepath=None, chunk_size=32*(10**3)):
+    def download(self, component_path, download_to_path=None, chunk_size=32*(10**3)):
         """
         Downloads `component_path` from this dataset if ModelDB-managed versioning was enabled.
 
@@ -93,16 +93,17 @@ class _Dataset(blob.Blob):
         ----------
         component_path : str
             Original path of the file in this dataset to download.
-        filepath : str, optional
-            Filepath to download `component_path` to. If not provided, the file will be downloaded
-            to the current directory.
+        download_to_path : str, optional
+            Path to download to. If not provided, the file(s) will be downloaded into a new path in
+            the current directory. If provided and the path already exists, it will be overwritten.
         chunk_size : int, default 32 kB
             Number of bytes to download at a time.
 
         Returns
         -------
-        filepath : str
-            Filepath where `component_path` was downloaded to.
+        downloaded_to_path : str
+            Path where file(s) were downloaded to. Identical to `download_to_path` if it was
+            provided as an argument.
 
         """
         if self._commit is None and self._blob_path is None:
@@ -111,8 +112,6 @@ class _Dataset(blob.Blob):
                 " consider using `commit.get()` to obtain a download-capable dataset"
                 " if ModelDB-managed versioning was enabled"
             )
-        if filepath is not None and os.path.exists(filepath):
-            raise OSError("{} already exists".format(filepath))
 
         # backend will return error if `component_path` not found/versioned
         url = self._commit._get_url_for_artifact(self._blob_path, component_path, "GET").url
@@ -130,23 +129,20 @@ class _Dataset(blob.Blob):
                         tempf.write(chunk)
 
                 # check for a unique `filepath`
-                if filepath is None:
+                if download_to_path is None:
                     # default to filename from `component_path` in cwd
-                    filepath = os.path.basename(component_path)
+                    download_to_path = os.path.basename(component_path)
 
                     # avoid collisions with existing files
-                    while os.path.exists(filepath):
-                        filepath = _file_utils.increment_filepath(filepath)
+                    while os.path.exists(download_to_path):
+                        download_to_path = _file_utils.increment_filepath(download_to_path)
                 else:
-                    if os.path.exists(filepath):  # file was created while we were downloading
-                        raise OSError("{} already exists".format(filepath))
-                    else:
-                        # create parent dirs
-                        pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+                    # create parent dirs
+                    pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
 
                 # move written contents to `filepath`
-                os.rename(tempf.name, filepath)
-                print("download complete; file written to {}".format(filepath))
+                os.rename(tempf.name, download_to_path)
+                print("download complete; file written to {}".format(download_to_path))
             except Exception as e:
                 # delete partially-downloaded file
                 os.remove(tempf.name)
@@ -154,4 +150,4 @@ class _Dataset(blob.Blob):
         finally:
             response.close()
 
-        return os.path.abspath(filepath)
+        return os.path.abspath(download_to_path)
