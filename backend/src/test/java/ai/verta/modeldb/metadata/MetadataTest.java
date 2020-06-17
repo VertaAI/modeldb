@@ -129,7 +129,7 @@ public class MetadataTest {
 
     IdentificationType id2 =
         IdentificationType.newBuilder()
-            .setIdType(IDTypeEnum.IDType.VERSIONING_COMMIT)
+            .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)
             .setStringId("12abc345")
             .build();
     AddLabelsRequest addLabelsRequest2 =

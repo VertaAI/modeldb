@@ -2140,7 +2140,7 @@ public class CommitTest {
 
       IdentificationType commitLabelId =
           IdentificationType.newBuilder()
-              .setIdType(IDTypeEnum.IDType.VERSIONING_COMMIT)
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)
               .setStringId(datasetCommit.getCommitSha())
               .build();
       labelIds.add(commitLabelId);
