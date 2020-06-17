@@ -23,7 +23,7 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 from ..external import six
 from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
-from .._protos.public.modeldb import CommonService_pb2 as _CommonService
+from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 try:
     import pandas as pd
@@ -72,6 +72,9 @@ THREAD_LOCALS = threading.local()
 THREAD_LOCALS.active_experiment_run = None
 
 SAVED_MODEL_DIR = "/app/tf_saved_model/"
+
+# TODO: remove this in favor of _config_utils when #635 is merged
+HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
 
 
 class Connection:
@@ -212,7 +215,7 @@ class LazyList(object):
             )
         raise_for_http_error(response)
 
-        response_msg = json_to_proto(response.json(), msg.Response)
+        response_msg = json_to_proto(body_to_json(response), msg.Response)
         return response_msg
 
     def _get_ids(self, response_msg):
@@ -250,9 +253,8 @@ def make_request(method, url, conn, **kwargs):
     if method.upper() not in _VALID_HTTP_METHODS:
         raise ValueError("`method` must be one of {}".format(_VALID_HTTP_METHODS))
 
-    if conn.auth is not None:
-        # add auth to `kwargs['headers']`
-        kwargs.setdefault('headers', {}).update(conn.auth)
+    # add auth to headers
+    kwargs.setdefault('headers', {}).update(conn.auth)
 
     with requests.Session() as s:
         s.mount(url, HTTPAdapter(max_retries=conn.retry))
@@ -291,7 +293,7 @@ def raise_for_http_error(response):
         response.raise_for_status()
     except requests.HTTPError as e:
         try:
-            reason = response.json()['message']
+            reason = body_to_json(response)['message']
         except (ValueError,  # not JSON response
                 KeyError):  # no 'message' from back end
             six.raise_from(e, None)  # use default reason
@@ -305,6 +307,39 @@ def raise_for_http_error(response):
                 cause = "Unexpected"
             message = "{} {} Error: {} for url: {}".format(response.status_code, cause, reason, response.url)
             six.raise_from(requests.HTTPError(message, response=response), None)
+
+
+def body_to_json(response):
+    """
+    Returns the JSON-encoded contents of `response`, raising a detailed error on failure.
+
+    Parameters
+    ----------
+    response : :class:`requests.Response`
+        HTTP response.
+
+    Returns
+    -------
+    contents : dict
+        JSON-encoded contents of `response`.
+
+    Raises
+    ------
+    ValueError
+        If `response`'s contents are not JSON-encoded.
+
+    """
+    try:
+        return response.json()
+    except ValueError:  # not JSON response
+        msg = '\n'.join([
+            "expected JSON response from {}, but instead got:".format(response.url),
+            response.text or "<empty response>",
+            "",
+            "Please notify the Verta development team.",
+        ])
+        msg = six.ensure_str(msg)
+        six.raise_from(ValueError(msg), None)
 
 
 def is_hidden(path):  # to avoid "./".startswith('.')
@@ -898,7 +933,7 @@ def get_notebook_filepath():
             response = requests.get(urljoin(server['url'], 'api/sessions'),
                                     params={'token': server.get('token', '')})
             if response.ok:
-                for session in response.json():
+                for session in body_to_json(response):
                     if session['kernel']['id'] == kernel_id:
                         relative_path = session['notebook']['path']
                         return os.path.join(server['notebook_dir'], relative_path)
@@ -941,3 +976,37 @@ def is_org(workspace_name, conn):
     )
 
     return response.status_code != 404
+
+
+def as_list_of_str(tags):
+    """
+    Ensures that `tags` is a list of str.
+
+    Parameters
+    ----------
+    tags : str or list of str
+        If list of str, return unchanged. If str, return wrapped in a list.
+
+    Returns
+    -------
+    tags : list of str
+        Tags.
+
+    Raises
+    ------
+    TypeError
+        If `tags` is neither str nor list of str.
+
+    """
+    # TODO: make error messages more general so this can be used for any similar var
+    if isinstance(tags, six.string_types):
+        tags = [tags]
+    else:
+        if not isinstance(tags, (list, tuple, set)):
+            raise TypeError("`tags` should be list of str, not {}".format(type(tags)))
+
+        for tag in tags:
+            if not isinstance(tag, six.string_types):
+                raise TypeError("`tags` must be list of str, but found {}".format(type(tag)))
+
+    return tags

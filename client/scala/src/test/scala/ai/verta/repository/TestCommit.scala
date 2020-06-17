@@ -407,43 +407,180 @@ class TestCommit extends FunSuite {
     }
   }
 
-  test("walk should visit all the blobs and folders in the correct order") {
+  test("revert with no commit passed should revert the latest commit") {
     val f = fixture
+
     try {
-      val newCommit = f.commit.update("file1", f.pathBlob)
-                    .flatMap(_.update("a/file2", f.pathBlob))
-                    .flatMap(_.update("a/file3", f.pathBlob))
-                    .flatMap(_.update("a/b/file4", f.pathBlob))
-                    .flatMap(_.update("a/c/file5", f.pathBlob))
-                    .flatMap(_.save("walkzzz")).get
-      val allBlobs = newCommit.walk(CommitLister()).map(_.get).filter(_.isDefined).toList.map(_.get)
-      assert(allBlobs equals List("file1", "a/file2", "a/file3", "a/b/file4", "a/c/file5"))
+        val preRevert = f.commit.update("abc/cde", f.pathBlob)
+                         .flatMap(_.save("Some message 1"))
+                         .flatMap(_.update("def/ghi", f.s3Blob))
+                         .flatMap(_.remove("abc/cde"))
+                         .flatMap(_.save("Some message 2")).get
 
-      val numFolders = newCommit.walk(FolderCounter()).map(_.get).sum
-      assert(numFolders equals 3)
+        val revCommit = preRevert.revert(message = Some("Revert test")).get
 
-      val numBlobs = newCommit.walk(BlobCounter()).map(_.get).sum
-      assert(numBlobs equals 5)
+        assert(revCommit.get("abc/cde").isSuccess)
+        assert(revCommit.get("def/ghi").isFailure)
     } finally {
       cleanup(f)
     }
   }
 
-  test("filtering folder should skip the their subtree") {
+  test("revert with another commit passed should revert the changes from that commit") {
     val f = fixture
+
     try {
-      val newCommit = f.commit.update("file1", f.pathBlob)
-                       .flatMap(_.update("a/file2", f.pathBlob))
-                       .flatMap(_.update("a/file3", f.pathBlob))
-                       .flatMap(_.update("a/b/file4", f.pathBlob))
-                       .flatMap(_.update("a/c/file5", f.pathBlob))
-                       .flatMap(_.save("walkzzz")).get
+        val firstCommit = f.commit.update("abc/cde", f.pathBlob)
+                           .flatMap(_.update("mnp/qrs", f.pathBlob))
+                           .flatMap(_.save("Some message 1")).get
 
-     val blobs = newCommit.walk(FilterWalker()).map(_.get).filter(_.isDefined).toList.map(_.get)
-     assert(blobs equals List("file1", "a/file2", "a/file3", "a/c/file5"))
+        val secondCommit = firstCommit.update("def/ghi", f.s3Blob)
+                                      .flatMap(_.update("tuv/wxy", f.pathBlob))
+                                      .flatMap(_.save("Some message 2")).get
 
-    } finally {
-      cleanup(f)
+        val thirdCommit = secondCommit.remove("abc/cde")
+                                      .flatMap(_.save("Some message 3")).get
+
+        val revCommit = thirdCommit.revert(secondCommit, Some("Revert test")).get
+
+        // first and third commit should be retained:
+        assert(revCommit.get("abc/cde").isFailure)
+        assert(revCommit.get("mnp/qrs").isSuccess)
+        // second commit should be reverted:
+        assert(revCommit.get("def/ghi").isFailure)
+        assert(revCommit.get("tuv/wxy").isFailure)
+      } finally {
+        cleanup(f)
+      }
     }
-  }
+
+    test("revert unsaved commit should fail") {
+      val f = fixture
+
+      try {
+          val firstCommit = f.commit.newBranch("new-branch-1")
+                             .flatMap(_.update("abc/cde", f.pathBlob))
+                             .flatMap(_.save("Some message 1")).get
+
+          val secondCommit = f.commit.newBranch("new-branch-2")
+                                     .flatMap(_.update("def/ghi", f.s3Blob)).get
+
+          val revAttempt = firstCommit.revert(secondCommit, Some("Revert test"))
+          assert(revAttempt.isFailure)
+          assert(revAttempt match {case Failure(e) => e.getMessage contains "Other commit must be saved"})
+
+          val revAttempt2 = secondCommit.revert(firstCommit, Some("Revert test"))
+          assert(revAttempt2.isFailure)
+          assert(revAttempt2 match {case Failure(e) => e.getMessage contains "This commit must be saved"})
+
+      } finally {
+        cleanup(f)
+      }
+    }
+
+    test("revert a merge commit should remove changes in the other branch") {
+      val f = fixture
+
+      try {
+        val originalCommit = f.commit.update("a", f.pathBlob)
+                              .flatMap(_.save("Some message")).get
+
+        val firstCommit = originalCommit.newBranch("new-branch-1")
+                             .flatMap(_.update("b", f.pathBlob))
+                             .flatMap(_.save("Some message 1")).get
+
+        val secondCommit = originalCommit.newBranch("new-branch-2")
+                                         .flatMap(_.remove("a"))
+                                         .flatMap(_.update("def/ghi", f.s3Blob))
+                                         .flatMap(_.save("Some message 2")).get
+
+        val mergeCommit = firstCommit.merge(secondCommit, Some("Merge commits")).get
+        val revCommit = mergeCommit.revert().get
+
+        assert(revCommit.get("a").isSuccess)
+        assert(revCommit.get("def/ghi").isFailure)
+        assert(revCommit.get("b").isSuccess)
+      } finally {
+        cleanup(f)
+      }
+    }
+
+    test("revert twice should undo the first revert") {
+      val f = fixture
+
+      try {
+        val originalCommit = f.commit.update("a", f.pathBlob)
+                              .flatMap(_.save("Some message")).get
+
+        val updateCommit = originalCommit.update("b", f.pathBlob)
+                                         .flatMap(_.remove("a"))
+                                         .flatMap(_.save("Some message 1")).get
+
+        val revertCommit = updateCommit.revert().flatMap(_.revert()).get
+        assert(revertCommit.get("a").isFailure)
+        assert(revertCommit.get("b").isSuccess)
+      } finally {
+        cleanup(f)
+      }
+    }
+
+    test("revert should affect the correct branch") {
+      val f = fixture
+
+      try {
+        val originalCommit = f.commit.update("a", f.pathBlob)
+                              .flatMap(_.save("Some message"))
+                              .flatMap(_.update("b", f.pathBlob))
+                              .flatMap(_.save("Some message 1")).get
+
+
+        val newBranch = originalCommit.newBranch("new-branch").get
+        val revertCommit = newBranch.revert().get
+
+        assert(f.repo.getCommitByBranch().get equals originalCommit) // master shouldn't be affect by revert
+        assert(f.repo.getCommitByBranch("new-branch").get equals revertCommit)
+      } finally {
+        cleanup(f)
+      }
+    }
+
+    test("walk should visit all the blobs and folders in the correct order") {
+      val f = fixture
+      try {
+        val newCommit = f.commit.update("file1", f.pathBlob)
+                      .flatMap(_.update("a/file2", f.pathBlob))
+                      .flatMap(_.update("a/file3", f.pathBlob))
+                      .flatMap(_.update("a/b/file4", f.pathBlob))
+                      .flatMap(_.update("a/c/file5", f.pathBlob))
+                      .flatMap(_.save("walkzzz")).get
+        val allBlobs = newCommit.walk(CommitLister()).map(_.get).filter(_.isDefined).toList.map(_.get)
+        assert(allBlobs equals List("file1", "a/file2", "a/file3", "a/b/file4", "a/c/file5"))
+
+        val numFolders = newCommit.walk(FolderCounter()).map(_.get).sum
+        assert(numFolders equals 3)
+
+        val numBlobs = newCommit.walk(BlobCounter()).map(_.get).sum
+        assert(numBlobs equals 5)
+      } finally {
+        cleanup(f)
+      }
+    }
+
+    test("filtering folder should skip the their subtree") {
+      val f = fixture
+      try {
+        val newCommit = f.commit.update("file1", f.pathBlob)
+                         .flatMap(_.update("a/file2", f.pathBlob))
+                         .flatMap(_.update("a/file3", f.pathBlob))
+                         .flatMap(_.update("a/b/file4", f.pathBlob))
+                         .flatMap(_.update("a/c/file5", f.pathBlob))
+                         .flatMap(_.save("walkzzz")).get
+
+       val blobs = newCommit.walk(FilterWalker()).map(_.get).filter(_.isDefined).toList.map(_.get)
+       assert(blobs equals List("file1", "a/file2", "a/file3", "a/c/file5"))
+
+      } finally {
+        cleanup(f)
+      }
+    }
 }

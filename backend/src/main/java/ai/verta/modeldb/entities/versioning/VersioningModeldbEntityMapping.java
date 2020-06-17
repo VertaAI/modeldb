@@ -47,7 +47,7 @@ public class VersioningModeldbEntityMapping implements Serializable {
     if (entity instanceof ExperimentRunEntity) {
       this.experimentRunEntity = (ExperimentRunEntity) entity;
     } else {
-      LOGGER.warn("Expected ExperimentRunEntity found {}", entity.getClass());
+      LOGGER.warn("ExperimentRunEntity Expected : found {}", entity.getClass());
       Status status =
           Status.newBuilder()
               .setCode(Code.INTERNAL_VALUE)
