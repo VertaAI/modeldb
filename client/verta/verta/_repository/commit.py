@@ -504,7 +504,16 @@ class Commit(object):
         msg = self._to_create_msg(commit_message=message)
         self._save(msg)
 
-        # TODO: upload ModelDB-versioned blobs
+        # upload ModelDB-versioned blobs
+        for blob_path, blob in mdb_versioned_blobs.items():
+            for component_blob in blob._path_component_blobs:
+                if component_blob.internal_versioned_path:
+                    component_path = component_blob.path
+                    downloaded_filepath = blob._components_to_upload[component_path]
+                    with open(downloaded_filepath, 'rb') as f:
+                        self._upload_artifact(blob_path, component_path, f)
+
+            blob._clean_up_uploaded_components()
 
     def _save(self, proto_message):
         data = _utils.proto_to_json(proto_message)
