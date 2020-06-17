@@ -106,7 +106,7 @@ class _Dataset(blob.Blob):
             provided as an argument.
 
         """
-        if self._commit is None and self._blob_path is None:
+        if self._commit is None or self._blob_path is None:
             raise RuntimeError(
                 "this dataset cannot be used for downloads;"
                 " consider using `commit.get()` to obtain a download-capable dataset"
