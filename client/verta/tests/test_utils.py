@@ -13,6 +13,69 @@ import pytest
 from . import utils
 
 
+class TestMakeRequest:
+    def test_200_no_history(self, client):
+        """
+        The util manually tracks and assigns the response history after resolving redirects.
+
+        If no redirects occurred, the history should be empty.
+
+        """
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/status/200",
+            client._conn,
+        )
+
+        assert not response.history
+        assert response.status_code == 200
+
+    def test_301_continue(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/redirect-to",
+            client._conn,
+            params={
+                'url': "http://httpbin.org/get",
+                'status_code': 301,
+            },
+        )
+
+        assert len(response.history) == 1
+        assert response.history[0].status_code == 301
+        assert response.status_code == 200
+
+    def test_302_stop(self, client):
+        with pytest.raises(RuntimeError) as excinfo:
+            _utils.make_request(
+                "GET",
+                "http://httpbin.org/redirect-to",
+                client._conn,
+                params={
+                    'url': "http://httpbin.org/get",
+                    'status_code': 302,
+                },
+            )
+        assert str(excinfo.value).strip().startswith("received status 302")
+
+    @pytest.mark.parametrize("status_code", [302, 400, 500])
+    def test_ignore_conn_err(self, client, status_code):
+        previous_setting = client.ignore_conn_err
+
+        client.ignore_conn_err = True
+        try:
+            response = _utils.make_request(
+                "GET",
+                "http://httpbin.org/status/{}".format(status_code),
+                client._conn,
+            )
+
+            assert response.status_code == 200
+            assert response.json() == {}
+        finally:
+            client.ignore_conn_err = previous_setting
+
+
 class TestBodyToJson:
     def test_json_response(self, client):
         response = _utils.make_request(
