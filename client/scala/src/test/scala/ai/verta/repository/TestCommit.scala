@@ -546,6 +546,7 @@ class TestCommit extends FunSuite {
 
     test("walk should visit all the blobs and folders in the correct order") {
       val f = fixture
+
       try {
         val newCommit = f.commit.update("file1", f.pathBlob)
                                 .flatMap(_.update("a/file2", f.pathBlob))
@@ -568,6 +569,7 @@ class TestCommit extends FunSuite {
 
     test("filtering folder should skip the their subtree") {
       val f = fixture
+
       try {
         val newCommit = f.commit.update("file1", f.pathBlob)
                                 .flatMap(_.update("a/file2", f.pathBlob))
@@ -579,6 +581,16 @@ class TestCommit extends FunSuite {
        val blobs = newCommit.walk(FilterWalker()).map(_.get).filter(_.isDefined).toList.map(_.get)
        assert(blobs equals List("file1", "a/file2", "a/file3", "a/c/file5"))
 
+      } finally {
+        cleanup(f)
+      }
+    }
+
+    test("walk on empty commit should produce an empty stream") {
+      val f = fixture
+
+      try {
+        assert(f.commit.walk(FolderCounter()).isEmpty)
       } finally {
         cleanup(f)
       }
