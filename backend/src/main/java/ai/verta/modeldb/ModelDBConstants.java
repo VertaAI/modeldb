@@ -115,6 +115,7 @@ public interface ModelDBConstants {
   String CODE_ARCHIVE = "code_archive";
   String CODE_VERSION = "code_version";
   String DATASET_ID = "dataset_id";
+  String DATASET_IDS = "dataset_ids";
   String DATA_LIST = "data_list";
   String DATE_TIME = "date_time";
   String DATASET_ID_STR = "datasetId";

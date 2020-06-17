@@ -78,22 +78,28 @@ class S3(_dataset._Dataset):
             })
 
         s3_metadata = six.viewvalues(obj_paths_to_metadata)
-        self._component_blobs.extend(s3_metadata)  # pylint: disable=no-member
+        self._msg.s3.components.extend(s3_metadata)
 
     def __repr__(self):
+        # TODO: consolidate with Path since they're almost identical now
         lines = ["S3 Version"]
         components = sorted(
-            self._component_blobs,
-            key=lambda component_msg: component_msg.path.path,
+            self._path_component_blobs,
+            key=lambda component_msg: component_msg.path,
         )
         for component in components:
-            lines.extend(self._path_component_to_repr_lines(component.path))
+            lines.extend(self._path_component_to_repr_lines(component))
 
         return "\n    ".join(lines)
 
     @property
-    def _component_blobs(self):
-        return self._msg.s3.components
+    def _path_component_blobs(self):
+        # S3 has its PathDatasetComponentBlob nested one lever deeper than Path
+        return [
+            component.path
+            for component
+            in self._msg.s3.components
+        ]
 
     @classmethod
     def _get_s3_loc_metadata(cls, s3_loc):

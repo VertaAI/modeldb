@@ -25,8 +25,17 @@ class _Dataset(blob.Blob):
         self._components_to_upload = dict()  # component paths to local filepaths
 
     @property
-    def _component_blobs(self):
-        """This shall be implemented by subclasses, but shouldn't halt execution if called."""
+    def _path_component_blobs(self):
+        """
+        Returns path components of this dataset.
+
+        Returns
+        -------
+        list of PathDatasetComponentBlob
+            Path components of this dataset.
+
+        """
+        # This shall be implemented by subclasses, but shouldn't halt execution if called.
         return []
 
     @staticmethod
