@@ -263,7 +263,7 @@ def make_request(method, url, conn, **kwargs):
             request = requests.Request(method, url, **kwargs).prepare()
             response = s.send(request, allow_redirects=False)
 
-            # manually inspect redirects to stop on 302s
+            # manually inspect initial response and subsequent redirects to stop on 302s
             history = []  # track history because `requests` doesn't since we're redirecting manually
             responses = itertools.chain([response], s.resolve_redirects(response, request))
             for response in responses:
