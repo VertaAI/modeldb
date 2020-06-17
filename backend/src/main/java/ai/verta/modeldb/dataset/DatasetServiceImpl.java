@@ -19,7 +19,6 @@ import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.GetAllDatasets;
-import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetDatasetById;
 import ai.verta.modeldb.GetDatasetByName;
 import ai.verta.modeldb.GetExperimentRunByDataset;
@@ -703,19 +702,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, UpdateDatasetAttributes.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
-  public void getDatasetAttributes(
-      GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      throw new ModelDBException("Not supported", io.grpc.Status.Code.FAILED_PRECONDITION);
-
-    } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetAttributes.Response.getDefaultInstance());
     }
   }
 

@@ -179,14 +179,6 @@ message UpdateDatasetAttributes {
     }
 }
 
-message GetDatasetAttributes {
-    string id = 1;
-
-    message Response {
-        repeated common.KeyValue attributes = 1;
-    }
-}
-
 message DeleteDatasetAttributes {
     string id = 1;
     repeated string attribute_keys = 2;
@@ -325,12 +317,6 @@ service DatasetService {
         option (google.api.http) = {
             post: "/v1/dataset/updateDatasetAttributes"
             body: "*"
-        };
-    };
-
-    rpc getDatasetAttributes(GetAttributes) returns (GetAttributes.Response) {
-        option (google.api.http) = {
-            get: "/v1/dataset/getDatasetAttributes"
         };
     };
 
