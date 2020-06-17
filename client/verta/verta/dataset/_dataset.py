@@ -129,7 +129,7 @@ class _Dataset(blob.Blob):
                     for chunk in response.iter_content(chunk_size=chunk_size):
                         tempf.write(chunk)
 
-                # check for a unique `filepath`
+                # prepare destination path
                 if download_to_path is None:
                     # default to filename from `component_path` in cwd
                     download_to_path = os.path.basename(component_path)
