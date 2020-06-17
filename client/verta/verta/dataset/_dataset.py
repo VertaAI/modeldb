@@ -212,4 +212,5 @@ class _Dataset(blob.Blob):
                 response.close()
 
         # TODO: return dir, not path, when user passed dir containing one file
+        # TODO: os.path.commonprefix is not the right tool here
         return os.path.abspath(os.path.commonprefix(list(components_to_download.values())))

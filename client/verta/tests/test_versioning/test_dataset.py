@@ -181,11 +181,11 @@ class TestS3:
         # download to implicit path
         filepath = dataset.download(s3_key)
         assert os.path.isfile(filepath)
-        assert os.path.abspath(filename) == filepath
+        assert filepath == os.path.abspath(filename)
 
         # download to implicit path without collision
         filepath2 = dataset.download(s3_key)
-        assert os.path.isfile(filepath)
+        assert os.path.isfile(filepath2)
         assert filepath2 != filepath
 
         # download to explicit path with overwrite
@@ -194,8 +194,32 @@ class TestS3:
         assert filepath3 == filepath
         assert os.path.getmtime(filepath) > last_updated
 
+    def test_mngd_ver_folder(self, commit, in_tempdir):
+        blob_path = "data"
+        dirname = "tiny-files/"
+        s3_folder = "s3://verta-versioned-bucket/{}".format(dirname)
 
-    # TODO: folder test
+        dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
+
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        # download to implicit path
+        dirpath = dataset.download(s3_folder)
+        assert os.path.isdir(dirpath)
+        assert dirpath == os.path.abspath(dirname)
+
+        # download to implicit path without collision
+        dirpath2 = dataset.download(s3_folder)
+        assert os.path.isdir(dirpath2)
+        assert dirpath2 != dirpath
+
+        # download to explicit path with overwrite
+        last_updated = os.path.getmtime(dirpath)
+        dirpath3 = dataset.download(s3_folder, dirpath)
+        assert dirpath3 == dirpath
+        assert os.path.getmtime(dirpath) > last_updated
 
 
 class TestPath:
