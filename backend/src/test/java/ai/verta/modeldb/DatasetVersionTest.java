@@ -1852,7 +1852,6 @@ public class DatasetVersionTest {
             .toBuilder()
             .setRawDatasetVersionInfo(
                 RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
@@ -1936,7 +1935,6 @@ public class DatasetVersionTest {
             .toBuilder()
             .setRawDatasetVersionInfo(
                 RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
