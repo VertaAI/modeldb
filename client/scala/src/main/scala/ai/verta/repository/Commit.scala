@@ -347,8 +347,12 @@ class Commit(
   def walk[T](walker: FolderWalker[T])(implicit ec: ExecutionContext): Stream[Try[T]] = {
     if (!saved)
       Stream(Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be walked")))
-    else
-      continueWalk(getFolder(PathList(Nil)).get, walker)
+    else {
+      getFolder(PathList(Nil)) match {
+        case Failure(e) => Stream(Failure(e))
+        case Success(root) => continueWalk(root, walker)
+      }
+    }
   }
 
   /** Get the folder corresponding to a path in list form
