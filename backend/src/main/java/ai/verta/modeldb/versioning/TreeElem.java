@@ -40,7 +40,7 @@ public class TreeElem {
   }
 
   String getBlobHash() {
-    return blobHash != null ? path : "";
+    return blobHash != null ? blobHash : "";
   }
 
   String getType() {
