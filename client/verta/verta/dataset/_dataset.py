@@ -122,6 +122,7 @@ class _Dataset(blob.Blob):
             _utils.raise_for_http_error(response)
 
             print("downloading {} from ModelDB".format(component_path))
+            tempf = None
             try:
                 # read response stream into temp file
                 with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
@@ -145,7 +146,8 @@ class _Dataset(blob.Blob):
                 print("download complete; file written to {}".format(download_to_path))
             except Exception as e:
                 # delete partially-downloaded file
-                os.remove(tempf.name)
+                if tempf is not None:
+                    os.remove(tempf.name)
                 raise e
         finally:
             response.close()
