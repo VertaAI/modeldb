@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 
+import os
+
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
 from .._internal_utils import _utils
@@ -14,10 +16,27 @@ class _Dataset(blob.Blob):
     Base class for dataset versioning. Not for human consumption.
 
     """
-    def __init__(self):
+    def __init__(self, enable_mdb_versioning=False):
         super(_Dataset, self).__init__()
 
         self._msg = _DatasetService.DatasetBlob()
+
+        self._mdb_versioned = enable_mdb_versioning
+        self._components_to_upload = dict()  # component paths to local filepaths
+
+    @property
+    def _path_component_blobs(self):
+        """
+        Returns path components of this dataset.
+
+        Returns
+        -------
+        list of PathDatasetComponentBlob
+            Path components of this dataset.
+
+        """
+        # This shall be implemented by subclasses, but shouldn't halt execution if called.
+        return []
 
     @staticmethod
     def _path_component_to_repr_lines(path_component_msg):

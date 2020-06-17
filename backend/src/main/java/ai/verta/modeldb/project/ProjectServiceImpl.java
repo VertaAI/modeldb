@@ -118,7 +118,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
     if (request.getName().isEmpty()) {
       String errorMessage = "Project name not found in CreateProject request";
-      LOGGER.warn(errorMessage);
+      LOGGER.info(errorMessage);
       Status status =
           Status.newBuilder()
               .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -221,7 +221,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in UpdateProjectName request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -266,7 +266,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID is not found in UpdateProjectDescription request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -310,7 +310,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -361,7 +361,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -413,7 +413,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -460,7 +460,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -503,7 +503,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in AddProjectTags request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -537,7 +537,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetTags request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -584,7 +584,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -628,7 +628,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -672,7 +672,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -714,7 +714,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in DeleteProject request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -815,7 +815,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectById request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -851,7 +851,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -937,7 +937,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId() == null) {
         String errorMessage = "Project ID not found in DeepCopyProject request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -985,7 +985,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getEntityId().isEmpty()) {
         String errorMessage = "Project ID not found in GetSummary request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1006,7 +1006,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.getProjects(ModelDBConstants.ID, request.getEntityId(), userInfo);
       if (projects.isEmpty()) {
         String errorMessage = "Project not found for given EntityId";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -1016,7 +1016,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       } else if (projects.size() != 1) {
         String errorMessage = "Multiple projects found for given EntityId";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.UNKNOWN_VALUE)
@@ -1114,7 +1114,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1148,7 +1148,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectReadme request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1189,7 +1189,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1239,7 +1239,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectShortName request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1272,7 +1272,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in SetProjectVisibilty request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1315,7 +1315,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1338,7 +1338,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
             projectDAO.logProjectCodeVersion(request.getId(), request.getCodeVersion());
       } else {
         errorMessage = "Code version already logged for project " + existingProject.getId();
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -1369,7 +1369,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectCodeVersion request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1442,7 +1442,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1465,7 +1465,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         s3Key = getUrlForCode(request);
       } else {
         errorMessage = "Project level artifacts only supported for code";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1476,7 +1476,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (s3Key == null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -1621,7 +1621,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getIdsList().isEmpty()) {
         String errorMessage = "Project IDs not found in DeleteProjects request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         ModelDBUtils.logAndThrowError(
             errorMessage,
             Code.INVALID_ARGUMENT_VALUE,

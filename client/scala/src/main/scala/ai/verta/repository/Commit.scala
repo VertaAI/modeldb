@@ -215,25 +215,25 @@ class Commit(
    *  @return if not saved, a failure; otherwise, this commit as the head of `branch`
    */
   def newBranch(branch: String)(implicit ec: ExecutionContext) = {
-    if (!saved)
-      Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be attached to a branch"))
-    else clientSet.versioningService.SetBranch2(
-      body = commit.commit_sha.get,
-      branch = branch,
-      repository_id_repo_id = repo.id
-    ).flatMap(_ => repo.getCommitByBranch(branch))
+    checkSaved("Commit must be saved before it can be attached to a branch").flatMap(_ =>
+      clientSet.versioningService.SetBranch2(
+        body = commit.commit_sha.get,
+        branch = branch,
+        repository_id_repo_id = repo.id
+      ).flatMap(_ => repo.getCommitByBranch(branch))
+    )
   }
 
   /** Assigns a tag to this Commit
    *  @param tag tag
    */
   def tag(tag: String)(implicit ec: ExecutionContext) = {
-    if (!saved)
-      Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be tagged"))
-    else clientSet.versioningService.SetTag2(
-        body = commit.commit_sha.get,
-        repository_id_repo_id = repo.id,
-        tag = tag
+    checkSaved("Commit must be saved before it can be tagged").flatMap(_ =>
+      clientSet.versioningService.SetTag2(
+          body = commit.commit_sha.get,
+          repository_id_repo_id = repo.id,
+          tag = tag
+      )
     ).map(_ => ())
   }
 
@@ -244,35 +244,33 @@ class Commit(
    *  @return Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository; the merged commit otherwise.
    */
   def merge(other: Commit, message: Option[String] = None)(implicit ec: ExecutionContext) = {
-    if (!saved)
-      Failure(new IllegalCommitSavedStateException("This commit must be saved"))
-    else if (!other.saved)
-      Failure(new IllegalCommitSavedStateException("Other commit must be saved"))
-    else if (other.repo.id != repo.id)
-      Failure(new IllegalArgumentException("Two commits must belong to the same repository"))
-    else
-      clientSet.versioningService.MergeRepositoryCommits2(
-        /** TODO: is dry run? */
-        body = VersioningMergeRepositoryCommitsRequest(
-          commit_sha_a = other.id,
-          commit_sha_b = id,
-          content = Some(VersioningCommit(message=message))
-        ),
-        repository_id_repo_id = repo.id
-      ).flatMap(r =>
-      if (r.conflicts.isDefined) Failure(throw new IllegalArgumentException(
-        List(
-          "Merge conflict.", "Resolution is not currently supported through the client",
-          "Please create a new Commit with the updated blobs.",
-          "See https://docs.verta.ai/en/master/examples/tutorials/merge.html for instructions"
-        ).mkString("\n")
-      ))
-      else versioningCommitToCommit(r.commit.get))
+    checkSaved("This commit must be saved").flatMap(_ => other.checkSaved("Other commit must be saved"))
+      .flatMap(_ => checkSameRepository(other))
+      .flatMap(_ => {
+        clientSet.versioningService.MergeRepositoryCommits2(
+          /** TODO: is dry run? */
+          body = VersioningMergeRepositoryCommitsRequest(
+            commit_sha_a = other.id,
+            commit_sha_b = id,
+            content = Some(VersioningCommit(message=message))
+          ),
+          repository_id_repo_id = repo.id
+        ).flatMap(r =>
+        if (r.conflicts.isDefined) Failure(throw new IllegalArgumentException(
+          List(
+            "Merge conflict.", "Resolution is not currently supported through the client",
+            "Please create a new Commit with the updated blobs.",
+            "See https://docs.verta.ai/en/master/examples/tutorials/merge.html for instructions"
+          ).mkString("\n")
+        ))
+        else versioningCommitToCommit(r.commit.get))
+      }
+    )
   }
 
   /** Helper function to convert the versioning commit instance to commit instance
    *  If the current instance has a branch associated with it, the new commit will become the head of the branch.
-   *  Useful for createCommit and merge
+   *  Useful for createCommit, merge, and revert
    *  @param versioningCommit the versioning commit instance
    *  @return the corresponding commit instance
    */
@@ -304,26 +302,48 @@ class Commit(
     )
   }
 
+  /** Reverts other.
+   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
+   *  Currently reverting a merge commit is not supported. Unexpected behavior might occur.
+   *  @param other Base for the revert. If not provided, this commit will be reverted
+   *  @param message Description of the revert. If not provided, a default message will be used
+   *  @return The new commit, with the changes in other reverted, if suceeds. Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository.
+   */
+  def revert(other: Commit = this, message: Option[String] = None)(implicit ec: ExecutionContext) = {
+    checkSaved("This commit must be saved").flatMap(_ => other.checkSaved("Other commit must be saved"))
+      .flatMap(_ => checkSameRepository(other))
+      .flatMap(_ =>
+        clientSet.versioningService.RevertRepositoryCommits2(
+          body = VersioningRevertRepositoryCommitsRequest(
+            base_commit_sha = Some(id.get),
+            commit_to_revert_sha = Some(other.id.get),
+            content = Some(VersioningCommit(message=message))
+          ),
+          commit_to_revert_sha = other.id.get,
+          repository_id_repo_id = repo.id
+        ).flatMap(r => versioningCommitToCommit(r.commit.get))
+      )
+  }
+
   /** Returns the diff from reference to self
    *  @param reference Commit to be compared to. If not provided, first parent will be used.
    *  @return Failure if this commit or reference has not yet been saved, or if they do not belong to the same repository; otherwise diff object.
    */
   def diffFrom(reference: Option[Commit] = None)(implicit ec: ExecutionContext) = {
-    if (!saved)
-      Failure(new IllegalCommitSavedStateException("Commit must be saved before a diff can be calculated"))
-    else if (reference.isDefined && !reference.get.saved)
-      Failure(new IllegalCommitSavedStateException("Reference must be saved before a diff can be calculated"))
-    else if (reference.isDefined && reference.get.repo.id != repo.id)
-      Failure(new IllegalArgumentException("Reference and this commit must belong to the same repository"))
-    else {
-      clientSet.versioningService.ComputeRepositoryDiff2(
+    checkSaved("Commit must be saved before a diff can be calculated").flatMap(_ =>
+      if (reference.isDefined)
+        reference.get.checkSaved("Reference must be saved before a diff can be calculated")
+                 .flatMap(_ => checkSameRepository(reference.get))
+      else
+        Success(())
+    ).flatMap(_ => clientSet.versioningService.ComputeRepositoryDiff2(
         repository_id_repo_id = repo.id,
         commit_a = Some(
           if (reference.isDefined) reference.get.id.get else commit.parent_shas.get.head
         ),
         commit_b = Some(commit.commit_sha.get)
       ).map(r => new Diff(r.diffs))
-    }
+    )
   }
 
   /** Applies a diff to this Commit.
@@ -333,11 +353,31 @@ class Commit(
    *  @return the new Commit instance, if succeeds.
    */
   def applyDiff(diff: Diff, message: String)(implicit ec: ExecutionContext) = {
+    checkSaved("Commit must be saved before a diff can be applied")
+      .flatMap(_ => loadBlobs())
+      .map(_ => getChild(blobs)) // new commit's parent is old commit
+      .flatMap(_.createCommit(message = message, diffs = diff.blobDiffs, commitBase = id))
+  }
+
+  /** Check that the commit is saved.
+   *  @param message error message if this commit is not saved
+   *  @return Failure if the commit is not saved. Success otherwise
+   */
+  private def checkSaved(message: String): Try[Unit] = {
     if (!saved)
-      Failure(new IllegalCommitSavedStateException("Commit must be saved before a diff can be applied"))
+      Failure(new IllegalCommitSavedStateException(message))
     else
-      loadBlobs().map(_ => getChild(blobs)).flatMap(_.createCommit(
-        message = message, diffs = diff.blobDiffs, commitBase = id
-      ))
+      Success(())
+  }
+
+  /** Check that the other commit is in the same repository as this commit.
+   *  @param message error message if the two commits are not in the same repository.
+   *  @return Failure if the two commits are not in the same repository. Success otherwise
+   */
+  private def checkSameRepository(other: Commit): Try[Unit] = {
+    if (repo != other.repo)
+      Failure(new IllegalArgumentException("Two commits must belong to the same repository"))
+    else
+      Success(())
   }
 }
