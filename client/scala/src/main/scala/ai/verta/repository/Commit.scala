@@ -353,9 +353,10 @@ class Commit(
    *  @return the new Commit instance, if succeeds.
    */
   def applyDiff(diff: Diff, message: String)(implicit ec: ExecutionContext) = {
-    checkSaved("Commit must be saved before a diff can be applied").flatMap(_ =>
-      createCommit(message = message, diffs = diff.blobDiffs, commitBase = id)
-    )
+    checkSaved("Commit must be saved before a diff can be applied")
+      .flatMap(_ => loadBlobs())
+      .map(_ => getChild(blobs)) // new commit's parent is old commit
+      .flatMap(_.createCommit(message = message, diffs = diff.blobDiffs, commitBase = id))
   }
 
   /** Check that the commit is saved.
