@@ -263,12 +263,12 @@ def make_request(method, url, conn, **kwargs):
             request = requests.Request(method, url, **kwargs).prepare()
             response = s.send(request, allow_redirects=False)
 
-            # store initial response to add back into final history
-            initial_response = response
-
             # manually inspect redirects to stop on 302s
-            responses = itertools.chain([initial_response], s.resolve_redirects(initial_response, request))
+            history = []  # track history because `requests` doesn't since we're redirecting manually
+            responses = itertools.chain([response], s.resolve_redirects(response, request))
             for response in responses:
+                history.append(response)
+
                 if response.status_code == 302:
                     if not conn.ignore_conn_err:
                         raise RuntimeError(
@@ -278,9 +278,8 @@ def make_request(method, url, conn, **kwargs):
                     else:
                         return fabricate_200()
 
-            if response is not initial_response:
-                # insert initial response back into history, b/c `resolve_redirects()` removed it
-                response.history.insert(0, initial_response)
+            # set full history
+            response.history = history[:-1]  # last element is this response, so drop it
         except (requests.exceptions.BaseHTTPError,
                 requests.exceptions.RequestException) as e:
             if not conn.ignore_conn_err:
