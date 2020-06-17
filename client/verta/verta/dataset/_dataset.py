@@ -143,12 +143,13 @@ class _Dataset(blob.Blob):
 
                 # move written contents to `filepath`
                 os.rename(tempf.name, download_to_path)
-                print("download complete; file written to {}".format(download_to_path))
             except Exception as e:
                 # delete partially-downloaded file
                 if tempf is not None:
                     os.remove(tempf.name)
                 raise e
+            else:
+                print("download complete; file written to {}".format(download_to_path))
         finally:
             response.close()
 
