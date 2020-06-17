@@ -548,11 +548,11 @@ class TestCommit extends FunSuite {
       val f = fixture
       try {
         val newCommit = f.commit.update("file1", f.pathBlob)
-                      .flatMap(_.update("a/file2", f.pathBlob))
-                      .flatMap(_.update("a/file3", f.pathBlob))
-                      .flatMap(_.update("a/b/file4", f.pathBlob))
-                      .flatMap(_.update("a/c/file5", f.pathBlob))
-                      .flatMap(_.save("walkzzz")).get
+                                .flatMap(_.update("a/file2", f.pathBlob))
+                                .flatMap(_.update("a/file3", f.pathBlob))
+                                .flatMap(_.update("a/b/file4", f.pathBlob))
+                                .flatMap(_.update("a/c/file5", f.pathBlob))
+                                .flatMap(_.save("walkzzz")).get
         val allBlobs = newCommit.walk(CommitLister()).map(_.get).filter(_.isDefined).toList.map(_.get)
         assert(allBlobs equals List("file1", "a/file2", "a/file3", "a/b/file4", "a/c/file5"))
 
@@ -570,11 +570,11 @@ class TestCommit extends FunSuite {
       val f = fixture
       try {
         val newCommit = f.commit.update("file1", f.pathBlob)
-                         .flatMap(_.update("a/file2", f.pathBlob))
-                         .flatMap(_.update("a/file3", f.pathBlob))
-                         .flatMap(_.update("a/b/file4", f.pathBlob))
-                         .flatMap(_.update("a/c/file5", f.pathBlob))
-                         .flatMap(_.save("walkzzz")).get
+                                .flatMap(_.update("a/file2", f.pathBlob))
+                                .flatMap(_.update("a/file3", f.pathBlob))
+                                .flatMap(_.update("a/b/file4", f.pathBlob))
+                                .flatMap(_.update("a/c/file5", f.pathBlob))
+                                .flatMap(_.save("walkzzz")).get
 
        val blobs = newCommit.walk(FilterWalker()).map(_.get).filter(_.isDefined).toList.map(_.get)
        assert(blobs equals List("file1", "a/file2", "a/file3", "a/c/file5"))
