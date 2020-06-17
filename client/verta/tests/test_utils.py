@@ -16,7 +16,7 @@ from . import utils
 class TestMakeRequest:
     def test_200_no_history(self, client):
         """
-        The util injects the initial response into the final history after resolving redirects.
+        The util manually tracks and assigns the response history after resolving redirects.
 
         If no redirects occurred, the history should be empty.
 
