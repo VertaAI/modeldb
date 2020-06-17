@@ -87,17 +87,19 @@ class _Dataset(blob.Blob):
 
     def _get_components_to_download(self, component_path, download_to_path=None):
         """
-
+        Identify components to be downloaded, along with their local destination paths.
 
         Parameters
         ----------
         component_path : str
+            Path to directory or file within blob.
         download_to_path : str, optional
+            Local path to download to.
 
         Returns
         -------
         components_to_download : dict
-            Map of component paths to local destination paths
+            Map of component paths to local destination paths.
 
         """
         component_path_as_dir = component_path if component_path.endswith('/') else component_path+'/'
@@ -155,15 +157,15 @@ class _Dataset(blob.Blob):
             )
 
         components_to_download = self._get_components_to_download(component_path, download_to_path)
-        for item_component_path, item_download_to_path in components_to_download.items():
-            url = self._commit._get_url_for_artifact(self._blob_path, item_component_path, "GET").url
+        for path in components_to_download:  # component paths
+            url = self._commit._get_url_for_artifact(self._blob_path, path, "GET").url
 
             # stream download to avoid overwhelming memory
             response = _utils.make_request("GET", url, self._commit._conn, stream=True)
             try:
                 _utils.raise_for_http_error(response)
 
-                print("downloading {} from ModelDB".format(item_component_path))
+                print("downloading {} from ModelDB".format(path))
                 tempf = None  # declare first in case NamedTemporaryFile init fails
                 try:
                     # read response stream into temp file
@@ -171,23 +173,28 @@ class _Dataset(blob.Blob):
                         for chunk in response.iter_content(chunk_size=chunk_size):
                             tempf.write(chunk)
 
+                    local_path = components_to_download[path]
+
                     if download_to_path is None:  # destination paths were automatically generated
                         # avoid collisions with existing files
-                        while os.path.exists(item_download_to_path):
-                            item_download_to_path = _file_utils.increment_filepath(item_download_to_path)
+                        while os.path.exists(local_path):
+                            local_path = _file_utils.increment_filepath(local_path)
+
+                        # update local path in dict
+                        components_to_download[path] = local_path
 
                     # create parent dirs
-                    pathlib2.Path(item_download_to_path).parent.mkdir(parents=True, exist_ok=True)
+                    pathlib2.Path(local_path).parent.mkdir(parents=True, exist_ok=True)
 
                     # move written contents to `filepath`
-                    os.rename(tempf.name, item_download_to_path)
+                    os.rename(tempf.name, local_path)
                 except Exception as e:
                     # delete partially-downloaded file
                     if tempf is not None:
                         os.remove(tempf.name)
                     raise e
                 else:
-                    print("download complete; file written to {}".format(item_download_to_path))
+                    print("download complete; file written to {}".format(components_to_download[path]))
             finally:
                 response.close()
 
