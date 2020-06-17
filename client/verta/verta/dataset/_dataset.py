@@ -155,15 +155,15 @@ class _Dataset(blob.Blob):
             )
 
         components_to_download = self._get_components_to_download(component_path, download_to_path)
-        for component_path, download_to_path in components_to_download.items():
-            url = self._commit._get_url_for_artifact(self._blob_path, component_path, "GET").url
+        for item_component_path, item_download_to_path in components_to_download.items():
+            url = self._commit._get_url_for_artifact(self._blob_path, item_component_path, "GET").url
 
             # stream download to avoid overwhelming memory
             response = _utils.make_request("GET", url, self._commit._conn, stream=True)
             try:
                 _utils.raise_for_http_error(response)
 
-                print("downloading {} from ModelDB".format(component_path))
+                print("downloading {} from ModelDB".format(item_component_path))
                 tempf = None  # declare first in case NamedTemporaryFile init fails
                 try:
                     # read response stream into temp file
@@ -171,27 +171,26 @@ class _Dataset(blob.Blob):
                         for chunk in response.iter_content(chunk_size=chunk_size):
                             tempf.write(chunk)
 
-                    # prepare destination path
-                    if download_to_path is None:
+                    if download_to_path is None:  # destination paths were automatically generated
                         # avoid collisions with existing files
-                        while os.path.exists(download_to_path):
-                            download_to_path = _file_utils.increment_filepath(download_to_path)
+                        while os.path.exists(item_download_to_path):
+                            item_download_to_path = _file_utils.increment_filepath(item_download_to_path)
 
                     # create parent dirs
-                    pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+                    pathlib2.Path(item_download_to_path).parent.mkdir(parents=True, exist_ok=True)
 
                     # move written contents to `filepath`
-                    os.rename(tempf.name, download_to_path)
+                    os.rename(tempf.name, item_download_to_path)
                 except Exception as e:
                     # delete partially-downloaded file
                     if tempf is not None:
                         os.remove(tempf.name)
                     raise e
                 else:
-                    print("download complete; file written to {}".format(download_to_path))
+                    print("download complete; file written to {}".format(item_download_to_path))
             finally:
                 response.close()
 
         # TODO: return dir when user passed dir containing one file
         # TODO: in test, assert equal to `download_to_path` if provided
-        return os.path.abspath(os.path.commonprefix(components_to_download.values()))
+        return os.path.abspath(os.path.commonprefix(list(components_to_download.values())))
