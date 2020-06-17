@@ -1169,6 +1169,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   .build());
       List<String> uniqueTags = new ArrayList<>(tags);
       uniqueTags.removeAll(tagsOld);
+      Transaction transaction = session.beginTransaction();
       metadataDAO.addLabels(
           session,
           IdentificationType.newBuilder()
@@ -1176,6 +1177,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               .setIntId(repositoryIdentification.getRepoId())
               .build(),
           uniqueTags);
+      transaction.commit();
 
       return AddDatasetTags.Response.newBuilder()
           .setDataset(convertToDataset(session, metadataDAO, repositoryEntity))
