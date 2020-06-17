@@ -277,7 +277,8 @@ public class FindDatasetEntitiesTest {
         versioningServiceBlockingStub.getBranch(getBranchRequest);
     // Create two datasetVersion of above dataset
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+        datasetVersionTest.getDatasetVersionRequest(
+            dataset1.getId(), getBranchResponse.getCommit().getCommitSha());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -291,7 +292,6 @@ public class FindDatasetEntitiesTest {
     createDatasetVersionRequest =
         createDatasetVersionRequest
             .toBuilder()
-            .setParentId(getBranchResponse.getCommit().getCommitSha())
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -303,7 +303,8 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("DatasetVersion created successfully");
 
     // datasetVersion2 of above dataset
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+    createDatasetVersionRequest =
+        datasetVersionTest.getDatasetVersionRequest(dataset1.getId(), datasetVersion1.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -317,7 +318,6 @@ public class FindDatasetEntitiesTest {
     createDatasetVersionRequest =
         createDatasetVersionRequest
             .toBuilder()
-            .setParentId(datasetVersion1.getId())
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -330,7 +330,8 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("DatasetVersion created successfully");
 
     // datasetVersion3 of above dataset
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+    createDatasetVersionRequest =
+        datasetVersionTest.getDatasetVersionRequest(dataset1.getId(), datasetVersion2.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -344,7 +345,6 @@ public class FindDatasetEntitiesTest {
     createDatasetVersionRequest =
         createDatasetVersionRequest
             .toBuilder()
-            .setParentId(datasetVersion2.getId())
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -357,7 +357,8 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("DatasetVersion created successfully");
 
     // datasetVersion4 of above dataset
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+    createDatasetVersionRequest =
+        datasetVersionTest.getDatasetVersionRequest(dataset1.getId(), datasetVersion3.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -371,7 +372,6 @@ public class FindDatasetEntitiesTest {
     createDatasetVersionRequest =
         createDatasetVersionRequest
             .toBuilder()
-            .setParentId(datasetVersion3.getId())
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_5")
@@ -611,8 +611,6 @@ public class FindDatasetEntitiesTest {
   @Test
   public void findDatasetsByMetricsAndTagsTest() {
     LOGGER.info("FindDatasets by metrics and tags test start................................");
-
-    DatasetTest datasetTest = new DatasetTest();
 
     List<KeyValueQuery> predicates = new ArrayList<>();
     Value stringValue = Value.newBuilder().setStringValue("Tag_7").build();
@@ -1590,6 +1588,7 @@ public class FindDatasetEntitiesTest {
 
   /** Find public visibility datasetVersions */
   @Test
+  @Ignore
   public void findPublicDatasetVersionsTest() {
     LOGGER.info("Find Public DatasetVersions test start................................");
 

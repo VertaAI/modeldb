@@ -20,8 +20,6 @@ import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.PathDatasetVersionInfo;
-import ai.verta.modeldb.QueryDatasetVersionInfo;
-import ai.verta.modeldb.RawDatasetVersionInfo;
 import ai.verta.modeldb.SetDatasetVersionVisibilty;
 import ai.verta.modeldb.UpdateDatasetVersionAttributes;
 import ai.verta.modeldb.UpdateDatasetVersionDescription;
@@ -39,7 +37,6 @@ import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
-import ai.verta.modeldb.versioning.DeleteCommitRequest;
 import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.Pagination;
@@ -54,6 +51,7 @@ import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -95,8 +93,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
    * parentDatasetVersionID, Description, Attributes, Tags and Visibility from the request. set
    * current user as an owner
    *
-   * <p>Based on the DatasetType initialize either {@link QueryDatasetVersionInfo}, {@link
-   * RawDatasetVersionInfo} or {@link PathDatasetVersionInfo}.
+   * <p>Based on the DatasetType initialize {@link PathDatasetVersionInfo}.
    */
   @Override
   public void createDatasetVersion(
@@ -251,15 +248,12 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()));
       }
 
-      DeleteCommitRequest deleteCommitRequest =
-          DeleteCommitRequest.newBuilder()
-              .setCommitSha(request.getId())
-              .setRepositoryId(
-                  RepositoryIdentification.newBuilder()
-                      .setRepoId(Long.parseLong(request.getDatasetId()))
-                      .build())
-              .build();
-      commitDAO.deleteCommit(deleteCommitRequest, repositoryDAO);
+      commitDAO.deleteCommits(
+          RepositoryIdentification.newBuilder()
+              .setRepoId(Long.parseLong(request.getDatasetId()))
+              .build(),
+          Collections.singletonList(request.getId()),
+          repositoryDAO);
 
       responseObserver.onNext(DeleteDatasetVersion.Response.newBuilder().setStatus(true).build());
       responseObserver.onCompleted();

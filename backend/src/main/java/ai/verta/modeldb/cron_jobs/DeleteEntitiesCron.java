@@ -656,7 +656,7 @@ public class DeleteEntitiesCron extends TimerTask {
         repositoryEntities.size());
   }
 
-  private void deleteLabels(Session session, Object entityHash, IDTypeEnum.IDType idType) {
+  public static void deleteLabels(Session session, Object entityHash, IDTypeEnum.IDType idType) {
     String deleteLabelsQueryString =
         new StringBuilder("DELETE LabelsMappingEntity lm where lm.id.")
             .append(ModelDBConstants.ENTITY_HASH)
@@ -671,7 +671,7 @@ public class DeleteEntitiesCron extends TimerTask {
     deleteLabelsQuery.executeUpdate();
   }
 
-  private void deleteAttribute(Session session, String entityHash) {
+  public static void deleteAttribute(Session session, String entityHash) {
     String deleteAllAttributes =
         new StringBuilder("delete from AttributeEntity at WHERE at.")
             .append(ModelDBConstants.ENTITY_HASH)

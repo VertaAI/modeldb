@@ -1,6 +1,7 @@
 package ai.verta.modeldb.metadata;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -99,6 +100,31 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
+  public boolean updateProperty(IdentificationType id, String key, String value)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      MetadataPropertyMappingEntity.LabelMappingId id0 =
+          MetadataPropertyMappingEntity.createId(id, key);
+      MetadataPropertyMappingEntity mappingEntity =
+          session.get(MetadataPropertyMappingEntity.class, id0);
+      if (mappingEntity != null) {
+        Transaction transaction = session.beginTransaction();
+        session.saveOrUpdate(new MetadataPropertyMappingEntity(id0, value));
+        transaction.commit();
+      } else {
+        throw new ModelDBException("Entity not found for given key: " + key, Code.NOT_FOUND);
+      }
+      return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addProperty(id, key, value);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
   public void addLabels(Session session, IdentificationType id, List<String> labels) {
     for (String label : labels) {
       LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
@@ -185,11 +211,13 @@ public class MetadataDAORdbImpl implements MetadataDAO {
             .append(ModelDBConstants.ID)
             .append(".")
             .append(ModelDBConstants.ENTITY_HASH)
-            .append(" = :entityHash AND lm.id.")
+            .append(" = :")
+            .append(ModelDBConstants.ENTITY_HASH)
+            .append(" AND lm.id.")
             .append(ModelDBConstants.ENTITY_TYPE)
-            .append(" = :entityType");
-        Query<LabelsMappingEntity> query =
-            session.createQuery(stringQueryBuilder.toString(), LabelsMappingEntity.class);
+            .append(" = :")
+            .append(ModelDBConstants.ENTITY_TYPE);
+        Query<LabelsMappingEntity> query = session.createQuery(stringQueryBuilder.toString());
         query.setParameter(ModelDBConstants.ENTITY_HASH, getEntityHash(id));
         query.setParameter(ModelDBConstants.ENTITY_TYPE, id.getIdTypeValue());
         query.executeUpdate();

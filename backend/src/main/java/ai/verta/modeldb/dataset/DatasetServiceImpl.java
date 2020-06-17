@@ -68,6 +68,7 @@ import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
@@ -267,23 +268,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      long id;
-      try {
-        id = Long.parseLong(request.getId());
-      } catch (NumberFormatException e) {
-        LOGGER.info("Wrong id format: {}", e.getMessage());
-        throw new ModelDBException(
-            "Wrong id format, expecting integer: " + request.getId(), Code.INVALID_ARGUMENT);
-      }
-      DeleteRepositoryRequest.Response response =
-          repositoryDAO.deleteRepository(
-              DeleteRepositoryRequest.newBuilder()
-                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-                  .build(),
-              commitDAO,
-              experimentRunDAO);
-      responseObserver.onNext(
-          DeleteDataset.Response.newBuilder().setStatus(response.getStatus()).build());
+      deleteRepositoriesByDatasetIds(Collections.singletonList(request.getId()));
+      responseObserver.onNext(DeleteDataset.Response.newBuilder().setStatus(true).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -804,12 +790,24 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean deleteStatus = datasetDAO.deleteDatasets(request.getIdsList());
-      responseObserver.onNext(DeleteDatasets.Response.newBuilder().setStatus(deleteStatus).build());
+      deleteRepositoriesByDatasetIds(request.getIdsList());
+      responseObserver.onNext(DeleteDatasets.Response.newBuilder().setStatus(true).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, DeleteDatasets.Response.getDefaultInstance());
+    }
+  }
+
+  private void deleteRepositoriesByDatasetIds(List<String> datasetIds) throws ModelDBException {
+    for (String datasetId : datasetIds) {
+      repositoryDAO.deleteRepository(
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(datasetId)))
+              .build(),
+          commitDAO,
+          experimentRunDAO);
     }
   }
 

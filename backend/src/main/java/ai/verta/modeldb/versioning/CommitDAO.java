@@ -50,9 +50,6 @@ public interface CommitDAO {
       RepositoryDAO repositoryDAO)
       throws ModelDBException;
 
-  DeleteCommitRequest.Response deleteCommit(
-      DeleteCommitRequest request, RepositoryDAO repositoryDAO) throws ModelDBException;
-
   void addDeleteDatasetVersionTags(
       MetadataDAO metadataDAO,
       boolean addTags,

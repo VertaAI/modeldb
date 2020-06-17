@@ -23,6 +23,9 @@ import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.GetBranchRequest;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.Action;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
@@ -3654,6 +3657,8 @@ public class HydratedServiceTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     Map<String, Dataset> datasetMap = new HashMap<>();
 
@@ -3778,8 +3783,19 @@ public class HydratedServiceTest {
         createDatasetRequest.getName(),
         dataset4.getName());
 
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset1.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+        datasetVersionTest.getDatasetVersionRequest(dataset1.getId(), dataset1.getId());
     createDatasetVersionRequest = createDatasetVersionRequest.toBuilder().addTags("Tag_8").build();
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
@@ -4391,6 +4407,8 @@ public class HydratedServiceTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
     long version = 1L;
@@ -4405,10 +4423,21 @@ public class HydratedServiceTest {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     // Create two datasetVersion of above datasetVersion
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset.getId());
+        datasetVersionTest.getDatasetVersionRequest(
+            dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -4438,7 +4467,8 @@ public class HydratedServiceTest {
         datasetVersion1.getVersion());
 
     // datasetVersion2 of above datasetVersion
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId());
+    createDatasetVersionRequest =
+        datasetVersionTest.getDatasetVersionRequest(dataset.getId(), datasetVersion1.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -4471,7 +4501,8 @@ public class HydratedServiceTest {
         datasetVersion2.getVersion());
 
     // datasetVersion3 of above datasetVersion
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId());
+    createDatasetVersionRequest =
+        datasetVersionTest.getDatasetVersionRequest(dataset.getId(), datasetVersion2.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -4502,7 +4533,8 @@ public class HydratedServiceTest {
         datasetVersion3.getVersion());
 
     // datasetVersion4 of above datasetVersion
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId());
+    createDatasetVersionRequest =
+        datasetVersionTest.getDatasetVersionRequest(dataset.getId(), datasetVersion3.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -5364,6 +5396,8 @@ public class HydratedServiceTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     List<Project> projectList = new ArrayList<>();
     List<Dataset> datasetList = new ArrayList<>();
@@ -5426,11 +5460,23 @@ public class HydratedServiceTest {
         createDatasetRequest.getName(),
         dataset2.getName());
 
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset1.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
     List<String> datasetVersionIds = new ArrayList<>();
     int version = 1;
     // Create two datasetVersion of above datasetVersion
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+        datasetVersionTest.getDatasetVersionRequest(
+            dataset1.getId(), getBranchResponse.getCommit().getCommitSha());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -5460,7 +5506,8 @@ public class HydratedServiceTest {
         datasetVersion1.getVersion());
 
     // datasetVersion2 of above datasetVersion
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset2.getId());
+    createDatasetVersionRequest =
+        datasetVersionTest.getDatasetVersionRequest(dataset2.getId(), datasetVersion1.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")

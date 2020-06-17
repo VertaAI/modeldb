@@ -43,6 +43,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -150,7 +151,23 @@ public class DatasetVersionTest {
     }
   }
 
-  public CreateDatasetVersion getDatasetVersionRequest(String datasetId) {
+  public CreateDatasetVersion getDatasetVersionRequest(String datasetId, String parentId) {
+
+    if (parentId == null || parentId.isEmpty()) {
+      VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+          VersioningServiceGrpc.newBlockingStub(channel);
+      GetBranchRequest getBranchRequest =
+          GetBranchRequest.newBuilder()
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder()
+                      .setRepoId(Long.parseLong(datasetId))
+                      .build())
+              .setBranch(ModelDBConstants.MASTER_BRANCH)
+              .build();
+      GetBranchRequest.Response getBranchResponse =
+          versioningServiceBlockingStub.getBranch(getBranchRequest);
+      parentId = getBranchResponse.getCommit().getCommitSha();
+    }
 
     List<KeyValue> attributeList = new ArrayList<>();
     Value stringValue =
@@ -187,6 +204,7 @@ public class DatasetVersionTest {
 
     return CreateDatasetVersion.newBuilder()
         .setDatasetId(datasetId)
+        .setParentId(parentId)
         .setDescription("this is the description of datsetVersion")
         .setDatasetVersionVisibility(DatasetVisibility.PRIVATE)
         .addTags("DatasetVersion_tag_x")
@@ -240,12 +258,8 @@ public class DatasetVersionTest {
     GetBranchRequest.Response getBranchResponse =
         versioningServiceBlockingStub.getBranch(getBranchRequest);
 
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
-    createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
-            .setParentId(getBranchResponse.getCommit().getCommitSha())
-            .build();
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
@@ -319,12 +333,8 @@ public class DatasetVersionTest {
         getAllDatasetVersionsByDatasetIdResponse.getTotalRecords());
 
     Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
-    createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
-            .setParentId(getBranchResponse.getCommit().getCommitSha())
-            .build();
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
@@ -335,9 +345,8 @@ public class DatasetVersionTest {
         dataset.getId(),
         datasetVersion1.getDatasetId());
 
-    createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     createDatasetVersionRequest =
-        createDatasetVersionRequest.toBuilder().setParentId(datasetVersion1.getId()).build();
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
@@ -348,9 +357,8 @@ public class DatasetVersionTest {
         dataset.getId(),
         datasetVersion2.getDatasetId());
 
-    createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     createDatasetVersionRequest =
-        createDatasetVersionRequest.toBuilder().setParentId(datasetVersion2.getId()).build();
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion3 = createDatasetVersionResponse.getDatasetVersion();
@@ -493,12 +501,8 @@ public class DatasetVersionTest {
         versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
-    createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
-            .setParentId(getBranchResponse.getCommit().getCommitSha())
-            .build();
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
@@ -509,9 +513,8 @@ public class DatasetVersionTest {
         dataset.getId(),
         datasetVersion1.getDatasetId());
 
-    createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     createDatasetVersionRequest =
-        createDatasetVersionRequest.toBuilder().setParentId(datasetVersion1.getId()).build();
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
@@ -522,9 +525,8 @@ public class DatasetVersionTest {
         dataset.getId(),
         datasetVersion2.getDatasetId());
 
-    createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     createDatasetVersionRequest =
-        createDatasetVersionRequest.toBuilder().setParentId(datasetVersion2.getId()).build();
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion3 = createDatasetVersionResponse.getDatasetVersion();
@@ -593,6 +595,7 @@ public class DatasetVersionTest {
   }
 
   @Test
+  @Ignore
   public void updateDatasetVersionDescription() {
     LOGGER.info("Update DatasetVersion Description test start................................");
 
@@ -614,17 +617,26 @@ public class DatasetVersionTest {
         createDatasetRequest.getName(),
         dataset.getName());
 
-    long version = 1L;
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
     // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        version,
-        datasetVersion.getVersion());
 
     UpdateDatasetVersionDescription updateDescriptionRequest =
         UpdateDatasetVersionDescription.newBuilder()
@@ -683,24 +695,8 @@ public class DatasetVersionTest {
   public void updateDatasetVersionDescriptionNegativeTest() {
     LOGGER.info(
         "Update DatasetVersion Description Negative test start................................");
-
-    DatasetTest datasetTest = new DatasetTest();
-
     DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
         DatasetVersionServiceGrpc.newBlockingStub(channel);
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-
-    CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    Dataset dataset = createDatasetResponse.getDataset();
-    LOGGER.info("CreateDataset Response : \n" + dataset);
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
 
     UpdateDatasetVersionDescription updateDescriptionRequest =
         UpdateDatasetVersionDescription.newBuilder()
@@ -718,31 +714,6 @@ public class DatasetVersionTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
-    CreateDatasetVersion.Response createDatasetVersionResponse =
-        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
-    DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
-    LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        1L,
-        datasetVersion.getVersion());
-
-    DeleteDatasetVersion deleteDatasetVersion =
-        DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
-    DeleteDatasetVersion.Response deleteDatasetVersionResponse =
-        datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
-    LOGGER.info("DatasetVersion deleted successfully");
-    LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
-
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
     LOGGER.info("Update DatasetVersion Description test stop................................");
   }
 
@@ -756,6 +727,8 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -767,9 +740,20 @@ public class DatasetVersionTest {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
@@ -863,6 +847,8 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -874,9 +860,20 @@ public class DatasetVersionTest {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
@@ -958,24 +955,8 @@ public class DatasetVersionTest {
   @Test
   public void deleteDatasetVersionTagsNegativeTest() {
     LOGGER.info("Delete DatasetVersion Tags Negative test start................................");
-
-    DatasetTest datasetTest = new DatasetTest();
-
     DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
         DatasetVersionServiceGrpc.newBlockingStub(channel);
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-
-    CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    Dataset dataset = createDatasetResponse.getDataset();
-    LOGGER.info("CreateDataset Response : \n" + dataset);
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
 
     DeleteDatasetVersionTags deleteDatasetVersionTagsRequest =
         DeleteDatasetVersionTags.newBuilder().build();
@@ -989,46 +970,11 @@ public class DatasetVersionTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
-    CreateDatasetVersion.Response createDatasetVersionResponse =
-        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
-    DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
-    LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        1L,
-        datasetVersion.getVersion());
-
-    deleteDatasetVersionTagsRequest =
-        DeleteDatasetVersionTags.newBuilder()
-            .setId(datasetVersion.getId())
-            .setDeleteAll(true)
-            .build();
-
-    DeleteDatasetVersionTags.Response response =
-        datasetVersionServiceStub.deleteDatasetVersionTags(deleteDatasetVersionTagsRequest);
-    LOGGER.info("Tags deleted in server : " + response.getDatasetVersion().getTagsList());
-    assertEquals(0, response.getDatasetVersion().getTagsList().size());
-
-    DeleteDatasetVersion deleteDatasetVersion =
-        DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
-    DeleteDatasetVersion.Response deleteDatasetVersionResponse =
-        datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
-    LOGGER.info("DatasetVersion deleted successfully");
-    LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
-
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
     LOGGER.info("Delete DatasetVersion tags Negative test stop................................");
   }
 
   @Test
+  @Ignore
   public void addDatasetVersionAttributes() {
     LOGGER.info("Add DatasetVersion Attributes test start................................");
 
@@ -1038,6 +984,8 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -1050,16 +998,24 @@ public class DatasetVersionTest {
         createDatasetRequest.getName(),
         dataset.getName());
 
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
     // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        1L,
-        datasetVersion.getVersion());
 
     List<KeyValue> attributeList = new ArrayList<>();
     Value intValue = Value.newBuilder().setNumberValue(1.1).build();
@@ -1116,24 +1072,8 @@ public class DatasetVersionTest {
   public void addDatasetVersionAttributesNegativeTest() {
     LOGGER.info(
         "Add DatasetVersion Attributes Negative test start................................");
-
-    DatasetTest datasetTest = new DatasetTest();
-
     DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
         DatasetVersionServiceGrpc.newBlockingStub(channel);
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-
-    CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    Dataset dataset = createDatasetResponse.getDataset();
-    LOGGER.info("CreateDataset Response : \n" + dataset);
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
 
     List<KeyValue> attributeList = new ArrayList<>();
     Value intValue = Value.newBuilder().setNumberValue(1.1).build();
@@ -1165,36 +1105,11 @@ public class DatasetVersionTest {
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
-
-    // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
-    CreateDatasetVersion.Response createDatasetVersionResponse =
-        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
-    DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
-    LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        1L,
-        datasetVersion.getVersion());
-
-    DeleteDatasetVersion deleteDatasetVersion =
-        DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
-    DeleteDatasetVersion.Response deleteDatasetVersionResponse =
-        datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
-    LOGGER.info("DatasetVersion deleted successfully");
-    LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
-
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
     LOGGER.info("Add DatasetVersion Attributes Negative test stop................................");
   }
 
   @Test
+  @Ignore
   public void updateDatasetVersionAttributes() {
     LOGGER.info("Update DatasetVersion Attributes test start................................");
 
@@ -1204,6 +1119,8 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -1216,16 +1133,24 @@ public class DatasetVersionTest {
         createDatasetRequest.getName(),
         dataset.getName());
 
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
     // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        1L,
-        datasetVersion.getVersion());
 
     List<KeyValue> attributes = datasetVersion.getAttributesList();
     Value stringValue =
@@ -1326,6 +1251,7 @@ public class DatasetVersionTest {
   }
 
   @Test
+  @Ignore
   public void updateDatasetVersionAttributesNegativeTest() {
     LOGGER.info(
         "Update DatasetVersion Attributes Negative test start................................");
@@ -1336,6 +1262,8 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -1348,16 +1276,24 @@ public class DatasetVersionTest {
         createDatasetRequest.getName(),
         dataset.getName());
 
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
     // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        1L,
-        datasetVersion.getVersion());
 
     List<KeyValue> attributes = datasetVersion.getAttributesList();
     Value stringValue = Value.newBuilder().setStringValue("attribute_updated_test_value").build();
@@ -1430,6 +1366,7 @@ public class DatasetVersionTest {
   }
 
   @Test
+  @Ignore
   public void getDatasetVersionAttributes() {
     LOGGER.info("Get DatasetVersion Attributes test start................................");
 
@@ -1439,6 +1376,8 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -1450,17 +1389,24 @@ public class DatasetVersionTest {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        1L,
-        datasetVersion.getVersion());
 
     List<KeyValue> attributes = datasetVersion.getAttributesList();
     LOGGER.info("Attributes size : " + attributes.size());
@@ -1549,6 +1495,7 @@ public class DatasetVersionTest {
   }
 
   @Test
+  @Ignore
   public void deleteDatasetVersionAttributesTest() {
     LOGGER.info("Delete DatasetVersion Attributes test start................................");
 
@@ -1558,6 +1505,8 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -1570,15 +1519,23 @@ public class DatasetVersionTest {
         createDatasetRequest.getName(),
         dataset.getName());
 
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
     // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        1L,
-        datasetVersion.getVersion());
     LOGGER.info("DatasetVersion created successfully");
 
     List<KeyValue> attributes = datasetVersion.getAttributesList();
@@ -1655,24 +1612,8 @@ public class DatasetVersionTest {
     LOGGER.info(
         "Delete DatasetVersion Attributes Negative test start................................");
 
-    DatasetTest datasetTest = new DatasetTest();
-
     DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
         DatasetVersionServiceGrpc.newBlockingStub(channel);
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-
-    CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    Dataset dataset = createDatasetResponse.getDataset();
-    LOGGER.info("CreateDataset Response : \n" + dataset);
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
-
     DeleteDatasetVersionAttributes deleteDatasetVersionAttributesRequest =
         DeleteDatasetVersionAttributes.newBuilder().build();
 
@@ -1686,49 +1627,12 @@ public class DatasetVersionTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    // Create datasetVersion
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
-    CreateDatasetVersion.Response createDatasetVersionResponse =
-        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
-    DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
-    LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        1L,
-        datasetVersion.getVersion());
-
-    deleteDatasetVersionAttributesRequest =
-        DeleteDatasetVersionAttributes.newBuilder()
-            .setId(datasetVersion.getId())
-            .setDeleteAll(true)
-            .build();
-    DeleteDatasetVersionAttributes.Response response =
-        datasetVersionServiceStub.deleteDatasetVersionAttributes(
-            deleteDatasetVersionAttributesRequest);
-    LOGGER.info(
-        "All the Attributes deleted from server. Attributes count : "
-            + response.getDatasetVersion().getAttributesCount());
-    assertEquals(0, response.getDatasetVersion().getAttributesList().size());
-
-    DeleteDatasetVersion deleteDatasetVersion =
-        DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
-    DeleteDatasetVersion.Response deleteDatasetVersionResponse =
-        datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
-    LOGGER.info("DatasetVersion deleted successfully");
-    LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
-
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
     LOGGER.info(
         "Delete DatasetVersion Attributes Negative test stop................................");
   }
 
   @Test
+  @Ignore
   public void setDatasetVersionVisibility() {
     LOGGER.info("Set DatasetVersion visibility test start................................");
 
@@ -1738,6 +1642,8 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -1750,9 +1656,21 @@ public class DatasetVersionTest {
         createDatasetRequest.getName(),
         dataset.getName());
 
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
     // Create public datasetVersion
     // Public datasetVersion 1
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     createDatasetVersionRequest =
         createDatasetVersionRequest
             .toBuilder()
@@ -1761,10 +1679,6 @@ public class DatasetVersionTest {
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        1L,
-        datasetVersion.getVersion());
     assertEquals(
         "DatasetVersion visibility not match with expected datasetVersion visibility",
         DatasetVisibility.PUBLIC,
@@ -1779,10 +1693,6 @@ public class DatasetVersionTest {
     SetDatasetVersionVisibilty.Response response =
         datasetVersionServiceStub.setDatasetVersionVisibility(setDatasetVersionVisibilty);
     DatasetVersion visibilityDatasetVersion = response.getDatasetVersion();
-    assertEquals(
-        "DatasetVersion version not match with expected datasetVersion version",
-        datasetVersion.getVersion(),
-        visibilityDatasetVersion.getVersion());
     assertEquals(
         "DatasetVersion visibility not match with updated datasetVersion visibility",
         DatasetVisibility.PRIVATE,
@@ -1819,6 +1729,8 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -1831,8 +1743,19 @@ public class DatasetVersionTest {
         createDatasetRequest.getName(),
         dataset.getName());
 
-    long version = 1L;
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
@@ -1841,18 +1764,9 @@ public class DatasetVersionTest {
         "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
         datasetVersion1.getDatasetId());
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        version,
-        datasetVersion1.getVersion());
 
-    createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
-            .setRawDatasetVersionInfo(
-                RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .build();
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
@@ -1861,17 +1775,16 @@ public class DatasetVersionTest {
         "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
         dataset.getId(),
         datasetVersion2.getDatasetId());
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        ++version,
-        datasetVersion2.getVersion());
 
     List<String> datasetVersionIds = new ArrayList<>();
-    datasetVersionIds.add(datasetVersion1.getId());
     datasetVersionIds.add(datasetVersion2.getId());
+    datasetVersionIds.add(datasetVersion1.getId());
 
     DeleteDatasetVersions deleteDatasetVersionsRequest =
-        DeleteDatasetVersions.newBuilder().addAllIds(datasetVersionIds).build();
+        DeleteDatasetVersions.newBuilder()
+            .setDatasetId(dataset.getId())
+            .addAllIds(datasetVersionIds)
+            .build();
     DeleteDatasetVersions.Response deleteDatasetVersionsResponse =
         datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersionsRequest);
     LOGGER.info("DeleteDatasetVersion deleted successfully");
@@ -1898,6 +1811,8 @@ public class DatasetVersionTest {
         DatasetServiceGrpc.newBlockingStub(channel);
     DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStubClient2 =
         DatasetVersionServiceGrpc.newBlockingStub(client2Channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -1905,6 +1820,17 @@ public class DatasetVersionTest {
         datasetServiceStub.createDataset(createDatasetRequest);
     Dataset dataset = createDatasetResponse.getDataset();
     LOGGER.info("CreateDataset Response : \n" + dataset);
+
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(dataset.getId()))
+                    .build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       AddCollaboratorRequest addCollaboratorRequest =
@@ -1923,19 +1849,15 @@ public class DatasetVersionTest {
       assertTrue(addCollaboratorResponse.getStatus());
     }
 
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion createDatasetVersionRequest =
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
     LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion1);
 
-    createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
-            .setRawDatasetVersionInfo(
-                RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .build();
+        getDatasetVersionRequest(dataset.getId(), getBranchResponse.getCommit().getCommitSha());
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
@@ -1946,7 +1868,10 @@ public class DatasetVersionTest {
     datasetVersionIds.add(datasetVersion2.getId());
 
     DeleteDatasetVersions deleteDatasetVersionsRequest =
-        DeleteDatasetVersions.newBuilder().addAllIds(datasetVersionIds).build();
+        DeleteDatasetVersions.newBuilder()
+            .setDatasetId(dataset.getId())
+            .addAllIds(datasetVersionIds)
+            .build();
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =

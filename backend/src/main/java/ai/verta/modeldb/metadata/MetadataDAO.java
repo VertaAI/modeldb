@@ -30,4 +30,6 @@ public interface MetadataDAO {
       throws ModelDBException;
 
   boolean deleteProperty(IdentificationType id, String key);
+
+  boolean updateProperty(IdentificationType id, String key, String value) throws ModelDBException;
 }

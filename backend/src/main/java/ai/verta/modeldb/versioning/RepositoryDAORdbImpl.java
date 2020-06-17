@@ -415,26 +415,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       saveBranch(
           session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repositoryEntity);
 
-      repositoryEntity.setAttributeMapping(
-          repository.getAttributesList().stream()
-              .map(
-                  attribute -> {
-                    try {
-                      return RdbmsUtils.generateAttributeEntity(
-                          repositoryEntity, ModelDBConstants.ATTRIBUTES, attribute);
-                    } catch (InvalidProtocolBufferException e) {
-                      LOGGER.error("Unexpected error occured {}", e.getMessage());
-                      Status status =
-                          Status.newBuilder()
-                              .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
-                              .setMessage(e.getMessage())
-                              .addDetails(Any.pack(SetRepository.Response.getDefaultInstance()))
-                              .build();
-                      throw StatusProto.toStatusRuntimeException(status);
-                    }
-                  })
-              .collect(Collectors.toList()));
-
       if (tagList != null && !tagList.isEmpty()) {
         metadataDAO.addLabels(
             session,
@@ -1285,7 +1265,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       if (!accessibleDatasetIds.isEmpty()) {
         Expression<String> exp = repositoryRoot.get(ModelDBConstants.ID);
-        Predicate predicate2 = exp.in(accessibleDatasetIds);
+        Predicate predicate2 =
+            exp.in(accessibleDatasetIds.stream().map(Long::parseLong).collect(Collectors.toList()));
         finalPredicatesList.add(predicate2);
       }
 
