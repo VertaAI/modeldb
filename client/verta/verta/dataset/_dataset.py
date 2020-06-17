@@ -110,6 +110,8 @@ class _Dataset(blob.Blob):
                 if download_to_path is None:
                     # default to filename from `component_path` in cwd
                     local_path = os.path.basename(component_path)
+                else:
+                    local_path = download_to_path
 
                 return {component_blob.path: local_path}
             elif component_blob.path.startswith(component_path_as_dir):
@@ -120,6 +122,17 @@ class _Dataset(blob.Blob):
                     #     component_path      = "coworker/downloads"
                     #     local_path          =          "downloads/data/info.csv"
                     local_path = os.path.relpath(component_blob.path, pathlib2.Path(component_path).parent)
+                else:
+                    # rebase from `component_path` onto `download_to_path`
+                    #     For example:
+                    #     component_blob.path = "coworker/downloads/data/info.csv"
+                    #     component_path      = "coworker/downloads"
+                    #     download_to_path    =            "my-data"
+                    #     local_path          =            "my-data/data/info.csv"
+                    local_path = os.path.join(
+                        download_to_path,
+                        os.path.relpath(component_blob.path, component_path),
+                    )
 
                 components_to_download[component_blob.path] = local_path
 
