@@ -4,7 +4,6 @@ import static ai.verta.modeldb.RepositoryTest.NAME;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
-import ai.verta.modeldb.DatasetTypeEnum.DatasetType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -1883,14 +1882,11 @@ public class CommitTest {
   }
 
   /**
-   * create repo creates the inti commit
-   * commit A is child of init
-   * commit B is child of A
-   * commit C is child of B
-   * commit D is child of C
-   * 
-   * we revert commit B and base it on B
-   * we revert commit C and base it on A
+   * create repo creates the inti commit commit A is child of init commit B is child of A commit C
+   * is child of B commit D is child of C
+   *
+   * <p>we revert commit B and base it on B we revert commit C and base it on A
+   *
    * @throws ModelDBException
    * @throws NoSuchAlgorithmException
    */
@@ -2428,23 +2424,33 @@ public class CommitTest {
     MergeRepositoryCommitsRequest.Response mergeReponse1 =
         versioningServiceBlockingStub.mergeRepositoryCommits(repositoryMergeRequest);
 
-    Assert.assertTrue("there shouldn't be a commit",mergeReponse1.getCommit().getCommitSha() == "");
+    Assert.assertTrue(
+        "there shouldn't be a commit", mergeReponse1.getCommit().getCommitSha() == "");
     Assert.assertTrue("conflicts should be non empty", !mergeReponse1.getConflictsList().isEmpty());
     Assert.assertTrue("there should be 2 conflicts", mergeReponse1.getConflictsList().size() == 2);
     BlobDiff diff = mergeReponse1.getConflictsList().get(0);
-    Assert.assertTrue("there should be a dataset diff", diff.getContentCase() == ContentCase.DATASET);
+    Assert.assertTrue(
+        "there should be a dataset diff", diff.getContentCase() == ContentCase.DATASET);
     Assert.assertTrue("diff location should be blob", diff.getLocation(0).equalsIgnoreCase("blob"));
-    Assert.assertTrue("diff status should be conflicted",diff.getStatus() == DiffStatus.CONFLICTED);
-    if(diff.getDataset().getContentCase().getNumber() != 2) {
-    	 diff = mergeReponse1.getConflictsList().get(1);
+    Assert.assertTrue(
+        "diff status should be conflicted", diff.getStatus() == DiffStatus.CONFLICTED);
+    if (diff.getDataset().getContentCase().getNumber() != 2) {
+      diff = mergeReponse1.getConflictsList().get(1);
     }
     PathDatasetDiff pathDiff = diff.getDataset().getPath();
-    Assert.assertTrue("path diff should have one component",pathDiff.getComponentsCount()==1);
+    Assert.assertTrue("path diff should have one component", pathDiff.getComponentsCount() == 1);
     PathDatasetComponentDiff componentDiff = pathDiff.getComponents(0);
-    Assert.assertTrue("component diff does not have a A", componentDiff.getA().equals(PathDatasetComponentBlob.getDefaultInstance()));
-    Assert.assertTrue("component diff does have a B", !componentDiff.getB().equals(PathDatasetComponentBlob.getDefaultInstance()));
-    Assert.assertTrue("component diff does have a B", componentDiff.getB().getPath().equalsIgnoreCase(path2));
-    Assert.assertTrue("component diff does not have a C", componentDiff.getC().equals(PathDatasetComponentBlob.getDefaultInstance()));
+    Assert.assertTrue(
+        "component diff does not have a A",
+        componentDiff.getA().equals(PathDatasetComponentBlob.getDefaultInstance()));
+    Assert.assertTrue(
+        "component diff does have a B",
+        !componentDiff.getB().equals(PathDatasetComponentBlob.getDefaultInstance()));
+    Assert.assertTrue(
+        "component diff does have a B", componentDiff.getB().getPath().equalsIgnoreCase(path2));
+    Assert.assertTrue(
+        "component diff does not have a C",
+        componentDiff.getC().equals(PathDatasetComponentBlob.getDefaultInstance()));
     for (Commit commit : new Commit[] {commitResponse1.getCommit(), commitResponse2.getCommit()}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()

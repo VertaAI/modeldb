@@ -1122,7 +1122,7 @@ public class BlobDAORdbImpl implements BlobDAO {
               getStringFromLocationList(locationList), new LinkedList<String>());
         }
         conflictLocationMap.get(getStringFromLocationList(locationList)).addAll(conflictKeys);
-        continue;
+        // continue;
       }
       locationBlobsMapNew.put(
           getStringFromLocationList(locationList),

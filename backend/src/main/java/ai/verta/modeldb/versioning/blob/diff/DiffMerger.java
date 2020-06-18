@@ -135,15 +135,18 @@ public class DiffMerger {
   }
 
   private static Boolean diffStatusDeleted = false;
+
   public static AutogenBlob mergeBlob(
       AutogenBlob a, AutogenBlobDiff d, HashSet<String> conflictKeys) {
-	  diffStatusDeleted = d.getStatus().isDeleted();
-    if (a!=null && d!=null && !diffStatusDeleted && !a.toProto()
-        .getContentCase()
-        .name()
-        .equalsIgnoreCase(d.toProto().getContentCase().name())) {
+    diffStatusDeleted = d != null && d.getStatus() != null && d.getStatus().isDeleted();
+    if (a != null
+        && d != null
+        && !diffStatusDeleted
+        && !a.toProto()
+            .getContentCase()
+            .name()
+            .equalsIgnoreCase(d.toProto().getContentCase().name())) {
       conflictKeys.add(a.toString());
-      return null;
     }
     return Utils.removeEmpty(
         new AutogenBlob()
@@ -183,9 +186,11 @@ public class DiffMerger {
 
   public static AutogenCodeBlob mergeCode(
       AutogenCodeBlob a, AutogenCodeDiff d, HashSet<String> conflictKeys) {
-    if (a!=null && d!=null && !diffStatusDeleted && a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
+    if (a != null
+        && d != null
+        && !diffStatusDeleted
+        && a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
       conflictKeys.add(a.toString());
-      return null;
     }
     return Utils.removeEmpty(
         new AutogenCodeBlob()
@@ -281,9 +286,11 @@ public class DiffMerger {
 
   public static AutogenDatasetBlob mergeDataset(
       AutogenDatasetBlob a, AutogenDatasetDiff d, HashSet<String> conflictKeys) {
-    if (a!=null && d!=null && !diffStatusDeleted &&  a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
+    if (a != null
+        && d != null
+        && !diffStatusDeleted
+        && a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
       conflictKeys.add(a.toString());
-      return null;
     }
     return Utils.removeEmpty(
         new AutogenDatasetBlob()
@@ -377,9 +384,11 @@ public class DiffMerger {
 
   public static AutogenEnvironmentBlob mergeEnvironment(
       AutogenEnvironmentBlob a, AutogenEnvironmentDiff d, HashSet<String> conflictKeys) {
-    if (a!=null && d!=null && !diffStatusDeleted && a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
+    if (a != null
+        && d != null
+        && !diffStatusDeleted
+        && a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
       conflictKeys.add(a.toString());
-      return null;
     }
     return Utils.removeEmpty(
         new AutogenEnvironmentBlob()
