@@ -6,8 +6,7 @@ import ai.verta.repository.Commit
 import scala.concurrent.ExecutionContext
 import scala.util.{ Try, Success, Failure }
 
-/**
- * Represent a commit associated with an experiment run.
+/** Represent a commit associated with an experiment run.
  *  User should not initialize this. Instances of this class are returned from ExperimentRun's getCommit
  *  @param commitSHA commit SHA of the commit
  *  @param repoId the id of the commit's repository
