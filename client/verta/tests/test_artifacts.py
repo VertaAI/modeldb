@@ -126,6 +126,18 @@ class TestArtifacts:
             # artifact parts ModelDB entry exists
             response = _utils.make_request("GET", get_parts_url, experiment_run._conn, params=get_parts_params)
             _utils.raise_for_http_error(response)  # no error
+            parts = _utils.body_to_json(response).get('artifact_parts', [])
+
+            assert len(parts) == 1  # small artifact, should only have one part
+            part = parts[0]
+
+            tempf.seek(0)
+            md5 = hashlib.md5(tempf.read()).hexdigest()
+            assert part['etag'].strip('"') == md5  # checksum matches committed part
+
+        artifact = experiment_run.get_artifact(key)
+        md5 = hashlib.md5(artifact.read()).hexdigest()
+        assert part['etag'].strip('"') == md5  # checksum also matches retrieved artifact
 
     def test_empty(self, experiment_run, strs):
         """uploading empty data, e.g. an empty file, raises an error"""
