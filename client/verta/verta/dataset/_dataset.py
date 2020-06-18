@@ -112,9 +112,22 @@ class _Dataset(blob.Blob):
                 " consider using `commit.get()` to obtain a download-capable dataset"
                 " if ModelDB-managed versioning was enabled"
             )
+        implicit_download_to_path = download_to_path is None
 
         # backend will return error if `component_path` not found/versioned
         url = self._commit._get_url_for_artifact(self._blob_path, component_path, "GET").url
+
+        if implicit_download_to_path:
+            # default to filename from `component_path` in cwd
+            download_to_path = os.path.basename(component_path)
+
+            # avoid collisions with existing files
+            while os.path.exists(download_to_path):
+                download_to_path = _file_utils.increment_filepath(download_to_path)
+
+        # create parent dirs
+        pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+        # TODO: clean up empty parent dirs if something later fails
 
         # stream download to avoid overwhelming memory
         response = _utils.make_request("GET", url, self._commit._conn, stream=True)
@@ -129,17 +142,10 @@ class _Dataset(blob.Blob):
                     for chunk in response.iter_content(chunk_size=chunk_size):
                         tempf.write(chunk)
 
-                # prepare destination path
-                if download_to_path is None:
-                    # default to filename from `component_path` in cwd
-                    download_to_path = os.path.basename(component_path)
-
-                    # avoid collisions with existing files
+                if implicit_download_to_path:
+                    # check for destination collision again in case taken during download
                     while os.path.exists(download_to_path):
                         download_to_path = _file_utils.increment_filepath(download_to_path)
-
-                # create parent dirs
-                pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
 
                 # move written contents to `filepath`
                 os.rename(tempf.name, download_to_path)
