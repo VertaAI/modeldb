@@ -134,12 +134,17 @@ public class DiffMerger {
     return a;
   }
 
+  private static Boolean diffStatusDeleted = false;
   public static AutogenBlob mergeBlob(
       AutogenBlob a, AutogenBlobDiff d, HashSet<String> conflictKeys) {
-	  if(!a.toProto().getContentCase().name().equalsIgnoreCase(d.toProto().getContentCase().name())) {
-		  conflictKeys.add(a.toString());
-		  return null;
-	  }
+	  diffStatusDeleted = d.getStatus().isDeleted();
+    if (a!=null && d!=null && !diffStatusDeleted && !a.toProto()
+        .getContentCase()
+        .name()
+        .equalsIgnoreCase(d.toProto().getContentCase().name())) {
+      conflictKeys.add(a.toString());
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenBlob()
             .setCode(
@@ -178,10 +183,10 @@ public class DiffMerger {
 
   public static AutogenCodeBlob mergeCode(
       AutogenCodeBlob a, AutogenCodeDiff d, HashSet<String> conflictKeys) {
-	  if(a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
-		  conflictKeys.add(a.toString());
-		  return null;
-	  }
+    if (a!=null && d!=null && !diffStatusDeleted && a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
+      conflictKeys.add(a.toString());
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenCodeBlob()
             .setGit(
@@ -276,10 +281,10 @@ public class DiffMerger {
 
   public static AutogenDatasetBlob mergeDataset(
       AutogenDatasetBlob a, AutogenDatasetDiff d, HashSet<String> conflictKeys) {
-	  if(a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
-		  conflictKeys.add(a.toString());
-		  return null;
-	  }
+    if (a!=null && d!=null && !diffStatusDeleted &&  a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
+      conflictKeys.add(a.toString());
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenDatasetBlob()
             .setPath(
@@ -300,7 +305,7 @@ public class DiffMerger {
                     conflictKeys)));
   }
 
-public static AutogenPathDatasetBlob mergePathDataset(
+  public static AutogenPathDatasetBlob mergePathDataset(
       AutogenPathDatasetBlob a, AutogenPathDatasetDiff d, HashSet<String> conflictKeys) {
     return Utils.removeEmpty(
         new AutogenPathDatasetBlob()
@@ -372,10 +377,10 @@ public static AutogenPathDatasetBlob mergePathDataset(
 
   public static AutogenEnvironmentBlob mergeEnvironment(
       AutogenEnvironmentBlob a, AutogenEnvironmentDiff d, HashSet<String> conflictKeys) {
-	  if(a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
-		  conflictKeys.add(a.toString());
-		  return null;
-	  }
+    if (a!=null && d!=null && !diffStatusDeleted && a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
+      conflictKeys.add(a.toString());
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenEnvironmentBlob()
             .setPython(
@@ -479,7 +484,7 @@ public static AutogenPathDatasetBlob mergePathDataset(
       AutogenVersionEnvironmentBlob a,
       AutogenVersionEnvironmentDiff d,
       HashSet<String> conflictKeys) {
-	  
+
     if (a == null && d == null) return null;
     if (d == null) return a;
     if (d.getStatus().isDeleted()) return null;
@@ -493,7 +498,6 @@ public static AutogenPathDatasetBlob mergePathDataset(
             AutogenVersionEnvironmentBlob::toString,
             conflictKeys));
   }
-
 
   public static AutogenDockerEnvironmentBlob mergeDockerEnvironment(
       AutogenDockerEnvironmentBlob a,
