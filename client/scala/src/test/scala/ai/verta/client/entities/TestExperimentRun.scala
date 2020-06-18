@@ -152,7 +152,7 @@ class TestExperimentRun extends FunSuite {
       val logAttempt = f.expRun.logCommit(commit)
       assert(logAttempt.isSuccess)
 
-      val retrievedCommit = f.expRun.getCommit().flatMap(_.toCommit(f.client)).get
+      val retrievedCommit = f.expRun.getCommit().get.commit
       assert(retrievedCommit equals commit)
 
       // update the logged commit:
@@ -160,9 +160,8 @@ class TestExperimentRun extends FunSuite {
                             .flatMap(_.save("Add a blob")).get
       f.expRun.logCommit(newCommit, Some(Map[String, String]("mnp/qrs" -> "abc/def")))
       val newExpRunCommit = f.expRun.getCommit().get
-      val newRetrievedCommit = newExpRunCommit.toCommit(f.client).get
-      assert(newCommit equals newRetrievedCommit)
-      assert(!newRetrievedCommit.equals(commit))
+      assert(newCommit equals newExpRunCommit.commit)
+      assert(!newExpRunCommit.commit.equals(commit))
       assert(newExpRunCommit.keyPaths.get equals Map[String, String]("mnp/qrs" -> "abc/def"))
     } finally {
       cleanup(f)

@@ -350,7 +350,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
           _.map(pair => (pair._1, pair._2.location.get.mkString("/")))
         )
 
-        Success(ExperimentRunCommit(versioningEntry.commit.get, versioningEntry.repository_id.get, keyPaths))
+        clientSet.versioningService.GetRepository2(id_repo_id = versioningEntry.repository_id.get)
+          .map(r => new Repository(clientSet, r.repository.get))
+          .flatMap(_.getCommitById(versioningEntry.commit.get))
+          .map(commit => ExperimentRunCommit(commit, keyPaths))
       }
     )
   }
