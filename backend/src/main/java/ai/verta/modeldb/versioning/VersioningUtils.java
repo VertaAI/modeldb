@@ -109,11 +109,13 @@ public class VersioningUtils {
   public static void saveOrUpdateArtifactPartEntity(
       ArtifactPart artifactPart, Session session, String artifactId, int artifactType) {
     if (artifactPart.getEtag().isEmpty()) {
-      getArtifactPart(session, artifactId, artifactType, artifactPart.getPartNumber()).ifPresent(artifactPartEntity -> {
-        session.beginTransaction();
-          session.delete(artifactPartEntity);
-        session.getTransaction().commit();
-      });
+      getArtifactPart(session, artifactId, artifactType, artifactPart.getPartNumber())
+          .ifPresent(
+              artifactPartEntity -> {
+                session.beginTransaction();
+                session.delete(artifactPartEntity);
+                session.getTransaction().commit();
+              });
     } else {
       ArtifactPartEntity artifactPartEntity =
           new ArtifactPartEntity(
