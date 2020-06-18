@@ -168,9 +168,21 @@ class _Dataset(blob.Blob):
                 " consider using `commit.get()` to obtain a download-capable dataset"
                 " if ModelDB-managed versioning was enabled"
             )
+        implicit_download_to_path = download_to_path is None
 
         components_to_download = self._get_components_to_download(component_path, download_to_path)
         for path in components_to_download:  # component paths
+            local_path = components_to_download[path]  # dict will be updated near end of iteration
+
+            if implicit_download_to_path:
+                # avoid collisions with existing files
+                while os.path.exists(local_path):
+                    local_path = _file_utils.increment_filepath(local_path)
+
+            # create parent dirs
+            pathlib2.Path(local_path).parent.mkdir(parents=True, exist_ok=True)
+            # TODO: clean up empty parent dirs if something later fails
+
             url = self._commit._get_url_for_artifact(self._blob_path, path, "GET").url
 
             # stream download to avoid overwhelming memory
@@ -186,18 +198,10 @@ class _Dataset(blob.Blob):
                         for chunk in response.iter_content(chunk_size=chunk_size):
                             tempf.write(chunk)
 
-                    local_path = components_to_download[path]
-
-                    if download_to_path is None:  # destination paths were automatically generated
-                        # avoid collisions with existing files
+                    if implicit_download_to_path:
+                        # check for destination collision again in case taken during download
                         while os.path.exists(local_path):
                             local_path = _file_utils.increment_filepath(local_path)
-
-                        # update local path in dict
-                        components_to_download[path] = local_path
-
-                    # create parent dirs
-                    pathlib2.Path(local_path).parent.mkdir(parents=True, exist_ok=True)
 
                     # move written contents to `filepath`
                     os.rename(tempf.name, local_path)
@@ -207,6 +211,9 @@ class _Dataset(blob.Blob):
                         os.remove(tempf.name)
                     raise e
                 else:
+                    # update local path in dict in case changed to avoid collisiion
+                    components_to_download[path] = local_path
+
                     print("download complete; file written to {}".format(local_path))
             finally:
                 response.close()
