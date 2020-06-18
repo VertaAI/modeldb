@@ -129,7 +129,10 @@ class _Dataset(blob.Blob):
                     #     component_blob.path = "coworker/downloads/data/info.csv"
                     #     component_path      = "coworker/downloads"
                     #     local_path          =          "downloads/data/info.csv"
-                    local_path = os.path.relpath(component_blob.path, pathlib2.Path(component_path).parent)
+                    local_path = os.path.relpath(
+                        component_blob.path,
+                        pathlib2.Path(component_path).parent,
+                    )
                 else:
                     # rebase from `component_path` onto `download_to_path`
                     #     For example:
