@@ -38,6 +38,7 @@ import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import ai.verta.modeldb.versioning.ListCommitBlobsRequest;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
+import ai.verta.modeldb.versioning.MergeRepositoryCommitsRequest;
 import ai.verta.modeldb.versioning.NotebookCodeBlob;
 import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
@@ -46,6 +47,8 @@ import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RevertRepositoryCommitsRequest;
+import ai.verta.modeldb.versioning.S3DatasetBlob;
+import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
 import ai.verta.modeldb.versioning.SetBranchRequest;
 import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
@@ -759,6 +762,22 @@ public class CommitTest {
                                 .build())
                         .build())
                 .build())
+        .build();
+  }
+
+  static Blob getS3DatasetBlobFromPath(String path) {
+    return Blob.newBuilder()
+        .setDataset(
+            DatasetBlob.newBuilder()
+                .setS3(
+                    S3DatasetBlob.newBuilder()
+                        .addComponents(
+                            S3DatasetComponentBlob.newBuilder()
+                                .setPath(
+                                    PathDatasetComponentBlob.newBuilder()
+                                        .setPath(path)
+                                        .setSize(2)
+                                        .setLastModifiedAtSource(time)))))
         .build();
   }
 
@@ -2316,5 +2335,100 @@ public class CommitTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Delete commit with tags test end................................");
+  }
+
+  @Test
+  public void mergeConflictTest() {
+    LOGGER.info("merge Conflict test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id =
+        createRepository(versioningServiceBlockingStub, RepositoryTest.NAME + "mergeConflict");
+
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    String path1 = "s3://verta-scala-demo-super-big";
+    List<String> location1 = new ArrayList<>();
+    location1.add("blob");
+    BlobExpanded blobExpanded1 =
+        BlobExpanded.newBuilder()
+            .setBlob(getS3DatasetBlobFromPath(path1))
+            .addAllLocation(location1)
+            .build();
+
+    String path2 = "testdir/testsubdir/testfile2";
+    List<String> location2 = new ArrayList<>();
+    location2.add("blob");
+    BlobExpanded blobExpanded2 =
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path2))
+            .addAllLocation(location2)
+            .build();
+
+    Commit.Builder commitBuilder =
+        Commit.newBuilder()
+            .setMessage("s3blob")
+            .setDateCreated(Calendar.getInstance().getTimeInMillis())
+            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
+    }
+    CreateCommitRequest createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommit(commitBuilder.build())
+            .addBlobs(blobExpanded1)
+            .build();
+
+    CreateCommitRequest.Response commitResponse1 =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+
+    createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommit(commitBuilder.setMessage("pathblob").build())
+            .addBlobs(blobExpanded2)
+            .build();
+    CreateCommitRequest.Response commitResponse2 =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+
+    MergeRepositoryCommitsRequest repositoryMergeRequest =
+        MergeRepositoryCommitsRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitShaA(commitResponse1.getCommit().getCommitSha())
+            .setCommitShaB(commitResponse2.getCommit().getCommitSha())
+            .build();
+    MergeRepositoryCommitsRequest.Response mergeReponse1 =
+        versioningServiceBlockingStub.mergeRepositoryCommits(repositoryMergeRequest);
+
+    Assert.assertTrue(mergeReponse1.getCommit().getCommitSha() == "");
+    Assert.assertTrue(!mergeReponse1.getConflictsList().isEmpty());
+    for (Commit commit : new Commit[] {commitResponse1.getCommit(), commitResponse2.getCommit()}) {
+      DeleteCommitRequest deleteCommitRequest =
+          DeleteCommitRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setCommitSha(commit.getCommitSha())
+              .build();
+      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+    }
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    LOGGER.info("List commit blob test end................................");
   }
 }
