@@ -3,6 +3,7 @@
 import datetime
 import glob
 import inspect
+import itertools
 import json
 import numbers
 import os
@@ -259,19 +260,53 @@ def make_request(method, url, conn, **kwargs):
     with requests.Session() as s:
         s.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
-            response = s.request(method, url, **kwargs)
+            request = requests.Request(method, url, **kwargs).prepare()
+            response = s.send(request, allow_redirects=False)
+
+            # manually inspect initial response and subsequent redirects to stop on 302s
+            history = []  # track history because `requests` doesn't since we're redirecting manually
+            responses = itertools.chain([response], s.resolve_redirects(response, request))
+            for response in responses:
+                if response.status_code == 302:
+                    if not conn.ignore_conn_err:
+                        raise RuntimeError(
+                            "received status 302 from {},"
+                            " which is not supported by the Client".format(response.url)
+                        )
+                    else:
+                        return fabricate_200()
+
+                history.append(response)
+            # set full history
+            response.history = history[:-1]  # last element is this response, so drop it
         except (requests.exceptions.BaseHTTPError,
                 requests.exceptions.RequestException) as e:
             if not conn.ignore_conn_err:
                 raise e
+            # else fall through to fabricate 200 response
         else:
             if response.ok or not conn.ignore_conn_err:
                 return response
-        # fabricate response
-        response = requests.Response()
-        response.status_code = 200  # success
-        response._content = six.ensure_binary("{}")  # empty contents
-        return response
+            # else fall through to fabricate 200 response
+        return fabricate_200()
+
+
+def fabricate_200():
+    """
+    Returns an HTTP response with ``status_code`` 200 and empty JSON contents.
+
+    This is used when the Client has ``ignore_conn_err=True``, so that backend responses can be
+    spoofed to minimize execution-halting errors.
+
+    Returns
+    -------
+    :class:`requests.Response`
+
+    """
+    response = requests.Response()
+    response.status_code = 200  # success
+    response._content = six.ensure_binary("{}")  # empty contents
+    return response
 
 
 def raise_for_http_error(response):
