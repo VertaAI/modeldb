@@ -1,7 +1,6 @@
 package ai.verta.modeldb.metadata;
 
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -97,31 +96,6 @@ public class MetadataDAORdbImpl implements MetadataDAO {
     MetadataPropertyMappingEntity.LabelMappingId id0 =
         MetadataPropertyMappingEntity.createId(id, key);
     session.saveOrUpdate(new MetadataPropertyMappingEntity(id0, value));
-  }
-
-  @Override
-  public boolean updateProperty(IdentificationType id, String key, String value)
-      throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      MetadataPropertyMappingEntity.LabelMappingId id0 =
-          MetadataPropertyMappingEntity.createId(id, key);
-      MetadataPropertyMappingEntity mappingEntity =
-          session.get(MetadataPropertyMappingEntity.class, id0);
-      if (mappingEntity != null) {
-        Transaction transaction = session.beginTransaction();
-        session.saveOrUpdate(new MetadataPropertyMappingEntity(id0, value));
-        transaction.commit();
-      } else {
-        throw new ModelDBException("Entity not found for given key: " + key, Code.NOT_FOUND);
-      }
-      return true;
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return addProperty(id, key, value);
-      } else {
-        throw ex;
-      }
-    }
   }
 
   @Override
@@ -247,47 +221,6 @@ public class MetadataDAORdbImpl implements MetadataDAO {
         throw ex;
       }
     }
-  }
-
-  @Override
-  public boolean deleteLabels(
-      Session session, IdentificationType id, List<String> labels, boolean deleteAll) {
-    if (deleteAll) {
-      StringBuilder stringQueryBuilder =
-          new StringBuilder("delete from ")
-              .append(LabelsMappingEntity.class.getSimpleName())
-              .append(" lm WHERE ");
-      stringQueryBuilder
-          .append(" lm.")
-          .append(ModelDBConstants.ID)
-          .append(".")
-          .append(ModelDBConstants.ENTITY_HASH)
-          .append(" = :entityHash AND lm.id.")
-          .append(ModelDBConstants.ENTITY_TYPE)
-          .append(" = :entityType");
-      Query<LabelsMappingEntity> query =
-          session.createQuery(stringQueryBuilder.toString(), LabelsMappingEntity.class);
-      query.setParameter(ModelDBConstants.ENTITY_HASH, getEntityHash(id));
-      query.setParameter(ModelDBConstants.ENTITY_TYPE, id.getIdTypeValue());
-      query.executeUpdate();
-    } else {
-      for (String label : labels) {
-        LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
-        LabelsMappingEntity existingLabelsMappingEntity =
-            session.get(LabelsMappingEntity.class, id0);
-        if (existingLabelsMappingEntity != null) {
-          session.delete(existingLabelsMappingEntity);
-        } else {
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.NOT_FOUND_VALUE)
-                  .setMessage("Label '" + label + "' not found in DB")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
-        }
-      }
-    }
-    return true;
   }
 
   @Override
