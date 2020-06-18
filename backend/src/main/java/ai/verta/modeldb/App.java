@@ -512,7 +512,8 @@ public class App implements ApplicationContextAware {
             experimentDAO,
             experimentRunDAO,
             new ModelDBAuthInterceptor(),
-            new FileHasher()));
+            new FileHasher(),
+            artifactStoreDAO));
     LOGGER.trace("Versioning serviceImpl initialized");
     wrapService(serverBuilder, new MetadataServiceImpl(metadataDAO));
     LOGGER.trace("Metadata serviceImpl initialized");
