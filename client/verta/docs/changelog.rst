@@ -21,6 +21,11 @@ Release Notes
    - `
      <>`__
 
+   Enhancements
+   ^^^^^^^^^^^^
+   - `
+     <>`__
+
    Bug Fixes
    ^^^^^^^^^
    - `
@@ -30,6 +35,44 @@ Release Notes
    ^^^^^^^^^^^^^^^^
    - `
      <>`__
+
+
+v0.14.7 (2020-06-18)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add workspace parameter to find_datasets()
+  <https://github.com/VertaAI/modeldb/pull/758>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `print part numbers during multipart upload
+  <https://github.com/VertaAI/modeldb/pull/688>`__
+- `retry part uploads on connection errors
+  <https://github.com/VertaAI/modeldb/pull/729>`__
+- `read bytestreams in chunks
+  <https://github.com/VertaAI/modeldb/pull/706>`__
+- `enable fuzzy find by name in find_datasets()
+  <https://github.com/VertaAI/modeldb/pull/793>`__
+- `raise more informative error on non-JSON response bodies
+  <https://github.com/VertaAI/modeldb/pull/799>`__
+
+Bug Fixes
+^^^^^^^^^
+- `always set grpc-metadata-source header, even in no-auth
+  <https://github.com/VertaAI/modeldb/pull/794>`__
+- `typecheck tags
+  <https://github.com/VertaAI/modeldb/pull/761>`__
+- `don't follow 302s
+  <https://github.com/VertaAI/modeldb/pull/798>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `add _path_component_blobs attribute for dataset blobs
+  <https://github.com/VertaAI/modeldb/pull/777>`__
+- `handle protos refactor
+  <https://github.com/VertaAI/modeldb/pull/749>`__
 
 
 v0.14.6 (2020-05-29)
