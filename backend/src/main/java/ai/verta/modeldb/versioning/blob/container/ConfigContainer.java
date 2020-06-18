@@ -152,7 +152,8 @@ public class ConfigContainer extends BlobContainer {
   }
 
   @Override
-  public void processAttribute(Session session, Long repoId, String commitHash)
+  public void processAttribute(
+      Session session, Long repoId, String commitHash, boolean addAttribute)
       throws ModelDBException {}
 
   private String computeContinuousSHA(

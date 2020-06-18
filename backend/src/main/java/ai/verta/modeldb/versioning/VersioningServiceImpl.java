@@ -268,7 +268,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               request.getCommit(),
               (session) -> blobDAO.setBlobs(session, blobContainers, fileHasher),
               (session, repoId, commitHash) ->
-                  blobDAO.setBlobsAttributes(session, repoId, commitHash, blobContainers),
+                  blobDAO.setBlobsAttributes(session, repoId, commitHash, blobContainers, true),
               repositoryFunction);
 
       responseObserver.onNext(response);

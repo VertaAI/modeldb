@@ -671,7 +671,7 @@ public class DeleteEntitiesCron extends TimerTask {
     deleteLabelsQuery.executeUpdate();
   }
 
-  private void deleteAttribute(Session session, String entityHash) {
+  public static void deleteAttribute(Session session, String entityHash) {
     String deleteAllAttributes =
         new StringBuilder("delete from AttributeEntity at WHERE at.")
             .append(ModelDBConstants.ENTITY_HASH)

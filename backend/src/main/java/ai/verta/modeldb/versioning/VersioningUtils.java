@@ -264,20 +264,42 @@ public class VersioningUtils {
   }
 
   public static List<KeyValue> getAttributes(
-      Session session, Long repoId, String commitHash, List<String> locations)
+      Session session,
+      Long repoId,
+      String commitHash,
+      List<String> locations,
+      List<String> attributeKeysList)
       throws ModelDBException {
     try {
-      String getAttributesHQL =
-          "From AttributeEntity kv where kv.entity_hash = :entityHash "
-              + " AND kv.entity_name = :entityName AND kv.field_type = :fieldType ORDER BY kv.id";
-      Query getQuery = session.createQuery(getAttributesHQL);
-      getQuery.setParameter("entityName", ModelDBConstants.BLOB);
-      getQuery.setParameter("entityHash", getVersioningCompositeId(repoId, commitHash, locations));
-      getQuery.setParameter("fieldType", ModelDBConstants.ATTRIBUTES);
-      List<AttributeEntity> attributeEntities = getQuery.list();
+      List<AttributeEntity> attributeEntities =
+          getAttributeEntities(session, repoId, commitHash, locations, attributeKeysList);
       return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
     } catch (InvalidProtocolBufferException e) {
       throw new ModelDBException(e);
     }
+  }
+
+  public static List<AttributeEntity> getAttributeEntities(
+      Session session,
+      Long repoId,
+      String commitHash,
+      List<String> locations,
+      List<String> attributeKeys) {
+    StringBuilder getAttributesHQLBuilder =
+        new StringBuilder(
+            "From AttributeEntity kv where kv.entity_hash = :entityHash "
+                + " AND kv.entity_name = :entityName AND kv.field_type = :fieldType");
+    if (attributeKeys != null && !attributeKeys.isEmpty()) {
+      getAttributesHQLBuilder.append(" AND kv.key IN (:keys) ");
+    }
+    getAttributesHQLBuilder.append(" ORDER BY kv.id");
+    Query getQuery = session.createQuery(getAttributesHQLBuilder.toString());
+    getQuery.setParameter("entityName", ModelDBConstants.BLOB);
+    getQuery.setParameter("entityHash", getVersioningCompositeId(repoId, commitHash, locations));
+    getQuery.setParameter("fieldType", ModelDBConstants.ATTRIBUTES);
+    if (attributeKeys != null && !attributeKeys.isEmpty()) {
+      getQuery.setParameterList("keys", attributeKeys);
+    }
+    return getQuery.list();
   }
 }
