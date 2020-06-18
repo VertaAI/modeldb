@@ -2322,7 +2322,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       uploadId = artifactEntity.getUploadId();
       try {
         String message = null;
-        if (uploadId == null) {
+        if (uploadId == null || artifactEntity.isUploadCompleted()) {
           if (initializeMultipart == null) {
             message = "Multipart wasn't initialized";
           } else {
@@ -2412,8 +2412,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           artifactEntity.getPath(), artifactEntity.getUploadId(), partETags);
       session.beginTransaction();
       artifactEntity.setUploadCompleted(true);
-      artifactPartEntities.forEach(session::delete);
-      artifactPartEntities.clear();
       session.getTransaction().commit();
     }
     return CommitMultipartArtifact.Response.newBuilder().build();
