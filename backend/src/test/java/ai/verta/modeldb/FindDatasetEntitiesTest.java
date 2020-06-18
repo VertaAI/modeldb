@@ -265,8 +265,7 @@ public class FindDatasetEntitiesTest {
 
     // Create two datasetVersion of above dataset
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(
-            dataset1.getId(), getBranchResponse.getCommit().getCommitSha());
+        datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -291,8 +290,7 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("DatasetVersion created successfully");
 
     // datasetVersion2 of above dataset
-    createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset1.getId(), datasetVersion1.getId());
+    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -318,8 +316,7 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("DatasetVersion created successfully");
 
     // datasetVersion3 of above dataset
-    createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset1.getId(), datasetVersion2.getId());
+    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -345,8 +342,7 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("DatasetVersion created successfully");
 
     // datasetVersion4 of above dataset
-    createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset1.getId(), datasetVersion3.getId());
+    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -585,7 +581,7 @@ public class FindDatasetEntitiesTest {
         "Dataset not match with expected dataset",
         dataset2.getId(),
         response.getDatasetsList().get(0).getId());
-    assertNotEquals(
+    assertEquals(
         "Dataset not match with expected dataset", dataset2, response.getDatasetsList().get(0));
     assertEquals(
         "Total records count not matched with expected records count",
@@ -918,15 +914,15 @@ public class FindDatasetEntitiesTest {
     for (int index = 0; index < response.getDatasetsCount(); index++) {
       Dataset dataset = response.getDatasetsList().get(index);
       if (index == 0) {
-        assertNotEquals("Dataset not match with expected dataset", dataset3, dataset);
+        assertEquals("Dataset not match with expected dataset", dataset3, dataset);
         assertEquals(
             "Dataset Id not match with expected dataset Id", dataset3.getId(), dataset.getId());
       } else if (index == 1) {
-        assertNotEquals("Dataset not match with expected dataset", dataset2, dataset);
+        assertEquals("Dataset not match with expected dataset", dataset2, dataset);
         assertEquals(
             "Dataset Id not match with expected dataset Id", dataset2.getId(), dataset.getId());
       } else if (index == 2) {
-        assertNotEquals("Dataset not match with expected dataset", dataset1, dataset);
+        assertEquals("Dataset not match with expected dataset", dataset1, dataset);
         assertEquals(
             "Dataset Id not match with expected dataset Id", dataset1.getId(), dataset.getId());
       }
@@ -1304,7 +1300,6 @@ public class FindDatasetEntitiesTest {
             .build();
 
     int pageLimit = 2;
-    int count = 0;
     boolean isExpectedResultFound = false;
     for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       FindDatasetVersions findDatasetVersions =
@@ -1334,24 +1329,6 @@ public class FindDatasetEntitiesTest {
               "DatasetVersion not match with expected datasetVersion",
               datasetVersionMap.get(datasetVersion.getId()),
               datasetVersion);
-
-          if (count == 0) {
-            assertEquals(
-                "DatasetVersion version not match with expected datasetVersion version",
-                datasetVersion1.getVersion(),
-                datasetVersion.getVersion());
-          } else if (count == 1) {
-            assertEquals(
-                "DatasetVersion version not match with expected datasetVersion version",
-                datasetVersion2.getVersion(),
-                datasetVersion.getVersion());
-          } else if (count == 2) {
-            assertEquals(
-                "DatasetVersion version not match with expected datasetVersion version",
-                datasetVersion3.getVersion(),
-                datasetVersion.getVersion());
-          }
-          count++;
         }
       } else {
         if (isExpectedResultFound) {

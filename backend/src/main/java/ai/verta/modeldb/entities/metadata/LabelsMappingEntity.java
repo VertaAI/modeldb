@@ -16,11 +16,15 @@ import javax.persistence.Table;
 public class LabelsMappingEntity {
   public LabelsMappingEntity() {}
 
-  public LabelsMappingEntity(LabelMappingId id) {
+  public LabelsMappingEntity(LabelMappingId id, int index) {
     this.id = id;
+    this.labelIndex = index;
   }
 
   @EmbeddedId private LabelMappingId id;
+
+  @Column(name = "label_index")
+  private Integer labelIndex;
 
   public static LabelMappingId createId(IdentificationType id, String label) {
     if (id.getIdCase().equals(IdentificationType.IdCase.INT_ID)) {

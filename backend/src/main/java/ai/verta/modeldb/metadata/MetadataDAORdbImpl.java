@@ -100,11 +100,12 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public void addLabels(Session session, IdentificationType id, List<String> labels) {
-    for (String label : labels) {
+    for (int index = 0; index < labels.size(); index++) {
+      String label = labels.get(index);
       LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
       LabelsMappingEntity existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
       if (existingLabelsMappingEntity == null) {
-        session.save(new LabelsMappingEntity(id0));
+        session.save(new LabelsMappingEntity(id0, index));
       }
     }
   }
@@ -133,7 +134,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   private List<LabelsMappingEntity> getLabelsMappingEntities(
       Session session, IdentificationType id) {
     Query<LabelsMappingEntity> query =
-        session.createQuery(GET_LABELS_HQL, LabelsMappingEntity.class);
+        session.createQuery(GET_LABELS_HQL + " ORDER BY lm.labelIndex", LabelsMappingEntity.class);
     query.setParameter("entityHash", getEntityHash(id));
     query.setParameter("entityType", id.getIdTypeValue());
     return query.list();

@@ -20,9 +20,6 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.GetBranchRequest;
-import ai.verta.modeldb.versioning.RepositoryIdentification;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.Status.Code;
@@ -484,7 +481,10 @@ public class LineageTest {
   private void deleteAll(List<DatasetVersion> datasetVersionList, Project project) {
     for (DatasetVersion datasetVersion1 : datasetVersionList) {
       DeleteDatasetVersion deleteDatasetVersionRequest =
-          DeleteDatasetVersion.newBuilder().setId(datasetVersion1.getId()).build();
+          DeleteDatasetVersion.newBuilder()
+              .setDatasetId(datasetVersion1.getDatasetId())
+              .setId(datasetVersion1.getId())
+              .build();
       DeleteDatasetVersion.Response deleteDatasetVersionResponse =
           datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
       LOGGER.info("DeleteDatasetVersion deleted successfully");
@@ -547,22 +547,8 @@ public class LineageTest {
         createDatasetRequest.getName(),
         dataset.getName());
 
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(
-                RepositoryIdentification.newBuilder()
-                    .setRepoId(Long.parseLong(dataset.getId()))
-                    .build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(
-            dataset.getId(), getBranchResponse.getCommit().getCommitSha());
+        datasetVersionTest.getDatasetVersionRequest(dataset.getId());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();

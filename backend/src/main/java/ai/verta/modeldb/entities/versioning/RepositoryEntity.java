@@ -121,6 +121,10 @@ public class RepositoryEntity {
     return name;
   }
 
+  public String getDescription() {
+    return description;
+  }
+
   public Long getDate_created() {
     return date_created;
   }

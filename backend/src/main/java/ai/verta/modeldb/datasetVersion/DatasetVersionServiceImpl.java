@@ -4,6 +4,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddDatasetVersionAttributes;
 import ai.verta.modeldb.AddDatasetVersionTags;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.CreateDatasetVersion.Response;
 import ai.verta.modeldb.DatasetVersion;
@@ -55,6 +56,7 @@ import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -65,8 +67,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private static final Logger LOGGER = LogManager.getLogger(DatasetVersionServiceImpl.class);
   private AuthService authService;
   private RoleService roleService;
-  private DatasetDAO datasetDAO;
-  private DatasetVersionDAO datasetVersionDAO;
+  // private DatasetDAO datasetDAO;
+  // private DatasetVersionDAO datasetVersionDAO;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
@@ -83,12 +85,47 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       MetadataDAO metadataDAO) {
     this.authService = authService;
     this.roleService = roleService;
-    this.datasetDAO = datasetDAO;
-    this.datasetVersionDAO = datasetVersionDAO;
+    // this.datasetDAO = datasetDAO;
+    // this.datasetVersionDAO = datasetVersionDAO;
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
     this.metadataDAO = metadataDAO;
+  }
+
+  private DatasetVersion getDatasetVersionFromRequest(
+      AuthService authService, CreateDatasetVersion request, UserInfo userInfo)
+      throws ModelDBException {
+    DatasetVersion.Builder datasetVersionBuilder =
+        DatasetVersion.newBuilder()
+            .setDatasetId(request.getDatasetId())
+            .setDescription(request.getDescription())
+            .addAllTags(request.getTagsList())
+            .setDatasetVersionVisibility(request.getDatasetVersionVisibility())
+            .addAllAttributes(request.getAttributesList());
+
+    if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
+      datasetVersionBuilder.setTimeLogged(request.getTimeCreated());
+      datasetVersionBuilder.setTimeUpdated(request.getTimeCreated());
+    } else {
+      datasetVersionBuilder.setTimeLogged(Calendar.getInstance().getTimeInMillis());
+      datasetVersionBuilder.setTimeUpdated(Calendar.getInstance().getTimeInMillis());
+    }
+
+    if (!request.getParentId().isEmpty()) {
+      datasetVersionBuilder.setParentId(request.getParentId());
+    }
+
+    if (userInfo != null) {
+      datasetVersionBuilder.setOwner(authService.getVertaIdFromUserInfo(userInfo));
+    }
+
+    if (!request.hasPathDatasetVersionInfo()) {
+      throw new ModelDBException("Not supported", io.grpc.Status.Code.UNIMPLEMENTED);
+    }
+    datasetVersionBuilder.setPathDatasetVersionInfo(request.getPathDatasetVersionInfo());
+
+    return datasetVersionBuilder.build();
   }
 
   /**
@@ -115,8 +152,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
       /*Get the user info from the Context*/
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      DatasetVersion datasetVersion =
-          datasetVersionDAO.getDatasetVersionFromRequest(authService, request, userInfo);
+      DatasetVersion datasetVersion = getDatasetVersionFromRequest(authService, request, userInfo);
 
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder()
@@ -414,7 +450,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void updateDatasetVersionDescription(
       UpdateDatasetVersionDescription request,
       StreamObserver<UpdateDatasetVersionDescription.Response> responseObserver) {
-    QPSCountResource.inc();
+    super.updateDatasetVersionDescription(request, responseObserver);
+    /*QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
@@ -460,7 +497,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, UpdateDatasetVersionDescription.Response.getDefaultInstance());
-    }
+    }*/
   }
 
   @Override
@@ -828,7 +865,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void setDatasetVersionVisibility(
       SetDatasetVersionVisibilty request,
       StreamObserver<SetDatasetVersionVisibilty.Response> responseObserver) {
-    QPSCountResource.inc();
+    super.setDatasetVersionVisibility(request, responseObserver);
+    /*QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
@@ -861,7 +899,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, SetDatasetVersionVisibilty.Response.getDefaultInstance());
-    }
+    }*/
   }
 
   @Override
