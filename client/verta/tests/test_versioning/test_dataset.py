@@ -9,9 +9,9 @@ class TestS3:
         pytest.importorskip("boto3")
 
         dataset = verta.dataset.S3("s3://verta-starter")
-        assert len(dataset._msg.s3.components) > 1
+        assert len(dataset._path_component_blobs) > 1
 
-        for s3_obj_metadata in (component.path for component in dataset._msg.s3.components):
+        for s3_obj_metadata in dataset._path_component_blobs:
             assert s3_obj_metadata.path != ""
             assert s3_obj_metadata.size != 0
             assert s3_obj_metadata.last_modified_at_source != 0
@@ -23,9 +23,9 @@ class TestS3:
 
         dataset = verta.dataset.S3("s3://verta-starter/census-test.csv")
 
-        assert len(dataset._msg.s3.components) == 1
+        assert len(dataset._path_component_blobs) == 1
 
-        s3_obj_metadata = dataset._msg.s3.components[0].path
+        s3_obj_metadata = dataset._path_component_blobs[0]
         assert s3_obj_metadata.path != ""
         assert s3_obj_metadata.size != 0
         assert s3_obj_metadata.last_modified_at_source != 0
@@ -50,9 +50,9 @@ class TestS3:
             "s3://verta-starter/census-train.csv",
         ])
 
-        assert len(dataset._msg.s3.components) == 2
+        assert len(dataset._path_component_blobs) == 2
 
-        for s3_obj_metadata in (component.path for component in dataset._msg.s3.components):
+        for s3_obj_metadata in dataset._path_component_blobs:
             assert s3_obj_metadata.path != ""
             assert s3_obj_metadata.size != 0
             assert s3_obj_metadata.last_modified_at_source != 0
@@ -68,7 +68,7 @@ class TestS3:
         ])
         bucket_dataset = verta.dataset.S3("s3://verta-starter")
 
-        assert len(multiple_dataset._msg.s3.components) == len(bucket_dataset._msg.s3.components)
+        assert len(multiple_dataset._path_component_blobs) == len(bucket_dataset._path_component_blobs)
 
     def test_versioned_bucket(self):
         s3 = pytest.importorskip("boto3").client('s3')
@@ -169,9 +169,9 @@ class TestS3:
 class TestPath:
     def test_dirpath(self):
         dataset = verta.dataset.Path("modelapi_hypothesis/")
-        assert len(dataset._msg.path.components) > 1
+        assert len(dataset._path_component_blobs) > 1
 
-        for file_metadata in dataset._msg.path.components:
+        for file_metadata in dataset._path_component_blobs:
             assert file_metadata.path != ""
             assert file_metadata.size != 0
             assert file_metadata.last_modified_at_source != 0
@@ -180,9 +180,9 @@ class TestPath:
     def test_filepath(self):
         dataset = verta.dataset.Path("modelapi_hypothesis/api_generator.py")
 
-        assert len(dataset._msg.path.components) == 1
+        assert len(dataset._path_component_blobs) == 1
 
-        file_metadata = dataset._msg.path.components[0]
+        file_metadata = dataset._path_component_blobs[0]
         assert file_metadata.path != ""
         assert file_metadata.size != 0
         assert file_metadata.last_modified_at_source != 0
@@ -193,9 +193,9 @@ class TestPath:
             "modelapi_hypothesis/api_generator.py",
             "modelapi_hypothesis/test_modelapi.py",
         ])
-        assert len(dataset._msg.path.components) == 2
+        assert len(dataset._path_component_blobs) == 2
 
-        for file_metadata in dataset._msg.path.components:
+        for file_metadata in dataset._path_component_blobs:
             assert file_metadata.path != ""
             assert file_metadata.size != 0
             assert file_metadata.last_modified_at_source != 0
@@ -207,7 +207,7 @@ class TestPath:
             "modelapi_hypothesis/api_generator.py",
         ])
         dir_dataset = verta.dataset.Path("modelapi_hypothesis/")
-        assert len(multiple_dataset._msg.path.components) == len(dir_dataset._msg.path.components)
+        assert len(multiple_dataset._path_component_blobs) == len(dir_dataset._path_component_blobs)
 
     def test_repr(self):
         """Tests that __repr__() executes without error"""

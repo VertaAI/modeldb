@@ -1,0 +1,32 @@
+.root {
+  display: grid;
+  grid-template-columns: 140px auto;
+  grid-column-gap: 10px;
+  padding: 2px 0;
+  margin-bottom: 15px;
+}
+.root:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  font-size: 15px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  color: #aaaaaa;
+}
+.align_center {
+  align-self: center;
+}
+
+.value {
+  font-size: 15px;
+  color: var(--main-text-color1);
+}
+.withTruncation {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}

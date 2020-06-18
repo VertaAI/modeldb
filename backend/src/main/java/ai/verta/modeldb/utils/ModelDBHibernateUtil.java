@@ -2,11 +2,11 @@ package ai.verta.modeldb.utils;
 
 import static ai.verta.modeldb.authservice.AuthServiceChannel.isBackgroundUtilsCall;
 
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.entities.ArtifactEntity;
@@ -32,6 +32,7 @@ import ai.verta.modeldb.entities.QueryDatasetVersionInfoEntity;
 import ai.verta.modeldb.entities.QueryParameterEntity;
 import ai.verta.modeldb.entities.RawDatasetVersionInfoEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.entities.UploadStatusEntity;
 import ai.verta.modeldb.entities.UserCommentEntity;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
@@ -158,7 +159,8 @@ public class ModelDBHibernateUtil {
     NotebookCodeBlobEntity.class,
     BranchEntity.class,
     VersioningModeldbEntityMapping.class,
-    HyperparameterElementMappingEntity.class
+    HyperparameterElementMappingEntity.class,
+    UploadStatusEntity.class
   };
 
   private ModelDBHibernateUtil() {}
@@ -302,6 +304,7 @@ public class ModelDBHibernateUtil {
   }
 
   public static SessionFactory resetSessionFactory() {
+    isReady = false;
     ModelDBHibernateUtil.sessionFactory = null;
     return getSessionFactory();
   }
@@ -487,17 +490,20 @@ public class ModelDBHibernateUtil {
   }
 
   public static boolean ping() {
-    try (Session session = sessionFactory.openSession()) {
-      final boolean[] valid = {false};
-      session.doWork(
-          connection -> {
-            if (connection.isValid(timeout)) {
-              valid[0] = true;
-            }
-          });
+    if (sessionFactory != null) {
+      try (Session session = sessionFactory.openSession()) {
+        final boolean[] valid = {false};
+        session.doWork(
+            connection -> {
+              if (connection.isValid(timeout)) {
+                valid[0] = true;
+              }
+            });
 
-      return valid[0];
+        return valid[0];
+      }
     }
+    return false;
   }
 
   public static HealthCheckResponse.ServingStatus checkReady() {
@@ -552,7 +558,7 @@ public class ModelDBHibernateUtil {
 
     if (count > 0) {
       // Throw error if it is an insert request and project with same name already exists
-      logger.warn(entityName + " with name {} already exists", name);
+      logger.info(entityName + " with name {} already exists", name);
       Status status =
           Status.newBuilder()
               .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -666,7 +672,7 @@ public class ModelDBHibernateUtil {
                     CompletableFuture<Void> combinedFuture =
                         CompletableFuture.allOf(completableFutures);
                     combinedFuture.get();
-                    LOGGER.warn("Finished all the future tasks");
+                    LOGGER.info("Finished all the future tasks");
                   }
                 } catch (InterruptedException | ExecutionException e) {
                   LOGGER.warn(

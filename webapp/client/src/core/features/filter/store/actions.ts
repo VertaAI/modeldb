@@ -2,7 +2,11 @@ import { History } from 'history';
 import { ThunkDispatch } from 'redux-thunk';
 import { action } from 'typesafe-actions';
 
-import { IFilterData, IIdFilterData } from 'core/features/filter/Model';
+import {
+  IFilterData,
+  makeURLFilters,
+  URLFiltersParam,
+} from 'core/features/filter/Model';
 
 import {
   hasContext,
@@ -32,7 +36,8 @@ export function applyFilters(
 ): ActionResult<void> {
   return async (dispatch, getState) => {
     const ctx = selectContextDataByName(getState(), ctxName).ctx;
-    ctx.onApplyFilters(filters, dispatch);
+    const filteredFilters = filters.filter(f => f.isActive && f.value);
+    ctx.onApplyFilters(filteredFilters, dispatch);
   };
 }
 
@@ -86,11 +91,7 @@ function changeContext(
   return async (dispatch, getState) => {
     dispatch(action(changeContextActionTypes.CHANGE_CONTEXT, ctxName));
     if (hasContext(getState(), ctxName)) {
-      const ctx = selectContextDataByName(getState(), ctxName).ctx;
-      ctx.onApplyFilters(
-        selectCurrentContextAppliedFilters(getState()),
-        dispatch
-      );
+      dispatch(applyCurrentContextFilters());
     }
   };
 }
@@ -101,13 +102,10 @@ function handleCurrentContextFiltersChanging(
   dispatch: ThunkDispatch<any, any, any>,
   state: IFilterRootState,
   ctxName: string,
-  needApplyFilters: boolean,
-  needSaveFilters: boolean
+  needApplyFilters: boolean
 ) {
-  if (needSaveFilters) {
-    const filters = selectCurrentContextAppliedFilters(state);
-    saveFilters(history, ctxName, filters);
-  }
+  const filters = selectCurrentContextAppliedFilters(state);
+  saveFilters(history, ctxName, filters);
   if (needApplyFilters) {
     dispatch(applyCurrentContextFilters());
   }
@@ -118,14 +116,15 @@ export function addFilterToCurrentContext(
 ): ActionResult<void, IManageFiltersAction> {
   return async (dispatch, getState, deps) => {
     const ctx = selectCurrentContextName(getState())!;
+    const isActive = isUpdatedActiveFilter(filter, getState(), ctx);
+
     dispatch(action(manageFiltersTypes.ADD_FILTER, { filter, ctx }));
     handleCurrentContextFiltersChanging(
       deps.history,
       dispatch,
       getState(),
       ctx,
-      isNeedApplyFilter(filter),
-      isNeedSaveFilter(filter)
+      isNeedApplyFilter(filter, isActive)
     );
   };
 }
@@ -135,14 +134,15 @@ export function editFilterInCurrentContext(
 ): ActionResult<void, IManageFiltersAction> {
   return async (dispatch, getState, deps) => {
     const ctx = selectCurrentContextName(getState())!;
+    const isActive = isUpdatedActiveFilter(filter, getState(), ctx);
+
     dispatch(action(manageFiltersTypes.EDIT_FILTER, { filter, ctx }));
     handleCurrentContextFiltersChanging(
       deps.history,
       dispatch,
       getState(),
       ctx,
-      isNeedApplyFilter(filter),
-      isNeedSaveFilter(filter)
+      isNeedApplyFilter(filter, isActive)
     );
   };
 }
@@ -152,14 +152,14 @@ export function removeFilterFromCurrentContext(
 ): ActionResult<void, IManageFiltersAction> {
   return async (dispatch, getState, deps) => {
     const ctx = selectCurrentContextName(getState())!;
+    const isActive = isUpdatedActiveFilter(filter, getState(), ctx);
     dispatch(action(manageFiltersTypes.REMOVE_FILTER, { filter, ctx }));
     handleCurrentContextFiltersChanging(
       deps.history,
       dispatch,
       getState(),
       ctx,
-      true,
-      true
+      isActive
     );
   };
 }
@@ -175,44 +175,41 @@ export function resetCurrentContextFilters(
       dispatch,
       getState(),
       ctx,
-      isApplyFilters,
-      true
+      isApplyFilters
     );
   };
 }
 
-function isEditedFilter(filter: IFilterData) {
-  return 'isEdited' in filter ? filter.isEdited : false;
+function isNeedApplyFilter(filter: IFilterData, isActive: boolean) {
+  return isActive;
 }
-function isNeedApplyFilter(filter: IFilterData) {
-  return 'isEdited' in filter ? !filter.isEdited : true;
-}
-function isNeedSaveFilter(filter: IFilterData) {
-  return 'isEdited' in filter ? !filter.isEdited : true;
+
+function isUpdatedActiveFilter(
+  filter: IFilterData,
+  state: IFilterRootState,
+  ctxName: string
+) {
+  const oldFilter = state.filters.data.contexts[ctxName].filters.find(
+    f => f.id === filter.id
+  );
+
+  if (oldFilter && !oldFilter.isActive && !filter.isActive) {
+    return false;
+  }
+
+  if (!oldFilter && !filter.value) {
+    return false;
+  }
+
+  if (oldFilter && !oldFilter.value && !filter.value) {
+    return false;
+  }
+
+  return true;
 }
 
 export function resetCurrentContext(): IResetCurrentContextAction {
   return { type: resetCurrentContextActionType.RESET_CURRENT_CONTEXT };
-}
-
-export function saveEditedFilterInCurrentContext(
-  filter: IIdFilterData
-): ActionResult<void, IManageFiltersAction> {
-  return async (dispatch, getState, deps) => {
-    if (filter.value.length === 0) {
-      removeFilterFromCurrentContext({ ...filter, isEdited: false })(
-        dispatch,
-        getState,
-        deps
-      );
-    } else {
-      editFilterInCurrentContext({ ...filter, isEdited: false })(
-        dispatch,
-        getState,
-        deps
-      );
-    }
-  };
 }
 
 export function updateContextFilters(
@@ -253,13 +250,12 @@ function saveFilters(
   saveFiltersInLocalStorage(ctxName, filters);
 }
 
-const URLFiltersParam = 'filters';
 function saveFiltersInUrl(history: History, filters: IFilterData[]) {
   const urlParams = new URLSearchParams(window.location.search);
   if (filters.length === 0) {
     urlParams.delete(URLFiltersParam);
   } else {
-    urlParams.set(URLFiltersParam, encodeURIComponent(JSON.stringify(filters)));
+    urlParams.set(URLFiltersParam, makeURLFilters(filters));
   }
   history.push({
     search: String(urlParams),

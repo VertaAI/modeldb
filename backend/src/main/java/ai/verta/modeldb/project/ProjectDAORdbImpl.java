@@ -1,9 +1,11 @@
 package ai.verta.modeldb.project;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
@@ -15,7 +17,6 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -34,7 +35,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Organization;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
@@ -49,6 +49,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -127,6 +128,22 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .toString();
   private static final String GET_PROJECT_BY_ID_HQL =
       "From ProjectEntity p where p.id = :id AND p." + ModelDBConstants.DELETED + " = false";
+  private static final String COUNT_PROJECT_BY_ID_HQL =
+      "Select Count(id) From ProjectEntity p where p.deleted = false AND p.id = :projectId";
+  private static final String NON_DELETED_PROJECT_IDS =
+      "select id  From ProjectEntity p where p.deleted = false";
+  private static final String NON_DELETED_PROJECT_IDS_BY_IDS =
+      NON_DELETED_PROJECT_IDS + " AND p.id in (:" + ModelDBConstants.PROJECT_IDS + ")";
+  private static final String IDS_FILTERED_BY_WORKSPACE =
+      NON_DELETED_PROJECT_IDS_BY_IDS
+          + " AND p."
+          + ModelDBConstants.WORKSPACE
+          + " = :"
+          + ModelDBConstants.WORKSPACE
+          + " AND p."
+          + ModelDBConstants.WORKSPACE_TYPE
+          + " = :"
+          + ModelDBConstants.WORKSPACE_TYPE;
   private static final String GET_PROJECT_BY_IDS_HQL =
       "From ProjectEntity p where p.id IN (:ids) AND p." + ModelDBConstants.DELETED + " = false";
   private static final String GET_PROJECT_BY_SHORT_NAME_AND_OWNER_HQL =
@@ -373,7 +390,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
       if (projectObj == null) {
         String errorMessage = "Project not found for given ID";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -423,7 +440,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
         if (projectObj == null) {
           String errorMessage = "Project not found for given ID: " + projectId;
-          LOGGER.warn(errorMessage);
+          LOGGER.info(errorMessage);
           Status status =
               Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
           throw StatusProto.toStatusRuntimeException(status);
@@ -455,7 +472,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
       if (projectObj == null) {
         String errorMessage = "Project not found for given ID";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -796,8 +813,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       query.setParameter("id", id);
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
-        String errorMessage = "Project not found for given ID";
-        LOGGER.warn(errorMessage);
+        String errorMessage = ModelDBMessages.PROJECT_NOT_FOUND_FOR_ID;
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -1108,7 +1125,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       } catch (ModelDBException ex) {
         if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
-          LOGGER.warn(ex.getMessage());
+          LOGGER.info(ex.getMessage());
           ProjectPaginationDTO projectPaginationDTO = new ProjectPaginationDTO();
           projectPaginationDTO.setProjects(Collections.emptyList());
           projectPaginationDTO.setTotalRecords(0L);
@@ -1189,7 +1206,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
         String errorMessage = "Project not found for given ID: " + projectId;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -1238,7 +1255,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
         String errorMessage = "Project not found for given ID: " + projectId;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -1249,7 +1266,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         return project.getArtifactsList();
       } else {
         String errorMessage = "Artifacts not found in the Project";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -1351,15 +1368,70 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
   }
 
+  /**
+   * returns a list of projectIds accessible to the user passed as an argument within the workspace
+   * passed as an argument. For no auth returns the list of non deleted projects
+   */
   @Override
   public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException {
-    FindProjects findProjects =
-        FindProjects.newBuilder().setWorkspaceName(workspaceName).setIdsOnly(true).build();
-    ProjectPaginationDTO projectPaginationDTO =
-        findProjects(findProjects, null, currentLoginUserInfo, ProjectVisibility.PRIVATE);
-    return projectPaginationDTO.getProjects().stream()
-        .map(Project::getId)
-        .collect(Collectors.toList());
+    if (!roleService.IsImplemented()) {
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        return session.createQuery(NON_DELETED_PROJECT_IDS).list();
+      }
+    } else {
+
+      // get list of accessible projects
+      @SuppressWarnings("unchecked")
+      List<String> accessibleProjectIds =
+          roleService.getAccessibleResourceIds(
+              null,
+              new CollaboratorUser(authService, currentLoginUserInfo),
+              ProjectVisibility.PRIVATE,
+              ModelDBServiceResourceTypes.PROJECT,
+              Collections.EMPTY_LIST);
+
+      // resolve workspace
+      WorkspaceDTO workspaceDTO =
+          roleService.getWorkspaceDTOByWorkspaceName(currentLoginUserInfo, workspaceName);
+
+      List<String> resultProjects = new LinkedList<String>();
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        @SuppressWarnings("unchecked")
+        Query<String> query = session.createQuery(IDS_FILTERED_BY_WORKSPACE);
+        query.setParameterList(ModelDBConstants.PROJECT_IDS, accessibleProjectIds);
+        query.setParameter(ModelDBConstants.WORKSPACE, workspaceDTO.getWorkspaceId());
+        query.setParameter(
+            ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
+        resultProjects = query.list();
+
+        // in personal workspace show projects directly shared
+        if (workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          List<String> directlySharedProjects =
+              roleService.getSelfDirectlyAllowedResources(
+                  ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
+          query = session.createQuery(NON_DELETED_PROJECT_IDS_BY_IDS);
+          query.setParameterList(ModelDBConstants.PROJECT_IDS, directlySharedProjects);
+          resultProjects.addAll(query.list());
+        }
+      }
+      return resultProjects;
+    }
+  }
+
+  @Override
+  public boolean projectExistsInDB(String projectId) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Query query = session.createQuery(COUNT_PROJECT_BY_ID_HQL);
+      query.setParameter("projectId", projectId);
+      Long projectCount = (Long) query.getSingleResult();
+      return projectCount == 1L;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return projectExistsInDB(projectId);
+      } else {
+        throw ex;
+      }
+    }
   }
 }

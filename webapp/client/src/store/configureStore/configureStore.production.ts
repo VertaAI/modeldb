@@ -11,15 +11,19 @@ import {
   IApplicationState,
   IThunkActionDependencies,
 } from '../store';
+import { ApolloClient } from 'apollo-boost';
 
 export default function configureStore(
   history: History,
-  initialState: IApplicationState
+  initialState: IApplicationState,
+  extraMiddlewares: any = [],
+  apolloClient: ApolloClient<any>
 ): Store<IApplicationState> {
   const reduxThunkExtraArgument: IThunkActionDependencies = {
     ServiceFactory,
     history,
     makeCommentsService: Comments.makeCommentsService,
+    apolloClient,
   };
 
   const store = createStore<IApplicationState, any, any, any>(

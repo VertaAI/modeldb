@@ -65,7 +65,7 @@ class TestRepository extends FunSuite {
 
     try {
       val originalCommit = f.repo.getCommitByBranch().get
-      val getCommitAttempt = f.repo.getCommitById(originalCommit.id)
+      val getCommitAttempt = f.repo.getCommitById(originalCommit.id.get)
 
       assert(getCommitAttempt.isSuccess)
       assert(getCommitAttempt.get equals originalCommit)
@@ -102,6 +102,20 @@ class TestRepository extends FunSuite {
     }
   }
 
+  test("create new branch and get commit by that branch's name") {
+    val f = fixture
+
+    try {
+      val commit = f.repo.getCommitByBranch().get
+      val commitNewBranch = commit.newBranch("new-branch").get
+      val commitGetByBranch = f.repo.getCommitByBranch("new-branch").get
+
+      assert(commitGetByBranch equals commitNewBranch)
+    } finally {
+      cleanup(f)
+    }
+  }
+
   test("get commit by branch (not exist) should return a failure")  {
     val f = fixture
 
@@ -112,6 +126,27 @@ class TestRepository extends FunSuite {
       assert(getCommitAttempt match {
         case Failure(e) => e.getMessage contains "Branch not found"
       })
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("add/remove tag and get commit by tag") {
+    val f = fixture
+
+    try {
+      val commit = f.repo.getCommitByBranch().get
+      commit.tag("Some tag")
+
+      val getCommitAttempt = f.repo.getCommitByTag("Some tag")
+      assert(getCommitAttempt.isSuccess)
+      assert(getCommitAttempt.get equals commit)
+
+      f.repo.deleteTag("Some tag")
+
+      val getCommitAttemptAfterDel = f.repo.getCommitByTag("Some tag")
+      assert(getCommitAttemptAfterDel.isFailure)
+      assert(getCommitAttemptAfterDel match {case Failure(e) => e.getMessage contains "Tag not found"})
     } finally {
       cleanup(f)
     }

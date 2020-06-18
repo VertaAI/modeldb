@@ -110,3 +110,17 @@ export const renameObjectKey = <T extends Record<any, any>>(
     [newKey]: obj[oldKey],
   } as T;
 };
+
+export const toggle = <T>(array: T[], value: T) => {
+  if (array.includes(value)) {
+    return array.filter(i => i !== value);
+  }
+  return [...array, value];
+};
+
+export function groupBy<T, U extends string>(
+  fn: (a: T) => U,
+  list: ReadonlyArray<T>
+): Record<U, T[]> {
+  return R.groupBy(fn, list) as any;
+}

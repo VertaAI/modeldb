@@ -1,0 +1,13 @@
+.root {
+  width: 184px;
+}
+
+.icon {
+  font-size: 17.5px;
+  color: var(--main-text-color2);
+  cursor: pointer;
+}
+
+.root input {
+  padding: 8.5px 14px !important;
+}

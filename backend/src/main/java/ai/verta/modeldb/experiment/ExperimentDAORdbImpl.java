@@ -1,7 +1,8 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
-import ai.verta.modeldb.Artifact;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.Experiment;
@@ -24,7 +25,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.ModelResourceEnum;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -152,14 +152,14 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     // Validate if current user has access to the entity or not
     if (projectIdSet.size() == 1) {
       roleService.isSelfAllowed(
-          ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceResourceTypes.PROJECT,
           modelDBServiceActions,
           new ArrayList<>(projectIdSet).get(0));
       accessibleExperimentIds.addAll(requestedExperimentIds);
     } else {
       allowedProjectIds =
           roleService.getSelfAllowedResources(
-              ModelResourceEnum.ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
+              ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
       // Validate if current user has access to the entity or not
       allowedProjectIds.retainAll(projectIdSet);
       for (Map.Entry<String, String> entry : projectIdExperimentIdMap.entrySet()) {
@@ -251,7 +251,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         ownerRole,
         new CollaboratorUser(authService, userInfo),
         experiment.getId(),
-        ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
+        ModelDBServiceResourceTypes.EXPERIMENT);
   }
 
   @Override
@@ -307,7 +307,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         return experimentObj.getProtoObject();
       } else {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -370,7 +370,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       ExperimentEntity experimentObj = session.load(ExperimentEntity.class, experimentId);
       if (experimentObj == null) {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -461,7 +461,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       ExperimentEntity experimentObj = session.get(ExperimentEntity.class, experimentId);
       if (experimentObj == null) {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -493,7 +493,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       ExperimentEntity experimentObj = session.get(ExperimentEntity.class, experimentId);
       if (experimentObj == null) {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -829,7 +829,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
             projectDAO.getWorkspaceProjectIDs(
                 queryParameters.getWorkspaceName(), currentLoginUserInfo);
         if (workspaceProjectIDs == null || workspaceProjectIDs.isEmpty()) {
-          LOGGER.warn(
+          LOGGER.info(
               "accessible project for the experiments not found for given workspace : {}",
               queryParameters.getWorkspaceName());
           ExperimentPaginationDTO experimentPaginationDTO = new ExperimentPaginationDTO();
@@ -873,7 +873,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       } catch (ModelDBException ex) {
         if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
-          LOGGER.warn(ex.getMessage());
+          LOGGER.info(ex.getMessage());
           ExperimentPaginationDTO experimentPaginationDTO = new ExperimentPaginationDTO();
           experimentPaginationDTO.setExperiments(Collections.emptyList());
           experimentPaginationDTO.setTotalRecords(0L);
@@ -1011,7 +1011,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         return experiment.getArtifactsList();
       } else {
         String errorMessage = "Artifacts not found in the Experiment";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);

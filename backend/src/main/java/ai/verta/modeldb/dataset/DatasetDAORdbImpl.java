@@ -1,7 +1,9 @@
 package ai.verta.modeldb.dataset;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
@@ -10,7 +12,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorOrg;
@@ -25,7 +26,7 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
@@ -40,6 +41,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -90,6 +92,22 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           .append(ModelDBConstants.ID)
           .append(" IN (:datasetIds)")
           .toString();
+  private static final String COUNT_DATASET_BY_ID_HQL =
+      "Select Count(id) From DatasetEntity d where d.deleted = false AND d.id = :datasetId";
+  private static final String NON_DELETED_DATASET_IDS =
+      "select id  From DatasetEntity d where d.deleted = false";
+  private static final String NON_DELETED_DATASET_IDS_BY_IDS =
+      NON_DELETED_DATASET_IDS + " AND d.id in (:" + ModelDBConstants.DATASET_IDS + ")";
+  private static final String IDS_FILTERED_BY_WORKSPACE =
+      NON_DELETED_DATASET_IDS_BY_IDS
+          + " AND d."
+          + ModelDBConstants.WORKSPACE
+          + " = :"
+          + ModelDBConstants.WORKSPACE
+          + " AND d."
+          + ModelDBConstants.WORKSPACE_TYPE
+          + " = :"
+          + ModelDBConstants.WORKSPACE_TYPE;
 
   public DatasetDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
@@ -453,7 +471,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       } catch (ModelDBException ex) {
         if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
-          LOGGER.warn(ex.getMessage());
+          LOGGER.info(ex.getMessage());
           DatasetPaginationDTO datasetPaginationDTO = new DatasetPaginationDTO();
           datasetPaginationDTO.setDatasets(Collections.emptyList());
           datasetPaginationDTO.setTotalRecords(0L);
@@ -606,7 +624,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -718,7 +736,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
@@ -990,12 +1008,63 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   @Override
   public List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException {
-    FindDatasets findDatasets =
-        FindDatasets.newBuilder().setWorkspaceName(workspaceName).setIdsOnly(true).build();
-    DatasetPaginationDTO datasetPaginationDTO =
-        findDatasets(findDatasets, currentLoginUserInfo, DatasetVisibility.PRIVATE);
-    return datasetPaginationDTO.getDatasets().stream()
-        .map(Dataset::getId)
-        .collect(Collectors.toList());
+    if (!roleService.IsImplemented()) {
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        return session.createQuery(NON_DELETED_DATASET_IDS).list();
+      }
+    } else {
+
+      // get list of accessible datasets
+      @SuppressWarnings("unchecked")
+      List<String> accessibleDatasetIds =
+          roleService.getAccessibleResourceIds(
+              null,
+              new CollaboratorUser(authService, currentLoginUserInfo),
+              DatasetVisibility.PRIVATE,
+              ModelDBServiceResourceTypes.DATASET,
+              Collections.EMPTY_LIST);
+
+      // resolve workspace
+      WorkspaceDTO workspaceDTO =
+          roleService.getWorkspaceDTOByWorkspaceName(currentLoginUserInfo, workspaceName);
+
+      List<String> resultDatasets = new LinkedList<String>();
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        @SuppressWarnings("unchecked")
+        Query<String> query = session.createQuery(IDS_FILTERED_BY_WORKSPACE);
+        query.setParameterList(ModelDBConstants.DATASET_IDS, accessibleDatasetIds);
+        query.setParameter(ModelDBConstants.WORKSPACE, workspaceDTO.getWorkspaceId());
+        query.setParameter(
+            ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
+        resultDatasets = query.list();
+
+        // in personal workspace show datasets directly shared
+        if (workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          List<String> directlySharedDatasets =
+              roleService.getSelfDirectlyAllowedResources(
+                  ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.READ);
+          query = session.createQuery(NON_DELETED_DATASET_IDS_BY_IDS);
+          query.setParameterList(ModelDBConstants.DATASET_IDS, directlySharedDatasets);
+          resultDatasets.addAll(query.list());
+        }
+      }
+      return resultDatasets;
+    }
+  }
+
+  @Override
+  public boolean datasetExistsInDB(String datasetId) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Query query = session.createQuery(COUNT_DATASET_BY_ID_HQL);
+      query.setParameter("datasetId", datasetId);
+      Long projectCount = (Long) query.getSingleResult();
+      return projectCount == 1L;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return datasetExistsInDB(datasetId);
+      } else {
+        throw ex;
+      }
+    }
   }
 }

@@ -7,10 +7,111 @@ import sys
 
 import verta
 from verta._internal_utils import _utils
+from verta._internal_utils import _file_utils
 from verta._internal_utils import _pip_requirements_utils
 
 import pytest
 from . import utils
+
+
+class TestMakeRequest:
+    def test_200_no_history(self, client):
+        """
+        The util manually tracks and assigns the response history after resolving redirects.
+
+        If no redirects occurred, the history should be empty.
+
+        """
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/status/200",
+            client._conn,
+        )
+
+        assert not response.history
+        assert response.status_code == 200
+
+    def test_301_continue(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/redirect-to",
+            client._conn,
+            params={
+                'url': "http://httpbin.org/get",
+                'status_code': 301,
+            },
+        )
+
+        assert len(response.history) == 1
+        assert response.history[0].status_code == 301
+        assert response.status_code == 200
+
+    def test_302_stop(self, client):
+        with pytest.raises(RuntimeError) as excinfo:
+            _utils.make_request(
+                "GET",
+                "http://httpbin.org/redirect-to",
+                client._conn,
+                params={
+                    'url': "http://httpbin.org/get",
+                    'status_code': 302,
+                },
+            )
+        assert str(excinfo.value).strip().startswith("received status 302")
+
+    @pytest.mark.parametrize("status_code", [302, 400, 500])
+    def test_ignore_conn_err(self, client, status_code):
+        previous_setting = client.ignore_conn_err
+
+        client.ignore_conn_err = True
+        try:
+            response = _utils.make_request(
+                "GET",
+                "http://httpbin.org/status/{}".format(status_code),
+                client._conn,
+            )
+
+            assert response.status_code == 200
+            assert response.json() == {}
+        finally:
+            client.ignore_conn_err = previous_setting
+
+
+class TestBodyToJson:
+    def test_json_response(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/json",
+            client._conn,
+        )
+
+        assert isinstance(_utils.body_to_json(response), dict)
+
+    def test_empty_response_error(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/status/200",
+            client._conn,
+        )
+
+        with pytest.raises(ValueError) as excinfo:
+            _utils.body_to_json(response)
+        msg = str(excinfo.value).strip()
+        assert msg.startswith("expected JSON response")
+        assert "<empty response>" in msg
+
+    def test_html_response_error(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/html",
+            client._conn,
+        )
+
+        with pytest.raises(ValueError) as excinfo:
+            _utils.body_to_json(response)
+        msg = str(excinfo.value).strip()
+        assert msg.startswith("expected JSON response")
+        assert "<!DOCTYPE html>" in msg
 
 
 class TestToBuiltin:
@@ -183,3 +284,21 @@ class TestPipRequirementsUtils:
             _pip_requirements_utils.SPACY_MODEL_REGEX.match,
             _pip_requirements_utils.get_pip_freeze(),
         ))
+
+
+class TestIncrementFilepath:
+    @pytest.mark.parametrize(
+        "input_filepath, expected_filepath",
+        [
+            ("data.csv", "data 1.csv"),
+            ("data 1.csv", "data 2.csv"),
+            ("my data.csv", "my data 1.csv"),
+            ("my data 1.csv", "my data 2.csv"),
+            ("archive.tar.gz", "archive.tar 1.gz"),
+            ("archive.tar 1.gz", "archive.tar 2.gz"),
+            ("my archive.tar.gz", "my archive.tar 1.gz"),
+            ("my archive.tar 1.gz", "my archive.tar 2.gz"),
+        ],
+    )
+    def test_increment(self, input_filepath, expected_filepath):
+        assert expected_filepath == _file_utils.increment_filepath(input_filepath)

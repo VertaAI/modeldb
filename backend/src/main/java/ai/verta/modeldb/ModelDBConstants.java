@@ -47,6 +47,8 @@ public interface ModelDBConstants {
   Integer NAME_LENGTH = 256;
   String PATH_DELIMITER = "/";
   Integer TAG_LENGTH = 40;
+  int INITIAL_CRON_DELAY = 300; // 300second = 5min : timeout in second
+  String INITIAL_DELAY = "initial_delay";
 
   // String Constants
   String STRING_COLON = ":";
@@ -113,6 +115,7 @@ public interface ModelDBConstants {
   String CODE_ARCHIVE = "code_archive";
   String CODE_VERSION = "code_version";
   String DATASET_ID = "dataset_id";
+  String DATASET_IDS = "dataset_ids";
   String DATA_LIST = "data_list";
   String DATE_TIME = "date_time";
   String DATASET_ID_STR = "datasetId";

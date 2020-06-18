@@ -9,6 +9,7 @@ import ai.verta.client.entities.subobjects._
 import ai.verta.client.entities.utils.KVHandler
 import ai.verta.swagger._public.modeldb.model._
 import ai.verta.swagger.client.ClientSet
+import ai.verta.repository._
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
@@ -16,13 +17,25 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success, Try}
 
 class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: ModeldbExperimentRun) extends Taggable {
+  /** Return a set-like object of type Tags, representing the tags associated with ExperimentRun
+   *  Provide an alternative interface to get/del/add Tags methods
+   *  @return the tags set
+   */
   def tags()(implicit ec: ExecutionContext) = new Tags(clientSet, ec, this)
 
+  /** Gets all tags from this Experiment Run
+   *  @return list of all the tags of this run, if succeeds
+   */
   override def getTags()(implicit ec: ExecutionContext): Try[List[String]] = {
     clientSet.experimentRunService.getExperimentRunTags(run.id)
       .map(r => r.tags.getOrElse(Nil))
   }
 
+  /** Delete multiple tags of this Experiment Run.
+   *  If the run does not have any tag in the list, that tag will be ignored
+   *  @param tags tags
+   *  @return whether the attempt succeeds
+   */
   override def delTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
     clientSet.experimentRunService.deleteExperimentRunTags(ModeldbDeleteExperimentRunTags(
       id = run.id,
@@ -31,6 +44,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       .map(_ => {})
   }
 
+  /** Logs multiple tags to this Experiment Run
+   *  @param tags tags
+   *  @return whether the attempt succeeds
+   */
   override def addTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
     clientSet.experimentRunService.addExperimentRunTags(ModeldbAddExperimentRunTags(
       id = run.id,
@@ -70,8 +87,15 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
     getHyperparameters().map(_.get(key))
 
   // TODO: add overwrite
+  /** Return a map-like object of type Metrics, representing the metrics associated with ExperimentRun
+   *  Provide an alternative interface to get/log metrics
+   *  @return the metrics map
+   */
   def metrics()(implicit ec: ExecutionContext) = new Metrics(clientSet, ec, this)
 
+  /** Logs potentially multiple metrics to this Experiment Run.
+   *  @param metrics Metrics
+   */
   def logMetrics(vals: Map[String, Any])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
@@ -81,9 +105,18 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       )).map(_ => {})
   }
 
+  /** Logs a metric to this Experiment Run
+   *  If the metadatum of interest might recur, logObservation() should be used instead
+   *  @param key Name of the metric
+   *  @param value Value of the metric
+   */
   def logMetric(key: String, value: Any)(implicit ec: ExecutionContext) =
     logMetrics(Map(key -> value))
 
+  /** Gets all metrics from this Experiment Run
+   *  @param key Name of the metric
+   *  @return Names and values of all metrics
+   */
   def getMetrics()(implicit ec: ExecutionContext): Try[Map[String, Any]] = {
     clientSet.experimentRunService.getMetrics(
       id = run.id
@@ -96,6 +129,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       })
   }
 
+  /** Gets the metric with name key from this Experiment Run
+   *  @param key Name of the metric
+   *  @return Value of the metric
+   */
   def getMetric(key: String)(implicit ec: ExecutionContext) =
     getMetrics().map(_.get(key))
 
@@ -219,7 +256,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
 
     clientSet.experimentRunService.logArtifact(ModeldbLogArtifact(
       id = run.id,
-      artifact = Some(ModeldbArtifact(
+      artifact = Some(CommonArtifact(
         key = Some(key),
         path = Some(artifactPath),
         path_only = Some(false),
@@ -273,5 +310,51 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
           Duration.Inf
         )
       })
+  }
+
+  /** Associate a Commit with this Experiment Run
+   *  @param commit Verta commit
+   *  @param keyPaths (optional) A mapping between descriptive keys and paths of particular interest within commit. This can be useful for, say, highlighting a particular file as the training dataset used for this Experiment Run.
+   *  @return whether the log attempt succeeds
+   */
+  def logCommit(commit: Commit, keyPaths: Option[Map[String, String]] = None)(implicit ec: ExecutionContext) = {
+    commit.checkSaved("Commit must be saved before it can be associated to a run").flatMap(_ => {
+      // convert the path to correct format for query
+      // split it, then wrapped with VertamodeldbLocation
+      val keyLocationMap = keyPaths.map(
+        _.mapValues(location => VertamodeldbLocation(Some(location.split("/").toList)))
+      )
+
+      clientSet.experimentRunService.logVersionedInput(
+        body = ModeldbLogVersionedInput(
+          id = run.id, versioned_inputs = Some(ModeldbVersioningEntry(
+            commit = commit.id,
+            key_location_map = keyLocationMap,
+            repository_id = Some(commit.repoId)
+          ))
+        )
+      )
+    }).map(_ => ())
+  }
+
+  /** Gets the Commit associated with this Experiment Run
+   *  @return commit sha, its repository ID, and the associated key-paths, wrapped in an ExperimentRunCommit instance.
+   */
+  def getCommit()(implicit ec: ExecutionContext): Try[ExperimentRunCommit] = {
+    clientSet.experimentRunService.getVersionedInputs(id = run.id).flatMap(response =>
+      if (response.versioned_inputs.isEmpty || response.versioned_inputs.get.commit.isEmpty)
+        Failure(new IllegalStateException("No commit is associated with this experiment run"))
+      else {
+        val versioningEntry = response.versioned_inputs.get
+        val keyPaths = versioningEntry.key_location_map.map(
+          _.map(pair => (pair._1, pair._2.location.get.mkString("/")))
+        )
+
+        clientSet.versioningService.GetRepository2(id_repo_id = versioningEntry.repository_id.get)
+          .map(r => new Repository(clientSet, r.repository.get))
+          .flatMap(_.getCommitById(versioningEntry.commit.get))
+          .map(commit => ExperimentRunCommit(commit, keyPaths))
+      }
+    )
   }
 }

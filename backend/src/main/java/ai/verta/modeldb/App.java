@@ -31,9 +31,6 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunServiceImpl;
 import ai.verta.modeldb.health.HealthServiceImpl;
 import ai.verta.modeldb.health.HealthStatusManager;
-import ai.verta.modeldb.job.JobDAO;
-import ai.verta.modeldb.job.JobDAORdbImpl;
-import ai.verta.modeldb.job.JobServiceImpl;
 import ai.verta.modeldb.lineage.LineageDAO;
 import ai.verta.modeldb.lineage.LineageDAORdbImpl;
 import ai.verta.modeldb.lineage.LineageServiceImpl;
@@ -404,7 +401,6 @@ public class App implements ApplicationContextAware {
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
     ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
-    JobDAO jobDAO = new JobDAORdbImpl(authService);
     CommentDAO commentDAO = new CommentDAORdbImpl(authService);
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
     LineageDAO lineageDAO = new LineageDAORdbImpl();
@@ -420,7 +416,6 @@ public class App implements ApplicationContextAware {
         datasetDAO,
         datasetVersionDAO,
         artifactStoreDAO,
-        jobDAO,
         commentDAO,
         lineageDAO,
         metadataDAO,
@@ -439,7 +434,6 @@ public class App implements ApplicationContextAware {
       DatasetDAO datasetDAO,
       DatasetVersionDAO datasetVersionDAO,
       ArtifactStoreDAO artifactStoreDAO,
-      JobDAO jobDAO,
       CommentDAO commentDAO,
       LineageDAO lineageDAO,
       MetadataDAO metadataDAO,
@@ -470,9 +464,9 @@ public class App implements ApplicationContextAware {
             artifactStoreDAO,
             datasetVersionDAO));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
-    wrapService(serverBuilder, new JobServiceImpl(authService, jobDAO));
-    LOGGER.trace("Job serviceImpl initialized");
-    wrapService(serverBuilder, new CommentServiceImpl(authService, commentDAO));
+    wrapService(
+        serverBuilder,
+        new CommentServiceImpl(authService, commentDAO, experimentRunDAO, roleService));
     LOGGER.trace("Comment serviceImpl initialized");
     wrapService(
         serverBuilder,
@@ -518,7 +512,8 @@ public class App implements ApplicationContextAware {
             experimentDAO,
             experimentRunDAO,
             new ModelDBAuthInterceptor(),
-            new FileHasher()));
+            new FileHasher(),
+            artifactStoreDAO));
     LOGGER.trace("Versioning serviceImpl initialized");
     wrapService(serverBuilder, new MetadataServiceImpl(metadataDAO));
     LOGGER.trace("Metadata serviceImpl initialized");
@@ -640,7 +635,7 @@ public class App implements ApplicationContextAware {
     if (optIn) {
       // creating an instance of task to be scheduled
       TimerTask task = new TelemetryCron(consumer);
-      ModelDBUtils.scheduleTask(task, frequency, TimeUnit.HOURS);
+      ModelDBUtils.scheduleTask(task, frequency, frequency, TimeUnit.HOURS);
       LOGGER.info("Telemetry scheduled successfully");
     } else {
       LOGGER.info("Telemetry opt out by user");

@@ -1,5 +1,5 @@
 .layout {
-  --sidebar-width: 270px;
+  --sidebar-width: 240px;
   --layout-horizontal-padding: 28px;
 
   max-width: 100%;
@@ -44,6 +44,9 @@
   padding: 22px 0 10px 0;
   justify-self: center;
   margin-left: 20px;
+}
+.maxWidthForContent .contentWithBreadcrumbs {
+  width: 95%;
 }
 .breadcrumbs {
 }

@@ -1,8 +1,8 @@
 .blobBox {
-  margin-top: 15px;
+  margin-top: 32px;
 }
 .blobBox:first-child {
-  margin-top: 5px;
+  margin-top: 0;
 }
 
 .title {
@@ -13,4 +13,8 @@
 }
 .dataBox.withPadding {
   padding: 6px 4px;
+}
+
+.boxes [data-type='page-header-title'] {
+  font-weight: normal !important;
 }

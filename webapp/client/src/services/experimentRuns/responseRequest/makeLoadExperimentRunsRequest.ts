@@ -7,20 +7,21 @@ import {
 import {
   IFilterData,
   PropertyType,
-  IIdFilterData,
   IExperimentNameFilterData,
 } from 'core/features/filter/Model';
 import { IPagination } from 'core/shared/models/Pagination';
 import { ISorting } from 'core/shared/models/Sorting';
 import { makeAddFiltersToRequestWithDefaultFilters } from 'features/filter/service/serverModel/Filter/converters';
-import { addPaginationToRequest } from 'services/serverModel/Pagination/converters';
-import { IServerPaginationInRequest } from 'services/serverModel/Pagination/Pagination';
+import { addPaginationToRequest } from 'core/services/serverModel/Pagination/converters';
+import { IServerPaginationInRequest } from 'core/services/serverModel/Pagination/Pagination';
 import { getServerSorting } from 'services/serverModel/Sorting/Sorting';
 
 import {
   ServerFilterValueType,
   getServerFilterOperator,
 } from 'core/features/filter/service/serverModel/Filters/Filters';
+import { IWorkspace } from 'models/Workspace';
+import { addWorkspaceName } from 'services/serverModel/Workspace/converters';
 
 export type IGetExperimentRunsRequest = {
   project_id: string;
@@ -53,20 +54,6 @@ const addServerFilters = (
   projectId: string,
   filters: IFilterData[]
 ): TransformGetExperimentRunsRequest => request => {
-  const idFilterConverter = makeFilterConverter<
-    ITransformedGetExperimentRunsRequest,
-    IIdFilterData
-  >({
-    predicate: (filter): filter is IIdFilterData =>
-      filter.type === PropertyType.ID,
-    convert: (filter, resRequest) => {
-      return Promise.resolve({
-        ...resRequest,
-        experiment_run_ids: filter.value,
-      });
-    },
-  });
-
   const experimentNameFilterConverter = makeFilterConverter<
     ITransformedGetExperimentRunsRequest,
     IExperimentNameFilterData
@@ -91,7 +78,6 @@ const addServerFilters = (
   });
 
   return makeAddFiltersToRequestWithDefaultFilters([
-    idFilterConverter,
     experimentNameFilterConverter,
   ])(filters)(request);
 };
@@ -130,6 +116,19 @@ const makeLoadExperimentRunsRequest = (
     .then(addServerFilters(projectId, filters)) as Promise<
     IGetExperimentRunsRequest
   >;
+};
+
+export const makeLoadExperimentRunsByWorkspaceRequest = (
+  workspaceName: IWorkspace['name'],
+  filters: IFilterData[],
+  pagination: IPagination | null,
+  sorting: ISorting | null
+): Promise<IGetExperimentRunsRequest> => {
+  return Promise.resolve({})
+    .then(addPagination(pagination))
+    .then(workspaceName ? addWorkspaceName(workspaceName) : request => request)
+    .then(addServerFilters('', filters))
+    .then(addSorting(sorting)) as Promise<IGetExperimentRunsRequest>;
 };
 
 export default makeLoadExperimentRunsRequest;

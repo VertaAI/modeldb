@@ -2,11 +2,16 @@
 
 from __future__ import print_function
 
+import os
+import pathlib2
+import tempfile
+
 from ..external import six
 from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
+from .._internal_utils import _artifact_utils
 from .._internal_utils import _utils
 
 from . import _dataset
@@ -24,6 +29,8 @@ class S3(_dataset._Dataset):
     paths : list
         List of S3 URLs of the form ``"s3://<bucket-name>"`` or ``"s3://<bucket-name>/<key>"``, or
         objects returned by :meth:`S3.location`.
+    enable_mdb_versioning : bool, default False
+        Whether to upload the data itself to ModelDB to enable managed data versioning.
 
     Examples
     --------
@@ -45,11 +52,11 @@ class S3(_dataset._Dataset):
     """
     _S3_PATH = "s3://{}/{}"
 
-    def __init__(self, paths):
+    def __init__(self, paths, enable_mdb_versioning=False):
         if isinstance(paths, (six.string_types, S3Location)):
             paths = [paths]
 
-        super(S3, self).__init__()
+        super(S3, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
         obj_paths_to_metadata = dict()  # prevent duplicate objects
         for path in paths:
@@ -71,18 +78,28 @@ class S3(_dataset._Dataset):
             })
 
         s3_metadata = six.viewvalues(obj_paths_to_metadata)
-        self._msg.s3.components.extend(s3_metadata)  # pylint: disable=no-member
+        self._msg.s3.components.extend(s3_metadata)
 
     def __repr__(self):
+        # TODO: consolidate with Path since they're almost identical now
         lines = ["S3 Version"]
         components = sorted(
-            self._msg.s3.components,
-            key=lambda component_msg: component_msg.path.path,
+            self._path_component_blobs,
+            key=lambda component_msg: component_msg.path,
         )
         for component in components:
-            lines.extend(self._path_component_to_repr_lines(component.path))
+            lines.extend(self._path_component_to_repr_lines(component))
 
         return "\n    ".join(lines)
+
+    @property
+    def _path_component_blobs(self):
+        # S3 has its PathDatasetComponentBlob nested one lever deeper than Path
+        return [
+            component.path
+            for component
+            in self._msg.s3.components
+        ]
 
     @classmethod
     def _get_s3_loc_metadata(cls, s3_loc):
@@ -156,6 +173,62 @@ class S3(_dataset._Dataset):
 
         """
         return S3Location(path, version_id)
+
+    def _prepare_components_to_upload(self):
+        """
+        Downloads files from S3 and tracks them for upload to ModelDB.
+
+        This method does nothing if ModelDB-managed versioning was not enabled.
+
+        """
+        if not self._mdb_versioned:
+            return
+
+        try:
+            import boto3
+        except ImportError:
+            e = ImportError("Boto 3 is not installed; try `pip install boto3`")
+            six.raise_from(e, None)
+        s3 = boto3.client('s3')
+
+        # download files to local disk
+        for s3_obj in self._msg.s3.components:
+            s3_path = s3_obj.path.path
+            s3_loc = S3Location(s3_path, s3_obj.s3_version_id)
+
+            # download to file in ~/.verta/temp/
+            tempdir = os.path.join(_utils.HOME_VERTA_DIR, "temp")
+            pathlib2.Path(tempdir).mkdir(parents=True, exist_ok=True)
+            print("downloading {} from S3".format(s3_path))
+            with tempfile.NamedTemporaryFile('w+b', dir=tempdir, delete=False) as tempf:
+                s3.download_fileobj(
+                    Bucket=s3_loc.bucket,
+                    Key=s3_loc.key,
+                    ExtraArgs={'VersionId': s3_loc.version_id} if s3_loc.version_id else None,
+                    Fileobj=tempf,
+                )
+            print("download complete")
+
+            # track which downloaded file this component corresponds to
+            self._components_to_upload[s3_path] = tempf.name
+
+            # add MDB path to component blob
+            with open(tempf.name, 'rb') as f:
+                artifact_hash = _artifact_utils.calc_sha256(f)
+            s3_obj.path.internal_versioned_path = artifact_hash + '/' + s3_loc.key
+
+    def _clean_up_uploaded_components(self):
+        """
+        Deletes temporary files that had been downloaded for ModelDB-managed versioning.
+
+        This method does nothing if ModelDB-managed versioning was not enabled.
+
+        """
+        if not self._mdb_versioned:
+            return
+
+        for filepath in self._components_to_upload.values():
+            os.remove(filepath)
 
 
 class S3Location(object):

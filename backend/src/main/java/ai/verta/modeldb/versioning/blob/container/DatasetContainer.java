@@ -121,7 +121,8 @@ public class DatasetContainer extends BlobContainer {
     }
   }
 
-  static String computeSHA(AutogenPathDatasetComponentBlob path) throws NoSuchAlgorithmException {
+  public static String computeSHA(AutogenPathDatasetComponentBlob path)
+      throws NoSuchAlgorithmException {
     StringBuilder sb = new StringBuilder();
     sb.append("path:")
         .append(path.getPath())
@@ -136,7 +137,7 @@ public class DatasetContainer extends BlobContainer {
     return FileHasher.getSha(sb.toString());
   }
 
-  private String computeSHA(AutogenS3DatasetComponentBlob s3componentBlob)
+  public static String computeSHA(AutogenS3DatasetComponentBlob s3componentBlob)
       throws NoSuchAlgorithmException {
     StringBuilder sb = new StringBuilder();
     sb.append(":s3:")

@@ -5,10 +5,6 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import DatasetEntityDescriptionManager from 'components/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
-import Attributes from 'components/ModelRecordProps/Attributes/Attributes/Attributes';
-import SummaryInfo from 'components/SummaryViewComponents/SummaryInfo/SummaryInfo';
-import DatasetEntityTagsManager from 'components/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
 import { initialCommunication } from 'core/shared/utils/redux/communication';
 import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
@@ -19,8 +15,12 @@ import {
   selectDataset,
   deleteDataset,
   selectLoadingDataset,
-} from 'store/datasets';
+} from 'features/datasets/store';
 import { IApplicationState } from 'store/store';
+import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
+import Attributes from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
+import DatasetEntityDescriptionManager from 'features/descriptionManager/view/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
+import SummaryInfo from 'core/shared/view/elements/SummaryViewComponents/SummaryInfo/SummaryInfo';
 
 import DatasetDetailsLayout from '../shared/DatasetDetailsLayout/DatasetDetailsLayout';
 import styles from './DatasetSummaryPage.module.css';

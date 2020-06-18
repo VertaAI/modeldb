@@ -315,7 +315,7 @@
       ],
       "default": "UNKNOWN"
     },
-    "ModelResourceEnumModelDBServiceResourceTypes": {
+    "ModelDBResourceEnumModelDBServiceResourceTypes": {
       "type": "string",
       "enum": [
         "UNKNOWN",
@@ -468,14 +468,11 @@
     "uacGetAllowedEntitiesWithActionsResponse": {
       "type": "object",
       "properties": {
-        "entities": {
+        "entitiesWithActions": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/uacEntities"
+            "$ref": "#/definitions/uacGetAllowedEntitiesWithActionsResponse"
           }
-        },
-        "actions": {
-          "$ref": "#/definitions/uacAction"
         }
       }
     },
@@ -626,7 +623,7 @@
       "type": "object",
       "properties": {
         "modeldb_service_resource_type": {
-          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+          "$ref": "#/definitions/ModelDBResourceEnumModelDBServiceResourceTypes"
         }
       }
     },

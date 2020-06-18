@@ -16,17 +16,10 @@
 
 .comparingInfo {
   display: flex;
-  align-items: center;
-  position: relative;
-  padding-bottom: 24px;
-  margin-bottom: 14px;
   border-bottom: 1px solid var(--main-text-color3);
-  color: var(--main-text-color1);
+  margin-bottom: 14px;
 }
 
-.commitPointer {
-}
-
-.merge {
+.button {
   margin-left: auto;
 }

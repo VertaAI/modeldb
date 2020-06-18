@@ -1,9 +1,10 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
@@ -19,7 +20,6 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -303,7 +303,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 workspaceDTO,
                 request.getRepository().getOwner(),
                 request.getRepository().getRepositoryVisibility());
-        repository.setDeleted(true);
       } else {
         repository = getRepositoryById(session, request.getId(), true);
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -337,19 +336,24 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
       session.getTransaction().commit();
       if (create) {
-        createRoleBindingsForRepository(request, userInfo, repository);
-
-        // Update repository deleted status to false after roleBindings created successfully
-        session.beginTransaction();
-        repository.setDeleted(false);
-        session.update(repository);
-        session.getTransaction().commit();
+        try {
+          createRoleBindingsForRepository(request, userInfo, repository);
+        } catch (Exception e) {
+          LOGGER.info("Exception from UAC during Repo role binding creation : {}", e.getMessage());
+          LOGGER.info("Deleting the created repository {}", repository.getId());
+          // delete the repo created
+          session.beginTransaction();
+          session.delete(repository);
+          session.getTransaction().commit();
+          throw e;
+        }
       }
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setRepository(commitDAO, request, userInfo, create);
       } else {
+
         throw ex;
       }
     }
@@ -899,7 +903,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       } catch (ModelDBException ex) {
         if (ex.getCode().ordinal() == com.google.rpc.Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
-          LOGGER.warn(ex.getMessage());
+          LOGGER.info(ex.getMessage());
           return FindRepositories.Response.newBuilder()
               .addAllRepositories(Collections.emptyList())
               .setTotalRecords(0L)
