@@ -211,7 +211,7 @@ class _Dataset(blob.Blob):
                         os.remove(tempf.name)
                     raise e
                 else:
-                    # update local path in dict in case changed to avoid collisiion
+                    # update local path in dict in case changed
                     components_to_download[path] = local_path
 
                     print("download complete; file written to {}".format(local_path))
