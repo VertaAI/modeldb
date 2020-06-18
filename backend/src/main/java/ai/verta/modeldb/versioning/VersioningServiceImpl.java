@@ -269,7 +269,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               request.getCommit(),
               (session) -> blobDAO.setBlobs(session, blobContainers, fileHasher),
               (session, repoId, commitHash) ->
-                  blobDAO.setBlobsAttributes(session, repoId, commitHash, blobContainers),
+                  blobDAO.setBlobsAttributes(session, repoId, commitHash, blobContainers, true),
               repositoryFunction);
 
       responseObserver.onNext(response);
@@ -314,7 +314,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         commitDAO.deleteCommits(
             request.getRepositoryId(),
             Collections.singletonList(request.getCommitSha()),
-            repositoryDAO);
+            repositoryDAO,
+            false);
         responseObserver.onNext(DeleteCommitRequest.Response.newBuilder().build());
         responseObserver.onCompleted();
       }

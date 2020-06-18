@@ -160,7 +160,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       CommitEntity commitEntity =
           saveCommitEntity(session, commit, rootSha, datasetVersion.getOwner(), repositoryEntity);
       blobDAO.setBlobsAttributes(
-          session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList);
+          session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList, true);
       String compositeId =
           VersioningUtils.getVersioningCompositeId(
               repositoryEntity.getId(), commitEntity.getCommit_hash(), location);
@@ -385,7 +385,8 @@ public class CommitDAORdbImpl implements CommitDAO {
   public boolean deleteCommits(
       RepositoryIdentification repositoryIdentification,
       List<String> commitShas,
-      RepositoryDAO repositoryDAO)
+      RepositoryDAO repositoryDAO,
+      boolean isDatasetVersion)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity =
@@ -400,16 +401,6 @@ public class CommitDAORdbImpl implements CommitDAO {
       getCommitQuery.setParameter("commitHashes", commitShas);
       List<CommitEntity> commitEntities = getCommitQuery.getResultList();
 
-      for (CommitEntity commitEntity : commitEntities) {
-        if (!commitEntity.getChild_commits().isEmpty()) {
-          throw new ModelDBException(
-              "Commit '"
-                  + commitEntity.getCommit_hash()
-                  + "' has the child, please delete child commit first",
-              Code.FAILED_PRECONDITION);
-        }
-      }
-
       String getBranchByCommitHQLBuilder =
           "FROM "
               + BranchEntity.class.getSimpleName()
@@ -420,37 +411,54 @@ public class CommitDAORdbImpl implements CommitDAO {
       getBranchByCommitQuery.setParameter("repositoryId", repositoryEntity.getId());
       getBranchByCommitQuery.setParameter("commitHashes", commitShas);
       List<BranchEntity> branchEntities = getBranchByCommitQuery.list();
-      if (branchEntities != null && !branchEntities.isEmpty()) {
-        StringBuilder errorMessage =
-            new StringBuilder("Commits are associated with branch name : ");
-        int count = 0;
-        for (BranchEntity branchEntity : branchEntities) {
-          errorMessage.append(branchEntity.getId().getBranch());
-          if (count < branchEntities.size() - 1) {
-            errorMessage.append(", ");
-          }
-          count++;
-        }
-        throw new ModelDBException(errorMessage.toString(), Code.FAILED_PRECONDITION);
-      }
 
-      String getTagsHql =
-          "From TagsEntity te where te.id."
-              + ModelDBConstants.REPOSITORY_ID
-              + " = :repoId "
-              + " AND te.commit_hash"
-              + " IN (:commitHashes)";
-      Query<TagsEntity> getTagsQuery = session.createQuery(getTagsHql, TagsEntity.class);
-      getTagsQuery.setParameter("repoId", repositoryEntity.getId());
-      getTagsQuery.setParameter("commitHashes", commitShas);
-      List<TagsEntity> tagsEntities = getTagsQuery.list();
-      if (tagsEntities.size() > 0) {
-        throw new ModelDBException(
-            "Commit is associated with Tags : "
-                + tagsEntities.stream()
-                    .map(tagsEntity -> tagsEntity.getId().getTag())
-                    .collect(Collectors.joining(",")),
-            Code.FAILED_PRECONDITION);
+      if (isDatasetVersion) {
+        for (BranchEntity branchEntity : branchEntities) {
+          session.delete(branchEntity);
+        }
+      } else {
+        for (CommitEntity commitEntity : commitEntities) {
+          if (!commitEntity.getChild_commits().isEmpty()) {
+            throw new ModelDBException(
+                "Commit '"
+                    + commitEntity.getCommit_hash()
+                    + "' has the child, please delete child commit first",
+                Code.FAILED_PRECONDITION);
+          }
+        }
+
+        if (branchEntities != null && !branchEntities.isEmpty()) {
+          StringBuilder errorMessage =
+              new StringBuilder("Commits are associated with branch name : ");
+          int count = 0;
+          for (BranchEntity branchEntity : branchEntities) {
+            errorMessage.append(branchEntity.getId().getBranch());
+            if (count < branchEntities.size() - 1) {
+              errorMessage.append(", ");
+            }
+            count++;
+          }
+          throw new ModelDBException(errorMessage.toString(), Code.FAILED_PRECONDITION);
+        }
+
+        String getTagsHql =
+            "From TagsEntity te where te.id."
+                + ModelDBConstants.REPOSITORY_ID
+                + " = :repoId "
+                + " AND te.commit_hash"
+                + " IN (:commitHashes)";
+        Query<TagsEntity> getTagsQuery = session.createQuery(getTagsHql, TagsEntity.class);
+        getTagsQuery.setParameter("repoId", repositoryEntity.getId());
+        getTagsQuery.setParameter("commitHashes", commitShas);
+        List<TagsEntity> tagsEntities = getTagsQuery.list();
+        if (tagsEntities.size() > 0) {
+          throw new ModelDBException(
+              "Commit is associated with Tags : "
+                  + tagsEntities.stream()
+                      .map(tagsEntity -> tagsEntity.getId().getTag())
+                      .collect(Collectors.joining(",")),
+              Code.FAILED_PRECONDITION);
+        }
       }
 
       session.beginTransaction();
@@ -491,7 +499,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       return true;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return deleteCommits(repositoryIdentification, commitShas, repositoryDAO);
+        return deleteCommits(repositoryIdentification, commitShas, repositoryDAO, isDatasetVersion);
       } else {
         throw ex;
       }
@@ -569,8 +577,7 @@ public class CommitDAORdbImpl implements CommitDAO {
   /**
    * This method find the blobs supported based on the following conditions
    *
-   * <p>commit.author, commit.label, VERSIONING_REPO_COMMIT_BLOB.label,
-   * VERSIONING_REPO_COMMIT.label, repoIds, commitHashList
+   * <p>commit.author, commit.label, tags, repoIds, commitHashList
    *
    * @param session :hibernate session
    * @param request : FindRepositoriesBlobs request
@@ -742,39 +749,37 @@ public class CommitDAORdbImpl implements CommitDAO {
                 parametersMap.put("attr_" + index + "_CommitHashes", attrCommitHashes);
               }
               break;
+            case ModelDBConstants.TAGS:
             case ModelDBConstants.BLOB:
               LOGGER.debug("switch case : Blob");
-              if (names[1].contains(ModelDBConstants.LABEL)) {
-                StringBuilder subQueryBuilder =
-                    new StringBuilder("SELECT lb.id.entity_hash FROM ")
-                        .append(LabelsMappingEntity.class.getSimpleName())
-                        .append(" lb WHERE ")
-                        .append(" lb.id.entity_type = :entityType")
-                        .append(" AND lb.id.label ");
-                Map<String, Object> innerQueryParametersMap = new HashMap<>();
-                VersioningUtils.setValueWithOperatorInQuery(
-                    index,
-                    subQueryBuilder,
-                    predicate.getOperator(),
-                    predicate.getValue().getStringValue(),
-                    innerQueryParametersMap);
-                Query labelQuery = session.createQuery(subQueryBuilder.toString());
-                labelQuery.setParameter(
-                    "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_VALUE);
-                innerQueryParametersMap.forEach(labelQuery::setParameter);
-                List<String> blobHashes = labelQuery.list();
-                Set<String> commitHashes = new HashSet<>();
-                blobHashes.forEach(
-                    blobHash -> {
-                      String[] compositeIdArr =
-                          VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
-                      commitHashes.add(compositeIdArr[1]);
-                    });
-                if (!commitHashes.isEmpty()) {
-                  whereClauseList.add(
-                      alias + ".commit_hash IN (:label_" + index + "_CommitHashes)");
-                  parametersMap.put("label_" + index + "_CommitHashes", commitHashes);
-                }
+              StringBuilder subQueryBuilder =
+                  new StringBuilder("SELECT lb.id.entity_hash FROM ")
+                      .append(LabelsMappingEntity.class.getSimpleName())
+                      .append(" lb WHERE ")
+                      .append(" lb.id.entity_type = :entityType")
+                      .append(" AND lb.id.label ");
+              Map<String, Object> innerQueryParametersMap = new HashMap<>();
+              VersioningUtils.setValueWithOperatorInQuery(
+                  index,
+                  subQueryBuilder,
+                  predicate.getOperator(),
+                  predicate.getValue().getStringValue(),
+                  innerQueryParametersMap);
+              Query labelQuery = session.createQuery(subQueryBuilder.toString());
+              labelQuery.setParameter(
+                  "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_VALUE);
+              innerQueryParametersMap.forEach(labelQuery::setParameter);
+              List<String> blobHashes = labelQuery.list();
+              Set<String> commitHashes = new HashSet<>();
+              blobHashes.forEach(
+                  blobHash -> {
+                    String[] compositeIdArr =
+                        VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
+                    commitHashes.add(compositeIdArr[1]);
+                  });
+              if (!commitHashes.isEmpty()) {
+                whereClauseList.add(alias + ".commit_hash IN (:label_" + index + "_CommitHashes)");
+                parametersMap.put("label_" + index + "_CommitHashes", commitHashes);
               }
               break;
             default:

@@ -15,8 +15,6 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.GetBranchRequest;
-import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
@@ -265,16 +263,6 @@ public class FindDatasetEntitiesTest {
   private static void createDatasetVersionEntities() {
     DatasetVersionTest datasetVersionTest = new DatasetVersionTest();
 
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(
-                RepositoryIdentification.newBuilder()
-                    .setRepoId(Long.parseLong(dataset1.getId()))
-                    .build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
     // Create two datasetVersion of above dataset
     CreateDatasetVersion createDatasetVersionRequest =
         datasetVersionTest.getDatasetVersionRequest(
@@ -1211,16 +1199,16 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("FindDatasetVersions by multiple attribute condition test stop..............");
   }
 
-  /** Find datasetVersion with value of metrics.accuracy >= 0.6543210 & blob.labels == Tag_7 */
+  /** Find datasetVersion with value of metrics.accuracy >= 0.6543210 & tags == Tag_7 */
   @Test
   public void findDatasetVersionsByMetricsAndTagsTest() {
-    LOGGER.info("FindDatasetVersions by metrics and blob.labels test start.........");
+    LOGGER.info("FindDatasetVersions by metrics and tags test start.........");
 
     List<KeyValueQuery> predicates = new ArrayList<>();
     Value stringValue = Value.newBuilder().setStringValue("Tag_7").build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
-            .setKey("blob.labels")
+            .setKey("tags")
             .setValue(stringValue)
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
@@ -1258,7 +1246,7 @@ public class FindDatasetEntitiesTest {
         1,
         response.getTotalRecords());
 
-    LOGGER.info("FindDatasetVersions by metrics and blob.labels test stop.........");
+    LOGGER.info("FindDatasetVersions by metrics and tags test stop.........");
   }
 
   /** Find datasetVersion with value of endTime */
@@ -1414,23 +1402,23 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("FindDatasetVersions not support the observation.attributes test stop........");
   }
 
-  /** Find datasetVersion with value of blob.labels */
+  /** Find datasetVersion with value of tags */
   @Test
   public void findDatasetVersionsByTagsTest() {
-    LOGGER.info("FindDatasetVersions by blob.labels test start................................");
+    LOGGER.info("FindDatasetVersions by tags test start................................");
 
     Value stringValue1 = Value.newBuilder().setStringValue("Tag_1").build();
     KeyValueQuery keyValueQueryTag1 =
         KeyValueQuery.newBuilder()
-            .setKey("blob.labels")
+            .setKey("tags")
             .setValue(stringValue1)
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
-    // get datasetVersionRun with value of blob.labels == test_tag_456
+    // get datasetVersionRun with value of tags == test_tag_456
     Value stringValue2 = Value.newBuilder().setStringValue("Tag_5").build();
     KeyValueQuery keyValueQueryTag2 =
         KeyValueQuery.newBuilder()
-            .setKey("blob.labels")
+            .setKey("tags")
             .setValue(stringValue2)
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
@@ -1459,7 +1447,7 @@ public class FindDatasetEntitiesTest {
         1,
         response.getTotalRecords());
 
-    LOGGER.info("FindDatasetVersions by blob.labels test stop................................");
+    LOGGER.info("FindDatasetVersions by tags test stop................................");
   }
 
   /** Find datasetVersions with attribute predicates and sort by attribute key */

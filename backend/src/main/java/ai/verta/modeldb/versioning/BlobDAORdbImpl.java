@@ -6,12 +6,15 @@ import static java.util.stream.Collectors.toMap;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.PathLocationTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
+import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
@@ -96,11 +99,107 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public void setBlobsAttributes(
-      Session session, Long repoId, String commitHash, List<BlobContainer> blobContainers)
+      Session session,
+      Long repoId,
+      String commitHash,
+      List<BlobContainer> blobContainers,
+      boolean addAttribute)
       throws ModelDBException {
     for (BlobContainer blobContainer : blobContainers) {
       // should save attributes of each blob during one session to avoid recurring entities ids
-      blobContainer.processAttribute(session, repoId, commitHash);
+      blobContainer.processAttribute(session, repoId, commitHash, addAttribute);
+    }
+  }
+
+  @Override
+  public void addUpdateBlobAttributes(
+      RepositoryEntity repositoryEntity,
+      CommitFunction commitFunction,
+      List<KeyValue> attributes,
+      boolean addAttribute)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
+
+      Blob.Builder blobBuilder = Blob.newBuilder();
+      blobBuilder.addAllAttributes(attributes);
+      List<String> locations =
+          Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION);
+      List<BlobContainer> blobList =
+          Collections.singletonList(
+              BlobContainer.create(
+                  BlobExpanded.newBuilder()
+                      .addAllLocation(locations)
+                      .setBlob(blobBuilder.setDataset(DatasetBlob.newBuilder().build()).build())
+                      .build()));
+      setBlobsAttributes(
+          session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList, addAttribute);
+      commitEntity.setDate_updated(new Date().getTime());
+      session.update(commitEntity);
+      session.getTransaction().commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        addUpdateBlobAttributes(repositoryEntity, commitFunction, attributes, addAttribute);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public void deleteBlobAttributes(
+      RepositoryEntity repositoryEntity,
+      CommitFunction commitFunction,
+      List<String> attributesKeys,
+      List<String> location,
+      boolean deleteAll)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
+      if (deleteAll) {
+        String entityHash =
+            VersioningUtils.getVersioningCompositeId(
+                repositoryEntity.getId(), commitEntity.getCommit_hash(), location);
+        DeleteEntitiesCron.deleteAttribute(session, entityHash);
+      } else {
+        List<AttributeEntity> existingAttributes =
+            VersioningUtils.getAttributeEntities(
+                session, repositoryEntity.getId(), commitEntity.getCommit_hash(), location, null);
+        for (String removeAttrKey : attributesKeys) {
+          for (AttributeEntity existingAttribute : existingAttributes) {
+            if (existingAttribute.getKey().equals(removeAttrKey)) {
+              session.delete(existingAttribute);
+            }
+          }
+        }
+      }
+      commitEntity.setDate_updated(new Date().getTime());
+      session.update(commitEntity);
+      session.getTransaction().commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        deleteBlobAttributes(repositoryEntity, commitFunction, attributesKeys, location, deleteAll);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public List<KeyValue> getBlobAttributes(
+      Long repoId, String commitHash, List<String> location, List<String> attributeKeysList)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      return VersioningUtils.getAttributes(
+          session, repoId, commitHash, location, attributeKeysList);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getBlobAttributes(repoId, commitHash, location, attributeKeysList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -213,7 +312,8 @@ public class BlobDAORdbImpl implements BlobDAO {
         if (index == locationList.size() - 1) {
           Blob blob = getBlob(session, elementEntity);
           List<KeyValue> attributeEntities =
-              VersioningUtils.getAttributes(session, repoId, commit.getCommit_hash(), locationList);
+              VersioningUtils.getAttributes(
+                  session, repoId, commit.getCommit_hash(), locationList, null);
           blob = blob.toBuilder().addAllAttributes(attributeEntities).build();
           return GetCommitComponentRequest.Response.newBuilder().setBlob(blob).build();
         } else {
@@ -543,7 +643,8 @@ public class BlobDAORdbImpl implements BlobDAO {
                 session,
                 repository.getId(),
                 commit.getCommit_hash(),
-                Collections.singletonList(location));
+                Collections.singletonList(location),
+                null);
         BlobExpanded blobExpanded = locationBlobMap.get(location);
         Blob blob = blobExpanded.getBlob().toBuilder().addAllAttributes(attributes).build();
         blobExpanded = blobExpanded.toBuilder().setBlob(blob).build();
@@ -1289,257 +1390,6 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
     return blobContainerList;
   }
-
-  /**
-   * This method find the blobs supported based on the following conditions
-   *
-   * <p>commit.author, commit.label, VERSIONING_REPO_COMMIT_BLOB.label,
-   * VERSIONING_REPO_COMMIT.label, repoIds, commitHashList
-   *
-   * @param session :hibernate session
-   * @param request : FindRepositoriesBlobs request
-   * @param currentLoginUserInfo : current login userInfo
-   * @return {@link Map} : "result", "count" as a key
-   */
-  /*private Map<String, Object> getRootShaListByCommitsOrRepos(
-      Session session,
-      FindRepositoriesBlobs request,
-      UserInfo currentLoginUserInfo) {
-    WorkspaceDTO workspaceDTO =
-            roleService.getWorkspaceDTOByWorkspaceName(
-                    currentLoginUserInfo, request.getWorkspaceName());
-
-    List<String> accessibleResourceIds =
-            roleService.getAccessibleResourceIds(
-                    null,
-                    new CollaboratorUser(authService, currentLoginUserInfo),
-                    RepositoryVisibilityEnum.RepositoryVisibility.PRIVATE,
-                    ModelDBServiceResourceTypes.REPOSITORY,
-                    request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
-
-    List<String> commitHashList = new ArrayList<>(request.getCommitsList());
-
-    Map<String, Object> parametersMap = new HashMap<>();
-
-    String alias = "cm";
-    StringBuilder rootQueryStringBuilder =
-        new StringBuilder(" FROM ")
-            .append(CommitEntity.class.getSimpleName())
-            .append(" ")
-            .append(alias)
-            .append(" ");
-
-    StringBuilder joinClause = new StringBuilder();
-    String repoAlias = "repo";
-    joinClause.append(" INNER JOIN ").append(alias).append(".repository ").append(repoAlias);
-    joinClause
-        .append(" INNER JOIN ")
-        .append(InternalFolderElementEntity.class.getSimpleName())
-        .append(" folderElm ")
-        .append(" ON ");
-    joinClause.append("folderElm.folder_hash = ").append(alias).append(".rootSha ");
-
-    List<KeyValueQuery> predicates = request.getPredicatesList();
-    List<String> whereClauseList = new ArrayList<>();
-    if (predicates != null && !predicates.isEmpty()) {
-      for (int index = 0; index < predicates.size(); index++) {
-        KeyValueQuery predicate = predicates.get(index);
-        String[] names = predicate.getKey().split("\\.");
-        switch (names[0].toLowerCase()) {
-          case ModelDBConstants.COMMIT:
-            LOGGER.debug("switch case : commit");
-            if (names[1].contains(ModelDBConstants.LABEL)) {
-              StringBuilder subQueryBuilder =
-                  new StringBuilder("SELECT lb.id.entity_hash FROM ")
-                      .append(LabelsMappingEntity.class.getSimpleName())
-                      .append(" lb WHERE ")
-                      .append(" lb.id.entity_type ");
-              VersioningUtils.setValueWithOperatorInQuery(
-                  index,
-                  subQueryBuilder,
-                  OperatorEnum.Operator.EQ,
-                  IDTypeEnum.IDType.VERSIONING_COMMIT.getNumber(),
-                  parametersMap);
-              subQueryBuilder.append(" AND lb.id.label ");
-              VersioningUtils.setValueWithOperatorInQuery(
-                  index,
-                  subQueryBuilder,
-                  OperatorEnum.Operator.EQ,
-                  predicate.getValue().getStringValue(),
-                  parametersMap);
-              whereClauseList.add(alias + ".commit_hash IN (" + subQueryBuilder.toString() + ") ");
-            } else {
-              StringBuilder authorBuilder = new StringBuilder(alias + "." + names[1]);
-              VersioningUtils.setValueWithOperatorInQuery(
-                      index,
-                      authorBuilder,
-                      predicate.getOperator(),
-                      predicate.getValue().getStringValue(),
-                      parametersMap);
-              whereClauseList.add(authorBuilder.toString());
-            }
-            break;
-          case ModelDBConstants.VERSIONING_REPO_COMMIT_BLOB:
-          case ModelDBConstants.VERSIONING_REPO_COMMIT:
-            LOGGER.debug("switch case : Blob");
-            if (names[1].contains(ModelDBConstants.LABEL)) {
-              StringBuilder subQueryBuilder =
-                  new StringBuilder("SELECT lb.id.entity_hash FROM ")
-                      .append(LabelsMappingEntity.class.getSimpleName())
-                      .append(" lb WHERE ")
-                      .append(" lb.id.entity_type = :entityType")
-                      .append(" AND lb.id.label ");
-              Map<String, Object> innerQueryParametersMap = new HashMap<>();
-              VersioningUtils.setValueWithOperatorInQuery(
-                  index,
-                  subQueryBuilder,
-                  predicate.getOperator(),
-                  predicate.getValue().getStringValue(),
-                  innerQueryParametersMap);
-              Query labelQuery = session.createQuery(subQueryBuilder.toString());
-              if (names[0].equals(ModelDBConstants.VERSIONING_REPO_COMMIT_BLOB)) {
-                labelQuery.setParameter(
-                    "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB.getNumber());
-              } else {
-                labelQuery.setParameter(
-                    "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT.getNumber());
-              }
-              innerQueryParametersMap.forEach(labelQuery::setParameter);
-              List<String> blobHashes = labelQuery.list();
-              List<String> commitHashes = new ArrayList<>();
-              List<String> repoIds = new ArrayList<>();
-              blobHashes.forEach(
-                  blobHash -> {
-                    String[] compositeIdArr =
-                        VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
-                    commitHashes.add(compositeIdArr[1]);
-                    repoIds.add(compositeIdArr[0]);
-                  });
-              if (!commitHashes.isEmpty()) {
-                commitHashList.addAll(commitHashes);
-              }
-              if (!repoIds.isEmpty()) {
-                accessibleResourceIds.retainAll(repoIds);
-              }
-            }
-            break;
-          default:
-            StringBuilder authorBuilder = new StringBuilder(alias + "." + names[0]);
-            VersioningUtils.setValueWithOperatorInQuery(
-                    index,
-                    authorBuilder,
-                    predicate.getOperator(),
-                    predicate.getValue().getStringValue(),
-                    parametersMap);
-            whereClauseList.add(authorBuilder.toString());
-            break;
-        }
-      }
-    }
-
-    if (workspaceDTO != null
-            && workspaceDTO.getWorkspaceId() != null
-            && !workspaceDTO.getWorkspaceId().isEmpty()) {
-      whereClauseList.add(
-              repoAlias + "." + ModelDBConstants.WORKSPACE_ID + " = :" + ModelDBConstants.WORKSPACE_ID);
-      parametersMap.put(ModelDBConstants.WORKSPACE_ID, workspaceDTO.getWorkspaceId());
-      whereClauseList.add(
-              repoAlias
-                      + "."
-                      + ModelDBConstants.WORKSPACE_TYPE
-                      + " = :"
-                      + ModelDBConstants.WORKSPACE_TYPE);
-      parametersMap.put(
-              ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
-    }
-
-    if (!accessibleResourceIds.isEmpty()) {
-      whereClauseList.add(repoAlias + ".id IN (:repoIds) ");
-      parametersMap.put(
-          "repoIds",
-          accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()));
-    } else {
-      String errorMessage =
-          "Access is denied. User is unauthorized for given resource IDs : "
-              + accessibleResourceIds;
-      ModelDBUtils.logAndThrowError(
-          errorMessage,
-          Code.PERMISSION_DENIED_VALUE,
-          Any.pack(FindRepositoriesBlobs.getDefaultInstance()));
-    }
-
-    if (!commitHashList.isEmpty()) {
-      whereClauseList.add(alias + ".commit_hash IN (:commitHashList)");
-      parametersMap.put("commitHashList", request.getCommitsList());
-    }
-    StringBuilder whereClause = new StringBuilder();
-    whereClause.append(
-        VersioningUtils.setPredicatesWithQueryOperator(
-            " AND ", whereClauseList.toArray(new String[0])));
-
-    // Order by clause
-    StringBuilder orderClause =
-        new StringBuilder(" ORDER BY ")
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.DATE_CREATED)
-            .append(" DESC");
-
-    StringBuilder finalQueryBuilder = new StringBuilder();
-    if (!joinClause.toString().isEmpty()) {
-      finalQueryBuilder.append("SELECT ").append(alias).append(".rootSha ");
-    }
-    finalQueryBuilder.append(rootQueryStringBuilder);
-    finalQueryBuilder.append(joinClause);
-    if (!whereClause.toString().isEmpty()) {
-      finalQueryBuilder.append(" WHERE ").append(whereClause);
-    }
-    finalQueryBuilder.append(orderClause);
-
-    // Build count query
-    StringBuilder countQueryBuilder = new StringBuilder();
-    if (!joinClause.toString().isEmpty()) {
-      countQueryBuilder.append("SELECT COUNT(").append(alias).append(") ");
-    } else {
-      countQueryBuilder.append("SELECT COUNT(*) ");
-    }
-    countQueryBuilder.append(rootQueryStringBuilder);
-    countQueryBuilder.append(joinClause);
-    if (!whereClause.toString().isEmpty()) {
-      countQueryBuilder.append(" WHERE ").append(whereClause);
-    }
-
-    Query query = session.createQuery(finalQueryBuilder.toString());
-    LOGGER.debug("Find Repository blob final query : {}", query.getQueryString());
-    Query countQuery = session.createQuery(countQueryBuilder.toString());
-    if (!parametersMap.isEmpty()) {
-      parametersMap.forEach(
-          (key, value) -> {
-            if (value instanceof List) {
-              List<Object> objectList = (List<Object>) value;
-              query.setParameterList(key, objectList);
-              countQuery.setParameterList(key, objectList);
-            } else {
-              query.setParameter(key, value);
-              countQuery.setParameter(key, value);
-            }
-          });
-    }
-
-    LOGGER.debug("Final find commit root_sha query : {}", query.getQueryString());
-    if (request.getPageNumber() != 0 && request.getPageLimit() != 0) {
-      // Calculate number of documents to skip
-      int skips = request.getPageLimit() * (request.getPageNumber() - 1);
-      query.setFirstResult(skips);
-      query.setMaxResults(request.getPageLimit());
-    }
-    List<String> resultSet = query.list();
-
-    Map<String, Object> responseMap = new HashMap<>();
-    responseMap.put("result", new HashSet<>(resultSet));
-    responseMap.put("count", countQuery.uniqueResult());
-    return responseMap;
-  }*/
 
   private Boolean blobTypeExistsInList(List<BlobType> blobTypeList, Blob.ContentCase contentCase)
       throws ModelDBException {

@@ -47,7 +47,8 @@ public interface CommitDAO {
   boolean deleteCommits(
       RepositoryIdentification repositoryIdentification,
       List<String> commitShas,
-      RepositoryDAO repositoryDAO)
+      RepositoryDAO repositoryDAO,
+      boolean isDatasetVersion)
       throws ModelDBException;
 
   void addDeleteDatasetVersionTags(

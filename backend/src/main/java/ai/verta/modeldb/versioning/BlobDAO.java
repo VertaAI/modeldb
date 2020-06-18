@@ -1,5 +1,6 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.common.KeyValue;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -18,7 +19,30 @@ public interface BlobDAO {
       throws NoSuchAlgorithmException, ModelDBException;
 
   void setBlobsAttributes(
-      Session session, Long repoId, String commitHash, List<BlobContainer> blobsList)
+      Session session,
+      Long repoId,
+      String commitHash,
+      List<BlobContainer> blobsList,
+      boolean addAttribute)
+      throws ModelDBException;
+
+  void addUpdateBlobAttributes(
+      RepositoryEntity repositoryEntity,
+      CommitFunction commitFunction,
+      List<KeyValue> attributes,
+      boolean addAttribute)
+      throws ModelDBException;
+
+  void deleteBlobAttributes(
+      RepositoryEntity repositoryEntity,
+      CommitFunction commitFunction,
+      List<String> attributesKeys,
+      List<String> location,
+      boolean deleteAll)
+      throws ModelDBException;
+
+  List<KeyValue> getBlobAttributes(
+      Long repoId, String commitHash, List<String> location, List<String> attributeKeysList)
       throws ModelDBException;
 
   GetCommitComponentRequest.Response getCommitComponent(
