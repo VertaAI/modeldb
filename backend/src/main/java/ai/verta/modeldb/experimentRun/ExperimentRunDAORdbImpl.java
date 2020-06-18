@@ -2345,6 +2345,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (!Objects.equals(uploadId, artifactEntity.getUploadId())
           || artifactEntity.isUploadCompleted()) {
         session.beginTransaction();
+        VersioningUtils.getArtifactPartEntities(
+                session,
+                String.valueOf(artifactEntity.getId()),
+                ArtifactPartEntity.EXP_RUN_ARTIFACT)
+            .forEach(session::delete);
         artifactEntity.setUploadId(uploadId);
         artifactEntity.setUploadCompleted(false);
         session.getTransaction().commit();

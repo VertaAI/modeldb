@@ -108,22 +108,12 @@ public class VersioningUtils {
 
   public static void saveOrUpdateArtifactPartEntity(
       ArtifactPart artifactPart, Session session, String artifactId, int artifactType) {
-    if (artifactPart.getEtag().isEmpty()) {
-      getArtifactPart(session, artifactId, artifactType, artifactPart.getPartNumber())
-          .ifPresent(
-              artifactPartEntity -> {
-                session.beginTransaction();
-                session.delete(artifactPartEntity);
-                session.getTransaction().commit();
-              });
-    } else {
-      ArtifactPartEntity artifactPartEntity =
-          new ArtifactPartEntity(
-              artifactId, artifactType, artifactPart.getPartNumber(), artifactPart.getEtag());
-      session.beginTransaction();
-      session.saveOrUpdate(artifactPartEntity);
-      session.getTransaction().commit();
-    }
+    ArtifactPartEntity artifactPartEntity =
+        new ArtifactPartEntity(
+            artifactId, artifactType, artifactPart.getPartNumber(), artifactPart.getEtag());
+    session.beginTransaction();
+    session.saveOrUpdate(artifactPartEntity);
+    session.getTransaction().commit();
   }
 
   public static Set<ArtifactPartEntity> getArtifactPartEntities(
@@ -137,19 +127,5 @@ public class VersioningUtils {
     query.setParameter("artifactId", artifactId);
     List<ArtifactPartEntity> artifactPartEntities = query.list();
     return new HashSet<>(artifactPartEntities);
-  }
-
-  public static Optional<ArtifactPartEntity> getArtifactPart(
-      Session session, String artifactId, int artifactType, long partNumber) {
-    String queryString =
-        "From "
-            + ArtifactPartEntity.class.getSimpleName()
-            + " arp WHERE arp.artifact_type = :artifactType AND arp.artifact_id = :artifactId"
-            + " AND arp.partNumber = :partNumber";
-    Query<ArtifactPartEntity> query = session.createQuery(queryString, ArtifactPartEntity.class);
-    query.setParameter("artifactType", artifactType);
-    query.setParameter("artifactId", artifactId);
-    query.setParameter("partNumber", partNumber);
-    return query.uniqueResultOptional();
   }
 }
