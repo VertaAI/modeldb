@@ -917,7 +917,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       } else {
         diffBuilder.addAllLocation(locSpecificBlobDiffB.get(0).getLocationList());
       }
-      blobDiffList.add(
+      blobDiffList.addAll(
           ConflictGenerator.setConflictBlobsInDiff(
               diffBuilder.build(),
               locSpecificBlobDiffA,
