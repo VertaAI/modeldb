@@ -320,7 +320,7 @@ public interface DatasetVersionDAO {
           break;
         case UNRECOGNIZED:
         default:
-          LOGGER.warn(ModelDBMessages.INVALID_DATSET_TYPE);
+          LOGGER.info(ModelDBMessages.INVALID_DATSET_TYPE);
           Status status =
               Status.newBuilder()
                   .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -372,7 +372,7 @@ public interface DatasetVersionDAO {
         break;
       case UNRECOGNIZED:
       default:
-        LOGGER.warn(ModelDBMessages.INVALID_DATSET_TYPE);
+        LOGGER.info(ModelDBMessages.INVALID_DATSET_TYPE);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)

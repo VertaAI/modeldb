@@ -60,12 +60,13 @@ class Path(_dataset._Dataset):
             })
 
         metadata = six.viewvalues(paths_to_metadata)
-        self._component_blobs.extend(metadata)
+        self._msg.path.components.extend(metadata)
 
     def __repr__(self):
+        # TODO: consolidate with S3 since they're almost identical now
         lines = ["Path Version"]
         components = sorted(
-            self._component_blobs,
+            self._path_component_blobs,
             key=lambda component_msg: component_msg.path,
         )
         for component in components:
@@ -74,8 +75,12 @@ class Path(_dataset._Dataset):
         return "\n    ".join(lines)
 
     @property
-    def _component_blobs(self):
-        return self._msg.path.components
+    def _path_component_blobs(self):
+        return [
+            component
+            for component
+            in self._msg.path.components
+        ]
 
     @classmethod
     def _get_path_metadata(cls, path):

@@ -7,10 +7,48 @@ import sys
 
 import verta
 from verta._internal_utils import _utils
+from verta._internal_utils import _file_utils
 from verta._internal_utils import _pip_requirements_utils
 
 import pytest
 from . import utils
+
+
+class TestBodyToJson:
+    def test_json_response(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/json",
+            client._conn,
+        )
+
+        assert isinstance(_utils.body_to_json(response), dict)
+
+    def test_empty_response_error(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/status/200",
+            client._conn,
+        )
+
+        with pytest.raises(ValueError) as excinfo:
+            _utils.body_to_json(response)
+        msg = str(excinfo.value).strip()
+        assert msg.startswith("expected JSON response")
+        assert "<empty response>" in msg
+
+    def test_html_response_error(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/html",
+            client._conn,
+        )
+
+        with pytest.raises(ValueError) as excinfo:
+            _utils.body_to_json(response)
+        msg = str(excinfo.value).strip()
+        assert msg.startswith("expected JSON response")
+        assert "<!DOCTYPE html>" in msg
 
 
 class TestToBuiltin:
@@ -183,3 +221,21 @@ class TestPipRequirementsUtils:
             _pip_requirements_utils.SPACY_MODEL_REGEX.match,
             _pip_requirements_utils.get_pip_freeze(),
         ))
+
+
+class TestIncrementFilepath:
+    @pytest.mark.parametrize(
+        "input_filepath, expected_filepath",
+        [
+            ("data.csv", "data 1.csv"),
+            ("data 1.csv", "data 2.csv"),
+            ("my data.csv", "my data 1.csv"),
+            ("my data 1.csv", "my data 2.csv"),
+            ("archive.tar.gz", "archive.tar 1.gz"),
+            ("archive.tar 1.gz", "archive.tar 2.gz"),
+            ("my archive.tar.gz", "my archive.tar 1.gz"),
+            ("my archive.tar 1.gz", "my archive.tar 2.gz"),
+        ],
+    )
+    def test_increment(self, input_filepath, expected_filepath):
+        assert expected_filepath == _file_utils.increment_filepath(input_filepath)

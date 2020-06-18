@@ -63,7 +63,7 @@ public class CronJobUtils {
                 task, initialDelay, deleteEntitiesFrequency, TimeUnit.SECONDS);
             LOGGER.info("{} cron job scheduled successfully", ModelDBConstants.DELETE_ENTITIES);
           } else {
-            LOGGER.warn("Unknown config key ({}) found for the cron job", cronJob.getKey());
+            LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());
           }
         }
       }
