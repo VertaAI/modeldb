@@ -2192,7 +2192,7 @@ public class CommitTest {
           FindRepositoriesBlobs.newBuilder()
               .addPredicates(
                   KeyValueQuery.newBuilder()
-                      .setKey(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB + "." + "labels")
+                      .setKey("blob.labels")
                       .setValue(
                           Value.newBuilder().setStringValue(addLabelsRequest.getLabels(0)).build())
                       .build())

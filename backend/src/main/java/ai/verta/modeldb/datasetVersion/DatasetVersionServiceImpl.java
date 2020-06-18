@@ -17,6 +17,7 @@ import ai.verta.modeldb.GetAllDatasetVersionsByDatasetId;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.PathDatasetVersionInfo;
@@ -41,10 +42,12 @@ import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.DeleteCommitRequest;
 import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
+import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.SetBranchRequest;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -110,25 +113,42 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(CreateDatasetVersion.Response.getDefaultInstance()));
-      } else if (request.getParentId().isEmpty()) {
-        throw new ModelDBException(
-            "Parent datasetVersion id not found in the CreateDatasetVersion",
-            io.grpc.Status.Code.INVALID_ARGUMENT);
       }
 
       /*Get the user info from the Context*/
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetVersion datasetVersion =
           datasetVersionDAO.getDatasetVersionFromRequest(authService, request, userInfo);
+
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder()
               .setRepoId(Long.parseLong(request.getDatasetId()))
               .build();
+
+      // Set parent datasetVersion
+      GetBranchRequest.Response getBranchResponse =
+          repositoryDAO.getBranch(
+              GetBranchRequest.newBuilder()
+                  .setRepositoryId(repositoryIdentification)
+                  .setBranch(ModelDBConstants.MASTER_BRANCH)
+                  .build());
+      datasetVersion =
+          datasetVersion
+              .toBuilder()
+              .setParentId(getBranchResponse.getCommit().getCommitSha())
+              .build();
+
       RepositoryEntity repositoryEntity =
           repositoryDAO.getRepositoryById(repositoryIdentification, true);
       CreateCommitRequest.Response createCommitResponse =
           commitDAO.setCommitFromDatasetVersion(
               datasetVersion, blobDAO, metadataDAO, repositoryEntity);
+      repositoryDAO.setBranch(
+          SetBranchRequest.newBuilder()
+              .setRepositoryId(repositoryIdentification)
+              .setBranch(ModelDBConstants.MASTER_BRANCH)
+              .setCommitSha(createCommitResponse.getCommit().getCommitSha())
+              .build());
       datasetVersion =
           blobDAO.convertToDatasetVersion(
               metadataDAO, repositoryEntity, createCommitResponse.getCommit().getCommitSha());
@@ -333,6 +353,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     throw StatusProto.toStatusRuntimeException(status);
   }
 
+  // FIXME: moving to versioning based datset versions we only support KeyValue Query on Attribute
+  // to be String
   @Override
   public void findDatasetVersions(
       FindDatasetVersions request, StreamObserver<FindDatasetVersions.Response> responseObserver) {

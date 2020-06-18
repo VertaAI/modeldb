@@ -664,8 +664,7 @@ public class CommitDAORdbImpl implements CommitDAO {
   /**
    * This method find the blobs supported based on the following conditions
    *
-   * <p>commit.author, commit.label, VERSIONING_REPO_COMMIT_BLOB.label,
-   * VERSIONING_REPO_COMMIT.label, repoIds, commitHashList
+   * <p>commit.author, commit.label, tags, repoIds, commitHashList
    *
    * @param session :hibernate session
    * @param request : FindRepositoriesBlobs request
@@ -837,39 +836,37 @@ public class CommitDAORdbImpl implements CommitDAO {
                 parametersMap.put("attr_" + index + "_CommitHashes", attrCommitHashes);
               }
               break;
+            case ModelDBConstants.TAGS:
             case ModelDBConstants.BLOB:
               LOGGER.debug("switch case : Blob");
-              if (names[1].contains(ModelDBConstants.LABEL)) {
-                StringBuilder subQueryBuilder =
-                    new StringBuilder("SELECT lb.id.entity_hash FROM ")
-                        .append(LabelsMappingEntity.class.getSimpleName())
-                        .append(" lb WHERE ")
-                        .append(" lb.id.entity_type = :entityType")
-                        .append(" AND lb.id.label ");
-                Map<String, Object> innerQueryParametersMap = new HashMap<>();
-                VersioningUtils.setValueWithOperatorInQuery(
-                    index,
-                    subQueryBuilder,
-                    predicate.getOperator(),
-                    predicate.getValue().getStringValue(),
-                    innerQueryParametersMap);
-                Query labelQuery = session.createQuery(subQueryBuilder.toString());
-                labelQuery.setParameter(
-                    "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_VALUE);
-                innerQueryParametersMap.forEach(labelQuery::setParameter);
-                List<String> blobHashes = labelQuery.list();
-                Set<String> commitHashes = new HashSet<>();
-                blobHashes.forEach(
-                    blobHash -> {
-                      String[] compositeIdArr =
-                          VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
-                      commitHashes.add(compositeIdArr[1]);
-                    });
-                if (!commitHashes.isEmpty()) {
-                  whereClauseList.add(
-                      alias + ".commit_hash IN (:label_" + index + "_CommitHashes)");
-                  parametersMap.put("label_" + index + "_CommitHashes", commitHashes);
-                }
+              StringBuilder subQueryBuilder =
+                  new StringBuilder("SELECT lb.id.entity_hash FROM ")
+                      .append(LabelsMappingEntity.class.getSimpleName())
+                      .append(" lb WHERE ")
+                      .append(" lb.id.entity_type = :entityType")
+                      .append(" AND lb.id.label ");
+              Map<String, Object> innerQueryParametersMap = new HashMap<>();
+              VersioningUtils.setValueWithOperatorInQuery(
+                  index,
+                  subQueryBuilder,
+                  predicate.getOperator(),
+                  predicate.getValue().getStringValue(),
+                  innerQueryParametersMap);
+              Query labelQuery = session.createQuery(subQueryBuilder.toString());
+              labelQuery.setParameter(
+                  "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_VALUE);
+              innerQueryParametersMap.forEach(labelQuery::setParameter);
+              List<String> blobHashes = labelQuery.list();
+              Set<String> commitHashes = new HashSet<>();
+              blobHashes.forEach(
+                  blobHash -> {
+                    String[] compositeIdArr =
+                        VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
+                    commitHashes.add(compositeIdArr[1]);
+                  });
+              if (!commitHashes.isEmpty()) {
+                whereClauseList.add(alias + ".commit_hash IN (:label_" + index + "_CommitHashes)");
+                parametersMap.put("label_" + index + "_CommitHashes", commitHashes);
               }
               break;
             default:
