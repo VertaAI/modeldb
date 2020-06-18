@@ -215,13 +215,13 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    */
   def getObservations()(implicit ec: ExecutionContext) = {
     clientSet.experimentRunService.getExperimentRunById(run.id)
-      .map(runResp => {
+      .flatMap(runResp => Try {
         val observations = runResp.experiment_run.get.observations
         val obsMap = new mutable.HashMap[String, List[(LocalDateTime, Any)]]()
         observations.get.foreach(o => {
           val ts = LocalDateTime.ofInstant(Instant.ofEpochMilli(o.timestamp.get.toLong), TimeZone.getTimeZone("UTC").toZoneId)
           val key = o.attribute.get.key.get
-          val value = KVHandler.convertToAny(o.attribute.get.value.get, s"unknown type for observation $key: ${o.attribute.get.value.get.toString} (${o.attribute.get.value.get.getClass.toString})")
+          val value = KVHandler.convertToAny(o.attribute.get.value.get, s"unknown type for observation $key: ${o.attribute.get.value.get.toString} (${o.attribute.get.value.get.getClass.toString})").get
           obsMap.update(key, (ts, value) :: obsMap.getOrElse(key, Nil))
         })
         obsMap.map(el => {

@@ -156,9 +156,7 @@ class TestExperimentRun extends FunSuite {
       assert(f.expRun.getObservation("non-existing-obs").get equals Nil)
 
       val allObservations = f.expRun.getObservations().get.mapValues(series => series.map(_._2))
-      assert(allObservations equals
-        Map("some-obs" -> List(Success(0.5), Success(0.4), Success(0.6)), "single-obs" -> List(Success(0.3)))
-      )
+      assert(allObservations equals Map("some-obs" -> List(0.5, 0.4, 0.6), "single-obs" -> List(0.3)))
     } finally {
       cleanup(f)
     }
