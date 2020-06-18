@@ -9,6 +9,7 @@ import ai.verta.client.entities.subobjects._
 import ai.verta.client.entities.utils.KVHandler
 import ai.verta.swagger._public.modeldb.model._
 import ai.verta.swagger.client.ClientSet
+import ai.verta.repository._
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
@@ -309,5 +310,51 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
           Duration.Inf
         )
       })
+  }
+
+  /** Associate a Commit with this Experiment Run
+   *  @param commit Verta commit
+   *  @param keyPaths (optional) A mapping between descriptive keys and paths of particular interest within commit. This can be useful for, say, highlighting a particular file as the training dataset used for this Experiment Run.
+   *  @return whether the log attempt succeeds
+   */
+  def logCommit(commit: Commit, keyPaths: Option[Map[String, String]] = None)(implicit ec: ExecutionContext) = {
+    commit.checkSaved("Commit must be saved before it can be associated to a run").flatMap(_ => {
+      // convert the path to correct format for query
+      // split it, then wrapped with VertamodeldbLocation
+      val keyLocationMap = keyPaths.map(
+        _.mapValues(location => VertamodeldbLocation(Some(location.split("/").toList)))
+      )
+
+      clientSet.experimentRunService.logVersionedInput(
+        body = ModeldbLogVersionedInput(
+          id = run.id, versioned_inputs = Some(ModeldbVersioningEntry(
+            commit = commit.id,
+            key_location_map = keyLocationMap,
+            repository_id = Some(commit.repoId)
+          ))
+        )
+      )
+    }).map(_ => ())
+  }
+
+  /** Gets the Commit associated with this Experiment Run
+   *  @return commit sha, its repository ID, and the associated key-paths, wrapped in an ExperimentRunCommit instance.
+   */
+  def getCommit()(implicit ec: ExecutionContext): Try[ExperimentRunCommit] = {
+    clientSet.experimentRunService.getVersionedInputs(id = run.id).flatMap(response =>
+      if (response.versioned_inputs.isEmpty || response.versioned_inputs.get.commit.isEmpty)
+        Failure(new IllegalStateException("No commit is associated with this experiment run"))
+      else {
+        val versioningEntry = response.versioned_inputs.get
+        val keyPaths = versioningEntry.key_location_map.map(
+          _.map(pair => (pair._1, pair._2.location.get.mkString("/")))
+        )
+
+        clientSet.versioningService.GetRepository2(id_repo_id = versioningEntry.repository_id.get)
+          .map(r => new Repository(clientSet, r.repository.get))
+          .flatMap(_.getCommitById(versioningEntry.commit.get))
+          .map(commit => ExperimentRunCommit(commit, keyPaths))
+      }
+    )
   }
 }

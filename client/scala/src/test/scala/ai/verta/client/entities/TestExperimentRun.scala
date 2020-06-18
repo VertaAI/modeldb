@@ -141,4 +141,43 @@ class TestExperimentRun extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("get commit should retrieve the right commit that was logged") {
+    val f = fixture
+
+    try {
+      val commit = f.repo.getCommitByBranch().get
+      val pathBlob = PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir").get
+
+      val logAttempt = f.expRun.logCommit(commit)
+      assert(logAttempt.isSuccess)
+
+      val retrievedCommit = f.expRun.getCommit().get.commit
+      assert(retrievedCommit equals commit)
+
+      // update the logged commit:
+      val newCommit = commit.update("abc/def", pathBlob)
+                            .flatMap(_.save("Add a blob")).get
+      f.expRun.logCommit(newCommit, Some(Map[String, String]("mnp/qrs" -> "abc/def")))
+      val newExpRunCommit = f.expRun.getCommit().get
+      assert(newCommit equals newExpRunCommit.commit)
+      assert(!newExpRunCommit.commit.equals(commit))
+      assert(newExpRunCommit.keyPaths.get equals Map[String, String]("mnp/qrs" -> "abc/def"))
+    } finally {
+      cleanup(f)
+    }
+  }
+
+
+  test("get commit should fail if there isn't one assigned to the run") {
+    val f = fixture
+
+    try {
+      val getAttempt = f.expRun.getCommit()
+      assert(getAttempt.isFailure)
+      assert(getAttempt match {case Failure(e) => e.getMessage contains "No commit is associated with this experiment run"})
+    } finally {
+      cleanup(f)
+    }
+  }
 }
