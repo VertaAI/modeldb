@@ -35,6 +35,12 @@ public interface RoleService {
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
+  void createPublicRoleBinding(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  String buildPublicRoleBindingName(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
   void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
