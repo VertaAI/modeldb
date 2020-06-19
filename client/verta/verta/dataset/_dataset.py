@@ -175,6 +175,7 @@ class _Dataset(blob.Blob):
             downloaded_to_path = root_dirnames.pop()
         else:
             # everything is relative to cwd, so cwd is our root
+            # NOTE: we shouldn't end up here if `download_to_path` was provided
             # TODO: handle if a `local_path` was actually at system root or a parent dir
             downloaded_to_path = os.curdir
 
