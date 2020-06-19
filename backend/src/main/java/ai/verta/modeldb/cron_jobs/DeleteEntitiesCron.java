@@ -22,7 +22,6 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.uac.UserInfo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -156,7 +155,6 @@ public class DeleteEntitiesCron extends TimerTask {
 
   private void setRoleBindingsNameOfAccessibleProjectsInRoleBindingNamesList(
       List<ProjectEntity> allowedProjects, List<String> roleBindingNames) {
-    UserInfo unsignedUser = authService.getUnsignedUser();
     for (ProjectEntity project : allowedProjects) {
       String projectId = project.getId();
 
@@ -172,11 +170,7 @@ public class DeleteEntitiesCron extends TimerTask {
 
       if (project.getProject_visibility() == ProjectVisibility.PUBLIC.getNumber()) {
         String publicReadRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_PROJECT_PUBLIC_READ,
-                projectId,
-                authService.getVertaIdFromUserInfo(unsignedUser),
-                ModelDBServiceResourceTypes.PROJECT.name());
+            roleService.buildPublicRoleBindingName(projectId, ModelDBServiceResourceTypes.PROJECT);
         if (publicReadRoleBindingName != null) {
           roleBindingNames.add(publicReadRoleBindingName);
         }
@@ -416,7 +410,6 @@ public class DeleteEntitiesCron extends TimerTask {
 
   private void setRoleBindingsNameOfAccessibleDatasetsInRoleBindingsList(
       List<DatasetEntity> allowedDatasets, List<String> roleBindingNames) {
-    UserInfo unsignedUser = authService.getUnsignedUser();
     for (DatasetEntity datasetEntity : allowedDatasets) {
       String datasetId = datasetEntity.getId();
 
@@ -433,11 +426,7 @@ public class DeleteEntitiesCron extends TimerTask {
       if (datasetEntity.getDataset_visibility()
           == DatasetVisibilityEnum.DatasetVisibility.PUBLIC.getNumber()) {
         String publicReadRoleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_DATASET_PUBLIC_READ,
-                datasetId,
-                authService.getVertaIdFromUserInfo(unsignedUser),
-                ModelDBServiceResourceTypes.DATASET.name());
+            roleService.buildPublicRoleBindingName(datasetId, ModelDBServiceResourceTypes.DATASET);
         if (publicReadRoleBindingName != null && !publicReadRoleBindingName.isEmpty()) {
           roleBindingNames.add(publicReadRoleBindingName);
         }
