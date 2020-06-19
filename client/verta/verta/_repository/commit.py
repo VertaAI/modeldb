@@ -448,9 +448,15 @@ class Commit(object):
         self._lazy_load_blobs()
 
         try:
-            return self._blobs[path]
+            blob = self._blobs[path]
         except KeyError:
             self._raise_lookup_error(path)
+
+        if isinstance(blob, dataset._Dataset):
+            # for _Dataset.download()
+            blob._set_commit_and_blob_path(self, path)
+
+        return blob
 
     def remove(self, path):
         """
@@ -496,9 +502,7 @@ class Commit(object):
         mdb_versioned_blobs = dict()
         for blob_path, blob in self._blobs.items():
             if isinstance(blob, dataset._Dataset) and blob._mdb_versioned:
-                if isinstance(blob, dataset.S3):
-                    blob._download_components_from_S3()
-
+                blob._prepare_components_to_upload()
                 mdb_versioned_blobs[blob_path] = blob
 
         msg = self._to_create_msg(commit_message=message)

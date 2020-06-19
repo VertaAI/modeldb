@@ -231,7 +231,7 @@ class LazyList(object):
         raise NotImplementedError
 
 
-def make_request(method, url, conn, **kwargs):
+def make_request(method, url, conn, stream=False, **kwargs):
     """
     Makes a REST request.
 
@@ -243,8 +243,10 @@ def make_request(method, url, conn, **kwargs):
         URL.
     conn : Connection
         Connection authentication and configuration.
+    stream : bool, default False
+        Whether to stream the response contents.
     **kwargs
-        Parameters to requests.request().
+        Initialization parameters to requests.Request().
 
     Returns
     -------
@@ -261,7 +263,7 @@ def make_request(method, url, conn, **kwargs):
         s.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
             request = requests.Request(method, url, **kwargs).prepare()
-            response = s.send(request, allow_redirects=False)
+            response = s.send(request, stream=stream, allow_redirects=False)
 
             # manually inspect initial response and subsequent redirects to stop on 302s
             history = []  # track history because `requests` doesn't since we're redirecting manually

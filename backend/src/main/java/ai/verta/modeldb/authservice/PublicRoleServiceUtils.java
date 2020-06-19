@@ -79,6 +79,16 @@ public class PublicRoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
 
   @Override
+  public void createPublicRoleBinding(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
+
+  @Override
+  public String buildPublicRoleBindingName(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return null;
+  }
+
+  @Override
   public void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
