@@ -1112,6 +1112,16 @@ public class CommitTest {
             .addAllLocation(location4)
             .build();
 
+    String path5 = "versioned_modeldb.txt";
+    List<String> location5 = new ArrayList<>();
+    location5.add("versioned");
+    location5.add("modeldb.json");
+    BlobExpanded blobExpanded5 =
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path5))
+            .addAllLocation(location5)
+            .build();
+
     Commit.Builder commitBuilder =
         Commit.newBuilder()
             .setMessage("this is the test commit message")
@@ -1129,6 +1139,7 @@ public class CommitTest {
             .addBlobs(blobExpanded2)
             .addBlobs(blobExpanded3)
             .addBlobs(blobExpanded4)
+            .addBlobs(blobExpanded5)
             .build();
 
     CreateCommitRequest.Response commitResponse =
@@ -1240,6 +1251,19 @@ public class CommitTest {
       Assert.assertEquals(Code.NOT_FOUND, e.getStatus().getCode());
       e.printStackTrace();
     }
+
+    listCommitBlobsRequest =
+        ListCommitBlobsRequest.newBuilder()
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .addAllLocationPrefix(location5)
+            .build();
+
+    listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        1,
+        listCommitBlobsResponse.getBlobsCount());
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()

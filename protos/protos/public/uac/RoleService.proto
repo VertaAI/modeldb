@@ -102,6 +102,7 @@ message RoleBinding {
     // We optionally allow a more specialized list of resources that the original one allowed by the roles
     repeated Resources resources = 6;
     string role_id = 7;
+    bool public = 8;
 }
 
 // Service messages

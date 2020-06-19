@@ -494,6 +494,7 @@ message GetUrlForBlobVersioned {
 
     message Response {
         string url = 1;
+        bool multipart_upload_ok = 3;  // for backcompat: new Client, old Backend
     }
 }
 

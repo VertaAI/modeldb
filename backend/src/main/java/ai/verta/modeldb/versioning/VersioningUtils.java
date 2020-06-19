@@ -1,10 +1,12 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.common.KeyValue;
+import ai.verta.modeldb.ArtifactPart;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.OperatorEnum;
+import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -15,9 +17,11 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -277,6 +281,29 @@ public class VersioningUtils {
     } catch (InvalidProtocolBufferException e) {
       throw new ModelDBException(e);
     }
+  }
+
+  public static void saveOrUpdateArtifactPartEntity(
+      ArtifactPart artifactPart, Session session, String artifactId, int artifactType) {
+    ArtifactPartEntity artifactPartEntity =
+        new ArtifactPartEntity(
+            artifactId, artifactType, artifactPart.getPartNumber(), artifactPart.getEtag());
+    session.beginTransaction();
+    session.saveOrUpdate(artifactPartEntity);
+    session.getTransaction().commit();
+  }
+
+  public static Set<ArtifactPartEntity> getArtifactPartEntities(
+      Session session, String artifactId, int artifactType) {
+    String queryString =
+        "From "
+            + ArtifactPartEntity.class.getSimpleName()
+            + " arp WHERE arp.artifact_type = :artifactType AND arp.artifact_id = :artifactId";
+    Query query = session.createQuery(queryString);
+    query.setParameter("artifactType", artifactType);
+    query.setParameter("artifactId", artifactId);
+    List<ArtifactPartEntity> artifactPartEntities = query.list();
+    return new HashSet<>(artifactPartEntities);
   }
 
   public static List<AttributeEntity> getAttributeEntities(
