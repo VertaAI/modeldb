@@ -142,6 +142,26 @@ class TestExperimentRun extends FunSuite {
     }
   }
 
+  test("getObservation(s) should get the correct series of logged observation") {
+    val f = fixture
+
+    try {
+      f.expRun.logObservation("some-obs", 0.5)
+      f.expRun.logObservation("some-obs", 0.4)
+      f.expRun.logObservation("some-obs", 0.6)
+      f.expRun.logObservation("single-obs", 0.3)
+
+      assert(f.expRun.getObservation("some-obs").get.map(_._2) equals List(0.5, 0.4, 0.6))
+      assert(f.expRun.getObservation("single-obs").get.map(_._2) equals List(0.3))
+      assert(f.expRun.getObservation("non-existing-obs").get equals Nil)
+
+      val allObservations = f.expRun.getObservations().get.mapValues(series => series.map(_._2))
+      assert(allObservations equals Map("some-obs" -> List(0.5, 0.4, 0.6), "single-obs" -> List(0.3)))
+    } finally {
+      cleanup(f)
+    }
+  }
+
   test("get commit should retrieve the right commit that was logged") {
     val f = fixture
 

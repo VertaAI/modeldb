@@ -168,6 +168,11 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   def getAttribute(key: String)(implicit ec: ExecutionContext) =
     getAttributes(List(key)).map(_.get(key))
 
+  /** Logs an observation to this Experiment Run
+   *  @param key Name of the observation
+   *  @param value Value of the observation
+   *  @param timestamp Unix timestamp. If not provided, the current time will be used.
+   */
   def logObservation(key: String, value: Any, timestamp: LocalDateTime = null)(implicit ec: ExecutionContext) = {
     val ts = if (timestamp == null) LocalDateTime.now() else timestamp
 
@@ -187,6 +192,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       .map(_ => {})
   }
 
+  /** Gets the observation series with name key from this Experiment Run
+   *  @param key Name of observation series
+   *  @return Values of observation series
+   */
   def getObservation(key: String)(implicit ec: ExecutionContext) = {
     clientSet.experimentRunService.getObservations(id = run.id, observation_key = Some(key))
       .map(res => {
@@ -201,15 +210,18 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       })
   }
 
+  /** Gets all observations from this Experiment Run.
+   *  @return Names and values of all observation series
+   */
   def getObservations()(implicit ec: ExecutionContext) = {
     clientSet.experimentRunService.getExperimentRunById(run.id)
-      .map(runResp => {
+      .flatMap(runResp => Try {
         val observations = runResp.experiment_run.get.observations
         val obsMap = new mutable.HashMap[String, List[(LocalDateTime, Any)]]()
         observations.get.foreach(o => {
           val ts = LocalDateTime.ofInstant(Instant.ofEpochMilli(o.timestamp.get.toLong), TimeZone.getTimeZone("UTC").toZoneId)
           val key = o.attribute.get.key.get
-          val value = KVHandler.convertToAny(o.attribute.get.value.get, s"unknown type for observation $key: ${o.attribute.get.value.get.toString} (${o.attribute.get.value.get.getClass.toString})")
+          val value = KVHandler.convertToAny(o.attribute.get.value.get, s"unknown type for observation $key: ${o.attribute.get.value.get.toString} (${o.attribute.get.value.get.getClass.toString})").get
           obsMap.update(key, (ts, value) :: obsMap.getOrElse(key, Nil))
         })
         obsMap.map(el => {
