@@ -2,6 +2,7 @@ import os
 import shutil
 
 import pytest
+from .. import utils
 
 import verta.dataset
 
@@ -362,3 +363,51 @@ class TestPath:
         new_filename = dataset.download(filename)
         with open(new_filename, 'rb') as f:
             assert f.read() == file1_contents
+
+    def test_mngd_ver_to_parent_dir(self, commit, in_tempdir):
+        """Download to parent directory works as expected."""
+        child_dirname = "child"
+        os.mkdir(child_dirname)
+        filename = "tiny1.bin"
+
+        with utils.chdir(child_dirname):
+            file1_contents = os.urandom(2**16)
+            with open(filename, 'wb') as f:
+                f.write(file1_contents)
+            blob_path = "data"
+
+            dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
+            commit.update(blob_path, dataset)
+            commit.save("First file.")
+            dataset = commit.get(blob_path)
+
+            # download to parent dir
+            download_to_path = os.path.join("..", filename)
+            filepath = dataset.download(filename, download_to_path)
+            assert os.path.isfile(filepath)
+            assert filepath == os.path.abspath(download_to_path)
+
+    def test_mngd_ver_to_sibling_dir(self, commit, in_tempdir):
+        """Download to sibling directory works as expected."""
+        child_dirname = "child"
+        os.mkdir(child_dirname)
+        sibling_dirname = "sibling"
+        os.mkdir(sibling_dirname)
+        filename = "tiny1.bin"
+
+        with utils.chdir(child_dirname):
+            file1_contents = os.urandom(2**16)
+            with open(filename, 'wb') as f:
+                f.write(file1_contents)
+            blob_path = "data"
+
+            dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
+            commit.update(blob_path, dataset)
+            commit.save("First file.")
+            dataset = commit.get(blob_path)
+
+            # download to sibling dir
+            download_to_path = os.path.join("..", sibling_dirname, filename)
+            filepath = dataset.download(filename, download_to_path)
+            assert os.path.isfile(filepath)
+            assert filepath == os.path.abspath(download_to_path)

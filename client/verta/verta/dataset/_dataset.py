@@ -168,15 +168,18 @@ class _Dataset(blob.Blob):
             raise KeyError("no components found for path {}".format(component_path))
 
         # determine the root path everything is being downloaded to
-        local_paths = map(os.path.relpath, components_to_download.values())  # relative to cwd
-        root_dirnames = set(local_path.split('/')[0] for local_path in local_paths)
-        if len(root_dirnames) == 1:
-            # great, that's our root
-            downloaded_to_path = root_dirnames.pop()
+        if not implicit_download_to_path:
+            downloaded_to_path = download_to_path
         else:
-            # everything is relative to cwd, so cwd is our root
-            # TODO: handle if a `local_path` was actually at system root or a parent dir
-            downloaded_to_path = os.curdir
+            local_paths = map(os.path.relpath, components_to_download.values())  # relative to cwd
+            root_dirnames = set(local_path.split('/')[0] for local_path in local_paths)
+            if len(root_dirnames) == 1:
+                # great, that's our root
+                downloaded_to_path = root_dirnames.pop()
+            else:
+                # everything is relative to cwd, so cwd is our root
+                # TODO: handle if a `local_path` was actually at system root or a parent dir
+                downloaded_to_path = os.curdir
 
         return (components_to_download, downloaded_to_path)
 
