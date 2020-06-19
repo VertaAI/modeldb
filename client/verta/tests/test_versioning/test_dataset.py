@@ -1,5 +1,6 @@
 import os
 import shutil
+import pathlib2
 
 import pytest
 from .. import utils
@@ -220,6 +221,20 @@ class TestS3:
         dirpath3 = dataset.download(s3_folder, dirpath)
         assert dirpath3 == dirpath
         assert os.path.getmtime(dirpath) > last_updated
+
+    def test_not_to_s3_dir(self, commit, in_tempdir):
+        """If the user specifies "s3://", things shouldn't go into a """
+        dirname = "tiny-files/"
+        s3_folder = "s3://verta-versioned-bucket/{}".format(dirname)
+        blob_path = "data"
+
+        dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        dirpath = dataset.download("s3://")
+        assert "s3:" not in pathlib2.Path(dirpath).parts
 
 
 class TestPath:

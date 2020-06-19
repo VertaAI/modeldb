@@ -137,19 +137,23 @@ class _Dataset(blob.Blob):
                     #     component_blob.path = "coworker/downloads/data/info.csv"
                     #     component_path      = "coworker/downloads"
                     #     local_path          =          "downloads/data/info.csv"
-                    # TODO: handle "s3://" prefix
                     local_path = os.path.relpath(
                         component_blob.path,
                         pathlib2.Path(component_path).parent,
                     )
 
+                    # TODO: move following steps outside of loop if less expensive
+                    path_parts = pathlib2.Path(local_path).parts
+
+                    # user probably doesn't want an s3:/ dir
+                    if path_parts[0] == "s3:":
+                        path_parts = path_parts[1:]
+
                     # avoid collision with existing directory
-                    # TODO: this, but outside of loop if less expensive
-                    parts = pathlib2.Path(local_path).parts
-                    root_dirname = parts[0]
+                    root_dirname = path_parts[0]
                     while os.path.exists(root_dirname):
                         root_dirname = _file_utils.increment_path(root_dirname)
-                    local_path = os.path.join(root_dirname, *parts[1:])
+                    local_path = os.path.join(root_dirname, *path_parts[1:])
                 else:
                     # rebase from `component_path` onto `download_to_path`
                     #     For example:
