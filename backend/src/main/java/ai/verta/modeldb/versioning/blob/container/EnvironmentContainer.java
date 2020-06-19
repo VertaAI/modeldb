@@ -132,7 +132,8 @@ public class EnvironmentContainer extends BlobContainer {
   }
 
   @Override
-  public void processAttribute(Session session, Long repoId, String commitHash)
+  public void processAttribute(
+      Session session, Long repoId, String commitHash, boolean addAttribute)
       throws ModelDBException {}
 
   private static final String PATTERN = "[a-zA-Z0-9_-]+";

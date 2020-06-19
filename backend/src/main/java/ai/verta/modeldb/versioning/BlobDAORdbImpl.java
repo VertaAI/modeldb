@@ -6,12 +6,15 @@ import static java.util.stream.Collectors.toMap;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.PathLocationTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
+import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
@@ -96,11 +99,107 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public void setBlobsAttributes(
-      Session session, Long repoId, String commitHash, List<BlobContainer> blobContainers)
+      Session session,
+      Long repoId,
+      String commitHash,
+      List<BlobContainer> blobContainers,
+      boolean addAttribute)
       throws ModelDBException {
     for (BlobContainer blobContainer : blobContainers) {
       // should save attributes of each blob during one session to avoid recurring entities ids
-      blobContainer.processAttribute(session, repoId, commitHash);
+      blobContainer.processAttribute(session, repoId, commitHash, addAttribute);
+    }
+  }
+
+  @Override
+  public void addUpdateBlobAttributes(
+      RepositoryEntity repositoryEntity,
+      CommitFunction commitFunction,
+      List<KeyValue> attributes,
+      boolean addAttribute)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
+
+      Blob.Builder blobBuilder = Blob.newBuilder();
+      blobBuilder.addAllAttributes(attributes);
+      List<String> locations =
+          Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION);
+      List<BlobContainer> blobList =
+          Collections.singletonList(
+              BlobContainer.create(
+                  BlobExpanded.newBuilder()
+                      .addAllLocation(locations)
+                      .setBlob(blobBuilder.setDataset(DatasetBlob.newBuilder().build()).build())
+                      .build()));
+      setBlobsAttributes(
+          session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList, addAttribute);
+      commitEntity.setDate_updated(new Date().getTime());
+      session.update(commitEntity);
+      session.getTransaction().commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        addUpdateBlobAttributes(repositoryEntity, commitFunction, attributes, addAttribute);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public void deleteBlobAttributes(
+      RepositoryEntity repositoryEntity,
+      CommitFunction commitFunction,
+      List<String> attributesKeys,
+      List<String> location,
+      boolean deleteAll)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
+      if (deleteAll) {
+        String entityHash =
+            VersioningUtils.getVersioningCompositeId(
+                repositoryEntity.getId(), commitEntity.getCommit_hash(), location);
+        DeleteEntitiesCron.deleteAttribute(session, entityHash);
+      } else {
+        List<AttributeEntity> existingAttributes =
+            VersioningUtils.getAttributeEntities(
+                session, repositoryEntity.getId(), commitEntity.getCommit_hash(), location, null);
+        for (String removeAttrKey : attributesKeys) {
+          for (AttributeEntity existingAttribute : existingAttributes) {
+            if (existingAttribute.getKey().equals(removeAttrKey)) {
+              session.delete(existingAttribute);
+            }
+          }
+        }
+      }
+      commitEntity.setDate_updated(new Date().getTime());
+      session.update(commitEntity);
+      session.getTransaction().commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        deleteBlobAttributes(repositoryEntity, commitFunction, attributesKeys, location, deleteAll);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public List<KeyValue> getBlobAttributes(
+      Long repoId, String commitHash, List<String> location, List<String> attributeKeysList)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      return VersioningUtils.getAttributes(
+          session, repoId, commitHash, location, attributeKeysList);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getBlobAttributes(repoId, commitHash, location, attributeKeysList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -213,7 +312,8 @@ public class BlobDAORdbImpl implements BlobDAO {
         if (index == locationList.size() - 1) {
           Blob blob = getBlob(session, elementEntity);
           List<KeyValue> attributeEntities =
-              VersioningUtils.getAttributes(session, repoId, commit.getCommit_hash(), locationList);
+              VersioningUtils.getAttributes(
+                  session, repoId, commit.getCommit_hash(), locationList, null);
           blob = blob.toBuilder().addAllAttributes(attributeEntities).build();
           return GetCommitComponentRequest.Response.newBuilder().setBlob(blob).build();
         } else {
@@ -543,7 +643,8 @@ public class BlobDAORdbImpl implements BlobDAO {
                 session,
                 repository.getId(),
                 commit.getCommit_hash(),
-                Collections.singletonList(location));
+                Collections.singletonList(location),
+                null);
         BlobExpanded blobExpanded = locationBlobMap.get(location);
         Blob blob = blobExpanded.getBlob().toBuilder().addAllAttributes(attributes).build();
         blobExpanded = blobExpanded.toBuilder().setBlob(blob).build();
