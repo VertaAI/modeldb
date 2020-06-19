@@ -16,15 +16,22 @@ class Commit(
   private val clientSet: ClientSet, private val repo: Repository,
   private val commit: VersioningCommit, private val commitBranch: Option[String] = None
 ) {
-  private var saved = true // whether the commit instance is saved to database, or is currently being modified.
   private var loadedFromRemote = false // whether blobs has been retrieved from remote
   private var blobs = Map[String, VersioningBlob]() // mutable map for storing blobs. Only loaded when used
 
   /** Return the id of the commit */
   def id = commit.commit_sha
 
+  /** Return the id of the commit's repository */
+  def repoId = repo.id
+
+  /** Whether the commit instance is saved to database, or is currently being modified.
+   *  A commit is saved if and only if its versioning commit field has a defined ID.
+   */
+  private def saved = id.isDefined
+
   override def equals(other: Any) = other match {
-    case other: Commit => id.isDefined && other.id.isDefined && id.get == other.id.get
+    case other: Commit => saved && other.saved && id.get == other.id.get
     case _ => false
   }
 
@@ -61,7 +68,7 @@ class Commit(
       case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
       case s3: S3 => S3.toVersioningBlob(s3)
     }
-    getChild(blobs + (path -> versioningBlob))
+    loadBlobs().map(_ => getChild(blobs + (path -> versioningBlob)))
   }
 
   /** Remove a blob to this commit at path
@@ -69,7 +76,7 @@ class Commit(
    *  @return The new commit with the blob removed, if succeeds.
    */
   def remove(path: String)(implicit ec: ExecutionContext) =
-    getVersioningBlob(path).flatMap(_ => getChild(blobs - path))
+    getVersioningBlob(path).map(_ => getChild(blobs - path))
 
   /** Saves this commit to ModelDB
    *  @param message description of this commit
@@ -77,7 +84,7 @@ class Commit(
    */
   def save(message: String)(implicit ec: ExecutionContext) = {
     if (saved)
-      Failure(new IllegalStateException("Commit is already saved"))
+      Failure(new IllegalCommitSavedStateException("Commit is already saved"))
     else
       blobsList().flatMap(list => createCommit(message = message, blobs = Some(list)))
   }
@@ -103,16 +110,7 @@ class Commit(
           diffs = diffs
         ),
         repository_id_repo_id = repo.id
-      )
-      .flatMap(r => {
-        val newCommit = new Commit(clientSet, repo, r.commit.get, commitBranch)
-
-        // Update branch to child commit
-        if (commitBranch.isDefined)
-          newCommit.newBranch(commitBranch.get)
-        else
-          Success(newCommit)
-      })
+      ).flatMap(r => versioningCommitToCommit(r.commit.get))
   }
 
   /** Convert a location to "repeated string" representation
@@ -191,8 +189,7 @@ class Commit(
    *  @param childBlobs the blobs of the child commit
    *  @return the child commit instance, if loading blobs succeeds.
    */
-  private def getChild(childBlobs: Map[String, VersioningBlob])(implicit ec: ExecutionContext) =
-    loadBlobs().map(_ => {
+  private def getChild(childBlobs: Map[String, VersioningBlob])(implicit ec: ExecutionContext) = {
       /** TODO: Deal with author, date_created */
       val newVersioningCommit = VersioningCommit(
         parent_shas = if (saved) commit.commit_sha.map(List(_)) else commit.parent_shas
@@ -200,11 +197,10 @@ class Commit(
 
       val child = new Commit(clientSet, repo, newVersioningCommit, commitBranch)
       child.blobs = childBlobs
-      child.saved = false
-      child.loadedFromRemote = true
+      child.loadedFromRemote = true  // child's blobs are already provided
 
       child
-    })
+    }
 
   /** Helper function to convert a VersioningBlob instance to corresponding Blob subclass instance
    *  @param vb the VersioningBlob instance
@@ -222,25 +218,245 @@ class Commit(
    *  @return if not saved, a failure; otherwise, this commit as the head of `branch`
    */
   def newBranch(branch: String)(implicit ec: ExecutionContext) = {
-    if (!saved)
-      Failure(new IllegalStateException("Commit must be saved before it can be attached to a branch"))
-    else clientSet.versioningService.SetBranch2(
-      body = commit.commit_sha.get,
-      branch = branch,
-      repository_id_repo_id = repo.id
-    ).flatMap(_ => repo.getCommitByBranch(branch))
+    checkSaved("Commit must be saved before it can be attached to a branch").flatMap(_ =>
+      clientSet.versioningService.SetBranch2(
+        body = commit.commit_sha.get,
+        branch = branch,
+        repository_id_repo_id = repo.id
+      ).flatMap(_ => repo.getCommitByBranch(branch))
+    )
   }
 
   /** Assigns a tag to this Commit
    *  @param tag tag
    */
   def tag(tag: String)(implicit ec: ExecutionContext) = {
-    if (!saved)
-      Failure(new IllegalStateException("Commit must be saved before it can be tagged"))
-    else clientSet.versioningService.SetTag2(
-        body = commit.commit_sha.get,
-        repository_id_repo_id = repo.id,
-        tag = tag
+    checkSaved("Commit must be saved before it can be tagged").flatMap(_ =>
+      clientSet.versioningService.SetTag2(
+          body = commit.commit_sha.get,
+          repository_id_repo_id = repo.id,
+          tag = tag
+      )
     ).map(_ => ())
+  }
+
+  /** Merges a branch headed by other into this commit
+   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
+   *  @param other Commit to be merged
+   *  @param message Description of the merge. If not provided, a default message will be used
+   *  @return Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository; the merged commit otherwise.
+   */
+  def merge(other: Commit, message: Option[String] = None)(implicit ec: ExecutionContext) = {
+    checkSaved("This commit must be saved").flatMap(_ => other.checkSaved("Other commit must be saved"))
+      .flatMap(_ => checkSameRepository(other))
+      .flatMap(_ => {
+        clientSet.versioningService.MergeRepositoryCommits2(
+          /** TODO: is dry run? */
+          body = VersioningMergeRepositoryCommitsRequest(
+            commit_sha_a = other.id,
+            commit_sha_b = id,
+            content = Some(VersioningCommit(message=message))
+          ),
+          repository_id_repo_id = repo.id
+        ).flatMap(r =>
+        if (r.conflicts.isDefined) Failure(throw new IllegalArgumentException(
+          List(
+            "Merge conflict.", "Resolution is not currently supported through the client",
+            "Please create a new Commit with the updated blobs.",
+            "See https://docs.verta.ai/en/master/examples/tutorials/merge.html for instructions"
+          ).mkString("\n")
+        ))
+        else versioningCommitToCommit(r.commit.get))
+      }
+    )
+  }
+
+  /** Helper function to convert the versioning commit instance to commit instance
+   *  If the current instance has a branch associated with it, the new commit will become the head of the branch.
+   *  Useful for createCommit, merge, and revert
+   *  @param versioningCommit the versioning commit instance
+   *  @return the corresponding commit instance
+   */
+  private def versioningCommitToCommit(versioningCommit: VersioningCommit)(implicit ec: ExecutionContext) = {
+    val newCommit = new Commit(clientSet, repo, versioningCommit, commitBranch)
+
+    if (commitBranch.isDefined)
+      newCommit.newBranch(commitBranch.get)
+    else
+      Success(newCommit)
+  }
+
+  /** Return ancestors, starting from this Commit until the root of the Repository
+   *  @return a list of ancestors
+   */
+  def log()(implicit ec: ExecutionContext): Try[Stream[Commit]] = {
+    // if the current commit is not saved (no sha), get the one of its parent
+    // (the base of the modification)
+    val commitSHA = commit.commit_sha.getOrElse(commit.parent_shas.get.head)
+
+    clientSet.versioningService.ListCommitsLog4(
+      repository_id_repo_id = repo.id,
+      commit_sha = commitSHA
+    ) // Try[VersioningListCommitsLogRequestResponse]
+    .map(_.commits) // Try[Option[List[VersioningCommit]]]
+    .map(ls =>
+      if (ls.isEmpty) Stream()
+      else ls.get.toStream.map(c => new Commit(clientSet, repo, c))
+    )
+  }
+
+  /** Reverts other.
+   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
+   *  Currently reverting a merge commit is not supported. Unexpected behavior might occur.
+   *  @param other Base for the revert. If not provided, this commit will be reverted
+   *  @param message Description of the revert. If not provided, a default message will be used
+   *  @return The new commit, with the changes in other reverted, if suceeds. Failure if this commit or other has not yet been saved, or if they do not belong to the same Repository.
+   */
+  def revert(other: Commit = this, message: Option[String] = None)(implicit ec: ExecutionContext) = {
+    checkSaved("This commit must be saved").flatMap(_ => other.checkSaved("Other commit must be saved"))
+      .flatMap(_ => checkSameRepository(other))
+      .flatMap(_ =>
+        clientSet.versioningService.RevertRepositoryCommits2(
+          body = VersioningRevertRepositoryCommitsRequest(
+            base_commit_sha = Some(id.get),
+            commit_to_revert_sha = Some(other.id.get),
+            content = Some(VersioningCommit(message=message))
+          ),
+          commit_to_revert_sha = other.id.get,
+          repository_id_repo_id = repo.id
+        ).flatMap(r => versioningCommitToCommit(r.commit.get))
+      )
+  }
+
+  /** Returns the diff from reference to self
+   *  @param reference Commit to be compared to. If not provided, first parent will be used.
+   *  @return Failure if this commit or reference has not yet been saved, or if they do not belong to the same repository; otherwise diff object.
+   */
+  def diffFrom(reference: Option[Commit] = None)(implicit ec: ExecutionContext) = {
+    checkSaved("Commit must be saved before a diff can be calculated").flatMap(_ =>
+      if (reference.isDefined)
+        reference.get.checkSaved("Reference must be saved before a diff can be calculated")
+                 .flatMap(_ => checkSameRepository(reference.get))
+      else
+        Success(())
+    ).flatMap(_ => clientSet.versioningService.ComputeRepositoryDiff2(
+        repository_id_repo_id = repo.id,
+        commit_a = Some(
+          if (reference.isDefined) reference.get.id.get else commit.parent_shas.get.head
+        ),
+        commit_b = Some(commit.commit_sha.get)
+      ).map(r => new Diff(r.diffs))
+    )
+  }
+
+  /** Applies a diff to this Commit.
+   *  This method creates a new commit in ModelDB, and assigns a new ID to this object.
+   *  @param diff the Diff instance returned by diffFrom
+   *  @param message the message associated with the new commit
+   *  @return the new Commit instance, if succeeds.
+   */
+  def applyDiff(diff: Diff, message: String)(implicit ec: ExecutionContext) = {
+    checkSaved("Commit must be saved before a diff can be applied")
+      .flatMap(_ => loadBlobs())
+      .map(_ => getChild(blobs)) // new commit's parent is old commit
+      .flatMap(_.createCommit(message = message, diffs = diff.blobDiffs, commitBase = id))
+  }
+
+  /** Check that the commit is saved.
+   *  @param message error message if this commit is not saved
+   *  @return Failure if the commit is not saved. Success otherwise
+   */
+  def checkSaved(message: String): Try[Unit] = {
+    if (!saved)
+      Failure(new IllegalCommitSavedStateException(message))
+    else
+      Success(())
+  }
+
+  /** Check that the other commit is in the same repository as this commit.
+   *  @param message error message if the two commits are not in the same repository.
+   *  @return Failure if the two commits are not in the same repository. Success otherwise
+   */
+  private def checkSameRepository(other: Commit): Try[Unit] = {
+    if (repo != other.repo)
+      Failure(new IllegalArgumentException("Two commits must belong to the same repository"))
+    else
+      Success(())
+  }
+
+  /** Generates a stream of outputs in this commit by walking through its folder tree.
+   *  The stream ends at the first failure, or when there are no folders left. If the commit is not saved, its only element is that Failure
+   *  @param walker the FolderWalker to process the folders in the folder tree.
+   *  @return a stream of Try's of WalkOutput.
+   */
+  def walk[T](walker: FolderWalker[T])(implicit ec: ExecutionContext): Stream[Try[T]] = {
+    if (!saved)
+      Stream(Failure(new IllegalCommitSavedStateException("Commit must be saved before it can be walked")))
+    else {
+      getFolder(PathList(Nil)) match {
+        case Failure(e) => Stream(Failure(e))
+        case Success(root) => continueWalk(root, walker)
+      }
+    }
+  }
+
+  /** Get the folder corresponding to a path in list form
+   *  @param location location
+   *  @return the folder, if succeeds
+   */
+  def getFolder(location: PathList)(implicit ec: ExecutionContext): Try[Folder] = {
+    clientSet.versioningService.GetCommitComponent2(
+      commit_sha = id.get,
+      repository_id_repo_id = repo.id,
+      location = if (location.components.length > 0) Some(location.components) else None
+    ).flatMap(r => {
+        val folderPath = location.path
+        val responseFolder = r.folder
+
+        val folderNames = responseFolder.flatMap(_.sub_folders) // Option[List[VersioningFolderElement]]
+                                        .map(_.map(folder => folder.element_name.get))
+                                        // Option[List[String]]
+                                        .map(_.sorted)
+
+        val blobNames = responseFolder.flatMap(_.blobs) // Option[List[VersioningFolderElement]]
+                                      .map(_.map(folder => folder.element_name.get))
+                                      // Option[List[String]]
+                                      .map(_.sorted)
+
+        Success(Folder(folderPath, blobNames.getOrElse(Nil), folderNames.getOrElse(Nil)))
+      })
+  }
+
+  /** Continue the walk from a folder.
+   *  @param folder current folder being explored.
+   *  @param walker a FolderWalker instance to process the returned folder
+   *  @return Stream of Trys. If the returned WalkOutput fails, abort the remaining locations.
+   */
+  def continueWalk[T](folder: Folder, walker: FolderWalker[T])(implicit ec: ExecutionContext): Stream[Try[T]] = {
+    // process the folder and walker:
+    val replacedWalker = walker.replace(folder)
+    val filteredFolder = replacedWalker.filterFolder(folder)
+
+    val subfolders: Try[List[Folder]] =
+      Try(filteredFolder.subfolderPaths.map(folder => getFolder(PathList(folder.split("/").toList))).map(_.get))
+    val blobs: Try[List[Blob]] =
+      Try(filteredFolder.blobPaths.map(get).map(_.get))
+
+    subfolders match {
+      case Failure(e) => Stream(Failure(e))
+      case Success(sf) => {
+        blobs match {
+          case Failure(e) => Stream(Failure(e))
+          case Success(bl) => {
+            val blobResults: Stream[Try[T]] =
+              filteredFolder.blobs.zip(bl).toStream.map(pair => Success(replacedWalker.visitBlob(pair._1, pair._2)))
+            val subfolderResults: Stream[Try[T]] =
+              filteredFolder.subfolders.zip(sf).toStream.map(pair => Success(replacedWalker.visitFolder(pair._1, pair._2)))
+
+            blobResults #::: subfolderResults #::: sf.toStream.flatMap(folder => continueWalk(folder, replacedWalker))
+          }
+        }
+      }
+    }
   }
 }
