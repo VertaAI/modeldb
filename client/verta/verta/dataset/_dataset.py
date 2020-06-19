@@ -225,6 +225,9 @@ class _Dataset(blob.Blob):
                         while os.path.exists(local_path):
                             local_path = _file_utils.increment_path(local_path)
 
+                        # update in dict for consistency
+                        components_to_download[path] = local_path
+
                     # move written contents to `filepath`
                     os.rename(tempf.name, local_path)
                 except Exception as e:
@@ -233,9 +236,6 @@ class _Dataset(blob.Blob):
                         os.remove(tempf.name)
                     raise e
                 else:
-                    # update local path in dict in case changed
-                    components_to_download[path] = local_path
-
                     print("download complete; file written to {}".format(local_path))
             finally:
                 response.close()
