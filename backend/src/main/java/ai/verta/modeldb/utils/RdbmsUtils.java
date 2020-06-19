@@ -257,7 +257,7 @@ public class RdbmsUtils {
                 + "(select id from keyvalue k where kv_key ='"
                 + observation.getAttribute().getKey()
                 + "' and  entity_name IS NULL) k "
-                + "where o.keyvalue_mapping_id = k.id ";
+                + "where o.keyvaluemapping_id = k.id ";
         Query sqlQuery = session.createSQLQuery(MAX_EPOCH_NUMBER_SQL);
         Long maxEpochNumber = (Long) sqlQuery.uniqueResult();
         Long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber + 1;

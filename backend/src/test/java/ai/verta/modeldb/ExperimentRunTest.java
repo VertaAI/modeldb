@@ -316,9 +316,9 @@ public class ExperimentRunTest {
                 Artifact.newBuilder()
                     .setKey("Google developer Observation artifact")
                     .setPath("This is data artifact type in Google developer Observation artifact")
-                    .setArtifactType(ArtifactType.DATA)
-                    .build())
+                    .setArtifactType(ArtifactType.DATA))
             .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(1))
             .build());
     stringValue =
         Value.newBuilder()
@@ -332,6 +332,7 @@ public class ExperimentRunTest {
                     .setValue(stringValue)
                     .setValueType(ValueType.STRING))
             .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(123))
             .build());
 
     List<Feature> features = new ArrayList<>();
@@ -2420,6 +2421,7 @@ public class ExperimentRunTest {
                     .setValueType(ValueType.NUMBER)
                     .build())
             .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(2L))
             .build();
 
     LogObservation logObservationRequest =
@@ -2610,6 +2612,7 @@ public class ExperimentRunTest {
                     .setValueType(ValueType.NUMBER)
                     .build())
             .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(234L))
             .build();
     observations.add(observation1);
 
@@ -2626,6 +2629,7 @@ public class ExperimentRunTest {
                     .setValueType(ValueType.STRING)
                     .build())
             .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(2134L))
             .build();
     observations.add(observation2);
 
