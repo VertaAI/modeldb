@@ -2,11 +2,23 @@ package ai.verta.client.entities.utils
 
 import scala.language.implicitConversions
 
-sealed trait ValueType
+sealed trait ValueType {
+  def asBigInt: Option[BigInt] = None
+  def asString: Option[String] = None
+  def asDouble: Option[Double] = None
+}
 
-case class IntValueType(i: BigInt) extends ValueType
-case class StringValueType(s: String) extends ValueType
-case class DoubleValueType(d: Double) extends ValueType
+case class IntValueType(i: BigInt) extends ValueType {
+  override def asBigInt = Some(i)
+}
+
+case class StringValueType(s: String) extends ValueType {
+  override def asString = Some(s)
+}
+
+case class DoubleValueType(d: Double) extends ValueType {
+  override def asDouble = Some(d)
+}
 
 object ValueType {
   implicit def fromInt(i: Int): ValueType = IntValueType(BigInt(i))

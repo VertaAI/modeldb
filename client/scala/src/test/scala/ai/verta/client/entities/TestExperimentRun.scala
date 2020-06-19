@@ -40,9 +40,9 @@ class TestExperimentRun extends FunSuite {
 
        assertTypeError("f.expRun.logMetric(\"should-not-compile\", true)")
 
-       assert((f.expRun.getMetric("some-metric").get.get match {case DoubleValueType(d) => d}) equals 0.5)
-       assert((f.expRun.getMetric("other-metric").get.get match {case DoubleValueType(d) => d}) equals 0.3)
-       assert((f.expRun.getMetric("other-metric-2").get.get match {case DoubleValueType(d) => d}) equals 0.1)
+       assert(f.expRun.getMetric("some-metric").get.get.asDouble.get equals 0.5)
+       assert(f.expRun.getMetric("other-metric").get.get.asDouble.get equals 0.3)
+       assert(f.expRun.getMetric("other-metric-2").get.get.asDouble.get equals 0.1)
     } finally {
       cleanup(f)
     }
@@ -95,8 +95,8 @@ class TestExperimentRun extends FunSuite {
     try {
       val metrics = f.expRun.metrics()
       metrics += ("some-metric" -> 0.5)
-      assert((metrics.get("some-metric").get match {case DoubleValueType(d) => d}) == 0.5)
-      assert((f.expRun.getMetric("some-metric").get.get match {case DoubleValueType(d) => d}) equals 0.5)
+      assert(metrics.get("some-metric").get.asDouble.get == 0.5)
+      assert(f.expRun.getMetric("some-metric").get.get.asDouble.get equals 0.5)
       assert(metrics.get("other-metric").isEmpty)
     } finally {
       cleanup(f)
