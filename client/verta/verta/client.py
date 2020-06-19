@@ -3339,6 +3339,7 @@ class ExperimentRun(_ModelDBEntity):
         artifact, path_only = self._get_artifact(key)
         if path_only:
             # might be clientside storage
+            # TODO: can cause problem if accidentally picks up unrelated file w/ same name
             if os.path.exists(artifact):
                 # return bytestream b/c that's what this fn does with MDB artifacts
                 return open(artifact, 'rb')
