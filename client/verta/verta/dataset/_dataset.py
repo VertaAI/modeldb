@@ -188,7 +188,7 @@ class _Dataset(blob.Blob):
             if implicit_download_to_path:
                 # avoid collisions with existing files
                 while os.path.exists(local_path):
-                    local_path = _file_utils.increment_filepath(local_path)
+                    local_path = _file_utils.increment_path(local_path)
 
             # create parent dirs
             pathlib2.Path(local_path).parent.mkdir(parents=True, exist_ok=True)
@@ -212,7 +212,7 @@ class _Dataset(blob.Blob):
                     if implicit_download_to_path:
                         # check for destination collision again in case taken during download
                         while os.path.exists(local_path):
-                            local_path = _file_utils.increment_filepath(local_path)
+                            local_path = _file_utils.increment_path(local_path)
 
                     # move written contents to `filepath`
                     os.rename(tempf.name, local_path)
