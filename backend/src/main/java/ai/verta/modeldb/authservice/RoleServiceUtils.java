@@ -124,6 +124,34 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
+  public void createPublicRoleBinding(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    String roleBindingName = buildPublicRoleBindingName(resourceId, modelDBServiceResourceTypes);
+
+    RoleBinding newRoleBinding =
+        RoleBinding.newBuilder()
+            .setName(roleBindingName)
+            .setPublic(true)
+            .addResources(
+                Resources.newBuilder()
+                    .setService(Service.MODELDB_SERVICE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                    .addResourceIds(resourceId)
+                    .build())
+            .build();
+    setRoleBindingOnAuthService(true, newRoleBinding);
+  }
+
+  @Override
+  public String buildPublicRoleBindingName(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return buildRoleBindingName(
+        "PUBLIC_ROLE", resourceId, "PUBLIC", modelDBServiceResourceTypes.name());
+  }
+
+  @Override
   public void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
