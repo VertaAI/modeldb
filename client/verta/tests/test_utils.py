@@ -301,4 +301,4 @@ class TestIncrementFilepath:
         ],
     )
     def test_increment(self, input_filepath, expected_filepath):
-        assert expected_filepath == _file_utils.increment_filepath(input_filepath)
+        assert expected_filepath == _file_utils.increment_path(input_filepath)
