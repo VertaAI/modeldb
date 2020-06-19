@@ -4,7 +4,7 @@ import ai.verta.client._
 import ai.verta.repository._
 import ai.verta.blobs._
 import ai.verta.blobs.dataset._
-import ai.verta.client.entities.utils.{ValueType, DoubleValueType}
+import ai.verta.client.entities.utils.ValueType
 
 import scala.language.reflectiveCalls
 import scala.concurrent.ExecutionContext

@@ -32,7 +32,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   }
 
   /** Delete multiple tags of this Experiment Run.
-   *  If the run does not have ValueType tag in the list, that tag will be ignored
+   *  If the run does not have any tag in the list, that tag will be ignored
    *  @param tags tags
    *  @return whether the attempt succeeds
    */
