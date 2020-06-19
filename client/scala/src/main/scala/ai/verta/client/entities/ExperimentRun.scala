@@ -6,7 +6,7 @@ import java.time.{Instant, LocalDateTime}
 import java.util.TimeZone
 
 import ai.verta.client.entities.subobjects._
-import ai.verta.client.entities.utils.KVHandler
+import ai.verta.client.entities.utils.{KVHandler, ValueType}
 import ai.verta.swagger._public.modeldb.model._
 import ai.verta.swagger.client.ClientSet
 import ai.verta.repository._
@@ -59,7 +59,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   // TODO: add overwrite
   def hyperparameters()(implicit ec: ExecutionContext) = new Hyperparameters(clientSet, ec, this)
 
-  def logHyperparameters(vals: Map[String, Any])(implicit ec: ExecutionContext): Try[Unit] = {
+  def logHyperparameters(vals: Map[String, ValueType])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
       clientSet.experimentRunService.logHyperparameters(ModeldbLogHyperparameters(
@@ -68,16 +68,16 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       )).map(_ => {})
   }
 
-  def logHyperparameter(key: String, value: Any)(implicit ec: ExecutionContext) =
+  def logHyperparameter(key: String, value: ValueType)(implicit ec: ExecutionContext) =
     logHyperparameters(Map(key -> value))
 
-  def getHyperparameters()(implicit ec: ExecutionContext): Try[Map[String, Any]] = {
+  def getHyperparameters()(implicit ec: ExecutionContext): Try[Map[String, ValueType]] = {
     clientSet.experimentRunService.getHyperparameters(
       id = run.id
     )
       .flatMap(r => {
         if (r.hyperparameters.isEmpty)
-          Success(Map[String, Any]())
+          Success(Map[String, ValueType]())
         else
           utils.KVHandler.kvListToMap(r.hyperparameters.get)
       })
@@ -96,7 +96,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   /** Logs potentially multiple metrics to this Experiment Run.
    *  @param metrics Metrics
    */
-  def logMetrics(vals: Map[String, Any])(implicit ec: ExecutionContext): Try[Unit] = {
+  def logMetrics(vals: Map[String, ValueType])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
       clientSet.experimentRunService.logMetrics(ModeldbLogMetrics(
@@ -110,20 +110,20 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @param key Name of the metric
    *  @param value Value of the metric
    */
-  def logMetric(key: String, value: Any)(implicit ec: ExecutionContext) =
+  def logMetric(key: String, value: ValueType)(implicit ec: ExecutionContext) =
     logMetrics(Map(key -> value))
 
   /** Gets all metrics from this Experiment Run
    *  @param key Name of the metric
    *  @return Names and values of all metrics
    */
-  def getMetrics()(implicit ec: ExecutionContext): Try[Map[String, Any]] = {
+  def getMetrics()(implicit ec: ExecutionContext): Try[Map[String, ValueType]] = {
     clientSet.experimentRunService.getMetrics(
       id = run.id
     )
       .flatMap(r => {
         if (r.metrics.isEmpty)
-          Success(Map[String, Any]())
+          Success(Map[String, ValueType]())
         else
           utils.KVHandler.kvListToMap(r.metrics.get)
       })
@@ -139,7 +139,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   // TODO: add overwrite
   def attributes()(implicit ec: ExecutionContext) = new Attributes(clientSet, ec, this)
 
-  def logAttributes(vals: Map[String, Any])(implicit ec: ExecutionContext): Try[Unit] = {
+  def logAttributes(vals: Map[String, ValueType])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
       clientSet.experimentRunService.logAttributes(ModeldbLogAttributes(
@@ -148,10 +148,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       )).map(_ => {})
   }
 
-  def logAttribute(key: String, value: Any)(implicit ec: ExecutionContext) =
+  def logAttribute(key: String, value: ValueType)(implicit ec: ExecutionContext) =
     logAttributes(Map(key -> value))
 
-  def getAttributes(keys: List[String] = Nil)(implicit ec: ExecutionContext): Try[Map[String, Any]] = {
+  def getAttributes(keys: List[String] = Nil)(implicit ec: ExecutionContext): Try[Map[String, ValueType]] = {
     clientSet.experimentRunService.getExperimentRunAttributes(
       id = run.id,
       attribute_keys = Some(keys),
@@ -159,7 +159,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
     )
       .flatMap(r => {
         if (r.attributes.isEmpty)
-          Success(Map[String, Any]())
+          Success(Map[String, ValueType]())
         else
           utils.KVHandler.kvListToMap(r.attributes.get)
       })
@@ -173,10 +173,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @param value Value of the observation
    *  @param timestamp Unix timestamp. If not provided, the current time will be used.
    */
-  def logObservation(key: String, value: Any, timestamp: LocalDateTime = null)(implicit ec: ExecutionContext) = {
+  def logObservation(key: String, value: ValueType, timestamp: LocalDateTime = null)(implicit ec: ExecutionContext) = {
     val ts = if (timestamp == null) LocalDateTime.now() else timestamp
 
-    val convertedValue = KVHandler.convertFromAny(value, s"unknown type for observation ${key}: ${value.toString} (${value.getClass.toString})")
+    val convertedValue = KVHandler.convertFromValueType(value, s"unknown type for observation ${key}: ${value.toString} (${value.getClass.toString})")
     convertedValue.flatMap(newValue => {
       clientSet.experimentRunService.logObservation(ModeldbLogObservation(
         id = run.id,
@@ -203,7 +203,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
           obs.map(o => {
             (
               LocalDateTime.ofInstant(Instant.ofEpochMilli(o.timestamp.get.toLong), TimeZone.getTimeZone("UTC").toZoneId),
-              KVHandler.convertToAny(o.attribute.get.value.get, s"unknown type for observation ${key}: ${o.attribute.get.value.get.toString} (${o.attribute.get.value.get.getClass.toString})").get
+              KVHandler.convertToValueType(o.attribute.get.value.get, s"unknown type for observation ${key}: ${o.attribute.get.value.get.toString} (${o.attribute.get.value.get.getClass.toString})").get
             )
           })
         }).getOrElse(Nil)
@@ -217,11 +217,11 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
     clientSet.experimentRunService.getExperimentRunById(run.id)
       .flatMap(runResp => Try {
         val observations = runResp.experiment_run.get.observations
-        val obsMap = new mutable.HashMap[String, List[(LocalDateTime, Any)]]()
+        val obsMap = new mutable.HashMap[String, List[(LocalDateTime, ValueType)]]()
         observations.get.foreach(o => {
           val ts = LocalDateTime.ofInstant(Instant.ofEpochMilli(o.timestamp.get.toLong), TimeZone.getTimeZone("UTC").toZoneId)
           val key = o.attribute.get.key.get
-          val value = KVHandler.convertToAny(o.attribute.get.value.get, s"unknown type for observation $key: ${o.attribute.get.value.get.toString} (${o.attribute.get.value.get.getClass.toString})").get
+          val value = KVHandler.convertToValueType(o.attribute.get.value.get, s"unknown type for observation $key: ${o.attribute.get.value.get.toString} (${o.attribute.get.value.get.getClass.toString})").get
           obsMap.update(key, (ts, value) :: obsMap.getOrElse(key, Nil))
         })
         obsMap.map(el => {

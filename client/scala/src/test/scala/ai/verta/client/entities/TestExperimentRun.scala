@@ -4,6 +4,7 @@ import ai.verta.client._
 import ai.verta.repository._
 import ai.verta.blobs._
 import ai.verta.blobs.dataset._
+import ai.verta.client.entities.utils.ValueType
 
 import scala.language.reflectiveCalls
 import scala.concurrent.ExecutionContext
@@ -35,11 +36,15 @@ class TestExperimentRun extends FunSuite {
 
     try {
        f.expRun.logMetric("some-metric", 0.5)
+       f.expRun.logMetric("int-metric", 4)
        f.expRun.logMetrics(Map("other-metric" -> 0.3, "other-metric-2" -> 0.1))
 
-       assert(f.expRun.getMetric("some-metric").get.get equals 0.5)
-       assert(f.expRun.getMetric("other-metric").get.get equals 0.3)
-       assert(f.expRun.getMetric("other-metric-2").get.get equals 0.1)
+       assertTypeError("f.expRun.logMetric(\"should-not-compile\", true)")
+
+       assert(f.expRun.getMetric("some-metric").get.get.asDouble.get equals 0.5)
+       assert(f.expRun.getMetric("other-metric").get.get.asDouble.get equals 0.3)
+       assert(f.expRun.getMetric("other-metric-2").get.get.asDouble.get equals 0.1)
+       assert(f.expRun.getMetric("int-metric").get.get.asBigInt.get equals 4)
     } finally {
       cleanup(f)
     }
@@ -49,7 +54,7 @@ class TestExperimentRun extends FunSuite {
     val f = fixture
 
     try {
-      val metrics = Map("other-metric" -> 0.3, "other-metric-2" -> 0.1)
+      val metrics: Map[String, ValueType] = Map("other-metric" -> 0.3, "other-metric-2" -> 0.1, "int-metric" -> 4)
       f.expRun.logMetrics(metrics)
 
       assert(f.expRun.getMetrics.get equals metrics)
@@ -92,8 +97,8 @@ class TestExperimentRun extends FunSuite {
     try {
       val metrics = f.expRun.metrics()
       metrics += ("some-metric" -> 0.5)
-      assert(metrics.get("some-metric").get == 0.5)
-      assert(f.expRun.getMetric("some-metric").get.get equals 0.5)
+      assert(metrics.get("some-metric").get.asDouble.get == 0.5)
+      assert(f.expRun.getMetric("some-metric").get.get.asDouble.get equals 0.5)
       assert(metrics.get("other-metric").isEmpty)
     } finally {
       cleanup(f)
@@ -149,14 +154,19 @@ class TestExperimentRun extends FunSuite {
       f.expRun.logObservation("some-obs", 0.5)
       f.expRun.logObservation("some-obs", 0.4)
       f.expRun.logObservation("some-obs", 0.6)
-      f.expRun.logObservation("single-obs", 0.3)
+      f.expRun.logObservation("single-obs", 7)
+      f.expRun.logObservation("string-obs", "some string obs")
+      assertTypeError("f.expRun.logObservation(\"some-observation\", true)")
 
-      assert(f.expRun.getObservation("some-obs").get.map(_._2) equals List(0.5, 0.4, 0.6))
-      assert(f.expRun.getObservation("single-obs").get.map(_._2) equals List(0.3))
+      assert(f.expRun.getObservation("some-obs").get.map(_._2) equals List[ValueType](0.5, 0.4, 0.6))
+      assert(f.expRun.getObservation("single-obs").get.map(_._2) equals List[ValueType](7))
+      assert(f.expRun.getObservation("string-obs").get.map(_._2) equals List[ValueType]("some string obs"))
       assert(f.expRun.getObservation("non-existing-obs").get equals Nil)
 
       val allObservations = f.expRun.getObservations().get.mapValues(series => series.map(_._2))
-      assert(allObservations equals Map("some-obs" -> List(0.5, 0.4, 0.6), "single-obs" -> List(0.3)))
+      assert(allObservations equals
+        Map[String, List[ValueType]]("some-obs" -> List(0.5, 0.4, 0.6), "single-obs" -> List(7), "string-obs" -> List("some string obs"))
+      )
     } finally {
       cleanup(f)
     }
