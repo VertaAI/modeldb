@@ -450,6 +450,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void updateDatasetVersionDescription(
       UpdateDatasetVersionDescription request,
       StreamObserver<UpdateDatasetVersionDescription.Response> responseObserver) {
+    LOGGER.info("updateDatasetVersionDescription not supported");
     super.updateDatasetVersionDescription(request, responseObserver);
     /*QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
@@ -865,6 +866,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void setDatasetVersionVisibility(
       SetDatasetVersionVisibilty request,
       StreamObserver<SetDatasetVersionVisibilty.Response> responseObserver) {
+    LOGGER.info("setDatasetVersionVisibility not supported");
     super.setDatasetVersionVisibility(request, responseObserver);
     /*QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
