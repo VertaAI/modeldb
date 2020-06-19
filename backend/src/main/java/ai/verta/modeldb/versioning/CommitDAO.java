@@ -22,6 +22,7 @@ public interface CommitDAO {
 
   CreateCommitRequest.Response setCommitFromDatasetVersion(
       DatasetVersion datasetVersion,
+      RepositoryDAO repositoryDAO,
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       RepositoryEntity repositoryEntity)
