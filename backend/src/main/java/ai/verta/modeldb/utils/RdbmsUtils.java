@@ -237,13 +237,59 @@ public class RdbmsUtils {
   }
 
   public static ObservationEntity generateObservationEntity(
-      Object entity, String fieldType, Observation observation)
+      Session session,
+      Object entity,
+      String fieldType,
+      Observation observation,
+      String entity_name,
+      String entity_id)
       throws InvalidProtocolBufferException {
-    return new ObservationEntity(entity, fieldType, observation);
+    if (session == null
+        || observation.hasEpochNumber()) { // request came from creating the entire ExperimentRun
+      return new ObservationEntity(entity, fieldType, observation);
+    } else {
+      if (entity_name.equalsIgnoreCase("ExperimentRunEntity") && observation.hasAttribute()) {
+        String MAX_EPOCH_NUMBER_SQL =
+            "select max(o.epoch_number) "
+                + "From (select * from observation where experiment_run_id ='"
+                + entity_id
+                + "' and entity_name = 'ExperimentRunEntity') o,"
+                + "(select id from keyvalue k where kv_key ='"
+                + observation.getAttribute().getKey()
+                + "' and  entity_name IS NULL) k "
+                + "where o.keyvalue_mapping_id = k.id ";
+        Query sqlQuery = session.createSQLQuery(MAX_EPOCH_NUMBER_SQL);
+        Long maxEpochNumber = (Long) sqlQuery.uniqueResult();
+        Long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber + 1;
+
+        Observation new_observation =
+            Observation.newBuilder(observation)
+                .setEpochNumber(Value.newBuilder().setNumberValue(newEpochValue))
+                .build();
+        return new ObservationEntity(entity, fieldType, observation);
+      } else {
+
+        Status unimplementedError =
+            Status.newBuilder()
+                .setCode(Code.UNIMPLEMENTED_VALUE)
+                .setMessage(
+                    "Observations not supported for Non ExperimentRun entities, found "
+                        + entity_name
+                        + " in "
+                        + observation)
+                .build();
+        throw StatusProto.toStatusRuntimeException(unimplementedError);
+      }
+    }
   }
 
   public static List<ObservationEntity> convertObservationsFromObservationEntityList(
-      Object entity, String fieldType, List<Observation> observationList)
+      Session session,
+      Object entity,
+      String fieldType,
+      List<Observation> observationList,
+      String entity_name,
+      String entity_id)
       throws InvalidProtocolBufferException {
     LOGGER.trace("Converting ObservationsFromObservationEntityList");
     LOGGER.trace("fieldType {}", fieldType);
@@ -252,7 +298,8 @@ public class RdbmsUtils {
       LOGGER.trace("observationList size {}", observationList.size());
       for (Observation observation : observationList) {
         ObservationEntity observationEntity =
-            generateObservationEntity(entity, fieldType, observation);
+            generateObservationEntity(
+                session, entity, fieldType, observation, entity_name, entity_id);
         observationEntityList.add(observationEntity);
       }
     }
