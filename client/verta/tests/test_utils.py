@@ -286,7 +286,7 @@ class TestPipRequirementsUtils:
         ))
 
 
-class TestIncrementFilepath:
+class TestIncrementPath:
     @pytest.mark.parametrize(
         "input_filepath, expected_filepath",
         [
