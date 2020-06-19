@@ -108,6 +108,8 @@ class _Dataset(blob.Blob):
         -------
         components_to_download : dict
             Map of component paths to local destination paths.
+        downloaded_to_path : str
+            Path where file(s) were downloaded to. May be relative to cwd.
 
         """
         implicit_download_to_path = download_to_path is None
@@ -127,7 +129,7 @@ class _Dataset(blob.Blob):
                 else:
                     local_path = download_to_path
 
-                return {component_blob.path: local_path}
+                return ({component_blob.path: local_path}, local_path)
             elif component_blob.path.startswith(component_path_as_dir):
                 if implicit_download_to_path:
                     # default to path relative to parent of `component_path`
@@ -165,7 +167,18 @@ class _Dataset(blob.Blob):
         if not components_to_download:
             raise KeyError("no components found for path {}".format(component_path))
 
-        return components_to_download
+        # determine the root path everything is being downloaded to
+        local_paths = map(os.path.relpath, components_to_download.values())  # relative to cwd
+        root_dirnames = set(local_path.split('/')[0] for local_path in local_paths)
+        if len(root_dirnames) == 1:
+            # great, that's our root
+            downloaded_to_path = root_dirnames.pop()
+        else:
+            # everything is relative to cwd, so cwd is our root
+            # TODO: handle if a `local_path` is at system root or a parent dir for some reason
+            downloaded_to_path = os.curdir
+
+        return (components_to_download, downloaded_to_path)
 
     def download(self, component_path, download_to_path=None, chunk_size=32*(10**3)):
         """
@@ -184,7 +197,7 @@ class _Dataset(blob.Blob):
         Returns
         -------
         downloaded_to_path : str
-            Path where file(s) were downloaded to. Identical to `download_to_path` if it was
+            Absolute path where file(s) were downloaded to. Matches `download_to_path` if it was
             provided as an argument.
 
         """
@@ -196,7 +209,10 @@ class _Dataset(blob.Blob):
             )
         implicit_download_to_path = download_to_path is None
 
-        components_to_download = self._get_components_to_download(component_path, download_to_path)
+        components_to_download, downloaded_to_path = self._get_components_to_download(
+            component_path,
+            download_to_path,
+        )
         for path in components_to_download:  # component paths
             local_path = components_to_download[path]  # dict will be updated near end of iteration
 
@@ -221,12 +237,15 @@ class _Dataset(blob.Blob):
 
                     if implicit_download_to_path:
                         # check for destination collision again in case taken during download
-                        # TODO: maybe not if we're downloading a folder, though shouldn't matter
                         while os.path.exists(local_path):
                             local_path = _file_utils.increment_path(local_path)
 
                         # update in dict for consistency
                         components_to_download[path] = local_path
+
+                        if os.path.isfile(downloaded_to_path):  # single file download
+                            # `downloaded_to_path` also needs to match
+                            downloaded_to_path = local_path
 
                     # move written contents to `filepath`
                     os.rename(tempf.name, local_path)
@@ -240,6 +259,4 @@ class _Dataset(blob.Blob):
             finally:
                 response.close()
 
-        # TODO: return dir, not path, when user passed dir containing one file
-        # TODO: os.path.commonprefix is not the right tool here
-        return os.path.abspath(os.path.commonprefix(list(components_to_download.values())))
+        return os.path.abspath(downloaded_to_path)
