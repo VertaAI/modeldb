@@ -233,10 +233,10 @@ public interface ModelDBConstants {
   String VERSIONING_LOCATION = "versioning_location";
   String REPOSITORY_VISIBILITY = "repository_visibility";
   String REPOSITORY = "repository";
-  String VERSIONING_REPOSITORY = "VERSIONING_REPOSITORY";
-  String VERSIONING_COMMIT = "VERSIONING_COMMIT";
-  String VERSIONING_REPO_COMMIT_BLOB = "VERSIONING_REPO_COMMIT_BLOB";
-  String VERSIONING_REPO_COMMIT = "VERSIONING_REPO_COMMIT";
+  String VERSIONING_REPOSITORY = "versioning_repository";
+  String VERSIONING_COMMIT = "versioning_commit";
+  String VERSIONING_REPO_COMMIT_BLOB = "versioning_repo_commit_blob";
+  String VERSIONING_REPO_COMMIT = "versioning_repo_commit";
   String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
 
   // Cron job constant

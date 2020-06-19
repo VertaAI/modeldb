@@ -2164,7 +2164,7 @@ public class CommitTest {
 
       IdentificationType commitLabelId =
           IdentificationType.newBuilder()
-              .setIdType(IDTypeEnum.IDType.VERSIONING_COMMIT)
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)
               .setStringId(datasetCommit.getCommitSha())
               .build();
       labelIds.add(commitLabelId);
@@ -2180,7 +2180,7 @@ public class CommitTest {
           FindRepositoriesBlobs.newBuilder()
               .addPredicates(
                   KeyValueQuery.newBuilder()
-                      .setKey(IDTypeEnum.IDType.VERSIONING_COMMIT + "." + "labels")
+                      .setKey(ModelDBConstants.COMMIT + "." + "labels")
                       .setValue(
                           Value.newBuilder().setStringValue(addLabelsRequest.getLabels(0)).build())
                       .build())
@@ -2191,37 +2191,6 @@ public class CommitTest {
       Assert.assertEquals(
           "blob count not match with expected blob count",
           1,
-          listCommitBlobsResponse.getBlobsCount());
-
-      IdentificationType repoLabelId =
-          IdentificationType.newBuilder()
-              .setIdType(IDTypeEnum.IDType.VERSIONING_REPOSITORY)
-              .setIntId(id)
-              .build();
-      labelIds.add(repoLabelId);
-      addLabelsRequest =
-          AddLabelsRequest.newBuilder()
-              .setId(repoLabelId)
-              .addLabels("Backend")
-              .addLabels("Frontend")
-              .build();
-      serviceBlockingStub.addLabels(addLabelsRequest);
-
-      findRepositoriesBlobs =
-          FindRepositoriesBlobs.newBuilder()
-              .addPredicates(
-                  KeyValueQuery.newBuilder()
-                      .setKey(IDTypeEnum.IDType.VERSIONING_REPOSITORY + "." + "labels")
-                      .setValue(
-                          Value.newBuilder().setStringValue(addLabelsRequest.getLabels(0)).build())
-                      .build())
-              .build();
-
-      listCommitBlobsResponse =
-          versioningServiceBlockingStub.findRepositoriesBlobs(findRepositoriesBlobs);
-      Assert.assertEquals(
-          "blob count not match with expected blob count",
-          2,
           listCommitBlobsResponse.getBlobsCount());
 
       List<String> locations = new ArrayList<>();
@@ -2247,7 +2216,7 @@ public class CommitTest {
           FindRepositoriesBlobs.newBuilder()
               .addPredicates(
                   KeyValueQuery.newBuilder()
-                      .setKey(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB + "." + "labels")
+                      .setKey("blob.labels")
                       .setValue(
                           Value.newBuilder().setStringValue(addLabelsRequest.getLabels(0)).build())
                       .build())
@@ -2261,43 +2230,7 @@ public class CommitTest {
           listCommitBlobsResponse.getBlobsCount());
       Assert.assertEquals(
           "blob count not match with expected blob count",
-          datasetBlob,
-          listCommitBlobsResponse.getBlobsList().get(0).getBlob());
-
-      repoCommitBlobLabelId =
-          repoCommitBlobLabelId
-              .toBuilder()
-              .setStringId(id + "::" + datasetCommit.getCommitSha())
-              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT)
-              .build();
-      labelIds.add(repoCommitBlobLabelId);
-      addLabelsRequest =
-          AddLabelsRequest.newBuilder()
-              .setId(repoCommitBlobLabelId)
-              .addLabels("Backend")
-              .addLabels("Frontend")
-              .build();
-      serviceBlockingStub.addLabels(addLabelsRequest);
-
-      findRepositoriesBlobs =
-          FindRepositoriesBlobs.newBuilder()
-              .addPredicates(
-                  KeyValueQuery.newBuilder()
-                      .setKey(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT + "." + "labels")
-                      .setValue(
-                          Value.newBuilder().setStringValue(addLabelsRequest.getLabels(0)).build())
-                      .build())
-              .build();
-
-      listCommitBlobsResponse =
-          versioningServiceBlockingStub.findRepositoriesBlobs(findRepositoriesBlobs);
-      Assert.assertEquals(
-          "blob count not match with expected blob count",
-          1,
-          listCommitBlobsResponse.getBlobsCount());
-      Assert.assertEquals(
-          "blob count not match with expected blob count",
-          datasetBlob,
+          datasetBlob.toBuilder().clearAttributes().build(),
           listCommitBlobsResponse.getBlobsList().get(0).getBlob());
 
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
