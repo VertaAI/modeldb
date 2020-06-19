@@ -1,12 +1,9 @@
 package ai.verta.client.entities.utils
 
-import ai.verta.swagger._public.modeldb.model.CommonKeyValue
-import ai.verta.swagger.client.objects.GenericObject
-
-import scala.util.{Failure, Success, Try}
 import scala.language.implicitConversions
 
 sealed trait ValueType
+
 case class IntValueType(i: BigInt) extends ValueType
 case class StringValueType(s: String) extends ValueType
 case class DoubleValueType(d: Double) extends ValueType
