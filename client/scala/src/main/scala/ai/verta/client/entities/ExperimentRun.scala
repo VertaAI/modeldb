@@ -137,8 +137,15 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
     getMetrics().map(_.get(key))
 
   // TODO: add overwrite
+  /** Return a map-like object of type Attributes, representing the attributes associated with ExperimentRun
+   *  Provide an alternative interface to get/log attributes methods
+   *  @return the attributes map
+   */
   def attributes()(implicit ec: ExecutionContext) = new Attributes(clientSet, ec, this)
 
+  /** Logs potentially multiple attributes to this Experiment Run
+   *  @param vals Attributes name and value (String, Int, or Double)
+   */
   def logAttributes(vals: Map[String, ValueType])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
@@ -148,9 +155,17 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       )).map(_ => {})
   }
 
+  /** Logs an attribute to this Experiment Run.
+   *  @param key Name of the attribute
+   *  @param value Value of the attribute. Could be String, Int, or Double
+   */
   def logAttribute(key: String, value: ValueType)(implicit ec: ExecutionContext) =
     logAttributes(Map(key -> value))
 
+  /** Gets multiple attributes from this Experiment Run
+   *  @param keys Names of the attributes. If not passed, get all attributes.
+   *  @return Values of the attributes (String, Int, or Double)
+   */
   def getAttributes(keys: List[String] = Nil)(implicit ec: ExecutionContext): Try[Map[String, ValueType]] = {
     clientSet.experimentRunService.getExperimentRunAttributes(
       id = run.id,
@@ -165,6 +180,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       })
   }
 
+  /** Gets the attribute with name key from this Experiment Run
+   *  @param key Name of the attribute
+   *  @return Value of the attribute (String, Int, or Double)
+   */
   def getAttribute(key: String)(implicit ec: ExecutionContext) =
     getAttributes(List(key)).map(_.get(key))
 
@@ -350,7 +369,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   }
 
   /** Gets the Commit associated with this Experiment Run
-   *  @return commit sha, its repository ID, and the associated key-paths, wrapped in an ExperimentRunCommit instance.
+   *  @return ExperimentRunCommit instance, containing the commit and key-path map.
    */
   def getCommit()(implicit ec: ExecutionContext): Try[ExperimentRunCommit] = {
     clientSet.experimentRunService.getVersionedInputs(id = run.id).flatMap(response =>
