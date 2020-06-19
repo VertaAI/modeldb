@@ -110,29 +110,44 @@ class _Dataset(blob.Blob):
             Map of component paths to local destination paths.
 
         """
+        implicit_download_to_path = download_to_path is None
+
         component_path_as_dir = component_path if component_path.endswith('/') else component_path+'/'
         components_to_download = dict()
 
         for component_blob in self._path_component_blobs:
             if component_blob.path == component_path:  # exact match with file
-                if download_to_path is None:
+                if implicit_download_to_path:
                     # default to filename from `component_path` in cwd
                     local_path = os.path.basename(component_path)
+
+                    # avoid collision with existing file
+                    while os.path.exists(local_path):
+                        local_path = _file_utils.increment_path(local_path)
                 else:
                     local_path = download_to_path
 
                 return {component_blob.path: local_path}
             elif component_blob.path.startswith(component_path_as_dir):
-                if download_to_path is None:
+                if implicit_download_to_path:
                     # default to path relative to parent of `component_path`
                     #     For example:
                     #     component_blob.path = "coworker/downloads/data/info.csv"
                     #     component_path      = "coworker/downloads"
                     #     local_path          =          "downloads/data/info.csv"
+                    # TODO: handle "s3://" prefix
                     local_path = os.path.relpath(
                         component_blob.path,
                         pathlib2.Path(component_path).parent,
                     )
+
+                    # avoid collision with existing directory
+                    # TODO: this, but outside of loop if less expensive
+                    parts = pathlib2.Path(local_path).parts
+                    root_dirname = parts[0]
+                    while os.path.exists(root_dirname):
+                        root_dirname = _file_utils.increment_path(root_dirname)
+                    local_path = os.path.join(root_dirname, *parts[1:])
                 else:
                     # rebase from `component_path` onto `download_to_path`
                     #     For example:
@@ -185,11 +200,6 @@ class _Dataset(blob.Blob):
         for path in components_to_download:  # component paths
             local_path = components_to_download[path]  # dict will be updated near end of iteration
 
-            if implicit_download_to_path:
-                # avoid collisions with existing files
-                while os.path.exists(local_path):
-                    local_path = _file_utils.increment_path(local_path)
-
             # create parent dirs
             pathlib2.Path(local_path).parent.mkdir(parents=True, exist_ok=True)
             # TODO: clean up empty parent dirs if something later fails
@@ -211,6 +221,7 @@ class _Dataset(blob.Blob):
 
                     if implicit_download_to_path:
                         # check for destination collision again in case taken during download
+                        # TODO: maybe not if we're downloading a folder, though shouldn't matter
                         while os.path.exists(local_path):
                             local_path = _file_utils.increment_path(local_path)
 
