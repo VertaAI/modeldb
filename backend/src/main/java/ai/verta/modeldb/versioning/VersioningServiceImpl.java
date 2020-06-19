@@ -268,7 +268,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               request.getCommit(),
               (session) -> blobDAO.setBlobs(session, blobContainers, fileHasher),
               (session, repoId, commitHash) ->
-                  blobDAO.setBlobsAttributes(session, repoId, commitHash, blobContainers),
+                  blobDAO.setBlobsAttributes(session, repoId, commitHash, blobContainers, true),
               repositoryFunction);
 
       responseObserver.onNext(response);
@@ -661,7 +661,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
 
-        FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(request);
+        FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(commitDAO, request);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }

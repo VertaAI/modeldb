@@ -22,6 +22,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.versioning.VersioningUtils;
 import ai.verta.uac.UserInfo;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -632,8 +633,14 @@ public class DeleteEntitiesCron extends TimerTask {
               if (commitEntity.getRepository().contains(repository)) {
                 commitEntity.getRepository().remove(repository);
                 if (commitEntity.getRepository().isEmpty()) {
-                  deleteLabels(
-                      session, commitEntity.getCommit_hash(), IDTypeEnum.IDType.VERSIONING_COMMIT);
+                  String compositeId =
+                      VersioningUtils.getVersioningCompositeId(
+                          repository.getId(),
+                          commitEntity.getCommit_hash(),
+                          Collections.singletonList(
+                              ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
+                  deleteLabels(session, compositeId, IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB);
+                  deleteAttribute(session, compositeId);
                   session.delete(commitEntity);
                 } else {
                   session.update(commitEntity);
@@ -661,6 +668,20 @@ public class DeleteEntitiesCron extends TimerTask {
     Query deleteLabelsQuery = session.createQuery(deleteLabelsQueryString);
     deleteLabelsQuery.setParameter("entityHash", entityHash);
     deleteLabelsQuery.setParameter("entityType", idType.getNumber());
+    deleteLabelsQuery.executeUpdate();
+  }
+
+  public static void deleteAttribute(Session session, String entityHash) {
+    String deleteAllAttributes =
+        new StringBuilder("delete from AttributeEntity at WHERE at.")
+            .append(ModelDBConstants.ENTITY_HASH)
+            .append(" = :entityHash")
+            .append(" AND at.entity_name ")
+            .append(" = :entityName")
+            .toString();
+    Query deleteLabelsQuery = session.createQuery(deleteAllAttributes);
+    deleteLabelsQuery.setParameter("entityHash", entityHash);
+    deleteLabelsQuery.setParameter("entityName", ModelDBConstants.BLOB);
     deleteLabelsQuery.executeUpdate();
   }
 

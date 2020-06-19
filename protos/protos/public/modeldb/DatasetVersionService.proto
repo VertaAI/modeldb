@@ -192,6 +192,7 @@ message DeleteDatasetVersionTags {
 message AddDatasetVersionAttributes {
     string id = 1;
     repeated common.KeyValue attributes = 2;
+    string dataset_id = 3;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -201,6 +202,7 @@ message AddDatasetVersionAttributes {
 message UpdateDatasetVersionAttributes {
     string id = 1;
     common.KeyValue attribute = 2;
+    string dataset_id = 3;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -209,6 +211,9 @@ message UpdateDatasetVersionAttributes {
 
 message GetDatasetVersionAttributes {
     string id = 1;
+    repeated string attribute_keys = 2;
+    bool get_all = 3;
+    string dataset_id = 4;
 
     message Response {
         repeated common.KeyValue attributes = 1;
@@ -219,6 +224,7 @@ message DeleteDatasetVersionAttributes {
     string id = 1;
     repeated string attribute_keys = 2;
     bool delete_all = 3;
+    string dataset_id = 4;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -312,7 +318,7 @@ service DatasetVersionService {
         };
     };
 
-    rpc getDatasetVersionAttributes(GetAttributes) returns (GetAttributes.Response) {
+    rpc getDatasetVersionAttributes(GetDatasetVersionAttributes) returns (GetDatasetVersionAttributes.Response) {
         option (google.api.http) = {
             get: "/v1/dataset-version/getDatasetVersionAttributes"
         };
