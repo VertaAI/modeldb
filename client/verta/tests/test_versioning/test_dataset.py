@@ -350,6 +350,7 @@ class TestPath:
         commit.update(blob_path, dataset)
         commit.save("Second file.")
 
+        # check latest commit's file
         dataset = commit.get(blob_path)
         new_filename = dataset.download(filename)
         with open(new_filename, 'rb') as f:
