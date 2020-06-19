@@ -174,7 +174,6 @@ class TestS3:
         blob_path = "data"
 
         dataset = verta.dataset.S3(s3_key, enable_mdb_versioning=True)
-
         commit.update(blob_path, dataset)
         commit.save("Version data.")
         dataset = commit.get(blob_path)
@@ -201,7 +200,6 @@ class TestS3:
         blob_path = "data"
 
         dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
-
         commit.update(blob_path, dataset)
         commit.save("Version data.")
         dataset = commit.get(blob_path)
@@ -279,7 +277,6 @@ class TestPath:
         blob_path = "data"
 
         dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
-
         commit.update(blob_path, dataset)
         commit.save("Version data.")
         os.remove(filename)  # delete for first download test
@@ -310,7 +307,6 @@ class TestPath:
         blob_path = "data"
 
         dataset = verta.dataset.Path(dirname, enable_mdb_versioning=True)
-
         commit.update(blob_path, dataset)
         commit.save("Version data.")
         shutil.rmtree(dirname)  # delete for first download test
@@ -331,3 +327,37 @@ class TestPath:
         dirpath3 = dataset.download(dirname, dirpath)
         assert dirpath3 == dirpath
         assert os.path.getmtime(dirpath) > last_updated
+
+    def test_mngd_ver_rollback(self, commit, in_tempdir):
+        """Recover a versioned file by loading a prior commit."""
+        filename = "tiny1.bin"
+        file1_contents = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(file1_contents)
+        blob_path = "data"
+
+        dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("First file.")
+
+        # new file with same name
+        os.remove(filename)
+        file2_contents = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(file2_contents)
+
+        dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Second file.")
+
+        dataset = commit.get(blob_path)
+        new_filename = dataset.download(filename)
+        with open(new_filename, 'rb') as f:
+            assert f.read() == file2_contents
+
+        # recover previous commit's file
+        commit = commit.parent
+        dataset = commit.get(blob_path)
+        new_filename = dataset.download(filename)
+        with open(new_filename, 'rb') as f:
+            assert f.read() == file1_contents
