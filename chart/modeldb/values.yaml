@@ -2,11 +2,11 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 image:
-  modeldbBackendProxyImage:  vertaaiofficial/modeldb-proxy:latest
-  modeldbBackendImage: vertaaiofficial/modeldb-backend:latest
+  modeldbBackendProxyImage:  vertaaiofficial/modeldb-proxy:2.0.6
+  modeldbBackendImage: vertaaiofficial/modeldb-backend:2.0.6
   modeldbDatabaseImage: postgres
-  modeldbFrontendImage: vertaaiofficial/modeldb-frontend:latest
-  modeldbGraphqlImage: vertaaiofficial/modeldb-graphql:latest
+  modeldbFrontendImage: vertaaiofficial/modeldb-frontend:2.0.6
+  modeldbGraphqlImage: vertaaiofficial/modeldb-graphql:2.0.6
 service:
   modeldbFrontendService: LoadBalancer
   modeldbBackendService: ClusterIP
