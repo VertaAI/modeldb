@@ -64,6 +64,7 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -259,14 +260,14 @@ public class RdbmsUtils {
                 + "' and  entity_name IS NULL) k "
                 + "where o.keyvaluemapping_id = k.id ";
         Query sqlQuery = session.createSQLQuery(MAX_EPOCH_NUMBER_SQL);
-        Long maxEpochNumber = (Long) sqlQuery.uniqueResult();
-        Long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber + 1;
+        BigInteger maxEpochNumber = (BigInteger) sqlQuery.uniqueResult();
+        Long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber.longValue() + 1;
 
         Observation new_observation =
             Observation.newBuilder(observation)
                 .setEpochNumber(Value.newBuilder().setNumberValue(newEpochValue))
                 .build();
-        return new ObservationEntity(entity, fieldType, observation);
+        return new ObservationEntity(entity, fieldType, new_observation);
       } else {
 
         Status unimplementedError =

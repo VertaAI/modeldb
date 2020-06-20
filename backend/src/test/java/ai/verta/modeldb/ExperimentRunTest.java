@@ -2805,7 +2805,7 @@ public class ExperimentRunTest {
   }
 
   @Test
-  public void h_getLogObservationTest() {
+  public void h_getObservationTest() {
     LOGGER.info("Get Observation from ExperimentRun test start................................");
 
     ProjectTest projectTest = new ProjectTest();
@@ -2852,14 +2852,14 @@ public class ExperimentRunTest {
         createExperimentRunRequest.getName(),
         experimentRun.getName());
 
-    GetObservations getLogObservationRequest =
+    GetObservations getObservationRequest =
         GetObservations.newBuilder()
             .setId(experimentRun.getId())
             .setObservationKey("Google developer Observation artifact")
             .build();
 
     GetObservations.Response response =
-        experimentRunServiceStub.getObservations(getLogObservationRequest);
+        experimentRunServiceStub.getObservations(getObservationRequest);
 
     LOGGER.info("GetObservations Response : " + response.getObservationsCount());
     for (Observation observation : response.getObservationsList()) {
@@ -2887,20 +2887,20 @@ public class ExperimentRunTest {
   }
 
   @Test
-  public void h_getLogObservationNegativeTest() {
+  public void h_getObservationNegativeTest() {
     LOGGER.info(
         "Get Observation from ExperimentRun Negative test start................................");
 
     ExperimentRunServiceBlockingStub experimentRunServiceStub =
         ExperimentRunServiceGrpc.newBlockingStub(channel);
 
-    GetObservations getLogObservationRequest =
+    GetObservations getObservationRequest =
         GetObservations.newBuilder()
             .setObservationKey("Google developer Observation artifact")
             .build();
 
     try {
-      experimentRunServiceStub.getObservations(getLogObservationRequest);
+      experimentRunServiceStub.getObservations(getObservationRequest);
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
@@ -2908,14 +2908,14 @@ public class ExperimentRunTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    getLogObservationRequest =
+    getObservationRequest =
         GetObservations.newBuilder()
             .setId("dfsdfs")
             .setObservationKey("Google developer Observation artifact")
             .build();
 
     try {
-      experimentRunServiceStub.getObservations(getLogObservationRequest);
+      experimentRunServiceStub.getObservations(getObservationRequest);
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
@@ -2925,6 +2925,181 @@ public class ExperimentRunTest {
 
     LOGGER.info(
         "Get Observation from ExperimentRun Negative tags test stop................................");
+  }
+
+  @Test
+  public void h_LogObservationEpochTest() {
+    LOGGER.info("Get Observation from ExperimentRun test start................................");
+
+    ProjectTest projectTest = new ProjectTest();
+    ExperimentTest experimentTest = new ExperimentTest();
+
+    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    ExperimentServiceBlockingStub experimentServiceStub =
+        ExperimentServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStub =
+        ExperimentRunServiceGrpc.newBlockingStub(channel);
+
+    // Create project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("experimentRun_project_h_loet");
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project = createProjectResponse.getProject();
+    LOGGER.info("Project created successfully");
+
+    // Create an experiment of above project
+    CreateExperiment createExperimentRequest =
+        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_h_loet_abc");
+    CreateExperiment.Response createExperimentResponse =
+        experimentServiceStub.createExperiment(createExperimentRequest);
+    Experiment experiment = createExperimentResponse.getExperiment();
+    LOGGER.info("Experiment created successfully");
+
+    CreateExperimentRun createExperimentRunRequest =
+        getCreateExperimentRunRequestSimple(
+            project.getId(), experiment.getId(), "ExperimentRun_h_loet");
+    CreateExperimentRun.Response createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
+    LOGGER.info("ExperimentRun created successfully");
+
+    Value intValue =
+        Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
+    // First Observation without epoch should get epoch number to zero
+    Observation observation =
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("key1")
+                    .setValue(intValue)
+                    .setValueType(ValueType.NUMBER)
+                    .build())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .build();
+
+    LogObservation logObservationRequest =
+        LogObservation.newBuilder()
+            .setId(experimentRun.getId())
+            .setObservation(observation)
+            .build();
+
+    experimentRunServiceStub.logObservation(logObservationRequest);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    Assert.assertTrue(
+        "there should be exactly one observation",
+        response.getExperimentRun().getObservationsCount() == 1);
+    Observation responseObservation = response.getExperimentRun().getObservations(0);
+    Assert.assertTrue(
+        "observation epoch should be 0",
+        responseObservation.getEpochNumber().getNumberValue() == 0);
+
+    // observation with epoch should set the value passed
+    observation =
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("key1")
+                    .setValue(intValue)
+                    .setValueType(ValueType.NUMBER)
+                    .build())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(123))
+            .build();
+
+    logObservationRequest =
+        LogObservation.newBuilder()
+            .setId(experimentRun.getId())
+            .setObservation(observation)
+            .build();
+
+    experimentRunServiceStub.logObservation(logObservationRequest);
+
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    Assert.assertTrue(
+        "there should be two observations",
+        response.getExperimentRun().getObservationsCount() == 2);
+    // Observations are sorted by auto incr id so the observation of interest is on index 1
+    responseObservation = response.getExperimentRun().getObservations(1);
+    Assert.assertTrue(
+        "observation epoch should be 123",
+        (long) responseObservation.getEpochNumber().getNumberValue() == 123);
+
+    // Subsequent call to log observation without epoch should set value to old max +1
+    observation =
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("key1")
+                    .setValue(intValue)
+                    .setValueType(ValueType.NUMBER)
+                    .build())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .build();
+
+    logObservationRequest =
+        LogObservation.newBuilder()
+            .setId(experimentRun.getId())
+            .setObservation(observation)
+            .build();
+
+    experimentRunServiceStub.logObservation(logObservationRequest);
+
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    Assert.assertTrue(
+        "there should be three observations",
+        response.getExperimentRun().getObservationsCount() == 3);
+    // Observations are sorted by auto incr id so the observation of interest is on index 2
+    responseObservation = response.getExperimentRun().getObservations(2);
+    Assert.assertTrue(
+        "observation epoch should be 123 + 1",
+        (long) responseObservation.getEpochNumber().getNumberValue() == 124);
+
+    // call to log observation with epoch but o not a different key should set value to 0
+    observation =
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("key2")
+                    .setValue(intValue)
+                    .setValueType(ValueType.NUMBER)
+                    .build())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .build();
+
+    logObservationRequest =
+        LogObservation.newBuilder()
+            .setId(experimentRun.getId())
+            .setObservation(observation)
+            .build();
+
+    experimentRunServiceStub.logObservation(logObservationRequest);
+
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    Assert.assertTrue(
+        "there should be three observations",
+        response.getExperimentRun().getObservationsCount() == 4);
+    // Observations are sorted by auto incr id so the observation of interest is on index 3
+    responseObservation = response.getExperimentRun().getObservations(3);
+    Assert.assertTrue(
+        "observation epoch should be 0",
+        (long) responseObservation.getEpochNumber().getNumberValue() == 0);
+
+    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project deleted successfully");
+    LOGGER.info(deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+
+    LOGGER.info(
+        "Get Observation from ExperimentRun tags test stop................................");
   }
 
   @Test
