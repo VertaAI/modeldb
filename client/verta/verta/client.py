@@ -3373,8 +3373,8 @@ class ExperimentRun(_ModelDBEntity):
         download_to_path = os.path.abspath(download_to_path)
 
         # TODO: unpack dirs logged as artifacts
-        #     Although we can't distinguish if a ZIP artifact is a directory we've compressed, or
-        #     if it was a ZIP file the user already had.
+        #     But we can't distinguish if a ZIP artifact is a directory we've compressed, or if it
+        #     was a ZIP file the user already had.
         print("downloading {} from ModelDB".format(key))
         artifact = self.get_artifact(key)
         if isinstance(artifact, six.string_types):
