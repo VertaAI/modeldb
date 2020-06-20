@@ -670,7 +670,7 @@ def unravel_artifacts(rpt_artifact_msg):
             in rpt_artifact_msg]
 
 
-def unravel_observation(obs_msg, with_epoch_num=False):
+def unravel_observation(obs_msg):
     """
     Converts an Observation protobuf message into a more straightforward Python tuple.
 
@@ -692,17 +692,15 @@ def unravel_observation(obs_msg, with_epoch_num=False):
     elif obs_msg.WhichOneof("oneOf") == "artifact":
         key = obs_msg.artifact.key
         value = "{} artifact".format(_CommonCommonService.ArtifactTypeEnum.ArtifactType.Name(obs_msg.artifact.artifact_type))
-    obs = (
+    return (
         key,
         val_proto_to_python(value),
         timestamp_to_str(obs_msg.timestamp),
+        int(obs_msg.epoch_number.number_value),
     )
-    if with_epoch_num:
-        obs += (int(obs_msg.epoch_number.number_value),)
-    return obs
 
 
-def unravel_observations(rpt_obs_msg, with_epoch_num=False):
+def unravel_observations(rpt_obs_msg):
     """
     Converts a repeated Observation field of a protobuf message into a dictionary.
 
@@ -719,7 +717,7 @@ def unravel_observations(rpt_obs_msg, with_epoch_num=False):
     """
     observations = {}
     for obs_msg in rpt_obs_msg:
-        obs_tuple = unravel_observation(obs_msg, with_epoch_num=with_epoch_num)
+        obs_tuple = unravel_observation(obs_msg)
         key = obs_tuple[0]
         observations.setdefault(key, []).append(obs_tuple[1:])
     return observations

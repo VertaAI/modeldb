@@ -3380,9 +3380,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, json=data)
         _utils.raise_for_http_error(response)
 
-    # TODO: warn DeprecationWarning in future, with_epoch_num will be permanently True
-    # TODO: change observations to be namedtuples
-    def get_observation(self, key, with_epoch_num=False):
+    def get_observation(self, key):
         """
         Gets the observation series with name `key` from this Experiment Run.
 
@@ -3390,8 +3388,6 @@ class ExperimentRun(_ModelDBEntity):
         ----------
         key : str
             Name of observation series.
-        with_epoch_num : bool, default False
-            Whether to also include the epoch number of observation values.
 
         Returns
         -------
@@ -3413,20 +3409,12 @@ class ExperimentRun(_ModelDBEntity):
         if len(response_msg.observations) == 0:
             raise KeyError("no observation found with key {}".format(key))
         else:
-            return [
-                _utils.unravel_observation(observation, with_epoch_num=with_epoch_num)[1:]  # drop key from tuple
-                for observation
-                in response_msg.observations
-            ]  # TODO: support Artifacts
+            return [_utils.unravel_observation(observation)[1:]  # drop key from tuple
+                    for observation in response_msg.observations]  # TODO: support Artifacts
 
-    def get_observations(self, with_epoch_num=False):
+    def get_observations(self):
         """
         Gets all observations from this Experiment Run.
-
-        Parameters
-        ----------
-        with_epoch_num : bool, default False
-            Whether to also include the epoch number of observation values.
 
         Returns
         -------
@@ -3443,7 +3431,7 @@ class ExperimentRun(_ModelDBEntity):
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return _utils.unravel_observations(response_msg.experiment_run.observations, with_epoch_num=with_epoch_num)
+        return _utils.unravel_observations(response_msg.experiment_run.observations)
 
     def log_requirements(self, requirements, overwrite=False):
         """

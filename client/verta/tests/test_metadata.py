@@ -325,7 +325,7 @@ class TestObservations:
         value_to_epoch = {
             obs_tuple[0]: obs_tuple[2]
             for obs_tuple
-            in experiment_run.get_observation(key, with_epoch_num=True)
+            in experiment_run.get_observation(key)
         }
         assert value_to_epoch[value1] == 0  # start at 0
         assert value_to_epoch[value2] == epoch_num  # manual
