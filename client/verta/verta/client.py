@@ -3353,7 +3353,54 @@ class ExperimentRun(_ModelDBEntity):
             except:
                 return six.BytesIO(artifact)
 
-    # TODO: download_artifact(self, key, download_to_path)
+    def download_artifact(self, key, download_to_path):
+        """
+        Downloads the artifact with name `key` to path `download_to_path`.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+        download_to_path : str
+            Path to download to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where artifact was downloaded to. Matches `download_to_path`.
+
+        """
+        download_to_path = os.path.abspath(download_to_path)
+
+        # TODO: unpack dirs logged as artifacts
+        #     Although we can't distinguish if a ZIP artifact is a directory we've compressed, or
+        #     if it was a ZIP file the user already had.
+        print("downloading {} from ModelDB".format(key))
+        artifact = self.get_artifact(key)
+        if isinstance(artifact, six.string_types):
+            raise ValueError(
+                "artifact {} appears to have been logged as path-only,"
+                " and cannot be downloaded".format(key)
+            )
+
+        # create parent dirs
+        pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+        # TODO: clean up empty parent dirs if something later fails
+
+        tempf = None
+        try:
+            # write artifact to tempfile
+            with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
+                shutil.copyfileobj(artifact, tempf)
+
+            # move written contents to `filepath`
+            os.rename(tempf.name, download_to_path)
+        finally:
+            if tempf is not None and os.path.isfile(tempf.name):
+                os.remove(tempf.name)
+        print("download complete; file written to {}".format(download_to_path))
+
+        return download_to_path
 
     def log_observation(self, key, value, timestamp=None):
         """
