@@ -282,7 +282,7 @@ public class RdbmsUtils {
         return new ObservationEntity(entity, fieldType, new_observation);
       } else {
         String unimplementedErrorMessage =
-            "Observations not supported for Non ExperimentRun entities, found "
+            "Observations not supported for non ExperimentRun entities, found "
                 + entity_name
                 + " in "
                 + observation;
