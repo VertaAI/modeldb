@@ -3084,13 +3084,73 @@ public class ExperimentRunTest {
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     Assert.assertTrue(
-        "there should be three observations",
+        "there should be four observations",
         response.getExperimentRun().getObservationsCount() == 4);
     // Observations are sorted by auto incr id so the observation of interest is on index 3
     responseObservation = response.getExperimentRun().getObservations(3);
     Assert.assertTrue(
         "observation epoch should be 0",
         (long) responseObservation.getEpochNumber().getNumberValue() == 0);
+
+    //same epoch_number, same key stores duplicate
+    observation =
+            Observation.newBuilder()
+                .setAttribute(
+                    KeyValue.newBuilder()
+                        .setKey("key1")
+                        .setValue(Value.newBuilder().setNumberValue(1))
+                        .setValueType(ValueType.NUMBER)
+                        .build())
+                .setTimestamp(Calendar.getInstance().getTimeInMillis())
+                .setEpochNumber(Value.newBuilder().setNumberValue(123))
+                .build();
+
+        logObservationRequest =
+            LogObservation.newBuilder()
+                .setId(experimentRun.getId())
+                .setObservation(observation)
+                .build();
+
+        experimentRunServiceStub.logObservation(logObservationRequest);
+
+        getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+        response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+        Assert.assertTrue(
+            "there should be five observations",
+            response.getExperimentRun().getObservationsCount() == 5);
+        // Observations are sorted by auto incr id so the observation of interest is on index 3
+        responseObservation = response.getExperimentRun().getObservations(1);
+        Observation responseObservation2 = response.getExperimentRun().getObservations(4);
+        Assert.assertTrue("observations have same key", responseObservation.getAttribute().getKey().equals(responseObservation2.getAttribute().getKey()));
+        Assert.assertTrue("observations have same epoch number", responseObservation.getEpochNumber().equals(responseObservation2.getEpochNumber()));
+        
+    // call to log observation with non numeric epoch throws error
+    observation =
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("key2")
+                    .setValue(intValue)
+                    .setValueType(ValueType.NUMBER)
+                    .build())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setStringValue("125"))
+            .build();
+
+    logObservationRequest =
+        LogObservation.newBuilder()
+            .setId(experimentRun.getId())
+            .setObservation(observation)
+            .build();
+
+    try {
+    	experimentRunServiceStub.logObservation(logObservationRequest);
+      fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
