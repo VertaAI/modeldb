@@ -300,3 +300,34 @@ class TestObservations:
             for val in vals:
                 with pytest.raises(TypeError):
                     experiment_run.log_observation(key, val)
+
+    def test_epoch_num(self, experiment_run, strs, ints):
+        key = strs[0]
+        values = iter(set(ints))  # unique integers
+        epoch_num = 3
+
+        # start at 0
+        value1 = next(values)
+        experiment_run.log_observation(key, value1)
+
+        # manually pass `epoch_num`
+        value2 = next(values)
+        experiment_run.log_observation(key, value2, epoch_num=epoch_num)
+
+        # if not passed, backend auto-increments
+        value3 = next(values)
+        experiment_run.log_observation(key, value3)
+
+        # accept duplicate `epoch_num`
+        value4 = next(values)
+        experiment_run.log_observation(key, value4, epoch_num=3)
+
+        value_to_epoch = {
+            obs_tuple[0]: obs_tuple[2]
+            for obs_tuple
+            in experiment_run.get_observation(key, with_epoch_num=True)
+        }
+        assert value_to_epoch[value1] == 0  # start at 0
+        assert value_to_epoch[value2] == epoch_num  # manual
+        assert value_to_epoch[value3] == epoch_num + 1  # auto-increment
+        assert value_to_epoch[value4] == epoch_num  # duplicate
