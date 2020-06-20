@@ -28,7 +28,7 @@ public class ObservationEntity {
       throws InvalidProtocolBufferException {
 
     setTimestamp(observation.getTimestamp());
-    setEpoch_number((long) observation.getEpochNumber().getNumberValue());
+    setEpochNumber((long) observation.getEpochNumber().getNumberValue());
     if (observation.getAttribute() != null && !observation.getAttribute().getKey().isEmpty()) {
       setKeyValueMapping(
           RdbmsUtils.generateKeyValueEntity(
@@ -152,8 +152,8 @@ public class ObservationEntity {
     return field_type;
   }
 
-  public void setEpoch_number(Long epoch_number) {
-    this.epoch_number = epoch_number;
+  public void setEpochNumber(Long epochNumber) {
+    this.epoch_number = epochNumber;
   }
 
   public Observation getProtoObject() throws InvalidProtocolBufferException {

@@ -61,6 +61,7 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
+import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
@@ -245,14 +246,25 @@ public class RdbmsUtils {
       String entity_name,
       String entity_id)
       throws InvalidProtocolBufferException {
-    if (session == null
-        || observation.hasEpochNumber()) { // request came from creating the entire ExperimentRun
+    if (session == null // request came from creating the entire ExperimentRun
+        || observation.hasEpochNumber()) {
+      if (observation.getEpochNumber().getKindCase() != KindCase.NUMBER_VALUE) {
+        String invalidEpochMessage =
+            "Observations can only have numeric epoch_number, condition not met in " + observation;
+        LOGGER.info(invalidEpochMessage);
+        Status invalidEpoch =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(invalidEpochMessage)
+                .build();
+        throw StatusProto.toStatusRuntimeException(invalidEpoch);
+      }
       return new ObservationEntity(entity, fieldType, observation);
     } else {
       if (entity_name.equalsIgnoreCase("ExperimentRunEntity") && observation.hasAttribute()) {
         String MAX_EPOCH_NUMBER_SQL =
             "select max(o.epoch_number) "
-                + "From (select * from observation where experiment_run_id ='"
+                + "From (select keyvaluemapping_id, epoch_number from observation where experiment_run_id ='"
                 + entity_id
                 + "' and entity_name = 'ExperimentRunEntity') o,"
                 + "(select id from keyvalue k where kv_key ='"
@@ -269,15 +281,16 @@ public class RdbmsUtils {
                 .build();
         return new ObservationEntity(entity, fieldType, new_observation);
       } else {
-
+        String unimplementedErrorMessage =
+            "Observations not supported for Non ExperimentRun entities, found "
+                + entity_name
+                + " in "
+                + observation;
+        LOGGER.warn(unimplementedErrorMessage);
         Status unimplementedError =
             Status.newBuilder()
                 .setCode(Code.UNIMPLEMENTED_VALUE)
-                .setMessage(
-                    "Observations not supported for Non ExperimentRun entities, found "
-                        + entity_name
-                        + " in "
-                        + observation)
+                .setMessage(unimplementedErrorMessage)
                 .build();
         throw StatusProto.toStatusRuntimeException(unimplementedError);
       }
