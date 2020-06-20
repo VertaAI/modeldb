@@ -3371,7 +3371,7 @@ class ExperimentRun(_ModelDBEntity):
         attribute = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         observation = _ExperimentRunService.Observation(attribute=attribute, timestamp=timestamp)  # TODO: support Artifacts
         if epoch_num is not None:
-            observation.epoch_number.number_value = epoch_num
+            observation.epoch_number.number_value = epoch_num  # pylint: disable=no-member
 
         msg = _ExperimentRunService.LogObservation(id=self.id, observation=observation)
         data = _utils.proto_to_json(msg)
@@ -3380,7 +3380,9 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, json=data)
         _utils.raise_for_http_error(response)
 
-    def get_observation(self, key):
+    # TODO: warn DeprecationWarning in future, with_epoch_num will be permanently True
+    # TODO: change observations to be namedtuples
+    def get_observation(self, key, with_epoch_num=False):
         """
         Gets the observation series with name `key` from this Experiment Run.
 
@@ -3409,10 +3411,13 @@ class ExperimentRun(_ModelDBEntity):
         if len(response_msg.observations) == 0:
             raise KeyError("no observation found with key {}".format(key))
         else:
-            return [_utils.unravel_observation(observation)[1:]  # drop key from tuple
-                    for observation in response_msg.observations]  # TODO: support Artifacts
+            return [
+                _utils.unravel_observation(observation, with_epoch_num=with_epoch_num)[1:]  # drop key from tuple
+                for observation
+                in response_msg.observations
+            ]  # TODO: support Artifacts
 
-    def get_observations(self):
+    def get_observations(self, with_epoch_num=False):
         """
         Gets all observations from this Experiment Run.
 
@@ -3431,7 +3436,7 @@ class ExperimentRun(_ModelDBEntity):
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return _utils.unravel_observations(response_msg.experiment_run.observations)
+        return _utils.unravel_observations(response_msg.experiment_run.observations, with_epoch_num=with_epoch_num)
 
     def log_requirements(self, requirements, overwrite=False):
         """
