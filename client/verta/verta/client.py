@@ -3390,6 +3390,8 @@ class ExperimentRun(_ModelDBEntity):
         ----------
         key : str
             Name of observation series.
+        with_epoch_num : bool, default False
+            Whether to also include the epoch number of observation values.
 
         Returns
         -------
@@ -3420,6 +3422,11 @@ class ExperimentRun(_ModelDBEntity):
     def get_observations(self, with_epoch_num=False):
         """
         Gets all observations from this Experiment Run.
+
+        Parameters
+        ----------
+        with_epoch_num : bool, default False
+            Whether to also include the epoch number of observation values.
 
         Returns
         -------
