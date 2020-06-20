@@ -3387,17 +3387,8 @@ class ExperimentRun(_ModelDBEntity):
         pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
         # TODO: clean up empty parent dirs if something later fails
 
-        tempf = None
-        try:
-            # write artifact to tempfile
-            with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
-                shutil.copyfileobj(artifact, tempf)
-
-            # move written contents to `filepath`
-            os.rename(tempf.name, download_to_path)
-        finally:
-            if tempf is not None and os.path.isfile(tempf.name):
-                os.remove(tempf.name)
+        with open(download_to_path, 'wb') as f:
+            f.write(artifact.read())
         print("download complete; file written to {}".format(download_to_path))
 
         return download_to_path
