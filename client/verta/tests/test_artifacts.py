@@ -169,6 +169,14 @@ class TestArtifacts:
         with open(new_filename, 'rb') as f:
             assert f.read() == FILE_CONTENTS
 
+    def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
+        key = strs[0]
+        path = strs[1]
+
+        experiment_run.log_artifact_path(key, path)
+        with pytest.raises(ValueError):
+            experiment_run.download_artifact(key, path)
+
 
 class TestModels:
     def test_sklearn(self, seed, experiment_run, strs):
