@@ -3331,7 +3331,7 @@ class ExperimentRun(_ModelDBEntity):
             except:
                 return six.BytesIO(artifact)
 
-    def log_observation(self, key, value, timestamp=None):
+    def log_observation(self, key, value, timestamp=None, epoch_num=None):
         """
         Logs an observation to this Experiment Run.
 
@@ -3341,9 +3341,12 @@ class ExperimentRun(_ModelDBEntity):
             Name of the observation.
         value : one of {None, bool, float, int, str}
             Value of the observation.
-        timestamp: str or float or int, optional
+        timestamp : str or float or int, optional
             String representation of a datetime or numerical Unix timestamp. If not provided, the
             current time will be used.
+        epoch_num : non-negative int, optional
+            Epoch number associated with this observation. If not provided, it will automatically
+            be incremented from prior observations for the same `key`.
 
         Warnings
         --------
@@ -3358,8 +3361,18 @@ class ExperimentRun(_ModelDBEntity):
         else:
             timestamp = _utils.ensure_timestamp(timestamp)
 
+        if epoch_num is not None:
+            if (not isinstance(epoch_num, six.integer_types)
+                    and not (isinstance(epoch_num, float) and epoch_num.is_integer())):
+                raise TypeError("`epoch_num` must be int, not {}".format(type(epoch_num)))
+            if epoch_num < 0:
+                raise ValueError("`epoch_num` must be non-negative")
+
         attribute = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         observation = _ExperimentRunService.Observation(attribute=attribute, timestamp=timestamp)  # TODO: support Artifacts
+        if epoch_num is not None:
+            observation.epoch_number.number_value = epoch_num
+
         msg = _ExperimentRunService.LogObservation(id=self.id, observation=observation)
         data = _utils.proto_to_json(msg)
         response = _utils.make_request("POST",
