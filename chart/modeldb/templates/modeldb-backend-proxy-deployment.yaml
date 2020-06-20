@@ -25,5 +25,15 @@ spec:
             value: "modeldb-backend:8085"
           - name: SERVER_HTTP_PORT
             value: "8080"
+          - name: SERVER_GRPC_PROXY_REMOTE
+            value: localhost:8085
         ports:
-        - containerPort: 8080
+          - containerPort: 8080
+            name : http
+        resources:
+          limits:
+            cpu: 1500m
+            memory: 2Gi
+          requests:
+            cpu: 1500m
+            memory: 2Gi

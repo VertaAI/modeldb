@@ -31,5 +31,14 @@ spec:
             value: http://modeldb-backend-proxy:8080
           - name: ARTIFACTORY_ADDRESS
             value: http://modeldb-backend:8086
+          - name: GQL_ADDRESS
+            value: http://modeldb-graphql:4000
         ports:
         - containerPort: 3000
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 500m
+            memory: 512Mi

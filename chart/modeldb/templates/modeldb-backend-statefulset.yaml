@@ -23,13 +23,23 @@ spec:
         image: {{ .Values.image.modeldbBackendImage }}
         name: modeldb-backend
         ports:
-        - containerPort: 8085
+          - containerPort: 8085
+            name: backend
+          - containerPort: 8086
+            name: artifactstore
         volumeMounts:
         - mountPath: /config-backend
           name: modeldb-backend-secret-volume
           readOnly: true
         - name: artifact-store
           mountPath: /artifactStore
+        resources:
+          limits:
+            cpu: 1500m
+            memory: 2Gi
+          requests:
+            cpu: 1500m
+            memory: 2Gi
       volumes:
       - name: modeldb-backend-secret-volume
         secret:

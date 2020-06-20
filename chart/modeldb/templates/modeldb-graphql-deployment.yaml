@@ -32,4 +32,11 @@ spec:
           - name: ARTIFACTORY_ADDRESS
             value: http://modeldb-backend:8086
         ports:
-        - containerPort: 3000
+        - containerPort: 4000
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 200m
+            memory: 128Mi
