@@ -95,6 +95,12 @@ public class RdbmsUtils {
   private RdbmsUtils() {}
 
   private static final Logger LOGGER = LogManager.getLogger(RdbmsUtils.class);
+  private static final String MAX_EPOCH_NUMBER_SQL_1 =
+      "select max(o.epoch_number) From (select keyvaluemapping_id, epoch_number from observation where experiment_run_id ='";
+  private static final String MAX_EPOCH_NUMBER_SQL_2 =
+      "' and entity_name = 'ExperimentRunEntity') o, (select id from keyvalue k where kv_key ='";
+  private static final String MAX_EPOCH_NUMBER_SQL_3 =
+      "' and  entity_name IS NULL) k where o.keyvaluemapping_id = k.id ";
 
   public static JobEntity generateJobEntity(Job job) throws InvalidProtocolBufferException {
     return new JobEntity(job);
@@ -263,14 +269,11 @@ public class RdbmsUtils {
     } else {
       if (entity_name.equalsIgnoreCase("ExperimentRunEntity") && observation.hasAttribute()) {
         String MAX_EPOCH_NUMBER_SQL =
-            "select max(o.epoch_number) "
-                + "From (select keyvaluemapping_id, epoch_number from observation where experiment_run_id ='"
+            MAX_EPOCH_NUMBER_SQL_1
                 + entity_id
-                + "' and entity_name = 'ExperimentRunEntity') o,"
-                + "(select id from keyvalue k where kv_key ='"
+                + MAX_EPOCH_NUMBER_SQL_2
                 + observation.getAttribute().getKey()
-                + "' and  entity_name IS NULL) k "
-                + "where o.keyvaluemapping_id = k.id ";
+                + MAX_EPOCH_NUMBER_SQL_3;
         Query sqlQuery = session.createSQLQuery(MAX_EPOCH_NUMBER_SQL);
         BigInteger maxEpochNumber = (BigInteger) sqlQuery.uniqueResult();
         Long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber.longValue() + 1;
