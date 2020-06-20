@@ -2038,8 +2038,6 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
-        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR')
-
         if isinstance(artifact, six.string_types):
             os.path.expanduser(artifact)
             artifact = open(artifact, 'rb')
@@ -2069,6 +2067,7 @@ class ExperimentRun(_ModelDBEntity):
         # build upload path from checksum and basename
         artifact_path = os.path.join(artifact_hash, basename)
 
+        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR')
         if VERTA_ARTIFACT_DIR:
             artifact_path = os.path.join(VERTA_ARTIFACT_DIR, artifact_path)
             pathlib2.Path(artifact_path).parent.mkdir(parents=True, exist_ok=True)
