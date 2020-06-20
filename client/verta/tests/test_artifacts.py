@@ -149,6 +149,8 @@ class TestArtifacts:
         finally:
             if VERTA_ARTIFACT_DIR is not None:
                 os.environ[VERTA_ARTIFACT_DIR_KEY] = VERTA_ARTIFACT_DIR
+            else:
+                del os.environ[VERTA_ARTIFACT_DIR_KEY]
 
 
 class TestModels:
