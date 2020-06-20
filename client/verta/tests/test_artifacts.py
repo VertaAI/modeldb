@@ -152,6 +152,23 @@ class TestArtifacts:
             else:
                 del os.environ[VERTA_ARTIFACT_DIR_KEY]
 
+    def test_download(self, experiment_run, strs, in_tempdir):
+        key = strs[0]
+        filename = strs[1]
+        new_filename = strs[2]
+        FILE_CONTENTS = os.urandom(2**16)
+
+        # create file and upload as artifact
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+        experiment_run.log_artifact(key, filename)
+
+        # download artifact and verify contents
+        new_filepath = experiment_run.download_artifact(key, new_filename)
+        assert new_filepath == os.path.abspath(new_filename)
+        with open(new_filename, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
+
 
 class TestModels:
     def test_sklearn(self, seed, experiment_run, strs):
