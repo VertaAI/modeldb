@@ -2067,8 +2067,11 @@ class ExperimentRun(_ModelDBEntity):
         # build upload path from checksum and basename
         artifact_path = os.path.join(artifact_hash, basename)
 
+        # TODO: incorporate into config
         VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR')
         if VERTA_ARTIFACT_DIR:
+            print("set artifact directory from environment:")
+            print("    " + VERTA_ARTIFACT_DIR)
             artifact_path = os.path.join(VERTA_ARTIFACT_DIR, artifact_path)
             pathlib2.Path(artifact_path).parent.mkdir(parents=True, exist_ok=True)
 
@@ -2100,7 +2103,7 @@ class ExperimentRun(_ModelDBEntity):
             print("logging artifact")
             with open(artifact_path, 'wb') as f:
                 shutil.copyfileobj(artifact_stream, f)
-            print("logging complete; file written to {}".format(artifact_path))
+            print("log complete; file written to {}".format(artifact_path))
         else:
             self._upload_artifact(key, artifact_stream)
 
