@@ -31,6 +31,8 @@ class TestMakeRequest:
         assert response.status_code == 200
         assert not response.history
 
+    # https://github.com/postmanlabs/httpbin/issues/617
+    @pytest.mark.skip(reason="httpbin's /redirect-to is currently returning 404s")
     def test_301_continue(self, client):
         response = _utils.make_request(
             "GET",
@@ -46,6 +48,8 @@ class TestMakeRequest:
         assert len(response.history) == 1
         assert response.history[0].status_code == 301
 
+    # https://github.com/postmanlabs/httpbin/issues/617
+    @pytest.mark.skip(reason="httpbin's /redirect-to is currently returning 404s")
     def test_302_stop(self, client):
         with pytest.raises(RuntimeError) as excinfo:
             _utils.make_request(
