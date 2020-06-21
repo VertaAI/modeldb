@@ -28,8 +28,8 @@ class TestMakeRequest:
             client._conn,
         )
 
-        assert not response.history
         assert response.status_code == 200
+        assert not response.history
 
     def test_301_continue(self, client):
         response = _utils.make_request(
@@ -42,9 +42,9 @@ class TestMakeRequest:
             },
         )
 
+        assert response.status_code == 200
         assert len(response.history) == 1
         assert response.history[0].status_code == 301
-        assert response.status_code == 200
 
     def test_302_stop(self, client):
         with pytest.raises(RuntimeError) as excinfo:
