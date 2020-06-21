@@ -306,7 +306,7 @@ class TestObservations:
         values = iter(set(ints))  # unique integers
         epoch_num = 3
 
-        # start at 0
+        # backend auto start at 0
         value1 = next(values)
         experiment_run.log_observation(key, value1)
 
