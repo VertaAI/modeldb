@@ -120,50 +120,52 @@ public class ConflictGenerator {
           return Collections.emptyList();
       }
     } else {
-      AutogenBlobDiff diff1 = AutogenBlobDiff.fromProto(blobDiff);
-      AutogenBlobDiff diff2 = AutogenBlobDiff.fromProto(blobDiff);
-      switch (locSpecificBlobDiffA.get(0).getContentCase()) {
-        case CODE:
-          diff1.setCode(getCodeConflictBlob(a.getCode(), b.getCode(), c.getCode()).get(0));
-          break;
-        case CONFIG:
-          diff1.setConfig(getConfigConflictBlob(a.getConfig(), b.getConfig(), c.getConfig()));
-          break;
-        case DATASET:
-          diff1.setDataset(
-              getDatasetConflictBlob(a.getDataset(), b.getDataset(), c.getDataset()).get(0));
-          break;
-        case ENVIRONMENT:
-          diff1.setEnvironment(
-              getEnvironmentonflictBlob(a.getEnvironment(), b.getEnvironment(), c.getEnvironment())
-                  .get(0));
-          break;
-        case CONTENT_NOT_SET:
-          break;
-      }
-      switch (locSpecificBlobDiffB.get(0).getContentCase()) {
-        case CODE:
-          diff2.setCode(getCodeConflictBlob(a.getCode(), b.getCode(), c.getCode()).get(0));
-          break;
-        case CONFIG:
-          diff2.setConfig(getConfigConflictBlob(a.getConfig(), b.getConfig(), c.getConfig()));
-          break;
-        case DATASET:
-          diff2.setDataset(
-              getDatasetConflictBlob(a.getDataset(), b.getDataset(), c.getDataset()).get(0));
-          break;
-        case ENVIRONMENT:
-          diff2.setEnvironment(
-              getEnvironmentonflictBlob(a.getEnvironment(), b.getEnvironment(), c.getEnvironment())
-                  .get(0));
-          break;
-        case CONTENT_NOT_SET:
-          break;
-      }
-      return Arrays.asList(diff1.toProto().build(), diff2.toProto().build());
+      return Arrays.asList(
+          updateDiffBasedOnDiffType(locSpecificBlobDiffA, a, b, c, blobDiff),
+          updateDiffBasedOnDiffType(locSpecificBlobDiffB, a, b, c, blobDiff));
     }
     LOGGER.warn("During conflict generation code should not reach here.");
     throw new ModelDBException("Exception during conflict generation", Code.INTERNAL);
+  }
+
+  private static BlobDiff updateDiffBasedOnDiffType(
+      List<BlobDiff> locSpecificBlobDiffList,
+      AutogenBlobDiff a,
+      AutogenBlobDiff b,
+      AutogenBlob c,
+      BlobDiff blobDiff)
+      throws ModelDBException {
+    AutogenBlobDiff diff = AutogenBlobDiff.fromProto(blobDiff);
+    switch (locSpecificBlobDiffList.get(0).getContentCase()) {
+      case CODE:
+        return diff.setCode(getCodeConflictBlob(a.getCode(), b.getCode(), c.getCode()).get(0))
+            .toProto()
+            .build();
+      case CONFIG:
+        return diff.setConfig(getConfigConflictBlob(a.getConfig(), b.getConfig(), c.getConfig()))
+            .toProto()
+            .build();
+      case DATASET:
+        return diff.setDataset(
+                getDatasetConflictBlob(a.getDataset(), b.getDataset(), c.getDataset()).get(0))
+            .toProto()
+            .build();
+      case ENVIRONMENT:
+        return diff.setEnvironment(
+                getEnvironmentonflictBlob(
+                        a.getEnvironment(), b.getEnvironment(), c.getEnvironment())
+                    .get(0))
+            .toProto()
+            .build();
+      case CONTENT_NOT_SET:
+        return diff.toProto().build();
+      default:
+        LOGGER.warn(
+            "unsupported diff type found, {}", locSpecificBlobDiffList.get(0).getContentCase());
+        throw new ModelDBException(
+            "unsupported diff type found" + locSpecificBlobDiffList.get(0).getContentCase(),
+            Code.UNIMPLEMENTED);
+    }
   }
 
   private static List<AutogenEnvironmentDiff> getEnvironmentonflictBlob(
