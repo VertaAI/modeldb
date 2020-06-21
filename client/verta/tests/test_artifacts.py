@@ -120,7 +120,7 @@ class TestArtifacts:
                 experiment_run.log_artifact_path(key, artifact)
 
     def test_clientside_storage(self, experiment_run, strs):
-        key = strs[0]
+        strs = iter(strs)
         FILE_CONTENTS = os.urandom(2**16)
 
         # TODO: use existing env var in case tester intentionally set
@@ -132,6 +132,7 @@ class TestArtifacts:
                 os.environ[VERTA_ARTIFACT_DIR_KEY] = os.path.join(tempdir, "artifact-store")
 
                 # create file and upload as artifact
+                key = next(strs)
                 with tempfile.NamedTemporaryFile() as tempf:
                     tempf.write(FILE_CONTENTS)
                     tempf.flush()  # flush object buffer
@@ -146,6 +147,14 @@ class TestArtifacts:
                 assert artifact.read() == FILE_CONTENTS
             finally:
                 shutil.rmtree(tempdir)
+
+            # upload object as artifact
+            key = next(strs)
+            obj = experiment_run._conn.auth  # arbitrary object
+            experiment_run.log_artifact(key, obj)
+
+            # artifact retrievable
+            assert experiment_run.get_artifact(key) == obj
         finally:
             if VERTA_ARTIFACT_DIR is not None:
                 os.environ[VERTA_ARTIFACT_DIR_KEY] = VERTA_ARTIFACT_DIR
