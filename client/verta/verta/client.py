@@ -7,8 +7,10 @@ import copy
 import glob
 import importlib
 import os
+import pathlib2
 import pprint
 import re
+import shutil
 import sys
 import tarfile
 import tempfile
@@ -2065,11 +2067,19 @@ class ExperimentRun(_ModelDBEntity):
         # build upload path from checksum and basename
         artifact_path = os.path.join(artifact_hash, basename)
 
+        # TODO: incorporate into config
+        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR')
+        if VERTA_ARTIFACT_DIR:
+            print("set artifact directory from environment:")
+            print("    " + VERTA_ARTIFACT_DIR)
+            artifact_path = os.path.join(VERTA_ARTIFACT_DIR, artifact_path)
+            pathlib2.Path(artifact_path).parent.mkdir(parents=True, exist_ok=True)
+
         # log key to ModelDB
         Message = _ExperimentRunService.LogArtifact
         artifact_msg = _CommonCommonService.Artifact(key=key,
                                                path=artifact_path,
-                                               path_only=False,
+                                               path_only=True if VERTA_ARTIFACT_DIR else False,
                                                artifact_type=artifact_type,
                                                filename_extension=extension)
         msg = Message(id=self.id, artifact=artifact_msg)
@@ -2089,7 +2099,13 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-        self._upload_artifact(key, artifact_stream)
+        if VERTA_ARTIFACT_DIR:
+            print("logging artifact")
+            with open(artifact_path, 'wb') as f:
+                shutil.copyfileobj(artifact_stream, f)
+            print("log complete; file written to {}".format(artifact_path))
+        else:
+            self._upload_artifact(key, artifact_stream)
 
     def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
         """
@@ -3244,6 +3260,9 @@ class ExperimentRun(_ModelDBEntity):
         """
         Logs an artifact to this Experiment Run.
 
+        The ``VERTA_ARTIFACT_DIR`` environment variable can be used to specify a locally-accessible
+        directory to store artifacts.
+
         Parameters
         ----------
         key : str
@@ -3324,12 +3343,20 @@ class ExperimentRun(_ModelDBEntity):
         """
         artifact, path_only = self._get_artifact(key)
         if path_only:
+            # might be clientside storage
+            # NOTE: can cause problem if accidentally picks up unrelated file w/ same name
+            if os.path.exists(artifact):
+                # return bytestream b/c that's what this fn does with MDB artifacts
+                return open(artifact, 'rb')
+
             return artifact
         else:
             try:
                 return pickle.loads(artifact)
             except:
                 return six.BytesIO(artifact)
+
+    # TODO: download_artifact(self, key, download_to_path)
 
     def log_observation(self, key, value, timestamp=None):
         """
