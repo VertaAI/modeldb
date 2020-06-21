@@ -57,8 +57,15 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   }
 
   // TODO: add overwrite
+  /** Return a map-like object of type Hyperparameters, representing the hyperparameters associated with ExperimentRun
+   *  Provide an alternative interface to get/log hyperparameters
+   *  @return the hyperparameters map
+   */
   def hyperparameters()(implicit ec: ExecutionContext) = new Hyperparameters(clientSet, ec, this)
 
+  /** Logs potentially multiple hyperparameters to this Experiment Run
+   *  @param vals Hyperparameters
+   */
   def logHyperparameters(vals: Map[String, ValueType])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
@@ -68,9 +75,16 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       )).map(_ => {})
   }
 
+  /** Logs a hyperparameter to this Experiment Run
+   *  @param key Name of the hyperparameter
+   *  @param value Value of the hyperparameter (String, Double, or (Big)Int)
+   */
   def logHyperparameter(key: String, value: ValueType)(implicit ec: ExecutionContext) =
     logHyperparameters(Map(key -> value))
 
+  /** Gets all hyperparameters from this Experiment Run
+   *  @return Names and values of all hyperparameters
+   */
   def getHyperparameters()(implicit ec: ExecutionContext): Try[Map[String, ValueType]] = {
     clientSet.experimentRunService.getHyperparameters(
       id = run.id
@@ -83,6 +97,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       })
   }
 
+  /** Gets the hyperparameter with name key from this Experiment Run
+   *  @param key Name of the hyperparameter
+   *  @return Value of the hyperparameter
+   */
   def getHyperparameter(key: String)(implicit ec: ExecutionContext) =
     getHyperparameters().map(_.get(key))
 
