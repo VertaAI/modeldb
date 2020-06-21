@@ -320,7 +320,7 @@ class TestObservations:
 
         # accept duplicate `epoch_num`
         value4 = next(values)
-        experiment_run.log_observation(key, value4, epoch_num=3)
+        experiment_run.log_observation(key, value4, epoch_num=epoch_num)
 
         value_to_epoch = {
             obs_tuple[0]: obs_tuple[2]
