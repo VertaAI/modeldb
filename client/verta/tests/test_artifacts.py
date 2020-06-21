@@ -4,10 +4,12 @@ import six
 
 import hashlib
 import os
+import shutil
 import tempfile
 import zipfile
 
 from verta._internal_utils import _artifact_utils
+from verta._internal_utils import _utils
 
 from . import utils
 
@@ -116,6 +118,39 @@ class TestArtifacts:
                 experiment_run.log_artifact(key, artifact)
             with pytest.raises(ValueError):
                 experiment_run.log_artifact_path(key, artifact)
+
+    def test_clientside_storage(self, experiment_run, strs):
+        key = strs[0]
+        FILE_CONTENTS = os.urandom(2**16)
+
+        # TODO: use existing env var in case tester intentionally set
+        VERTA_ARTIFACT_DIR_KEY = 'VERTA_ARTIFACT_DIR'
+        VERTA_ARTIFACT_DIR = os.environ.pop(VERTA_ARTIFACT_DIR_KEY, None)
+        try:
+            tempdir = tempfile.mkdtemp()
+            try:
+                os.environ[VERTA_ARTIFACT_DIR_KEY] = os.path.join(tempdir, "artifact-store")
+
+                # create file and upload as artifact
+                with tempfile.NamedTemporaryFile() as tempf:
+                    tempf.write(FILE_CONTENTS)
+                    tempf.flush()  # flush object buffer
+                    os.fsync(tempf.fileno())  # flush OS buffer
+                    tempf.seek(0)
+
+                    experiment_run.log_artifact(key, tempf)
+                assert True  # TODO: new file in artifact dir
+
+                # artifact retrievable
+                artifact = experiment_run.get_artifact(key)
+                assert artifact.read() == FILE_CONTENTS
+            finally:
+                shutil.rmtree(tempdir)
+        finally:
+            if VERTA_ARTIFACT_DIR is not None:
+                os.environ[VERTA_ARTIFACT_DIR_KEY] = VERTA_ARTIFACT_DIR
+            else:
+                del os.environ[VERTA_ARTIFACT_DIR_KEY]
 
 
 class TestModels:
