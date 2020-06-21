@@ -105,6 +105,74 @@ class TestExperimentRun extends FunSuite {
     }
   }
 
+  test("getAttribute(s) should retrieve the correct logged attributes") {
+    val f = fixture
+
+    try {
+      f.expRun.logAttribute("some-att", 0.5)
+      f.expRun.logAttribute("int-att", 4)
+      f.expRun.logAttributes(Map("other-att" -> 0.3, "string-att" -> "desc"))
+      assertTypeError("f.expRun.logAtt(\"should-not-compile\", true)")
+
+      assert(f.expRun.getAttribute("some-att").get.get.asDouble.get equals 0.5)
+      assert(f.expRun.getAttribute("other-att").get.get.asDouble.get equals 0.3)
+      assert(f.expRun.getAttribute("int-att").get.get.asBigInt.get equals 4)
+      assert(f.expRun.getAttribute("string-att").get.get.asString.get equals "desc")
+
+      assert(f.expRun.getAttributes(List("some-att", "other-att")).get equals
+        Map[String, ValueType]("some-att" -> 0.5, "other-att" -> 0.3)
+      )
+
+      assert(f.expRun.getAttributes().get equals
+        Map[String, ValueType]("some-att" -> 0.5, "int-att" -> 4, "other-att" -> 0.3, "string-att" -> "desc")
+      )
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("getAttribute should return None when a non-existing key is passed") {
+    val f = fixture
+
+    try {
+      assert(f.expRun.getAttribute("non-existing").get.isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("logAttribute(s) should fail when pass an existing key") {
+    val f = fixture
+
+    try {
+      f.expRun.logAttribute("existing", 0.5)
+      val logAttempt = f.expRun.logAttribute("existing", 0.5)
+      assert(logAttempt.isFailure)
+      assert(logAttempt match {case Failure(e) => e.getMessage contains "Attribute being logged already exists"})
+
+      val logAttempt2 = f.expRun.logAttributes(Map("existing" -> 0.5, "other-att" -> 0.3))
+      assert(logAttempt2.isFailure)
+      assert(logAttempt2 match {case Failure(e) => e.getMessage contains "Attribute being logged already exists"})
+      assert(f.expRun.getAttribute("other-att").get.isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("attributes map should behave like other attribute methods") {
+    val f = fixture
+
+    try {
+      val attributes = f.expRun.attributes()
+      attributes += ("some-att" -> 0.5)
+      assert(attributes.get("some-att").get.asDouble.get == 0.5)
+      assert(f.expRun.getAttribute("some-att").get.get.asDouble.get equals 0.5)
+      assert(attributes.get("non-existing").isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
+
   test("getTags should correctly retrieve the added tags") {
     val f = fixture
 
