@@ -33,16 +33,6 @@ const Commit = (props: ILocalProps) => {
       </div>
       <div className={styles.info}>
         <div className={styles.meta}>
-          <div className={styles.author}>
-            <Avatar
-              sizeInPx={28}
-              username={data.author.username}
-              picture={data.author.picture}
-            />
-            <div className={styles.author__username}>
-              {data.author.username}
-            </div>
-          </div>
           <div className={styles.date}>
             committed {moment(data.dateCreated).fromNow()}
           </div>

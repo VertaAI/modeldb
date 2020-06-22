@@ -23,16 +23,10 @@ const CurrentCommitInfo = (props: ILocalProps) => {
   return (
     <div className={styles.root}>
       <div className={styles.row}>
-        <span className={styles.author__text}>Last change done by</span>
+        <span className={styles.author__text}></span>
       </div>
       <div className={styles.row}>
         <div className={styles.author}>
-          <Avatar
-            username={author.username}
-            sizeInPx={28}
-            picture={author.picture}
-          />
-          <div className={styles.author__username}>{author.username}</div>
         </div>
         <div className={styles.message} title={message}>
           {message}

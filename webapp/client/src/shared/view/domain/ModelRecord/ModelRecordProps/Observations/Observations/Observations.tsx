@@ -56,6 +56,7 @@ class Observations extends React.PureComponent<ILocalProps> {
 export interface IObservationsValues {
   value: string | number;
   timeStamp: Date;
+  epochNumber?: number;
 }
 
 export const groupObservations = (observations: Observation[]) => {
@@ -67,20 +68,29 @@ export const groupObservations = (observations: Observation[]) => {
       if (obs.attribute.key) {
         map.set(key, [
           {
-            value: withScientificNotationOrRounded(Number(obs.attribute.value)),
+            value:
+              typeof obs.attribute.value === 'number'
+                ? withScientificNotationOrRounded(Number(obs.attribute.value))
+                : obs.attribute.value,
             timeStamp: obs.timestamp,
+            epochNumber: obs.epochNumber,
           },
         ]);
       }
     } else {
       if (obs.attribute.key) {
         collection.push({
-          value: withScientificNotationOrRounded(Number(obs.attribute.value)),
+          value:
+            typeof obs.attribute.value === 'number'
+              ? withScientificNotationOrRounded(Number(obs.attribute.value))
+              : obs.attribute.value,
           timeStamp: obs.timestamp,
+          epochNumber: obs.epochNumber,
         });
       }
     }
   });
+
   return map;
 };
 

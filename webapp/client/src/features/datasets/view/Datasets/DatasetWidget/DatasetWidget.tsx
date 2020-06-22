@@ -73,17 +73,6 @@ class DatasetWidget extends React.PureComponent<AllProps> {
                         onClick={this.onTagsManagerClick}
                       />
                     </div>
-                    <div className={styles.owner_block}>
-                      <div className={styles.owner_username}>
-                        <div>{unknownUser.username}</div>
-                        <div className={styles.owner_status}>Owner</div>
-                      </div>
-                      <Avatar
-                        username={unknownUser.username}
-                        sizeInPx={36}
-                        picture={unknownUser.picture}
-                      />
-                    </div>
                     <div className={styles.type}>
                       Type:{' '}
                       {(() => {

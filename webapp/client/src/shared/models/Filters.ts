@@ -54,19 +54,9 @@ export interface IMetricFilterData {
   isActive: boolean;
 }
 
-export type ExperimentFilterOperator = Extract<
-  OperatorType,
-  'EQUALS' | 'NOT_EQUALS'
->;
-export interface IExperimentNameFilterData {
-  id: string;
+export type IExperimentNameFilterData = Omit<IStringFilterData, 'type'> & {
   type: PropertyType.EXPERIMENT_NAME;
-  caption?: string;
-  name: string;
-  value: string;
-  operator: ExperimentFilterOperator;
-  isActive: boolean;
-}
+};
 
 export type IFilterData =
   | IStringFilterData
@@ -159,7 +149,7 @@ export const makeDefaultFilterDataFromQuickFilter = (
 };
 
 export const defaultQuickFilters: Record<
-  'name' | 'description' | 'tag',
+  'name' | 'description' | 'tag' | 'owner',
   IQuickFilter
 > = {
   name: {
@@ -180,9 +170,13 @@ export const defaultQuickFilters: Record<
     isFuzzy: false,
     caption: 'tag',
   },
+  owner: {
+    type: PropertyType.STRING,
+    propertyName: 'owner',
+    isFuzzy: false,
+    caption: 'owner',
+  },
 };
-
-//
 
 declare const URLFiltersSymbol: unique symbol;
 export type URLFilters = Brand<string, 'URLFilters', typeof URLFiltersSymbol>;
@@ -196,3 +190,7 @@ export const URLFiltersParam: keyof IURLWithFilters = 'filters';
 export interface IURLWithFilters {
   filters: URLFilters;
 }
+
+export const makeDefaultOwnerFilter = (username: string): IStringFilterData => {
+  return makeDefaultStringFilter('owner', username, 'EQUALS');
+};
