@@ -112,7 +112,7 @@ class TestExperimentRun extends FunSuite {
       f.expRun.logAttribute("some-att", 0.5)
       f.expRun.logAttribute("int-att", 4)
       f.expRun.logAttributes(Map("other-att" -> 0.3, "string-att" -> "desc"))
-      assertTypeError("f.expRun.logAtt(\"should-not-compile\", true)")
+      assertTypeError("f.expRun.logAttribute(\"should-not-compile\", true)")
 
       assert(f.expRun.getAttribute("some-att").get.get.asDouble.get equals 0.5)
       assert(f.expRun.getAttribute("other-att").get.get.asDouble.get equals 0.3)
@@ -168,6 +168,70 @@ class TestExperimentRun extends FunSuite {
       assert(attributes.get("some-att").get.asDouble.get == 0.5)
       assert(f.expRun.getAttribute("some-att").get.get.asDouble.get equals 0.5)
       assert(attributes.get("non-existing").isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("getHyperparameter(s) should retrieve the correct logged attributes") {
+    val f = fixture
+
+    try {
+      f.expRun.logHyperparameter("some-hyp", 0.5)
+      f.expRun.logHyperparameter("int-hyp", 4)
+      f.expRun.logHyperparameters(Map("other-hyp" -> 0.3, "string-hyp" -> "desc"))
+      assertTypeError("f.expRun.logHyperparameter(\"should-not-compile\", true)")
+
+      assert(f.expRun.getHyperparameter("some-hyp").get.get.asDouble.get equals 0.5)
+      assert(f.expRun.getHyperparameter("other-hyp").get.get.asDouble.get equals 0.3)
+      assert(f.expRun.getHyperparameter("int-hyp").get.get.asBigInt.get equals 4)
+      assert(f.expRun.getHyperparameter("string-hyp").get.get.asString.get equals "desc")
+
+      assert(f.expRun.getHyperparameters().get equals
+        Map[String, ValueType]("some-hyp" -> 0.5, "int-hyp" -> 4, "other-hyp" -> 0.3, "string-hyp" -> "desc")
+      )
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("getHyperparameter should return None when a non-existing key is passed") {
+    val f = fixture
+
+    try {
+      assert(f.expRun.getHyperparameter("non-existing").get.isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("logHyperparameter(s) should fail when pass an existing key") {
+    val f = fixture
+
+    try {
+      f.expRun.logHyperparameter("existing", 0.5)
+      val logAttempt = f.expRun.logHyperparameter("existing", 0.5)
+      assert(logAttempt.isFailure)
+      assert(logAttempt match {case Failure(e) => e.getMessage contains "Hyperparameter being logged already exists"})
+
+      val logAttempt2 = f.expRun.logHyperparameters(Map("existing" -> 0.5, "other-att" -> 0.3))
+      assert(logAttempt2.isFailure)
+      assert(logAttempt2 match {case Failure(e) => e.getMessage contains "Hyperparameter being logged already exists"})
+      assert(f.expRun.getAttribute("other-att").get.isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("hyperparameters map should behave like other hyperparameter methods") {
+    val f = fixture
+
+    try {
+      val hyperparameters = f.expRun.hyperparameters()
+      hyperparameters += ("some-hyp" -> 0.5)
+      assert(hyperparameters.get("some-hyp").get.asDouble.get == 0.5)
+      assert(f.expRun.getHyperparameter("some-hyp").get.get.asDouble.get equals 0.5)
+      assert(hyperparameters.get("non-existing").isEmpty)
     } finally {
       cleanup(f)
     }
