@@ -129,31 +129,26 @@ class TestArtifacts:
         VERTA_ARTIFACT_DIR_KEY = 'VERTA_ARTIFACT_DIR'
         PREV_VERTA_ARTIFACT_DIR = os.environ.pop(VERTA_ARTIFACT_DIR_KEY, None)
         try:
-            tempdir = tempfile.mkdtemp()
-            try:
-                VERTA_ARTIFACT_DIR = os.path.join(tempdir, "artifact-store")
-                os.environ[VERTA_ARTIFACT_DIR_KEY] = VERTA_ARTIFACT_DIR
+            VERTA_ARTIFACT_DIR = os.path.join(in_tempdir, "artifact-store")
+            os.environ[VERTA_ARTIFACT_DIR_KEY] = VERTA_ARTIFACT_DIR
 
-                # create file
-                with open(filename, 'wb') as f:
-                    f.write(FILE_CONTENTS)
-                # log artifact and delete file
-                experiment_run.log_artifact(key, filename)
-                os.remove(filename)
-                # and then there was one
-                assert len(os.listdir(VERTA_ARTIFACT_DIR)) == 1
+            # create file
+            with open(filename, 'wb') as f:
+                f.write(FILE_CONTENTS)
+            # log artifact and delete file
+            experiment_run.log_artifact(key, filename)
+            os.remove(filename)
+            # and then there was one
+            assert len(os.listdir(VERTA_ARTIFACT_DIR)) == 1
 
-                # artifact retrievable
-                artifact = experiment_run.get_artifact(key)
-                assert artifact.read() == FILE_CONTENTS
+            # artifact retrievable
+            artifact = experiment_run.get_artifact(key)
+            assert artifact.read() == FILE_CONTENTS
 
-                # artifact downloadable
-                filepath = experiment_run.download_artifact(key, filename)
-                with open(filepath, 'rb') as f:
-                    assert f.read() == FILE_CONTENTS
-
-            finally:
-                shutil.rmtree(tempdir)
+            # artifact downloadable
+            filepath = experiment_run.download_artifact(key, filename)
+            with open(filepath, 'rb') as f:
+                assert f.read() == FILE_CONTENTS
         finally:
             if PREV_VERTA_ARTIFACT_DIR is not None:
                 os.environ[VERTA_ARTIFACT_DIR_KEY] = PREV_VERTA_ARTIFACT_DIR
