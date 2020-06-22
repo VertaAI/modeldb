@@ -37,12 +37,14 @@ class TestExperimentRun extends FunSuite {
    *  @param multiLogger function to log multiple pieces of metadata
    *  @param getter function to retrieve a single piece of metadata
    *  @param allGetter function to retrieve all stored metadata
+   *  @param someGetter (optional) function to retrieve stored metadata corresponding to a list of keys
    */
   def testMetadata(
-    logger: ExperimentRun => (String, ValueType) => Try[Unit],
-    multiLogger: ExperimentRun => Map[String, ValueType] => Try[Unit],
-    getter: ExperimentRun => String => Try[Option[ValueType]],
-    allGetter: ExperimentRun => () => Try[Map[String, ValueType]]
+    logger: ExperimentRun => ((String, ValueType) => Try[Unit]),
+    multiLogger: ExperimentRun => (Map[String, ValueType] => Try[Unit]),
+    getter: ExperimentRun => (String => Try[Option[ValueType]]),
+    allGetter: ExperimentRun => (() => Try[Map[String, ValueType]]),
+    someGetter: Option[ExperimentRun => (List[String] => Try[Map[String, ValueType]])] = None
   ) = {
     val f = fixture
 
@@ -56,6 +58,11 @@ class TestExperimentRun extends FunSuite {
       assert(getter(f.expRun)("int").get.get.asBigInt.get equals 4)
       assert(getter(f.expRun)("string").get.get.asString.get equals "desc")
 
+      if (someGetter.isDefined)
+        assert(someGetter.get(f.expRun)(List("some", "other")).get  equals
+          Map[String, ValueType]("some" -> 0.5, "other" -> 0.3)
+        )
+
       assert(allGetter(f.expRun)().get equals
         Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
       )
@@ -67,7 +74,7 @@ class TestExperimentRun extends FunSuite {
   /** Test function to verify that getting a metadata with non-existing key should fail
    *  @param getter function to retrieve a single piece of metadata
    */
-  def testNonExisting(getter: ExperimentRun => String => Try[Option[ValueType]]) = {
+  def testNonExisting(getter: ExperimentRun => (String => Try[Option[ValueType]])) = {
     val f = fixture
 
     try {
@@ -84,9 +91,9 @@ class TestExperimentRun extends FunSuite {
    *  @param metadataName type of the metadata
    */
   def testAlreadyLogged(
-    logger: ExperimentRun => (String, ValueType) => Try[Unit],
-    multiLogger: ExperimentRun => Map[String, ValueType] => Try[Unit],
-    getter: ExperimentRun => String => Try[Option[ValueType]],
+    logger: ExperimentRun => ((String, ValueType) => Try[Unit]),
+    multiLogger: ExperimentRun => (Map[String, ValueType] => Try[Unit]),
+    getter: ExperimentRun => (String => Try[Option[ValueType]]),
     metadataName: String
   ) = {
     val f = fixture
@@ -111,8 +118,8 @@ class TestExperimentRun extends FunSuite {
    *  @param getter function to retrieve a single piece of metadata
    */
   def testMapInterface(
-    getMap: ExperimentRun => () => mutable.Map[String, ValueType],
-    getter: ExperimentRun => String => Try[Option[ValueType]]
+    getMap: ExperimentRun => (() => mutable.Map[String, ValueType]),
+    getter: ExperimentRun => (String => Try[Option[ValueType]])
   ) = {
     val f = fixture
 
@@ -144,30 +151,13 @@ class TestExperimentRun extends FunSuite {
   }
 
   test("getAttribute(s) should retrieve the correct logged attributes") {
-    // interface is a bit different
-    val f = fixture
-
-    try {
-      f.expRun.logAttribute("some-att", 0.5)
-      f.expRun.logAttribute("int-att", 4)
-      f.expRun.logAttributes(Map("other-att" -> 0.3, "string-att" -> "desc"))
-      assertTypeError("f.expRun.logAttribute(\"should-not-compile\", true)")
-
-      assert(f.expRun.getAttribute("some-att").get.get.asDouble.get equals 0.5)
-      assert(f.expRun.getAttribute("other-att").get.get.asDouble.get equals 0.3)
-      assert(f.expRun.getAttribute("int-att").get.get.asBigInt.get equals 4)
-      assert(f.expRun.getAttribute("string-att").get.get.asString.get equals "desc")
-
-      assert(f.expRun.getAttributes(List("some-att", "other-att")).get equals
-        Map[String, ValueType]("some-att" -> 0.5, "other-att" -> 0.3)
-      )
-
-      assert(f.expRun.getAttributes().get equals
-        Map[String, ValueType]("some-att" -> 0.5, "int-att" -> 4, "other-att" -> 0.3, "string-att" -> "desc")
-      )
-    } finally {
-      cleanup(f)
-    }
+    testMetadata(
+      _.logAttribute,
+      _.logAttributes,
+      _.getAttribute,
+      expRun => (() => expRun.getAttributes()),
+      Some(_.getAttributes)
+    )
   }
 
   test("getAttribute should return None when a non-existing key is passed") {
