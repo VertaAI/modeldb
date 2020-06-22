@@ -32,7 +32,7 @@ class TestExperimentRun extends FunSuite {
     f.client.close()
   }
 
-  /** Test function to verify that getting should retrieve the correctly log metadata */
+  /** Test function to verify that getting should retrieve the correctly logged metadata */
   def testMetadata(
     logger: ExperimentRun => (String, ValueType) => Try[Unit],
     multiLogger: ExperimentRun => Map[String, ValueType] => Try[Unit],
