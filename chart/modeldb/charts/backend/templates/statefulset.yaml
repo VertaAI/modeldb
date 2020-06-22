@@ -85,8 +85,6 @@ spec:
           ports:
             - containerPort: 3000
               name: http
-            - containerPort: 3001
-              name: grpc
           resources:
 {{ toYaml .Values.proxy.resources | indent 12 }}
       {{- if .Values.tolerations }}

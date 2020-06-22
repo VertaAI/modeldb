@@ -18,8 +18,6 @@ spec:
       port: 8086
     - port: 3000
       name: http
-    - port: 3001
-      name: grpc
   selector:
     app: {{ .Release.Name }}
     component: backend
