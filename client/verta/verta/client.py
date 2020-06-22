@@ -1882,7 +1882,7 @@ class ExperimentRun(_ModelDBEntity):
             "name: {}".format(run_msg.name),
             "url: {}://{}/{}/projects/{}/exp-runs/{}".format(self._conn.scheme, self._conn.socket, self.workspace, run_msg.project_id, self.id),
             "date created: {}".format(_utils.timestamp_to_str(int(run_msg.date_created))),
-            "last updated: {}".format(_utils.timestamp_to_str(int(run_msg.date_updated))),
+            "date updated: {}".format(_utils.timestamp_to_str(int(run_msg.date_updated))),
             "description: {}".format(run_msg.description),
             "tags: {}".format(run_msg.tags),
             "attributes: {}".format(_utils.unravel_key_values(run_msg.attributes)),
