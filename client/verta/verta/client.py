@@ -2020,9 +2020,12 @@ class ExperimentRun(_ModelDBEntity):
         Message = _ExperimentRunService.GetExperimentRunById
         msg = Message(id=self.id)
         data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
+        url = "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        response = _utils.make_request("GET", url, self._conn, params=data)
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
