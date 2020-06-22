@@ -185,7 +185,7 @@ class _Dataset(blob.Blob):
 
         return (components_to_download, downloaded_to_path)
 
-    def download(self, component_path, download_to_path=None, chunk_size=32*(10**3)):
+    def download(self, component_path, download_to_path=None, chunk_size=32*(10**6)):
         """
         Downloads `component_path` from this dataset if ModelDB-managed versioning was enabled.
 
@@ -196,7 +196,7 @@ class _Dataset(blob.Blob):
         download_to_path : str, optional
             Path to download to. If not provided, the file(s) will be downloaded into a new path in
             the current directory. If provided and the path already exists, it will be overwritten.
-        chunk_size : int, default 32 kB
+        chunk_size : int, default 32 MB
             Number of bytes to download at a time.
 
         Returns
