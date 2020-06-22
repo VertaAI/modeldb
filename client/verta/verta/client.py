@@ -3370,7 +3370,7 @@ class ExperimentRun(_ModelDBEntity):
             Name of the artifact.
         download_to_path : str
             Path to download to.
-        chunk_size : int, default 32 kB
+        chunk_size : int, default 32 MB
             Number of bytes to download at a time.
 
         Returns
