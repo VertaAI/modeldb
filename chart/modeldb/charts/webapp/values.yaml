@@ -1,0 +1,13 @@
+image: vertaaiofficial/modeldb-frontend
+imageTag: latest
+tolerations: []
+resources: {}
+env: {}
+service:
+  annotations: {}
+affinity: {}
+hpa:
+  enabled: false
+pdb:
+  enabled: false
+labels: {}
