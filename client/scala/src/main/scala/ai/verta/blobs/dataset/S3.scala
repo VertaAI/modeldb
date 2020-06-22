@@ -12,6 +12,8 @@ import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 import scala.annotation.tailrec
 
+import java.io.{File, FileOutputStream}
+
 /** Captures metadata about S3 objects
  *  Please set up AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION environment variables before use.
  *  To create a new instance, use the constructor taking a list of S3 Locations or a single location
@@ -26,6 +28,49 @@ case class S3(protected val contents: HashMap[String, FileMetadata]) extends Dat
    *  @return the version id of the file, if the file exists and has a versionId; otherwise None.
    */
   def getVersionId(path: String) = contents.get(path).flatMap(_.versionId)
+
+  /** Downloads the stored objects from S3.
+   *  @return A map from the s3 path to the path of the stored object, if succeeds
+   */
+  def downloadFromS3(): Try[Map[String, String]] = {
+    Try(contents
+      .mapValues(metadata => S3Location(metadata.path, metadata.versionId).get)
+      .mapValues(location => downloadFromLocation(location, S3.s3, "").get)
+      .toMap
+    )
+  }
+
+  /** Helper method to download the object stored in a S3 location.
+   *  Based on https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/examples-s3-objects.html#download-object
+   *  @param location the S3 location. Must correspond to a file
+   *  @param s3 The s3 client
+   *  @return the path of the saved object, computed based on the s3 location, if succeeds.
+   */
+  private def downloadFromLocation(location: S3Location, s3: AmazonS3, savePath: String) = Try {
+    val savePath = Dataset.expanduser(f"~/.verta/${location.bucketName}/${location.key.get}")
+
+    val request =
+      if(location.versionID.isDefined)
+        new GetObjectRequest(location.bucketName, location.key.get, location.versionID.get)
+      else
+        new GetObjectRequest(location.bucketName, location.key.get)
+
+    val obj: S3Object = s3.getObject(request)
+    val s3InputStream: S3ObjectInputStream = obj.getObjectContent()
+    val fileOutputStream: FileOutputStream = new FileOutputStream(new File(savePath))
+    val buffer = new Array[Byte](1024)
+    var readLen = s3InputStream.read(buffer)
+
+    while (readLen > 0) {
+        fileOutputStream.write(buffer, 0, readLen)
+        readLen = s3InputStream.read(buffer)
+    }
+
+    s3InputStream.close()
+    fileOutputStream.close()
+
+    savePath // return the path of the saved file
+  }
 
   override def equals(other: Any) = other match {
     case other: S3 => contents.equals(other.contents)

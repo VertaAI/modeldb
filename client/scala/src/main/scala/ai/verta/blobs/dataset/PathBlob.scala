@@ -40,7 +40,7 @@ object PathBlob {
    */
   def apply(paths: List[String]): Try[PathBlob] = {
     val metadataLists = Try(
-      paths.map(expanduser)
+      paths.map(Dataset.expanduser)
            .map((path: String) => processPath(new File(path)))
            .map(_.get)
     )
@@ -150,11 +150,4 @@ object PathBlob {
       BigInt(file.length)
     ))
   }
-
-  /** Analogous to Python's os.path.expanduser
-   *  From https://stackoverflow.com/questions/6803913/java-analogous-to-python-os-path-expanduser-os-path-expandvars
-   *  @param path path
-   *  @return path, but with (first occurence of) ~ replace with user's home directory
-   */
-  private def expanduser(path: String) = path.replaceFirst("~", System.getProperty("user.home"))
 }

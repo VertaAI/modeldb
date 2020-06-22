@@ -38,6 +38,13 @@ trait Dataset extends Blob {
     val shared = contents.keySet.intersect(other.contents.keySet)
     contents.filterKeys(shared).equals(other.contents.filterKeys(shared))
   }
+
+  /** Analogous to Python's os.path.expanduser
+   *  From https://stackoverflow.com/questions/6803913/java-analogous-to-python-os-path-expanduser-os-path-expandvars
+   *  @param path path
+   *  @return path, but with (first occurence of) ~ replace with user's home directory
+   */
+  protected def expanduser(path: String) = path.replaceFirst("~", System.getProperty("user.home"))
 }
 
 object Dataset {
@@ -53,4 +60,11 @@ object Dataset {
      component.size.get,
      versionId
    )
+
+   /** Analogous to Python's os.path.expanduser
+    *  From https://stackoverflow.com/questions/6803913/java-analogous-to-python-os-path-expanduser-os-path-expandvars
+    *  @param path path
+    *  @return path, but with (first occurence of) ~ replace with user's home directory
+    */
+   private[dataset] def expanduser(path: String) = path.replaceFirst("~", System.getProperty("user.home"))
 }
