@@ -429,6 +429,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void updateDatasetVersionDescription(
       UpdateDatasetVersionDescription request,
       StreamObserver<UpdateDatasetVersionDescription.Response> responseObserver) {
+    LOGGER.info("updateDatasetVersionDescription not supported");
     super.updateDatasetVersionDescription(request, responseObserver);
     /*QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
@@ -446,7 +447,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -502,7 +503,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -558,7 +559,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -617,7 +618,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -679,7 +680,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -741,7 +742,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -801,7 +802,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -844,13 +845,14 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void setDatasetVersionVisibility(
       SetDatasetVersionVisibilty request,
       StreamObserver<SetDatasetVersionVisibilty.Response> responseObserver) {
+    LOGGER.info("setDatasetVersionVisibility not supported");
     super.setDatasetVersionVisibility(request, responseObserver);
     /*QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)

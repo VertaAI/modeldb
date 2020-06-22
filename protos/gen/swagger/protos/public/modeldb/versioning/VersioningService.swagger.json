@@ -3975,6 +3975,10 @@
       "properties": {
         "url": {
           "type": "string"
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },

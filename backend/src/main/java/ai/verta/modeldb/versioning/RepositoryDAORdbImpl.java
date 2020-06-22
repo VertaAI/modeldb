@@ -1137,7 +1137,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       } catch (ModelDBException ex) {
         if (ex.getCode().ordinal() == com.google.rpc.Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
-          LOGGER.warn(ex.getMessage());
+          LOGGER.info(ex.getMessage());
           return FindRepositories.Response.newBuilder()
               .addAllRepositories(Collections.emptyList())
               .setTotalRecords(0L)

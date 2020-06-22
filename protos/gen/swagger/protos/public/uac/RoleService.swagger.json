@@ -766,6 +766,10 @@
         },
         "role_id": {
           "type": "string"
+        },
+        "public": {
+          "type": "boolean",
+          "format": "boolean"
         }
       },
       "title": "Binds a set of roles to a set of entities"

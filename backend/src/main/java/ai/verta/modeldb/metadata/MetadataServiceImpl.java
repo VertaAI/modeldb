@@ -34,7 +34,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
           || request.getId().getIdTypeValue() == 0
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         String errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -69,7 +69,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -104,7 +104,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)

@@ -187,8 +187,8 @@ public class DatasetVersionTest {
         .setDatasetId(datasetId)
         .setDescription("this is the description of datsetVersion")
         .setDatasetVersionVisibility(DatasetVisibility.PRIVATE)
-        .addTags("DatasetVersion_tag_x")
-        .addTags("DatasetVersion_tag_y")
+        .addTags("A")
+        .addTags("A0")
         .addAllAttributes(attributeList)
         .setPathDatasetVersionInfo(
             PathDatasetVersionInfo.newBuilder()
@@ -1668,7 +1668,7 @@ public class DatasetVersionTest {
           CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
     }
@@ -1715,7 +1715,7 @@ public class DatasetVersionTest {
               "Please refer shared dataset for your invention");
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 

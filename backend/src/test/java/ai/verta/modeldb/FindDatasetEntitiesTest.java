@@ -154,8 +154,8 @@ public class FindDatasetEntitiesTest {
             .toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_2")
+            .addTags("A1")
+            .addTags("A2")
             .build();
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
@@ -183,9 +183,9 @@ public class FindDatasetEntitiesTest {
             .toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_3")
-            .addTags("Tag_4")
+            .addTags("A1")
+            .addTags("A3")
+            .addTags("A4")
             .build();
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
     dataset2 = createDatasetResponse.getDataset();
@@ -212,9 +212,9 @@ public class FindDatasetEntitiesTest {
             .toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_5")
-            .addTags("Tag_6")
+            .addTags("A1")
+            .addTags("A5")
+            .addTags("A6")
             .build();
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
     dataset3 = createDatasetResponse.getDataset();
@@ -241,9 +241,9 @@ public class FindDatasetEntitiesTest {
             .toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
-            .addTags("Tag_5")
-            .addTags("Tag_7")
-            .addTags("Tag_8")
+            .addTags("A5")
+            .addTags("A7")
+            .addTags("A8")
             .setDatasetVisibility(DatasetVisibility.PUBLIC)
             .build();
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
@@ -281,8 +281,8 @@ public class FindDatasetEntitiesTest {
             .toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_2")
+            .addTags("A1")
+            .addTags("A2")
             .build();
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
@@ -306,9 +306,9 @@ public class FindDatasetEntitiesTest {
             .toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_3")
-            .addTags("Tag_4")
+            .addTags("A1")
+            .addTags("A3")
+            .addTags("A4")
             .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
@@ -332,9 +332,9 @@ public class FindDatasetEntitiesTest {
             .toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_5")
-            .addTags("Tag_6")
+            .addTags("A1")
+            .addTags("A5")
+            .addTags("A6")
             .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
@@ -358,9 +358,9 @@ public class FindDatasetEntitiesTest {
             .toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
-            .addTags("Tag_5")
-            .addTags("Tag_7")
-            .addTags("Tag_8")
+            .addTags("A5")
+            .addTags("A7")
+            .addTags("A8")
             .setDatasetVersionVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     createDatasetVersionResponse =
@@ -591,13 +591,13 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("FindDatasets by multiple attribute condition test stop..................");
   }
 
-  /** Find dataset with value of metrics.accuracy >= 0.6543210 & tags == Tag_7 */
+  /** Find dataset with value of metrics.accuracy >= 0.6543210 & tags == A7 */
   @Test
   public void findDatasetsByMetricsAndTagsTest() {
     LOGGER.info("FindDatasets by metrics and tags test start................................");
 
     List<KeyValueQuery> predicates = new ArrayList<>();
-    Value stringValue = Value.newBuilder().setStringValue("Tag_7").build();
+    Value stringValue = Value.newBuilder().setStringValue("A7").build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
             .setKey("tags")
@@ -793,7 +793,7 @@ public class FindDatasetEntitiesTest {
     DatasetTest datasetTest = new DatasetTest();
 
     // get dataset with value of tags == test_tag_123
-    Value stringValue1 = Value.newBuilder().setStringValue("Tag_1").build();
+    Value stringValue1 = Value.newBuilder().setStringValue("A1").build();
     KeyValueQuery keyValueQueryTag1 =
         KeyValueQuery.newBuilder()
             .setKey("tags")
@@ -801,7 +801,7 @@ public class FindDatasetEntitiesTest {
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
     // get datasetRun with value of tags == test_tag_456
-    Value stringValue2 = Value.newBuilder().setStringValue("Tag_5").build();
+    Value stringValue2 = Value.newBuilder().setStringValue("A5").build();
     KeyValueQuery keyValueQueryTag2 =
         KeyValueQuery.newBuilder()
             .setKey("tags")
@@ -1195,13 +1195,13 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("FindDatasetVersions by multiple attribute condition test stop..............");
   }
 
-  /** Find datasetVersion with value of metrics.accuracy >= 0.6543210 & tags == Tag_7 */
+  /** Find datasetVersion with value of metrics.accuracy >= 0.6543210 & tags == A7 */
   @Test
   public void findDatasetVersionsByMetricsAndTagsTest() {
     LOGGER.info("FindDatasetVersions by metrics and tags test start.........");
 
     List<KeyValueQuery> predicates = new ArrayList<>();
-    Value stringValue = Value.newBuilder().setStringValue("Tag_7").build();
+    Value stringValue = Value.newBuilder().setStringValue("A7").build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
             .setKey("tags")
@@ -1384,7 +1384,7 @@ public class FindDatasetEntitiesTest {
   public void findDatasetVersionsByTagsTest() {
     LOGGER.info("FindDatasetVersions by tags test start................................");
 
-    Value stringValue1 = Value.newBuilder().setStringValue("Tag_1").build();
+    Value stringValue1 = Value.newBuilder().setStringValue("A1").build();
     KeyValueQuery keyValueQueryTag1 =
         KeyValueQuery.newBuilder()
             .setKey("tags")
@@ -1392,7 +1392,7 @@ public class FindDatasetEntitiesTest {
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
     // get datasetVersionRun with value of tags == test_tag_456
-    Value stringValue2 = Value.newBuilder().setStringValue("Tag_5").build();
+    Value stringValue2 = Value.newBuilder().setStringValue("A5").build();
     KeyValueQuery keyValueQueryTag2 =
         KeyValueQuery.newBuilder()
             .setKey("tags")

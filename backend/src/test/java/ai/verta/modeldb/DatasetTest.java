@@ -224,8 +224,8 @@ public class DatasetTest {
     return CreateDataset.newBuilder()
         .setName(datasetName)
         .setDatasetVisibility(DatasetVisibility.PRIVATE)
-        .addTags("tag_x")
-        .addTags("tag_y")
+        .addTags("A")
+        .addTags("A0")
         .addAllAttributes(attributeList)
         .build();
   }
@@ -453,11 +453,12 @@ public class DatasetTest {
               authClientInterceptor.getClient1Email(),
               CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
 
-      AddCollaboratorRequest.Response addOrUpdateDatasetCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+      AddCollaboratorRequest.Response addOrUpdateRepositoryCollaboratorResponse =
+          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info(
-          "Collaborator added in server : " + addOrUpdateDatasetCollaboratorResponse.getStatus());
-      assertTrue(addOrUpdateDatasetCollaboratorResponse.getStatus());
+          "Collaborator added in server : "
+              + addOrUpdateRepositoryCollaboratorResponse.getStatus());
+      assertTrue(addOrUpdateRepositoryCollaboratorResponse.getStatus());
 
       GetDatasetByName.Response getDatasetByNameResponse =
           datasetServiceStub.getDatasetByName(getDataset);
@@ -565,11 +566,11 @@ public class DatasetTest {
             authClientInterceptor.getClient1Email(),
             CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
 
-    AddCollaboratorRequest.Response addOrUpdateDatasetCollaboratorResponse =
-        collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+    AddCollaboratorRequest.Response addOrUpdateRepositoryCollaboratorResponse =
+        collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
     LOGGER.info(
-        "Collaborator added in server : " + addOrUpdateDatasetCollaboratorResponse.getStatus());
-    assertTrue(addOrUpdateDatasetCollaboratorResponse.getStatus());
+        "Collaborator added in server : " + addOrUpdateRepositoryCollaboratorResponse.getStatus());
+    assertTrue(addOrUpdateRepositoryCollaboratorResponse.getStatus());
 
     // Create dataset
     createDatasetRequest = getDatasetRequest("dataset_f_apt");
@@ -888,8 +889,8 @@ public class DatasetTest {
         dataset.getName());
 
     List<String> tagsList = new ArrayList<>();
-    tagsList.add("Add Test Tag1");
-    tagsList.add("Add Test Tag2");
+    tagsList.add("A1");
+    tagsList.add("A2");
     AddDatasetTags addDatasetTagsRequest =
         AddDatasetTags.newBuilder().setId(dataset.getId()).addAllTags(tagsList).build();
 
@@ -904,8 +905,8 @@ public class DatasetTest {
         checkDataset.getTimeUpdated());
 
     tagsList = new ArrayList<>();
-    tagsList.add("Add Test Tag3");
-    tagsList.add("Add Test Tag2");
+    tagsList.add("A3");
+    tagsList.add("A2");
     addDatasetTagsRequest =
         AddDatasetTags.newBuilder().setId(dataset.getId()).addAllTags(tagsList).build();
 
@@ -948,8 +949,8 @@ public class DatasetTest {
     DatasetServiceBlockingStub datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
 
     List<String> tagsList = new ArrayList<>();
-    tagsList.add("Add Test Tag " + Calendar.getInstance().getTimeInMillis());
-    tagsList.add("Add Test Tag 2 " + Calendar.getInstance().getTimeInMillis());
+    tagsList.add("A " + Calendar.getInstance().getTimeInMillis());
+    tagsList.add("A 2 " + Calendar.getInstance().getTimeInMillis());
     AddDatasetTags addDatasetTagsRequest = AddDatasetTags.newBuilder().addAllTags(tagsList).build();
 
     try {

@@ -235,15 +235,4 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="add-label-index-in-labels-mapping" author="anandJ">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="labels_mapping" columnName="label_index"/>
-            </not>
-        </preConditions>
-        <addColumn tableName="labels_mapping">
-            <column name="label_index" type="int4" defaultValue="0"/>
-        </addColumn>
-    </changeSet>
-
 </databaseChangeLog>
