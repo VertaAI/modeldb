@@ -37,7 +37,9 @@ class AttributeButton extends React.PureComponent<ILocalProps, ILocalState> {
       type: 'epochNumber',
       title: 'Epoch number',
       width: '33%',
-      render: ({ epochNumber }: any) => <span>{epochNumber}</span>,
+      render: ({ epochNumber }: { epochNumber: string | number }) => (
+        <span>{epochNumber}</span>
+      ),
     };
     return (
       <div>
@@ -109,11 +111,11 @@ class AttributeButton extends React.PureComponent<ILocalProps, ILocalState> {
   private isWithEpoch(groupedObs: Map<string, any>) {
     return groupedObs
       .get(this.props.attributeKey)
-      .some((d: any) => Boolean(d.epochNumber));
+      .some((d: any) => d.epochNumber !== undefined);
   }
 
   @bind
-  private getRowKey(row: { timeStamp: string }) {
+  private getRowKey(row: { timeStamp: string; epochNumber: string | number }) {
     return row.timeStamp;
   }
 
