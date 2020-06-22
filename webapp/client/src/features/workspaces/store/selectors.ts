@@ -8,7 +8,7 @@ export const selectUserWorkspace = (
 ): Workspace.IUserWorkspace => {
   return {
     type: 'user',
-    name: 'kirill_gulyaev' as Workspace.IUserWorkspace['name'],
+    name: 'andrey_kuznetsov' as Workspace.IUserWorkspace['name'],
     id: 'id' as Workspace.IUserWorkspace['id'],
   };
 };

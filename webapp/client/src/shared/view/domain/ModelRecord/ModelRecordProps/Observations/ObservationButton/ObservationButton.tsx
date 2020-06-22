@@ -12,6 +12,7 @@ import Table from 'shared/view/elements/Table/Table';
 interface IAttributeVal {
   timeStamp: Date;
   value: string;
+  epochNumber?: number;
 }
 
 interface ILocalProps {
@@ -32,6 +33,12 @@ class AttributeButton extends React.PureComponent<ILocalProps, ILocalState> {
   public render() {
     const { groupedObs, attributeKey, additionalClassname } = this.props;
     const iconType = 'binoculars-tilted';
+    const epochColumn = {
+      type: 'epochNumber',
+      title: 'Epoch number',
+      width: '33%',
+      render: ({ epochNumber }: any) => <span>{epochNumber}</span>,
+    };
     return (
       <div>
         <Popup
@@ -52,24 +59,29 @@ class AttributeButton extends React.PureComponent<ILocalProps, ILocalState> {
                     .map((obs: IAttributeVal) => {
                       return {
                         ...obs,
+                        epochNumber:
+                          obs.epochNumber === undefined ? '-' : obs.epochNumber,
                         timeStamp: getFormattedDateTime(obs.timeStamp),
                       };
                     })}
                   getRowKey={this.getRowKey}
-                  columnDefinitions={[
+                  columnDefinitions={(this.isWithEpoch(groupedObs)
+                    ? [epochColumn]
+                    : []
+                  ).concat([
                     {
                       type: 'timeStamp',
                       title: 'TimeStamp',
-                      width: '50%',
+                      width: '33%',
                       render: ({ timeStamp }: any) => <span>{timeStamp}</span>,
                     },
                     {
                       type: 'value',
                       title: 'Value',
-                      width: '50%',
+                      width: '34%',
                       render: ({ value }: any) => <span>{value}</span>,
                     },
-                  ]}
+                  ])}
                 />
               )}
           </div>
@@ -91,6 +103,13 @@ class AttributeButton extends React.PureComponent<ILocalProps, ILocalState> {
         </div>
       </div>
     );
+  }
+
+  @bind
+  private isWithEpoch(groupedObs: Map<string, any>) {
+    return groupedObs
+      .get(this.props.attributeKey)
+      .some((d: any) => Boolean(d.epochNumber));
   }
 
   @bind
