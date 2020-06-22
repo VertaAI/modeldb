@@ -57,7 +57,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   }
 
   // TODO: add overwrite
-  /** Return a map-like object of type Hyperparameters, representing the hyperparameters associated with ExperimentRun
+  /** Return a map-like object of type Hyperparameters, representing the hyperparameters associated with ExperimentRun.
    *  Provide an alternative interface to get/log hyperparameters
    *  @return the hyperparameters map
    */
@@ -155,7 +155,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
     getMetrics().map(_.get(key))
 
   // TODO: add overwrite
-  /** Return a map-like object of type Attributes, representing the attributes associated with ExperimentRun
+  /** Return a map-like object of type Attributes, representing the attributes associated with ExperimentRun.
    *  Provide an alternative interface to get/log attributes methods
    *  @return the attributes map
    */
