@@ -3410,10 +3410,7 @@ class ExperimentRun(_ModelDBEntity):
         if artifact.path_only:
             if os.path.exists(artifact.path):
                 # copy from clientside storage
-                # TODO: use a tempfile first, and also delete if failed
-                with open(artifact.path, 'rb') as src_f:
-                    with open(download_to_path, 'wb') as dest_f:
-                        shutil.copyfileobj(src_f, dest_f)
+                shutil.copyfile(artifact.path, download_to_path)
             else:
                 raise ValueError(
                     "artifact {} appears to have been logged as path-only,"
