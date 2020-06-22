@@ -37,6 +37,15 @@ Release Notes
      <>`__
 
 
+v0.14.10 (2020-06-22)
+---------------------
+
+Bug Fixes
+^^^^^^^^^
+- `use a proper default for VERTA_ARTIFACT_DIR
+  <https://github.com/VertaAI/modeldb/pull/844>`__
+
+
 v0.14.9 (2020-06-22)
 --------------------
 
