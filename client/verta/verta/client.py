@@ -3346,8 +3346,12 @@ class ExperimentRun(_ModelDBEntity):
             # might be clientside storage
             # NOTE: can cause problem if accidentally picks up unrelated file w/ same name
             if os.path.exists(artifact):
-                # return bytestream b/c that's what this fn does with MDB artifacts
-                return open(artifact, 'rb')
+                try:
+                    with open(artifact, 'rb') as f:
+                        return pickle.load(f)
+                except:
+                    # return bytestream b/c that's what this fn does with MDB artifacts
+                    return open(artifact, 'rb')
 
             return artifact
         else:
