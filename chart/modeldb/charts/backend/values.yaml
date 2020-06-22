@@ -1,7 +1,13 @@
 image: vertaaiofficial/modeldb-backend
 imageTag: latest
 tolerations: []
-resources: {}
+resources:
+  limits:
+    cpu: 750m
+    memory: 1Gi
+  requests:
+    cpu: 750m
+    memory: 1Gi
 affinity: {}
 env: {}
 
@@ -11,14 +17,20 @@ service:
 proxy:
   image: vertaaiofficial/modeldb-proxy
   imageTag: latest
-  resources: {}
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 500m
+      memory: 256Mi
   env: {}
 
 artifactStore:
   enabled: true
   # This should be configured to the same path that artifact store will use
   path: /artifact-store/
-  storage: 10Gi
+  storage: 100Gi
 
 hpa:
   enabled: false
