@@ -2068,7 +2068,7 @@ class ExperimentRun(_ModelDBEntity):
         artifact_path = os.path.join(artifact_hash, basename)
 
         # TODO: incorporate into config
-        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR')
+        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR', "")
         VERTA_ARTIFACT_DIR = os.path.expanduser(VERTA_ARTIFACT_DIR)
         if VERTA_ARTIFACT_DIR:
             print("set artifact directory from environment:")
