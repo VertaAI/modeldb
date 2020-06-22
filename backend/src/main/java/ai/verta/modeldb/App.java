@@ -225,9 +225,7 @@ public class App implements ApplicationContextAware {
                 featureFlagMap.getOrDefault(
                     ModelDBConstants.STORE_CLIENT_CREATION_TIMESTAMP, false);
         app.setPublicSharingEnabled(
-            (Boolean)
-                featureFlagMap.getOrDefault(
-                    ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
+            (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
       }
 
       if (propertiesMap.containsKey("enableTrace") && (Boolean) propertiesMap.get("enableTrace")) {
@@ -340,6 +338,8 @@ public class App implements ApplicationContextAware {
     if (featureFlagMap != null) {
       app.setDisabledAuthz(
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
+      app.setPublicSharingEnabled(
+          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
     }
 
     Map<String, Object> starterProjectDetail =

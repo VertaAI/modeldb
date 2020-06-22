@@ -1,7 +1,9 @@
 package ai.verta.modeldb.entities;
 
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
+import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
@@ -34,7 +36,10 @@ public class ProjectEntity {
     setDate_created(project.getDateCreated());
     setDate_updated(project.getDateUpdated());
     setDescription(project.getDescription());
-    setProject_visibility(project.getProjectVisibilityValue());
+    setProject_visibility(
+        App.getInstance().getPublicSharingEnabled()
+            ? ProjectVisibility.PUBLIC_VALUE
+            : project.getProjectVisibilityValue());
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, project.getAttributesList()));

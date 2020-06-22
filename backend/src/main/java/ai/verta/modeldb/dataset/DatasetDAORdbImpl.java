@@ -181,10 +181,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     }
 
     createWorkspaceRoleBinding(
-        dataset.getWorkspaceId(),
-        dataset.getWorkspaceType(),
-        dataset.getId(),
-        datasetVisibility);
+        dataset.getWorkspaceId(), dataset.getWorkspaceType(), dataset.getId(), datasetVisibility);
   }
 
   private void createWorkspaceRoleBinding(
