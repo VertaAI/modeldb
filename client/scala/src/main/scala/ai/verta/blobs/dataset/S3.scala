@@ -48,6 +48,9 @@ case class S3(protected val contents: HashMap[String, FileMetadata]) extends Dat
    */
   private def downloadFromLocation(location: S3Location, s3: AmazonS3, savePath: String) = Try {
     val savePath = Dataset.expanduser(f"~/.verta/${location.bucketName}/${location.key.get}")
+    val file = new File(savePath)
+    file.getParentFile().mkdirs() // create directory if not exists
+    file.createNewFile() // create file if not exists
 
     val request =
       if(location.versionID.isDefined)
@@ -57,7 +60,7 @@ case class S3(protected val contents: HashMap[String, FileMetadata]) extends Dat
 
     val obj: S3Object = s3.getObject(request)
     val s3InputStream: S3ObjectInputStream = obj.getObjectContent()
-    val fileOutputStream: FileOutputStream = new FileOutputStream(new File(savePath))
+    val fileOutputStream: FileOutputStream = new FileOutputStream(file)
     val buffer = new Array[Byte](1024)
     var readLen = s3InputStream.read(buffer)
 
