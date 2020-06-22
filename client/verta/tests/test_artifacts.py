@@ -4,6 +4,7 @@ import six
 
 import hashlib
 import os
+import pickle
 import shutil
 import tempfile
 import zipfile
@@ -165,12 +166,20 @@ class TestArtifacts:
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
         experiment_run.log_artifact(key, filename)
+        os.remove(filename)
 
         # download artifact and verify contents
         new_filepath = experiment_run.download_artifact(key, new_filename)
         assert new_filepath == os.path.abspath(new_filename)
-        with open(new_filename, 'rb') as f:
+        with open(new_filepath, 'rb') as f:
             assert f.read() == FILE_CONTENTS
+
+        # object as well
+        obj = {'some': ["arbitrary", "object"]}
+        experiment_run.log_artifact(key, obj, overwrite=True)
+        new_filepath = experiment_run.download_artifact(key, new_filename)
+        with open(new_filepath, 'rb') as f:
+            assert pickle.load(f) == obj
 
     def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
         key = strs[0]
