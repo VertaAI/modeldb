@@ -67,7 +67,10 @@ export const groupObservations = (observations: Observation[]) => {
       if (obs.attribute.key) {
         map.set(key, [
           {
-            value: withScientificNotationOrRounded(Number(obs.attribute.value)),
+            value:
+              typeof obs.attribute.value === 'number'
+                ? withScientificNotationOrRounded(Number(obs.attribute.value))
+                : obs.attribute.value,
             timeStamp: obs.timestamp,
           },
         ]);
@@ -75,7 +78,10 @@ export const groupObservations = (observations: Observation[]) => {
     } else {
       if (obs.attribute.key) {
         collection.push({
-          value: withScientificNotationOrRounded(Number(obs.attribute.value)),
+          value:
+            typeof obs.attribute.value === 'number'
+              ? withScientificNotationOrRounded(Number(obs.attribute.value))
+              : obs.attribute.value,
           timeStamp: obs.timestamp,
         });
       }

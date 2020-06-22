@@ -160,9 +160,10 @@ class ObservationsModelPage extends React.PureComponent<
         if (obs.attribute.key) {
           map.set(key, [
             {
-              value: withScientificNotationOrRounded(
-                Number(obs.attribute.value)
-              ),
+              value:
+                obs.attribute.value === 'number'
+                  ? withScientificNotationOrRounded(Number(obs.attribute.value))
+                  : obs.attribute.value,
               timeStamp: obs.timestamp,
             },
           ]);
@@ -170,7 +171,10 @@ class ObservationsModelPage extends React.PureComponent<
       } else {
         if (obs.attribute.key) {
           collection.push({
-            value: withScientificNotationOrRounded(Number(obs.attribute.value)),
+            value:
+              obs.attribute.value === 'number'
+                ? withScientificNotationOrRounded(Number(obs.attribute.value))
+                : obs.attribute.value,
             timeStamp: obs.timestamp,
           });
         }
