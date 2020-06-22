@@ -1,8 +1,6 @@
 package ai.verta.modeldb.entities;
 
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.Dataset;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -30,10 +28,7 @@ public class DatasetEntity {
     setName(dataset.getName());
     setDescription(dataset.getDescription());
     setTags(RdbmsUtils.convertTagListFromTagMappingList(this, dataset.getTagsList()));
-    setDataset_visibility(
-        App.getInstance().getPublicSharingEnabled()
-            ? DatasetVisibility.PUBLIC_VALUE
-            : dataset.getDatasetVisibilityValue());
+    setDataset_visibility(dataset.getDatasetVisibilityValue());
     setDataset_type(dataset.getDatasetTypeValue());
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(

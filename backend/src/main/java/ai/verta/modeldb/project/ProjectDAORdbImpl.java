@@ -235,19 +235,15 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         project.getId(),
         ModelDBServiceResourceTypes.PROJECT);
 
-    ProjectVisibility projectVisibility;
-    if (App.getInstance().getPublicSharingEnabled()) {
-      projectVisibility = ProjectVisibility.PUBLIC;
-    } else {
-      projectVisibility = project.getProjectVisibility();
-    }
-
-    if (projectVisibility.equals(ProjectVisibility.PUBLIC)) {
+    if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
       roleService.createPublicRoleBinding(project.getId(), ModelDBServiceResourceTypes.PROJECT);
     }
 
     createWorkspaceRoleBinding(
-        project.getWorkspaceId(), project.getWorkspaceType(), project.getId(), projectVisibility);
+        project.getWorkspaceId(),
+        project.getWorkspaceType(),
+        project.getId(),
+        project.getProjectVisibility());
   }
 
   private void createWorkspaceRoleBinding(

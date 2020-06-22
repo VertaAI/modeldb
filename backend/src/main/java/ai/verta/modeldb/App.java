@@ -224,8 +224,6 @@ public class App implements ApplicationContextAware {
             (Boolean)
                 featureFlagMap.getOrDefault(
                     ModelDBConstants.STORE_CLIENT_CREATION_TIMESTAMP, false);
-        app.setPublicSharingEnabled(
-            (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
       }
 
       if (propertiesMap.containsKey("enableTrace") && (Boolean) propertiesMap.get("enableTrace")) {
