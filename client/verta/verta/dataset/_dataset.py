@@ -159,7 +159,7 @@ class _Dataset(blob.Blob):
                 os.rename(tempf.name, download_to_path)
             except Exception as e:
                 # delete partially-downloaded file
-                if tempf is not None:
+                if tempf is not None and os.path.isfile(tempf.name):
                     os.remove(tempf.name)
                 raise e
             else:
