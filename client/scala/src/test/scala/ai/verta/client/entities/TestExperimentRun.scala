@@ -37,8 +37,7 @@ class TestExperimentRun extends FunSuite {
     logger: ExperimentRun => (String, ValueType) => Try[Unit],
     multiLogger: ExperimentRun => Map[String, ValueType] => Try[Unit],
     getter: ExperimentRun => String => Try[Option[ValueType]],
-    allGetter: ExperimentRun => () => Try[Map[String, ValueType]],
-    metadataName: String
+    allGetter: ExperimentRun => () => Try[Map[String, ValueType]]
   ) = {
     val f = fixture
 
@@ -114,7 +113,7 @@ class TestExperimentRun extends FunSuite {
   }
 
   test("getMetric should retrieve the correct logged metric") {
-    testMetadata(_.logMetric, _.logMetrics, _.getMetric, _.getMetrics, "Metric")
+    testMetadata(_.logMetric, _.logMetrics, _.getMetric, _.getMetrics)
   }
 
   test("logMetric(s) should fail when pass an existing key") {
@@ -169,7 +168,7 @@ class TestExperimentRun extends FunSuite {
   }
 
   test("getHyperparameter(s) should retrieve the correct logged attributes") {
-    testMetadata(_.logHyperparameter, _.logHyperparameters, _.getHyperparameter, _.getHyperparameters, "Hyperparameter")
+    testMetadata(_.logHyperparameter, _.logHyperparameters, _.getHyperparameter, _.getHyperparameters)
   }
 
   test("getHyperparameter should return None when a non-existing key is passed") {
