@@ -11,6 +11,9 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Try, Success, Failure}
 import scala.collection.mutable
 
+import java.io._
+import java.nio.charset.StandardCharsets
+
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
 
@@ -30,6 +33,21 @@ class TestExperimentRun extends FunSuite {
     f.client.deleteRepository(f.repo.id)
     f.client.deleteProject(f.project.proj.id.get)
     f.client.close()
+  }
+
+  /** Helper function to convert byte stream to UTF-8 string
+   *  From https://stackoverflow.com/questions/50392640/how-to-compare-two-bytearrayinputstream-in-junit-testing/50392948
+   */
+  def streamToString(inputStream: ByteArrayInputStream) = {
+    val result = new ByteArrayOutputStream();
+    val buffer = new Array[Byte](1024)
+
+    var length = inputStream.read(buffer);
+    while (length != -1) {
+        result.write(buffer, 0, length);
+        length = inputStream.read(buffer);
+    }
+    result.toString("UTF-8");
   }
 
   /** Test function to verify that getting should retrieve the correctly logged metadata
@@ -289,6 +307,63 @@ class TestExperimentRun extends FunSuite {
       val getAttempt = f.expRun.getCommit()
       assert(getAttempt.isFailure)
       assert(getAttempt match {case Failure(e) => e.getMessage contains "No commit is associated with this experiment run"})
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("get artifact object should get the correct logged object") {
+    val f = fixture
+
+    try {
+      val artifact = new DummyArtifact("hello")
+      f.expRun.logArtifactObj("dummy", artifact)
+      assert(f.expRun.getArtifactObj("dummy").get equals artifact)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("get artifact stream should get the correct logged stream of bytes") {
+    val f = fixture
+
+    try {
+      val arr = new ByteArrayOutputStream()
+      val stream = new ObjectOutputStream(arr)
+      stream.writeObject("some weird object")
+      stream.close
+      f.expRun.logArtifact("stream", new ByteArrayInputStream(arr.toByteArray))
+
+      assert(
+        streamToString(new ByteArrayInputStream(arr.toByteArray)) ==
+          streamToString(f.expRun.getArtifact("stream").get)
+      )
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("log artifact with existing key should fail") {
+    val f = fixture
+
+    try {
+      val artifact = new DummyArtifact("hello")
+      f.expRun.logArtifactObj("existing", artifact)
+
+      val newArtifact = new DummyArtifact("world")
+      val logAttempt = f.expRun.logArtifactObj("existing", newArtifact)
+
+      assert(logAttempt.isFailure)
+      assert(logAttempt match {case Failure(e) => e.getMessage contains "Artifact being logged already exists"})
+
+      val arr = new ByteArrayOutputStream()
+      val stream = new ObjectOutputStream(arr)
+      stream.writeObject("some weird object")
+      stream.close
+      val logAttempt2 = f.expRun.logArtifact("existing", new ByteArrayInputStream(arr.toByteArray))
+
+      assert(logAttempt2.isFailure)
+      assert(logAttempt2 match {case Failure(e) => e.getMessage contains "Artifact being logged already exists"})
     } finally {
       cleanup(f)
     }
