@@ -54,10 +54,6 @@
   margin-top: 8px;
 }
 
-.owner_status {
-  color: var(--text-color3);
-}
-
 .owner_block {
   display: grid;
   grid-template-columns: auto 12px 36px;
