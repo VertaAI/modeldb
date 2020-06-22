@@ -43,7 +43,6 @@
   display: grid;
   padding: 1em 4em;
   font-size: 0.85em;
-  max-width: 450px;
 }
 
 .popupAction {
