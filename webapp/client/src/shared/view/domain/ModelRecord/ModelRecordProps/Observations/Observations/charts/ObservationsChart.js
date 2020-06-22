@@ -5,9 +5,9 @@ import { cssTheme } from 'shared/styles/theme';
 
 import styles from '../ObservationsModelPage.module.css';
 
-const width = 520,
+const width = 620,
   height = 340,
-  margin = { top: 30, right: 35, bottom: 70, left: 60 },
+  margin = { top: 40, right: 110, bottom: 70, left: 60 },
   chart_width = width - margin.left - margin.right,
   chart_height = height - margin.top - margin.bottom,
   duration = 250;
@@ -203,12 +203,25 @@ class ObservationsChart extends Component {
             .style('cursor', 'pointer')
             .append('text')
             .attr('class', 'ml-text')
-            .text(`${d.value}`)
+            .text(`Value: ${d.value}`)
             .attr('x', d => x(d.timeStamp) + 5)
             .attr('y', d => y(d.value) - 10)
             .style('opacity', d => {
               return Number.isNaN(d.value) ? 0 : 1;
             });
+
+          if (d.epochNumber !== undefined) {
+            d3.select(this)
+              .style('cursor', 'pointer')
+              .append('text')
+              .attr('class', 'ml-text')
+              .text(`Epoch number: ${d.epochNumber}`)
+              .attr('x', d => x(d.timeStamp) + 5)
+              .attr('y', d => y(d.value) - 24)
+              .style('opacity', d => {
+                return Number.isNaN(d.value) ? 0 : 1;
+              });
+          }
         })
         .on('mouseout', function(d) {
           d3.select(this)
