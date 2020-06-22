@@ -230,6 +230,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       })
   }
 
+  /** Logs an serializable artifact object to this Experiment Run
+   *  @param key Name of the artifact
+   *  @param obj Serializable object
+   */
   def logArtifactObj[T <: Serializable](key: String, obj: T)(implicit ec: ExecutionContext) = {
     val arr = new ByteArrayOutputStream()
     val stream = new ObjectOutputStream(arr)
@@ -261,6 +265,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
     return (hasher.digest(), offset)
   }
 
+  /** Logs an artifact in the form of a stream of bytes to this Experiment Run
+   *  @param key Name of the artifact
+   *  @param stream Input stream
+   */
   def logArtifact(key: String, stream: InputStream)(implicit ec: ExecutionContext) = {
     val hashResult = streamHash(stream)
     val artifactHash = hashResult._1
@@ -290,6 +298,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       .map(_ => {})
   }
 
+  /** Gets the artifact with name key from this Experiment Run
+   *  @param key Name of the artifact
+   *  @return Serializable artifact object
+   */
   def getArtifactObj(key: String)(implicit ec: ExecutionContext) =
     getArtifact(key)
       .map(stream => {
@@ -300,6 +312,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
         obj
       })
 
+  /** Gets an artifact in the form of a stream of bytes to this Experiment Run
+   *  @param key Name of the artifact
+   *  @return The output stream
+   */
   def getArtifact(key: String)(implicit ec: ExecutionContext) = {
     clientSet.experimentRunService.getUrlForArtifact(ModeldbGetUrlForArtifact(
       id = run.id,
