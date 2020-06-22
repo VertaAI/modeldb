@@ -145,7 +145,7 @@ class Commit(
   /** Retrieve commit's blobs from remote
    *  This is only called when user perform operations involving blobs.
    */
-  private def loadBlobs()(implicit ec: ExecutionContext): Try[Unit] = {
+  private def loadBlobs()(implicit ec: ExecutionContext): Try[Unit] = this.synchronized {
     if (!loadedFromRemote) {
       // if the commit is not saved, get the blobs of its parent(s)
       val ids: List[String] = commit.commit_sha match {
