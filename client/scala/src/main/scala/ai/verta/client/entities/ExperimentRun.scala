@@ -16,6 +16,12 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success, Try}
 
+/** Represents a machine learning Experiment Run.
+ *
+ *  This class provides read/write functionality for Experiment Run metadata.
+ *
+ *  There should not be a need to instantiate this class directly; please use experiment run's getOrCreateExperimentRun.
+ */
 class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: ModeldbExperimentRun) extends Taggable {
   /** Return a set-like object of type Tags, representing the tags associated with ExperimentRun
    *  Provide an alternative interface to get/del/add Tags methods
