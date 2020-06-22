@@ -150,6 +150,13 @@ class TestArtifacts:
             filepath = experiment_run.download_artifact(key, filename)
             with open(filepath, 'rb') as f:
                 assert f.read() == FILE_CONTENTS
+
+            # object as well
+            obj = {'some': ["arbitrary", "object"]}
+            experiment_run.log_artifact(key, obj, overwrite=True)
+            new_filepath = experiment_run.download_artifact(key, filename)
+            with open(new_filepath, 'rb') as f:
+                assert pickle.load(f) == obj
         finally:
             if PREV_VERTA_ARTIFACT_DIR is not None:
                 os.environ[VERTA_ARTIFACT_DIR_KEY] = PREV_VERTA_ARTIFACT_DIR
