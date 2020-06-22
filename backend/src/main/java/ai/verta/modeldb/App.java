@@ -140,6 +140,7 @@ public class App implements ApplicationContextAware {
 
   // Feature flags
   private Boolean disabledAuthz = false;
+  private Boolean publicSharingEnabled = false;
   private Boolean storeClientCreationTimestamp = false;
   private Integer requestTimeout = 30;
 
@@ -223,6 +224,10 @@ public class App implements ApplicationContextAware {
             (Boolean)
                 featureFlagMap.getOrDefault(
                     ModelDBConstants.STORE_CLIENT_CREATION_TIMESTAMP, false);
+        app.setPublicSharingEnabled(
+            (Boolean)
+                featureFlagMap.getOrDefault(
+                    ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
       }
 
       if (propertiesMap.containsKey("enableTrace") && (Boolean) propertiesMap.get("enableTrace")) {
@@ -700,6 +705,14 @@ public class App implements ApplicationContextAware {
 
   public void setDisabledAuthz(Boolean disabledAuthz) {
     this.disabledAuthz = disabledAuthz;
+  }
+
+  public Boolean getPublicSharingEnabled() {
+    return publicSharingEnabled;
+  }
+
+  public void setPublicSharingEnabled(Boolean publicSharingEnabled) {
+    this.publicSharingEnabled = publicSharingEnabled;
   }
 
   public String getCloudAccessKey() {

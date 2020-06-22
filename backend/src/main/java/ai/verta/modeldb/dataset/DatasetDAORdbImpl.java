@@ -4,6 +4,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
@@ -167,7 +168,15 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         new CollaboratorUser(authService, userInfo),
         dataset.getId(),
         ModelDBServiceResourceTypes.DATASET);
-    if (dataset.getDatasetVisibility().equals(DatasetVisibility.PUBLIC)) {
+
+    DatasetVisibility datasetVisibility;
+    if (App.getInstance().getPublicSharingEnabled()) {
+      datasetVisibility = DatasetVisibility.PUBLIC;
+    } else {
+      datasetVisibility = dataset.getDatasetVisibility();
+    }
+
+    if (datasetVisibility.equals(DatasetVisibility.PUBLIC)) {
       roleService.createPublicRoleBinding(dataset.getId(), ModelDBServiceResourceTypes.DATASET);
     }
 
@@ -175,7 +184,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         dataset.getWorkspaceId(),
         dataset.getWorkspaceType(),
         dataset.getId(),
-        dataset.getDatasetVisibility());
+        datasetVisibility);
   }
 
   private void createWorkspaceRoleBinding(
