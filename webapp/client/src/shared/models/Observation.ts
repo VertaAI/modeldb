@@ -16,7 +16,7 @@ export class Observation implements IObservation {
   public readonly attribute: DataAttribute;
   @JsonProperty('timestamp', StringToDateConverter, true)
   public readonly timestamp: Date;
-  @JsonProperty('epoch_number', Number)
+  @JsonProperty('epoch_number', Number, true)
   public readonly epochNumber?: number;
 
   constructor(
