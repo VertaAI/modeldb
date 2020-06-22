@@ -81,7 +81,7 @@ public class ConflictGenerator {
       switch (locSpecificBlobDiffA.get(0).getContentCase()) {
         case CODE:
           List<AutogenCodeDiff> diffs = getCodeConflictBlob(a.getCode(), b.getCode(), c.getCode());
-          if (diffs.size() >= 1) {
+          if (diffs.size() == 2) {
             return Arrays.asList(
                 diff0.setCode(diffs.get(0)).toProto().build(),
                 diff1.setCode(diffs.get(1)).toProto().build());
@@ -97,7 +97,7 @@ public class ConflictGenerator {
         case DATASET:
           List<AutogenDatasetDiff> datasetDiffs =
               getDatasetConflictBlob(a.getDataset(), b.getDataset(), c.getDataset());
-          if (datasetDiffs.size() >= 1) {
+          if (datasetDiffs.size() == 2) {
             return Arrays.asList(
                 diff0.setDataset(datasetDiffs.get(0)).toProto().build(),
                 diff1.setDataset(datasetDiffs.get(1)).toProto().build());
@@ -108,7 +108,7 @@ public class ConflictGenerator {
         case ENVIRONMENT:
           List<AutogenEnvironmentDiff> envDiffs =
               getEnvironmentonflictBlob(a.getEnvironment(), b.getEnvironment(), c.getEnvironment());
-          if (envDiffs.size() >= 1) {
+          if (envDiffs.size() == 2) {
             return Arrays.asList(
                 diff0.setEnvironment(envDiffs.get(0)).toProto().build(),
                 diff1.setEnvironment(envDiffs.get(1)).toProto().build());
