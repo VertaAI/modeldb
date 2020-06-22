@@ -62,15 +62,6 @@ const RepositoryWidget: React.FC<AllProps> = ({ repository, onDeleted }) => {
         </div>
         <div className={styles.right}>
           <div className={styles.owner_block}>
-            <div className={styles.owner_username}>
-              <div>{repository.owner.username}</div>
-              <div className={styles.owner_status}>Owner</div>
-            </div>
-            <Avatar
-              username={repository.owner.username}
-              sizeInPx={36}
-              picture={repository.owner.picture}
-            />
           </div>
           <span
             className={styles.date}
