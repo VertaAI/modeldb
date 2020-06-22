@@ -117,19 +117,6 @@ class TestExperimentRun extends FunSuite {
     testMetadata(_.logMetric, _.logMetrics, _.getMetric, _.getMetrics, "Metric")
   }
 
-  test("getMetrics should retireve all the metrics logged") {
-    val f = fixture
-
-    try {
-      val metrics: Map[String, ValueType] = Map("other-metric" -> 0.3, "other-metric-2" -> 0.1, "int-metric" -> 4)
-      f.expRun.logMetrics(metrics)
-
-      assert(f.expRun.getMetrics.get equals metrics)
-    } finally {
-      cleanup(f)
-    }
-  }
-
   test("logMetric(s) should fail when pass an existing key") {
     testAlreadyLogged(_.logMetric, _.logMetrics, _.getMetric,  "Metric")
   }
