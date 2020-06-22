@@ -7,10 +7,10 @@ import {
   IAuthorizedLayoutLocalProps,
   BreadcrumbsBuilder,
 } from 'pages/authorized/shared/AuthorizedLayout';
-import routes from 'routes';
+import routes from 'shared/routes';
 import { selectExperimentRuns } from 'features/experimentRuns/store';
 import { selectProjects } from 'features/projects/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 type ILocalProps = IAuthorizedLayoutLocalProps;
 

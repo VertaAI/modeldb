@@ -1,9 +1,9 @@
-import { HttpError } from 'core/shared/models/Error';
+import { HttpError } from 'shared/models/Error';
 import {
   CustomApiErrorConverter,
   GetErrorMessage,
   IHttpMethodRequestConfig,
-} from 'core/services/BaseDataService';
+} from 'services/BaseDataService';
 
 // todo find the better name
 export type DeploymentRequestErrorType = 'expectedDeployApiError';

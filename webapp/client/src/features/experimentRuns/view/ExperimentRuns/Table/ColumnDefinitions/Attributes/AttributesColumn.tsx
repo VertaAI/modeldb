@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import Attributes from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
+import Attributes from 'shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
 
 import { IRow } from '../types';
 

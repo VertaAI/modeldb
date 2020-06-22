@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import { Markdown } from 'core/shared/utils/types';
+import { Markdown } from 'shared/utils/types';
 
 import 'github-markdown-css';
 import './Markdown.module.css';

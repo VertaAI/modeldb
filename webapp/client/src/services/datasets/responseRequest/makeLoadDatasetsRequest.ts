@@ -1,15 +1,15 @@
-import { IServerFiltersInRequest } from 'core/features/filter/service/serverModel/Filters/converters';
-import { IFilterData } from 'core/features/filter/Model';
-import { IPagination } from 'core/shared/models/Pagination';
-import { IWorkspace } from 'models/Workspace';
-import { makeAddFiltersToRequestWithDefaultFilters } from 'features/filter/service/serverModel/Filter/converters';
-import { addPaginationToRequest } from 'core/services/serverModel/Pagination/converters';
-import { IServerPaginationInRequest } from 'core/services/serverModel/Pagination/Pagination';
+import { IServerFiltersInRequest } from 'services/serverModel/Filters/converters';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination } from 'shared/models/Pagination';
+import { IWorkspace } from 'shared/models/Workspace';
+import { makeAddFiltersToRequest } from 'services/serverModel/Filters/converters';
+import { addPaginationToRequest } from 'services/serverModel/Pagination/converters';
+import { IServerPaginationInRequest } from 'services/serverModel/Pagination/Pagination';
 import {
   IServerEntityWithWorkspaceName,
   addWorkspaceName,
 } from 'services/serverModel/Workspace/converters';
-import { ISorting } from 'core/shared/models/Sorting';
+import { ISorting } from 'shared/models/Sorting';
 import { addSorting } from 'services/serverModel/Sorting/Sorting';
 
 export type ILoadDatasetsRequest = {
@@ -28,7 +28,7 @@ const addPagination = (
 ): TransformLoadDatasetsRequest => request =>
   Promise.resolve(addPaginationToRequest(pagination)(request));
 
-const addFilters = makeAddFiltersToRequestWithDefaultFilters();
+const addFilters = makeAddFiltersToRequest();
 
 const makeLoadDatasetsRequest = (
   filters: IFilterData[],

@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { IArtifactWithDatasetVersion } from 'core/shared/models/Artifact';
-import { IDatasetVersion } from 'models/DatasetVersion';
+import { IArtifactWithDatasetVersion } from 'shared/models/Artifact';
+import { IDatasetVersion } from 'shared/models/DatasetVersion';
 import {
   selectCommunications,
   selectDatasetVersion,
@@ -10,9 +10,9 @@ import {
 import {
   initialCommunication,
   ICommunication,
-} from 'core/shared/utils/redux/communication';
+} from 'shared/utils/redux/communication';
 import { useSelector, useDispatch } from 'react-redux';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 export const useArtifactDatasetVersion = ({

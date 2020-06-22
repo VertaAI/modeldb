@@ -2,19 +2,19 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import {
   IColumnConfig,
   selectColumnConfig,
-} from 'core/features/experimentRunsTableConfig';
-import { selectCurrentContextAppliedFilters } from 'core/features/filter';
-import { IFilterData } from 'core/features/filter/Model';
-import { IPagination } from 'core/shared/models/Pagination';
-import { ISorting } from 'core/shared/models/Sorting';
-import { ICommunication } from 'core/shared/utils/redux/communication';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import ModelRecord from 'models/ModelRecord';
+} from 'features/experimentRunsTableConfig';
+import { selectCurrentContextAppliedFilters } from 'features/filter';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination } from 'shared/models/Pagination';
+import { ISorting } from 'shared/models/Sorting';
+import { ICommunication } from 'shared/utils/redux/communication';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import ModelRecord from 'shared/models/ModelRecord';
 import {
   selectExperimentRuns,
   selectExperimentRunsPagination,
@@ -23,7 +23,7 @@ import {
   changeSortingWithLoadingExperimentRuns,
   selectLoadingExperimentRuns,
 } from 'features/experimentRuns/store';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'setup/store/store';
 
 import DashboardActions from './DashboardActions/DashboardActions';
 import styles from './ExperimentRuns.module.css';
@@ -114,9 +114,7 @@ class ExperimentRuns extends React.PureComponent<AllProps, ILocalState> {
                       data={data}
                       sorting={sorting}
                       onSortingChange={this.onSortingChange}
-                      onCurrentPageChange={
-                        this.onPaginationCurrentPageChange
-                      }
+                      onCurrentPageChange={this.onPaginationCurrentPageChange}
                       resetShowingBulkDeletionMenu={
                         this.resetShowingBulkDeletionMenu
                       }

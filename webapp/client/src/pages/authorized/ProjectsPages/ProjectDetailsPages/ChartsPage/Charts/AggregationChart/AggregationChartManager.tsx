@@ -4,7 +4,7 @@ import React from 'react';
 
 import ChartConfigDropdown, {
   IOption,
-} from 'core/shared/view/elements/ChartConfigDropdown/ChartConfigDropdown';
+} from 'shared/view/elements/ChartConfigDropdown/ChartConfigDropdown';
 import {
   listAverage,
   listCount,
@@ -12,8 +12,8 @@ import {
   listStdev,
   listSum,
   listVariance,
-} from 'core/shared/utils/statMethods/AggregationTypes';
-import { isNumeric } from 'core/shared/utils/typeChecker/numFormatChecker';
+} from 'shared/utils/statMethods/AggregationTypes';
+import { isNumeric } from 'shared/utils/typeChecker/numFormatChecker';
 
 import { IAggregationChartSelection } from '../shared/types/chartConfiguration';
 import { IGenericChartData } from '../shared/types/chartDataTypes';

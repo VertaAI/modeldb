@@ -9,12 +9,12 @@ import { Provider } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import * as apollo from 'core/shared/graphql/apollo/apollo';
-import cleanLocalStorageForNewVersion from 'core/shared/utils/cleanLocalStorageForNewVersion';
+import * as apollo from 'shared/graphql/apollo/apollo';
+import cleanLocalStorageForNewVersion from 'shared/utils/cleanLocalStorageForNewVersion';
 
-import App from './App/App';
+import App from './setup/app/App';
 import './index.css';
-import configureStore from './store/configureStore';
+import configureStore from './setup/store/configureStore';
 
 const localStorageVersion = '1.0.14';
 cleanLocalStorageForNewVersion(localStorageVersion);

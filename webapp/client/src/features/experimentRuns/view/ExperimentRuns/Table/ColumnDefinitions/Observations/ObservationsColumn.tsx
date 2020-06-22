@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import Observations from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/Observations';
+import Observations from 'shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/Observations';
 
 import { IRow } from '../types';
 

@@ -1,17 +1,14 @@
 import * as R from 'ramda';
-import routes from 'routes';
+import routes from 'shared/routes';
 
-import setupIntegrationTest from 'utils/tests/integrations/setupIntegrationTest';
+import setupIntegrationTest from 'shared/utils/tests/integrations/setupIntegrationTest';
 
-import { IFilterData, makeDefaultTagFilter } from 'core/features/filter/Model';
-import { ISorting } from 'core/shared/models/Sorting';
-import checkURLSearchParams from 'core/shared/utils/tests/checkURLSearchParams';
-import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
-import {
-  IFilterState,
-  selectCurrentContextFilters,
-} from 'core/features/filter';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import { IFilterData, makeDefaultTagFilter } from 'shared/models/Filters';
+import { ISorting } from 'shared/models/Sorting';
+import checkURLSearchParams from 'shared/utils/tests/checkURLSearchParams';
+import flushAllPromises from 'shared/utils/tests/integrations/flushAllPromises';
+import { IFilterState, selectCurrentContextFilters } from 'features/filter';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 
 import {
   changePaginationWithLoadingExperimentRuns,

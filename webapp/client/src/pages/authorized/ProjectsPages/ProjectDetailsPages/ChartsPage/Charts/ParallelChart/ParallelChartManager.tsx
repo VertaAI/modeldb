@@ -1,11 +1,11 @@
 import { bind } from 'decko';
 import React from 'react';
 
-import Collapsable from 'core/shared/view/elements/Collapsable/Collapsable';
+import Collapsable from 'shared/view/elements/Collapsable/Collapsable';
 import ChartConfigDropdown, {
   IOption,
-} from 'core/shared/view/elements/ChartConfigDropdown/ChartConfigDropdown';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
+} from 'shared/view/elements/ChartConfigDropdown/ChartConfigDropdown';
+import { Icon } from 'shared/view/elements/Icon/Icon';
 
 import { IParallelChartSelection } from '../shared/types/chartConfiguration';
 import { IGenericChartData, Category } from '../shared/types/chartDataTypes';

@@ -1,10 +1,10 @@
 import {
   initialCommunication,
   ICommunication,
-} from 'core/shared/utils/redux/communication';
+} from 'shared/utils/redux/communication';
 import { makeSelectDeletingEntity } from 'features/shared/deletion';
 
-import { IApplicationState } from '../../../store/store';
+import { IApplicationState } from '../../../setup/store/store';
 import { IProjectsState } from './types';
 
 const selectState = (state: IApplicationState): IProjectsState =>

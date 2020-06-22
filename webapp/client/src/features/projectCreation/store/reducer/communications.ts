@@ -3,8 +3,8 @@ import { combineReducers } from 'redux';
 import {
   makeCommunicationReducerFromEnum,
   makeResetCommunicationReducer,
-} from 'core/shared/utils/redux/communication';
-import composeReducers from 'core/shared/utils/redux/composeReducers';
+} from 'shared/utils/redux/communication';
+import composeReducers from 'shared/utils/redux/composeReducers';
 
 import {
   createProjectActionTypes,
