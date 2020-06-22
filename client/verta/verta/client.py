@@ -3356,7 +3356,7 @@ class ExperimentRun(_ModelDBEntity):
             except:
                 return six.BytesIO(artifact)
 
-    def download_artifact(self, key, download_to_path):
+    def download_artifact(self, key, download_to_path, chunk_size=32*(10**3)):
         """
         Downloads the artifact with name `key` to path `download_to_path`.
 
@@ -3366,6 +3366,8 @@ class ExperimentRun(_ModelDBEntity):
             Name of the artifact.
         download_to_path : str
             Path to download to.
+        chunk_size : int, default 32 kB
+            Number of bytes to download at a time.
 
         Returns
         -------
@@ -3375,32 +3377,57 @@ class ExperimentRun(_ModelDBEntity):
         """
         download_to_path = os.path.abspath(download_to_path)
 
+        # get key-path from ModelDB
+        # TODO: consolidate the following ~12 lines with ExperimentRun._get_artifact()
+        Message = _CommonService.GetArtifacts
+        msg = Message(id=self.id, key=key)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        artifact = {artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
+        if artifact is None:
+            raise KeyError("no artifact found with key {}".format(key))
+
         # TODO: unpack dirs logged as artifacts
         #     But we can't distinguish if a ZIP artifact is a directory we've compressed, or if it
         #     was a ZIP file the user already had.
-        print("downloading {} from ModelDB".format(key))
-        artifact = self.get_artifact(key)
-        if isinstance(artifact, six.string_types):
-            raise ValueError(
-                "artifact {} appears to have been logged as path-only,"
-                " and cannot be downloaded".format(key)
-            )
 
         # create parent dirs
         pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
         # TODO: clean up empty parent dirs if something later fails
 
-        tempf = None
-        try:
-            # write artifact to tempfile
-            with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
-                shutil.copyfileobj(artifact, tempf)
+        # get a stream of the file bytes, without loading into memory, and write to file
+        # TODO: consolidate this with other fns
+        print("downloading {} from ModelDB".format(key))
+        if artifact.path_only:
+            if os.path.exists(artifact.path):
+                # copy from clientside storage
+                # TODO: use a tempfile first, then move
+                with open(artifact.path, 'rb') as src_f:
+                    with open(download_to_path, 'wb') as dest_f:
+                        shutil.copyfileobj(src_f, dest_f)
+            else:
+                raise ValueError(
+                    "artifact {} appears to have been logged as path-only,"
+                    " and cannot be downloaded".format(key)
+                )
+        else:
+            # download artifact from artifact store
+            url = self._get_url_for_artifact(key, "GET").url
+            response = _utils.make_request("GET", url, self._conn, stream=True)
+            try:
+                _utils.raise_for_http_error(response)
 
-            # move written contents to `filepath`
-            os.rename(tempf.name, download_to_path)
-        finally:
-            if tempf is not None and os.path.isfile(tempf.name):
-                os.remove(tempf.name)
+                # TODO: use a tempfile first, then move
+                with open(download_to_path, 'wb') as dest_f:
+                    for chunk in response.iter_content(chunk_size=chunk_size):
+                        dest_f.write(chunk)
+            finally:
+                response.close()
         print("download complete; file written to {}".format(download_to_path))
 
         return download_to_path

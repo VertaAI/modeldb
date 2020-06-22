@@ -119,7 +119,7 @@ class TestArtifacts:
             with pytest.raises(ValueError):
                 experiment_run.log_artifact_path(key, artifact)
 
-    def test_clientside_storage(self, experiment_run, strs):
+    def test_clientside_storage(self, experiment_run, strs, in_tempdir):
         key = strs[0]
         FILE_CONTENTS = os.urandom(2**16)
 
@@ -144,6 +144,14 @@ class TestArtifacts:
                 # artifact retrievable
                 artifact = experiment_run.get_artifact(key)
                 assert artifact.read() == FILE_CONTENTS
+
+                # artifact downloadable
+                filename = strs[1]
+                filepath = experiment_run.download_artifact(key, filename)
+                assert filepath == os.path.abspath(filename)
+                with open(filename, 'rb') as f:
+                    assert f.read() == FILE_CONTENTS
+
             finally:
                 shutil.rmtree(tempdir)
         finally:
