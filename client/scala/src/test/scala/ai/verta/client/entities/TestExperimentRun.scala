@@ -32,7 +32,12 @@ class TestExperimentRun extends FunSuite {
     f.client.close()
   }
 
-  /** Test function to verify that getting should retrieve the correctly logged metadata */
+  /** Test function to verify that getting should retrieve the correctly logged metadata
+   *  @param logger function to log a single piece metadata
+   *  @param multiLogger function to log multiple pieces of metadata
+   *  @param getter function to retrieve a single piece of metadata
+   *  @param allGetter function to retrieve all stored metadata
+   */
   def testMetadata(
     logger: ExperimentRun => (String, ValueType) => Try[Unit],
     multiLogger: ExperimentRun => Map[String, ValueType] => Try[Unit],
@@ -59,7 +64,9 @@ class TestExperimentRun extends FunSuite {
     }
   }
 
-  /** Test function to verify that getting a metadata with non-existing key should fail */
+  /** Test function to verify that getting a metadata with non-existing key should fail
+   *  @param getter function to retrieve a single piece of metadata
+   */
   def testNonExisting(getter: ExperimentRun => String => Try[Option[ValueType]]) = {
     val f = fixture
 
@@ -70,7 +77,12 @@ class TestExperimentRun extends FunSuite {
     }
   }
 
-  /** Test function to verify that logging a metadata with an existing key should fail */
+  /** Test function to verify that logging a metadata with an existing key should fail
+   *  @param logger function to log a single piece metadata
+   *  @param multiLogger function to log multiple pieces of metadata
+   *  @param getter function to retrieve a single piece of metadata
+   *  @param metadataName type of the metadata
+   */
   def testAlreadyLogged(
     logger: ExperimentRun => (String, ValueType) => Try[Unit],
     multiLogger: ExperimentRun => Map[String, ValueType] => Try[Unit],
@@ -94,7 +106,10 @@ class TestExperimentRun extends FunSuite {
     }
   }
 
-  /** Test function to verify that the map interface of a metadata works */
+  /** Test function to verify that the map interface of a metadata works
+   *  @param getMap function to get the map interface of metadata
+   *  @param getter function to retrieve a single piece of metadata
+   */
   def testMapInterface(
     getMap: ExperimentRun => () => mutable.Map[String, ValueType],
     getter: ExperimentRun => String => Try[Option[ValueType]]
