@@ -9,6 +9,7 @@ import ai.verta.client.entities.utils.ValueType
 import scala.language.reflectiveCalls
 import scala.concurrent.ExecutionContext
 import scala.util.{Try, Success, Failure}
+import scala.collection.mutable
 
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
@@ -31,23 +32,89 @@ class TestExperimentRun extends FunSuite {
     f.client.close()
   }
 
-  test("getMetric should retrieve the correct logged metric") {
+  /** Test function to verify that getting should retrieve the correctly log metadata */
+  def testMetadata(
+    logger: ExperimentRun => (String, ValueType) => Try[Unit],
+    multiLogger: ExperimentRun => Map[String, ValueType] => Try[Unit],
+    getter: ExperimentRun => String => Try[Option[ValueType]],
+    allGetter: ExperimentRun => () => Try[Map[String, ValueType]],
+    metadataName: String
+  ) = {
     val f = fixture
 
     try {
-       f.expRun.logMetric("some-metric", 0.5)
-       f.expRun.logMetric("int-metric", 4)
-       f.expRun.logMetrics(Map("other-metric" -> 0.3, "other-metric-2" -> 0.1))
+      logger(f.expRun)("some", 0.5)
+      logger(f.expRun)("int", 4)
+      multiLogger(f.expRun)(Map("other" -> 0.3, "string" -> "desc"))
 
-       assertTypeError("f.expRun.logMetric(\"should-not-compile\", true)")
+      assert(getter(f.expRun)("some").get.get.asDouble.get equals 0.5)
+      assert(getter(f.expRun)("other").get.get.asDouble.get equals 0.3)
+      assert(getter(f.expRun)("int").get.get.asBigInt.get equals 4)
+      assert(getter(f.expRun)("string").get.get.asString.get equals "desc")
 
-       assert(f.expRun.getMetric("some-metric").get.get.asDouble.get equals 0.5)
-       assert(f.expRun.getMetric("other-metric").get.get.asDouble.get equals 0.3)
-       assert(f.expRun.getMetric("other-metric-2").get.get.asDouble.get equals 0.1)
-       assert(f.expRun.getMetric("int-metric").get.get.asBigInt.get equals 4)
+      assert(allGetter(f.expRun)().get equals
+        Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
+      )
     } finally {
       cleanup(f)
     }
+  }
+
+  /** Test function to verify that getting a metadata with non-existing key should fail */
+  def testNonExisting(getter: ExperimentRun => String => Try[Option[ValueType]]) = {
+    val f = fixture
+
+    try {
+      assert(getter(f.expRun)("non-existing").get.isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  /** Test function to verify that logging a metadata with an existing key should fail */
+  def testAlreadyLogged(
+    logger: ExperimentRun => (String, ValueType) => Try[Unit],
+    multiLogger: ExperimentRun => Map[String, ValueType] => Try[Unit],
+    getter: ExperimentRun => String => Try[Option[ValueType]],
+    metadataName: String
+  ) = {
+    val f = fixture
+
+    try {
+      logger(f.expRun)("existing", 0.5)
+      val logAttempt = logger(f.expRun)("existing", 0.5)
+      assert(logAttempt.isFailure)
+      assert(logAttempt match {case Failure(e) => e.getMessage contains f"${metadataName} being logged already exists"})
+
+      val logAttempt2 = multiLogger(f.expRun)(Map("existing" -> 0.5, "other" -> 0.3))
+      assert(logAttempt2.isFailure)
+      assert(logAttempt2 match {case Failure(e) => e.getMessage contains f"${metadataName} being logged already exists"})
+      assert(getter(f.expRun)("other").get.isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  /** Test function to verify that the map interface of a metadata works */
+  def testMapInterface(
+    getMap: ExperimentRun => () => mutable.Map[String, ValueType],
+    getter: ExperimentRun => String => Try[Option[ValueType]]
+  ) = {
+    val f = fixture
+
+    try {
+      val map = getMap(f.expRun)()
+      map += ("some" -> 0.5)
+      assert(map.get("some").get.asDouble.get == 0.5)
+      assert(getter(f.expRun)("some").get.get.asDouble.get equals 0.5)
+      assert(map.get("non-existing").isEmpty)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("getMetric should retrieve the correct logged metric") {
+    testMetadata(_.logMetric, _.logMetrics, _.getMetric, _.getMetrics, "Metric")
   }
 
   test("getMetrics should retireve all the metrics logged") {
@@ -64,48 +131,19 @@ class TestExperimentRun extends FunSuite {
   }
 
   test("logMetric(s) should fail when pass an existing key") {
-    val f = fixture
-
-    try {
-      f.expRun.logMetric("existing", 0.5)
-      val logAttempt = f.expRun.logMetric("existing", 0.5)
-      assert(logAttempt.isFailure)
-      assert(logAttempt match {case Failure(e) => e.getMessage contains "Metric being logged already exists"})
-
-      val logAttempt2 = f.expRun.logMetrics(Map("existing" -> 0.5, "other-metric" -> 0.3))
-      assert(logAttempt2.isFailure)
-      assert(logAttempt2 match {case Failure(e) => e.getMessage contains "Metric being logged already exists"})
-      assert(f.expRun.getMetric("other-metric").get.isEmpty)
-    } finally {
-      cleanup(f)
-    }
+    testAlreadyLogged(_.logMetric, _.logMetrics, _.getMetric,  "Metric")
   }
 
   test("getMetric should return None when a non-existing key is passed") {
-    val f = fixture
-
-    try {
-      assert(f.expRun.getMetric("some-metric").get.isEmpty)
-    } finally {
-      cleanup(f)
-    }
+    testNonExisting(_.getMetric)
   }
 
   test("metrics map should behave like other metric methods") {
-    val f = fixture
-
-    try {
-      val metrics = f.expRun.metrics()
-      metrics += ("some-metric" -> 0.5)
-      assert(metrics.get("some-metric").get.asDouble.get == 0.5)
-      assert(f.expRun.getMetric("some-metric").get.get.asDouble.get equals 0.5)
-      assert(metrics.get("other-metric").isEmpty)
-    } finally {
-      cleanup(f)
-    }
+    testMapInterface(_.metrics, _.getMetric)
   }
 
   test("getAttribute(s) should retrieve the correct logged attributes") {
+    // interface is a bit different
     val f = fixture
 
     try {
@@ -132,109 +170,31 @@ class TestExperimentRun extends FunSuite {
   }
 
   test("getAttribute should return None when a non-existing key is passed") {
-    val f = fixture
-
-    try {
-      assert(f.expRun.getAttribute("non-existing").get.isEmpty)
-    } finally {
-      cleanup(f)
-    }
+    testNonExisting(_.getAttribute)
   }
 
   test("logAttribute(s) should fail when pass an existing key") {
-    val f = fixture
-
-    try {
-      f.expRun.logAttribute("existing", 0.5)
-      val logAttempt = f.expRun.logAttribute("existing", 0.5)
-      assert(logAttempt.isFailure)
-      assert(logAttempt match {case Failure(e) => e.getMessage contains "Attribute being logged already exists"})
-
-      val logAttempt2 = f.expRun.logAttributes(Map("existing" -> 0.5, "other-att" -> 0.3))
-      assert(logAttempt2.isFailure)
-      assert(logAttempt2 match {case Failure(e) => e.getMessage contains "Attribute being logged already exists"})
-      assert(f.expRun.getAttribute("other-att").get.isEmpty)
-    } finally {
-      cleanup(f)
-    }
+    testAlreadyLogged(_.logAttribute, _.logAttributes, _.getAttribute, "Attribute")
   }
 
   test("attributes map should behave like other attribute methods") {
-    val f = fixture
-
-    try {
-      val attributes = f.expRun.attributes()
-      attributes += ("some-att" -> 0.5)
-      assert(attributes.get("some-att").get.asDouble.get == 0.5)
-      assert(f.expRun.getAttribute("some-att").get.get.asDouble.get equals 0.5)
-      assert(attributes.get("non-existing").isEmpty)
-    } finally {
-      cleanup(f)
-    }
+    testMapInterface(_.attributes, _.getAttribute)
   }
 
   test("getHyperparameter(s) should retrieve the correct logged attributes") {
-    val f = fixture
-
-    try {
-      f.expRun.logHyperparameter("some-hyp", 0.5)
-      f.expRun.logHyperparameter("int-hyp", 4)
-      f.expRun.logHyperparameters(Map("other-hyp" -> 0.3, "string-hyp" -> "desc"))
-      assertTypeError("f.expRun.logHyperparameter(\"should-not-compile\", true)")
-
-      assert(f.expRun.getHyperparameter("some-hyp").get.get.asDouble.get equals 0.5)
-      assert(f.expRun.getHyperparameter("other-hyp").get.get.asDouble.get equals 0.3)
-      assert(f.expRun.getHyperparameter("int-hyp").get.get.asBigInt.get equals 4)
-      assert(f.expRun.getHyperparameter("string-hyp").get.get.asString.get equals "desc")
-
-      assert(f.expRun.getHyperparameters().get equals
-        Map[String, ValueType]("some-hyp" -> 0.5, "int-hyp" -> 4, "other-hyp" -> 0.3, "string-hyp" -> "desc")
-      )
-    } finally {
-      cleanup(f)
-    }
+    testMetadata(_.logHyperparameter, _.logHyperparameters, _.getHyperparameter, _.getHyperparameters, "Hyperparameter")
   }
 
   test("getHyperparameter should return None when a non-existing key is passed") {
-    val f = fixture
-
-    try {
-      assert(f.expRun.getHyperparameter("non-existing").get.isEmpty)
-    } finally {
-      cleanup(f)
-    }
+    testNonExisting(_.getHyperparameter)
   }
 
   test("logHyperparameter(s) should fail when pass an existing key") {
-    val f = fixture
-
-    try {
-      f.expRun.logHyperparameter("existing", 0.5)
-      val logAttempt = f.expRun.logHyperparameter("existing", 0.5)
-      assert(logAttempt.isFailure)
-      assert(logAttempt match {case Failure(e) => e.getMessage contains "Hyperparameter being logged already exists"})
-
-      val logAttempt2 = f.expRun.logHyperparameters(Map("existing" -> 0.5, "other-att" -> 0.3))
-      assert(logAttempt2.isFailure)
-      assert(logAttempt2 match {case Failure(e) => e.getMessage contains "Hyperparameter being logged already exists"})
-      assert(f.expRun.getAttribute("other-att").get.isEmpty)
-    } finally {
-      cleanup(f)
-    }
+    testAlreadyLogged(_.logHyperparameter, _.logHyperparameters, _.getHyperparameter, "Hyperparameter")
   }
 
   test("hyperparameters map should behave like other hyperparameter methods") {
-    val f = fixture
-
-    try {
-      val hyperparameters = f.expRun.hyperparameters()
-      hyperparameters += ("some-hyp" -> 0.5)
-      assert(hyperparameters.get("some-hyp").get.asDouble.get == 0.5)
-      assert(f.expRun.getHyperparameter("some-hyp").get.get.asDouble.get equals 0.5)
-      assert(hyperparameters.get("non-existing").isEmpty)
-    } finally {
-      cleanup(f)
-    }
+    testMapInterface(_.hyperparameters, _.getHyperparameter)
   }
 
   test("getTags should correctly retrieve the added tags") {
