@@ -37,6 +37,15 @@ Release Notes
      <>`__
 
 
+v0.14.9 (2020-06-22)
+--------------------
+
+Bug Fixes
+^^^^^^^^^
+- `expand user directory for clientside artifact storage environment variable
+  <https://github.com/VertaAI/modeldb/pull/840>`__
+
+
 v0.14.8 (2020-06-22)
 --------------------
 

@@ -19,6 +19,7 @@ const styles = theme => ({
     minWidth: theme.spacing(2),
   },
   activeButton: {
+    fontSize: '1.3em',
     fontWeight: 'bold',
     cursor: 'default',
   },

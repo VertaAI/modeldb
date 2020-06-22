@@ -30,17 +30,7 @@
   font-size: 14px;
 }
 
-.author {
-  display: flex;
-  align-items: center;
-}
-.author__username {
-  margin-left: 5px;
-  color: var(--main-text-color1);
-}
-
 .date {
-  margin-left: 5px;
   color: var(--main-text-color3);
 }
 

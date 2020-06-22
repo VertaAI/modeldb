@@ -92,17 +92,6 @@ class ExperimentWidget extends React.PureComponent<AllProps> {
                       </div>
                     </div>
                   )}
-                  <div className={styles.owner_block}>
-                    <div className={styles.owner_username}>
-                      <div>{unknownUser.username}</div>
-                      <div className={styles.owner_status}>Owner</div>
-                    </div>
-                    <Avatar
-                      username={unknownUser.username}
-                      sizeInPx={36}
-                      picture={unknownUser.picture}
-                    />
-                  </div>
                   <div className={styles.created_date_block}>
                     <div className={styles.created_date}>
                       Created: {experiment.dateCreated.toLocaleDateString()}

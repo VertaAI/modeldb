@@ -16,6 +16,12 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success, Try}
 
+/** Represents a machine learning Experiment Run.
+ *
+ *  This class provides read/write functionality for Experiment Run metadata.
+ *
+ *  There should not be a need to instantiate this class directly; please use experiment run's getOrCreateExperimentRun.
+ */
 class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: ModeldbExperimentRun) extends Taggable {
   /** Return a set-like object of type Tags, representing the tags associated with ExperimentRun
    *  Provide an alternative interface to get/del/add Tags methods
@@ -57,8 +63,15 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   }
 
   // TODO: add overwrite
+  /** Return a map-like object of type Hyperparameters, representing the hyperparameters associated with ExperimentRun.
+   *  Provide an alternative interface to get/log hyperparameters
+   *  @return the hyperparameters map
+   */
   def hyperparameters()(implicit ec: ExecutionContext) = new Hyperparameters(clientSet, ec, this)
 
+  /** Logs potentially multiple hyperparameters to this Experiment Run
+   *  @param vals Hyperparameters
+   */
   def logHyperparameters(vals: Map[String, ValueType])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
@@ -68,9 +81,16 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       )).map(_ => {})
   }
 
+  /** Logs a hyperparameter to this Experiment Run
+   *  @param key Name of the hyperparameter
+   *  @param value Value of the hyperparameter (String, Double, or (Big)Int)
+   */
   def logHyperparameter(key: String, value: ValueType)(implicit ec: ExecutionContext) =
     logHyperparameters(Map(key -> value))
 
+  /** Gets all hyperparameters from this Experiment Run
+   *  @return Names and values of all hyperparameters
+   */
   def getHyperparameters()(implicit ec: ExecutionContext): Try[Map[String, ValueType]] = {
     clientSet.experimentRunService.getHyperparameters(
       id = run.id
@@ -83,6 +103,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       })
   }
 
+  /** Gets the hyperparameter with name key from this Experiment Run
+   *  @param key Name of the hyperparameter
+   *  @return Value of the hyperparameter
+   */
   def getHyperparameter(key: String)(implicit ec: ExecutionContext) =
     getHyperparameters().map(_.get(key))
 
@@ -137,8 +161,15 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
     getMetrics().map(_.get(key))
 
   // TODO: add overwrite
+  /** Return a map-like object of type Attributes, representing the attributes associated with ExperimentRun.
+   *  Provide an alternative interface to get/log attributes methods
+   *  @return the attributes map
+   */
   def attributes()(implicit ec: ExecutionContext) = new Attributes(clientSet, ec, this)
 
+  /** Logs potentially multiple attributes to this Experiment Run
+   *  @param vals Attributes name and value (String, Int, or Double)
+   */
   def logAttributes(vals: Map[String, ValueType])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
@@ -148,9 +179,17 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       )).map(_ => {})
   }
 
+  /** Logs an attribute to this Experiment Run.
+   *  @param key Name of the attribute
+   *  @param value Value of the attribute. Could be String, Int, or Double
+   */
   def logAttribute(key: String, value: ValueType)(implicit ec: ExecutionContext) =
     logAttributes(Map(key -> value))
 
+  /** Gets multiple attributes from this Experiment Run
+   *  @param keys Names of the attributes. If not passed, get all attributes.
+   *  @return Values of the attributes (String, Int, or Double)
+   */
   def getAttributes(keys: List[String] = Nil)(implicit ec: ExecutionContext): Try[Map[String, ValueType]] = {
     clientSet.experimentRunService.getExperimentRunAttributes(
       id = run.id,
@@ -165,6 +204,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       })
   }
 
+  /** Gets the attribute with name key from this Experiment Run
+   *  @param key Name of the attribute
+   *  @return Value of the attribute (String, Int, or Double)
+   */
   def getAttribute(key: String)(implicit ec: ExecutionContext) =
     getAttributes(List(key)).map(_.get(key))
 
@@ -230,6 +273,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       })
   }
 
+  /** Logs an serializable artifact object to this Experiment Run
+   *  @param key Name of the artifact
+   *  @param obj Serializable object
+   */
   def logArtifactObj[T <: Serializable](key: String, obj: T)(implicit ec: ExecutionContext) = {
     val arr = new ByteArrayOutputStream()
     val stream = new ObjectOutputStream(arr)
@@ -261,6 +308,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
     return (hasher.digest(), offset)
   }
 
+  /** Logs an artifact in the form of a stream of bytes to this Experiment Run
+   *  @param key Name of the artifact
+   *  @param stream Input stream
+   */
   def logArtifact(key: String, stream: InputStream)(implicit ec: ExecutionContext) = {
     val hashResult = streamHash(stream)
     val artifactHash = hashResult._1
@@ -290,6 +341,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       .map(_ => {})
   }
 
+  /** Gets the artifact with name key from this Experiment Run
+   *  @param key Name of the artifact
+   *  @return Serializable artifact object
+   */
   def getArtifactObj(key: String)(implicit ec: ExecutionContext) =
     getArtifact(key)
       .map(stream => {
@@ -300,6 +355,10 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
         obj
       })
 
+  /** Gets an artifact in the form of a stream of bytes to this Experiment Run
+   *  @param key Name of the artifact
+   *  @return The output stream
+   */
   def getArtifact(key: String)(implicit ec: ExecutionContext) = {
     clientSet.experimentRunService.getUrlForArtifact(ModeldbGetUrlForArtifact(
       id = run.id,
@@ -350,7 +409,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   }
 
   /** Gets the Commit associated with this Experiment Run
-   *  @return commit sha, its repository ID, and the associated key-paths, wrapped in an ExperimentRunCommit instance.
+   *  @return ExperimentRunCommit instance, containing the commit and key-path map.
    */
   def getCommit()(implicit ec: ExecutionContext): Try[ExperimentRunCommit] = {
     clientSet.experimentRunService.getVersionedInputs(id = run.id).flatMap(response =>

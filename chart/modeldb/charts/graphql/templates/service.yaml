@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ .Release.Name }}
+    component: graphql
+  name: {{ .Release.Name }}-graphql
+  namespace: {{ .Release.Namespace | quote }}
+  annotations:
+{{ toYaml .Values.service.annotations | indent 4 }}
+spec:
+  ports:
+    - port: 3000
+  selector:
+    app: {{ .Release.Name }}
+    component: graphql
+  type: ClusterIP

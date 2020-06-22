@@ -93,17 +93,6 @@ class ProjectWidget extends React.Component<AllProps> {
                         onClick={this.onTagsManagerClick}
                       />
                     </div>
-                    <div className={styles.owner_block}>
-                      <div className={styles.owner_username}>
-                        <div>{unknownUser.username}</div>
-                        <div className={styles.owner_status}>Owner</div>
-                      </div>
-                      <Avatar
-                        username={unknownUser.username}
-                        sizeInPx={36}
-                        picture={unknownUser.picture}
-                      />
-                    </div>
                     <div className={styles.dates_block}>
                       <div className={styles.created_date}>
                         Created: {project.dateCreated.toLocaleDateString()}

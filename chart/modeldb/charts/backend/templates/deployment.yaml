@@ -1,0 +1,99 @@
+{{- if not .Values.artifactStore.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-backend
+    component: backend
+{{- if .Values.labels}}
+{{toYaml .Values.labels | indent 4 -}}
+{{- end}}
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: backend
+{{- if .Values.labels}}
+{{toYaml .Values.labels | indent 8 -}}
+{{- end}}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        verta.ai/disable_anti_affinity: "true"
+    spec:
+      containers:
+        - image: {{ .Values.image }}:{{ .Values.imageTag }}
+          env:
+            - name: VERTA_MODELDB_CONFIG
+              value: /config-backend/config.yaml
+            {{- range $name, $value := .Values.env }}
+            - name: {{ $name | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+          imagePullPolicy: Always
+          name: backend
+          ports:
+            - containerPort: 8085
+              name: backend
+            - containerPort: 8086
+              name: artifactstore
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:8085", "-service=ready"]
+            initialDelaySeconds: 5
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:8085", "-service=live"]
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 15
+          lifecycle:
+            preStop:
+              exec:
+                command: [
+                  "/bin/sh", "-c",
+                  "sleep 10",
+                ]
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            - mountPath: /config-backend
+              name: {{ .Release.Name }}-secret-volume
+              readOnly: true
+        - image: {{ .Values.proxy.image }}:{{ .Values.proxy.imageTag }}
+          imagePullPolicy: Always
+          name: proxy
+          env:
+            - name: MDB_ADDRESS
+              value: localhost:8085
+            - name: SERVER_HTTP_PORT
+              value: "3000"
+            {{- range $name, $value := .Values.proxy.env }}
+            - name: {{ $name | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - containerPort: 3000
+              name: http
+          resources:
+{{ toYaml .Values.proxy.resources | indent 12 }}
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      {{ if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+      {{- end }}
+      volumes:
+        - name: {{ .Release.Name }}-secret-volume
+          secret:
+            secretName: {{ .Release.Name }}-backend-config-secret
+{{- end -}}

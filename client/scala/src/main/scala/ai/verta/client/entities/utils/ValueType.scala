@@ -48,13 +48,13 @@ object ValueType {
   implicit def fromBigInt(i: BigInt): ValueType = IntValueType(i)
 
   /** Implicit conversion method to convert a string to ValueType
-   *  @param i the string
+   *  @param s the string
    *  @return the equivalent ValueType instance
    */
   implicit def fromString(s: String): ValueType = StringValueType(s)
 
   /** Implicit conversion method to convert a double to ValueType
-   *  @param i the double
+   *  @param d the double
    *  @return the equivalent ValueType instance
    */
   implicit def fromDouble(d: Double): ValueType = DoubleValueType(d)
