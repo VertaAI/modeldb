@@ -453,11 +453,12 @@ public class DatasetTest {
               authClientInterceptor.getClient1Email(),
               CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
 
-      AddCollaboratorRequest.Response addOrUpdateDatasetCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+      AddCollaboratorRequest.Response addOrUpdateRepositoryCollaboratorResponse =
+          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info(
-          "Collaborator added in server : " + addOrUpdateDatasetCollaboratorResponse.getStatus());
-      assertTrue(addOrUpdateDatasetCollaboratorResponse.getStatus());
+          "Collaborator added in server : "
+              + addOrUpdateRepositoryCollaboratorResponse.getStatus());
+      assertTrue(addOrUpdateRepositoryCollaboratorResponse.getStatus());
 
       GetDatasetByName.Response getDatasetByNameResponse =
           datasetServiceStub.getDatasetByName(getDataset);
@@ -565,11 +566,11 @@ public class DatasetTest {
             authClientInterceptor.getClient1Email(),
             CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
 
-    AddCollaboratorRequest.Response addOrUpdateDatasetCollaboratorResponse =
-        collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+    AddCollaboratorRequest.Response addOrUpdateRepositoryCollaboratorResponse =
+        collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
     LOGGER.info(
-        "Collaborator added in server : " + addOrUpdateDatasetCollaboratorResponse.getStatus());
-    assertTrue(addOrUpdateDatasetCollaboratorResponse.getStatus());
+        "Collaborator added in server : " + addOrUpdateRepositoryCollaboratorResponse.getStatus());
+    assertTrue(addOrUpdateRepositoryCollaboratorResponse.getStatus());
 
     // Create dataset
     createDatasetRequest = getDatasetRequest("dataset_f_apt");
