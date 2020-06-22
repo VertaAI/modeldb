@@ -2383,6 +2383,30 @@ class ExperimentRun(_ModelDBEntity):
 
         return new_run
 
+    def get_date_created(self):
+        """
+        Gets a timestamp representing the time this Experiment Run was created.
+
+        Returns
+        -------
+        timestamp : int
+            Unix timestamp (in UTC).
+
+        """
+        pass
+
+    def get_date_updated(self):
+        """
+        Gets a timestamp representing the time this Experiment Run was updated.
+
+        Returns
+        -------
+        timestamp : int
+            Unix timestamp (in UTC).
+
+        """
+        pass
+
     def log_tag(self, tag):
         """
         Logs a tag to this Experiment Run.
