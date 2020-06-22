@@ -3360,7 +3360,7 @@ class ExperimentRun(_ModelDBEntity):
             except:
                 return six.BytesIO(artifact)
 
-    def download_artifact(self, key, download_to_path, chunk_size=32*(10**3)):
+    def download_artifact(self, key, download_to_path, chunk_size=32*(10**6)):
         """
         Downloads the artifact with name `key` to path `download_to_path`.
 
