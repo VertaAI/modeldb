@@ -4,6 +4,7 @@ import six
 
 import hashlib
 import os
+import pickle
 import shutil
 import tempfile
 import zipfile
@@ -119,38 +120,79 @@ class TestArtifacts:
             with pytest.raises(ValueError):
                 experiment_run.log_artifact_path(key, artifact)
 
-    def test_clientside_storage(self, experiment_run, strs):
+    def test_clientside_storage(self, experiment_run, strs, in_tempdir):
         key = strs[0]
+        filename = strs[1]
         FILE_CONTENTS = os.urandom(2**16)
 
-        # TODO: use existing env var in case tester intentionally set
+        # TODO: be able to use existing env var for debugging
+        # NOTE: there is an assertion of `== 1` artifact that would need to be changed
         VERTA_ARTIFACT_DIR_KEY = 'VERTA_ARTIFACT_DIR'
-        VERTA_ARTIFACT_DIR = os.environ.pop(VERTA_ARTIFACT_DIR_KEY, None)
+        PREV_VERTA_ARTIFACT_DIR = os.environ.pop(VERTA_ARTIFACT_DIR_KEY, None)
         try:
-            tempdir = tempfile.mkdtemp()
-            try:
-                os.environ[VERTA_ARTIFACT_DIR_KEY] = os.path.join(tempdir, "artifact-store")
+            VERTA_ARTIFACT_DIR = os.path.join(in_tempdir, "artifact-store")
+            os.environ[VERTA_ARTIFACT_DIR_KEY] = VERTA_ARTIFACT_DIR
 
-                # create file and upload as artifact
-                with tempfile.NamedTemporaryFile() as tempf:
-                    tempf.write(FILE_CONTENTS)
-                    tempf.flush()  # flush object buffer
-                    os.fsync(tempf.fileno())  # flush OS buffer
-                    tempf.seek(0)
+            # create file
+            with open(filename, 'wb') as f:
+                f.write(FILE_CONTENTS)
+            # log artifact and delete file
+            experiment_run.log_artifact(key, filename)
+            os.remove(filename)
+            # and then there was one
+            assert len(os.listdir(VERTA_ARTIFACT_DIR)) == 1
 
-                    experiment_run.log_artifact(key, tempf)
-                assert True  # TODO: new file in artifact dir
+            # artifact retrievable
+            artifact = experiment_run.get_artifact(key)
+            assert artifact.read() == FILE_CONTENTS
 
-                # artifact retrievable
-                artifact = experiment_run.get_artifact(key)
-                assert artifact.read() == FILE_CONTENTS
-            finally:
-                shutil.rmtree(tempdir)
+            # artifact downloadable
+            filepath = experiment_run.download_artifact(key, filename)
+            with open(filepath, 'rb') as f:
+                assert f.read() == FILE_CONTENTS
+
+            # object as well
+            obj = {'some': ["arbitrary", "object"]}
+            experiment_run.log_artifact(key, obj, overwrite=True)
+            assert experiment_run.get_artifact(key) == obj
         finally:
-            if VERTA_ARTIFACT_DIR is not None:
-                os.environ[VERTA_ARTIFACT_DIR_KEY] = VERTA_ARTIFACT_DIR
+            if PREV_VERTA_ARTIFACT_DIR is not None:
+                os.environ[VERTA_ARTIFACT_DIR_KEY] = PREV_VERTA_ARTIFACT_DIR
             else:
                 del os.environ[VERTA_ARTIFACT_DIR_KEY]
+
+    def test_download(self, experiment_run, strs, in_tempdir):
+        key = strs[0]
+        filename = strs[1]
+        new_filename = strs[2]
+        FILE_CONTENTS = os.urandom(2**16)
+
+        # create file and upload as artifact
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+        experiment_run.log_artifact(key, filename)
+        os.remove(filename)
+
+        # download artifact and verify contents
+        new_filepath = experiment_run.download_artifact(key, new_filename)
+        assert new_filepath == os.path.abspath(new_filename)
+        with open(new_filepath, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
+
+        # object as well
+        obj = {'some': ["arbitrary", "object"]}
+        experiment_run.log_artifact(key, obj, overwrite=True)
+        new_filepath = experiment_run.download_artifact(key, new_filename)
+        with open(new_filepath, 'rb') as f:
+            assert pickle.load(f) == obj
+
+    def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
+        key = strs[0]
+        path = strs[1]
+
+        experiment_run.log_artifact_path(key, path)
+        with pytest.raises(ValueError):
+            experiment_run.download_artifact(key, path)
 
 
 class TestModels:

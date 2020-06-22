@@ -46,8 +46,8 @@ public class CronJobUtils {
             LOGGER.info(
                 "{} cron job scheduled successfully", ModelDBConstants.UPDATE_PARENT_TIMESTAMP);
           } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
-              && app.getServiceUserEmail() != null
-              && app.getServiceUserDevKey() != null) {
+              && ((app.getServiceUserEmail() != null && app.getServiceUserDevKey() != null)
+                  || !roleService.IsImplemented())) {
             Map<String, Object> deleteEntitiesCronMap = (Map<String, Object>) cronJob.getValue();
             deleteEntitiesFrequency =
                 (int) deleteEntitiesCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);

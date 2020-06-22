@@ -3346,8 +3346,12 @@ class ExperimentRun(_ModelDBEntity):
             # might be clientside storage
             # NOTE: can cause problem if accidentally picks up unrelated file w/ same name
             if os.path.exists(artifact):
-                # return bytestream b/c that's what this fn does with MDB artifacts
-                return open(artifact, 'rb')
+                try:
+                    with open(artifact, 'rb') as f:
+                        return pickle.load(f)
+                except:
+                    # return bytestream b/c that's what this fn does with MDB artifacts
+                    return open(artifact, 'rb')
 
             return artifact
         else:
@@ -3356,9 +3360,80 @@ class ExperimentRun(_ModelDBEntity):
             except:
                 return six.BytesIO(artifact)
 
-    # TODO: download_artifact(self, key, download_to_path)
+    def download_artifact(self, key, download_to_path, chunk_size=32*(10**6)):
+        """
+        Downloads the artifact with name `key` to path `download_to_path`.
 
-    def log_observation(self, key, value, timestamp=None):
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+        download_to_path : str
+            Path to download to.
+        chunk_size : int, default 32 MB
+            Number of bytes to download at a time.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where artifact was downloaded to. Matches `download_to_path`.
+
+        """
+        download_to_path = os.path.abspath(download_to_path)
+
+        # get key-path from ModelDB
+        # TODO: consolidate the following ~12 lines with ExperimentRun._get_artifact()
+        Message = _CommonService.GetArtifacts
+        msg = Message(id=self.id, key=key)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        artifact = {artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
+        if artifact is None:
+            raise KeyError("no artifact found with key {}".format(key))
+
+        # TODO: unpack dirs logged as artifacts
+        #     But we can't distinguish if a ZIP artifact is a directory we've compressed, or if it
+        #     was a ZIP file the user already had.
+
+        # create parent dirs
+        pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+        # TODO: clean up empty parent dirs if something later fails
+
+        # get a stream of the file bytes, without loading into memory, and write to file
+        # TODO: consolidate this with _get_artifact() and get_artifact()
+        print("downloading {} from ModelDB".format(key))
+        if artifact.path_only:
+            if os.path.exists(artifact.path):
+                # copy from clientside storage
+                shutil.copyfile(artifact.path, download_to_path)
+            else:
+                raise ValueError(
+                    "artifact {} appears to have been logged as path-only,"
+                    " and cannot be downloaded".format(key)
+                )
+        else:
+            # download artifact from artifact store
+            url = self._get_url_for_artifact(key, "GET").url
+            response = _utils.make_request("GET", url, self._conn, stream=True)
+            try:
+                _utils.raise_for_http_error(response)
+
+                # TODO: use a tempfile first, and also delete if failed
+                with open(download_to_path, 'wb') as dest_f:
+                    for chunk in response.iter_content(chunk_size=chunk_size):
+                        dest_f.write(chunk)
+            finally:
+                response.close()
+        print("download complete; file written to {}".format(download_to_path))
+
+        return download_to_path
+
+    def log_observation(self, key, value, timestamp=None, epoch_num=None):
         """
         Logs an observation to this Experiment Run.
 
@@ -3368,9 +3443,12 @@ class ExperimentRun(_ModelDBEntity):
             Name of the observation.
         value : one of {None, bool, float, int, str}
             Value of the observation.
-        timestamp: str or float or int, optional
+        timestamp : str or float or int, optional
             String representation of a datetime or numerical Unix timestamp. If not provided, the
             current time will be used.
+        epoch_num : non-negative int, optional
+            Epoch number associated with this observation. If not provided, it will automatically
+            be incremented from prior observations for the same `key`.
 
         Warnings
         --------
@@ -3385,8 +3463,18 @@ class ExperimentRun(_ModelDBEntity):
         else:
             timestamp = _utils.ensure_timestamp(timestamp)
 
+        if epoch_num is not None:
+            if (not isinstance(epoch_num, six.integer_types)
+                    and not (isinstance(epoch_num, float) and epoch_num.is_integer())):
+                raise TypeError("`epoch_num` must be int, not {}".format(type(epoch_num)))
+            if epoch_num < 0:
+                raise ValueError("`epoch_num` must be non-negative")
+
         attribute = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         observation = _ExperimentRunService.Observation(attribute=attribute, timestamp=timestamp)  # TODO: support Artifacts
+        if epoch_num is not None:
+            observation.epoch_number.number_value = epoch_num  # pylint: disable=no-member
+
         msg = _ExperimentRunService.LogObservation(id=self.id, observation=observation)
         data = _utils.proto_to_json(msg)
         response = _utils.make_request("POST",
