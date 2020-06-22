@@ -98,7 +98,7 @@ public class RdbmsUtils {
   private static final String MAX_EPOCH_NUMBER_SQL_1 =
       "select max(o.epoch_number) From (select keyvaluemapping_id, epoch_number from observation where experiment_run_id ='";
   private static final String MAX_EPOCH_NUMBER_SQL_2 =
-      "' and entity_name = 'ExperimentRunEntity') o, (select id from keyvalue k where kv_key ='";
+      "' and entity_name = 'ExperimentRunEntity') o, (select id from keyvalue where kv_key ='";
   private static final String MAX_EPOCH_NUMBER_SQL_3 =
       "' and  entity_name IS NULL) k where o.keyvaluemapping_id = k.id ";
 
