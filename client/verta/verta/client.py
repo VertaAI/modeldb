@@ -3401,12 +3401,12 @@ class ExperimentRun(_ModelDBEntity):
         # TODO: clean up empty parent dirs if something later fails
 
         # get a stream of the file bytes, without loading into memory, and write to file
-        # TODO: consolidate this with other fns
+        # TODO: consolidate this with _get_artifact() and get_artifact()
         print("downloading {} from ModelDB".format(key))
         if artifact.path_only:
             if os.path.exists(artifact.path):
                 # copy from clientside storage
-                # TODO: use a tempfile first, then move
+                # TODO: use a tempfile first, and also delete if failed
                 with open(artifact.path, 'rb') as src_f:
                     with open(download_to_path, 'wb') as dest_f:
                         shutil.copyfileobj(src_f, dest_f)
@@ -3422,7 +3422,7 @@ class ExperimentRun(_ModelDBEntity):
             try:
                 _utils.raise_for_http_error(response)
 
-                # TODO: use a tempfile first, then move
+                # TODO: use a tempfile first, and also delete if failed
                 with open(download_to_path, 'wb') as dest_f:
                     for chunk in response.iter_content(chunk_size=chunk_size):
                         dest_f.write(chunk)
