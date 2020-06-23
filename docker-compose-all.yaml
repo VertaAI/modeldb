@@ -61,7 +61,7 @@ services:
         environment:
             DEPLOYED: "yes"
             BACKEND_API_PROTOCOL: "http"
-            BACKEND_API_DOMAIN: "modeldb-proxy:8080"
+            BACKEND_API_DOMAIN: "modeldb-webapp:8080"
             MDB_ADDRESS: http://modeldb-proxy:8080
             ARTIFACTORY_ADDRESS: http://modeldb-backend:8086
             GQL_ADDRESS: http://modeldb-graphql:4000
