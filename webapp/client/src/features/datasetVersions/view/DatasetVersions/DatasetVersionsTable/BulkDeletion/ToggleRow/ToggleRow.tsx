@@ -2,13 +2,13 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import ToggleRowForBulkDeletion from 'core/shared/view/domain/BulkDeletion/TableBulkDeletionComponents/ToggleRowForBulkDeletion/ToggleRowForBulkDeletion';
+import ToggleRowForBulkDeletion from 'shared/view/domain/BulkDeletion/TableBulkDeletionComponents/ToggleRowForBulkDeletion/ToggleRowForBulkDeletion';
 import {
   selectDatasetVersionForDeleting,
   unselectDatasetVersionForDeleting,
   selectDatasetVersionIdsForDeleting,
 } from 'features/datasetVersions';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 interface ILocalProps {
   id: string;

@@ -1,24 +1,24 @@
 import * as R from 'ramda';
 
-import { BaseDataService } from 'core/services/BaseDataService';
-import { EntityErrorType } from 'core/shared/models/Common';
-import { HttpError } from 'core/shared/models/Error';
-import { IFilterData } from 'core/features/filter/Model';
-import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
-import * as Dataset from 'models/Dataset';
-import { IWorkspace } from 'models/Workspace';
+import { BaseDataService } from 'services/BaseDataService';
+import { EntityErrorType } from 'shared/models/Common';
+import { HttpError } from 'shared/models/Error';
+import { IFilterData } from 'shared/models/Filters';
+import { DataWithPagination, IPagination } from 'shared/models/Pagination';
+import * as Dataset from 'shared/models/Dataset';
+import { IWorkspace } from 'shared/models/Workspace';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
-import { convertServerUser } from 'core/services/serverModel/User/converters';
+import { convertServerUser } from 'services/serverModel/User/converters';
 
 import { convertServerShortWorkspaceToClient } from 'services/serverModel/Workspace/converters';
-import * as EntityAlreadyExistError from '../../core/services/shared/EntityAlreadyExistError';
+import * as EntityAlreadyExistError from '../shared/EntityAlreadyExistError';
 import makeLoadDatasetsRequest from './responseRequest/makeLoadDatasetsRequest';
-import { ISorting } from 'core/shared/models/Sorting';
+import { ISorting } from 'shared/models/Sorting';
 import {
   convertServerPaginationResponse,
   IServerPaginatedResponse,
-} from 'core/services/serverModel/Pagination/Pagination';
-import { unknownUser } from 'models/User';
+} from 'services/serverModel/Pagination/Pagination';
+import { unknownUser } from 'shared/models/User';
 
 const convertDatasetVisibilityToServer = (
   datasetVisibility: Dataset.DatasetVisibility
@@ -41,7 +41,10 @@ export default class DatasetsDataService extends BaseDataService {
   ): Promise<Dataset.Dataset> {
     const request = (() => {
       const requestFields: {
-        [K in keyof Omit<Required<Dataset.IDatasetCreationSettings>, 'workspaceName'>]: [string, any]
+        [K in keyof Omit<
+          Required<Dataset.IDatasetCreationSettings>,
+          'workspaceName'
+        >]: [string, any]
       } = {
         name: ['name', settings.name],
         visibility: [

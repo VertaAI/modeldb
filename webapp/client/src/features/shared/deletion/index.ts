@@ -1,9 +1,9 @@
-import { IPagination } from 'core/shared/models/Pagination';
+import { IPagination } from 'shared/models/Pagination';
 import {
   ICommunication,
   initialCommunication,
-} from 'core/shared/utils/redux/communication';
-import { IApplicationState } from 'store/store';
+} from 'shared/utils/redux/communication';
+import { IApplicationState } from 'setup/store/store';
 
 export const handleDeleteEntities = ({
   changePagination,

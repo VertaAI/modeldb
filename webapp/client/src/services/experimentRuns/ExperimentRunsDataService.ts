@@ -1,29 +1,24 @@
 import { JsonConvert } from 'json2typescript';
 import * as R from 'ramda';
 
-import * as Comments from 'features/comments';
-import { BaseDataService } from 'core/services/BaseDataService';
-import { IArtifact } from 'core/shared/models/Artifact';
-import {
-  IFilterData,
-  PropertyType,
-  OperatorType,
-} from 'core/features/filter/Model';
-import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
-import { ISorting } from 'core/shared/models/Sorting';
-import { ShortExperiment } from 'models/Experiment';
+import { BaseDataService } from 'services/BaseDataService';
+import { IArtifact } from 'shared/models/Artifact';
+import { IFilterData, PropertyType, OperatorType } from 'shared/models/Filters';
+import { IPagination, DataWithPagination } from 'shared/models/Pagination';
+import { ISorting } from 'shared/models/Sorting';
+import { ShortExperiment } from 'shared/models/Experiment';
 import ModelRecord, {
   LoadExperimentRunErrorType,
   IVersionedInputs,
-} from 'models/ModelRecord';
-import User from 'models/User';
+} from 'shared/models/ModelRecord';
+import User from 'shared/models/User';
 import {
   convertServerCodeVersion,
   convertServerCodeVersionsFromBlob,
 } from 'services/serverModel/CodeVersion/converters';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
 
-import { convertServerUser } from '../../core/services/serverModel/User/converters';
+import { convertServerUser } from '../serverModel/User/converters';
 import makeLoadExperimentRunsRequest, {
   makeLoadExperimentRunsByWorkspaceRequest,
 } from './responseRequest/makeLoadExperimentRunsRequest';
@@ -32,8 +27,9 @@ import {
   ILoadModelRecordResult,
   ILazyLoadChartData,
 } from './types';
-import { IWorkspace } from 'models/Workspace';
-import { RepositoriesDataService } from 'core/services/versioning/repositories';
+import { IWorkspace } from 'shared/models/Workspace';
+import { RepositoriesDataService } from 'services/versioning/repositories';
+import { convertServerComment } from 'services/serverModel/Comments/converters';
 
 export const chartsPageSettings = {
   pageSize: 50,
@@ -336,9 +332,7 @@ const convertServerExperimentRun = async (
   const result: ILoadModelRecordResult = {
     experimentRun: modelRecord,
     comments: (hydrated_experiment_run.comments || []).map((comment: any) =>
-      Comments.convertServerComment(
-        comment,
-      )
+      convertServerComment(comment)
     ),
   };
   return result;

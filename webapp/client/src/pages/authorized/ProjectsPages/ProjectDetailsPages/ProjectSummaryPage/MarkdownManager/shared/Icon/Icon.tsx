@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Icon, IconType } from 'core/shared/view/elements/Icon/Icon';
+import { Icon, IconType } from 'shared/view/elements/Icon/Icon';
 
 import styles from './Icon.module.css';
 

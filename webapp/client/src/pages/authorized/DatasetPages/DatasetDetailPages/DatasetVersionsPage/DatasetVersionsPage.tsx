@@ -3,15 +3,15 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { IFilterContext } from 'core/features/filter';
+import { IFilterContext } from 'features/filter';
 import {
   getDefaultDatasetVersionsOptions,
   loadDatasetVersions,
   resetDatasetVersionsPagination,
   DatasetVersions,
 } from 'features/datasetVersions';
-import { defaultQuickFilters } from 'features/filter/Model';
-import routes, { GetRouteParams } from 'routes';
+import { defaultQuickFilters } from 'shared/models/Filters';
+import routes, { GetRouteParams } from 'shared/routes';
 
 import DatasetDetailsLayout from '../shared/DatasetDetailsLayout/DatasetDetailsLayout';
 

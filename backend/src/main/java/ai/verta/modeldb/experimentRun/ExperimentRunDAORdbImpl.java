@@ -747,13 +747,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+
+      Transaction transaction = session.beginTransaction();
       List<ObservationEntity> newObservationList =
           RdbmsUtils.convertObservationsFromObservationEntityList(
-              experimentRunEntityObj, ModelDBConstants.OBSERVATIONS, observations);
+              session,
+              experimentRunEntityObj,
+              ModelDBConstants.OBSERVATIONS,
+              observations,
+              ExperimentRunEntity.class.getSimpleName(),
+              experimentRunEntityObj.getId());
       experimentRunEntityObj.setObservationMapping(newObservationList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
-      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
     } catch (Exception ex) {
@@ -2322,7 +2328,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       uploadId = artifactEntity.getUploadId();
       try {
         String message = null;
-        if (uploadId == null) {
+        if (uploadId == null || artifactEntity.isUploadCompleted()) {
           if (initializeMultipart == null) {
             message = "Multipart wasn't initialized";
           } else {
@@ -2345,6 +2351,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (!Objects.equals(uploadId, artifactEntity.getUploadId())
           || artifactEntity.isUploadCompleted()) {
         session.beginTransaction();
+        VersioningUtils.getArtifactPartEntities(
+                session,
+                String.valueOf(artifactEntity.getId()),
+                ArtifactPartEntity.EXP_RUN_ARTIFACT)
+            .forEach(session::delete);
         artifactEntity.setUploadId(uploadId);
         artifactEntity.setUploadCompleted(false);
         session.getTransaction().commit();
@@ -2412,8 +2423,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           artifactEntity.getPath(), artifactEntity.getUploadId(), partETags);
       session.beginTransaction();
       artifactEntity.setUploadCompleted(true);
-      artifactPartEntities.forEach(session::delete);
-      artifactPartEntities.clear();
       session.getTransaction().commit();
     }
     return CommitMultipartArtifact.Response.newBuilder().build();

@@ -2,13 +2,13 @@ import { bind } from 'decko';
 import * as R from 'ramda';
 import * as React from 'react';
 
-import { IArtifactWithPath } from 'core/shared/models/Artifact';
-import { artifactErrorMessages } from 'core/shared/utils/customErrorMessages';
-import { initialCommunication } from 'core/shared/utils/redux/communication';
-import Button from 'core/shared/view/elements/Button/Button';
-import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
+import { IArtifactWithPath } from 'shared/models/Artifact';
+import { artifactErrorMessages } from 'shared/utils/customErrorMessages';
+import { initialCommunication } from 'shared/utils/redux/communication';
+import Button from 'shared/view/elements/Button/Button';
+import InlineCommunicationError from 'shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
 import { EntityType } from 'features/artifactManager/store';
 import useDownloadArtifact from 'features/artifactManager/store/hooks/useDownloadArtifact';
 

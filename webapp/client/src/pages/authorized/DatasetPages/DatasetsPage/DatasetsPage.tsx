@@ -1,10 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { isHttpNotFoundError } from 'core/shared/models/Error';
+import { isHttpNotFoundError } from 'shared/models/Error';
 import { Datasets } from 'features/datasets';
 import { selectCommunications } from 'features/datasets/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import NotFoundPage from '../../NotFoundPage/NotFoundPage';
 import DatasetsPagesLayout from '../shared/DatasetsPagesLayout/DatasetsPagesLayout';

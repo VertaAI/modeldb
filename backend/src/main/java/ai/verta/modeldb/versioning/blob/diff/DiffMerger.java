@@ -134,8 +134,20 @@ public class DiffMerger {
     return a;
   }
 
+  private static Boolean diffStatusDeleted = false;
+
   public static AutogenBlob mergeBlob(
       AutogenBlob a, AutogenBlobDiff d, HashSet<String> conflictKeys) {
+    diffStatusDeleted = d != null && d.getStatus() != null && d.getStatus().isDeleted();
+    if (a != null
+        && d != null
+        && !diffStatusDeleted
+        && !a.toProto()
+            .getContentCase()
+            .name()
+            .equalsIgnoreCase(d.toProto().getContentCase().name())) {
+      conflictKeys.add(a.toString());
+    }
     return Utils.removeEmpty(
         new AutogenBlob()
             .setCode(
@@ -174,6 +186,12 @@ public class DiffMerger {
 
   public static AutogenCodeBlob mergeCode(
       AutogenCodeBlob a, AutogenCodeDiff d, HashSet<String> conflictKeys) {
+    if (a != null
+        && d != null
+        && !diffStatusDeleted
+        && a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
+      conflictKeys.add(a.toString());
+    }
     return Utils.removeEmpty(
         new AutogenCodeBlob()
             .setGit(
@@ -266,20 +284,14 @@ public class DiffMerger {
                     conflictKeys)));
   }
 
-  /*
-  public static HyperparameterConfigBlob mergeHyperparameterConfig(
-      Set<HyperparameterConfigBlob> a, HyperparameterConfigDiff d) {
-    return new HyperparameterConfigBlob().setName(d.Name).setValue(d.B);
-  }
-
-  public static HyperparameterSetConfigBlob mergeHyperparameterSetConfig(
-      Set<HyperparameterSetConfigBlob> a, HyperparameterSetConfigDiff d) {
-    return new HyperparameterSetConfigBlob().setName(d.Name).setContinuous(d.ContinuousB).setDiscrete(d.DiscreteB);
-  }
-   */
-
   public static AutogenDatasetBlob mergeDataset(
       AutogenDatasetBlob a, AutogenDatasetDiff d, HashSet<String> conflictKeys) {
+    if (a != null
+        && d != null
+        && !diffStatusDeleted
+        && a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
+      conflictKeys.add(a.toString());
+    }
     return Utils.removeEmpty(
         new AutogenDatasetBlob()
             .setPath(
@@ -370,15 +382,14 @@ public class DiffMerger {
                     conflictKeys)));
   }
 
-  /*
-  public static S3DatasetComponentBlob mergeS3DatasetComponent(
-      Set<S3DatasetComponentBlob> a, S3DatasetComponentDiff d) {
-    return new S3DatasetComponentBlob().setPath(d.Path.B);
-  }
-   */
-
   public static AutogenEnvironmentBlob mergeEnvironment(
       AutogenEnvironmentBlob a, AutogenEnvironmentDiff d, HashSet<String> conflictKeys) {
+    if (a != null
+        && d != null
+        && !diffStatusDeleted
+        && a.toProto().getContentCase().getNumber() != d.toProto().getContentCase().getNumber()) {
+      conflictKeys.add(a.toString());
+    }
     return Utils.removeEmpty(
         new AutogenEnvironmentBlob()
             .setPython(
@@ -482,6 +493,7 @@ public class DiffMerger {
       AutogenVersionEnvironmentBlob a,
       AutogenVersionEnvironmentDiff d,
       HashSet<String> conflictKeys) {
+
     if (a == null && d == null) return null;
     if (d == null) return a;
     if (d.getStatus().isDeleted()) return null;
@@ -495,13 +507,6 @@ public class DiffMerger {
             AutogenVersionEnvironmentBlob::toString,
             conflictKeys));
   }
-
-  /*
-  public static PythonRequirementEnvironmentBlob mergePythonRequirementEnvironment(
-      Set<PythonRequirementEnvironmentBlob> a, PythonRequirementEnvironmentDiff d) {
-    return d.B;
-  }
-   */
 
   public static AutogenDockerEnvironmentBlob mergeDockerEnvironment(
       AutogenDockerEnvironmentBlob a,
@@ -520,12 +525,4 @@ public class DiffMerger {
             AutogenDockerEnvironmentBlob::getRepository,
             conflictKeys));
   }
-
-  /*
-  public static EnvironmentVariablesBlob mergeEnvironmentVariables(
-      Set<EnvironmentVariablesBlob> a, EnvironmentVariablesDiff d) {
-    return new EnvironmentVariablesBlob().setValue(d.ValueB).setName(d.Name);
-  }
-  I/
-   */
 }
