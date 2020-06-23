@@ -44,6 +44,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -171,6 +172,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(" in (:keys) AND attr.repositoryEntity.")
           .append(ModelDBConstants.ID)
           .append(" = :repoId AND attr.field_type = :fieldType")
+          .toString();
+  String DELETE_ALL_REPOSITORY_ATTRIBUTES_HQL =
+      new StringBuilder("delete from AttributeEntity attr WHERE attr.repositoryEntity.")
+          .append(ModelDBConstants.ID)
+          .append(" = :repoId")
+          .toString();
+  private static final String DELETE_SELECTED_REPOSITORY_ATTRIBUTES_HQL =
+      new StringBuilder("delete from AttributeEntity attr WHERE attr.")
+          .append(ModelDBConstants.KEY)
+          .append(" in (:keys) AND attr.repositoryEntity.")
+          .append(ModelDBConstants.ID)
+          .append(" = :repoId")
           .toString();
 
   public RepositoryDAORdbImpl(AuthService authService, RoleService roleService) {
@@ -415,26 +428,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       saveBranch(
           session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repositoryEntity);
 
-      repositoryEntity.setAttributeMapping(
-          repository.getAttributesList().stream()
-              .map(
-                  attribute -> {
-                    try {
-                      return RdbmsUtils.generateAttributeEntity(
-                          repositoryEntity, ModelDBConstants.ATTRIBUTES, attribute);
-                    } catch (InvalidProtocolBufferException e) {
-                      LOGGER.error("Unexpected error occured {}", e.getMessage());
-                      Status status =
-                          Status.newBuilder()
-                              .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
-                              .setMessage(e.getMessage())
-                              .addDetails(Any.pack(SetRepository.Response.getDefaultInstance()))
-                              .build();
-                      throw StatusProto.toStatusRuntimeException(status);
-                    }
-                  })
-              .collect(Collectors.toList()));
-
       if (tagList != null && !tagList.isEmpty()) {
         metadataDAO.addLabels(
             session,
@@ -550,13 +543,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public Repository createRepository(
-      CommitDAO commitDAO, MetadataDAO metadataDAO, Dataset dataset, UserInfo userInfo)
+      CommitDAO commitDAO,
+      MetadataDAO metadataDAO,
+      Dataset dataset,
+      boolean create,
+      UserInfo userInfo)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      return createRepository(session, commitDAO, metadataDAO, dataset, userInfo);
+      return createRepository(session, commitDAO, metadataDAO, dataset, create, userInfo);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return createRepository(commitDAO, metadataDAO, dataset, userInfo);
+        return createRepository(commitDAO, metadataDAO, dataset, create, userInfo);
       } else {
         throw ex;
       }
@@ -568,19 +565,23 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       CommitDAO commitDAO,
       MetadataDAO metadataDAO,
       Dataset dataset,
+      boolean create,
       UserInfo userInfo)
       throws NoSuchAlgorithmException, ModelDBException, InvalidProtocolBufferException {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(dataset.getWorkspaceId());
     workspaceDTO.setWorkspaceType(dataset.getWorkspaceType());
-    RepositoryIdentification repositoryId =
-        RepositoryIdentification.newBuilder()
-            .setNamedId(
-                RepositoryNamedIdentification.newBuilder()
-                    .setName(dataset.getName())
-                    .setWorkspaceName(dataset.getWorkspaceId())
-                    .build())
-            .build();
+    RepositoryIdentification.Builder repositoryId = RepositoryIdentification.newBuilder();
+    if (dataset.getId().isEmpty()) {
+      repositoryId.setNamedId(
+          RepositoryNamedIdentification.newBuilder()
+              .setName(dataset.getName())
+              .setWorkspaceName(dataset.getWorkspaceId())
+              .build());
+    } else {
+      repositoryId.setRepoId(Long.parseLong(dataset.getId()));
+    }
+
     RepositoryEntity repositoryEntity =
         setRepository(
             session,
@@ -593,14 +594,15 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 .setDateCreated(dataset.getTimeCreated())
                 .setDateUpdated(dataset.getTimeUpdated())
                 .setName(dataset.getName())
+                .setDescription(dataset.getDescription())
                 .setOwner(dataset.getOwner())
                 .addAllAttributes(dataset.getAttributesList())
                 .build(),
-            repositoryId,
+            repositoryId.build(),
             dataset.getTagsList(),
             userInfo,
             workspaceDTO,
-            true,
+            create,
             true);
     return repositoryEntity.toProto();
   }
@@ -618,6 +620,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         .setTimeCreated(repositoryEntity.getDate_created())
         .setTimeUpdated(repositoryEntity.getDate_updated())
         .setName(repositoryEntity.getName())
+        .setDescription(repositoryEntity.getDescription())
         .setOwner(repositoryEntity.getOwner());
     dataset.addAllAttributes(
         repositoryEntity.getAttributeMapping().stream()
@@ -1285,7 +1288,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       if (!accessibleDatasetIds.isEmpty()) {
         Expression<String> exp = repositoryRoot.get(ModelDBConstants.ID);
-        Predicate predicate2 = exp.in(accessibleDatasetIds);
+        Predicate predicate2 =
+            exp.in(accessibleDatasetIds.stream().map(Long::parseLong).collect(Collectors.toList()));
         finalPredicatesList.add(predicate2);
       }
 
@@ -1453,6 +1457,43 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               .addDetails(Any.pack(FindDatasets.Response.getDefaultInstance()))
               .build();
       throw StatusProto.toStatusRuntimeException(status);
+    }
+  }
+
+  @Override
+  public void deleteRepositoryAttributes(
+      Long repositoryId, List<String> attributesKeys, boolean deleteAll) throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      RepositoryEntity repositoryEntity =
+          getRepositoryById(
+              session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build(), true);
+
+      if (deleteAll) {
+        Query query = session.createQuery(DELETE_ALL_REPOSITORY_ATTRIBUTES_HQL);
+        query.setParameter("repoId", repositoryEntity.getId());
+        query.executeUpdate();
+      } else {
+        Query query = session.createQuery(DELETE_SELECTED_REPOSITORY_ATTRIBUTES_HQL);
+        query.setParameter("keys", attributesKeys);
+        query.setParameter("repoId", repositoryEntity.getId());
+        query.executeUpdate();
+      }
+
+      StringBuilder updateRepoTimeQuery =
+          new StringBuilder(
+              "UPDATE RepositoryEntity rp SET rp.date_updated = :updatedTime where rp.id = :repoId ");
+      Query updateRepoQuery = session.createQuery(updateRepoTimeQuery.toString());
+      updateRepoQuery.setParameter("updatedTime", new Date().getTime());
+      updateRepoQuery.setParameter("repoId", repositoryId);
+      updateRepoQuery.executeUpdate();
+      session.getTransaction().commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        deleteRepositoryAttributes(repositoryId, attributesKeys, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 }

@@ -46,7 +46,11 @@ public interface RepositoryDAO {
       throws ModelDBException;
 
   Repository createRepository(
-      CommitDAO commitDAO, MetadataDAO metadataDAO, Dataset dataset, UserInfo userInfo)
+      CommitDAO commitDAO,
+      MetadataDAO metadataDAO,
+      Dataset dataset,
+      boolean create,
+      UserInfo userInfo)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException;
 
   ListRepositoriesRequest.Response listRepositories(
@@ -93,4 +97,7 @@ public interface RepositoryDAO {
 
   GetDatasetById.Response getDatasetById(MetadataDAO metadataDAO, String id)
       throws ModelDBException, InvalidProtocolBufferException;
+
+  void deleteRepositoryAttributes(Long repositoryId, List<String> attributesKeys, boolean deleteAll)
+      throws ModelDBException;
 }

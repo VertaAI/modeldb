@@ -56,6 +56,7 @@ import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
+import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.uac.UserInfo;
@@ -1650,13 +1651,28 @@ public class RdbmsUtils {
             LOGGER.debug("switch case : tags");
             Predicate tagValuePredicate;
             if (entityName.equals(ModelDBConstants.REPOSITORY_ENTITY)) {
-              Root<LabelsMappingEntity> tagsMappingRoot = subquery.from(LabelsMappingEntity.class);
+              Subquery<Long> longSubquery = criteriaQuery.subquery(Long.class);
+              Root<LabelsMappingEntity> tagsMappingRoot =
+                  longSubquery.from(LabelsMappingEntity.class);
               tagsMappingRoot.alias(entityName + "_" + ModelDBConstants.TAGS_ALIAS + index);
-              tagValuePredicate =
+              Predicate predicate1 =
+                  builder.equal(
+                      tagsMappingRoot.get("id").get("entity_type"),
+                      IDTypeEnum.IDType.VERSIONING_REPOSITORY_VALUE);
+              Predicate predicate2 =
                   RdbmsUtils.getValuePredicate(
                       builder, "id.label", tagsMappingRoot.get("id").get("label"), predicate, true);
-
+              tagValuePredicate = builder.and(predicate1, predicate2);
               parentPathFromChild = tagsMappingRoot.get("id").get("entity_hash");
+              longSubquery.select(parentPathFromChild.as(Long.class));
+              longSubquery.where(
+                  builder.and(tagValuePredicate, builder.isNotNull(parentPathFromChild)));
+              Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
+              if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
+                keyValuePredicates.add(builder.not(exp.in(longSubquery)));
+              } else {
+                keyValuePredicates.add(exp.in(longSubquery));
+              }
             } else {
               Root<TagsMapping> tagsMappingRoot = subquery.from(TagsMapping.class);
               tagsMappingRoot.alias(entityName + "_" + ModelDBConstants.TAGS_ALIAS + index);
@@ -1669,11 +1685,12 @@ public class RdbmsUtils {
                       true);
 
               parentPathFromChild = tagsMappingRoot.get(entityName).get(ModelDBConstants.ID);
+              subquery.select(parentPathFromChild);
+              subquery.where(
+                  builder.and(tagValuePredicate, builder.isNotNull(parentPathFromChild)));
+              keyValuePredicates.add(
+                  getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             }
-            subquery.select(parentPathFromChild);
-            subquery.where(builder.and(tagValuePredicate, builder.isNotNull(parentPathFromChild)));
-            keyValuePredicates.add(
-                getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
             break;
           case ModelDBConstants.VERSIONED_INPUTS:
             LOGGER.debug("switch case : versioned_inputs");
@@ -1716,6 +1733,12 @@ public class RdbmsUtils {
                     ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND,
                     io.grpc.Status.Code.FAILED_PRECONDITION);
               }
+            } else if (key.equalsIgnoreCase("dataset_visibility")) {
+              expression = entityRootPath.get("repository_visibility");
+              Predicate queryPredicate =
+                  RdbmsUtils.getValuePredicate(builder, key, expression, predicate, false);
+              keyValuePredicates.add(queryPredicate);
+              criteriaQuery.multiselect(entityRootPath, expression);
             } else {
               expression = entityRootPath.get(key);
               Predicate queryPredicate =

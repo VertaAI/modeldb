@@ -513,6 +513,8 @@ public class BlobDAORdbImpl implements BlobDAO {
               setBlobInBlobExpandMap(
                   parentLocation, childBlobExpandedMap, childElementFolder, blob);
             }
+          } else {
+            setBlobInBlobExpandMap(parentLocation, childBlobExpandedMap, childElementFolder, blob);
           }
         }
       }

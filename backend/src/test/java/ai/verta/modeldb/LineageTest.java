@@ -481,7 +481,10 @@ public class LineageTest {
   private void deleteAll(List<DatasetVersion> datasetVersionList, Project project) {
     for (DatasetVersion datasetVersion1 : datasetVersionList) {
       DeleteDatasetVersion deleteDatasetVersionRequest =
-          DeleteDatasetVersion.newBuilder().setId(datasetVersion1.getId()).build();
+          DeleteDatasetVersion.newBuilder()
+              .setDatasetId(datasetVersion1.getDatasetId())
+              .setId(datasetVersion1.getId())
+              .build();
       DeleteDatasetVersion.Response deleteDatasetVersionResponse =
           datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
       LOGGER.info("DeleteDatasetVersion deleted successfully");
@@ -543,6 +546,7 @@ public class LineageTest {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+
     CreateDatasetVersion createDatasetVersionRequest =
         datasetVersionTest.getDatasetVersionRequest(dataset.getId());
     CreateDatasetVersion.Response createDatasetVersionResponse =

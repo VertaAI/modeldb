@@ -133,7 +133,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   private List<LabelsMappingEntity> getLabelsMappingEntities(
       Session session, IdentificationType id) {
     Query<LabelsMappingEntity> query =
-        session.createQuery(GET_LABELS_HQL, LabelsMappingEntity.class);
+        session.createQuery(GET_LABELS_HQL + " ORDER BY lm.id.label", LabelsMappingEntity.class);
     query.setParameter("entityHash", getEntityHash(id));
     query.setParameter("entityType", id.getIdTypeValue());
     return query.list();
@@ -185,11 +185,13 @@ public class MetadataDAORdbImpl implements MetadataDAO {
             .append(ModelDBConstants.ID)
             .append(".")
             .append(ModelDBConstants.ENTITY_HASH)
-            .append(" = :entityHash AND lm.id.")
+            .append(" = :")
+            .append(ModelDBConstants.ENTITY_HASH)
+            .append(" AND lm.id.")
             .append(ModelDBConstants.ENTITY_TYPE)
-            .append(" = :entityType");
-        Query<LabelsMappingEntity> query =
-            session.createQuery(stringQueryBuilder.toString(), LabelsMappingEntity.class);
+            .append(" = :")
+            .append(ModelDBConstants.ENTITY_TYPE);
+        Query<LabelsMappingEntity> query = session.createQuery(stringQueryBuilder.toString());
         query.setParameter(ModelDBConstants.ENTITY_HASH, getEntityHash(id));
         query.setParameter(ModelDBConstants.ENTITY_TYPE, id.getIdTypeValue());
         query.executeUpdate();
@@ -219,47 +221,6 @@ public class MetadataDAORdbImpl implements MetadataDAO {
         throw ex;
       }
     }
-  }
-
-  @Override
-  public boolean deleteLabels(
-      Session session, IdentificationType id, List<String> labels, boolean deleteAll) {
-    if (deleteAll) {
-      StringBuilder stringQueryBuilder =
-          new StringBuilder("delete from ")
-              .append(LabelsMappingEntity.class.getSimpleName())
-              .append(" lm WHERE ");
-      stringQueryBuilder
-          .append(" lm.")
-          .append(ModelDBConstants.ID)
-          .append(".")
-          .append(ModelDBConstants.ENTITY_HASH)
-          .append(" = :entityHash AND lm.id.")
-          .append(ModelDBConstants.ENTITY_TYPE)
-          .append(" = :entityType");
-      Query<LabelsMappingEntity> query =
-          session.createQuery(stringQueryBuilder.toString(), LabelsMappingEntity.class);
-      query.setParameter(ModelDBConstants.ENTITY_HASH, getEntityHash(id));
-      query.setParameter(ModelDBConstants.ENTITY_TYPE, id.getIdTypeValue());
-      query.executeUpdate();
-    } else {
-      for (String label : labels) {
-        LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
-        LabelsMappingEntity existingLabelsMappingEntity =
-            session.get(LabelsMappingEntity.class, id0);
-        if (existingLabelsMappingEntity != null) {
-          session.delete(existingLabelsMappingEntity);
-        } else {
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.NOT_FOUND_VALUE)
-                  .setMessage("Label '" + label + "' not found in DB")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
-        }
-      }
-    }
-    return true;
   }
 
   @Override

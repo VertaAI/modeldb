@@ -51,9 +51,6 @@ public interface CommitDAO {
       boolean isDatasetVersion)
       throws ModelDBException;
 
-  DeleteCommitRequest.Response deleteCommit(
-      DeleteCommitRequest request, RepositoryDAO repositoryDAO) throws ModelDBException;
-
   void addDeleteDatasetVersionTags(
       MetadataDAO metadataDAO,
       boolean addTags,

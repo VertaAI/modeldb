@@ -13,6 +13,7 @@ import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -108,9 +109,6 @@ public class CommitDAORdbImpl implements CommitDAO {
       Blob.Builder blobBuilder = Blob.newBuilder();
       blobBuilder.addAllAttributes(datasetVersion.getAttributesList());
       switch (datasetVersion.getDatasetVersionInfoCase()) {
-        case RAW_DATASET_VERSION_INFO:
-        case QUERY_DATASET_VERSION_INFO:
-          throw new ModelDBException("Not supported", Code.UNIMPLEMENTED);
         case PATH_DATASET_VERSION_INFO:
           PathDatasetVersionInfo pathDatasetVersionInfo =
               datasetVersion.getPathDatasetVersionInfo();
@@ -129,6 +127,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           }
           break;
         case DATASETVERSIONINFO_NOT_SET:
+        default:
           throw new ModelDBException("Wrong dataset version type", Code.INVALID_ARGUMENT);
       }
       List<String> location =
@@ -421,7 +420,10 @@ public class CommitDAORdbImpl implements CommitDAO {
         for (CommitEntity commitEntity : commitEntities) {
           if (!commitEntity.getChild_commits().isEmpty()) {
             throw new ModelDBException(
-                "Commit has the child, please delete child commit first", Code.FAILED_PRECONDITION);
+                "Commit '"
+                    + commitEntity.getCommit_hash()
+                    + "' has the child, please delete child commit first",
+                Code.FAILED_PRECONDITION);
           }
         }
 
@@ -447,7 +449,7 @@ public class CommitDAORdbImpl implements CommitDAO {
                 + " IN (:commitHashes)";
         Query<TagsEntity> getTagsQuery = session.createQuery(getTagsHql, TagsEntity.class);
         getTagsQuery.setParameter("repoId", repositoryEntity.getId());
-        getTagsQuery.setParameter("commitHash", commitShas);
+        getTagsQuery.setParameter("commitHashes", commitShas);
         List<TagsEntity> tagsEntities = getTagsQuery.list();
         if (tagsEntities.size() > 0) {
           throw new ModelDBException(
@@ -479,6 +481,14 @@ public class CommitDAORdbImpl implements CommitDAO {
       commitEntities.forEach(
           (commitEntity) -> {
             if (commitEntity.getRepository().size() == 1) {
+              String compositeId =
+                  VersioningUtils.getVersioningCompositeId(
+                      repositoryEntity.getId(),
+                      commitEntity.getCommit_hash(),
+                      Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
+              DeleteEntitiesCron.deleteLabels(
+                  session, compositeId, IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB);
+              DeleteEntitiesCron.deleteAttribute(session, compositeId);
               session.delete(commitEntity);
             } else {
               commitEntity.getRepository().remove(repositoryEntity);
@@ -490,111 +500,6 @@ public class CommitDAORdbImpl implements CommitDAO {
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteCommits(repositoryIdentification, commitShas, repositoryDAO, isDatasetVersion);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
-  public DeleteCommitRequest.Response deleteCommit(
-      DeleteCommitRequest request, RepositoryDAO repositoryDAO) throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(session, request.getRepositoryId(), true);
-      boolean exists =
-          VersioningUtils.commitRepositoryMappingExists(
-              session, request.getCommitSha(), repositoryEntity.getId());
-      if (!exists) {
-        throw new ModelDBException(
-            "Commit_hash and repository_id mapping not found", Code.NOT_FOUND);
-      }
-
-      Query getCommitQuery =
-          session.createQuery(
-              "From "
-                  + CommitEntity.class.getSimpleName()
-                  + " c WHERE c.commit_hash = :commitHash");
-      getCommitQuery.setParameter("commitHash", request.getCommitSha());
-      CommitEntity commitEntity = (CommitEntity) getCommitQuery.uniqueResult();
-
-      if (!commitEntity.getChild_commits().isEmpty()) {
-        throw new ModelDBException(
-            "Commit has the child, please delete child commit first", Code.FAILED_PRECONDITION);
-      }
-
-      StringBuilder getBranchByCommitHQLBuilder =
-          new StringBuilder("FROM ")
-              .append(BranchEntity.class.getSimpleName())
-              .append(" br where br.id.repository_id = :repositoryId ")
-              .append(" AND br.commit_hash = :commitHash ");
-      Query getBranchByCommitQuery = session.createQuery(getBranchByCommitHQLBuilder.toString());
-      getBranchByCommitQuery.setParameter("repositoryId", repositoryEntity.getId());
-      getBranchByCommitQuery.setParameter("commitHash", commitEntity.getCommit_hash());
-      List<BranchEntity> branchEntities = getBranchByCommitQuery.list();
-      if (branchEntities != null && !branchEntities.isEmpty()) {
-        StringBuilder errorMessage = new StringBuilder("Commit is associated with branch name : ");
-        int count = 0;
-        for (BranchEntity branchEntity : branchEntities) {
-          errorMessage.append(branchEntity.getId().getBranch());
-          if (count < branchEntities.size() - 1) {
-            errorMessage.append(", ");
-          }
-          count++;
-        }
-        throw new ModelDBException(errorMessage.toString(), Code.FAILED_PRECONDITION);
-      }
-
-      String getTagsHql =
-          new StringBuilder("From TagsEntity te where te.id.")
-              .append(ModelDBConstants.REPOSITORY_ID)
-              .append(" = :repoId ")
-              .append(" AND te.commit_hash")
-              .append(" = :commitHash")
-              .toString();
-      Query getTagsQuery = session.createQuery(getTagsHql);
-      getTagsQuery.setParameter("repoId", repositoryEntity.getId());
-      getTagsQuery.setParameter("commitHash", commitEntity.getCommit_hash());
-      List<TagsEntity> tagsEntities = getTagsQuery.list();
-      if (tagsEntities.size() > 0) {
-        throw new ModelDBException(
-            "Commit is associated with Tags : "
-                + tagsEntities.stream()
-                    .map(tagsEntity -> tagsEntity.getId().getTag())
-                    .collect(Collectors.joining(",")),
-            Code.FAILED_PRECONDITION);
-      }
-
-      session.beginTransaction();
-
-      String getLabelsHql =
-          new StringBuilder("From LabelsMappingEntity lm where lm.id.")
-              .append(ModelDBConstants.ENTITY_HASH)
-              .append(" = :entityHash ")
-              .append(" AND lm.id.")
-              .append(ModelDBConstants.ENTITY_TYPE)
-              .append(" = :entityType")
-              .toString();
-      Query<LabelsMappingEntity> query =
-          session.createQuery(getLabelsHql, LabelsMappingEntity.class);
-      query.setParameter("entityHash", commitEntity.getCommit_hash());
-      query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_VALUE);
-      List<LabelsMappingEntity> labelsMappingEntities = query.list();
-      for (LabelsMappingEntity labelsMappingEntity : labelsMappingEntities) {
-        session.delete(labelsMappingEntity);
-      }
-
-      if (commitEntity.getRepository().size() == 1) {
-        session.delete(commitEntity);
-      } else {
-        commitEntity.getRepository().remove(repositoryEntity);
-        session.update(commitEntity);
-      }
-      session.getTransaction().commit();
-      return DeleteCommitRequest.Response.newBuilder().build();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return deleteCommit(request, repositoryDAO);
       } else {
         throw ex;
       }

@@ -25,9 +25,5 @@ public interface MetadataDAO {
   boolean deleteLabels(IdentificationType id, List<String> labels, boolean deleteAll)
       throws ModelDBException;
 
-  boolean deleteLabels(
-      Session session, IdentificationType id, List<String> labels, boolean deleteAll)
-      throws ModelDBException;
-
   boolean deleteProperty(IdentificationType id, String key);
 }

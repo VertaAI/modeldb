@@ -22,6 +22,7 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -314,8 +315,12 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        DeleteCommitRequest.Response response = commitDAO.deleteCommit(request, repositoryDAO);
-        responseObserver.onNext(response);
+        commitDAO.deleteCommits(
+            request.getRepositoryId(),
+            Collections.singletonList(request.getCommitSha()),
+            repositoryDAO,
+            false);
+        responseObserver.onNext(DeleteCommitRequest.Response.newBuilder().build());
         responseObserver.onCompleted();
       }
     } catch (Exception e) {
