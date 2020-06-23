@@ -8315,6 +8315,8 @@ public class ExperimentRunTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStubClient2 =
+        VersioningServiceGrpc.newBlockingStub(client2Channel);
 
     long repoId =
         RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
@@ -8366,6 +8368,25 @@ public class ExperimentRunTest {
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
+
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
+      AddCollaboratorRequest addCollaboratorRequest =
+          CollaboratorTest.addCollaboratorRequestProject(
+              project, authClientInterceptor.getClient2Email(), CollaboratorType.READ_WRITE);
+      collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+      LOGGER.info("\n Collaborator1 added in project successfully \n");
+
+      addCollaboratorRequest =
+          CollaboratorTest.addCollaboratorRequestUser(
+              String.valueOf(repoId),
+              authClientInterceptor.getClient2Email(),
+              CollaboratorType.READ_WRITE,
+              "This is a repo collaborator description");
+      collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+      LOGGER.info("\n Collaborator1 added in repository successfully \n");
+    }
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
@@ -8470,6 +8491,27 @@ public class ExperimentRunTest {
         "ExperimentRun not match with expected ExperimentRun",
         experimentRun3.getId(),
         listCommitExperimentRunsResponse.getRuns(0).getId());
+
+    listCommitExperimentRunsRequest =
+        ListCommitExperimentRunsRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setCommitSha(commit.getCommitSha())
+            .build();
+    listCommitExperimentRunsResponse =
+        versioningServiceBlockingStubClient2.listCommitExperimentRuns(
+            listCommitExperimentRunsRequest);
+    assertEquals(
+        "ExperimentRun total records not match with expected ExperimentRun total records",
+        3,
+        listCommitExperimentRunsResponse.getTotalRecords());
+    assertEquals(
+        "ExperimentRun not match with expected ExperimentRun",
+        experimentRun1,
+        listCommitExperimentRunsResponse.getRuns(0));
+    assertEquals(
+        "ExperimentRun not match with expected ExperimentRun",
+        experimentRun3.getId(),
+        listCommitExperimentRunsResponse.getRuns(2).getId());
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
@@ -9517,6 +9559,39 @@ public class ExperimentRunTest {
         }
       }
     }
+
+    hyperparameterFilter = Value.newBuilder().setNumberValue(5).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.train")
+            .setValue(hyperparameterFilter)
+            .setOperator(Operator.NE)
+            .setValueType(ValueType.NUMBER)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(keyValueQuery)
+            .setAscending(false)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.train")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        1,
+        response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        experimentRunConfig2.getId(),
+        response.getExperimentRuns(0).getId());
 
     DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()

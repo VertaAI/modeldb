@@ -1070,18 +1070,20 @@ public class RoleServiceUtils implements RoleService {
       String vertaId = authService.getVertaIdFromUserInfo(currentLoginUserInfo);
       workspaceDTO.setWorkspaceId(vertaId);
       workspaceDTO.setWorkspaceType(WorkspaceType.USER);
+      workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
     } else {
       try {
         workspaceDTO.setWorkspaceId(new CollaboratorOrg(getOrgByName(workspaceName)).getId());
         workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
+        workspaceDTO.setWorkspaceName(workspaceName);
       } catch (StatusRuntimeException e) {
-        workspaceDTO.setWorkspaceId(
+        CollaboratorUser collaboratorUser =
             new CollaboratorUser(
-                    authService,
-                    authService.getUserInfo(
-                        workspaceName, ModelDBConstants.UserIdentifier.USER_NAME))
-                .getId());
+                authService,
+                authService.getUserInfo(workspaceName, ModelDBConstants.UserIdentifier.USER_NAME));
+        workspaceDTO.setWorkspaceId(collaboratorUser.getId());
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
+        workspaceDTO.setWorkspaceName(workspaceName);
       }
     }
     return workspaceDTO;
