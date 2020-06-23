@@ -1,6 +1,7 @@
 import os
 import shutil
 import pathlib2
+import tempfile
 
 import pytest
 from .. import utils
@@ -171,10 +172,22 @@ class TestS3:
         assert dataset_ver.__repr__()
 
     def test_mngd_ver_file(self, commit, in_tempdir):
+        boto3 = pytest.importorskip("boto3")
+        s3 = boto3.client('s3')
+
         filename = "tiny1.bin"
-        s3_key = "s3://verta-versioned-bucket/tiny-files/{}".format(filename)
+        bucket = "verta-versioned-bucket"
+        key = "tiny-files/{}".format(filename)
+        s3_key = "s3://{}/{}".format(bucket, key)
         blob_path = "data"
 
+        # get file contents directly from S3 for reference
+        s3.download_file(bucket, key, filename)
+        with open(filename, 'rb') as f:
+            FILE_CONTENTS = f.read()
+        os.remove(filename)
+
+        # commit dataset blob
         dataset = verta.dataset.S3(s3_key, enable_mdb_versioning=True)
         commit.update(blob_path, dataset)
         commit.save("Version data.")
@@ -184,23 +197,44 @@ class TestS3:
         filepath = dataset.download(s3_key)
         assert os.path.isfile(filepath)
         assert filepath == os.path.abspath(filename)
+        with open(filepath, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
 
         # download to implicit path without collision
         filepath2 = dataset.download(s3_key)
         assert os.path.isfile(filepath2)
         assert filepath2 != filepath
+        with open(filepath2, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
 
         # download to explicit path with overwrite
         last_updated = os.path.getmtime(filepath)
         filepath3 = dataset.download(s3_key, filepath)
         assert filepath3 == filepath
+        with open(filepath3, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
         assert os.path.getmtime(filepath) > last_updated
 
     def test_mngd_ver_folder(self, commit, in_tempdir):
+        boto3 = pytest.importorskip("boto3")
+        s3 = boto3.client('s3')
+
+        bucket = "verta-versioned-bucket"
         dirname = "tiny-files/"
-        s3_folder = "s3://verta-versioned-bucket/{}".format(dirname)
+        s3_folder = "s3://{}/{}".format(bucket, dirname)
         blob_path = "data"
 
+        # get files' contents directly from S3 for reference
+        FILE_CONTENTS = dict()  # filename to contents
+        for s3_obj in s3.list_objects_v2(Bucket=bucket, Prefix=dirname)['Contents']:
+            with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
+                s3.download_fileobj(bucket, s3_obj['Key'], tempf)
+            with open(tempf.name, 'rb') as f:
+                FILE_CONTENTS[os.path.basename(s3_obj['Key'])] = f.read()
+            os.remove(tempf.name)
+        assert FILE_CONTENTS
+
+        # commit dataset blob
         dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
         commit.update(blob_path, dataset)
         commit.save("Version data.")
@@ -210,24 +244,35 @@ class TestS3:
         dirpath = dataset.download(s3_folder)
         assert os.path.isdir(dirpath)
         assert dirpath == os.path.abspath(dirname)
+        for filename in os.listdir(dirpath):
+            with open(os.path.join(dirpath, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
 
         # download to implicit path without collision
         dirpath2 = dataset.download(s3_folder)
         assert os.path.isdir(dirpath2)
         assert dirpath2 != dirpath
+        for filename in os.listdir(dirpath):
+            with open(os.path.join(dirpath, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
 
         # download to explicit path with overwrite
         last_updated = os.path.getmtime(dirpath)
         dirpath3 = dataset.download(s3_folder, dirpath)
         assert dirpath3 == dirpath
+        for filename in os.listdir(dirpath):
+            with open(os.path.join(dirpath, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
         assert os.path.getmtime(dirpath) > last_updated
 
     def test_not_to_s3_dir(self, commit, in_tempdir):
         """If the user specifies "s3://", things shouldn't go into an "s3:" dir."""
+        bucket = "verta-versioned-bucket"
         dirname = "tiny-files/"
-        s3_folder = "s3://verta-versioned-bucket/{}".format(dirname)
+        s3_folder = "s3://{}/{}".format(bucket, dirname)
         blob_path = "data"
 
+        # commit dataset blob
         dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
         commit.update(blob_path, dataset)
         commit.save("Version data.")
