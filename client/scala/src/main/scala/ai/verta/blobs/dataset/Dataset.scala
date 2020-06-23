@@ -56,7 +56,7 @@ trait Dataset extends Blob {
 }
 
 object Dataset {
-  private val BufferSize = 8192
+  private val BufferSize = 1024 * 1024 // 1 MB
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
