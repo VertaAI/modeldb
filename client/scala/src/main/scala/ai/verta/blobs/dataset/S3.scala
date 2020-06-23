@@ -51,31 +51,40 @@ case class S3(
    *  @return the path of the saved object, computed based on the s3 location, if succeeds.
    */
   private def toUploadComponent(location: S3Location, s3: AmazonS3, metadata: FileMetadata) = Try {
-    val file = File.createTempFile(location.key.get, null)
+    // follow the pattern given here:
+    // https://alvinalexander.com/scala/how-declare-variable-option-before-try-catch-finally-scala/
+    // finally block cannot refer to variable declared in try block
+    var s3InputStream: Option[S3ObjectInputStream] = None
+    var fileOutputStream: Option[FileOutputStream] = None
 
-    val request =
-      if(location.versionID.isDefined)
-        new GetObjectRequest(location.bucketName, location.key.get, location.versionID.get)
-      else
-        new GetObjectRequest(location.bucketName, location.key.get)
+    try {
+      val file = File.createTempFile(location.key.get, null)
 
-    val obj: S3Object = s3.getObject(request)
-    val s3InputStream: S3ObjectInputStream = obj.getObjectContent()
-    val fileOutputStream: FileOutputStream = new FileOutputStream(file)
-    val BufferSize = 1024 * 1024 // 1 MB
-    val buffer = new Array[Byte](BufferSize)
-    var readLen = s3InputStream.read(buffer)
+      val request =
+        if(location.versionID.isDefined)
+          new GetObjectRequest(location.bucketName, location.key.get, location.versionID.get)
+        else
+          new GetObjectRequest(location.bucketName, location.key.get)
+      val obj: S3Object = s3.getObject(request)
 
-    while (readLen > 0) {
-        fileOutputStream.write(buffer, 0, readLen)
-        readLen = s3InputStream.read(buffer)
+      s3InputStream = Some(obj.getObjectContent())
+      fileOutputStream = Some(new FileOutputStream(file))
+
+      val BufferSize = 1024 * 1024 // 1 MB
+      val buffer = new Array[Byte](BufferSize)
+
+      var readLen = s3InputStream.get.read(buffer)
+      while (readLen > 0) {
+          fileOutputStream.get.write(buffer, 0, readLen)
+          readLen = s3InputStream.get.read(buffer)
+      }
+
+      val internalVersionedPath = f"${Dataset.hash(file, "SHA-256").get}/${location.key.get}"
+      UploadComponent(file.getPath(), toComponent(metadata, Some(internalVersionedPath)))
+    } finally {
+      if (s3InputStream.isDefined) s3InputStream.get.close()
+      if (fileOutputStream.isDefined) fileOutputStream.get.close()
     }
-
-    s3InputStream.close()
-    fileOutputStream.close()
-
-    val internalVersionedPath = f"${Dataset.hash(file, "SHA-256").get}/${location.key.get}"
-    UploadComponent(file.getPath(), toComponent(metadata, Some(internalVersionedPath)))
   }
 
   override def equals(other: Any) = other match {
