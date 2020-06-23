@@ -134,7 +134,7 @@ class _Dataset(blob.Blob):
         # figure out where files are going to be downloaded to
         if implicit_download_to_path:
             # automatically determine directory
-            # TODO: this is probably going have issues with `component_path` in {".", "..", "/"}
+            # TODO: this is going have issues with `component_path` in {".", "..", "/"}
             downloaded_to_path = pathlib2.Path(component_path).name  # final path component
 
             # avoid collision with existing directory
