@@ -24,6 +24,10 @@ trait Dataset extends Blob {
       size = Some(metadata.size)
     )
 
+  /** Prepare the components and data for upload.
+   *  @return a map of paths (in the blob) to instances of UploadComponent
+   *  which contains the path to the object in local file system and the versioning component
+   */
   def prepareForUpload(): Try[Map[String, UploadComponent]]
 
   /** Get the metadata of a certain file stored in the dataset blob
