@@ -91,7 +91,7 @@ object S3 {
    *  @param location a single S3Location
    *  @return if location is invalid, a failure along with exception message. Otherwise, the blob (wrapped in success)
    */
-  def apply(location: S3Location): Try[S3] = apply(List(location), false)
+  def apply(location: S3Location): Try[S3] = apply(List(location))
 
   /** Constructor taking a list of S3 locations. Does not version with ModelDB.
    *  @param locations list of locations

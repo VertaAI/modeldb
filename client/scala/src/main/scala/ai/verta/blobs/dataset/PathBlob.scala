@@ -42,7 +42,7 @@ object PathBlob {
    *  @param path a single path
    *  @return if the path is invalid, a failure along with exception message. Otherwise, the pathblob (wrapped in success)
    */
-  def apply(path: String): Try[PathBlob] = apply(List(path), false)
+  def apply(path: String): Try[PathBlob] = apply(List(path))
 
   /** Constructor taking a list of paths. Does not version the data in the blob with ModelDB.
    *  @param paths list of paths
