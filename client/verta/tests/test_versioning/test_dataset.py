@@ -1,4 +1,10 @@
+import os
+import shutil
+import pathlib2
+import tempfile
+
 import pytest
+from .. import utils
 
 import verta.dataset
 
@@ -165,6 +171,116 @@ class TestS3:
 
         assert dataset_ver.__repr__()
 
+    def test_mngd_ver_file(self, commit, in_tempdir):
+        boto3 = pytest.importorskip("boto3")
+        s3 = boto3.client('s3')
+
+        filename = "tiny1.bin"
+        bucket = "verta-versioned-bucket"
+        key = "tiny-files/{}".format(filename)
+        s3_key = "s3://{}/{}".format(bucket, key)
+        blob_path = "data"
+
+        # get file contents directly from S3 for reference
+        s3.download_file(bucket, key, filename)
+        with open(filename, 'rb') as f:
+            FILE_CONTENTS = f.read()
+        os.remove(filename)
+
+        # commit dataset blob
+        dataset = verta.dataset.S3(s3_key, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        # download to implicit path
+        filepath = dataset.download(s3_key)
+        assert os.path.isfile(filepath)
+        assert filepath == os.path.abspath(filename)
+        with open(filepath, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
+
+        # download to implicit path without collision
+        filepath2 = dataset.download(s3_key)
+        assert os.path.isfile(filepath2)
+        assert filepath2 != filepath
+        with open(filepath2, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
+
+        # download to explicit path with overwrite
+        last_updated = os.path.getmtime(filepath)
+        filepath3 = dataset.download(s3_key, filepath)
+        assert filepath3 == filepath
+        with open(filepath3, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
+        assert os.path.getmtime(filepath) > last_updated
+
+    def test_mngd_ver_folder(self, commit, in_tempdir):
+        boto3 = pytest.importorskip("boto3")
+        s3 = boto3.client('s3')
+
+        bucket = "verta-versioned-bucket"
+        dirname = "tiny-files/"
+        s3_folder = "s3://{}/{}".format(bucket, dirname)
+        blob_path = "data"
+
+        # get files' contents directly from S3 for reference
+        FILE_CONTENTS = dict()  # filename to contents
+        for s3_obj in s3.list_objects_v2(Bucket=bucket, Prefix=dirname)['Contents']:
+            with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
+                s3.download_fileobj(bucket, s3_obj['Key'], tempf)
+            with open(tempf.name, 'rb') as f:
+                FILE_CONTENTS[os.path.basename(s3_obj['Key'])] = f.read()
+            os.remove(tempf.name)
+        assert FILE_CONTENTS
+
+        # commit dataset blob
+        dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        # download to implicit path
+        dirpath = dataset.download(s3_folder)
+        assert os.path.isdir(dirpath)
+        assert dirpath == os.path.abspath(dirname)
+        for filename in os.listdir(dirpath):
+            with open(os.path.join(dirpath, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
+
+        # download to implicit path without collision
+        dirpath2 = dataset.download(s3_folder)
+        assert os.path.isdir(dirpath2)
+        assert dirpath2 != dirpath
+        for filename in os.listdir(dirpath):
+            with open(os.path.join(dirpath, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
+
+        # download to explicit path with overwrite
+        last_updated = os.path.getmtime(dirpath)
+        dirpath3 = dataset.download(s3_folder, dirpath)
+        assert dirpath3 == dirpath
+        for filename in os.listdir(dirpath):
+            with open(os.path.join(dirpath, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
+        assert os.path.getmtime(dirpath) > last_updated
+
+    def test_not_to_s3_dir(self, commit, in_tempdir):
+        """If the user specifies "s3://", things shouldn't go into an "s3:" dir."""
+        bucket = "verta-versioned-bucket"
+        dirname = "tiny-files/"
+        s3_folder = "s3://{}/{}".format(bucket, dirname)
+        blob_path = "data"
+
+        # commit dataset blob
+        dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        dirpath = dataset.download("s3://")
+        assert "s3:" not in pathlib2.Path(dirpath).parts
+
 
 class TestPath:
     def test_dirpath(self):
@@ -214,3 +330,169 @@ class TestPath:
         dataset = verta.dataset.Path("modelapi_hypothesis/")
 
         assert dataset.__repr__()
+
+    def test_mngd_ver_file(self, commit, in_tempdir):
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+        blob_path = "data"
+
+        dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        os.remove(filename)  # delete for first download test
+        dataset = commit.get(blob_path)
+
+        # download to implicit path
+        filepath = dataset.download(filename)
+        assert os.path.isfile(filepath)
+        assert filepath == os.path.abspath(filename)
+        with open(filepath, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
+
+        # download to implicit path without collision
+        filepath2 = dataset.download(filename)
+        assert os.path.isfile(filepath2)
+        assert filepath2 != filepath
+        with open(filepath2, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
+
+        # download to explicit path with overwrite
+        last_updated = os.path.getmtime(filepath)
+        filepath3 = dataset.download(filename, filepath)
+        assert filepath3 == filepath
+        with open(filepath3, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
+        assert os.path.getmtime(filepath) > last_updated
+
+    def test_mngd_ver_folder(self, commit, in_tempdir):
+        dirname = "tiny-files/"
+        os.mkdir(dirname)
+        FILE_CONTENTS = {  # filename to contents
+            "tiny{}.bin".format(i): os.urandom(2**16)
+            for i in range(3)
+        }
+        for filename, contents in FILE_CONTENTS.items():
+            with open(os.path.join(dirname, filename), 'wb') as f:
+                f.write(contents)
+        blob_path = "data"
+
+        dataset = verta.dataset.Path(dirname, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        shutil.rmtree(dirname)  # delete for first download test
+        dataset = commit.get(blob_path)
+
+        # download to implicit path
+        dirpath = dataset.download(dirname)
+        assert os.path.isdir(dirpath)
+        assert dirpath == os.path.abspath(dirname)
+        for filename in os.listdir(dirpath):
+            with open(os.path.join(dirpath, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
+
+        # download to implicit path without collision
+        dirpath2 = dataset.download(dirname)
+        assert os.path.isdir(dirpath2)
+        assert dirpath2 != dirpath
+        for filename in os.listdir(dirpath2):
+            with open(os.path.join(dirpath2, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
+
+        # download to explicit path with overwrite
+        last_updated = os.path.getmtime(dirpath)
+        dirpath3 = dataset.download(dirname, dirpath)
+        assert dirpath3 == dirpath
+        for filename in os.listdir(dirpath3):
+            with open(os.path.join(dirpath3, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
+        assert os.path.getmtime(dirpath) > last_updated
+
+    def test_mngd_ver_rollback(self, commit, in_tempdir):
+        """Recover a versioned file by loading a prior commit."""
+        filename = "tiny1.bin"
+        file1_contents = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(file1_contents)
+        blob_path = "data"
+
+        dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("First file.")
+
+        # new file with same name
+        os.remove(filename)
+        file2_contents = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(file2_contents)
+
+        dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Second file.")
+
+        # check latest commit's file
+        dataset = commit.get(blob_path)
+        new_filename = dataset.download(filename)
+        with open(new_filename, 'rb') as f:
+            assert f.read() == file2_contents
+
+        # recover previous commit's file
+        commit = commit.parent
+        dataset = commit.get(blob_path)
+        new_filename = dataset.download(filename)
+        with open(new_filename, 'rb') as f:
+            assert f.read() == file1_contents
+
+    def test_mngd_ver_to_parent_dir(self, commit, in_tempdir):
+        """Download to parent directory works as expected."""
+        child_dirname = "child"
+        os.mkdir(child_dirname)
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+
+        with utils.chdir(child_dirname):
+            with open(filename, 'wb') as f:
+                f.write(FILE_CONTENTS)
+            blob_path = "data"
+
+            dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
+            commit.update(blob_path, dataset)
+            commit.save("First file.")
+            dataset = commit.get(blob_path)
+
+            # download to parent dir
+            download_to_path = os.path.join("..", filename)
+            filepath = dataset.download(filename, download_to_path)
+            assert os.path.isfile(filepath)
+            assert filepath == os.path.abspath(download_to_path)
+            with open(filepath, 'rb') as f:
+                assert f.read() == FILE_CONTENTS
+
+
+    def test_mngd_ver_to_sibling_dir(self, commit, in_tempdir):
+        """Download to sibling directory works as expected."""
+        child_dirname = "child"
+        os.mkdir(child_dirname)
+        sibling_dirname = "sibling"
+        os.mkdir(sibling_dirname)
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+
+        with utils.chdir(child_dirname):
+            with open(filename, 'wb') as f:
+                f.write(FILE_CONTENTS)
+            blob_path = "data"
+
+            dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
+            commit.update(blob_path, dataset)
+            commit.save("First file.")
+            dataset = commit.get(blob_path)
+
+            # download to sibling dir
+            download_to_path = os.path.join("..", sibling_dirname, filename)
+            filepath = dataset.download(filename, download_to_path)
+            assert os.path.isfile(filepath)
+            assert filepath == os.path.abspath(download_to_path)
+            with open(filepath, 'rb') as f:
+                assert f.read() == FILE_CONTENTS
