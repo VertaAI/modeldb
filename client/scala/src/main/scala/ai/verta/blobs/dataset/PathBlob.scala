@@ -77,11 +77,10 @@ object PathBlob {
    *  @return failure if the two blobs have conflicting entries; the combined blob otherwise.
    */
   def reduce(firstBlob: PathBlob, secondBlob: PathBlob): Try[PathBlob] = {
-    if (firstBlob.notConflicts(secondBlob))
-      Success(new PathBlob(
-        firstBlob.contents ++ secondBlob.contents,
-        firstBlob.enableMDBVersioning && secondBlob.enableMDBVersioning
-      ))
+    if (firstBlob.enableMDBVersioning ^ secondBlob.enableMDBVersioning)
+      Failure(new IllegalArgumentException("Cannot combine a blob that enables versioning with a blob that does not"))
+    else if (firstBlob.notConflicts(secondBlob))
+      Success(new PathBlob(firstBlob.contents ++ secondBlob.contents, firstBlob.enableMDBVersioning))
     else
       Failure(new IllegalArgumentException("The two blobs have conflicting entries"))
   }

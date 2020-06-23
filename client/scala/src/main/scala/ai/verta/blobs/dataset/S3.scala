@@ -143,11 +143,10 @@ object S3 {
    *  @return failure if the two blobs have conflicting entries; the combined blob otherwise.
    */
   def reduce(firstBlob: S3, secondBlob: S3): Try[S3] = {
-    if (firstBlob.notConflicts(secondBlob))
-      Success(new S3(
-        firstBlob.contents ++ secondBlob.contents,
-        firstBlob.enableMDBVersioning && secondBlob.enableMDBVersioning
-      ))
+    if (firstBlob.enableMDBVersioning ^ secondBlob.enableMDBVersioning)
+      Failure(new IllegalArgumentException("Cannot combine a blob that enables versioning with a blob that does not"))
+    else if (firstBlob.notConflicts(secondBlob))
+      Success(new S3(firstBlob.contents ++ secondBlob.contents, firstBlob.enableMDBVersioning))
     else Failure(new IllegalArgumentException("The two blobs have conflicting entries"))
   }
 

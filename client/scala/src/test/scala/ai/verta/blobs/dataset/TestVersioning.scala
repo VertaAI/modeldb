@@ -35,6 +35,12 @@ class TestVersioning extends FunSuite {
       val testsubdirLoc = S3Location(testsubdirPath).get
 
       val bucketLoc = S3Location("s3://verta-scala-test").get
+
+      val workingDir = System.getProperty("user.dir")
+      val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
+      val testfile = testDir + "/testfile"
+      val testSubdir = testDir + "/testsubdir"
+      val testfile2 = testSubdir + "/testfile2"
     }
 
   test("The downloaded s3 file should not be corrupted") {
@@ -49,5 +55,26 @@ class TestVersioning extends FunSuite {
     val localPath2 = s3PathToLocalMap.get(f.testfilePath2).get
     val pathBlob2 = PathBlob(localPath2).get
     assert(pathBlob2.getMetadata(localPath2).get.md5 equals s3Blob.getMetadata(f.testfilePath2).get.md5)
+  }
+
+  test("Combining a Dataset blob that enables versioning with one that doesn't should fail") {
+    val f = fixture
+    val s3Blob = S3(f.testfileLoc, true).get
+    val s3Blob2 = S3(f.testfileLoc2, false).get
+
+    val combineAttempt = S3.reduce(s3Blob, s3Blob2)
+    assert(combineAttempt.isFailure)
+    assert(combineAttempt match {
+      case Failure(e) => e.getMessage contains "Cannot combine a blob that enables versioning with a blob that does not"
+    })
+
+    val pathBlob = PathBlob(f.testfile, true).get
+    val pathBlob2 = PathBlob(f.testfile2, false).get
+
+    val combineAttempt2 = PathBlob.reduce(pathBlob, pathBlob2)
+    assert(combineAttempt2.isFailure)
+    assert(combineAttempt2 match {
+      case Failure(e) => e.getMessage contains "Cannot combine a blob that enables versioning with a blob that does not"
+    })
   }
 }
