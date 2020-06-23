@@ -230,17 +230,14 @@ class _Dataset(blob.Blob):
                         for chunk in response.iter_content(chunk_size=chunk_size):
                             tempf.write(chunk)
 
-                    if implicit_download_to_path:
+                    if (implicit_download_to_path
+                            and len(components_to_download) == 1):  # single file download
                         # check for destination collision again in case taken during download
                         while os.path.exists(local_path):
                             local_path = _file_utils.increment_path(local_path)
 
-                        # update in dict for consistency
-                        components_to_download[path] = local_path
-
-                        if os.path.isfile(downloaded_to_path):  # single file download
-                            # `downloaded_to_path` also needs to match
-                            downloaded_to_path = local_path
+                        # update `downloaded_to_path`
+                        downloaded_to_path = local_path
 
                     # move written contents to `filepath`
                     os.rename(tempf.name, local_path)
