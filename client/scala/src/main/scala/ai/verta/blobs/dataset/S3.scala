@@ -94,10 +94,16 @@ object S3 {
   def apply(location: S3Location): Try[S3] = apply(List(location), false)
 
   /** Constructor taking a list of S3 locations. Does not version with ModelDB.
+   *  @param locations list of locations
    *  @return if any location is invalid, a failure along with exception message. Otherwise, the blob (wrapped in success)
    */
   def apply(locations: List[S3Location]): Try[S3] = apply(locations, false)
 
+  /** Constructor taking only one S3 location.
+   *  @param location a single S3Location
+   *  @param enableMDBVersioning whether to version the data in the blob
+   *  @return if any location is invalid, a failure along with exception message. Otherwise, the blob (wrapped in success)
+   */
   def apply(location: S3Location, enableMDBVersioning: Boolean): Try[S3] = apply(List(location), enableMDBVersioning)
 
   /** Constructor taking a list of S3 locations.
