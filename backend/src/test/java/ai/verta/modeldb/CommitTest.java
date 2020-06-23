@@ -2872,25 +2872,25 @@ public class CommitTest {
     Assert.assertTrue("there should be 2 conflicts", mergeReponse1.getConflictsList().size() == 1);
     BlobDiff diff = mergeReponse1.getConflictsList().get(0);
     Assert.assertTrue(
-        "there should be a dataset diff", diff.getContentCase() == ContentCase.ENVIRONMENT);
-    Assert.assertTrue("diff location should be blob", diff.getLocation(0).equalsIgnoreCase("env"));
+        "there should be a environment diff", diff.getContentCase() == ContentCase.ENVIRONMENT);
+    Assert.assertTrue("diff location should be env", diff.getLocation(0).equalsIgnoreCase("env"));
     Assert.assertTrue(
         "diff status should be conflicted", diff.getStatus() == DiffStatus.CONFLICTED);
 
     PythonEnvironmentDiff pythonDiff = diff.getEnvironment().getPython();
     Assert.assertTrue(
-        "path diff should have one component", pythonDiff.getRequirementsCount() == 1);
+        "requirement count should have one element", pythonDiff.getRequirementsCount() == 1);
     PythonRequirementEnvironmentDiff reqDiff = pythonDiff.getRequirements(0);
     Assert.assertTrue(
-        "component diff does have a A",
+        "python diff does have a A",
         reqDiff.getA().getLibrary().equals("pytest")
             && reqDiff.getA().getVersion().getMajor() == 1);
     Assert.assertTrue(
-        "component diff does have a B",
+        "python diff does have a B",
         reqDiff.getB().getLibrary().equals("pytest")
             && reqDiff.getB().getVersion().getMajor() == 2);
     Assert.assertTrue(
-        "component diff does not have a C",
+        "python diff does not have a C",
         reqDiff.getC().equals(PythonRequirementEnvironmentBlob.getDefaultInstance()));
     for (Commit commit : new Commit[] {commitResponse1.getCommit(), commitResponse2.getCommit()}) {
       DeleteCommitRequest deleteCommitRequest =
