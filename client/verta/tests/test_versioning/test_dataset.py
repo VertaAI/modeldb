@@ -223,7 +223,7 @@ class TestS3:
         assert os.path.getmtime(dirpath) > last_updated
 
     def test_not_to_s3_dir(self, commit, in_tempdir):
-        """If the user specifies "s3://", things shouldn't go into a """
+        """If the user specifies "s3://", things shouldn't go into an "s3:" dir."""
         dirname = "tiny-files/"
         s3_folder = "s3://verta-versioned-bucket/{}".format(dirname)
         blob_path = "data"
@@ -288,8 +288,9 @@ class TestPath:
 
     def test_mngd_ver_file(self, commit, in_tempdir):
         filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
         with open(filename, 'wb') as f:
-            f.write(os.urandom(2**16))
+            f.write(FILE_CONTENTS)
         blob_path = "data"
 
         dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
@@ -302,24 +303,34 @@ class TestPath:
         filepath = dataset.download(filename)
         assert os.path.isfile(filepath)
         assert filepath == os.path.abspath(filename)
+        with open(filepath, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
 
         # download to implicit path without collision
         filepath2 = dataset.download(filename)
         assert os.path.isfile(filepath2)
         assert filepath2 != filepath
+        with open(filepath2, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
 
         # download to explicit path with overwrite
         last_updated = os.path.getmtime(filepath)
         filepath3 = dataset.download(filename, filepath)
         assert filepath3 == filepath
+        with open(filepath3, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
         assert os.path.getmtime(filepath) > last_updated
 
     def test_mngd_ver_folder(self, commit, in_tempdir):
         dirname = "tiny-files/"
         os.mkdir(dirname)
-        for i in range(3):
-            with open(os.path.join(dirname, "tiny{}.bin".format(i)), 'wb') as f:
-                f.write(os.urandom(2**16))
+        FILE_CONTENTS = {  # filename to contents
+            "tiny{}.bin".format(i): os.urandom(2**16)
+            for i in range(3)
+        }
+        for filename, contents in FILE_CONTENTS.items():
+            with open(os.path.join(dirname, filename), 'wb') as f:
+                f.write(contents)
         blob_path = "data"
 
         dataset = verta.dataset.Path(dirname, enable_mdb_versioning=True)
@@ -332,16 +343,25 @@ class TestPath:
         dirpath = dataset.download(dirname)
         assert os.path.isdir(dirpath)
         assert dirpath == os.path.abspath(dirname)
+        for filename in os.listdir(dirpath):
+            with open(os.path.join(dirpath, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
 
         # download to implicit path without collision
         dirpath2 = dataset.download(dirname)
         assert os.path.isdir(dirpath2)
         assert dirpath2 != dirpath
+        for filename in os.listdir(dirpath2):
+            with open(os.path.join(dirpath2, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
 
         # download to explicit path with overwrite
         last_updated = os.path.getmtime(dirpath)
         dirpath3 = dataset.download(dirname, dirpath)
         assert dirpath3 == dirpath
+        for filename in os.listdir(dirpath3):
+            with open(os.path.join(dirpath3, filename), 'rb') as f:
+                assert f.read() == FILE_CONTENTS[filename]
         assert os.path.getmtime(dirpath) > last_updated
 
     def test_mngd_ver_rollback(self, commit, in_tempdir):
@@ -384,11 +404,11 @@ class TestPath:
         child_dirname = "child"
         os.mkdir(child_dirname)
         filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
 
         with utils.chdir(child_dirname):
-            file1_contents = os.urandom(2**16)
             with open(filename, 'wb') as f:
-                f.write(file1_contents)
+                f.write(FILE_CONTENTS)
             blob_path = "data"
 
             dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
@@ -401,6 +421,9 @@ class TestPath:
             filepath = dataset.download(filename, download_to_path)
             assert os.path.isfile(filepath)
             assert filepath == os.path.abspath(download_to_path)
+            with open(filepath, 'rb') as f:
+                assert f.read() == FILE_CONTENTS
+
 
     def test_mngd_ver_to_sibling_dir(self, commit, in_tempdir):
         """Download to sibling directory works as expected."""
@@ -409,11 +432,11 @@ class TestPath:
         sibling_dirname = "sibling"
         os.mkdir(sibling_dirname)
         filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
 
         with utils.chdir(child_dirname):
-            file1_contents = os.urandom(2**16)
             with open(filename, 'wb') as f:
-                f.write(file1_contents)
+                f.write(FILE_CONTENTS)
             blob_path = "data"
 
             dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
@@ -426,3 +449,5 @@ class TestPath:
             filepath = dataset.download(filename, download_to_path)
             assert os.path.isfile(filepath)
             assert filepath == os.path.abspath(download_to_path)
+            with open(filepath, 'rb') as f:
+                assert f.read() == FILE_CONTENTS
