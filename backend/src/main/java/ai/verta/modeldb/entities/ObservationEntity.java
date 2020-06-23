@@ -159,7 +159,9 @@ public class ObservationEntity {
   public Observation getProtoObject() throws InvalidProtocolBufferException {
     Observation.Builder builder = Observation.newBuilder();
     builder.setTimestamp(timestamp);
-    builder.setEpochNumber(Value.newBuilder().setNumberValue(epoch_number));
+    if (epoch_number != null) {
+      builder.setEpochNumber(Value.newBuilder().setNumberValue(epoch_number));
+    }
     if (keyValueMapping != null) {
       builder.setAttribute(keyValueMapping.getProtoKeyValue());
     }
