@@ -2909,6 +2909,6 @@ public class CommitTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
 
-    LOGGER.info("merge Conflict test end................................");
+    LOGGER.info("merge Conflict Bug test end................................");
   }
 }
