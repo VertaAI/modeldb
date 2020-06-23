@@ -619,7 +619,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="add-epoch_number" author="raviS">
+    <changeSet id="add-epoch_number" author="raviS" failOnError="false">
         <preConditions onFail="MARK_RAN">
             <not>
                 <columnExists tableName="observation" columnName="epoch_number"/>
@@ -627,6 +627,17 @@
         </preConditions>
         <addColumn tableName="observation">
             <column name="epoch_number" type="int8" value="0"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-epoch_number-without-default" author="raviS" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="observation" columnName="epoch_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="observation">
+            <column name="epoch_number" type="int8"/>
         </addColumn>
     </changeSet>
 
