@@ -119,13 +119,14 @@ class _Dataset(blob.Blob):
         for component_blob in self._path_component_blobs:
             if component_blob.path == component_path:
                 if implicit_download_to_path:
-                    # default to filename from `component_path` in cwd
+                    # default to filename from `component_path`, in cwd
                     local_path = os.path.basename(component_path)
 
                     # avoid collision with existing file
                     while os.path.exists(local_path):
                         local_path = _file_utils.increment_path(local_path)
                 else:
+                    # exactly where the user requests
                     local_path = download_to_path
 
                 return ({component_blob.path: local_path}, os.path.abspath(local_path))
