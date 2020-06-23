@@ -214,6 +214,10 @@ public class DatasetToRepositoryMigration {
               DatasetVersion newDatasetVersion = datasetVersionEntity.getProtoObject();
               if (newDatasetVersion.hasPathDatasetVersionInfo()) {
                 createCommitAndBlobsFromDatsetVersion(newDatasetVersion, repoId);
+              } else {
+                LOGGER.warn(
+                    "DatasetVersion found with versionInfo type : {}",
+                    newDatasetVersion.getDatasetVersionInfoCase());
               }
             } catch (Exception e) {
               e.printStackTrace();
@@ -240,7 +244,7 @@ public class DatasetToRepositoryMigration {
 
   private static void createCommitAndBlobsFromDatsetVersion(
       DatasetVersion newDatasetVersion, Long repoId)
-      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
+      throws ModelDBException, NoSuchAlgorithmException {
     RepositoryIdentification repositoryIdentification =
         RepositoryIdentification.newBuilder().setRepoId(repoId).build();
     RepositoryEntity repositoryEntity =
