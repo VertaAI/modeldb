@@ -141,23 +141,6 @@ class _Dataset(blob.Blob):
                         component_blob.path,
                         pathlib2.Path(component_path).parent,
                     )
-
-                    # TODO: move following steps outside of loop if less expensive
-                    # split `local_path` into its segments for handling
-                    path_parts = pathlib2.Path(local_path).parts
-
-                    # remove "s3:" if it's the first segment
-                    if path_parts[0] == "s3:":
-                        path_parts = path_parts[1:]
-
-                    # avoid collision with existing directory
-                    ## grab outermost dir from `local_path`, e.g. "downloads"
-                    root_dirname = path_parts[0]
-                    ## add number so doesn't collide w/ existing dir, e.g. "downloads 1"
-                    while os.path.exists(root_dirname):
-                        root_dirname = _file_utils.increment_path(root_dirname)
-                    ## rejoin with rest of `local_path`, e.g. "downloads 1/data/info.csv"
-                    local_path = os.path.join(root_dirname, *path_parts[1:])
                 else:
                     # rebase from `component_path` onto `download_to_path`
                     #     For example:
@@ -174,6 +157,27 @@ class _Dataset(blob.Blob):
 
         if not components_to_download:
             raise KeyError("no components found for path {}".format(component_path))
+
+        if implicit_download_to_path:
+            # perform additional processing for `local_path`s
+            for path, local_path in components_to_download.items():
+                # split `local_path` into its segments for handling
+                path_parts = pathlib2.Path(local_path).parts
+
+                # remove first segment if it's "s3:"
+                if path_parts[0] == "s3:":
+                    path_parts = path_parts[1:]
+
+                # avoid collision with existing directory
+                ## grab outermost dir from `local_path`, e.g. "downloads"
+                root_dirname = path_parts[0]
+                ## add number so doesn't collide w/ existing dir, e.g. "downloads 1"
+                while os.path.exists(root_dirname):
+                    root_dirname = _file_utils.increment_path(root_dirname)
+                ## rejoin with rest of `local_path`, e.g. "downloads 1/data/info.csv"
+                local_path = os.path.join(root_dirname, *path_parts[1:])
+
+                components_to_download[path] = local_path
 
         # determine the root path everything is being downloaded to
         local_paths = map(os.path.relpath, components_to_download.values())  # relative to cwd
