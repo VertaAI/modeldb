@@ -22,35 +22,36 @@ import java.io.{File, FileOutputStream}
  *  val s3Blob2: Try[S3] = S3(S3Location("some-path"))
  *  }}}
  */
-case class S3(protected val contents: HashMap[String, FileMetadata]) extends Dataset {
+case class S3(
+  protected val contents: HashMap[String, FileMetadata],
+  protected val enableMDBVersioning: Boolean = false
+) extends Dataset {
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"
    *  @return the version id of the file, if the file exists and has a versionId; otherwise None.
    */
   def getVersionId(path: String) = contents.get(path).flatMap(_.versionId)
 
-  /** Downloads the stored objects from S3.
+  /** Preparing for uploading by downloading the stored objects from S3.
    *  @return A map from the s3 path to the path of the stored object, if succeeds
    */
-  def downloadFromS3(): Try[Map[String, String]] = {
+  override def prepareForUpload(): Try[Map[String, UploadComponent]] = {
     Try(contents
-      .mapValues(metadata => S3Location(metadata.path, metadata.versionId).get)
-      .mapValues(location => downloadFromLocation(location, S3.s3, "").get)
+      .mapValues(metadata =>
+        toUploadComponent(S3Location(metadata.path, metadata.versionId).get, S3.s3, metadata).get
+      )
       .toMap
     )
   }
 
-  /** Helper method to download the object stored in a S3 location.
+  /** Helper method to download the object stored in a S3 location and construct the corresponding upload component
    *  Based on https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/examples-s3-objects.html#download-object
    *  @param location the S3 location. Must correspond to a file
    *  @param s3 The s3 client
    *  @return the path of the saved object, computed based on the s3 location, if succeeds.
    */
-  private def downloadFromLocation(location: S3Location, s3: AmazonS3, savePath: String) = Try {
-    val savePath = Dataset.expanduser(f"~/.verta/${location.bucketName}/${location.key.get}")
-    val file = new File(savePath)
-    file.getParentFile().mkdirs() // create directory if not exists
-    file.createNewFile() // create file if not exists
+  private def toUploadComponent(location: S3Location, s3: AmazonS3, metadata: FileMetadata) = Try {
+    val file = File.createTempFile(location.key.get, null)
 
     val request =
       if(location.versionID.isDefined)
@@ -72,7 +73,8 @@ case class S3(protected val contents: HashMap[String, FileMetadata]) extends Dat
     s3InputStream.close()
     fileOutputStream.close()
 
-    savePath // return the path of the saved file
+    val internalVersionedPath = f"${Dataset.hash(file, "SHA-256").get}/${location.key.get}"
+    UploadComponent(file.getPath(), toComponent(metadata, Some(internalVersionedPath)))
   }
 
   override def equals(other: Any) = other match {
@@ -85,23 +87,35 @@ case class S3(protected val contents: HashMap[String, FileMetadata]) extends Dat
 object S3 {
   private val s3: AmazonS3 = AmazonS3ClientBuilder.standard().build()
 
-  /** Constructor taking only one S3Location
+  /** Constructor taking only one S3Location. Does not version with ModelDB.
    *  @param location a single S3Location
    *  @return if location is invalid, a failure along with exception message. Otherwise, the blob (wrapped in success)
    */
-  def apply(location: S3Location): Try[S3] = apply(List(location))
+  def apply(location: S3Location): Try[S3] = apply(List(location), false)
 
-  /** Constructor that user should use.
-  *  @return if any location is invalid, a failure along with exception message. Otherwise, the blob (wrapped in success)
+  /** Constructor taking a list of S3 locations. Does not version with ModelDB.
+   *  @return if any location is invalid, a failure along with exception message. Otherwise, the blob (wrapped in success)
    */
-  def apply(paths: List[S3Location]): Try[S3] = {
+  def apply(locations: List[S3Location]): Try[S3] = apply(locations, false)
+
+  def apply(location: S3Location, enableMDBVersioning: Boolean): Try[S3] = apply(List(location), enableMDBVersioning)
+
+  /** Constructor taking a list of S3 locations.
+   *  @param locations list of locations
+   *  @param enableMDBVersioning whether to version the data in the blob
+   *  @return if any location is invalid, a failure along with exception message. Otherwise, the blob (wrapped in success)
+   */
+  def apply(locations: List[S3Location], enableMDBVersioning: Boolean): Try[S3] = {
     val queryAttempt = Try(
-      paths.map(getS3LocMetadata).map(_.get)
+      locations.map(getS3LocMetadata).map(_.get)
     ).map(_.flatten)
 
     queryAttempt match {
       case Failure(e) => Failure(e)
-      case Success(list) => Success(new S3(HashMap(list.map(metadata => metadata.path -> metadata): _*)))
+      case Success(list) => Success(new S3(
+        HashMap(list.map(metadata => metadata.path -> metadata): _*),
+        enableMDBVersioning
+      ))
     }
   }
 
@@ -124,7 +138,10 @@ object S3 {
    */
   def reduce(firstBlob: S3, secondBlob: S3): Try[S3] = {
     if (firstBlob.notConflicts(secondBlob))
-      Success(new S3(firstBlob.contents ++ secondBlob.contents))
+      Success(new S3(
+        firstBlob.contents ++ secondBlob.contents,
+        firstBlob.enableMDBVersioning && secondBlob.enableMDBVersioning
+      ))
     else Failure(new IllegalArgumentException("The two blobs have conflicting entries"))
   }
 
