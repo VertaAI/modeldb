@@ -41,7 +41,7 @@ spec:
             - name: BACKEND_API_PROTOCOL
               value: "http"
             - name: BACKEND_API_DOMAIN
-              value: "{{ .Release.Name }}-backend:3000"
+              value: "{{ .Release.Name }}-webapp:3000"
             - name: MDB_ADDRESS
               value: http://{{ .Release.Name }}-backend:3000
             - name: ARTIFACTORY_ADDRESS
