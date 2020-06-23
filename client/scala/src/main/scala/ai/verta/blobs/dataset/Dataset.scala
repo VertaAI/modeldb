@@ -56,8 +56,6 @@ trait Dataset extends Blob {
 }
 
 object Dataset {
-  private val BufferSize = 1024 * 1024 // 1 MB
-
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
    private[dataset] def toMetadata(
@@ -83,6 +81,7 @@ object Dataset {
     *  @param path filepath
     */
    private[dataset] def hash(file: File, algorithm: String) = Try {
+     val BufferSize = 1024 * 1024 // 1 MB
      val buffer = new Array[Byte](BufferSize)
      val messageDigest = MessageDigest.getInstance(algorithm)
 
