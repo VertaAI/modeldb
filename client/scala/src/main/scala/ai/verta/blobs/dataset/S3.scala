@@ -62,7 +62,8 @@ case class S3(
     val obj: S3Object = s3.getObject(request)
     val s3InputStream: S3ObjectInputStream = obj.getObjectContent()
     val fileOutputStream: FileOutputStream = new FileOutputStream(file)
-    val buffer = new Array[Byte](1024)
+    val BufferSize = 1024 * 1024 // 1 MB
+    val buffer = new Array[Byte](BufferSize)
     var readLen = s3InputStream.read(buffer)
 
     while (readLen > 0) {
