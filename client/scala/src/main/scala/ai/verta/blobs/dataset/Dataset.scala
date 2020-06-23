@@ -28,7 +28,7 @@ trait Dataset extends Blob {
    *  @return a map of paths (in the blob) to instances of UploadComponent
    *  which contains the path to the object in local file system and the versioning component
    */
-  def prepareForUpload(): Try[Map[String, UploadComponent]]
+  private[verta] def prepareForUpload(): Try[Map[String, UploadComponent]]
 
   /** Get the metadata of a certain file stored in the dataset blob
    *  @param path path to the file
