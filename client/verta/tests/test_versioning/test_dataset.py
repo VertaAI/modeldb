@@ -171,6 +171,20 @@ class TestS3:
 
         assert dataset_ver.__repr__()
 
+    def test_list_paths(self):
+        s3 = pytest.importorskip("boto3").client('s3')
+
+        bucket = "verta-starter"
+        expected_paths = [
+            "s3://{}/{}".format(bucket, s3_obj['Key'])
+            for s3_obj
+            in s3.list_objects_v2(Bucket=bucket)['Contents']
+            if not s3_obj['Key'].endswith('/')  # folder, not object
+        ]
+
+        dataset = verta.dataset.S3("s3://{}".format(bucket))
+        assert dataset.list_paths() == expected_paths
+
 
 class TestPath:
     def test_dirpath(self):
@@ -220,6 +234,17 @@ class TestPath:
         dataset = verta.dataset.Path("modelapi_hypothesis/")
 
         assert dataset.__repr__()
+
+    def test_list_paths(self):
+        data_dir = "modelapi_hypothesis/"
+
+        expected_paths = []
+        for root, _, filenames in os.walk(data_dir):
+            for filename in filenames:
+                expected_paths.append(os.path.join(root, filename))
+
+        dataset = verta.dataset.Path(data_dir)
+        assert dataset.list_paths() == expected_paths
 
 
 class TestS3ManagedVersioning:
