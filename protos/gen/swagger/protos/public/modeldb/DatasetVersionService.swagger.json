@@ -333,7 +333,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/modeldbGetAttributesResponse"
+              "$ref": "#/definitions/modeldbGetDatasetVersionAttributesResponse"
             }
           },
           "default": {
@@ -366,63 +366,9 @@
             "required": false,
             "type": "boolean",
             "format": "boolean"
-          }
-        ],
-        "tags": [
-          "DatasetVersionService"
-        ]
-      }
-    },
-    "/dataset-version/getDatasetVersionById": {
-      "get": {
-        "operationId": "getDatasetVersionById",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetDatasetVersionByIdResponse"
-            }
           },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "DatasetVersionService"
-        ]
-      }
-    },
-    "/dataset-version/getDatasetVersionTags": {
-      "get": {
-        "operationId": "getDatasetVersionTags",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetTagsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
+            "name": "dataset_id",
             "in": "query",
             "required": false,
             "type": "string"
@@ -574,15 +520,6 @@
     }
   },
   "definitions": {
-    "DatasetTypeEnumDatasetType": {
-      "type": "string",
-      "enum": [
-        "RAW",
-        "PATH",
-        "QUERY"
-      ],
-      "default": "RAW"
-    },
     "DatasetVisibilityEnumDatasetVisibility": {
       "type": "string",
       "enum": [
@@ -653,6 +590,9 @@
           "items": {
             "$ref": "#/definitions/commonKeyValue"
           }
+        },
+        "dataset_id": {
+          "type": "string"
         }
       }
     },
@@ -706,9 +646,6 @@
         },
         "dataset_version_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
-        },
-        "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
         },
         "attributes": {
           "type": "array",
@@ -790,9 +727,6 @@
         "dataset_version_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
-        "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
-        },
         "attributes": {
           "type": "array",
           "items": {
@@ -818,6 +752,9 @@
         "time_updated": {
           "type": "string",
           "format": "uint64"
+        },
+        "dataset_blob": {
+          "$ref": "#/definitions/versioningDatasetBlob"
         }
       }
     },
@@ -825,6 +762,9 @@
       "type": "object",
       "properties": {
         "id": {
+          "type": "string"
+        },
+        "dataset_id": {
           "type": "string"
         }
       }
@@ -844,6 +784,9 @@
         "delete_all": {
           "type": "boolean",
           "format": "boolean"
+        },
+        "dataset_id": {
+          "type": "string"
         }
       }
     },
@@ -856,13 +799,7 @@
       }
     },
     "modeldbDeleteDatasetVersionResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
+      "type": "object"
     },
     "modeldbDeleteDatasetVersionTags": {
       "type": "object",
@@ -879,6 +816,9 @@
         "delete_all": {
           "type": "boolean",
           "format": "boolean"
+        },
+        "dataset_id": {
+          "type": "string"
         }
       }
     },
@@ -898,17 +838,14 @@
           "items": {
             "type": "string"
           }
+        },
+        "dataset_id": {
+          "type": "string"
         }
       }
     },
     "modeldbDeleteDatasetVersionsResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
+      "type": "object"
     },
     "modeldbFindDatasetVersions": {
       "type": "object",
@@ -983,7 +920,7 @@
         }
       }
     },
-    "modeldbGetAttributesResponse": {
+    "modeldbGetDatasetVersionAttributesResponse": {
       "type": "object",
       "properties": {
         "attributes": {
@@ -994,30 +931,11 @@
         }
       }
     },
-    "modeldbGetDatasetVersionByIdResponse": {
-      "type": "object",
-      "properties": {
-        "dataset_version": {
-          "$ref": "#/definitions/modeldbDatasetVersion"
-        }
-      }
-    },
     "modeldbGetLatestDatasetVersionByDatasetIdResponse": {
       "type": "object",
       "properties": {
         "dataset_version": {
           "$ref": "#/definitions/modeldbDatasetVersion"
-        }
-      }
-    },
-    "modeldbGetTagsResponse": {
-      "type": "object",
-      "properties": {
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       }
     },
@@ -1153,6 +1071,9 @@
         },
         "attribute": {
           "$ref": "#/definitions/commonKeyValue"
+        },
+        "dataset_id": {
+          "type": "string"
         }
       }
     },
@@ -1171,6 +1092,9 @@
           "type": "string"
         },
         "description": {
+          "type": "string"
+        },
+        "dataset_id": {
           "type": "string"
         }
       }
@@ -1221,6 +1145,75 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "versioningDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "s3": {
+          "$ref": "#/definitions/versioningS3DatasetBlob"
+        },
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetBlob"
+        }
+      }
+    },
+    "versioningPathDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningPathDatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "last_modified_at_source": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "md5": {
+          "type": "string"
+        },
+        "internal_versioned_path": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningS3DatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningS3DatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningS3DatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+        },
+        "s3_version_id": {
+          "type": "string"
         }
       }
     }

@@ -939,15 +939,6 @@
       ],
       "default": "READ_ONLY"
     },
-    "DatasetTypeEnumDatasetType": {
-      "type": "string",
-      "enum": [
-        "RAW",
-        "PATH",
-        "QUERY"
-      ],
-      "default": "RAW"
-    },
     "DatasetVisibilityEnumDatasetVisibility": {
       "type": "string",
       "enum": [
@@ -1256,9 +1247,6 @@
         "dataset_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
-        "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
-        },
         "attributes": {
           "type": "array",
           "items": {
@@ -1328,9 +1316,6 @@
         "dataset_version_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
-        "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
-        },
         "attributes": {
           "type": "array",
           "items": {
@@ -1356,6 +1341,9 @@
         "time_updated": {
           "type": "string",
           "format": "uint64"
+        },
+        "dataset_blob": {
+          "$ref": "#/definitions/versioningDatasetBlob"
         }
       }
     },
@@ -2441,6 +2429,75 @@
         },
         "publicProfile": {
           "$ref": "#/definitions/uacFlagEnum"
+        }
+      }
+    },
+    "versioningDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "s3": {
+          "$ref": "#/definitions/versioningS3DatasetBlob"
+        },
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetBlob"
+        }
+      }
+    },
+    "versioningPathDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningPathDatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "last_modified_at_source": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "md5": {
+          "type": "string"
+        },
+        "internal_versioned_path": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningS3DatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningS3DatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningS3DatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+        },
+        "s3_version_id": {
+          "type": "string"
         }
       }
     },

@@ -3371,6 +3371,12 @@
         },
         "blob": {
           "$ref": "#/definitions/versioningBlob"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
         }
       }
     },
@@ -3458,6 +3464,11 @@
         },
         "commit_sha": {
           "type": "string"
+        },
+        "date_updated": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Updated Date while create tags & attribute for the commit."
         }
       },
       "title": "Base commit for the versioning system\nDO NOT USE TO COMPUTE SHA"
@@ -3829,6 +3840,13 @@
         "page_limit": {
           "type": "integer",
           "format": "int32"
+        },
+        "predicates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbKeyValueQuery"
+          },
+          "title": "In future requirement\nbool ascending = 8;\nstring sort_key = 9;"
         }
       }
     },
@@ -3908,6 +3926,12 @@
         },
         "blob": {
           "$ref": "#/definitions/versioningBlob"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
         }
       }
     },
@@ -4450,6 +4474,15 @@
         },
         "owner": {
           "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
         }
       }
     },

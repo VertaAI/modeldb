@@ -341,53 +341,6 @@
         ]
       }
     },
-    "/dataset/getDatasetAttributes": {
-      "get": {
-        "operationId": "getDatasetAttributes",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetAttributesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "attribute_keys",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "name": "get_all",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          }
-        ],
-        "tags": [
-          "DatasetService"
-        ]
-      }
-    },
     "/dataset/getDatasetById": {
       "get": {
         "operationId": "getDatasetById",
@@ -722,15 +675,6 @@
       ],
       "default": "IMAGE"
     },
-    "DatasetTypeEnumDatasetType": {
-      "type": "string",
-      "enum": [
-        "RAW",
-        "PATH",
-        "QUERY"
-      ],
-      "default": "RAW"
-    },
     "DatasetVisibilityEnumDatasetVisibility": {
       "type": "string",
       "enum": [
@@ -906,9 +850,6 @@
         "dataset_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
-        "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
-        },
         "workspace_name": {
           "type": "string"
         },
@@ -949,9 +890,6 @@
         },
         "dataset_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
-        },
-        "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
         },
         "attributes": {
           "type": "array",
@@ -1279,17 +1217,6 @@
         "total_records": {
           "type": "string",
           "format": "uint64"
-        }
-      }
-    },
-    "modeldbGetAttributesResponse": {
-      "type": "object",
-      "properties": {
-        "attributes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonKeyValue"
-          }
         }
       }
     },

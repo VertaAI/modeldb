@@ -91,17 +91,6 @@ class DatasetServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def getAllDatasets(ascending: Option[Boolean]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None, workspace_name: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetAllDatasetsResponse] = Await.result(getAllDatasetsAsync(ascending, page_limit, page_number, sort_key, workspace_name), Duration.Inf)
 
-  def getDatasetAttributesAsync(attribute_keys: Option[List[String]]=None, get_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetAttributesResponse]] = {
-    var __query = new mutable.HashMap[String,List[String]]
-    if (id.isDefined) __query.update("id", client.toQuery(id.get))
-    if (attribute_keys.isDefined) __query.update("attribute_keys", client.toQuery(attribute_keys.get))
-    if (get_all.isDefined) __query.update("get_all", client.toQuery(get_all.get))
-    val body: String = null
-    return client.request[String, ModeldbGetAttributesResponse]("GET", basePath + s"/dataset/getDatasetAttributes", __query.toMap, body, ModeldbGetAttributesResponse.fromJson)
-  }
-
-  def getDatasetAttributes(attribute_keys: Option[List[String]]=None, get_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetAttributesResponse] = Await.result(getDatasetAttributesAsync(attribute_keys, get_all, id), Duration.Inf)
-
   def getDatasetByIdAsync(id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetDatasetByIdResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (id.isDefined) __query.update("id", client.toQuery(id.get))

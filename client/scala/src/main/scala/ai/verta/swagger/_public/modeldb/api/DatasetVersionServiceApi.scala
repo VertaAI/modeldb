@@ -88,34 +88,17 @@ class DatasetVersionServiceApi(client: HttpClient, val basePath: String = "/v1")
 
   def getAllDatasetVersionsByDatasetId(ascending: Option[Boolean]=None, dataset_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetAllDatasetVersionsByDatasetIdResponse] = Await.result(getAllDatasetVersionsByDatasetIdAsync(ascending, dataset_id, page_limit, page_number, sort_key), Duration.Inf)
 
-  def getDatasetVersionAttributesAsync(attribute_keys: Option[List[String]]=None, get_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetAttributesResponse]] = {
+  def getDatasetVersionAttributesAsync(attribute_keys: Option[List[String]]=None, dataset_id: Option[String]=None, get_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetDatasetVersionAttributesResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (id.isDefined) __query.update("id", client.toQuery(id.get))
     if (attribute_keys.isDefined) __query.update("attribute_keys", client.toQuery(attribute_keys.get))
     if (get_all.isDefined) __query.update("get_all", client.toQuery(get_all.get))
+    if (dataset_id.isDefined) __query.update("dataset_id", client.toQuery(dataset_id.get))
     val body: String = null
-    return client.request[String, ModeldbGetAttributesResponse]("GET", basePath + s"/dataset-version/getDatasetVersionAttributes", __query.toMap, body, ModeldbGetAttributesResponse.fromJson)
+    return client.request[String, ModeldbGetDatasetVersionAttributesResponse]("GET", basePath + s"/dataset-version/getDatasetVersionAttributes", __query.toMap, body, ModeldbGetDatasetVersionAttributesResponse.fromJson)
   }
 
-  def getDatasetVersionAttributes(attribute_keys: Option[List[String]]=None, get_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetAttributesResponse] = Await.result(getDatasetVersionAttributesAsync(attribute_keys, get_all, id), Duration.Inf)
-
-  def getDatasetVersionByIdAsync(id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetDatasetVersionByIdResponse]] = {
-    var __query = new mutable.HashMap[String,List[String]]
-    if (id.isDefined) __query.update("id", client.toQuery(id.get))
-    val body: String = null
-    return client.request[String, ModeldbGetDatasetVersionByIdResponse]("GET", basePath + s"/dataset-version/getDatasetVersionById", __query.toMap, body, ModeldbGetDatasetVersionByIdResponse.fromJson)
-  }
-
-  def getDatasetVersionById(id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetDatasetVersionByIdResponse] = Await.result(getDatasetVersionByIdAsync(id), Duration.Inf)
-
-  def getDatasetVersionTagsAsync(id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetTagsResponse]] = {
-    var __query = new mutable.HashMap[String,List[String]]
-    if (id.isDefined) __query.update("id", client.toQuery(id.get))
-    val body: String = null
-    return client.request[String, ModeldbGetTagsResponse]("GET", basePath + s"/dataset-version/getDatasetVersionTags", __query.toMap, body, ModeldbGetTagsResponse.fromJson)
-  }
-
-  def getDatasetVersionTags(id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetTagsResponse] = Await.result(getDatasetVersionTagsAsync(id), Duration.Inf)
+  def getDatasetVersionAttributes(attribute_keys: Option[List[String]]=None, dataset_id: Option[String]=None, get_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetDatasetVersionAttributesResponse] = Await.result(getDatasetVersionAttributesAsync(attribute_keys, dataset_id, get_all, id), Duration.Inf)
 
   def getLatestDatasetVersionByDatasetIdAsync(ascending: Option[Boolean]=None, dataset_id: Option[String]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetLatestDatasetVersionByDatasetIdResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
