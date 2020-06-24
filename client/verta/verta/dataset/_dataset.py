@@ -260,6 +260,11 @@ class _Dataset(blob.Blob):
         """
         Returns the paths of all components in this dataset.
 
+        .. note::
+
+            In Python 2.7, this method returns ``str`` rather than ``unicode``.  Unicode filenames
+            can be restored by calling ``.decode('utf-8')`` on the returned strings.
+
         Returns
         -------
         component_paths : list of str
