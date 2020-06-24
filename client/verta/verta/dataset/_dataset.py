@@ -150,7 +150,7 @@ class _Dataset(blob.Blob):
                 downloaded_to_path = pathlib2.Path(component_path).name  # final path component
 
                 if downloaded_to_path in {".", "..", "/", "s3:"}:
-                    # rather than dump everything ito cwd, use new child dir
+                    # rather than dump everything into cwd, use new child dir
                     downloaded_to_path = DEFAULT_DOWNLOAD_DIR
 
                 # avoid collision with existing directory
