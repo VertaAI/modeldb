@@ -17,7 +17,7 @@ class Commit(
   private val commit: VersioningCommit, private val commitBranch: Option[String] = None
 ) {
   private var loadedFromRemote = false // whether blobs has been retrieved from remote
-  private var blobs = Map[String, VersioningBlob]() // mutable map for storing blobs. Only loaded when used
+  private var blobs = Map[String, Blob]() // mutable map for storing blobs. Only loaded when used
 
   /** Return the id of the commit */
   def id = commit.commit_sha
@@ -40,14 +40,14 @@ class Commit(
    *  @return The blob. If not existed, or retrieving blobs from backend fails, return a failure.
    */
   def get(path: String)(implicit ec: ExecutionContext): Try[Blob] =
-    getVersioningBlob(path).map(versioningBlobToBlob)
+    getBlob(path)
 
   /** Retrieve the versioning blob stored at the path
    *  Helper function for get and remove operations
    *  @param path location of the blob
    *  @return ModelDB versioning blob. If not existed, fails.
    */
-  private def getVersioningBlob(path: String)(implicit ec: ExecutionContext): Try[VersioningBlob] =
+  private def getBlob(path: String)(implicit ec: ExecutionContext): Try[Blob] =
     loadBlobs().flatMap(_ =>
       blobs.get(path) match {
         case None => Failure(new NoSuchElementException("No blob was stored at this path."))
@@ -63,12 +63,7 @@ class Commit(
    *  @return The new commit, if succeeds.
    */
   def update(path: String, blob: Blob)(implicit ec: ExecutionContext): Try[Commit] = {
-    /** TODO: Add blob subtypes to pattern matching */
-    val versioningBlob = blob match {
-      case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
-      case s3: S3 => S3.toVersioningBlob(s3)
-    }
-    loadBlobs().map(_ => getChild(blobs + (path -> versioningBlob)))
+    loadBlobs().map(_ => getChild(blobs + (path -> blob)))
   }
 
   /** Remove a blob to this commit at path
@@ -76,7 +71,7 @@ class Commit(
    *  @return The new commit with the blob removed, if succeeds.
    */
   def remove(path: String)(implicit ec: ExecutionContext) =
-    getVersioningBlob(path).map(_ => getChild(blobs - path))
+    getBlob(path).map(_ => getChild(blobs - path))
 
   /** Saves this commit to ModelDB
    *  @param message description of this commit
@@ -127,7 +122,7 @@ class Commit(
     */
   private def blobsList()(implicit ec: ExecutionContext): Try[List[VersioningBlobExpanded]] = {
     loadBlobs().map(_ => (for ((path, blob) <- blobs) yield VersioningBlobExpanded(
-        blob = Some(blob),
+        blob = Some(blobToVersioningBlob(blob)),
         location = Some(pathToLocation(path))
     )).toList)
   }
@@ -172,15 +167,15 @@ class Commit(
    */
   private def loadBlobsFromId(
     id: String
-  )(implicit ec: ExecutionContext): Try[Map[String, VersioningBlob]] = {
+  )(implicit ec: ExecutionContext): Try[Map[String, Blob]] = {
     clientSet.versioningService.ListCommitBlobs2(
       commit_sha = id,
       repository_id_repo_id = repo.id
     ) // Try[VersioningListCommitBlobsRequestResponse]
     .map(_.blobs) // Try[Option[List[VersioningBlobExpanded]]]
     .map(ls =>
-      if (ls.isEmpty) Map[String, VersioningBlob]()
-      else ls.get.map(blob => blob.location.get.mkString("/") -> blob.blob.get).toMap
+      if (ls.isEmpty) Map[String, Blob]()
+      else ls.get.map(blob => blob.location.get.mkString("/") -> versioningBlobToBlob(blob.blob.get)).toMap
     )
   }
 
@@ -189,7 +184,7 @@ class Commit(
    *  @param childBlobs the blobs of the child commit
    *  @return the child commit instance, if loading blobs succeeds.
    */
-  private def getChild(childBlobs: Map[String, VersioningBlob])(implicit ec: ExecutionContext) = {
+  private def getChild(childBlobs: Map[String, Blob])(implicit ec: ExecutionContext) = {
       /** TODO: Deal with author, date_created */
       val newVersioningCommit = VersioningCommit(
         parent_shas = if (saved) commit.commit_sha.map(List(_)) else commit.parent_shas
@@ -206,11 +201,18 @@ class Commit(
    *  @param vb the VersioningBlob instance
    *  @return an instance of a Blob subclass
    */
-  def versioningBlobToBlob(vb: VersioningBlob): Blob = vb match {
+  private def versioningBlobToBlob(vb: VersioningBlob): Blob = vb match {
     /** TODO: finish the pattern matching with other blob subclasses */
     case VersioningBlob(_, _, Some(VersioningDatasetBlob(Some(path), _)), _) => PathBlob(path)
     case VersioningBlob(_, _, Some(VersioningDatasetBlob(_, Some(s3))), _) => S3(s3)
   }
+
+  private def blobToVersioningBlob(blob: Blob): VersioningBlob =  blob match {
+    /** TODO: Add blob subtypes to pattern matching */
+    case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
+    case s3: S3 => S3.toVersioningBlob(s3)
+  }
+
 
   /** Creates a branch at this Commit and returns the checked-out branch
    *  If the branch already exists, it will be moved to this commit.
