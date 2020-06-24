@@ -171,6 +171,58 @@ class TestS3:
 
         assert dataset_ver.__repr__()
 
+
+class TestPath:
+    def test_dirpath(self):
+        dataset = verta.dataset.Path("modelapi_hypothesis/")
+        assert len(dataset._path_component_blobs) > 1
+
+        for file_metadata in dataset._path_component_blobs:
+            assert file_metadata.path != ""
+            assert file_metadata.size != 0
+            assert file_metadata.last_modified_at_source != 0
+            assert file_metadata.md5 != ""
+
+    def test_filepath(self):
+        dataset = verta.dataset.Path("modelapi_hypothesis/api_generator.py")
+
+        assert len(dataset._path_component_blobs) == 1
+
+        file_metadata = dataset._path_component_blobs[0]
+        assert file_metadata.path != ""
+        assert file_metadata.size != 0
+        assert file_metadata.last_modified_at_source != 0
+        assert file_metadata.md5 != ""
+
+    def test_multiple_filepaths(self):
+        dataset = verta.dataset.Path([
+            "modelapi_hypothesis/api_generator.py",
+            "modelapi_hypothesis/test_modelapi.py",
+        ])
+        assert len(dataset._path_component_blobs) == 2
+
+        for file_metadata in dataset._path_component_blobs:
+            assert file_metadata.path != ""
+            assert file_metadata.size != 0
+            assert file_metadata.last_modified_at_source != 0
+            assert file_metadata.md5 != ""
+
+    def test_no_duplicates(self):
+        multiple_dataset = verta.dataset.Path([
+            "modelapi_hypothesis/",
+            "modelapi_hypothesis/api_generator.py",
+        ])
+        dir_dataset = verta.dataset.Path("modelapi_hypothesis/")
+        assert len(multiple_dataset._path_component_blobs) == len(dir_dataset._path_component_blobs)
+
+    def test_repr(self):
+        """Tests that __repr__() executes without error"""
+        dataset = verta.dataset.Path("modelapi_hypothesis/")
+
+        assert dataset.__repr__()
+
+
+class TestS3ManagedVersioning:
     def test_mngd_ver_file(self, commit, in_tempdir):
         boto3 = pytest.importorskip("boto3")
         s3 = boto3.client('s3')
@@ -282,55 +334,7 @@ class TestS3:
         assert "s3:" not in pathlib2.Path(dirpath).parts
 
 
-class TestPath:
-    def test_dirpath(self):
-        dataset = verta.dataset.Path("modelapi_hypothesis/")
-        assert len(dataset._path_component_blobs) > 1
-
-        for file_metadata in dataset._path_component_blobs:
-            assert file_metadata.path != ""
-            assert file_metadata.size != 0
-            assert file_metadata.last_modified_at_source != 0
-            assert file_metadata.md5 != ""
-
-    def test_filepath(self):
-        dataset = verta.dataset.Path("modelapi_hypothesis/api_generator.py")
-
-        assert len(dataset._path_component_blobs) == 1
-
-        file_metadata = dataset._path_component_blobs[0]
-        assert file_metadata.path != ""
-        assert file_metadata.size != 0
-        assert file_metadata.last_modified_at_source != 0
-        assert file_metadata.md5 != ""
-
-    def test_multiple_filepaths(self):
-        dataset = verta.dataset.Path([
-            "modelapi_hypothesis/api_generator.py",
-            "modelapi_hypothesis/test_modelapi.py",
-        ])
-        assert len(dataset._path_component_blobs) == 2
-
-        for file_metadata in dataset._path_component_blobs:
-            assert file_metadata.path != ""
-            assert file_metadata.size != 0
-            assert file_metadata.last_modified_at_source != 0
-            assert file_metadata.md5 != ""
-
-    def test_no_duplicates(self):
-        multiple_dataset = verta.dataset.Path([
-            "modelapi_hypothesis/",
-            "modelapi_hypothesis/api_generator.py",
-        ])
-        dir_dataset = verta.dataset.Path("modelapi_hypothesis/")
-        assert len(multiple_dataset._path_component_blobs) == len(dir_dataset._path_component_blobs)
-
-    def test_repr(self):
-        """Tests that __repr__() executes without error"""
-        dataset = verta.dataset.Path("modelapi_hypothesis/")
-
-        assert dataset.__repr__()
-
+class TestPathManagedVersioning:
     def test_mngd_ver_file(self, commit, in_tempdir):
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2**16)
