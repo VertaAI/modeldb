@@ -96,13 +96,14 @@ class _Dataset(blob.Blob):
         self._commit = commit
         self._blob_path = blob_path
 
-    def _get_components_to_download(self, component_path, download_to_path=None):
+    # TODO: there is too much happening in this method's body
+    def _get_components_to_download(self, component_path=None, download_to_path=None):
         """
         Identify components to be downloaded, along with their local destination paths.
 
         Parameters
         ----------
-        component_path : str
+        component_path : str, optional
             Path to directory or file within blob.
         download_to_path : str, optional
             Local path to download to.
@@ -118,74 +119,95 @@ class _Dataset(blob.Blob):
         """
         implicit_download_to_path = download_to_path is None
 
-        # look for an exact match with `component_path` as a file
-        for path in self.list_paths():
-            if path == component_path:
-                if implicit_download_to_path:
-                    # default to filename from `component_path`, in cwd
-                    local_path = os.path.basename(component_path)
+        if component_path is not None:
+            # look for an exact match with `component_path` as a file
+            for path in self.list_paths():
+                if path == component_path:
+                    if implicit_download_to_path:
+                        # default to filename from `component_path`, in cwd
+                        local_path = os.path.basename(component_path)
 
-                    # avoid collision with existing file
-                    while os.path.exists(local_path):
-                        local_path = _file_utils.increment_path(local_path)
-                else:
-                    # exactly where the user requests
-                    local_path = download_to_path
+                        # avoid collision with existing file
+                        while os.path.exists(local_path):
+                            local_path = _file_utils.increment_path(local_path)
+                    else:
+                        # exactly where the user requests
+                        local_path = download_to_path
 
-                return ({path: local_path}, os.path.abspath(local_path))
+                    return ({path: local_path}, os.path.abspath(local_path))
+        # no exact match, so it's a folder download (or a lookup error)
 
         # figure out where files are going to be downloaded to
         if implicit_download_to_path:
-            # automatically determine directory
-            downloaded_to_path = pathlib2.Path(component_path).name  # final path component
-
-            if downloaded_to_path in {".", "..", "/", "s3:"}:
-                # rather than dump everything ito cwd, use new child dir
+            if component_path is None:
                 downloaded_to_path = DEFAULT_DOWNLOAD_DIR
 
-            # avoid collision with existing directory
-            while os.path.exists(downloaded_to_path):
-                downloaded_to_path = _file_utils.increment_path(downloaded_to_path)
+                # avoid collision with existing directory
+                while os.path.exists(downloaded_to_path):
+                    downloaded_to_path = _file_utils.increment_path(downloaded_to_path)
+            else:
+                # automatically determine directory
+                downloaded_to_path = pathlib2.Path(component_path).name  # final path component
+
+                if downloaded_to_path in {".", "..", "/", "s3:"}:
+                    # rather than dump everything ito cwd, use new child dir
+                    downloaded_to_path = DEFAULT_DOWNLOAD_DIR
+
+                # avoid collision with existing directory
+                while os.path.exists(downloaded_to_path):
+                    downloaded_to_path = _file_utils.increment_path(downloaded_to_path)
         else:
             # exactly where the user requests
             downloaded_to_path = download_to_path
 
-        # look for files contained in `component_path` as a directory
-        component_path_as_dir = component_path if component_path.endswith('/') else component_path+'/'
+        # collect paths in blob and map them to download locations
         components_to_download = dict()
-        for path in self.list_paths():
-            if path.startswith(component_path_as_dir):
-                # rebase from `component_path` onto `downloaded_to_path`
-                #     Implicit `download_to_path` example:
-                #         component_blob.path = "coworker/downloads/data/info.csv"
-                #         component_path      = "coworker/downloads"
-                #         downloaded_to_path  =          "downloads" or "downloads 1", etc.
-                #         local_path          =          "downloads/data/info.csv"
-                #     Explicit `download_to_path` example:
-                #         component_blob.path = "coworker/downloads/data/info.csv"
-                #         component_path      = "coworker/downloads"
-                #         downloaded_to_path  =            "my-data"
-                #         local_path          =            "my-data/data/info.csv"
+        if component_path is None:
+            # download all
+            for path in self.list_paths():
                 local_path = os.path.join(
                     downloaded_to_path,
-                    os.path.relpath(path, component_path),
+                    path,
                 )
 
                 components_to_download[path] = local_path
+        else:
+            # look for files contained in `component_path` as a directory
+            component_path_as_dir = component_path if component_path.endswith('/') else component_path+'/'
+            for path in self.list_paths():
+                if path.startswith(component_path_as_dir):
+                    # rebase from `component_path` onto `downloaded_to_path`
+                    #     Implicit `download_to_path` example:
+                    #         component_blob.path = "coworker/downloads/data/info.csv"
+                    #         component_path      = "coworker/downloads"
+                    #         downloaded_to_path  =          "downloads" or "downloads 1", etc.
+                    #         local_path          =          "downloads/data/info.csv"
+                    #     Explicit `download_to_path` example:
+                    #         component_blob.path = "coworker/downloads/data/info.csv"
+                    #         component_path      = "coworker/downloads"
+                    #         downloaded_to_path  =            "my-data"
+                    #         local_path          =            "my-data/data/info.csv"
+                    local_path = os.path.join(
+                        downloaded_to_path,
+                        os.path.relpath(path, component_path),
+                    )
+
+                    components_to_download[path] = local_path
 
         if not components_to_download:
             raise KeyError("no components found for path {}".format(component_path))
 
         return (components_to_download, os.path.abspath(downloaded_to_path))
 
-    def download(self, component_path, download_to_path=None, chunk_size=32*(10**6)):
+    def download(self, component_path=None, download_to_path=None, chunk_size=32*(10**6)):
         """
         Downloads `component_path` from this dataset if ModelDB-managed versioning was enabled.
 
         Parameters
         ----------
-        component_path : str
-            Original path of the file or directory in this dataset to download.
+        component_path : str, optional
+            Original path of the file or directory in this dataset to download. If not provided,
+            all files will be downloaded.
         download_to_path : str, optional
             Path to download to. If not provided, the file(s) will be downloaded into a new path in
             the current directory. If provided and the path already exists, it will be overwritten.
