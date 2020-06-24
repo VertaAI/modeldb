@@ -35,13 +35,14 @@ case class S3(
   /** Preparing for uploading by downloading the stored objects from S3.
    *  @return A map from the s3 path to the path of the stored object, if succeeds
    */
-  override def prepareForUpload(): Try[Map[String, UploadComponent]] = {
-    Try(contents
-      .mapValues(metadata =>
-        toUploadComponent(S3Location(metadata.path, metadata.versionId).get, S3.s3, metadata).get
+  override def prepareForUpload(): Try[Unit] = {
+    if (enableMDBVersioning)
+      Try(
+        contents
+          .values
+          .map(metadata => toUploadComponent(S3Location(metadata.path, metadata.versionId).get, S3.s3, metadata).get)
       )
-      .toMap
-    )
+    else Success(())
   }
 
   /** Helper method to download the object stored in a S3 location and construct the corresponding upload component
@@ -80,7 +81,10 @@ case class S3(
       }
 
       val internalVersionedPath = f"${Dataset.hash(file, "SHA-256").get}/${location.key.get}"
-      UploadComponent(file.getPath(), toComponent(metadata, Some(internalVersionedPath)))
+
+      // mutating internal field:
+      metadata.internalVersionedPath = Some(internalVersionedPath)
+      metadata.localPath = Some(file.getPath)
     } finally {
       if (s3InputStream.isDefined) s3InputStream.get.close()
       if (fileOutputStream.isDefined) fileOutputStream.get.close()
