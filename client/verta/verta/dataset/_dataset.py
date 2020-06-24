@@ -135,7 +135,7 @@ class _Dataset(blob.Blob):
                         local_path = download_to_path
 
                     return ({path: local_path}, os.path.abspath(local_path))
-        # no exact match, so it's a folder download (or a lookup error)
+        # no exact match, so it's a folder download (or nonexistent path)
 
         # figure out where files are going to be downloaded to
         if implicit_download_to_path:
