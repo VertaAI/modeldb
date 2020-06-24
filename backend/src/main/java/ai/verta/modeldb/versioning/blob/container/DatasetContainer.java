@@ -182,7 +182,7 @@ public class DatasetContainer extends BlobContainer {
     try {
       List<AttributeEntity> newOrUpdatedAttributeEntities =
           RdbmsUtils.convertAttributesFromAttributeEntityList(
-              this, ModelDBConstants.ATTRIBUTES, blobExpanded.getBlob().getAttributesList());
+              this, ModelDBConstants.ATTRIBUTES, blobExpanded.getAttributesList());
       List<AttributeEntity> newAttributeEntities = new ArrayList<>();
       if (addAttribute) {
         newAttributeEntities.addAll(newOrUpdatedAttributeEntities);

@@ -107,7 +107,6 @@ public class CommitDAORdbImpl implements CommitDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetBlob.Builder datasetBlobBuilder = DatasetBlob.newBuilder();
       Blob.Builder blobBuilder = Blob.newBuilder();
-      blobBuilder.addAllAttributes(datasetVersion.getAttributesList());
       switch (datasetVersion.getDatasetVersionInfoCase()) {
         case PATH_DATASET_VERSION_INFO:
           PathDatasetVersionInfo pathDatasetVersionInfo =
@@ -138,6 +137,7 @@ public class CommitDAORdbImpl implements CommitDAO {
                   BlobExpanded.newBuilder()
                       .addAllLocation(location)
                       .setBlob(blobBuilder.setDataset(datasetBlobBuilder))
+                      .addAllAttributes(datasetVersion.getAttributesList())
                       .build()));
 
       session.beginTransaction();

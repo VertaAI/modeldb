@@ -314,8 +314,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               repositoryDAO,
               true);
 
-      responseObserver.onNext(
-          DeleteDatasetVersion.Response.newBuilder().setStatus(deleteStatus).build());
+      responseObserver.onNext(DeleteDatasetVersion.Response.getDefaultInstance());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -934,8 +933,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               repositoryDAO,
               true);
 
-      responseObserver.onNext(
-          DeleteDatasetVersions.Response.newBuilder().setStatus(deleteStatus).build());
+      responseObserver.onNext(DeleteDatasetVersions.Response.getDefaultInstance());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
