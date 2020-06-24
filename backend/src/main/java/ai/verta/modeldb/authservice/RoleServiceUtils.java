@@ -1090,6 +1090,34 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
+  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
+    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
+    workspaceDTO.setWorkspaceId(workspaceId);
+
+    switch (workspaceType) {
+      case WorkspaceType.ORGANIZATION_VALUE:
+        Organization organization = (Organization) getOrgById(workspaceId);
+        workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
+        workspaceDTO.setWorkspaceName(organization.getName());
+        return workspaceDTO;
+      case WorkspaceType.USER_VALUE:
+        workspaceDTO.setWorkspaceType(WorkspaceType.USER);
+        if (workspaceId.equalsIgnoreCase(
+            authService.getVertaIdFromUserInfo(currentLoginUserInfo))) {
+          workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
+        } else {
+          UserInfo userInfo =
+              authService.getUserInfo(workspaceId, ModelDBConstants.UserIdentifier.VERTA_ID);
+          workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(userInfo));
+        }
+        return workspaceDTO;
+      default:
+        return null;
+    }
+  }
+
+  @Override
   public List<Organization> listMyOrganizations() {
     return listMyOrganizations(true);
   }

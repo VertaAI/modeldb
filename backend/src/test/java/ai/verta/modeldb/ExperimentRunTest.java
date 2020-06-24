@@ -37,10 +37,14 @@ import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
+import ai.verta.uac.GetUser;
+import ai.verta.uac.UACServiceGrpc;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
@@ -8320,6 +8324,18 @@ public class ExperimentRunTest {
 
     long repoId =
         RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+
+    String testUser1UserName = null;
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      UACServiceGrpc.UACServiceBlockingStub uacServiceStub =
+          UACServiceGrpc.newBlockingStub(authServiceChannel);
+
+      GetUser getUserRequest =
+          GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+      // Get the user info by vertaId form the AuthService
+      UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
+      testUser1UserName = testUser1.getVertaInfo().getUsername();
+    }
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -8492,9 +8508,22 @@ public class ExperimentRunTest {
         experimentRun3.getId(),
         listCommitExperimentRunsResponse.getRuns(0).getId());
 
+    RepositoryIdentification repositoryIdentification;
+    if (testUser1UserName != null) {
+      repositoryIdentification =
+          RepositoryIdentification.newBuilder()
+              .setNamedId(
+                  RepositoryNamedIdentification.newBuilder()
+                      .setName(RepositoryTest.NAME)
+                      .setWorkspaceName(testUser1UserName)
+                      .build())
+              .build();
+    } else {
+      repositoryIdentification = RepositoryIdentification.newBuilder().setRepoId(repoId).build();
+    }
     listCommitExperimentRunsRequest =
         ListCommitExperimentRunsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setRepositoryId(repositoryIdentification)
             .setCommitSha(commit.getCommitSha())
             .build();
     listCommitExperimentRunsResponse =

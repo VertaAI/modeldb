@@ -32,6 +32,7 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
+import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -2181,17 +2182,30 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setValueType(ValueTypeEnum.ValueType.STRING)
               .build();
 
-      FindExperimentRuns findExperimentRuns =
+      FindExperimentRuns.Builder findExperimentRuns =
           FindExperimentRuns.newBuilder()
               .setPageNumber(request.getPagination().getPageNumber())
               .setPageLimit(request.getPagination().getPageLimit())
               .setAscending(true)
               .setSortKey(ModelDBConstants.DATE_UPDATED)
               .addPredicates(repositoryIdPredicate)
-              .addPredicates(commitHashPredicate)
-              .build();
+              .addPredicates(commitHashPredicate);
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      if (request.getRepositoryId().hasNamedId()) {
+        findExperimentRuns.setWorkspaceName(
+            request.getRepositoryId().getNamedId().getWorkspaceName());
+      } else {
+        WorkspaceDTO workspaceDTO =
+            roleService.getWorkspaceDTOByWorkspaceId(
+                currentLoginUserInfo,
+                repositoryEntity.getWorkspace_id(),
+                repositoryEntity.getWorkspace_type());
+        if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
+          findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());
+        }
+      }
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns);
+          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
       return ListCommitExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
@@ -2243,7 +2257,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setValueType(ValueTypeEnum.ValueType.STRING)
               .build();
 
-      FindExperimentRuns findExperimentRuns =
+      FindExperimentRuns.Builder findExperimentRuns =
           FindExperimentRuns.newBuilder()
               .setPageNumber(request.getPagination().getPageNumber())
               .setPageLimit(request.getPagination().getPageLimit())
@@ -2251,10 +2265,25 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setSortKey(ModelDBConstants.DATE_UPDATED)
               .addPredicates(repositoryIdPredicate)
               .addPredicates(commitHashPredicate)
-              .addPredicates(locationPredicate)
-              .build();
+              .addPredicates(locationPredicate);
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      if (request.getRepositoryId().hasNamedId()) {
+        findExperimentRuns.setWorkspaceName(
+            request.getRepositoryId().getNamedId().getWorkspaceName());
+      } else {
+        WorkspaceDTO workspaceDTO =
+            roleService.getWorkspaceDTOByWorkspaceId(
+                currentLoginUserInfo,
+                repositoryEntity.getWorkspace_id(),
+                repositoryEntity.getWorkspace_type());
+        if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
+          findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());
+        }
+      }
+
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns);
+          findExperimentRuns(
+              projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns.build());
 
       return ListBlobExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
