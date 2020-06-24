@@ -6,6 +6,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 option java_multiple_files = true;
 
 import "common/CommonService.proto";
+import "modeldb/versioning/VersioningService.proto";
 import "modeldb/CommonService.proto";
 import "modeldb/DatasetService.proto";
 import "google/api/annotations.proto";
@@ -20,6 +21,7 @@ message DatasetVersion {
     uint64 time_logged = 4;
     string description = 5;
     repeated string tags = 6;
+    DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 7;
     repeated common.KeyValue attributes = 9;
     string owner = 10;
     uint64 version = 11;
@@ -29,6 +31,7 @@ message DatasetVersion {
         QueryDatasetVersionInfo query_dataset_version_info = 14;
     }
     uint64 time_updated = 15;
+    versioning.DatasetBlob dataset_blob = 16;
 }
 
 message QueryDatasetVersionInfo {
