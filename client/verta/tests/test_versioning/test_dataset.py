@@ -344,6 +344,8 @@ class TestS3ManagedVersioning:
 
     def test_not_to_s3_dir(self, commit, in_tempdir):
         """If the user specifies "s3://", things shouldn't go into an "s3:" dir."""
+        pytest.importorskip("boto3")
+
         bucket = "verta-versioned-bucket"
         dirname = "tiny-files/"
         s3_folder = "s3://{}/{}".format(bucket, dirname)
