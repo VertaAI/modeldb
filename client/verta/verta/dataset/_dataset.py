@@ -253,3 +253,15 @@ class _Dataset(blob.Blob):
                 response.close()
 
         return os.path.abspath(downloaded_to_path)
+
+    def list_paths(self):
+        """
+        Returns the paths of all components in this dataset.
+
+        Returns
+        -------
+        component_paths : list of str
+            Paths of all components.
+
+        """
+        return [component.path for component in self._path_component_blobs]
