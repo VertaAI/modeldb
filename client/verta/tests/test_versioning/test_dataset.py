@@ -359,6 +359,34 @@ class TestS3ManagedVersioning:
         dirpath = dataset.download("s3://")
         assert "s3:" not in pathlib2.Path(dirpath).parts
 
+    def test_download_all(self, commit):
+        s3 = pytest.importorskip("boto3").client('s3')
+
+        bucket = "verta-versioned-bucket"
+        dirname = "tiny-files/"
+        s3_folder = "s3://{}/{}".format(bucket, dirname)
+
+        # get files' contents directly from S3 for reference
+        reference_dir = "reference/"
+        for s3_obj in s3.list_objects_v2(Bucket=bucket, Prefix=dirname)['Contents']:
+            key = s3_obj['Key']
+            filepath = os.path.join(reference_dir, bucket, key)
+            pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # create parent dirs
+
+            s3.download_file(bucket, key, filepath)
+
+        # commit dataset blob
+        blob_path = "data"
+        dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        dirpath = dataset.download()
+        assert dirpath == os.path.abspath(_dataset.DEFAULT_DOWNLOAD_DIR)
+
+        assert_dirs_match(dirpath, reference_dir)
+
 
 class TestPathManagedVersioning:
     def test_mngd_ver_file(self, commit, in_tempdir):
@@ -534,6 +562,7 @@ class TestPathManagedVersioning:
             with open(os.path.join(reference_dir, filename), 'wb') as f:
                 f.write(os.urandom(2**16))
 
+        # commit dataset blob
         blob_path = "data"
         dataset = verta.dataset.Path(reference_dir, enable_mdb_versioning=True)
         commit.update(blob_path, dataset)
