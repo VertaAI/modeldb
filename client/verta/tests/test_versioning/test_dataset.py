@@ -15,6 +15,18 @@ def walk_files(dirpath):
             yield os.path.join(root, filename)
 
 
+def assert_dirs_match(dirpath1, dirpath2):
+    for filepath1 in walk_files(dirpath1):
+        # get corresponding path in dirpath2
+        relative_filepath = os.path.relpath(filepath1, dirpath1)  # drop dirpath1 prefix
+        filepath2 = os.path.join(dirpath2, relative_filepath)  # rebase onto dirpath2
+
+        assert os.path.isfile(filepath2)
+        with open(filepath1, 'rb') as f1:
+            with open(filepath2, 'rb') as f2:
+                assert f1.read() == f2.read()
+
+
 class TestS3:
     def test_s3_bucket(self):
         # pylint: disable=no-member
@@ -305,14 +317,17 @@ class TestS3ManagedVersioning:
         blob_path = "data"
 
         # get files' contents directly from S3 for reference
-        FILE_CONTENTS = dict()  # filename to contents
+        reference_dir = "reference/"
         for s3_obj in s3.list_objects_v2(Bucket=bucket, Prefix=dirname)['Contents']:
-            with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
-                s3.download_fileobj(bucket, s3_obj['Key'], tempf)
-            with open(tempf.name, 'rb') as f:
-                FILE_CONTENTS[os.path.basename(s3_obj['Key'])] = f.read()
-            os.remove(tempf.name)
-        assert FILE_CONTENTS
+            key = s3_obj['Key']
+            filepath = os.path.join(reference_dir, key)
+            pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # create parent dirs
+
+            s3.download_file(bucket, key, filepath)
+
+        # Since we're retrieving files with the S3 prefix `dirname`, the downloaded filetree won't
+        # start with `dirname`, so we have to go deeper for `reference_dir` to account for that.
+        reference_dir = os.path.join(reference_dir, dirname)
 
         # commit dataset blob
         dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
@@ -324,25 +339,19 @@ class TestS3ManagedVersioning:
         dirpath = dataset.download(s3_folder)
         assert os.path.isdir(dirpath)
         assert dirpath == os.path.abspath(dirname)
-        for filename in os.listdir(dirpath):
-            with open(os.path.join(dirpath, filename), 'rb') as f:
-                assert f.read() == FILE_CONTENTS[filename]
+        assert_dirs_match(dirpath, reference_dir)
 
         # download to implicit path without collision
         dirpath2 = dataset.download(s3_folder)
         assert os.path.isdir(dirpath2)
         assert dirpath2 != dirpath
-        for filename in os.listdir(dirpath):
-            with open(os.path.join(dirpath, filename), 'rb') as f:
-                assert f.read() == FILE_CONTENTS[filename]
+        assert_dirs_match(dirpath2, reference_dir)
 
         # download to explicit path with overwrite
         last_updated = os.path.getmtime(dirpath)
         dirpath3 = dataset.download(s3_folder, dirpath)
         assert dirpath3 == dirpath
-        for filename in os.listdir(dirpath):
-            with open(os.path.join(dirpath, filename), 'rb') as f:
-                assert f.read() == FILE_CONTENTS[filename]
+        assert_dirs_match(dirpath3, reference_dir)
         assert os.path.getmtime(dirpath) > last_updated
 
     def test_not_to_s3_dir(self, commit, in_tempdir):
@@ -399,46 +408,37 @@ class TestPathManagedVersioning:
         assert os.path.getmtime(filepath) > last_updated
 
     def test_mngd_ver_folder(self, commit, in_tempdir):
+        reference_dir = "reference/"
         dirname = "tiny-files/"
         os.mkdir(dirname)
-        FILE_CONTENTS = {  # filename to contents
-            "tiny{}.bin".format(i): os.urandom(2**16)
-            for i in range(3)
-        }
-        for filename, contents in FILE_CONTENTS.items():
+        for filename in ["tiny{}.bin".format(i) for i in range(3)]:
             with open(os.path.join(dirname, filename), 'wb') as f:
-                f.write(contents)
-        blob_path = "data"
+                f.write(os.urandom(2**16))
 
+        blob_path = "data"
         dataset = verta.dataset.Path(dirname, enable_mdb_versioning=True)
         commit.update(blob_path, dataset)
         commit.save("Version data.")
-        shutil.rmtree(dirname)  # delete for first download test
+        os.rename(dirname, reference_dir)  # move sources to avoid collision
         dataset = commit.get(blob_path)
 
         # download to implicit path
         dirpath = dataset.download(dirname)
         assert os.path.isdir(dirpath)
         assert dirpath == os.path.abspath(dirname)
-        for filename in os.listdir(dirpath):
-            with open(os.path.join(dirpath, filename), 'rb') as f:
-                assert f.read() == FILE_CONTENTS[filename]
+        assert_dirs_match(dirpath, reference_dir)
 
         # download to implicit path without collision
         dirpath2 = dataset.download(dirname)
         assert os.path.isdir(dirpath2)
         assert dirpath2 != dirpath
-        for filename in os.listdir(dirpath2):
-            with open(os.path.join(dirpath2, filename), 'rb') as f:
-                assert f.read() == FILE_CONTENTS[filename]
+        assert_dirs_match(dirpath2, reference_dir)
 
         # download to explicit path with overwrite
         last_updated = os.path.getmtime(dirpath)
         dirpath3 = dataset.download(dirname, dirpath)
         assert dirpath3 == dirpath
-        for filename in os.listdir(dirpath3):
-            with open(os.path.join(dirpath3, filename), 'rb') as f:
-                assert f.read() == FILE_CONTENTS[filename]
+        assert_dirs_match(dirpath3, reference_dir)
         assert os.path.getmtime(dirpath) > last_updated
 
     def test_mngd_ver_rollback(self, commit, in_tempdir):
@@ -500,7 +500,6 @@ class TestPathManagedVersioning:
             assert filepath == os.path.abspath(download_to_path)
             with open(filepath, 'rb') as f:
                 assert f.read() == FILE_CONTENTS
-
 
     def test_mngd_ver_to_sibling_dir(self, commit, in_tempdir):
         """Download to sibling directory works as expected."""
