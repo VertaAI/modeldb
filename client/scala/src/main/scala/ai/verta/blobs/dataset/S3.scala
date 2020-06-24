@@ -83,6 +83,7 @@ case class S3(
 
       val internalVersionedPath = f"${Dataset.hash(file, "SHA-256").get}/${location.key.get}"
 
+      /** TODO: remove these  */
       // mutating internal field:
       metadata.internalVersionedPath = Some(internalVersionedPath)
       metadata.localPath = Some(file.getPath)
