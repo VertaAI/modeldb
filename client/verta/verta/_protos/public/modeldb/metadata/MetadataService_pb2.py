@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb.metadata',
   syntax='proto3',
   serialized_options=b'P\001ZGgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadata',
-  serialized_pb=b'\n&modeldb/metadata/MetadataService.proto\x12\x19\x61i.verta.modeldb.metadata\x1a\x1cgoogle/api/annotations.proto\"\x93\x01\n\nIDTypeEnum\"\x84\x01\n\x06IDType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x19\n\x15VERSIONING_REPOSITORY\x10\x01\x12\x15\n\x11VERSIONING_COMMIT\x10\x02\x12\x1f\n\x1bVERSIONING_REPO_COMMIT_BLOB\x10\x03\x12\x1a\n\x16VERSIONING_REPO_COMMIT\x10\x04\"\x80\x01\n\x12IdentificationType\x12=\n\x07id_type\x18\x01 \x01(\x0e\x32,.ai.verta.modeldb.metadata.IDTypeEnum.IDType\x12\x10\n\x06int_id\x18\x02 \x01(\x04H\x00\x12\x13\n\tstring_id\x18\x03 \x01(\tH\x00\x42\x04\n\x02id\"i\n\x10GetLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x1a\x1a\n\x08Response\x12\x0e\n\x06labels\x18\x01 \x03(\t\"y\n\x10\x41\x64\x64LabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"|\n\x13\x44\x65leteLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"h\n\x12GetPropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response\"w\n\x12\x41\x64\x64PropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\t\x1a\n\n\x08Response\"k\n\x15\x44\x65letePropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response2\x9b\x07\n\x0fMetadataService\x12\x8b\x01\n\tGetLabels\x12+.ai.verta.modeldb.metadata.GetLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.GetLabelsRequest.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/metadata/labels\x12\x8e\x01\n\tAddLabels\x12+.ai.verta.modeldb.metadata.AddLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.AddLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x1a\x13/v1/metadata/labels:\x01*\x12\x97\x01\n\x0c\x44\x65leteLabels\x12..ai.verta.modeldb.metadata.DeleteLabelsRequest\x1a\x37.ai.verta.modeldb.metadata.DeleteLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18*\x13/v1/metadata/labels:\x01*\x12\x93\x01\n\x0bGetProperty\x12-.ai.verta.modeldb.metadata.GetPropertyRequest\x1a\x36.ai.verta.modeldb.metadata.GetPropertyRequest.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/metadata/property\x12\x96\x01\n\x0b\x41\x64\x64Property\x12-.ai.verta.modeldb.metadata.AddPropertyRequest\x1a\x36.ai.verta.modeldb.metadata.AddPropertyRequest.Response\" \x82\xd3\xe4\x93\x02\x1a\x1a\x15/v1/metadata/property:\x01*\x12\x9f\x01\n\x0e\x44\x65leteProperty\x12\x30.ai.verta.modeldb.metadata.DeletePropertyRequest\x1a\x39.ai.verta.modeldb.metadata.DeletePropertyRequest.Response\" \x82\xd3\xe4\x93\x02\x1a*\x15/v1/metadata/property:\x01*BKP\x01ZGgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadatab\x06proto3'
+  serialized_pb=b'\n&modeldb/metadata/MetadataService.proto\x12\x19\x61i.verta.modeldb.metadata\x1a\x1cgoogle/api/annotations.proto\"\x93\x01\n\nIDTypeEnum\"\x84\x01\n\x06IDType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x19\n\x15VERSIONING_REPOSITORY\x10\x01\x12\x15\n\x11VERSIONING_COMMIT\x10\x02\x12\x1f\n\x1bVERSIONING_REPO_COMMIT_BLOB\x10\x03\x12\x1a\n\x16VERSIONING_REPO_COMMIT\x10\x04\"\x80\x01\n\x12IdentificationType\x12=\n\x07id_type\x18\x01 \x01(\x0e\x32,.ai.verta.modeldb.metadata.IDTypeEnum.IDType\x12\x10\n\x06int_id\x18\x02 \x01(\x04H\x00\x12\x13\n\tstring_id\x18\x03 \x01(\tH\x00\x42\x04\n\x02id\"i\n\x10GetLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x1a\x1a\n\x08Response\x12\x0e\n\x06labels\x18\x01 \x03(\t\"y\n\x10\x41\x64\x64LabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"|\n\x13\x44\x65leteLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"w\n\x12GetPropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x19\n\x08Response\x12\r\n\x05value\x18\x03 \x01(\t\"w\n\x12\x41\x64\x64PropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\t\x1a\n\n\x08Response\"k\n\x15\x44\x65letePropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response2\x9b\x07\n\x0fMetadataService\x12\x8b\x01\n\tGetLabels\x12+.ai.verta.modeldb.metadata.GetLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.GetLabelsRequest.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/metadata/labels\x12\x8e\x01\n\tAddLabels\x12+.ai.verta.modeldb.metadata.AddLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.AddLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x1a\x13/v1/metadata/labels:\x01*\x12\x97\x01\n\x0c\x44\x65leteLabels\x12..ai.verta.modeldb.metadata.DeleteLabelsRequest\x1a\x37.ai.verta.modeldb.metadata.DeleteLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18*\x13/v1/metadata/labels:\x01*\x12\x93\x01\n\x0bGetProperty\x12-.ai.verta.modeldb.metadata.GetPropertyRequest\x1a\x36.ai.verta.modeldb.metadata.GetPropertyRequest.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/metadata/property\x12\x96\x01\n\x0b\x41\x64\x64Property\x12-.ai.verta.modeldb.metadata.AddPropertyRequest\x1a\x36.ai.verta.modeldb.metadata.AddPropertyRequest.Response\" \x82\xd3\xe4\x93\x02\x1a\x1a\x15/v1/metadata/property:\x01*\x12\x9f\x01\n\x0e\x44\x65leteProperty\x12\x30.ai.verta.modeldb.metadata.DeletePropertyRequest\x1a\x39.ai.verta.modeldb.metadata.DeletePropertyRequest.Response\" \x82\xd3\xe4\x93\x02\x1a*\x15/v1/metadata/property:\x01*BKP\x01ZGgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadatab\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,])
 
@@ -337,6 +337,13 @@ _GETPROPERTYREQUEST_RESPONSE = _descriptor.Descriptor(
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
+    _descriptor.FieldDescriptor(
+      name='value', full_name='ai.verta.modeldb.metadata.GetPropertyRequest.Response.value', index=0,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -349,8 +356,8 @@ _GETPROPERTYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=459,
-  serialized_end=469,
+  serialized_start=830,
+  serialized_end=855,
 )
 
 _GETPROPERTYREQUEST = _descriptor.Descriptor(
@@ -387,7 +394,7 @@ _GETPROPERTYREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=736,
-  serialized_end=840,
+  serialized_end=855,
 )
 
 
@@ -454,8 +461,8 @@ _ADDPROPERTYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=842,
-  serialized_end=961,
+  serialized_start=857,
+  serialized_end=976,
 )
 
 
@@ -515,8 +522,8 @@ _DELETEPROPERTYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=963,
-  serialized_end=1070,
+  serialized_start=978,
+  serialized_end=1085,
 )
 
 _IDTYPEENUM_IDTYPE.containing_type = _IDTYPEENUM
@@ -662,8 +669,8 @@ _METADATASERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1073,
-  serialized_end=1996,
+  serialized_start=1088,
+  serialized_end=2011,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetLabels',

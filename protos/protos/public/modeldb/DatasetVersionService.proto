@@ -118,19 +118,14 @@ message DeleteDatasetVersion {
     string dataset_id = 2;
 
     message Response {
-        //bool status = 1;
     }
 }
 
 message DeleteDatasetVersions {
     repeated string ids = 1;
     string dataset_id = 2;
-<<<<<<< HEAD
-=======
 
->>>>>>> feature/VR-4556_integrate_data_versions
     message Response {
-        //bool status = 1;
     }
 }
 

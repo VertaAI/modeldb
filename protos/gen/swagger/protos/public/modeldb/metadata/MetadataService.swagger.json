@@ -341,7 +341,12 @@
       }
     },
     "metadataGetPropertyRequestResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string"
+        }
+      }
     },
     "metadataIdentificationType": {
       "type": "object",

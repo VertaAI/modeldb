@@ -615,6 +615,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "dataset_id": {
+          "type": "string"
         }
       }
     },
