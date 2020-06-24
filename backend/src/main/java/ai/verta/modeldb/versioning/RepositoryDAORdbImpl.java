@@ -253,13 +253,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public RepositoryEntity getRepositoryById(
       Session session, RepositoryIdentification id, boolean checkWrite) throws ModelDBException {
-    return getRepositoryById(session, id, checkWrite, true);
-  }
-
-  @Override
-  public RepositoryEntity getRepositoryById(
-      Session session, RepositoryIdentification id, boolean checkWrite, boolean checkProtected)
-      throws ModelDBException {
     RepositoryEntity repository;
     if (id.hasNamedId()) {
       WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(id, true);
@@ -279,10 +272,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                           "Couldn't find repository by id " + id.getRepoId(), Code.NOT_FOUND));
     }
     try {
-      if (checkProtected && repository.isProtected()) {
-        throw new ModelDBException(
-            "Can't access repository because it's protected", Code.PERMISSION_DENIED);
-      }
       if (checkWrite) {
         roleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.REPOSITORY,

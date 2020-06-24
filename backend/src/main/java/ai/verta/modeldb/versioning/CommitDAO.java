@@ -51,10 +51,12 @@ public interface CommitDAO {
       boolean isDatasetVersion)
       throws ModelDBException;
 
-  void addDeleteDatasetVersionTags(
+  DatasetVersion addDeleteDatasetVersionTags(
+      RepositoryDAO repositoryDAO,
+      BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       boolean addTags,
-      RepositoryEntity repositoryEntity,
+      String datasetId,
       String datasetVersionId,
       List<String> tagsList,
       boolean deleteAll)

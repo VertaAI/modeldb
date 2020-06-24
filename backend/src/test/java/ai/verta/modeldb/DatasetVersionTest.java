@@ -237,10 +237,7 @@ public class DatasetVersionTest {
         datasetVersion1.getDatasetId());
 
     DeleteDatasetVersion deleteDatasetVersionRequest =
-        DeleteDatasetVersion.newBuilder()
-            .setDatasetId(dataset.getId())
-            .setId(datasetVersion1.getId())
-            .build();
+        DeleteDatasetVersion.newBuilder().setId(datasetVersion1.getId()).build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
     LOGGER.info("DeleteDatasetVersion deleted successfully");
@@ -401,10 +398,7 @@ public class DatasetVersionTest {
     for (String datasetVersionId :
         new String[] {datasetVersion3.getId(), datasetVersion2.getId(), datasetVersion1.getId()}) {
       DeleteDatasetVersion deleteDatasetVersionRequest =
-          DeleteDatasetVersion.newBuilder()
-              .setDatasetId(dataset.getId())
-              .setId(datasetVersionId)
-              .build();
+          DeleteDatasetVersion.newBuilder().setId(datasetVersionId).build();
       DeleteDatasetVersion.Response deleteDatasetVersionResponse =
           datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
       LOGGER.info("DeleteDatasetVersion deleted successfully");
@@ -599,10 +593,7 @@ public class DatasetVersionTest {
         response.getDatasetVersion().getTimeUpdated());
 
     DeleteDatasetVersion deleteDatasetVersion =
-        DeleteDatasetVersion.newBuilder()
-            .setDatasetId(dataset.getId())
-            .setId(datasetVersion.getId())
-            .build();
+        DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
@@ -679,7 +670,6 @@ public class DatasetVersionTest {
     tagsList.add("Add Test Tag2");
     AddDatasetVersionTags addDatasetVersionTagsRequest =
         AddDatasetVersionTags.newBuilder()
-            .setDatasetId(dataset.getId())
             .setId(datasetVersion.getId())
             .addAllTags(tagsList)
             .build();
@@ -700,7 +690,6 @@ public class DatasetVersionTest {
     tagsList.add("Add Test Tag2");
     addDatasetVersionTagsRequest =
         AddDatasetVersionTags.newBuilder()
-            .setDatasetId(dataset.getId())
             .setId(datasetVersion.getId())
             .addAllTags(tagsList)
             .build();
@@ -719,11 +708,7 @@ public class DatasetVersionTest {
     try {
       String tag52 = "Human Activity Recognition using Smartphone DatasetVersion";
       addDatasetVersionTagsRequest =
-          AddDatasetVersionTags.newBuilder()
-              .setDatasetId(dataset.getId())
-              .setId(datasetVersion.getId())
-              .addTags(tag52)
-              .build();
+          AddDatasetVersionTags.newBuilder().setId(datasetVersion.getId()).addTags(tag52).build();
       datasetVersionServiceStub.addDatasetVersionTags(addDatasetVersionTagsRequest);
       fail();
     } catch (StatusRuntimeException e) {
@@ -733,10 +718,7 @@ public class DatasetVersionTest {
     }
 
     DeleteDatasetVersion deleteDatasetVersion =
-        DeleteDatasetVersion.newBuilder()
-            .setDatasetId(dataset.getId())
-            .setId(datasetVersion.getId())
-            .build();
+        DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
@@ -794,7 +776,6 @@ public class DatasetVersionTest {
       }
       DeleteDatasetVersionTags deleteDatasetVersionTagsRequest =
           DeleteDatasetVersionTags.newBuilder()
-              .setDatasetId(dataset.getId())
               .setId(datasetVersion.getId())
               .addAllTags(removableTags)
               .build();
@@ -926,7 +907,6 @@ public class DatasetVersionTest {
     AddDatasetVersionAttributes addDatasetVersionAttributesRequest =
         AddDatasetVersionAttributes.newBuilder()
             .setId(datasetVersion.getId())
-            .setDatasetId(dataset.getId())
             .addAllAttributes(attributeList)
             .build();
 
@@ -940,10 +920,7 @@ public class DatasetVersionTest {
         response.getDatasetVersion().getTimeUpdated());
 
     DeleteDatasetVersion deleteDatasetVersion =
-        DeleteDatasetVersion.newBuilder()
-            .setDatasetId(dataset.getId())
-            .setId(datasetVersion.getId())
-            .build();
+        DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
@@ -1044,7 +1021,6 @@ public class DatasetVersionTest {
     UpdateDatasetVersionAttributes updateDatasetVersionAttributesRequest =
         UpdateDatasetVersionAttributes.newBuilder()
             .setId(datasetVersion.getId())
-            .setDatasetId(dataset.getId())
             .setAttribute(keyValue)
             .build();
 
@@ -1216,10 +1192,7 @@ public class DatasetVersionTest {
     }
 
     DeleteDatasetVersion deleteDatasetVersion =
-        DeleteDatasetVersion.newBuilder()
-            .setDatasetId(dataset.getId())
-            .setId(datasetVersion.getId())
-            .build();
+        DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
@@ -1287,7 +1260,6 @@ public class DatasetVersionTest {
 
     GetDatasetVersionAttributes getDatasetVersionAttributesRequest =
         GetDatasetVersionAttributes.newBuilder()
-            .setDatasetId(dataset.getId())
             .setId(datasetVersion.getId())
             .addAllAttributeKeys(keys)
             .build();
@@ -1433,7 +1405,6 @@ public class DatasetVersionTest {
       deleteDatasetVersionAttributesRequest =
           DeleteDatasetVersionAttributes.newBuilder()
               .setId(datasetVersion.getId())
-              .setDatasetId(dataset.getId())
               .setDeleteAll(true)
               .build();
       response =
@@ -1451,10 +1422,7 @@ public class DatasetVersionTest {
 
     // Delete all data related to datasetVersion
     DeleteDatasetVersion deleteDatasetVersion =
-        DeleteDatasetVersion.newBuilder()
-            .setDatasetId(dataset.getId())
-            .setId(datasetVersion.getId())
-            .build();
+        DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
@@ -1553,10 +1521,7 @@ public class DatasetVersionTest {
         response.getDatasetVersion().getTimeUpdated());
 
     DeleteDatasetVersion deleteDatasetVersion =
-        DeleteDatasetVersion.newBuilder()
-            .setDatasetId(dataset.getId())
-            .setId(datasetVersion.getId())
-            .build();
+        DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
@@ -1618,10 +1583,7 @@ public class DatasetVersionTest {
     datasetVersionIds.add(datasetVersion2.getId());
 
     DeleteDatasetVersions deleteDatasetVersionsRequest =
-        DeleteDatasetVersions.newBuilder()
-            .setDatasetId(dataset.getId())
-            .addAllIds(datasetVersionIds)
-            .build();
+        DeleteDatasetVersions.newBuilder().addAllIds(datasetVersionIds).build();
     DeleteDatasetVersions.Response deleteDatasetVersionsResponse =
         datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersionsRequest);
     LOGGER.info("DeleteDatasetVersion deleted successfully");
@@ -1690,10 +1652,7 @@ public class DatasetVersionTest {
     datasetVersionIds.add(datasetVersion2.getId());
 
     DeleteDatasetVersions deleteDatasetVersionsRequest =
-        DeleteDatasetVersions.newBuilder()
-            .setDatasetId(dataset.getId())
-            .addAllIds(datasetVersionIds)
-            .build();
+        DeleteDatasetVersions.newBuilder().addAllIds(datasetVersionIds).build();
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =

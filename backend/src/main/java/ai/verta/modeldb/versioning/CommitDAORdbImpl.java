@@ -389,9 +389,11 @@ public class CommitDAORdbImpl implements CommitDAO {
       boolean isDatasetVersion)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(session, repositoryIdentification, true);
 
+      String entityName = "Commit";
+      if (isDatasetVersion) {
+        entityName = "DatasetVersion";
+      }
       Query<CommitEntity> getCommitQuery =
           session.createQuery(
               "From "
@@ -400,6 +402,41 @@ public class CommitDAORdbImpl implements CommitDAO {
               CommitEntity.class);
       getCommitQuery.setParameter("commitHashes", commitShas);
       List<CommitEntity> commitEntities = getCommitQuery.getResultList();
+      if (commitEntities.isEmpty()) {
+        throw new ModelDBException(
+            entityName + "s not found for the ids: " + commitShas, Code.NOT_FOUND);
+      }
+
+      if (repositoryIdentification == null && isDatasetVersion) {
+        for (CommitEntity commitEntity : commitEntities) {
+          if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
+            throw new ModelDBException(
+                entityName
+                    + " '"
+                    + commitEntity.getCommit_hash()
+                    + "' associated with multiple datasets",
+                Code.INTERNAL);
+          }
+          assert commitEntity.getRepository() != null;
+          Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
+          if (repositoryIdentification == null) {
+            repositoryIdentification =
+                RepositoryIdentification.newBuilder().setRepoId(newRepoId).build();
+          } else {
+            if (repositoryIdentification.getRepoId() != newRepoId) {
+              throw new ModelDBException(
+                  entityName
+                      + " '"
+                      + commitEntity.getCommit_hash()
+                      + "' associated with multiple datasets",
+                  Code.INTERNAL);
+            }
+          }
+        }
+      }
+
+      RepositoryEntity repositoryEntity =
+          repositoryDAO.getRepositoryById(session, repositoryIdentification, true);
 
       String getBranchByCommitHQLBuilder =
           "FROM "
@@ -507,18 +544,45 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   @Override
-  public void addDeleteDatasetVersionTags(
+  public DatasetVersion addDeleteDatasetVersionTags(
+      RepositoryDAO repositoryDAO,
+      BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       boolean addTags,
-      RepositoryEntity repositoryEntity,
+      String datasetId,
       String datasetVersionId,
       List<String> tagsList,
       boolean deleteAll)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
-      CommitEntity commitEntity =
-          getCommitEntity(session, datasetVersionId, (session1 -> repositoryEntity));
+      CommitEntity commitEntity = null;
+      RepositoryEntity repositoryEntity;
+
+      RepositoryIdentification.Builder repositoryIdentification =
+          RepositoryIdentification.newBuilder();
+      if (datasetId == null || datasetId.isEmpty()) {
+        commitEntity = session.get(CommitEntity.class, datasetVersionId);
+        if (commitEntity == null) {
+          throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
+        }
+
+        if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
+          throw new ModelDBException(
+              "DatasetVersion '"
+                  + commitEntity.getCommit_hash()
+                  + "' associated with multiple datasets",
+              Code.INTERNAL);
+        }
+        Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
+        repositoryIdentification.setRepoId(newRepoId);
+      } else {
+        repositoryIdentification.setRepoId(Long.parseLong(datasetId));
+      }
+      repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification.build(), true);
+
+      if (commitEntity == null) {
+        commitEntity = getCommitEntity(session, datasetVersionId, (session1 -> repositoryEntity));
+      }
 
       String compositeId =
           VersioningUtils.getVersioningCompositeId(
@@ -526,6 +590,7 @@ public class CommitDAORdbImpl implements CommitDAO {
               commitEntity.getCommit_hash(),
               Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
 
+      session.beginTransaction();
       IdentificationType identificationType =
           IdentificationType.newBuilder()
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
@@ -540,10 +605,19 @@ public class CommitDAORdbImpl implements CommitDAO {
       commitEntity.setDate_updated(new Date().getTime());
       session.update(commitEntity);
       session.getTransaction().commit();
+      return blobDAO.convertToDatasetVersion(
+          metadataDAO, repositoryEntity, commitEntity.getCommit_hash());
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        addDeleteDatasetVersionTags(
-            metadataDAO, addTags, repositoryEntity, datasetVersionId, tagsList, deleteAll);
+        return addDeleteDatasetVersionTags(
+            repositoryDAO,
+            blobDAO,
+            metadataDAO,
+            addTags,
+            datasetId,
+            datasetVersionId,
+            tagsList,
+            deleteAll);
       } else {
         throw ex;
       }

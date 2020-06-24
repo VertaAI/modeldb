@@ -7,14 +7,12 @@ import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
-import ai.verta.modeldb.versioning.RepositoryAccessModifierEnum.RepositoryAccessModifier;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -44,7 +42,6 @@ public class RepositoryEntity {
     this.date_created = new Date().getTime();
     this.date_updated = new Date().getTime();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
-    this.repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
     if (workspaceDTO.getWorkspaceId() != null) {
       this.workspace_id = workspaceDTO.getWorkspaceId();
       this.workspace_type = workspaceDTO.getWorkspaceType().getNumber();
@@ -95,9 +92,6 @@ public class RepositoryEntity {
 
   @Column(name = "repository_visibility")
   private Integer repository_visibility = null;
-
-  @Column(name = "repository_access_modifier")
-  private Integer repositoryAccessModifier = null;
 
   @Column(name = "deleted")
   private Boolean deleted = false;
@@ -182,9 +176,6 @@ public class RepositoryEntity {
     if (repository_visibility != null) {
       builder.setRepositoryVisibilityValue(repository_visibility);
     }
-    if (repositoryAccessModifier != null) {
-      builder.setRepositoryAccessModifierValue(repositoryAccessModifier);
-    }
     if (owner != null) {
       builder.setOwner(owner);
     }
@@ -195,7 +186,6 @@ public class RepositoryEntity {
     this.name = repository.getName();
     this.description = repository.getDescription();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
-    this.repositoryAccessModifier = repository.getRepositoryAccessModifierValue();
     this.workspace_id = repository.getWorkspaceId();
     this.workspace_type = repository.getWorkspaceTypeValue();
     update();
@@ -212,10 +202,6 @@ public class RepositoryEntity {
 
   public Integer getRepository_visibility() {
     return repository_visibility;
-  }
-
-  public boolean isProtected() {
-    return Objects.equals(repositoryAccessModifier, RepositoryAccessModifier.PROTECTED.getNumber());
   }
 
   private void updateAttribute(List<KeyValue> attributes) throws InvalidProtocolBufferException {
