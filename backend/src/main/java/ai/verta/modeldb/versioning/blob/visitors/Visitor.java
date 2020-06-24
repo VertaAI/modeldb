@@ -2419,6 +2419,57 @@ public class Visitor {
     return blob;
   }
 
+  public void preVisitListOfAutogenCommonKeyValue(List<AutogenCommonKeyValue> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenCommonKeyValue val : lst) {
+      preVisitAutogenCommonKeyValue(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenCommonKeyValue(List<AutogenCommonKeyValue> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenCommonKeyValue val : lst) {
+      preVisitDeepAutogenCommonKeyValue(val);
+    }
+  }
+
+  public List<AutogenCommonKeyValue> postVisitListOfAutogenCommonKeyValue(
+      List<AutogenCommonKeyValue> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenCommonKeyValue> collect = new ArrayList<>(lst.size());
+    for (AutogenCommonKeyValue val : lst) {
+      collect.add(postVisitAutogenCommonKeyValue(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenCommonKeyValue> postVisitDeepListOfAutogenCommonKeyValue(
+      List<AutogenCommonKeyValue> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenCommonKeyValue> collect = new ArrayList<>(lst.size());
+    for (AutogenCommonKeyValue val : lst) {
+      collect.add(postVisitDeepAutogenCommonKeyValue(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenCommonKeyValue(AutogenCommonKeyValue blob) throws ModelDBException {}
+
+  public void preVisitDeepAutogenCommonKeyValue(AutogenCommonKeyValue blob)
+      throws ModelDBException {}
+
+  public AutogenCommonKeyValue postVisitAutogenCommonKeyValue(AutogenCommonKeyValue blob)
+      throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenCommonKeyValue postVisitDeepAutogenCommonKeyValue(AutogenCommonKeyValue blob)
+      throws ModelDBException {
+    return blob;
+  }
+
   public <T> T genericPostVisitDeep(T b) throws ModelDBException {
     if (b instanceof AutogenBlob) {
       return Utils.removeEmpty((T) postVisitDeepAutogenBlob((AutogenBlob) b));
