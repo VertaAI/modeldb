@@ -30,6 +30,8 @@ message Commit {
     string author = 4;
 
     string commit_sha = 5;
+    // Updated Date while create tags & attribute for the commit.
+    uint64 date_updated = 6;
 }
 
 // Data structure used to compute the SHA of a folder
@@ -71,6 +73,7 @@ message BlobExpanded {
     // Each element goes one level deeper. So ["foo", "bar"] represents the same as /foo/bar
     repeated string location = 1;
     Blob blob = 2;
+    repeated common.KeyValue attributes = 3;
 }
 
 message BlobDiff {
@@ -108,6 +111,8 @@ message Repository {
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
 
     string owner = 10;
+    string description = 11;
+    repeated common.KeyValue attributes = 12;
 }
 
 // For pagination
@@ -271,6 +276,7 @@ message GetCommitComponentRequest {
             Folder folder = 1;
             Blob blob = 2;
         }
+        repeated common.KeyValue attributes = 10;
     }
 }
 
@@ -462,6 +468,7 @@ message FindRepositoriesBlobs {
     //In future requirement
     //bool ascending = 8;
     //string sort_key = 9;
+    repeated KeyValueQuery predicates = 10;
 
     message Response {
         repeated BlobExpanded blobs = 1;

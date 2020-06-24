@@ -20,8 +20,6 @@ message DatasetVersion {
     uint64 time_logged = 4;
     string description = 5;
     repeated string tags = 6;
-    DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 7;
-    DatasetTypeEnum.DatasetType dataset_type = 8;// this acts as a quick check on which type of DataSetInfo to look at for more details.
     repeated common.KeyValue attributes = 9;
     string owner = 10;
     uint64 version = 11;
@@ -85,7 +83,6 @@ message CreateDatasetVersion {
     string description = 4;
     repeated string tags = 5;
     DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 6;
-    DatasetTypeEnum.DatasetType dataset_type = 7;// this acts as a quick check on which type of DataSetInfo to look at for more details.
     repeated common.KeyValue attributes = 8;
     uint64 version = 9;
     oneof dataset_version_info {
@@ -115,17 +112,18 @@ message GetAllDatasetVersionsByDatasetId {
 
 message DeleteDatasetVersion {
     string id = 1;
+    string dataset_id = 2;
 
     message Response {
-        bool status = 1;
+        //bool status = 1;
     }
 }
 
 message DeleteDatasetVersions {
     repeated string ids = 1;
-
+    string dataset_id = 2;
     message Response {
-        bool status = 1;
+        //bool status = 1;
     }
 }
 
@@ -133,14 +131,6 @@ message GetLatestDatasetVersionByDatasetId {
     string dataset_id = 1;
     bool ascending = 9;
     string sort_key = 10;
-    message Response {
-        DatasetVersion dataset_version = 1;
-    }
-}
-
-message GetDatasetVersionById{
-    string id = 1;
-
     message Response {
         DatasetVersion dataset_version = 1;
     }
@@ -168,6 +158,7 @@ message FindDatasetVersions {
 message UpdateDatasetVersionDescription {
     string id = 1;
     string description = 2;
+    string dataset_id = 3;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -187,6 +178,7 @@ message DeleteDatasetVersionTags {
     string id = 1;
     repeated string tags = 2;
     bool delete_all = 3;
+    string dataset_id = 4;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -196,6 +188,7 @@ message DeleteDatasetVersionTags {
 message AddDatasetVersionAttributes {
     string id = 1;
     repeated common.KeyValue attributes = 2;
+    string dataset_id = 3;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -205,6 +198,7 @@ message AddDatasetVersionAttributes {
 message UpdateDatasetVersionAttributes {
     string id = 1;
     common.KeyValue attribute = 2;
+    string dataset_id = 3;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -213,6 +207,9 @@ message UpdateDatasetVersionAttributes {
 
 message GetDatasetVersionAttributes {
     string id = 1;
+    repeated string attribute_keys = 2;
+    bool get_all = 3;
+    string dataset_id = 4;
 
     message Response {
         repeated common.KeyValue attributes = 1;
@@ -223,6 +220,7 @@ message DeleteDatasetVersionAttributes {
     string id = 1;
     repeated string attribute_keys = 2;
     bool delete_all = 3;
+    string dataset_id = 4;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -273,12 +271,6 @@ service DatasetVersionService {
         };
     };
 
-    rpc getDatasetVersionById (GetDatasetVersionById) returns (GetDatasetVersionById.Response) {
-        option (google.api.http) ={
-            get: "/v1/dataset-version/getDatasetVersionById"
-        };
-    };
-
     // queries
     rpc findDatasetVersions(FindDatasetVersions) returns (FindDatasetVersions.Response){
         option (google.api.http) = {
@@ -298,12 +290,6 @@ service DatasetVersionService {
         option (google.api.http) = {
             post: "/v1/dataset-version/addDatasetVersionTags"
             body: "*"
-        };
-    };
-
-    rpc getDatasetVersionTags(GetTags) returns (GetTags.Response) {
-        option (google.api.http) = {
-            get: "/v1/dataset-version/getDatasetVersionTags"
         };
     };
 
@@ -328,7 +314,7 @@ service DatasetVersionService {
         };
     };
 
-    rpc getDatasetVersionAttributes(GetAttributes) returns (GetAttributes.Response) {
+    rpc getDatasetVersionAttributes(GetDatasetVersionAttributes) returns (GetDatasetVersionAttributes.Response) {
         option (google.api.http) = {
             get: "/v1/dataset-version/getDatasetVersionAttributes"
         };
