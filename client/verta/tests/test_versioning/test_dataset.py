@@ -9,12 +9,6 @@ from .. import utils
 import verta.dataset
 
 
-def walk_files(dirpath):
-    for root, _, filenames in os.walk(dirpath):
-        for filename in filenames:
-            yield os.path.join(root, filename)
-
-
 class TestS3:
     def test_s3_bucket(self):
         # pylint: disable=no-member
@@ -244,7 +238,10 @@ class TestPath:
     def test_list_paths(self):
         data_dir = "modelapi_hypothesis/"
 
-        expected_paths = list(walk_files(data_dir))
+        expected_paths = []
+        for root, _, filenames in os.walk(data_dir):
+            for filename in filenames:
+                expected_paths.append(os.path.join(root, filename))
 
         dataset = verta.dataset.Path(data_dir)
         assert dataset.list_paths() == expected_paths
