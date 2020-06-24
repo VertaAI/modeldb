@@ -14,6 +14,9 @@ from .._internal_utils import _file_utils
 from .._repository import blob
 
 
+DEFAULT_DOWNLOAD_DIR = "mdb-data-download"
+
+
 class _Dataset(blob.Blob):
     """
     Base class for dataset versioning. Not for human consumption.
@@ -134,16 +137,15 @@ class _Dataset(blob.Blob):
         # figure out where files are going to be downloaded to
         if implicit_download_to_path:
             # automatically determine directory
-            # TODO: this is going have issues with `component_path` in {".", "..", "/"}
             downloaded_to_path = pathlib2.Path(component_path).name  # final path component
+
+            if downloaded_to_path in {".", "..", "/", "s3:"}:
+                # rather than dump everything ito cwd, use new child dir
+                downloaded_to_path = DEFAULT_DOWNLOAD_DIR
 
             # avoid collision with existing directory
             while os.path.exists(downloaded_to_path):
                 downloaded_to_path = _file_utils.increment_path(downloaded_to_path)
-
-            # user probably doesn't want an "s3:" dir
-            if downloaded_to_path == "s3:":
-                downloaded_to_path = "."
         else:
             # exactly where the user requests
             downloaded_to_path = download_to_path
