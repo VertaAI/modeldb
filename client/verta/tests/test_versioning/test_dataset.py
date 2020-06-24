@@ -385,6 +385,7 @@ class TestS3ManagedVersioning:
         dirpath = dataset.download()
         assert dirpath == os.path.abspath(_dataset.DEFAULT_DOWNLOAD_DIR)
 
+        assert os.path.isdir(dirpath)
         assert_dirs_match(dirpath, reference_dir)
 
 
