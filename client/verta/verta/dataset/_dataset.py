@@ -116,8 +116,8 @@ class _Dataset(blob.Blob):
         implicit_download_to_path = download_to_path is None
 
         # look for an exact match with `component_path` as a file
-        for component_blob in self._path_component_blobs:
-            if component_blob.path == component_path:
+        for path in self.list_paths():
+            if path == component_path:
                 if implicit_download_to_path:
                     # default to filename from `component_path`, in cwd
                     local_path = os.path.basename(component_path)
@@ -129,7 +129,7 @@ class _Dataset(blob.Blob):
                     # exactly where the user requests
                     local_path = download_to_path
 
-                return ({component_blob.path: local_path}, os.path.abspath(local_path))
+                return ({path: local_path}, os.path.abspath(local_path))
 
         # figure out where files are going to be downloaded to
         if implicit_download_to_path:
@@ -151,8 +151,8 @@ class _Dataset(blob.Blob):
         # look for files contained in `component_path` as a directory
         component_path_as_dir = component_path if component_path.endswith('/') else component_path+'/'
         components_to_download = dict()
-        for component_blob in self._path_component_blobs:
-            if component_blob.path.startswith(component_path_as_dir):
+        for path in self.list_paths():
+            if path.startswith(component_path_as_dir):
                 # rebase from `component_path` onto `downloaded_to_path`
                 #     Implicit `download_to_path` example:
                 #         component_blob.path = "coworker/downloads/data/info.csv"
@@ -166,10 +166,10 @@ class _Dataset(blob.Blob):
                 #         local_path          =            "my-data/data/info.csv"
                 local_path = os.path.join(
                     downloaded_to_path,
-                    os.path.relpath(component_blob.path, component_path),
+                    os.path.relpath(path, component_path),
                 )
 
-                components_to_download[component_blob.path] = local_path
+                components_to_download[path] = local_path
 
         if not components_to_download:
             raise KeyError("no components found for path {}".format(component_path))
