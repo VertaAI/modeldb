@@ -7,6 +7,7 @@ import pytest
 from .. import utils
 
 import verta.dataset
+from verta.dataset import _dataset
 
 
 class TestS3:
@@ -525,3 +526,24 @@ class TestPathManagedVersioning:
             assert filepath == os.path.abspath(download_to_path)
             with open(filepath, 'rb') as f:
                 assert f.read() == FILE_CONTENTS
+
+    def test_download_all(self, commit):
+        reference_dir = "tiny-files/"
+        os.mkdir(reference_dir)
+        for filename in ["tiny{}.bin".format(i) for i in range(3)]:
+            with open(os.path.join(reference_dir, filename), 'wb') as f:
+                f.write(os.urandom(2**16))
+
+        blob_path = "data"
+        dataset = verta.dataset.Path(reference_dir, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        dirpath = dataset.download()
+        assert dirpath == os.path.abspath(_dataset.DEFAULT_DOWNLOAD_DIR)
+
+        # uploaded filetree was recreated within `DEFAULT_DOWNLOAD_DIR`
+        destination_dir = os.path.join(_dataset.DEFAULT_DOWNLOAD_DIR, reference_dir)
+        assert os.path.isdir(destination_dir)
+        assert_dirs_match(destination_dir, reference_dir)
