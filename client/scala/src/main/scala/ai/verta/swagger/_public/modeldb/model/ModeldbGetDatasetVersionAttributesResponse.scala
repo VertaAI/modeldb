@@ -5,7 +5,6 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.model.DatasetTypeEnumDatasetType._
 import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibility._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.model.PathLocationTypeEnumPathLocationType._
@@ -13,17 +12,17 @@ import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbGetDatasetVersionByIdResponse (
-  dataset_version: Option[ModeldbDatasetVersion] = None
+case class ModeldbGetDatasetVersionAttributesResponse (
+  attributes: Option[List[CommonKeyValue]] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbGetDatasetVersionByIdResponse.toJson(this)
+  def toJson(): JValue = ModeldbGetDatasetVersionAttributesResponse.toJson(this)
 }
 
-object ModeldbGetDatasetVersionByIdResponse {
-  def toJson(obj: ModeldbGetDatasetVersionByIdResponse): JObject = {
+object ModeldbGetDatasetVersionAttributesResponse {
+  def toJson(obj: ModeldbGetDatasetVersionAttributesResponse): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.dataset_version.map(x => JField("dataset_version", ((x: ModeldbDatasetVersion) => ModeldbDatasetVersion.toJson(x))(x)))
+        obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -31,13 +30,13 @@ object ModeldbGetDatasetVersionByIdResponse {
     )
   }
 
-  def fromJson(value: JValue): ModeldbGetDatasetVersionByIdResponse =
+  def fromJson(value: JValue): ModeldbGetDatasetVersionAttributesResponse =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbGetDatasetVersionByIdResponse(
+        ModeldbGetDatasetVersionAttributesResponse(
           // TODO: handle required
-          dataset_version = fieldsMap.get("dataset_version").map(ModeldbDatasetVersion.fromJson)
+          attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

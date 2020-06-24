@@ -7,7 +7,6 @@ import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.model.CollaboratorTypeEnumCollaboratorType._
-import ai.verta.swagger._public.modeldb.model.DatasetTypeEnumDatasetType._
 import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibility._
 import ai.verta.swagger._public.modeldb.model.EntitiesEnumEntitiesTypes._
 import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProvider._
@@ -26,7 +25,6 @@ import ai.verta.swagger.client.objects._
 case class ModeldbDatasetVersion (
   attributes: Option[List[CommonKeyValue]] = None,
   dataset_id: Option[String] = None,
-  dataset_type: Option[DatasetTypeEnumDatasetType] = None,
   dataset_version_visibility: Option[DatasetVisibilityEnumDatasetVisibility] = None,
   description: Option[String] = None,
   id: Option[String] = None,
@@ -49,7 +47,6 @@ object ModeldbDatasetVersion {
       List[Option[JField]](
         obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
         obj.dataset_id.map(x => JField("dataset_id", JString(x))),
-        obj.dataset_type.map(x => JField("dataset_type", ((x: DatasetTypeEnumDatasetType) => DatasetTypeEnumDatasetType.toJson(x))(x))),
         obj.dataset_version_visibility.map(x => JField("dataset_version_visibility", ((x: DatasetVisibilityEnumDatasetVisibility) => DatasetVisibilityEnumDatasetVisibility.toJson(x))(x))),
         obj.description.map(x => JField("description", JString(x))),
         obj.id.map(x => JField("id", JString(x))),
@@ -77,7 +74,6 @@ object ModeldbDatasetVersion {
           // TODO: handle required
           attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           dataset_id = fieldsMap.get("dataset_id").map(JsonConverter.fromJsonString),
-          dataset_type = fieldsMap.get("dataset_type").map(DatasetTypeEnumDatasetType.fromJson),
           dataset_version_visibility = fieldsMap.get("dataset_version_visibility").map(DatasetVisibilityEnumDatasetVisibility.fromJson),
           description = fieldsMap.get("description").map(JsonConverter.fromJsonString),
           id = fieldsMap.get("id").map(JsonConverter.fromJsonString),

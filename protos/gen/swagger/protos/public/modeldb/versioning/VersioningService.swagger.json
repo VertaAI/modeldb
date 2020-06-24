@@ -2965,6 +2965,15 @@
       ],
       "default": "EQ"
     },
+    "RepositoryAccessModifierEnumRepositoryAccessModifier": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "REGULAR",
+        "PROTECTED"
+      ],
+      "default": "UNKNOWN"
+    },
     "RepositoryVisibilityEnumRepositoryVisibility": {
       "type": "string",
       "enum": [
@@ -3326,6 +3335,12 @@
         },
         "config": {
           "$ref": "#/definitions/versioningConfigBlob"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
         }
       }
     },
@@ -3455,6 +3470,11 @@
         },
         "commit_sha": {
           "type": "string"
+        },
+        "date_updated": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Updated Date while create tags & attribute for the commit."
         }
       },
       "title": "Base commit for the versioning system\nDO NOT USE TO COMPUTE SHA"
@@ -3826,6 +3846,13 @@
         "page_limit": {
           "type": "integer",
           "format": "int32"
+        },
+        "predicates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbKeyValueQuery"
+          },
+          "title": "In future requirement\nbool ascending = 8;\nstring sort_key = 9;"
         }
       }
     },
@@ -4445,8 +4472,20 @@
         "repository_visibility": {
           "$ref": "#/definitions/RepositoryVisibilityEnumRepositoryVisibility"
         },
+        "repositoryAccessModifier": {
+          "$ref": "#/definitions/RepositoryAccessModifierEnumRepositoryAccessModifier"
+        },
+        "description": {
+          "type": "string"
+        },
         "owner": {
           "type": "string"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
         }
       }
     },

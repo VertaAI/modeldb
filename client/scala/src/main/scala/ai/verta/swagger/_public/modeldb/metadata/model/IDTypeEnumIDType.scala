@@ -9,7 +9,8 @@ object IDTypeEnumIDType {
   type IDTypeEnumIDType = String
   val UNKNOWN: IDTypeEnumIDType = "UNKNOWN"
   val VERSIONING_REPOSITORY: IDTypeEnumIDType = "VERSIONING_REPOSITORY"
-  val VERSIONING_COMMIT: IDTypeEnumIDType = "VERSIONING_COMMIT"
+  val VERSIONING_REPO_COMMIT_BLOB: IDTypeEnumIDType = "VERSIONING_REPO_COMMIT_BLOB"
+  val VERSIONING_REPO_COMMIT: IDTypeEnumIDType = "VERSIONING_REPO_COMMIT"
 
   def toJson(obj: IDTypeEnumIDType): JString = JString(obj)
 

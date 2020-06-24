@@ -939,15 +939,6 @@
       ],
       "default": "READ_ONLY"
     },
-    "DatasetTypeEnumDatasetType": {
-      "type": "string",
-      "enum": [
-        "RAW",
-        "PATH",
-        "QUERY"
-      ],
-      "default": "RAW"
-    },
     "DatasetVisibilityEnumDatasetVisibility": {
       "type": "string",
       "enum": [
@@ -1256,14 +1247,12 @@
         "dataset_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
-        "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
-        },
         "attributes": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/commonKeyValue"
-          }
+          },
+          "title": "DatasetTypeEnum.DatasetType dataset_type = 7;"
         },
         "time_created": {
           "type": "string",
@@ -1328,14 +1317,12 @@
         "dataset_version_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
-        "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
-        },
         "attributes": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/commonKeyValue"
-          }
+          },
+          "description": "DatasetTypeEnum.DatasetType dataset_type = 8;// this acts as a quick check on which type of DataSetInfo to look at for more details."
         },
         "owner": {
           "type": "string"
