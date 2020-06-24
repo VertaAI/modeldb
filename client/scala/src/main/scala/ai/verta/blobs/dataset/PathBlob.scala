@@ -22,18 +22,22 @@ case class PathBlob(
   protected val enableMDBVersioning: Boolean = false
 ) extends Dataset {
   /** Prepare the PathBlob for uploading
-   *  @return a map of paths (in the blob) to instances of UploadComponent, with the information for uploading to ModelDB
+   *  @return whether the attempt succeeds
    */
-  override def prepareForUpload() = Try(contents.mapValues(toUploadComponent).mapValues(_.get).toMap)
+  override def prepareForUpload() =
+    if (enableMDBVersioning)
+      Try(contents.values.map(updateMetadata).map(_.get))
+    else
+      Success(())
 
-  /** Builds the upload component instance from metadata and scontent of local file
+  /** Update metadata for uploading
    *  @param metadata metadata of the file
-   *  @return corresponding
+   *  @return whether the attempt succeeds
    */
-  private def toUploadComponent(metadata: FileMetadata) = Try {
+  private def updateMetadata(metadata: FileMetadata) = Try {
     val file = (new File(metadata.path)).getAbsoluteFile()
-    val internalVersionedPath = f"${Dataset.hash(file, "SHA-256").get}/${file.getName}"
-    UploadComponent(file.getPath, toComponent(metadata, Some(internalVersionedPath)))
+    metadata.internalVersionedPath = Some(f"${Dataset.hash(file, "SHA-256").get}/${file.getName}")
+    metadata.localPath = Some(file.getPath)
   }
 
   override def equals(other: Any) = other match {
