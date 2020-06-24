@@ -165,6 +165,7 @@ class _Dataset(blob.Blob):
         if component_path is None:
             # download all
             for path in self.list_paths():
+                # TODO: removeprefix "s3://"
                 local_path = os.path.join(
                     downloaded_to_path,
                     path,
