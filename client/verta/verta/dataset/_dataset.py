@@ -8,6 +8,8 @@ import tempfile
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
+from ..external import six
+
 from .._internal_utils import _utils
 from .._internal_utils import _file_utils
 
@@ -264,4 +266,8 @@ class _Dataset(blob.Blob):
             Paths of all components.
 
         """
-        return [component.path for component in self._path_component_blobs]
+        return [
+            six.ensure_str(component.path)  # in Py2, protobuf had converted this to unicode str
+            for component
+            in self._path_component_blobs
+        ]
