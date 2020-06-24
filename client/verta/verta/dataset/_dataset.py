@@ -145,8 +145,8 @@ class _Dataset(blob.Blob):
                 # avoid collision with existing directory
                 while os.path.exists(downloaded_to_path):
                     downloaded_to_path = _file_utils.increment_path(downloaded_to_path)
-            else:
-                # automatically determine directory
+            else:  # need to automatically determine directory
+                # NOTE: if `component_path` == "s3://" with any trailing slashes, it becomes "s3:"
                 downloaded_to_path = pathlib2.Path(component_path).name  # final path component
 
                 if downloaded_to_path in {".", "..", "/", "s3:"}:
