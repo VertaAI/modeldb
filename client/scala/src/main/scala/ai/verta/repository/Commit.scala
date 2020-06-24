@@ -9,6 +9,8 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 import scala.collection.immutable.Map
 
+import java.io.File
+
 /** Commit within a ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
  */
@@ -72,16 +74,24 @@ class Commit(
     if (saved)
       Failure(new IllegalCommitSavedStateException("Commit is already saved"))
     else
-      blobsList()
-        .flatMap(list => {
-          val uploadInformation = blobs
-            .mapValues(toMDBVersioningDataset)
-            .filter(pair => pair._2.isDefined)
-            .mapValues(_.get)
-            .mapValues(_.prepareForUpload())
+      loadBlobs().flatMap(_ => {
+        val toVersion = blobs
+          .mapValues(toMDBVersioningDataset)
+          .filter(pair => pair._2.isDefined)
+          .mapValues(_.get) // Map[String, Dataset]
 
-          createCommit(message = message, blobs = Some(list))
+        toVersion.values.foreach(dataset => dataset.prepareForUpload().get)
+        val newCommit = blobsList().flatMap(list => createCommit(message = message, blobs = Some(list)))
+
+        // upload the artifacts given by toVersion map
+        val upload: Try[Unit] = newCommit.map(newCommit => {
+          toVersion
+            .mapValues(_.getAllMetadata) // Map[String, Iterable[FileMetadata]]
+            .map(pair => pair._2.map(metadata => newCommit.uploadArtifact(pair._1, metadata.path, new File(metadata.localPath.get))))
         })
+
+        newCommit
+      })
   }
 
   /** Helper function to create a new commit and assign to current instance.
@@ -466,5 +476,25 @@ class Commit(
     case PathBlob(contents, true) => Some(PathBlob(contents, true))
     case S3(contents, true) => Some(S3(contents, true))
     case _ => None
+  }
+
+  private def getURLForArtifact(blobPath: String, datasetComponentPath: String, method: String, partNum: Int = 0)(implicit ec: ExecutionContext): Try[String] = {
+    clientSet.versioningService.getUrlForBlobVersioned2(
+      VersioningGetUrlForBlobVersioned(
+        commit_sha = id,
+        location = Some(pathToLocation(blobPath)),
+        method = Some(method),
+        part_number = Some(BigInt(partNum)),
+        path_dataset_component_blob_path = Some(datasetComponentPath),
+        repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
+      ),
+      id.get,
+      repoId
+    ).map(_ => _.url.get)
+  }
+
+  private def uploadArtifact(blobPath: String, datasetComponentPath: String, file: File)(implicit ec: ExecutionContext): Try[Unit] = {
+    va = getURLForArtifact(blobPath, datasetComponentPath, "PUT", 1)
+    println(response)
   }
 }
