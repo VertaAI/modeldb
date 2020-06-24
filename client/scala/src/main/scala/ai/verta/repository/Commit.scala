@@ -72,7 +72,16 @@ class Commit(
     if (saved)
       Failure(new IllegalCommitSavedStateException("Commit is already saved"))
     else
-      blobsList().flatMap(list => createCommit(message = message, blobs = Some(list)))
+      blobsList()
+        .flatMap(list => {
+          val uploadInformation = blobs
+            .mapValues(toMDBVersioningDataset)
+            .filter(pair => pair._2.isDefined)
+            .mapValues(_.get)
+            .mapValues(_.prepareForUpload())
+
+          createCommit(message = message, blobs = Some(list))
+        })
   }
 
   /** Helper function to create a new commit and assign to current instance.
@@ -451,5 +460,11 @@ class Commit(
         }
       }
     }
+  }
+
+  private def toMDBVersioningDataset(blob: Blob): Option[Dataset] = blob match {
+    case PathBlob(contents, true) => Some(PathBlob(contents, true))
+    case S3(contents, true) => Some(S3(contents, true))
+    case _ => None
   }
 }
