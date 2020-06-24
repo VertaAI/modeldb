@@ -40,21 +40,12 @@ class Commit(
    *  @return The blob. If not existed, or retrieving blobs from backend fails, return a failure.
    */
   def get(path: String)(implicit ec: ExecutionContext): Try[Blob] =
-    getBlob(path)
-
-  /** Retrieve the versioning blob stored at the path
-   *  Helper function for get and remove operations
-   *  @param path location of the blob
-   *  @return ModelDB versioning blob. If not existed, fails.
-   */
-  private def getBlob(path: String)(implicit ec: ExecutionContext): Try[Blob] =
     loadBlobs().flatMap(_ =>
       blobs.get(path) match {
         case None => Failure(new NoSuchElementException("No blob was stored at this path."))
         case Some(blob) => Success(blob)
       }
     )
-
 
   /** Adds blob to this commit at path
    *  If path is already in this Commit, it will be updated to the new blob
@@ -71,7 +62,7 @@ class Commit(
    *  @return The new commit with the blob removed, if succeeds.
    */
   def remove(path: String)(implicit ec: ExecutionContext) =
-    getBlob(path).map(_ => getChild(blobs - path))
+    get(path).map(_ => getChild(blobs - path))
 
   /** Saves this commit to ModelDB
    *  @param message description of this commit
