@@ -36,7 +36,9 @@ class TestCommitDataVersioning extends FunSuite {
     val f = fixture
 
     try {
-      f.commit.update("abc", PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir", true).get).flatMap(_.save("some-msg"))
+      f.commit
+        .update("abc", PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir", true).get)
+        .flatMap(_.save("some-msg"))
     } finally {
       cleanup(f)
     }

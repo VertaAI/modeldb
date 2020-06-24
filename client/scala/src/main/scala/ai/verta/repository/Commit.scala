@@ -8,8 +8,10 @@ import ai.verta.blobs.dataset._
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 import scala.collection.immutable.Map
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration.Duration
 
-import java.io.File
+import java.io.{File, FileInputStream}
 
 /** Commit within a ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
@@ -478,23 +480,42 @@ class Commit(
     case _ => None
   }
 
-  private def getURLForArtifact(blobPath: String, datasetComponentPath: String, method: String, partNum: Int = 0)(implicit ec: ExecutionContext): Try[String] = {
+  /** Helper method to retrieve URL to upload the file.
+    *  @param blobPath path to the blob in the commit
+    *  @param datasetComponentPath path to the component in the blob
+    *  @return The URL, if succeeds
+   */
+  private def getURLForArtifact(blobPath: String, datasetComponentPath: String)(implicit ec: ExecutionContext): Try[String] = {
     clientSet.versioningService.getUrlForBlobVersioned2(
       VersioningGetUrlForBlobVersioned(
         commit_sha = id,
         location = Some(pathToLocation(blobPath)),
-        method = Some(method),
-        part_number = Some(BigInt(partNum)),
+        method = Some("PUT"),
+        part_number = Some(BigInt(0)),
         path_dataset_component_blob_path = Some(datasetComponentPath),
         repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
       ),
       id.get,
       repoId
-    ).map(_ => _.url.get)
+    ).map(_.url.get)
   }
 
+  /** Helper method to upload the file to ModelDB. Currently not supporting multi-part upload
+   *  @param blobPath path to the blob in the commit
+   *  @param datasetComponentPath path to the component in the blob
+   *  @return whether the upload attempt succeeds
+   */
   private def uploadArtifact(blobPath: String, datasetComponentPath: String, file: File)(implicit ec: ExecutionContext): Try[Unit] = {
-    va = getURLForArtifact(blobPath, datasetComponentPath, "PUT", 1)
-    println(response)
+    getURLForArtifact(blobPath, datasetComponentPath)
+      .flatMap(url =>
+        Await.result(clientSet.client.requestRaw(
+          "PUT",
+          url,
+          Map[String, List[String]](),
+          Map[String, String](),
+          new FileInputStream(file)
+        ), Duration.Inf)
+      )
+      .map(_ => ())
   }
 }
