@@ -25,8 +25,7 @@ trait Dataset extends Blob {
     )
 
   /** Prepare the components and data for upload.
-   *  @return a map of paths (in the blob) to instances of UploadComponent
-   *  which contains the path to the object in local file system and the versioning component
+   *  @return whether the attempt succeeds.
    */
   private[verta] def prepareForUpload(): Try[Unit]
 
