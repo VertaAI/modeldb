@@ -1,4 +1,4 @@
-import { Markdown } from 'core/shared/utils/types';
+import { Markdown } from 'shared/utils/types';
 import * as React from 'react';
 
 import MarkdownIcon from '../shared/Icon/Icon';

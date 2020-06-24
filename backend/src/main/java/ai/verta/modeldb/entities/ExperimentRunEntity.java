@@ -64,7 +64,12 @@ public class ExperimentRunEntity {
             this, ModelDBConstants.METRICS, experimentRun.getMetricsList()));
     setObservationMapping(
         RdbmsUtils.convertObservationsFromObservationEntityList(
-            this, ModelDBConstants.OBSERVATIONS, experimentRun.getObservationsList()));
+            null,
+            this,
+            ModelDBConstants.OBSERVATIONS,
+            experimentRun.getObservationsList(),
+            null,
+            null));
     setFeatures(
         RdbmsUtils.convertFeatureListFromFeatureMappingList(this, experimentRun.getFeaturesList()));
     setJob_id(experimentRun.getJobId());

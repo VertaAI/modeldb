@@ -696,6 +696,7 @@ def unravel_observation(obs_msg):
         key,
         val_proto_to_python(value),
         timestamp_to_str(obs_msg.timestamp),
+        int(obs_msg.epoch_number.number_value),
     )
 
 
@@ -716,8 +717,9 @@ def unravel_observations(rpt_obs_msg):
     """
     observations = {}
     for obs_msg in rpt_obs_msg:
-        key, value, timestamp = unravel_observation(obs_msg)
-        observations.setdefault(key, []).append((value, timestamp))
+        obs_tuple = unravel_observation(obs_msg)
+        key = obs_tuple[0]
+        observations.setdefault(key, []).append(obs_tuple[1:])
     return observations
 
 

@@ -40,6 +40,7 @@ public interface ModelDBConstants {
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
   String STORE_CLIENT_CREATION_TIMESTAMP = "store-client-creation-timestamp";
+  String PUBLIC_SHARING_ENABLED = "public_sharing_enabled";
 
   // Threshold Constant
   Long DEFAULT_SHUTDOWN_TIMEOUT = 30L; // timeout in second

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { IconType } from 'core/shared/view/elements/Icon/Icon';
+import { IconType } from 'shared/view/elements/Icon/Icon';
 
 import MarkdownIcon from '../Icon/Icon';
 import styles from './TextWithIcon.module.css';

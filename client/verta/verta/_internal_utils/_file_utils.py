@@ -42,7 +42,7 @@ def increment_path(path):
 
     # check if name already has number
     if ' ' in base:
-        original_base, number_str = base.rsplit(' ', maxsplit=1)
+        original_base, number_str = base.rsplit(' ', 1)
         if number_str.isdigit():
             # increment number
             number = int(number_str) + 1

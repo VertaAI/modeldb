@@ -141,6 +141,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       Dataset dataset = getDatasetFromRequest(request, userInfo);
       ModelDBUtils.checkPersonalWorkspace(
           userInfo, dataset.getWorkspaceType(), dataset.getWorkspaceId(), "repository");
+      if (App.getInstance().getPublicSharingEnabled()) {
+        dataset = dataset.toBuilder().setDatasetVisibility(DatasetVisibility.PUBLIC).build();
+      }
       Repository repository =
           repositoryDAO.createRepository(commitDAO, metadataDAO, dataset, true, userInfo);
       Dataset createdDataset =

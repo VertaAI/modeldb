@@ -167,6 +167,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         new CollaboratorUser(authService, userInfo),
         dataset.getId(),
         ModelDBServiceResourceTypes.DATASET);
+
     if (dataset.getDatasetVisibility().equals(DatasetVisibility.PUBLIC)) {
       roleService.createPublicRoleBinding(dataset.getId(), ModelDBServiceResourceTypes.DATASET);
     }

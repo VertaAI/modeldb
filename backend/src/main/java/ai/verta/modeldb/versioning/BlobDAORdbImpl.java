@@ -1176,7 +1176,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       } else {
         diffBuilder.addAllLocation(locSpecificBlobDiffB.get(0).getLocationList());
       }
-      blobDiffList.add(
+      blobDiffList.addAll(
           ConflictGenerator.setConflictBlobsInDiff(
               diffBuilder.build(),
               locSpecificBlobDiffA,
@@ -1381,7 +1381,6 @@ public class BlobDAORdbImpl implements BlobDAO {
               getStringFromLocationList(locationList), new LinkedList<String>());
         }
         conflictLocationMap.get(getStringFromLocationList(locationList)).addAll(conflictKeys);
-        continue;
       }
       locationBlobsMapNew.put(
           getStringFromLocationList(locationList),

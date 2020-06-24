@@ -2,8 +2,8 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import BulkDeletionManager from 'core/shared/view/domain/BulkDeletion/WidgetsBulkDeletionComponents/BulkDeletionManager/BulkDeletionManager';
-import { ICommunication } from 'core/shared/utils/redux/communication';
+import BulkDeletionManager from 'shared/view/domain/BulkDeletion/WidgetsBulkDeletionComponents/BulkDeletionManager/BulkDeletionManager';
+import { ICommunication } from 'shared/utils/redux/communication';
 import {
   selectExperimentIdsForDeleting,
   unselectExperimentForDeleting,
@@ -11,7 +11,7 @@ import {
   selectCommunications,
   resetExperimentsForDeleting,
 } from 'features/experiments/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 interface ILocalProps {
   projectId: string;

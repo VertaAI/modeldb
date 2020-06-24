@@ -2969,6 +2969,9 @@
         "timestamp": {
           "type": "string",
           "format": "int64"
+        },
+        "epoch_number": {
+          "type": "object"
         }
       },
       "title": "observations with the same key are not overwritten, the are appended to a list"

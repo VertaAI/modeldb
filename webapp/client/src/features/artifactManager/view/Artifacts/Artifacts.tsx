@@ -1,9 +1,9 @@
 import * as React from 'react';
 
-import ClientSuggestion from 'core/shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
-import { IArtifact } from 'core/shared/models/Artifact';
-import { ICommunication } from 'core/shared/utils/redux/communication';
-import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
+import ClientSuggestion from 'shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
+import { IArtifact } from 'shared/models/Artifact';
+import { ICommunication } from 'shared/utils/redux/communication';
+import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 import { EntityType } from 'features/artifactManager/store';
 
 import ArtifactButton, {

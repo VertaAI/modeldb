@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "nodemon server.js",
-    "start-with-client": "concurrently \"cross-env DISABLE_LOGS=true node server.js\" \"cd ./client && yarn start\"",
+    "start-with-client": "concurrently \"cross-env DISABLE_LOGS=true node server.js\" \"cd ./client && cross-env BROWSER=none yarn start\"",
     "pretty": "prettier --write \"client/src/**/*.{ts*,css,js*}\"",
     "test": "cd ./client && yarn test"
   },

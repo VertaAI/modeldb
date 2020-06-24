@@ -140,6 +140,7 @@ public class App implements ApplicationContextAware {
 
   // Feature flags
   private Boolean disabledAuthz = false;
+  private Boolean publicSharingEnabled = false;
   private Boolean storeClientCreationTimestamp = false;
   private Integer requestTimeout = 30;
 
@@ -335,6 +336,8 @@ public class App implements ApplicationContextAware {
     if (featureFlagMap != null) {
       app.setDisabledAuthz(
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
+      app.setPublicSharingEnabled(
+          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
     }
 
     Map<String, Object> starterProjectDetail =
@@ -711,6 +714,14 @@ public class App implements ApplicationContextAware {
 
   public void setDisabledAuthz(Boolean disabledAuthz) {
     this.disabledAuthz = disabledAuthz;
+  }
+
+  public Boolean getPublicSharingEnabled() {
+    return publicSharingEnabled;
+  }
+
+  public void setPublicSharingEnabled(Boolean publicSharingEnabled) {
+    this.publicSharingEnabled = publicSharingEnabled;
   }
 
   public String getCloudAccessKey() {

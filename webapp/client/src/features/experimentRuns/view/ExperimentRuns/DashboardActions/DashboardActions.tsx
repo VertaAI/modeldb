@@ -3,13 +3,13 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import ComparedEntitesManager from 'core/features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
-import { ExperimentRunsTableConfig } from 'core/features/experimentRunsTableConfig';
-import Fai from 'core/shared/view/elements/Fai/Fai';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import ShareLink from 'core/shared/view/elements/ShareLink/ShareLink';
-import routes from 'routes';
-import { ComparedEntityIds } from 'core/features/compareEntities/store';
+import ComparedEntitesManager from 'features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
+import { ExperimentRunsTableConfig } from 'features/experimentRunsTableConfig';
+import Fai from 'shared/view/elements/Fai/Fai';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import ShareLink from 'shared/view/elements/ShareLink/ShareLink';
+import routes from 'shared/routes';
+import { ComparedEntityIds } from 'features/compareEntities/store';
 import { resetExperimentRunsSettings } from 'features/experimentRuns/store';
 
 import styles from './DashboardActions.module.css';

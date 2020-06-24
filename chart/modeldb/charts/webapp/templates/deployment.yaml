@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}
+    component: webapp
+{{- if .Values.labels}}
+{{toYaml .Values.labels | indent 4 -}}
+{{- end}}
+  name: {{ .Release.Name }}-webapp
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: webapp
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: webapp
+{{- if .Values.labels}}
+{{toYaml .Values.labels | indent 8 -}}
+{{- end}}
+      annotations:
+        verta.ai/disable_anti_affinity: "true"
+    spec:
+      containers:
+        - image: {{ .Values.image }}:{{ .Values.imageTag }}
+          imagePullPolicy: Always
+          name: {{ .Release.Name }}
+          ports:
+            - containerPort: 3000
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: DEPLOYED
+              value: "yes"
+            - name: BACKEND_API_PROTOCOL
+              value: "http"
+            - name: BACKEND_API_DOMAIN
+              value: "{{ .Release.Name }}-webapp:3000"
+            - name: MDB_ADDRESS
+              value: http://{{ .Release.Name }}-backend:3000
+            - name: ARTIFACTORY_ADDRESS
+              value: http://{{ .Release.Name }}-backend:8086
+            - name: GQL_ADDRESS
+              value: http://{{ .Release.Name }}-graphql:3000
+            {{- range $name, $value := .Values.env }}
+            - name: {{ $name | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: 3000
+            initialDelaySeconds: 1
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: 3000
+            initialDelaySeconds: 1
+            periodSeconds: 5
+          lifecycle:
+            preStop:
+              exec:
+                command: [
+                  "/bin/sh", "-c",
+                  "sleep 10",
+                ]
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      {{ if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+      {{- end }}

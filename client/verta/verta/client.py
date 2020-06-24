@@ -7,8 +7,10 @@ import copy
 import glob
 import importlib
 import os
+import pathlib2
 import pprint
 import re
+import shutil
 import sys
 import tarfile
 import tempfile
@@ -1866,19 +1868,12 @@ class ExperimentRun(_ModelDBEntity):
         super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", expt_run.id)
 
     def __repr__(self):
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        run_msg = response_msg.experiment_run
+        run_msg = self._get_self_as_msg()
         return '\n'.join((
             "name: {}".format(run_msg.name),
             "url: {}://{}/{}/projects/{}/exp-runs/{}".format(self._conn.scheme, self._conn.socket, self.workspace, run_msg.project_id, self.id),
+            "date created: {}".format(_utils.timestamp_to_str(int(run_msg.date_created))),
+            "date updated: {}".format(_utils.timestamp_to_str(int(run_msg.date_updated))),
             "description: {}".format(run_msg.description),
             "tags: {}".format(run_msg.tags),
             "attributes: {}".format(_utils.unravel_key_values(run_msg.attributes)),
@@ -1893,14 +1888,7 @@ class ExperimentRun(_ModelDBEntity):
 
     @property
     def workspace(self):
-        response = _utils.make_request(
-            "GET",
-            "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-            self._conn, params={'id': self.id},
-        )
-        _utils.raise_for_http_error(response)
-
-        proj_id = _utils.body_to_json(response)['experiment_run']['project_id']
+        proj_id = self._get_self_as_msg().project_id
         response = _utils.make_request(
             "GET",
             "{}://{}/api/v1/modeldb/project/getProjectById".format(self._conn.scheme, self._conn.socket),
@@ -1939,16 +1927,7 @@ class ExperimentRun(_ModelDBEntity):
 
     @property
     def name(self):
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return response_msg.experiment_run.name
+        return self._get_self_as_msg().name
 
     @staticmethod
     def _generate_default_name():
@@ -2012,6 +1991,30 @@ class ExperimentRun(_ModelDBEntity):
         else:
             _utils.raise_for_http_error(response)
 
+    # TODO: use this throughout `ExperimentRun`
+    def _get_self_as_msg(self):
+        """
+        Gets the full protobuf message representation of this Experiment Run.
+
+        Returns
+        -------
+        run_msg : ExperimentRun protobuf message
+
+        """
+        Message = _ExperimentRunService.GetExperimentRunById
+        msg = Message(id=self.id)
+        data = _utils.proto_to_json(msg)
+        url = "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        response = _utils.make_request("GET", url, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        return response_msg.experiment_run
+
     def _log_artifact(self, key, artifact, artifact_type, extension=None, method=None, overwrite=False):
         """
         Logs an artifact to this Experiment Run.
@@ -2065,11 +2068,20 @@ class ExperimentRun(_ModelDBEntity):
         # build upload path from checksum and basename
         artifact_path = os.path.join(artifact_hash, basename)
 
+        # TODO: incorporate into config
+        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR', "")
+        VERTA_ARTIFACT_DIR = os.path.expanduser(VERTA_ARTIFACT_DIR)
+        if VERTA_ARTIFACT_DIR:
+            print("set artifact directory from environment:")
+            print("    " + VERTA_ARTIFACT_DIR)
+            artifact_path = os.path.join(VERTA_ARTIFACT_DIR, artifact_path)
+            pathlib2.Path(artifact_path).parent.mkdir(parents=True, exist_ok=True)
+
         # log key to ModelDB
         Message = _ExperimentRunService.LogArtifact
         artifact_msg = _CommonCommonService.Artifact(key=key,
                                                path=artifact_path,
-                                               path_only=False,
+                                               path_only=True if VERTA_ARTIFACT_DIR else False,
                                                artifact_type=artifact_type,
                                                filename_extension=extension)
         msg = Message(id=self.id, artifact=artifact_msg)
@@ -2089,7 +2101,13 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-        self._upload_artifact(key, artifact_stream)
+        if VERTA_ARTIFACT_DIR:
+            print("logging artifact")
+            with open(artifact_path, 'wb') as f:
+                shutil.copyfileobj(artifact_stream, f)
+            print("log complete; file written to {}".format(artifact_path))
+        else:
+            self._upload_artifact(key, artifact_stream)
 
     def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
         """
@@ -2363,6 +2381,32 @@ class ExperimentRun(_ModelDBEntity):
         new_run = ExperimentRun(self._conn, self._conf, _expt_run_id=new_run_msg.id)
 
         return new_run
+
+    def get_date_created(self):
+        """
+        Gets a timestamp representing the time (in UTC) this Experiment Run was created.
+
+        Returns
+        -------
+        timestamp : int
+            Unix timestamp in milliseconds.
+
+        """
+        run_msg = self._get_self_as_msg()
+        return int(run_msg.date_created)
+
+    def get_date_updated(self):
+        """
+        Gets a timestamp representing the time (in UTC) this Experiment Run was updated.
+
+        Returns
+        -------
+        timestamp : int
+            Unix timestamp in milliseconds.
+
+        """
+        run_msg = self._get_self_as_msg()
+        return int(run_msg.date_updated)
 
     def log_tag(self, tag):
         """
@@ -3076,11 +3120,8 @@ class ExperimentRun(_ModelDBEntity):
 
         # validate that `artifacts` are actually logged
         if artifacts:
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                           self._conn, params={'id': self.id})
-            _utils.raise_for_http_error(response)
-            existing_artifact_keys = {artifact['key'] for artifact in _utils.body_to_json(response)['experiment_run'].get('artifacts', [])}
+            run_msg = self._get_self_as_msg()
+            existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
             unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
             if unlogged_artifact_keys:
                 raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
@@ -3244,6 +3285,9 @@ class ExperimentRun(_ModelDBEntity):
         """
         Logs an artifact to this Experiment Run.
 
+        The ``VERTA_ARTIFACT_DIR`` environment variable can be used to specify a locally-accessible
+        directory to store artifacts.
+
         Parameters
         ----------
         key : str
@@ -3324,6 +3368,16 @@ class ExperimentRun(_ModelDBEntity):
         """
         artifact, path_only = self._get_artifact(key)
         if path_only:
+            # might be clientside storage
+            # NOTE: can cause problem if accidentally picks up unrelated file w/ same name
+            if os.path.exists(artifact):
+                try:
+                    with open(artifact, 'rb') as f:
+                        return pickle.load(f)
+                except:
+                    # return bytestream b/c that's what this fn does with MDB artifacts
+                    return open(artifact, 'rb')
+
             return artifact
         else:
             try:
@@ -3331,7 +3385,80 @@ class ExperimentRun(_ModelDBEntity):
             except:
                 return six.BytesIO(artifact)
 
-    def log_observation(self, key, value, timestamp=None):
+    def download_artifact(self, key, download_to_path, chunk_size=32*(10**6)):
+        """
+        Downloads the artifact with name `key` to path `download_to_path`.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+        download_to_path : str
+            Path to download to.
+        chunk_size : int, default 32 MB
+            Number of bytes to download at a time.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where artifact was downloaded to. Matches `download_to_path`.
+
+        """
+        download_to_path = os.path.abspath(download_to_path)
+
+        # get key-path from ModelDB
+        # TODO: consolidate the following ~12 lines with ExperimentRun._get_artifact()
+        Message = _CommonService.GetArtifacts
+        msg = Message(id=self.id, key=key)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        artifact = {artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
+        if artifact is None:
+            raise KeyError("no artifact found with key {}".format(key))
+
+        # TODO: unpack dirs logged as artifacts
+        #     But we can't distinguish if a ZIP artifact is a directory we've compressed, or if it
+        #     was a ZIP file the user already had.
+
+        # create parent dirs
+        pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+        # TODO: clean up empty parent dirs if something later fails
+
+        # get a stream of the file bytes, without loading into memory, and write to file
+        # TODO: consolidate this with _get_artifact() and get_artifact()
+        print("downloading {} from ModelDB".format(key))
+        if artifact.path_only:
+            if os.path.exists(artifact.path):
+                # copy from clientside storage
+                shutil.copyfile(artifact.path, download_to_path)
+            else:
+                raise ValueError(
+                    "artifact {} appears to have been logged as path-only,"
+                    " and cannot be downloaded".format(key)
+                )
+        else:
+            # download artifact from artifact store
+            url = self._get_url_for_artifact(key, "GET").url
+            response = _utils.make_request("GET", url, self._conn, stream=True)
+            try:
+                _utils.raise_for_http_error(response)
+
+                # TODO: use a tempfile first, and also delete if failed
+                with open(download_to_path, 'wb') as dest_f:
+                    for chunk in response.iter_content(chunk_size=chunk_size):
+                        dest_f.write(chunk)
+            finally:
+                response.close()
+        print("download complete; file written to {}".format(download_to_path))
+
+        return download_to_path
+
+    def log_observation(self, key, value, timestamp=None, epoch_num=None):
         """
         Logs an observation to this Experiment Run.
 
@@ -3341,9 +3468,12 @@ class ExperimentRun(_ModelDBEntity):
             Name of the observation.
         value : one of {None, bool, float, int, str}
             Value of the observation.
-        timestamp: str or float or int, optional
+        timestamp : str or float or int, optional
             String representation of a datetime or numerical Unix timestamp. If not provided, the
             current time will be used.
+        epoch_num : non-negative int, optional
+            Epoch number associated with this observation. If not provided, it will automatically
+            be incremented from prior observations for the same `key`.
 
         Warnings
         --------
@@ -3358,8 +3488,18 @@ class ExperimentRun(_ModelDBEntity):
         else:
             timestamp = _utils.ensure_timestamp(timestamp)
 
+        if epoch_num is not None:
+            if (not isinstance(epoch_num, six.integer_types)
+                    and not (isinstance(epoch_num, float) and epoch_num.is_integer())):
+                raise TypeError("`epoch_num` must be int, not {}".format(type(epoch_num)))
+            if epoch_num < 0:
+                raise ValueError("`epoch_num` must be non-negative")
+
         attribute = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         observation = _ExperimentRunService.Observation(attribute=attribute, timestamp=timestamp)  # TODO: support Artifacts
+        if epoch_num is not None:
+            observation.epoch_number.number_value = epoch_num  # pylint: disable=no-member
+
         msg = _ExperimentRunService.LogObservation(id=self.id, observation=observation)
         data = _utils.proto_to_json(msg)
         response = _utils.make_request("POST",
@@ -3409,16 +3549,8 @@ class ExperimentRun(_ModelDBEntity):
             Names and values of all observation series.
 
         """
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return _utils.unravel_observations(response_msg.experiment_run.observations)
+        run_msg = self._get_self_as_msg()
+        return _utils.unravel_observations(run_msg.observations)
 
     def log_requirements(self, requirements, overwrite=False):
         """
@@ -3743,11 +3875,8 @@ class ExperimentRun(_ModelDBEntity):
             raise TypeError("`keys` must be list of str, not {}".format(type(keys)))
 
         # validate that `keys` are actually logged
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params={'id': self.id})
-        _utils.raise_for_http_error(response)
-        existing_artifact_keys = {artifact['key'] for artifact in _utils.body_to_json(response)['experiment_run'].get('artifacts', [])}
+        run_msg = self._get_self_as_msg()
+        existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
         unlogged_artifact_keys = set(keys) - existing_artifact_keys
         if unlogged_artifact_keys:
             raise ValueError("`keys` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
@@ -3852,13 +3981,8 @@ class ExperimentRun(_ModelDBEntity):
         data = {}
         if path is not None:
             # get project ID for URL path
-            response = _utils.make_request(
-                "GET",
-                "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                self._conn, params={'id': self.id})
-            _utils.raise_for_http_error(response)
-
-            data.update({'url_path': "{}/{}".format(_utils.body_to_json(response)['experiment_run']['project_id'], path)})
+            run_msg = self._get_self_as_msg()
+            data.update({'url_path': "{}/{}".format(run_msg.project_id, path)})
         if no_token:
             data.update({'token': ""})
         elif token is not None:

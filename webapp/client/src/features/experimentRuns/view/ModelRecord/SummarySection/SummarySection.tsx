@@ -2,19 +2,19 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'shared/models/ModelRecord';
 import ProjectEntityDescriptionManager from 'features/descriptionManager/view/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
 import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
-import { ShowCommentsButton } from 'features/comments';
-import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
-import { Project } from 'models/Project';
-import { TextWithCopyTooltip } from 'core/shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
-import routes from 'routes';
+import { ShowCommentsButtonWithAuthor } from 'features/comments';
+import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
+import { Project } from 'shared/models/Project';
+import { TextWithCopyTooltip } from 'shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
+import routes from 'shared/routes';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 import {
   makeURLFilters,
   makeDefaultExprNameFilter,
-} from 'core/features/filter/Model';
+} from 'shared/models/Filters';
 
 import Section from '../shared/Section/Section';
 import styles from './SummarySection.module.css';
@@ -60,7 +60,7 @@ const SummarySection = ({ modelRecord, project }: ILocalProps) => {
             labelAlign="center"
             withValueTruncation={false}
           >
-            <ShowCommentsButton
+            <ShowCommentsButtonWithAuthor
               entityInfo={{ id: modelRecord.id, name: modelRecord.name }}
               buttonType="badge"
             />

@@ -1,4 +1,4 @@
-import { IPagination } from 'core/shared/models/Pagination';
+import { IPagination } from 'shared/models/Pagination';
 import { IServerPaginationInRequest } from 'services/serverModel/Pagination/Pagination';
 
 export const addPaginationToRequest = <
@@ -13,5 +13,14 @@ export const convertClientPagination = (pagination: IPagination) => {
   return {
     page_number: pagination.currentPage + 1,
     page_limit: pagination.pageSize,
+  };
+};
+
+export const convertClientPaginationToNamespacedServerPagination = (
+  pagination: Omit<IPagination, 'totalCount'>
+) => {
+  return {
+    'pagination.page_limit': pagination.pageSize,
+    'pagination.page_number': pagination.currentPage + 1,
   };
 };

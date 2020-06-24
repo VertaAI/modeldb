@@ -194,6 +194,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       ModelDBUtils.checkPersonalWorkspace(
           userInfo, project.getWorkspaceType(), project.getWorkspaceId(), "project");
+      if (App.getInstance().getPublicSharingEnabled()) {
+        project = project.toBuilder().setProjectVisibility(ProjectVisibility.PUBLIC).build();
+      }
       project = projectDAO.insertProject(project, userInfo);
 
       responseObserver.onNext(CreateProject.Response.newBuilder().setProject(project).build());

@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
 
-import makeResetReducer from 'core/shared/utils/redux/makeResetReducer';
+import makeResetReducer from 'shared/utils/redux/makeResetReducer';
 
 import { IArtifactManagerState, resetActionType } from '../types';
 import communications from './communications';
