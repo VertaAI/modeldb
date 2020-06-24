@@ -20,14 +20,6 @@ public class AutogenBlobGen extends Generator<AutogenBlob> {
 
     AutogenBlob obj = new AutogenBlob();
     if (r.nextBoolean()) {
-      int size = r.nextInt(0, 10);
-      List<AutogenCommonKeyValue> ret = new ArrayList(size);
-      for (int i = 0; i < size; i++) {
-        ret.add(gen().type(AutogenCommonKeyValue.class).generate(r, status));
-      }
-      obj.setAttributes(Utils.removeEmpty(ret));
-    }
-    if (r.nextBoolean()) {
       obj.setCode(Utils.removeEmpty(gen().type(AutogenCodeBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {

@@ -13,19 +13,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenBlob implements ProtoType {
-  private List<AutogenCommonKeyValue> Attributes;
   private AutogenCodeBlob Code;
   private AutogenConfigBlob Config;
   private AutogenDatasetBlob Dataset;
   private AutogenEnvironmentBlob Environment;
 
   public AutogenBlob() {
-    this.Attributes = null;
     this.Code = null;
     this.Config = null;
     this.Dataset = null;
@@ -33,9 +29,6 @@ public class AutogenBlob implements ProtoType {
   }
 
   public Boolean isEmpty() {
-    if (this.Attributes != null && !this.Attributes.equals(null) && !this.Attributes.isEmpty()) {
-      return false;
-    }
     if (this.Code != null && !this.Code.equals(null)) {
       return false;
     }
@@ -56,11 +49,6 @@ public class AutogenBlob implements ProtoType {
     StringBuilder sb = new StringBuilder();
     sb.append("{\"class\": \"AutogenBlob\", \"fields\": {");
     boolean first = true;
-    if (this.Attributes != null && !this.Attributes.equals(null) && !this.Attributes.isEmpty()) {
-      if (!first) sb.append(", ");
-      sb.append("\"Attributes\": " + Attributes);
-      first = false;
-    }
     if (this.Code != null && !this.Code.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"Code\": " + Code);
@@ -106,25 +94,6 @@ public class AutogenBlob implements ProtoType {
     AutogenBlob other = (AutogenBlob) o;
 
     {
-      Function3<List<AutogenCommonKeyValue>, List<AutogenCommonKeyValue>, Boolean> f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<AutogenCommonKeyValue, AutogenCommonKeyValue, Boolean> f2 =
-                            (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
-      if (this.Attributes != null || other.Attributes != null) {
-        if (this.Attributes == null && other.Attributes != null) return false;
-        if (this.Attributes != null && other.Attributes == null) return false;
-        if (!f.apply(this.Attributes, other.Attributes)) return false;
-      }
-    }
-    {
       Function3<AutogenCodeBlob, AutogenCodeBlob, Boolean> f = (x, y) -> x.equals(y);
       if (this.Code != null || other.Code != null) {
         if (this.Code == null && other.Code != null) return false;
@@ -157,18 +126,6 @@ public class AutogenBlob implements ProtoType {
       }
     }
     return true;
-  }
-
-  public AutogenBlob setAttributes(List<AutogenCommonKeyValue> value) {
-    this.Attributes = Utils.removeEmpty(value);
-    if (this.Attributes != null) {
-      this.Attributes.sort(Comparator.comparingInt(AutogenCommonKeyValue::hashCode));
-    }
-    return this;
-  }
-
-  public List<AutogenCommonKeyValue> getAttributes() {
-    return this.Attributes;
   }
 
   public AutogenBlob setCode(AutogenCodeBlob value) {
@@ -214,14 +171,6 @@ public class AutogenBlob implements ProtoType {
 
     AutogenBlob obj = new AutogenBlob();
     {
-      Function<ai.verta.modeldb.versioning.Blob, List<AutogenCommonKeyValue>> f =
-          x ->
-              blob.getAttributesList().stream()
-                  .map(AutogenCommonKeyValue::fromProto)
-                  .collect(Collectors.toList());
-      obj.setAttributes(f.apply(blob));
-    }
-    {
       Function<ai.verta.modeldb.versioning.Blob, AutogenCodeBlob> f =
           x -> AutogenCodeBlob.fromProto(blob.getCode());
       obj.setCode(f.apply(blob));
@@ -247,19 +196,6 @@ public class AutogenBlob implements ProtoType {
   public ai.verta.modeldb.versioning.Blob.Builder toProto() {
     ai.verta.modeldb.versioning.Blob.Builder builder =
         ai.verta.modeldb.versioning.Blob.newBuilder();
-    {
-      if (this.Attributes != null && !this.Attributes.equals(null) && !this.Attributes.isEmpty()) {
-        Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
-            x -> {
-              builder.addAllAttributes(
-                  this.Attributes.stream()
-                      .map(y -> y.toProto().build())
-                      .collect(Collectors.toList()));
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
     {
       if (this.Code != null && !this.Code.equals(null)) {
         Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
@@ -309,8 +245,6 @@ public class AutogenBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepListOfAutogenCommonKeyValue(this.Attributes);
-
     visitor.preVisitDeepAutogenCodeBlob(this.Code);
     visitor.preVisitDeepAutogenConfigBlob(this.Config);
     visitor.preVisitDeepAutogenDatasetBlob(this.Dataset);
@@ -322,8 +256,6 @@ public class AutogenBlob implements ProtoType {
   }
 
   public AutogenBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setAttributes(visitor.postVisitDeepListOfAutogenCommonKeyValue(this.Attributes));
-
     this.setCode(visitor.postVisitDeepAutogenCodeBlob(this.Code));
     this.setConfig(visitor.postVisitDeepAutogenConfigBlob(this.Config));
     this.setDataset(visitor.postVisitDeepAutogenDatasetBlob(this.Dataset));

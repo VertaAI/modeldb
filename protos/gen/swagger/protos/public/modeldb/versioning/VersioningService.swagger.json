@@ -3338,12 +3338,6 @@
         },
         "config": {
           "$ref": "#/definitions/versioningConfigBlob"
-        },
-        "attributes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonKeyValue"
-          }
         }
       }
     },

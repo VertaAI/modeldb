@@ -18,7 +18,6 @@ import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorksp
 import ai.verta.swagger.client.objects._
 
 case class VersioningBlob (
-  attributes: Option[List[CommonKeyValue]] = None,
   code: Option[VersioningCodeBlob] = None,
   config: Option[VersioningConfigBlob] = None,
   dataset: Option[VersioningDatasetBlob] = None,
@@ -31,7 +30,6 @@ object VersioningBlob {
   def toJson(obj: VersioningBlob): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
         obj.code.map(x => JField("code", ((x: VersioningCodeBlob) => VersioningCodeBlob.toJson(x))(x))),
         obj.config.map(x => JField("config", ((x: VersioningConfigBlob) => VersioningConfigBlob.toJson(x))(x))),
         obj.dataset.map(x => JField("dataset", ((x: VersioningDatasetBlob) => VersioningDatasetBlob.toJson(x))(x))),
@@ -49,7 +47,6 @@ object VersioningBlob {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         VersioningBlob(
           // TODO: handle required
-          attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           code = fieldsMap.get("code").map(VersioningCodeBlob.fromJson),
           config = fieldsMap.get("config").map(VersioningConfigBlob.fromJson),
           dataset = fieldsMap.get("dataset").map(VersioningDatasetBlob.fromJson),
