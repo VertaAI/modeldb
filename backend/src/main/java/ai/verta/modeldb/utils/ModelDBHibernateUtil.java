@@ -49,8 +49,10 @@ import ai.verta.modeldb.entities.environment.EnvironmentVariablesEntity;
 import ai.verta.modeldb.entities.environment.PythonEnvironmentBlobEntity;
 import ai.verta.modeldb.entities.environment.PythonEnvironmentRequirementBlobEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
+import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
+import ai.verta.modeldb.entities.versioning.DatasetRepositoryMappingEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
@@ -160,6 +162,8 @@ public class ModelDBHibernateUtil {
     BranchEntity.class,
     VersioningModeldbEntityMapping.class,
     HyperparameterElementMappingEntity.class,
+    MetadataPropertyMappingEntity.class,
+    DatasetRepositoryMappingEntity.class,
     UploadStatusEntity.class
   };
 

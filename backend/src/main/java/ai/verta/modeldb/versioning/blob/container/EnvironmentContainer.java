@@ -131,6 +131,11 @@ public class EnvironmentContainer extends BlobContainer {
     rootTree.push(locationList, environmentBlobEntity.getBlob_hash(), blobType);
   }
 
+  @Override
+  public void processAttribute(
+      Session session, Long repoId, String commitHash, boolean addAttribute)
+      throws ModelDBException {}
+
   private static final String PATTERN = "[a-zA-Z0-9_-]+";
 
   private void validateEnvironmentVariableName(String name) throws ModelDBException {

@@ -149,8 +149,12 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        if (request.getRepository().getName().isEmpty()) {
-          throw new ModelDBException("Repository name is empty", Code.INVALID_ARGUMENT);
+        if (request.getRepository().getName().isEmpty()
+            && request.getRepository().getDescription().isEmpty()) {
+          throw new ModelDBException(
+              "Repository name and description is empty", Code.INVALID_ARGUMENT);
+        } else if (request.getRepository().getName().isEmpty()) {
+          throw new ModelDBException("Repository name should not be empty", Code.INVALID_ARGUMENT);
         }
 
         SetRepository.Response response =
@@ -264,6 +268,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               authService.getVertaIdFromUserInfo(currentLoginUserInfo),
               request.getCommit(),
               (session) -> blobDAO.setBlobs(session, blobContainers, fileHasher),
+              (session, repoId, commitHash) ->
+                  blobDAO.setBlobsAttributes(session, repoId, commitHash, blobContainers, true),
               repositoryFunction);
 
       responseObserver.onNext(response);
@@ -305,8 +311,12 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        DeleteCommitRequest.Response response = commitDAO.deleteCommit(request, repositoryDAO);
-        responseObserver.onNext(response);
+        commitDAO.deleteCommits(
+            request.getRepositoryId(),
+            Collections.singletonList(request.getCommitSha()),
+            repositoryDAO,
+            false);
+        responseObserver.onNext(DeleteCommitRequest.Response.newBuilder().build());
         responseObserver.onCompleted();
       }
     } catch (Exception e) {
@@ -655,7 +665,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(request);
+
+        FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(commitDAO, request);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }

@@ -26,6 +26,7 @@ public class CommitEntity {
       String rootSha) {
     this.commit_hash = internalCommit.getCommitSha();
     this.date_created = internalCommit.getDateCreated();
+    this.date_updated = internalCommit.getDateUpdated();
     this.message = internalCommit.getMessage();
     this.repository.add(repositoryEntity);
     this.author = internalCommit.getAuthor();
@@ -45,6 +46,9 @@ public class CommitEntity {
 
   @Column(name = "date_created")
   private Long date_created;
+
+  @Column(name = "date_updated")
+  private Long date_updated;
 
   @Column(name = "author", columnDefinition = "varchar", length = 50)
   private String author;
@@ -75,12 +79,24 @@ public class CommitEntity {
     return commit_hash;
   }
 
+  public void setCommit_hash(String commit_hash) {
+    this.commit_hash = commit_hash;
+  }
+
   public String getMessage() {
     return message;
   }
 
   public Long getDate_created() {
     return date_created;
+  }
+
+  public void setDate_updated(Long date_updated) {
+    this.date_updated = date_updated;
+  }
+
+  public Long getDate_updated() {
+    return date_updated;
   }
 
   public String getAuthor() {
@@ -99,6 +115,10 @@ public class CommitEntity {
     return rootSha;
   }
 
+  public void setRootSha(String rootSha) {
+    this.rootSha = rootSha;
+  }
+
   public Set<CommitEntity> getChild_commits() {
     return child_commits;
   }
@@ -112,6 +132,7 @@ public class CommitEntity {
         .setCommitSha(this.commit_hash)
         .addAllParentShas(getParentCommitIds())
         .setDateCreated(this.date_created)
+        .setDateUpdated(this.date_updated)
         .setMessage(this.message)
         .setAuthor(this.author)
         .build();

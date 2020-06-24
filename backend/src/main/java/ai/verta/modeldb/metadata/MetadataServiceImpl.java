@@ -98,9 +98,9 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       if (request.getId() == null
           || request.getId().getIdTypeValue() == 0
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
-        errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
+        errorMessage = "Invalid parameter set in DeleteLabelsRequest.Id";
       } else if (request.getLabelsList().isEmpty()) {
-        errorMessage = "Labels not found in GetLabelsRequest";
+        errorMessage = "Labels not found in DeleteLabelsRequest";
       }
 
       if (errorMessage != null) {
@@ -109,12 +109,12 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(GetLabelsRequest.Response.getDefaultInstance()))
+                .addDetails(Any.pack(DeleteLabelsRequest.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean status = metadataDAO.deleteLabels(request.getId(), request.getLabelsList());
+      boolean status = metadataDAO.deleteLabels(request.getId(), request.getLabelsList(), false);
       responseObserver.onNext(DeleteLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {

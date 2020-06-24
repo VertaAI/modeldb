@@ -4459,7 +4459,6 @@ public class HydratedServiceTest {
             .addTags("Tag_4")
             .setRawDatasetVersionInfo(
                 RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
@@ -4524,7 +4523,6 @@ public class HydratedServiceTest {
             .addTags("Tag_8")
             .setRawDatasetVersionInfo(
                 RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .setDatasetVersionVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     createDatasetVersionResponse =
@@ -4796,7 +4794,6 @@ public class HydratedServiceTest {
             .build();
 
     int pageLimit = 2;
-    int count = 0;
     boolean isExpectedResultFound = false;
     for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       findDatasetVersions =
@@ -4826,24 +4823,6 @@ public class HydratedServiceTest {
               "HydratedDatasetVersion not match with expected datasetVersion",
               datasetVersionMap.get(datasetVersion.getId()),
               datasetVersion);
-
-          if (count == 0) {
-            assertEquals(
-                "HydratedDatasetVersion version not match with expected datasetVersion version",
-                datasetVersion1.getVersion(),
-                datasetVersion.getVersion());
-          } else if (count == 1) {
-            assertEquals(
-                "HydratedDatasetVersion version not match with expected datasetVersion version",
-                datasetVersion2.getVersion(),
-                datasetVersion.getVersion());
-          } else if (count == 2) {
-            assertEquals(
-                "HydratedDatasetVersion version not match with expected datasetVersion version",
-                datasetVersion3.getVersion(),
-                datasetVersion.getVersion());
-          }
-          count++;
         }
       } else {
         if (isExpectedResultFound) {
@@ -5429,7 +5408,6 @@ public class HydratedServiceTest {
         dataset2.getName());
 
     List<String> datasetVersionIds = new ArrayList<>();
-    int version = 1;
     // Create two datasetVersion of above datasetVersion
     CreateDatasetVersion createDatasetVersionRequest =
         datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
@@ -5456,10 +5434,6 @@ public class HydratedServiceTest {
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
     datasetVersionIds.add(datasetVersion1.getId());
     LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        version,
-        datasetVersion1.getVersion());
 
     // datasetVersion2 of above datasetVersion
     createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset2.getId());
@@ -5487,10 +5461,6 @@ public class HydratedServiceTest {
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
     datasetVersionIds.add(datasetVersion2.getId());
     LOGGER.info("DatasetVersion created successfully");
-    assertEquals(
-        "DatasetVersion version not match with expected DatasetVersion version",
-        version,
-        datasetVersion2.getVersion());
 
     Map<String, Artifact> artifactMap = new HashMap<>();
     for (Artifact existingDataset : experimentRun1.getDatasetsList()) {
