@@ -7,7 +7,6 @@ import (
 	context "context"
 	fmt "fmt"
 	common "github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
-	modeldb "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	proto "github.com/golang/protobuf/proto"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
@@ -1014,11 +1013,11 @@ func (m *RepositoryIdentification) GetRepoId() uint64 {
 }
 
 type ListRepositoriesRequest struct {
-	WorkspaceName        string      `protobuf:"bytes,1,opt,name=workspace_name,json=workspaceName,proto3" json:"workspace_name,omitempty"`
-	Pagination           *Pagination `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
+	WorkspaceName        string             `protobuf:"bytes,1,opt,name=workspace_name,json=workspaceName,proto3" json:"workspace_name,omitempty"`
+	Pagination           *common.Pagination `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
 }
 
 func (m *ListRepositoriesRequest) Reset()         { *m = ListRepositoriesRequest{} }
@@ -1053,7 +1052,7 @@ func (m *ListRepositoriesRequest) GetWorkspaceName() string {
 	return ""
 }
 
-func (m *ListRepositoriesRequest) GetPagination() *Pagination {
+func (m *ListRepositoriesRequest) GetPagination() *common.Pagination {
 	if m != nil {
 		return m.Pagination
 	}
@@ -1352,7 +1351,7 @@ func (m *DeleteRepositoryRequest_Response) GetStatus() bool {
 // CRUD for commits
 type ListCommitsRequest struct {
 	RepositoryId         *RepositoryIdentification `protobuf:"bytes,1,opt,name=repository_id,json=repositoryId,proto3" json:"repository_id,omitempty"`
-	Pagination           *Pagination               `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Pagination           *common.Pagination        `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	CommitBase           string                    `protobuf:"bytes,3,opt,name=commit_base,json=commitBase,proto3" json:"commit_base,omitempty"`
 	CommitHead           string                    `protobuf:"bytes,4,opt,name=commit_head,json=commitHead,proto3" json:"commit_head,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
@@ -1392,7 +1391,7 @@ func (m *ListCommitsRequest) GetRepositoryId() *RepositoryIdentification {
 	return nil
 }
 
-func (m *ListCommitsRequest) GetPagination() *Pagination {
+func (m *ListCommitsRequest) GetPagination() *common.Pagination {
 	if m != nil {
 		return m.Pagination
 	}
@@ -3365,9 +3364,9 @@ func (m *RevertRepositoryCommitsRequest_Response) GetCommit() *Commit {
 //If any of the request parameters are not set then backend will return all the repositories.
 //the query like: FROM RepositoryEntity repo ORDER BY repo.date_updated DESC
 type FindRepositories struct {
-	RepoIds       []uint64                 `protobuf:"varint,1,rep,packed,name=repo_ids,json=repoIds,proto3" json:"repo_ids,omitempty"`
-	WorkspaceName string                   `protobuf:"bytes,2,opt,name=workspace_name,json=workspaceName,proto3" json:"workspace_name,omitempty"`
-	Predicates    []*modeldb.KeyValueQuery `protobuf:"bytes,3,rep,name=predicates,proto3" json:"predicates,omitempty"`
+	RepoIds       []uint64                `protobuf:"varint,1,rep,packed,name=repo_ids,json=repoIds,proto3" json:"repo_ids,omitempty"`
+	WorkspaceName string                  `protobuf:"bytes,2,opt,name=workspace_name,json=workspaceName,proto3" json:"workspace_name,omitempty"`
+	Predicates    []*common.KeyValueQuery `protobuf:"bytes,3,rep,name=predicates,proto3" json:"predicates,omitempty"`
 	//For pagination
 	PageNumber           int32    `protobuf:"varint,6,opt,name=page_number,json=pageNumber,proto3" json:"page_number,omitempty"`
 	PageLimit            int32    `protobuf:"varint,7,opt,name=page_limit,json=pageLimit,proto3" json:"page_limit,omitempty"`
@@ -3415,7 +3414,7 @@ func (m *FindRepositories) GetWorkspaceName() string {
 	return ""
 }
 
-func (m *FindRepositories) GetPredicates() []*modeldb.KeyValueQuery {
+func (m *FindRepositories) GetPredicates() []*common.KeyValueQuery {
 	if m != nil {
 		return m.Predicates
 	}
@@ -3495,10 +3494,10 @@ type FindRepositoriesBlobs struct {
 	//In future requirement
 	//bool ascending = 8;
 	//string sort_key = 9;
-	Predicates           []*modeldb.KeyValueQuery `protobuf:"bytes,10,rep,name=predicates,proto3" json:"predicates,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
-	XXX_unrecognized     []byte                   `json:"-"`
-	XXX_sizecache        int32                    `json:"-"`
+	Predicates           []*common.KeyValueQuery `protobuf:"bytes,10,rep,name=predicates,proto3" json:"predicates,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
+	XXX_unrecognized     []byte                  `json:"-"`
+	XXX_sizecache        int32                   `json:"-"`
 }
 
 func (m *FindRepositoriesBlobs) Reset()         { *m = FindRepositoriesBlobs{} }
@@ -3575,7 +3574,7 @@ func (m *FindRepositoriesBlobs) GetPageLimit() int32 {
 	return 0
 }
 
-func (m *FindRepositoriesBlobs) GetPredicates() []*modeldb.KeyValueQuery {
+func (m *FindRepositoriesBlobs) GetPredicates() []*common.KeyValueQuery {
 	if m != nil {
 		return m.Predicates
 	}
@@ -3760,7 +3759,7 @@ type CommitVersionedBlobArtifactPart struct {
 	CommitSha                    string                    `protobuf:"bytes,2,opt,name=commit_sha,json=commitSha,proto3" json:"commit_sha,omitempty"`
 	Location                     []string                  `protobuf:"bytes,3,rep,name=location,proto3" json:"location,omitempty"`
 	PathDatasetComponentBlobPath string                    `protobuf:"bytes,4,opt,name=path_dataset_component_blob_path,json=pathDatasetComponentBlobPath,proto3" json:"path_dataset_component_blob_path,omitempty"`
-	ArtifactPart                 *modeldb.ArtifactPart     `protobuf:"bytes,5,opt,name=artifact_part,json=artifactPart,proto3" json:"artifact_part,omitempty"`
+	ArtifactPart                 *common.ArtifactPart      `protobuf:"bytes,5,opt,name=artifact_part,json=artifactPart,proto3" json:"artifact_part,omitempty"`
 	XXX_NoUnkeyedLiteral         struct{}                  `json:"-"`
 	XXX_unrecognized             []byte                    `json:"-"`
 	XXX_sizecache                int32                     `json:"-"`
@@ -3819,7 +3818,7 @@ func (m *CommitVersionedBlobArtifactPart) GetPathDatasetComponentBlobPath() stri
 	return ""
 }
 
-func (m *CommitVersionedBlobArtifactPart) GetArtifactPart() *modeldb.ArtifactPart {
+func (m *CommitVersionedBlobArtifactPart) GetArtifactPart() *common.ArtifactPart {
 	if m != nil {
 		return m.ArtifactPart
 	}
@@ -3925,10 +3924,10 @@ func (m *GetCommittedVersionedBlobArtifactParts) GetPathDatasetComponentBlobPath
 }
 
 type GetCommittedVersionedBlobArtifactParts_Response struct {
-	ArtifactParts        []*modeldb.ArtifactPart `protobuf:"bytes,1,rep,name=artifact_parts,json=artifactParts,proto3" json:"artifact_parts,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
-	XXX_unrecognized     []byte                  `json:"-"`
-	XXX_sizecache        int32                   `json:"-"`
+	ArtifactParts        []*common.ArtifactPart `protobuf:"bytes,1,rep,name=artifact_parts,json=artifactParts,proto3" json:"artifact_parts,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
+	XXX_unrecognized     []byte                 `json:"-"`
+	XXX_sizecache        int32                  `json:"-"`
 }
 
 func (m *GetCommittedVersionedBlobArtifactParts_Response) Reset() {
@@ -3960,7 +3959,7 @@ func (m *GetCommittedVersionedBlobArtifactParts_Response) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetCommittedVersionedBlobArtifactParts_Response proto.InternalMessageInfo
 
-func (m *GetCommittedVersionedBlobArtifactParts_Response) GetArtifactParts() []*modeldb.ArtifactPart {
+func (m *GetCommittedVersionedBlobArtifactParts_Response) GetArtifactParts() []*common.ArtifactPart {
 	if m != nil {
 		return m.ArtifactParts
 	}
@@ -4080,7 +4079,6 @@ func init() {
 	proto.RegisterType((*RepositoryVisibilityEnum)(nil), "ai.verta.modeldb.versioning.RepositoryVisibilityEnum")
 	proto.RegisterType((*RepositoryAccessModifierEnum)(nil), "ai.verta.modeldb.versioning.RepositoryAccessModifierEnum")
 	proto.RegisterType((*Repository)(nil), "ai.verta.modeldb.versioning.Repository")
-	proto.RegisterType((*Pagination)(nil), "ai.verta.modeldb.versioning.Pagination")
 	proto.RegisterType((*RepositoryNamedIdentification)(nil), "ai.verta.modeldb.versioning.RepositoryNamedIdentification")
 	proto.RegisterType((*RepositoryIdentification)(nil), "ai.verta.modeldb.versioning.RepositoryIdentification")
 	proto.RegisterType((*ListRepositoriesRequest)(nil), "ai.verta.modeldb.versioning.ListRepositoriesRequest")
@@ -4101,10 +4099,6 @@ func init() {
 	proto.RegisterType((*DeleteCommitRequest_Response)(nil), "ai.verta.modeldb.versioning.DeleteCommitRequest.Response")
 	proto.RegisterType((*ListCommitBlobsRequest)(nil), "ai.verta.modeldb.versioning.ListCommitBlobsRequest")
 	proto.RegisterType((*ListCommitBlobsRequest_Response)(nil), "ai.verta.modeldb.versioning.ListCommitBlobsRequest.Response")
-	proto.RegisterType((*ListCommitExperimentRunsRequest)(nil), "ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest")
-	proto.RegisterType((*ListCommitExperimentRunsRequest_Response)(nil), "ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest.Response")
-	proto.RegisterType((*ListBlobExperimentRunsRequest)(nil), "ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest")
-	proto.RegisterType((*ListBlobExperimentRunsRequest_Response)(nil), "ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.Response")
 	proto.RegisterType((*GetCommitComponentRequest)(nil), "ai.verta.modeldb.versioning.GetCommitComponentRequest")
 	proto.RegisterType((*GetCommitComponentRequest_Response)(nil), "ai.verta.modeldb.versioning.GetCommitComponentRequest.Response")
 	proto.RegisterType((*ComputeRepositoryDiffRequest)(nil), "ai.verta.modeldb.versioning.ComputeRepositoryDiffRequest")
@@ -4415,10 +4409,6 @@ type VersioningServiceClient interface {
 	DeleteCommit(ctx context.Context, in *DeleteCommitRequest, opts ...grpc.CallOption) (*DeleteCommitRequest_Response, error)
 	// Getting blobs and folders in a commit
 	ListCommitBlobs(ctx context.Context, in *ListCommitBlobsRequest, opts ...grpc.CallOption) (*ListCommitBlobsRequest_Response, error)
-	// Getting ExperimentRuns linked to a commit
-	ListCommitExperimentRuns(ctx context.Context, in *ListCommitExperimentRunsRequest, opts ...grpc.CallOption) (*ListCommitExperimentRunsRequest_Response, error)
-	// Getting ExperimentRuns linked to a blob
-	ListBlobExperimentRuns(ctx context.Context, in *ListBlobExperimentRunsRequest, opts ...grpc.CallOption) (*ListBlobExperimentRunsRequest_Response, error)
 	GetCommitComponent(ctx context.Context, in *GetCommitComponentRequest, opts ...grpc.CallOption) (*GetCommitComponentRequest_Response, error)
 	// Git-like operations
 	ComputeRepositoryDiff(ctx context.Context, in *ComputeRepositoryDiffRequest, opts ...grpc.CallOption) (*ComputeRepositoryDiffRequest_Response, error)
@@ -4537,24 +4527,6 @@ func (c *versioningServiceClient) DeleteCommit(ctx context.Context, in *DeleteCo
 func (c *versioningServiceClient) ListCommitBlobs(ctx context.Context, in *ListCommitBlobsRequest, opts ...grpc.CallOption) (*ListCommitBlobsRequest_Response, error) {
 	out := new(ListCommitBlobsRequest_Response)
 	err := c.cc.Invoke(ctx, "/ai.verta.modeldb.versioning.VersioningService/ListCommitBlobs", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *versioningServiceClient) ListCommitExperimentRuns(ctx context.Context, in *ListCommitExperimentRunsRequest, opts ...grpc.CallOption) (*ListCommitExperimentRunsRequest_Response, error) {
-	out := new(ListCommitExperimentRunsRequest_Response)
-	err := c.cc.Invoke(ctx, "/ai.verta.modeldb.versioning.VersioningService/ListCommitExperimentRuns", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *versioningServiceClient) ListBlobExperimentRuns(ctx context.Context, in *ListBlobExperimentRunsRequest, opts ...grpc.CallOption) (*ListBlobExperimentRunsRequest_Response, error) {
-	out := new(ListBlobExperimentRunsRequest_Response)
-	err := c.cc.Invoke(ctx, "/ai.verta.modeldb.versioning.VersioningService/ListBlobExperimentRuns", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -4747,10 +4719,6 @@ type VersioningServiceServer interface {
 	DeleteCommit(context.Context, *DeleteCommitRequest) (*DeleteCommitRequest_Response, error)
 	// Getting blobs and folders in a commit
 	ListCommitBlobs(context.Context, *ListCommitBlobsRequest) (*ListCommitBlobsRequest_Response, error)
-	// Getting ExperimentRuns linked to a commit
-	ListCommitExperimentRuns(context.Context, *ListCommitExperimentRunsRequest) (*ListCommitExperimentRunsRequest_Response, error)
-	// Getting ExperimentRuns linked to a blob
-	ListBlobExperimentRuns(context.Context, *ListBlobExperimentRunsRequest) (*ListBlobExperimentRunsRequest_Response, error)
 	GetCommitComponent(context.Context, *GetCommitComponentRequest) (*GetCommitComponentRequest_Response, error)
 	// Git-like operations
 	ComputeRepositoryDiff(context.Context, *ComputeRepositoryDiffRequest) (*ComputeRepositoryDiffRequest_Response, error)
@@ -4810,12 +4778,6 @@ func (*UnimplementedVersioningServiceServer) DeleteCommit(ctx context.Context, r
 }
 func (*UnimplementedVersioningServiceServer) ListCommitBlobs(ctx context.Context, req *ListCommitBlobsRequest) (*ListCommitBlobsRequest_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListCommitBlobs not implemented")
-}
-func (*UnimplementedVersioningServiceServer) ListCommitExperimentRuns(ctx context.Context, req *ListCommitExperimentRunsRequest) (*ListCommitExperimentRunsRequest_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListCommitExperimentRuns not implemented")
-}
-func (*UnimplementedVersioningServiceServer) ListBlobExperimentRuns(ctx context.Context, req *ListBlobExperimentRunsRequest) (*ListBlobExperimentRunsRequest_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListBlobExperimentRuns not implemented")
 }
 func (*UnimplementedVersioningServiceServer) GetCommitComponent(ctx context.Context, req *GetCommitComponentRequest) (*GetCommitComponentRequest_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCommitComponent not implemented")
@@ -5055,42 +5017,6 @@ func _VersioningService_ListCommitBlobs_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(VersioningServiceServer).ListCommitBlobs(ctx, req.(*ListCommitBlobsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _VersioningService_ListCommitExperimentRuns_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListCommitExperimentRunsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(VersioningServiceServer).ListCommitExperimentRuns(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ai.verta.modeldb.versioning.VersioningService/ListCommitExperimentRuns",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VersioningServiceServer).ListCommitExperimentRuns(ctx, req.(*ListCommitExperimentRunsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _VersioningService_ListBlobExperimentRuns_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListBlobExperimentRunsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(VersioningServiceServer).ListBlobExperimentRuns(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ai.verta.modeldb.versioning.VersioningService/ListBlobExperimentRuns",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VersioningServiceServer).ListBlobExperimentRuns(ctx, req.(*ListBlobExperimentRunsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -5480,14 +5406,6 @@ var _VersioningService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListCommitBlobs",
 			Handler:    _VersioningService_ListCommitBlobs_Handler,
-		},
-		{
-			MethodName: "ListCommitExperimentRuns",
-			Handler:    _VersioningService_ListCommitExperimentRuns_Handler,
-		},
-		{
-			MethodName: "ListBlobExperimentRuns",
-			Handler:    _VersioningService_ListBlobExperimentRuns_Handler,
 		},
 		{
 			MethodName: "GetCommitComponent",

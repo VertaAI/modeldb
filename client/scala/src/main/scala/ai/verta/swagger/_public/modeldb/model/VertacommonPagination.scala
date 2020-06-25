@@ -12,17 +12,19 @@ import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbGetCommittedArtifactPartsResponse (
-  artifact_parts: Option[List[CommonArtifactPart]] = None
+case class VertacommonPagination (
+  page_limit: Option[BigInt] = None,
+  page_number: Option[BigInt] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbGetCommittedArtifactPartsResponse.toJson(this)
+  def toJson(): JValue = VertacommonPagination.toJson(this)
 }
 
-object ModeldbGetCommittedArtifactPartsResponse {
-  def toJson(obj: ModeldbGetCommittedArtifactPartsResponse): JObject = {
+object VertacommonPagination {
+  def toJson(obj: VertacommonPagination): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.artifact_parts.map(x => JField("artifact_parts", ((x: List[CommonArtifactPart]) => JArray(x.map(((x: CommonArtifactPart) => CommonArtifactPart.toJson(x)))))(x)))
+        obj.page_limit.map(x => JField("page_limit", JInt(x))),
+        obj.page_number.map(x => JField("page_number", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -30,13 +32,14 @@ object ModeldbGetCommittedArtifactPartsResponse {
     )
   }
 
-  def fromJson(value: JValue): ModeldbGetCommittedArtifactPartsResponse =
+  def fromJson(value: JValue): VertacommonPagination =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbGetCommittedArtifactPartsResponse(
+        VertacommonPagination(
           // TODO: handle required
-          artifact_parts = fieldsMap.get("artifact_parts").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonArtifactPart.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
+          page_limit = fieldsMap.get("page_limit").map(JsonConverter.fromJsonInteger),
+          page_number = fieldsMap.get("page_number").map(JsonConverter.fromJsonInteger)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

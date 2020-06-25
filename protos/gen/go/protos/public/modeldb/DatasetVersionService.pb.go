@@ -1186,10 +1186,10 @@ func (m *GetLatestDatasetVersionByDatasetId_Response) GetDatasetVersion() *Datas
 }
 
 type FindDatasetVersions struct {
-	DatasetId         string           `protobuf:"bytes,1,opt,name=dataset_id,json=datasetId,proto3" json:"dataset_id,omitempty"`
-	DatasetVersionIds []string         `protobuf:"bytes,2,rep,name=dataset_version_ids,json=datasetVersionIds,proto3" json:"dataset_version_ids,omitempty"`
-	Predicates        []*KeyValueQuery `protobuf:"bytes,3,rep,name=predicates,proto3" json:"predicates,omitempty"`
-	IdsOnly           bool             `protobuf:"varint,4,opt,name=ids_only,json=idsOnly,proto3" json:"ids_only,omitempty"`
+	DatasetId         string                  `protobuf:"bytes,1,opt,name=dataset_id,json=datasetId,proto3" json:"dataset_id,omitempty"`
+	DatasetVersionIds []string                `protobuf:"bytes,2,rep,name=dataset_version_ids,json=datasetVersionIds,proto3" json:"dataset_version_ids,omitempty"`
+	Predicates        []*common.KeyValueQuery `protobuf:"bytes,3,rep,name=predicates,proto3" json:"predicates,omitempty"`
+	IdsOnly           bool                    `protobuf:"varint,4,opt,name=ids_only,json=idsOnly,proto3" json:"ids_only,omitempty"`
 	//For pagination
 	PageNumber           int32    `protobuf:"varint,5,opt,name=page_number,json=pageNumber,proto3" json:"page_number,omitempty"`
 	PageLimit            int32    `protobuf:"varint,6,opt,name=page_limit,json=pageLimit,proto3" json:"page_limit,omitempty"`
@@ -1240,7 +1240,7 @@ func (m *FindDatasetVersions) GetDatasetVersionIds() []string {
 	return nil
 }
 
-func (m *FindDatasetVersions) GetPredicates() []*KeyValueQuery {
+func (m *FindDatasetVersions) GetPredicates() []*common.KeyValueQuery {
 	if m != nil {
 		return m.Predicates
 	}

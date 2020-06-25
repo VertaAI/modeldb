@@ -5,27 +5,25 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.versioning.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.versioning.model.DiffStatusEnumDiffStatus._
 import ai.verta.swagger._public.modeldb.versioning.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger._public.modeldb.versioning.model.RepositoryAccessModifierEnumRepositoryAccessModifier._
 import ai.verta.swagger._public.modeldb.versioning.model.RepositoryVisibilityEnumRepositoryVisibility._
-import ai.verta.swagger._public.modeldb.versioning.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.versioning.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbversioningPagination (
+case class CommonPagination (
   page_limit: Option[BigInt] = None,
   page_number: Option[BigInt] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbversioningPagination.toJson(this)
+  def toJson(): JValue = CommonPagination.toJson(this)
 }
 
-object ModeldbversioningPagination {
-  def toJson(obj: ModeldbversioningPagination): JObject = {
+object CommonPagination {
+  def toJson(obj: CommonPagination): JObject = {
     new JObject(
       List[Option[JField]](
         obj.page_limit.map(x => JField("page_limit", JInt(x))),
@@ -37,11 +35,11 @@ object ModeldbversioningPagination {
     )
   }
 
-  def fromJson(value: JValue): ModeldbversioningPagination =
+  def fromJson(value: JValue): CommonPagination =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbversioningPagination(
+        CommonPagination(
           // TODO: handle required
           page_limit = fieldsMap.get("page_limit").map(JsonConverter.fromJsonInteger),
           page_number = fieldsMap.get("page_number").map(JsonConverter.fromJsonInteger)
