@@ -23,15 +23,22 @@ def walk_files(dirpath):
 
 
 def assert_dirs_match(dirpath1, dirpath2):
-    for filepath1 in walk_files(dirpath1):
+    files1 = set(walk_files(dirpath1))
+    files2 = set(walk_files(dirpath2))
+
+    for filepath1 in files1:
         # get corresponding path in dirpath2
         relative_filepath = os.path.relpath(filepath1, dirpath1)  # drop dirpath1 prefix
         filepath2 = os.path.join(dirpath2, relative_filepath)  # rebase onto dirpath2
 
-        assert os.path.isfile(filepath2)
+        assert filepath2 in files2
+        files2.remove(filepath2)
+
         with open(filepath1, 'rb') as f1:
             with open(filepath2, 'rb') as f2:
                 assert f1.read() == f2.read()
+
+    assert not files2  # no additional files in `dirpath2`
 
 
 @pytest.mark.usefixtures("with_boto3")
