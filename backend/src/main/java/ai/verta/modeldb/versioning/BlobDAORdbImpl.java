@@ -506,6 +506,20 @@ public class BlobDAORdbImpl implements BlobDAO {
                   childLocation,
                   childElementFolder.getElement_sha(),
                   blobTypeList));
+        } else {
+          if (parentLocation.containsAll(requestedLocation)
+              || childLocation.containsAll(requestedLocation)) {
+            Blob blob = getBlob(session, childElementFolder);
+            if (blobTypeList != null && !blobTypeList.isEmpty()) {
+              if (blobTypeExistsInList(blobTypeList, blob.getContentCase())) {
+                setBlobInBlobExpandMap(
+                    parentLocation, childBlobExpandedMap, childElementFolder, blob);
+              }
+            } else {
+              setBlobInBlobExpandMap(
+                  parentLocation, childBlobExpandedMap, childElementFolder, blob);
+            }
+          }
         }
       } else {
         if (parentLocation.containsAll(requestedLocation)) {

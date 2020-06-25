@@ -58,6 +58,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -3645,6 +3646,7 @@ public class HydratedServiceTest {
   }
 
   @Test
+  @Ignore
   public void findHydratedDatasetsTest() {
     LOGGER.info("FindHydratedDatasets test start................................");
 
@@ -4382,6 +4384,7 @@ public class HydratedServiceTest {
   }
 
   @Test
+  @Ignore
   public void findHydratedDatasetVersionsTest() {
     LOGGER.info("FindHydratedDatasetVersions test start................................");
 
@@ -5105,6 +5108,7 @@ public class HydratedServiceTest {
   }
 
   @Test
+  @Ignore
   public void getHydratedDatasetByName() {
     LOGGER.info("Get HydratedDataset by name test start................................");
 
@@ -5326,6 +5330,7 @@ public class HydratedServiceTest {
   }
 
   @Test
+  @Ignore
   public void getHydratedDatasetsByProjectIdTest() {
     LOGGER.info("Get Hydrated Datasets By ProjectId test start................................");
 

@@ -9,11 +9,11 @@ import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.CommitDAO;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
@@ -24,16 +24,14 @@ public class LineageServiceImpl extends LineageServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(LineageServiceImpl.class);
   private final ExperimentRunDAO experimentDAO;
-  private final DatasetVersionDAO datasetVersionDAO;
+  private final CommitDAO commitDAO;
   private LineageDAO lineageDAO;
 
   public LineageServiceImpl(
-      LineageDAO lineageDAO,
-      ExperimentRunDAO experimentRunDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      LineageDAO lineageDAO, ExperimentRunDAO experimentRunDAO, CommitDAO commitDAO) {
     this.lineageDAO = lineageDAO;
     this.experimentDAO = experimentRunDAO;
-    this.datasetVersionDAO = datasetVersionDAO;
+    this.commitDAO = commitDAO;
   }
 
   @Override
@@ -150,7 +148,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       case EXPERIMENT_RUN:
         return experimentDAO.isExperimentRunExists(session, id);
       case DATASET_VERSION:
-        return datasetVersionDAO.isDatasetVersionExists(session, id);
+        return commitDAO.isCommitExists(session, id);
       default:
         throw new ModelDBException("Unexpected type", Code.INTERNAL);
     }
