@@ -168,7 +168,7 @@ class _Dataset(blob.Blob):
                 #         local_path          =            "my-data/data/info.csv"
                 local_path = os.path.join(
                     downloaded_to_path,
-                    os.path.relpath(path, component_path),
+                    _file_utils.remove_prefix_dir(path, prefix_dir=component_path),
                 )
 
                 components_to_download[path] = local_path

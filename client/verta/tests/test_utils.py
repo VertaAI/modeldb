@@ -290,7 +290,7 @@ class TestPipRequirementsUtils:
         ))
 
 
-class TestIncrementPath:
+class TestFileUtils:
     @pytest.mark.parametrize(
         "input_filepath, expected_filepath",
         [
@@ -304,5 +304,29 @@ class TestIncrementPath:
             ("my archive.tar 1.gz", "my archive.tar 2.gz"),
         ],
     )
-    def test_increment(self, input_filepath, expected_filepath):
+    def test_increment_path(self, input_filepath, expected_filepath):
         assert expected_filepath == _file_utils.increment_path(input_filepath)
+
+    @pytest.mark.parametrize(
+        "path, prefix_dir, expected",
+        [
+            # simple removal cases
+            ("files/data.csv",      "files",      "data.csv"),
+            ("files/data/data.csv", "files/data", "data.csv"),
+            # simple no-change cases
+            ("files/data.csv",      "foo",            "files/data.csv"),
+            ("files/data.csv",      "fil",            "files/data.csv"),
+            ("files/data/data.csv", "files/data.csv", "files/data/data.csv"),
+            # edge cases
+            ("data.csv", "data.csv", "data.csv"),
+            # examples from comments in fn
+            ("data/census-train.csv", "data/census", "data/census-train.csv"),
+            ("data/census/train.csv", "data/census", "train.csv"),
+            # remove "s3://"
+            ("s3://verta-starter/census-train.csv", "s3:",   "verta-starter/census-train.csv"),
+            ("s3://verta-starter/census-train.csv", "s3:/",  "verta-starter/census-train.csv"),
+            ("s3://verta-starter/census-train.csv", "s3://", "verta-starter/census-train.csv"),
+        ]
+    )
+    def test_remove_prefix_dir(self, path, prefix_dir, expected):
+        assert _file_utils.remove_prefix_dir(path, prefix_dir) == expected
