@@ -53,7 +53,6 @@ class Path(_dataset._Dataset):
         super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
         filepaths = _file_utils.flatten_file_trees(paths)
-        filepaths = set(filepaths)  # remove duplicates
         components = map(self._get_file_metadata, filepaths)
 
         self._msg.path.components.extend(components)

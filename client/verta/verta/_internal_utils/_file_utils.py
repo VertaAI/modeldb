@@ -115,17 +115,21 @@ def flatten_file_trees(paths):
     Parameters
     ----------
     paths : list of str
-        List of file and directory paths.
+        File and directory paths.
 
-    Yields
-    ------
-    filepath : str
-        Filepath (relative to cwd).
+    Returns
+    -------
+    filepaths : set of str
+        Filepaths.
 
     """
+    filepaths = set()
+
     for path in paths:
         if os.path.isdir(path):
             for filepath in walk_files(path):
-                yield filepath
+                filepaths.add(filepath)
         else:
-            yield path
+            filepaths.add(filepath)
+
+    return filepaths
