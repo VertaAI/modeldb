@@ -75,5 +75,5 @@ public interface CommitDAO {
       boolean rootSHAOnly)
       throws ModelDBException;
 
-  boolean isDatasetVersionExists(Session session, String datasetVersionId);
+  boolean isCommitExists(Session session, String commitHash);
 }

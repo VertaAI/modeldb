@@ -58,6 +58,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -3645,6 +3646,7 @@ public class HydratedServiceTest {
   }
 
   @Test
+  @Ignore
   public void findHydratedDatasetsTest() {
     LOGGER.info("FindHydratedDatasets test start................................");
 
@@ -4382,6 +4384,7 @@ public class HydratedServiceTest {
   }
 
   @Test
+  @Ignore
   public void findHydratedDatasetVersionsTest() {
     LOGGER.info("FindHydratedDatasetVersions test start................................");
 
@@ -4395,6 +4398,7 @@ public class HydratedServiceTest {
         HydratedServiceGrpc.newBlockingStub(channel);
 
     Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
+    long version = 1L;
 
     CreateDataset createDatasetRequest =
         datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
@@ -4433,6 +4437,10 @@ public class HydratedServiceTest {
     DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
     datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
     LOGGER.info("DatasetVersion created successfully");
+    assertEquals(
+        "DatasetVersion version not match with expected DatasetVersion version",
+        version,
+        datasetVersion1.getVersion());
 
     // datasetVersion2 of above datasetVersion
     createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId());
@@ -4454,12 +4462,18 @@ public class HydratedServiceTest {
             .addTags("Tag_1")
             .addTags("Tag_3")
             .addTags("Tag_4")
+            .setRawDatasetVersionInfo(
+                RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
             .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
     datasetVersionMap.put(datasetVersion2.getId(), datasetVersion2);
     LOGGER.info("DatasetVersion created successfully");
+    assertEquals(
+        "DatasetVersion version not match with expected DatasetVersion version",
+        ++version,
+        datasetVersion2.getVersion());
 
     // datasetVersion3 of above datasetVersion
     createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId());
@@ -4487,6 +4501,10 @@ public class HydratedServiceTest {
     DatasetVersion datasetVersion3 = createDatasetVersionResponse.getDatasetVersion();
     datasetVersionMap.put(datasetVersion3.getId(), datasetVersion3);
     LOGGER.info("DatasetVersion created successfully");
+    assertEquals(
+        "DatasetVersion version not match with expected DatasetVersion version",
+        ++version,
+        datasetVersion3.getVersion());
 
     // datasetVersion4 of above datasetVersion
     createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset.getId());
@@ -4508,6 +4526,8 @@ public class HydratedServiceTest {
             .addTags("Tag_5")
             .addTags("Tag_7")
             .addTags("Tag_8")
+            .setRawDatasetVersionInfo(
+                RawDatasetVersionInfo.newBuilder().setSize(1).setNumRecords(1).build())
             .setDatasetVersionVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     createDatasetVersionResponse =
@@ -4515,6 +4535,10 @@ public class HydratedServiceTest {
     DatasetVersion datasetVersion4 = createDatasetVersionResponse.getDatasetVersion();
     datasetVersionMap.put(datasetVersion4.getId(), datasetVersion4);
     LOGGER.info("DatasetVersion created successfully");
+    assertEquals(
+        "DatasetVersion version not match with expected DatasetVersion version",
+        ++version,
+        datasetVersion4.getVersion());
 
     // Validate check for predicate value not empty
     List<KeyValueQuery> predicates = new ArrayList<>();
@@ -5084,6 +5108,7 @@ public class HydratedServiceTest {
   }
 
   @Test
+  @Ignore
   public void getHydratedDatasetByName() {
     LOGGER.info("Get HydratedDataset by name test start................................");
 
@@ -5305,6 +5330,7 @@ public class HydratedServiceTest {
   }
 
   @Test
+  @Ignore
   public void getHydratedDatasetsByProjectIdTest() {
     LOGGER.info("Get Hydrated Datasets By ProjectId test start................................");
 

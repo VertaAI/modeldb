@@ -148,7 +148,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       case EXPERIMENT_RUN:
         return experimentDAO.isExperimentRunExists(session, id);
       case DATASET_VERSION:
-        return commitDAO.isDatasetVersionExists(session, id);
+        return commitDAO.isCommitExists(session, id);
       default:
         throw new ModelDBException("Unexpected type", Code.INTERNAL);
     }

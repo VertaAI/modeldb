@@ -1493,7 +1493,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
             "Blob Location '" + request.getLocationList() + "' not found in commit blobs",
-            Status.Code.NOT_FOUND);
+            Status.Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
       Blob blob = blobExpandedMap.getKey().getBlob();
