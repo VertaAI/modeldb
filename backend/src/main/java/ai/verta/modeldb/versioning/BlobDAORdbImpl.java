@@ -506,6 +506,20 @@ public class BlobDAORdbImpl implements BlobDAO {
                   childLocation,
                   childElementFolder.getElement_sha(),
                   blobTypeList));
+        } else {
+          if (parentLocation.containsAll(requestedLocation)
+              || childLocation.containsAll(requestedLocation)) {
+            Blob blob = getBlob(session, childElementFolder);
+            if (blobTypeList != null && !blobTypeList.isEmpty()) {
+              if (blobTypeExistsInList(blobTypeList, blob.getContentCase())) {
+                setBlobInBlobExpandMap(
+                    parentLocation, childBlobExpandedMap, childElementFolder, blob);
+              }
+            } else {
+              setBlobInBlobExpandMap(
+                  parentLocation, childBlobExpandedMap, childElementFolder, blob);
+            }
+          }
         }
       } else {
         if (parentLocation.containsAll(requestedLocation)) {
@@ -1479,7 +1493,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
             "Blob Location '" + request.getLocationList() + "' not found in commit blobs",
-            Status.Code.INVALID_ARGUMENT);
+            Status.Code.NOT_FOUND);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
       Blob blob = blobExpandedMap.getKey().getBlob();

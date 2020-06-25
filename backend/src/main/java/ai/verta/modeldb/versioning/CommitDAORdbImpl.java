@@ -924,4 +924,16 @@ public class CommitDAORdbImpl implements CommitDAO {
       throw new ModelDBException(e);
     }
   }
+
+  @Override
+  public boolean isDatasetVersionExists(Session session, String datasetVersionId) {
+    String checkDatasetVersionExistsByIdHql =
+        new StringBuilder("Select count(cm.commit_hash) From CommitEntity cm where ")
+            .append(" cm.commit_hash = :commitHash ")
+            .toString();
+    Query query = session.createQuery(checkDatasetVersionExistsByIdHql);
+    query.setParameter("commitHash", datasetVersionId);
+    Long count = (Long) query.uniqueResult();
+    return count > 0;
+  }
 }
