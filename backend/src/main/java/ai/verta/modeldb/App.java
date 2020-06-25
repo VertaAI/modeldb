@@ -394,9 +394,9 @@ public class App implements ApplicationContextAware {
       RoleService roleService) {
 
     // --------------- Start Initialize DAO --------------------------
-    CommitDAO commitDAO = new CommitDAORdbImpl();
+    CommitDAO commitDAO = new CommitDAORdbImpl(authService, roleService);
     RepositoryDAO repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
-    BlobDAO blobDAO = new BlobDAORdbImpl(authService);
+    BlobDAO blobDAO = new BlobDAORdbImpl(authService, roleService);
 
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, roleService);
     ExperimentRunDAO experimentRunDAO =
@@ -480,11 +480,22 @@ public class App implements ApplicationContextAware {
             datasetVersionDAO,
             projectDAO,
             experimentDAO,
-            experimentRunDAO));
+            experimentRunDAO,
+            repositoryDAO,
+            commitDAO,
+            metadataDAO));
     LOGGER.trace("Dataset serviceImpl initialized");
     wrapService(
         serverBuilder,
-        new DatasetVersionServiceImpl(authService, roleService, datasetDAO, datasetVersionDAO));
+        new DatasetVersionServiceImpl(
+            authService,
+            roleService,
+            datasetDAO,
+            datasetVersionDAO,
+            repositoryDAO,
+            commitDAO,
+            blobDAO,
+            metadataDAO));
     LOGGER.trace("Dataset Version serviceImpl initialized");
     wrapService(
         serverBuilder,

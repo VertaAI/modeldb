@@ -351,4 +351,81 @@
 			<column name="repository_visibility" type="int4"/>
 		</addColumn>
 	</changeSet>
+	<changeSet id="add-access-modifier-column-to-repository" author="lezhevg">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="repository" columnName="repository_access_modifier"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="repository">
+			<column name="repository_access_modifier" type="int4" defaultValue="1"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="add-repository-description-column" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="repository" columnName="description"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="repository">
+			<column name="description" type="TEXT" value=""/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="add-attributes-to-repository" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="attribute" columnName="repository_id"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="attribute">
+			<column name="repository_id" type="int8"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="add-description-blob-table" author="lezhevg">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="metadata_property_mapping"/>
+			</not>
+		</preConditions>
+		<createTable tableName="metadata_property_mapping">
+			<column name="repository_id" type="int8">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="commit_sha" type="varchar(256)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="location" type="varchar(256)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="metadata_key" type="varchar(50)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="metadata_value" type="TEXT"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="add-entity-hash-on-attribute" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="attribute" columnName="entity_hash"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="attribute">
+			<column name="entity_hash" type="varchar(255)"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="index-entity-hash-on-attribute" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<indexExists tableName="attribute" indexName="index_entity_hash"/>
+			</not>
+		</preConditions>
+		<createIndex tableName="attribute" indexName="index_entity_hash">
+			<column name="entity_hash"/>
+		</createIndex>
+	</changeSet>
 </databaseChangeLog>

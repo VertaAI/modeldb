@@ -48,6 +48,7 @@ import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -536,6 +537,14 @@ public class ModelDBUtils {
 
   public static String getLocationWithSlashOperator(List<String> locations) {
     return String.join("/", locations);
+  }
+
+  public static List<String> getLocationWithSplitSlashOperator(String locationsString) {
+    return Arrays.asList(locationsString.split("/"));
+  }
+
+  public static String getJoinedLocation(List<String> location) {
+    return String.join("#", location);
   }
 
   public interface RetryCallInterface<T> {

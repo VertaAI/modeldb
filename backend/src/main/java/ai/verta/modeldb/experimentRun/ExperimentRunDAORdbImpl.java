@@ -2134,6 +2134,21 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
+  public void deleteLogVersionedInputs(Session session, List<Long> repoIds) {
+    StringBuilder fetchAllExpRunLogVersionedInputsHqlBuilder =
+        new StringBuilder(
+            "DELETE FROM VersioningModeldbEntityMapping vm WHERE vm.repository_id IN (:repoIds) ");
+    fetchAllExpRunLogVersionedInputsHqlBuilder
+        .append(" AND vm.entity_type = '")
+        .append(ExperimentRunEntity.class.getSimpleName())
+        .append("'");
+    Query query = session.createQuery(fetchAllExpRunLogVersionedInputsHqlBuilder.toString());
+    query.setParameter("repoIds", repoIds);
+    query.executeUpdate();
+    LOGGER.debug("ExperimentRun versioning deleted successfully");
+  }
+
+  @Override
   public GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {

@@ -459,6 +459,8 @@ public interface ExperimentRunDAO {
 
   void deleteLogVersionedInputs(Session session, Long repoId, String commitHash);
 
+  void deleteLogVersionedInputs(Session session, List<Long> repoIds);
+
   GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)
       throws InvalidProtocolBufferException;
 

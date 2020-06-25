@@ -16,20 +16,28 @@ import javax.persistence.Table;
 public class LabelsMappingEntity {
   public LabelsMappingEntity() {}
 
-  public LabelsMappingEntity(IdentificationType id, String label) {
+  public LabelsMappingEntity(LabelMappingId id) {
+    this.id = id;
+  }
+
+  @EmbeddedId private LabelMappingId id;
+
+  public static LabelMappingId createId(IdentificationType id, String label) {
     if (id.getIdCase().equals(IdentificationType.IdCase.INT_ID)) {
-      this.id = new LabelMappingId(String.valueOf(id.getIntId()), id.getIdTypeValue(), label);
+      return new LabelMappingId(String.valueOf(id.getIntId()), id.getIdTypeValue(), label);
     } else if (id.getIdCase().equals(IdentificationType.IdCase.STRING_ID)) {
-      this.id = new LabelMappingId(id.getStringId(), id.getIdTypeValue(), label);
+      return new LabelMappingId(id.getStringId(), id.getIdTypeValue(), label);
     } else {
       throw new StatusRuntimeException(Status.INVALID_ARGUMENT);
     }
   }
 
-  @EmbeddedId private LabelMappingId id;
-
   public LabelMappingId getId() {
     return id;
+  }
+
+  public String getValue() {
+    return id.getLabel();
   }
 
   @Embeddable
@@ -38,7 +46,7 @@ public class LabelsMappingEntity {
     @Column(name = "label", length = 50)
     private String label;
 
-    @Column(name = "entity_hash", nullable = false, columnDefinition = "varchar", length = 64)
+    @Column(name = "entity_hash", nullable = false, columnDefinition = "varchar")
     private String entity_hash;
 
     @Column(name = "entity_type")
