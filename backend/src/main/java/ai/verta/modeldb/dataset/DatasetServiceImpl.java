@@ -1,6 +1,8 @@
 package ai.verta.modeldb.dataset;
 
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddDatasetAttributes;
 import ai.verta.modeldb.AddDatasetTags;
@@ -23,13 +25,11 @@ import ai.verta.modeldb.GetDatasetById;
 import ai.verta.modeldb.GetDatasetByName;
 import ai.verta.modeldb.GetExperimentRunByDataset;
 import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.LastExperimentByDatasetId;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.SetDatasetVisibilty;
 import ai.verta.modeldb.SetDatasetWorkspace;
 import ai.verta.modeldb.SetDatasetWorkspace.Response;

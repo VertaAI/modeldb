@@ -1,13 +1,13 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
 import ai.verta.modeldb.authservice.AuthService;
@@ -107,7 +107,6 @@ public class CommitDAORdbImpl implements CommitDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetBlob.Builder datasetBlobBuilder = DatasetBlob.newBuilder();
       Blob.Builder blobBuilder = Blob.newBuilder();
-      blobBuilder.addAllAttributes(datasetVersion.getAttributesList());
       switch (datasetVersion.getDatasetVersionInfoCase()) {
         case PATH_DATASET_VERSION_INFO:
           PathDatasetVersionInfo pathDatasetVersionInfo =
@@ -138,6 +137,7 @@ public class CommitDAORdbImpl implements CommitDAO {
                   BlobExpanded.newBuilder()
                       .addAllLocation(location)
                       .setBlob(blobBuilder.setDataset(datasetBlobBuilder))
+                      .addAllAttributes(datasetVersion.getAttributesList())
                       .build()));
 
       session.beginTransaction();
@@ -923,5 +923,24 @@ public class CommitDAORdbImpl implements CommitDAO {
     } catch (InvalidProtocolBufferException e) {
       throw new ModelDBException(e);
     }
+  }
+
+  /**
+   * Check commit exists in the commit table by commitHash irrespective to repository
+   *
+   * @param session : session
+   * @param commitHash : commit.commit_hash
+   * @return {@link Boolean} : exists status
+   */
+  @Override
+  public boolean isCommitExists(Session session, String commitHash) {
+    String checkDatasetVersionExistsByIdHql =
+        new StringBuilder("Select count(cm.commit_hash) From CommitEntity cm where ")
+            .append(" cm.commit_hash = :commitHash ")
+            .toString();
+    Query query = session.createQuery(checkDatasetVersionExistsByIdHql);
+    query.setParameter("commitHash", commitHash);
+    Long count = (Long) query.uniqueResult();
+    return count > 0;
   }
 }

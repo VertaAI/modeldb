@@ -8,11 +8,13 @@ import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
+import ai.verta.common.OperatorEnum.Operator;
+import ai.verta.common.Pagination;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
-import ai.verta.modeldb.OperatorEnum.Operator;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
@@ -33,9 +35,6 @@ import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GitCodeBlob;
-import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
-import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
-import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.AddCollaboratorRequest;
@@ -8669,7 +8668,7 @@ public class ExperimentRunTest {
             .setCommitSha(commit.getCommitSha())
             .build();
     ListCommitExperimentRunsRequest.Response listCommitExperimentRunsResponse =
-        versioningServiceBlockingStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
+        experimentRunServiceStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
     assertEquals(
         "ExperimentRun total records not match with expected ExperimentRun total records",
         3,
@@ -8690,7 +8689,7 @@ public class ExperimentRunTest {
             .setPagination(Pagination.newBuilder().setPageNumber(1).setPageLimit(1).build())
             .build();
     listCommitExperimentRunsResponse =
-        versioningServiceBlockingStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
+        experimentRunServiceStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
     assertEquals(
         "ExperimentRun total records not match with expected ExperimentRun total records",
         3,
@@ -8707,7 +8706,7 @@ public class ExperimentRunTest {
             .setPagination(Pagination.newBuilder().setPageNumber(3).setPageLimit(1).build())
             .build();
     listCommitExperimentRunsResponse =
-        versioningServiceBlockingStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
+        experimentRunServiceStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
     assertEquals(
         "ExperimentRun total records not match with expected ExperimentRun total records",
         3,
@@ -8874,7 +8873,7 @@ public class ExperimentRunTest {
             .addAllLocation(location1.getLocationList())
             .build();
     ListBlobExperimentRunsRequest.Response listBlobExperimentRunsResponse =
-        versioningServiceBlockingStub.listBlobExperimentRuns(listBlobExperimentRunsRequest);
+        experimentRunServiceStub.listBlobExperimentRuns(listBlobExperimentRunsRequest);
     assertEquals(
         "ExperimentRun total records not match with expected ExperimentRun total records",
         3,
@@ -8895,7 +8894,7 @@ public class ExperimentRunTest {
             .addAllLocation(location2.getLocationList())
             .build();
     listBlobExperimentRunsResponse =
-        versioningServiceBlockingStub.listBlobExperimentRuns(listBlobExperimentRunsRequest);
+        experimentRunServiceStub.listBlobExperimentRuns(listBlobExperimentRunsRequest);
     assertEquals(
         "ExperimentRun total records not match with expected ExperimentRun total records",
         2,

@@ -4,6 +4,8 @@ import static ai.verta.modeldb.RepositoryTest.NAME;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
+import ai.verta.common.KeyValueQuery;
+import ai.verta.common.Pagination;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -48,7 +50,6 @@ import ai.verta.modeldb.versioning.ListCommitBlobsRequest;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.MergeRepositoryCommitsRequest;
 import ai.verta.modeldb.versioning.NotebookCodeBlob;
-import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentDiff;
@@ -59,6 +60,8 @@ import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RevertRepositoryCommitsRequest;
+import ai.verta.modeldb.versioning.S3DatasetBlob;
+import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
 import ai.verta.modeldb.versioning.SetBranchRequest;
 import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
@@ -242,10 +245,7 @@ public class CommitTest {
     switch (contentCase) {
       case DATASET:
         DatasetBlob datasetBlob = DatasetBlob.newBuilder().setPath(getPathDatasetBlob()).build();
-        return Blob.newBuilder()
-            .setDataset(datasetBlob)
-            .addAllAttributes(RepositoryTest.getAttributeList())
-            .build();
+        return Blob.newBuilder().setDataset(datasetBlob).build();
       case CODE:
         return getCodeBlobFromPath("abc");
       case ENVIRONMENT:
@@ -2346,7 +2346,7 @@ public class CommitTest {
           listCommitBlobsResponse.getBlobsCount());
       Assert.assertEquals(
           "blob count not match with expected blob count",
-          datasetBlob.toBuilder().clearAttributes().build(),
+          datasetBlob.toBuilder().build(),
           listCommitBlobsResponse.getBlobsList().get(0).getBlob());
 
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
@@ -2604,8 +2604,8 @@ public class CommitTest {
         listCommitBlobsResponse.getBlobsCount());
     Assert.assertEquals(
         "blob attributes count not match with expected blob attributes count",
-        createCommitRequest.getBlobs(0).getBlob().getAttributesList(),
-        listCommitBlobsResponse.getBlobs(0).getBlob().getAttributesList());
+        createCommitRequest.getBlobs(0).getAttributesList(),
+        listCommitBlobsResponse.getBlobs(0).getAttributesList());
 
     DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()

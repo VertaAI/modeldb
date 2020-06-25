@@ -64,7 +64,6 @@ message Blob {
         CodeBlob code = 4;
         ConfigBlob config = 5;
     }
-    repeated common.KeyValue attributes = 10;
 }
 
 message BlobExpanded {
@@ -119,7 +118,6 @@ message Repository {
     RepositoryAccessModifierEnum.RepositoryAccessModifier repositoryAccessModifier = 8;
 
     string owner = 10;
-
     string description = 11;
     repeated common.KeyValue attributes = 12;
 }

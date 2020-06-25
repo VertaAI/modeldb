@@ -245,7 +245,6 @@ public class DatasetVersionTest {
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
     LOGGER.info("DeleteDatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
@@ -409,7 +408,6 @@ public class DatasetVersionTest {
           datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
       LOGGER.info("DeleteDatasetVersion deleted successfully");
       LOGGER.info(deleteDatasetVersionResponse.toString());
-      assertTrue(deleteDatasetVersionResponse.getStatus());
     }
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
@@ -522,7 +520,6 @@ public class DatasetVersionTest {
           datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
       LOGGER.info("DeleteDatasetVersion deleted successfully");
       LOGGER.info(deleteDatasetVersionResponse.toString());
-      assertTrue(deleteDatasetVersionResponse.getStatus());
     }
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
@@ -607,7 +604,6 @@ public class DatasetVersionTest {
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
@@ -741,7 +737,6 @@ public class DatasetVersionTest {
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
@@ -836,7 +831,6 @@ public class DatasetVersionTest {
           datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
       LOGGER.info("DatasetVersion deleted successfully");
       LOGGER.info(deleteDatasetVersionResponse.toString());
-      assertTrue(deleteDatasetVersionResponse.getStatus());
 
       DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
       DeleteDataset.Response deleteDatasetResponse =
@@ -948,7 +942,6 @@ public class DatasetVersionTest {
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
@@ -1121,7 +1114,6 @@ public class DatasetVersionTest {
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
@@ -1224,7 +1216,6 @@ public class DatasetVersionTest {
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
@@ -1318,7 +1309,6 @@ public class DatasetVersionTest {
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
@@ -1459,7 +1449,6 @@ public class DatasetVersionTest {
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
@@ -1561,7 +1550,6 @@ public class DatasetVersionTest {
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
     LOGGER.info("DatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionResponse.toString());
-    assertTrue(deleteDatasetVersionResponse.getStatus());
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
@@ -1626,7 +1614,6 @@ public class DatasetVersionTest {
         datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersionsRequest);
     LOGGER.info("DeleteDatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionsResponse.toString());
-    assertTrue(deleteDatasetVersionsResponse.getStatus());
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
@@ -1732,7 +1719,6 @@ public class DatasetVersionTest {
           datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersionsRequest);
       LOGGER.info("DeleteDatasetVersion deleted successfully");
       LOGGER.info(deleteDatasetVersionsResponse.toString());
-      assertTrue(deleteDatasetVersionsResponse.getStatus());
     }
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();

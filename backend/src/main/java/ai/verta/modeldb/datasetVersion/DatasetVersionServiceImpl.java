@@ -2,6 +2,7 @@ package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.Pagination;
 import ai.verta.modeldb.AddDatasetVersionAttributes;
 import ai.verta.modeldb.AddDatasetVersionTags;
 import ai.verta.modeldb.App;
@@ -43,7 +44,6 @@ import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
-import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.SetBranchRequest;
@@ -314,8 +314,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               repositoryDAO,
               true);
 
-      responseObserver.onNext(
-          DeleteDatasetVersion.Response.newBuilder().setStatus(deleteStatus).build());
+      responseObserver.onNext(DeleteDatasetVersion.Response.getDefaultInstance());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -934,8 +933,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               repositoryDAO,
               true);
 
-      responseObserver.onNext(
-          DeleteDatasetVersions.Response.newBuilder().setStatus(deleteStatus).build());
+      responseObserver.onNext(DeleteDatasetVersions.Response.getDefaultInstance());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
