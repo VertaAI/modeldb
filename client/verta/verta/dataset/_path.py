@@ -55,12 +55,10 @@ class Path(_dataset._Dataset):
         components = map(self._get_file_metadata, _file_utils.flatten_file_trees(paths))
 
         # key by path to remove duplicates
-        paths_to_components = {
+        components = {
             component.path: component
-            for component
-            in components
-        }
-        components = six.viewvalues(paths_to_components)
+            for component in components
+        }.values()
 
         self._msg.path.components.extend(components)
 
