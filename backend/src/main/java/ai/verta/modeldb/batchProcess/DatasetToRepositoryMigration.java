@@ -1,8 +1,12 @@
 package ai.verta.modeldb.batchProcess;
 
+import ai.verta.common.CollaboratorTypeEnum;
+import ai.verta.common.EntitiesEnum;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVersion;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
@@ -10,6 +14,10 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.collaborator.CollaboratorBase;
+import ai.verta.modeldb.collaborator.CollaboratorOrg;
+import ai.verta.modeldb.collaborator.CollaboratorTeam;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -25,7 +33,8 @@ import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
-import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.uac.GetCollaboratorResponse;
+import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status;
@@ -57,6 +66,8 @@ public class DatasetToRepositoryMigration {
   private static MetadataDAO metadataDAO;
   private static BlobDAO blobDAO;
   private static int recordUpdateLimit = 100;
+  private static Role readOnlyRole;
+  private static Role writeOnlyRole;
 
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
@@ -66,6 +77,9 @@ public class DatasetToRepositoryMigration {
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       authService = new AuthServiceUtils();
       roleService = new RoleServiceUtils(authService);
+
+      readOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_ONLY, null);
+      writeOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_WRITE, null);
     }
 
     commitDAO = new CommitDAORdbImpl(authService, roleService);
@@ -154,6 +168,7 @@ public class DatasetToRepositoryMigration {
     try {
       repository =
           repositoryDAO.createRepository(commitDAO, metadataDAO, newDataset, true, userInfoValue);
+      migrateDatasetCollaborators(datasetId, repository);
     } catch (Exception e) {
       if (e instanceof StatusRuntimeException) {
         Status status = Status.fromThrowable(e);
@@ -169,6 +184,47 @@ public class DatasetToRepositoryMigration {
     }
     LOGGER.debug("Migration done for dataset to repository - Repo ID : {}", repository.getId());
     migrateDatasetVersionToCommitsBlobsMigration(session, datasetId, repository.getId());
+  }
+
+  private static void migrateDatasetCollaborators(String datasetId, Repository repository) {
+    List<GetCollaboratorResponse> collaboratorResponses =
+        roleService.getResourceCollaborators(
+            ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET,
+            datasetId,
+            repository.getOwner(),
+            null);
+
+    if (!collaboratorResponses.isEmpty()) {
+      for (GetCollaboratorResponse collaboratorResponse : collaboratorResponses) {
+        CollaboratorBase collaboratorBase;
+        if (collaboratorResponse
+            .getAuthzEntityType()
+            .equals(EntitiesEnum.EntitiesTypes.ORGANIZATION)) {
+          collaboratorBase = new CollaboratorOrg(collaboratorResponse.getVertaId());
+        } else if (collaboratorResponse
+            .getAuthzEntityType()
+            .equals(EntitiesEnum.EntitiesTypes.TEAM)) {
+          collaboratorBase = new CollaboratorTeam(collaboratorResponse.getVertaId());
+        } else {
+          collaboratorBase = new CollaboratorUser(authService, collaboratorResponse.getVertaId());
+        }
+        if (collaboratorResponse
+            .getCollaboratorType()
+            .equals(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)) {
+          roleService.createRoleBinding(
+              readOnlyRole,
+              collaboratorBase,
+              String.valueOf(repository.getId()),
+              ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+        } else {
+          roleService.createRoleBinding(
+              writeOnlyRole,
+              collaboratorBase,
+              String.valueOf(repository.getId()),
+              ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+        }
+      }
+    }
   }
 
   private static void migrateDatasetVersionToCommitsBlobsMigration(
@@ -199,7 +255,10 @@ public class DatasetToRepositoryMigration {
         CriteriaQuery<DatasetVersionEntity> selectQuery =
             criteriaQuery
                 .select(root)
-                .where(criteriaBuilder.equal(root.get("deleted"), false))
+                .where(
+                    criteriaBuilder.and(
+                        criteriaBuilder.equal(root.get("deleted"), false),
+                        criteriaBuilder.equal(root.get("dataset_id"), datasetId)))
                 .orderBy(criteriaBuilder.asc(root.get("id")));
 
         TypedQuery<DatasetVersionEntity> typedQuery = session1.createQuery(selectQuery);
@@ -213,7 +272,7 @@ public class DatasetToRepositoryMigration {
             try {
               DatasetVersion newDatasetVersion = datasetVersionEntity.getProtoObject();
               if (newDatasetVersion.hasPathDatasetVersionInfo()) {
-                createCommitAndBlobsFromDatsetVersion(newDatasetVersion, repoId);
+                createCommitAndBlobsFromDatsetVersion(session1, newDatasetVersion, repoId);
               } else {
                 LOGGER.warn(
                     "DatasetVersion found with versionInfo type : {}",
@@ -243,12 +302,9 @@ public class DatasetToRepositoryMigration {
   }
 
   private static void createCommitAndBlobsFromDatsetVersion(
-      DatasetVersion newDatasetVersion, Long repoId)
+      Session session, DatasetVersion newDatasetVersion, Long repoId)
       throws ModelDBException, NoSuchAlgorithmException {
-    RepositoryIdentification repositoryIdentification =
-        RepositoryIdentification.newBuilder().setRepoId(repoId).build();
-    RepositoryEntity repositoryEntity =
-        repositoryDAO.getRepositoryById(repositoryIdentification, true);
+    RepositoryEntity repositoryEntity = session.get(RepositoryEntity.class, repoId);
     CreateCommitRequest.Response createCommitResponse =
         commitDAO.setCommitFromDatasetVersion(
             newDatasetVersion, repositoryDAO, blobDAO, metadataDAO, repositoryEntity);
