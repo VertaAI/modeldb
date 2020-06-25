@@ -8,6 +8,7 @@ from .. import utils
 
 import verta.dataset
 from verta.dataset import _dataset
+from verta._internal_utils import _file_utils
 
 
 @pytest.fixture
@@ -16,15 +17,9 @@ def with_boto3():
     yield
 
 
-def walk_files(dirpath):
-    for root, _, filenames in os.walk(dirpath):
-        for filename in filenames:
-            yield os.path.join(root, filename)
-
-
 def assert_dirs_match(dirpath1, dirpath2):
-    files1 = set(walk_files(dirpath1))
-    files2 = set(walk_files(dirpath2))
+    files1 = set(_file_utils.walk_files(dirpath1))
+    files2 = set(_file_utils.walk_files(dirpath2))
 
     for filepath1 in files1:
         # get corresponding path in dirpath2
@@ -259,7 +254,7 @@ class TestPath:
     def test_list_paths(self):
         data_dir = "modelapi_hypothesis/"
 
-        expected_paths = set(walk_files(data_dir))
+        expected_paths = set(_file_utils.walk_files(data_dir))
 
         dataset = verta.dataset.Path(data_dir)
         assert set(dataset.list_paths()) == expected_paths

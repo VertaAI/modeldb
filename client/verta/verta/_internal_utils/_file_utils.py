@@ -86,3 +86,23 @@ def remove_prefix_dir(path, prefix_dir):
         path = path.lstrip('/')  # remove leading slashes, e.g. for "s3:"
 
     return path
+
+
+def walk_files(dirpath):
+    """
+    Yields paths to the files within `dirpath`'s directory tree.
+
+    Parameters
+    ----------
+    dirpath : str
+        Directory to walk.
+
+    Yields
+    ------
+    filepath : str
+        Filepath (relative to cwd).
+
+    """
+    for root, _, filenames in os.walk(dirpath):
+        for filename in filenames:
+            yield os.path.join(root, filename)
