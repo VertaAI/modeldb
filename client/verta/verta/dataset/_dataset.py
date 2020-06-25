@@ -8,6 +8,8 @@ import tempfile
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
+from ..external import six
+
 from .._internal_utils import _utils
 from .._internal_utils import _file_utils
 
@@ -189,7 +191,7 @@ class _Dataset(blob.Blob):
                     #         local_path          =            "my-data/data/info.csv"
                     local_path = os.path.join(
                         downloaded_to_path,
-                        os.path.relpath(path, component_path),
+                        _file_utils.remove_prefix_dir(path, prefix_dir=component_path),
                     )
 
                     components_to_download[path] = local_path
@@ -282,10 +284,19 @@ class _Dataset(blob.Blob):
         """
         Returns the paths of all components in this dataset.
 
+        .. note::
+
+            In Python 2.7, this method returns ``str`` rather than ``unicode``.  Unicode filenames
+            can be restored by calling ``.decode('utf-8')`` on the returned strings.
+
         Returns
         -------
         component_paths : list of str
             Paths of all components.
 
         """
-        return [component.path for component in self._path_component_blobs]
+        return [
+            six.ensure_str(component.path)  # in Py2, protobuf had converted this to unicode str
+            for component
+            in self._path_component_blobs
+        ]
