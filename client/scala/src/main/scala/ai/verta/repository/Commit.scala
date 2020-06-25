@@ -533,18 +533,27 @@ class Commit(
    *  @param datasetComponentPath path to the component in the blob
    *  @return whether the upload attempt succeeds
    */
-  private def uploadArtifact(blobPath: String, datasetComponentPath: String, file: File)(implicit ec: ExecutionContext): Try[Unit] = {
-    getURLForArtifact(blobPath, datasetComponentPath, "PUT")
-      .flatMap(url =>
+  private def uploadArtifact(
+    blobPath: String,
+    datasetComponentPath: String,
+    file: File
+  )(implicit ec: ExecutionContext): Try[Unit] = {
+    for (
+      url <- getURLForArtifact(blobPath, datasetComponentPath);
+      inputStream <- Try(new FileInputStream(file))
+    ) yield {
+      try {
         Await.result(clientSet.client.requestRaw(
           "PUT",
           url,
           Map[String, List[String]](),
           Map[String, String](),
-          new FileInputStream(file)
-        ), Duration.Inf)
-      )
-      .map(_ => ())
+          inputStream
+        ), Duration.Inf).map(_ => ())
+      } finally {
+        inputStream.close()
+      }
+    }
   }
 
   /** Helper method to download a file from an URL.
