@@ -1,6 +1,7 @@
 package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
+import ai.verta.repository.Commit
 
 import java.io.{File, FileInputStream}
 
@@ -110,6 +111,9 @@ object PathBlob {
     val metadataList = pathVersioningBlob.components.get.map(
       comp => comp.path.get -> Dataset.toMetadata(comp)
     )
+
+    // if internal versioned path of a component is defined, then the blob enables MDB Versioning
+    val enableMDBVersioning = pathVersioningBlob.components.get.head.internal_versioned_path.isDefined
     new PathBlob(HashMap(metadataList: _*))
   }
 

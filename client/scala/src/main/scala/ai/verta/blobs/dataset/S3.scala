@@ -1,6 +1,7 @@
 package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
+import ai.verta.repository.Commit
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3._
@@ -150,7 +151,9 @@ object S3 {
       comp => comp.path.get.path.get -> Dataset.toMetadata(comp.path.get, comp.s3_version_id)
     )
 
-    new S3(HashMap(metadataList: _*))
+    // if internal versioned path of a component is defined, then the blob enables MDB Versioning
+    val enableMDBVersioning = componentList.head.path.get.internal_versioned_path.isDefined
+    new S3(HashMap(metadataList: _*), enableMDBVersioning)
   }
 
   /** Combine two S3 instances

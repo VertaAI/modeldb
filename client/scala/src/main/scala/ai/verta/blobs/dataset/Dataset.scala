@@ -9,6 +9,7 @@ import java.io.{File, FileInputStream}
 
 import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
+import scala.concurrent.ExecutionContext
 
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
@@ -30,10 +31,10 @@ trait Dataset extends Blob {
     componentPath: String,
     downloadToPath: String,
     chunkSize: Int = ChunkSize
-  ): Try[Unit] = {
+  )(implicit ec: ExecutionContext): Try[Unit] = {
     if (!enableMDBVersioning)
       Failure(new IllegalStateException("This blob did not allow for versioning"))
-    else if (commit.isEmpty || blobPath.isDefined)
+    else if (commit.isEmpty || blobPath.isEmpty)
       Failure(new IllegalStateException(
         "This dataset cannot be used for downloads. Consider using `commit.get()` to obtain a download-capable dataset"
       ))
@@ -43,8 +44,8 @@ trait Dataset extends Blob {
         file.mkdirs() // create the ancestor directories, if necessary
         file.createNewFile() // create the new file, if necessary
 
-        val url = commit.getUrlForArtifact(blobPath.get, datasetComponentPath.get, "GET").get
-        commit.downloadFromURL(url, file)
+        val url = commit.get.getURLForArtifact(blobPath.get, componentPath, "GET").get
+        commit.get.downloadFromURL(url, file)
       }
   }
 

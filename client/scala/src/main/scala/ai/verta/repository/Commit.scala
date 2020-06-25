@@ -11,7 +11,8 @@ import scala.collection.immutable.Map
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 
-import java.io.{File, FileInputStream}
+import java.io.{File, FileInputStream, FileOutputStream, ByteArrayInputStream}
+import java.nio.file.{Files, StandardCopyOption}
 
 /** Commit within a ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
@@ -539,7 +540,7 @@ class Commit(
     file: File
   )(implicit ec: ExecutionContext): Try[Unit] = {
     for (
-      url <- getURLForArtifact(blobPath, datasetComponentPath);
+      url <- getURLForArtifact(blobPath, datasetComponentPath, "PUT");
       inputStream <- Try(new FileInputStream(file))
     ) yield {
       try {
@@ -562,13 +563,27 @@ class Commit(
    *  @return whether the download attempt succeeds
    */
   private[verta] def downloadFromURL(url: String, file: File)(implicit ec: ExecutionContext): Try[Unit] = {
-    Await.result(clientSet.client.requestRaw(
-        "GET",
-        url,
-        Map[String, List[String]](),
-        Map[String, String](),
-        new FileInputStream(file)
-      ), Duration.Inf)
-    ).map(_ => ())
-  }
+    Await.result(
+      clientSet.client.requestRaw("GET", url, null, null, null)
+        .map(resp => resp match {
+          case Success(response) => {
+            var inputStream: Option[ByteArrayInputStream] = None
+
+            try {
+              inputStream = Some(new ByteArrayInputStream(response))
+              Try(Files.copy(inputStream.get, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
+                .map(_ => ())
+            }
+            catch {
+              case e: Throwable => Failure(e)
+            }
+            finally {
+              if (inputStream.isDefined)
+                inputStream.get.close()
+            }
+          }
+          case Failure(e) => Failure(e)
+        }),
+      Duration.Inf).map(_ => ())
+    }
 }
