@@ -51,6 +51,7 @@ class TestCommitDataVersioning extends FunSuite {
         .flatMap(_.update("def", f.pathBlob))
         .flatMap(_.save("some-msg")).get
 
+      // check for s3:
       val versionedS3Blob: S3 = newCommit.get("abc").get match {
         case s3: S3 => s3
       }
@@ -59,7 +60,13 @@ class TestCommitDataVersioning extends FunSuite {
         "./somefile2"
       )
       assert(downloadS3Attempt.isSuccess)
+      val downloadedS3MD5 = PathBlob("./somefile2").get
+      assert(
+        downloadedS3MD5.getMetadata("./somefile2").get.md5 equals
+        f.s3Blob.getMetadata("s3://verta-scala-test/testdir/testsubdir/testfile2").get.md5
+      )
 
+      // check for path:
       val versionedPathBlob: PathBlob = newCommit.get("def").get match {
         case path: PathBlob => path
       }

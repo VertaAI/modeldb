@@ -583,6 +583,6 @@ class Commit(
           }
           case Failure(e) => Failure(e)
         }),
-      Duration.Inf).map(_ => ())
+      Duration.Inf)
     }
 }
