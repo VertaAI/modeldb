@@ -13,11 +13,40 @@ import scala.util.{Failure, Success, Try}
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
   private[verta] val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
+  private val ChunkSize: Int = 32 * 1024 * 1024 // default chunk size, 32 MB
 
   // mutable state, populated when getting blob from commit
   /** TODO: Figure out a way to remove this */
   private[verta] var commit: Option[Commit] = None
   private[verta] var blobPath: Option[String] = None // path to the blob in the commit
+
+  /** Downloads componentPath from this dataset if ModelDB-managed versioning was enabled
+   *  @param componentPath Original path of the file or directory in this dataset to download
+   *  @param downloadToPath Path to download to
+   *  @param chunkSize Number of bytes to download at a time (default: 32 MB)
+   *  @return Whether the download attempts succeed.
+   */
+  def download(
+    componentPath: String,
+    downloadToPath: String,
+    chunkSize: Int = ChunkSize
+  ): Try[Unit] = {
+    if (!enableMDBVersioning)
+      Failure(new IllegalStateException("This blob did not allow for versioning"))
+    else if (commit.isEmpty || blobPath.isDefined)
+      Failure(new IllegalStateException(
+        "This dataset cannot be used for downloads. Consider using `commit.get()` to obtain a download-capable dataset"
+      ))
+    else
+      Try {
+        val file = new File(downloadToPath)
+        file.mkdirs() // create the ancestor directories, if necessary
+        file.createNewFile() // create the new file, if necessary
+
+        val url = commit.getUrlForArtifact(blobPath.get, datasetComponentPath.get, "GET").get
+        commit.downloadFromURL(url, file)
+      }
+  }
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */

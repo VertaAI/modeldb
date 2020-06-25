@@ -509,12 +509,16 @@ class Commit(
    *  @param datasetComponentPath path to the component in the blob
    *  @return The URL, if succeeds
    */
-  private def getURLForArtifact(blobPath: String, datasetComponentPath: String)(implicit ec: ExecutionContext): Try[String] = {
+  private[verta] def getURLForArtifact(
+    blobPath: String,
+    datasetComponentPath: String,
+    method: String
+  )(implicit ec: ExecutionContext): Try[String] = {
     clientSet.versioningService.getUrlForBlobVersioned2(
       VersioningGetUrlForBlobVersioned(
         commit_sha = id,
         location = Some(pathToLocation(blobPath)),
-        method = Some("PUT"),
+        method = Some(method),
         part_number = Some(BigInt(0)),
         path_dataset_component_blob_path = Some(datasetComponentPath),
         repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
@@ -530,7 +534,7 @@ class Commit(
    *  @return whether the upload attempt succeeds
    */
   private def uploadArtifact(blobPath: String, datasetComponentPath: String, file: File)(implicit ec: ExecutionContext): Try[Unit] = {
-    getURLForArtifact(blobPath, datasetComponentPath)
+    getURLForArtifact(blobPath, datasetComponentPath, "PUT")
       .flatMap(url =>
         Await.result(clientSet.client.requestRaw(
           "PUT",
@@ -541,5 +545,21 @@ class Commit(
         ), Duration.Inf)
       )
       .map(_ => ())
+  }
+
+  /** Helper method to download a file from an URL.
+   *  @param url the url
+   *  @param file Place to store the file
+   *  @return whether the download attempt succeeds
+   */
+  private[verta] def downloadFromURL(url: String, file: File)(implicit ec: ExecutionContext): Try[Unit] = {
+    Await.result(clientSet.client.requestRaw(
+        "GET",
+        url,
+        Map[String, List[String]](),
+        Map[String, String](),
+        new FileInputStream(file)
+      ), Duration.Inf)
+    ).map(_ => ())
   }
 }
