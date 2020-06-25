@@ -493,9 +493,9 @@ class Commit(
   }
 
   /** Helper method to retrieve URL to upload the file.
-    *  @param blobPath path to the blob in the commit
-    *  @param datasetComponentPath path to the component in the blob
-    *  @return The URL, if succeeds
+   *  @param blobPath path to the blob in the commit
+   *  @param datasetComponentPath path to the component in the blob
+   *  @return The URL, if succeeds
    */
   private def getURLForArtifact(blobPath: String, datasetComponentPath: String)(implicit ec: ExecutionContext): Try[String] = {
     clientSet.versioningService.getUrlForBlobVersioned2(
