@@ -83,16 +83,22 @@ class Commit(
           .mapValues(_.get) // Map[String, Dataset]
 
         toVersion.values.foreach(dataset => dataset.prepareForUpload().get)
-        val newCommit = blobsList().flatMap(list => createCommit(message = message, blobs = Some(list)))
+        val newCommit = blobsList().flatMap(list => createCommit(message = message, blobs = Some(list), updateBranch = false))
+        // do not update the branch's head right away (in case uploading data fails)
 
         // upload the artifacts given by toVersion map
-        val upload: Try[Unit] = newCommit.map(newCommit => {
+        val uploadAttempt: Try[Unit] = newCommit.map(newCommit => {
           toVersion
             .mapValues(_.getAllMetadata) // Map[String, Iterable[FileMetadata]]
             .map(pair => pair._2.map(metadata => newCommit.uploadArtifact(pair._1, metadata.path, new File(metadata.localPath.get))))
         })
 
-        newCommit
+        uploadAttempt.flatMap(_ =>
+          if (commitBranch.isDefined)
+            newCommit.flatMap(_.newBranch(commitBranch.get))
+          else
+            newCommit
+        ) // if uploading fails, return the failure instead
       })
   }
 
@@ -101,13 +107,15 @@ class Commit(
    *  @param blobs The list of blobs to assign to the new commit (optional)
    *  @param commitBase base for the new commit (optional)
    *  @param diffs a list of diffs (optional)
+   *  @param updateBranch whether to set the new commit to head of the current commit's branch. Default is true
    *  @return the new commit (if succeeds), set to the current branch's head (if there is a branch)
    */
   private def createCommit(
     message: String,
     blobs: Option[List[VersioningBlobExpanded]] = None,
     commitBase: Option[String] = None,
-    diffs: Option[List[VersioningBlobDiff]] = None
+    diffs: Option[List[VersioningBlobDiff]] = None,
+    updateBranch: Boolean = true
   )(implicit ec: ExecutionContext) = {
       clientSet.versioningService.CreateCommit2(
         body = VersioningCreateCommitRequest(
@@ -117,7 +125,7 @@ class Commit(
           diffs = diffs
         ),
         repository_id_repo_id = repo.id
-      ).flatMap(r => versioningCommitToCommit(r.commit.get))
+      ).flatMap(r => versioningCommitToCommit(r.commit.get, updateBranch))
   }
 
   /** Convert a location to "repeated string" representation
@@ -289,12 +297,16 @@ class Commit(
    *  If the current instance has a branch associated with it, the new commit will become the head of the branch.
    *  Useful for createCommit, merge, and revert
    *  @param versioningCommit the versioning commit instance
+   *  @param updateBranch whether to set the new commit to head of the current commit's branch. Default is true
    *  @return the corresponding commit instance
    */
-  private def versioningCommitToCommit(versioningCommit: VersioningCommit)(implicit ec: ExecutionContext) = {
+  private def versioningCommitToCommit(
+    versioningCommit: VersioningCommit,
+    updateBranch: Boolean = true
+  )(implicit ec: ExecutionContext) = {
     val newCommit = new Commit(clientSet, repo, versioningCommit, commitBranch)
 
-    if (commitBranch.isDefined)
+    if (updateBranch && commitBranch.isDefined)
       newCommit.newBranch(commitBranch.get)
     else
       Success(newCommit)
