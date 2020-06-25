@@ -9781,7 +9781,6 @@ public class ExperimentRunTest {
     LOGGER.info("FindExperimentRuns test stop................................");
   }
 
-  @Ignore
   @Test
   public void findExperimentRunsCodeConfigWithRepository()
       throws ModelDBException, NoSuchAlgorithmException {
