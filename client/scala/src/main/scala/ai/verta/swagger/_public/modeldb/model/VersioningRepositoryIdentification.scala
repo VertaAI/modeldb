@@ -12,17 +12,19 @@ import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbGetCommittedArtifactPartsResponse (
-  artifact_parts: Option[List[CommonArtifactPart]] = None
+case class VersioningRepositoryIdentification (
+  named_id: Option[VersioningRepositoryNamedIdentification] = None,
+  repo_id: Option[BigInt] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbGetCommittedArtifactPartsResponse.toJson(this)
+  def toJson(): JValue = VersioningRepositoryIdentification.toJson(this)
 }
 
-object ModeldbGetCommittedArtifactPartsResponse {
-  def toJson(obj: ModeldbGetCommittedArtifactPartsResponse): JObject = {
+object VersioningRepositoryIdentification {
+  def toJson(obj: VersioningRepositoryIdentification): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.artifact_parts.map(x => JField("artifact_parts", ((x: List[CommonArtifactPart]) => JArray(x.map(((x: CommonArtifactPart) => CommonArtifactPart.toJson(x)))))(x)))
+        obj.named_id.map(x => JField("named_id", ((x: VersioningRepositoryNamedIdentification) => VersioningRepositoryNamedIdentification.toJson(x))(x))),
+        obj.repo_id.map(x => JField("repo_id", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -30,13 +32,14 @@ object ModeldbGetCommittedArtifactPartsResponse {
     )
   }
 
-  def fromJson(value: JValue): ModeldbGetCommittedArtifactPartsResponse =
+  def fromJson(value: JValue): VersioningRepositoryIdentification =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbGetCommittedArtifactPartsResponse(
+        VersioningRepositoryIdentification(
           // TODO: handle required
-          artifact_parts = fieldsMap.get("artifact_parts").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonArtifactPart.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
+          named_id = fieldsMap.get("named_id").map(VersioningRepositoryNamedIdentification.fromJson),
+          repo_id = fieldsMap.get("repo_id").map(JsonConverter.fromJsonInteger)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

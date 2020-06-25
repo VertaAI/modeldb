@@ -13,7 +13,7 @@ import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbCommitArtifactPart (
-  artifact_part: Option[ModeldbArtifactPart] = None,
+  artifact_part: Option[CommonArtifactPart] = None,
   id: Option[String] = None,
   key: Option[String] = None
 ) extends BaseSwagger {
@@ -24,7 +24,7 @@ object ModeldbCommitArtifactPart {
   def toJson(obj: ModeldbCommitArtifactPart): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.artifact_part.map(x => JField("artifact_part", ((x: ModeldbArtifactPart) => ModeldbArtifactPart.toJson(x))(x))),
+        obj.artifact_part.map(x => JField("artifact_part", ((x: CommonArtifactPart) => CommonArtifactPart.toJson(x))(x))),
         obj.id.map(x => JField("id", JString(x))),
         obj.key.map(x => JField("key", JString(x)))
       ).flatMap(x => x match {
@@ -40,7 +40,7 @@ object ModeldbCommitArtifactPart {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbCommitArtifactPart(
           // TODO: handle required
-          artifact_part = fieldsMap.get("artifact_part").map(ModeldbArtifactPart.fromJson),
+          artifact_part = fieldsMap.get("artifact_part").map(CommonArtifactPart.fromJson),
           id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
           key = fieldsMap.get("key").map(JsonConverter.fromJsonString)
         )
