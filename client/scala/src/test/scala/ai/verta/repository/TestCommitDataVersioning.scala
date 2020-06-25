@@ -9,6 +9,9 @@ import scala.language.reflectiveCalls
 import scala.util.{Try, Success, Failure}
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.Arrays
 
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
@@ -33,7 +36,13 @@ class TestCommitDataVersioning extends FunSuite {
     f.client.close()
   }
 
-  test("versioning") {
+  def checkEqualFile(firstFile: File, secondFile: File) = {
+    val first: Array[Byte] = Files.readAllBytes(firstFile.toPath)
+    val second = Files.readAllBytes(secondFile.toPath)
+    Arrays.equals(first, second)
+  }
+
+  test("downloading an uploaded file should not corrupt it") {
     val f = fixture
 
     try {
@@ -59,7 +68,13 @@ class TestCommitDataVersioning extends FunSuite {
         "./somefile"
       )
       assert(downloadPathAttempt.isSuccess)
+      checkEqualFile(
+        new File("./src/test/scala/ai/verta/blobs/testdir/testfile"),
+        new File("./somefile")
+      )
     } finally {
+      (new File("./somefile")).delete()
+      (new File("./somefile2")).delete()
       cleanup(f)
     }
   }
