@@ -904,16 +904,16 @@ var xxx_messageInfo_Pagination proto.InternalMessageInfo
 
 func (m *Pagination) GetPageNumber() int32 {
 	if m != nil {
-		return m.PageNumber
+		return m.Description
 	}
-	return 0
+	return ""
 }
 
-func (m *Pagination) GetPageLimit() int32 {
+func (m *Repository) GetAttributes() []*common.KeyValue {
 	if m != nil {
-		return m.PageLimit
+		return m.Attributes
 	}
-	return 0
+	return nil
 }
 
 // CRUD for repositories

@@ -664,16 +664,16 @@ _PAGINATION = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='page_number', full_name='ai.verta.modeldb.versioning.Pagination.page_number', index=0,
-      number=2, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      name='description', full_name='ai.verta.modeldb.versioning.Repository.description', index=8,
+      number=11, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='page_limit', full_name='ai.verta.modeldb.versioning.Pagination.page_limit', index=1,
-      number=3, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      name='attributes', full_name='ai.verta.modeldb.versioning.Repository.attributes', index=9,
+      number=12, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1506,7 +1506,7 @@ _LISTCOMMITEXPERIMENTRUNSREQUEST = _descriptor.Descriptor(
 )
 
 
-_LISTBLOBEXPERIMENTRUNSREQUEST_RESPONSE = _descriptor.Descriptor(
+_GETCOMMITCOMPONENTREQUEST_RESPONSE = _descriptor.Descriptor(
   name='Response',
   full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.Response',
   filename=None,
@@ -1551,29 +1551,22 @@ _LISTBLOBEXPERIMENTRUNSREQUEST = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='repository_id', full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.repository_id', index=0,
+      name='folder', full_name='ai.verta.modeldb.versioning.GetCommitComponentRequest.Response.folder', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='pagination', full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.pagination', index=1,
+      name='blob', full_name='ai.verta.modeldb.versioning.GetCommitComponentRequest.Response.blob', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='commit_sha', full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.commit_sha', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='location', full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.location', index=3,
-      number=4, type=9, cpp_type=9, label=3,
+      name='attributes', full_name='ai.verta.modeldb.versioning.GetCommitComponentRequest.Response.attributes', index=2,
+      number=10, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
