@@ -550,7 +550,7 @@ class Commit(
           Map[String, List[String]](),
           Map[String, String](),
           inputStream
-        ), Duration.Inf).map(_ => ())
+        ), Duration.Inf).map(_ => ()).get // propagate the failure out
       } finally {
         inputStream.close()
       }
