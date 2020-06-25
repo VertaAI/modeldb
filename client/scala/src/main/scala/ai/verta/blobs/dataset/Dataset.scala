@@ -39,9 +39,7 @@ trait Dataset extends Blob {
       Failure(new IllegalStateException(
         "This dataset cannot be used for downloads. Consider using `commit.get()` to obtain a download-capable dataset"
       ))
-    else if (contents.get(componentPath).isEmpty)
-      Failure(new IllegalArgumentException("This component path is not in the blob"))
-    else
+    else if (contents.contains(componentPath))
       Try {
         val file = new File(downloadToPath)
         file.mkdirs() // create the ancestor directories, if necessary
@@ -50,6 +48,22 @@ trait Dataset extends Blob {
         val url = commit.get.getURLForArtifact(blobPath.get, componentPath, "GET").get
         commit.get.downloadFromURL(url, file)
       }
+    else {
+      // is a directory
+      Try(
+        getComponentPathInside(componentPath)
+          .map(comp => download(comp, f"${downloadToPath}/${removePrefixDir(comp, componentPath)}").get)
+      )
+    }
+  }
+
+  /** Return the set of component paths inside a directory path
+   *  @param path directory path
+   *  @return Set of component paths inside the directory
+   */
+  def getComponentPathInside(path: String): Iterable[String] = {
+    val dirPath = if(path.endsWith("/")) path else path + "/"
+    contents.keySet.filter(_.startsWith(dirPath))
   }
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
@@ -91,6 +105,21 @@ trait Dataset extends Blob {
 
   /** Clean up the uploaded components */
   protected def cleanUpUploadedComponents(): Try[Unit] = Success(())
+
+  /** Removes prefix from the beginning of path (leaving it unchanged if path does not contain prefix)
+   *  @param path directory path
+   *  @param prefix
+   */
+  private def removePrefixDir(path: String, prefix: String) = {
+    val prefixDirPath = if (prefix.endsWith("/")) prefix else prefix + "/"
+
+    if (path.startsWith(prefixDirPath + "/"))
+      path.substring(prefixDirPath.length + 1)
+    else if (path.startsWith(prefixDirPath))
+      path.substring(prefixDirPath.length)
+    else
+      path
+  }
 }
 
 object Dataset {

@@ -85,4 +85,36 @@ class TestCommitDataVersioning extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("downloading an entire folder should retrieve all the files") {
+    val f = fixture
+
+    try {
+      val newCommit = f.commit
+        .update("abc", f.pathBlob)
+        .flatMap(_.save("some-msg")).get
+
+      val versionedPathBlob: PathBlob = newCommit.get("abc").get match {
+        case path: PathBlob => path
+      }
+
+      versionedPathBlob.download(
+        "./src/test/scala/ai/verta/blobs/testdir",
+        "./somefiles"
+      )
+
+      checkEqualFile(
+        new File("./src/test/scala/ai/verta/blobs/testdir/testfile"),
+        new File("./somefiles/testfile")
+      )
+
+      checkEqualFile(
+        new File("./src/test/scala/ai/verta/blobs/testdir/testsubdir/testfile2"),
+        new File("./somefiles/testsubdir/testfile2")
+      )
+    } finally {
+      (new File("./somefiles")).delete()
+      cleanup(f)
+    }
+  }
 }
