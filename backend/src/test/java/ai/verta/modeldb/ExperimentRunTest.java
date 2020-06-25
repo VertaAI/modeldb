@@ -8548,7 +8548,6 @@ public class ExperimentRunTest {
   }
 
   @Test
-  @Ignore
   public void listCommitExperimentRunsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Fetch ExperimentRun for commit test start................................");
 
@@ -8741,7 +8740,6 @@ public class ExperimentRunTest {
     LOGGER.info("Fetch ExperimentRun for commit test stop................................");
   }
 
-  @Ignore
   @Test
   public void ListBlobExperimentRunsRequestTest()
       throws ModelDBException, NoSuchAlgorithmException {
