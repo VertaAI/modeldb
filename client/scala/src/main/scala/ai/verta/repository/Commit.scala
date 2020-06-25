@@ -488,6 +488,10 @@ class Commit(
     }
   }
 
+  /** Convert the blob to a dataset (if it is versioned)
+   *  @param blob the blob
+   *  @return Some dataset, if it is versioned; otherwise None
+   */
   private def toMDBVersioningDataset(blob: Blob): Option[Dataset] = blob match {
     case PathBlob(contents, true) => Some(PathBlob(contents, true))
     case S3(contents, true) => Some(S3(contents, true))
