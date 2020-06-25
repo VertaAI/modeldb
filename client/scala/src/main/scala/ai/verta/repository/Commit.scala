@@ -81,6 +81,7 @@ class Commit(
           .mapValues(toMDBVersioningDataset)
           .filter(pair => pair._2.isDefined)
           .mapValues(_.get) // Map[String, Dataset]
+          .filter(pair => pair._2.enableMDBVersioning)
 
         // trigger preparing for upload
         val newCommit = Try(toVersion.values.foreach(dataset => dataset.prepareForUpload().get))
@@ -488,13 +489,13 @@ class Commit(
     }
   }
 
-  /** Convert the blob to a dataset (if it is versioned)
+  /** Convert the blob to a dataset (if the blob is a dataset)
    *  @param blob the blob
-   *  @return Some dataset, if it is versioned; otherwise None
+   *  @return Some dataset, if the blob is a dataset; otherwise None
    */
   private def toMDBVersioningDataset(blob: Blob): Option[Dataset] = blob match {
-    case PathBlob(contents, true) => Some(PathBlob(contents, true))
-    case S3(contents, true) => Some(S3(contents, true))
+    case PathBlob(contents, enableMDBVersioning) => Some(PathBlob(contents, enableMDBVersioning))
+    case S3(contents, enableMDBVersioning) => Some(S3(contents, enableMDBVersioning))
     case _ => None
   }
 
