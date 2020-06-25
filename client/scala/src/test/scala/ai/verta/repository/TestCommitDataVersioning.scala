@@ -36,6 +36,11 @@ class TestCommitDataVersioning extends FunSuite {
     f.client.close()
   }
 
+  def deleteDirectory(dir: File): Unit = {
+    Option(dir.listFiles()).map(_.foreach(deleteDirectory))
+    dir.delete()
+  }
+
   def checkEqualFile(firstFile: File, secondFile: File) = {
     val first: Array[Byte] = Files.readAllBytes(firstFile.toPath)
     val second = Files.readAllBytes(secondFile.toPath)
@@ -113,7 +118,7 @@ class TestCommitDataVersioning extends FunSuite {
         new File("./somefiles/testsubdir/testfile2")
       )
     } finally {
-      (new File("./somefiles")).delete()
+      deleteDirectory(new File("./somefiles"))
       cleanup(f)
     }
   }
