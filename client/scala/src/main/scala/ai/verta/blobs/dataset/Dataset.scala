@@ -22,7 +22,7 @@ trait Dataset extends Blob {
   private[verta] var blobPath: Option[String] = None // path to the blob in the commit
 
   /** Downloads componentPath from this dataset if ModelDB-managed versioning was enabled
-   *  Currently, only support downloading a specific component to a specific path
+   *  Currently, only support downloading a specific component/folder to a specific path
    *  @param componentPath Original path of the file or directory in this dataset to download
    *  @param downloadToPath Path to download to
    *  @param chunkSize Number of bytes to download at a time (default: 32 MB)
@@ -39,15 +39,15 @@ trait Dataset extends Blob {
       Failure(new IllegalStateException(
         "This dataset cannot be used for downloads. Consider using `commit.get()` to obtain a download-capable dataset"
       ))
-    else if (contents.contains(componentPath))
-      Try {
-        val file = new File(downloadToPath)
-        file.mkdirs() // create the ancestor directories, if necessary
-        file.createNewFile() // create the new file, if necessary
+    else if (contents.contains(componentPath)) {
+      val file = new File(downloadToPath)
 
-        val url = commit.get.getURLForArtifact(blobPath.get, componentPath, "GET").get
-        commit.get.downloadFromURL(url, file)
-      }
+      for (
+        _ <- Try(file.mkdirs()); // create the ancestor directories, if necessary
+        _ <- Try(file.createNewFile()); // create the new file, if necessary
+        url <- commit.get.getURLForArtifact(blobPath.get, componentPath, "GET")
+      ) yield commit.get.downloadFromURL(url, file)
+    }
     else {
       // is a directory
       Try(
