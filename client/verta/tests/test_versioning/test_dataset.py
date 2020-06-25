@@ -7,6 +7,13 @@ import pytest
 from .. import utils
 
 import verta.dataset
+from verta.dataset import _dataset
+
+
+@pytest.fixture
+def with_boto3():
+    pytest.importorskip("boto3")
+    yield
 
 
 def walk_files(dirpath):
@@ -27,11 +34,10 @@ def assert_dirs_match(dirpath1, dirpath2):
                 assert f1.read() == f2.read()
 
 
+@pytest.mark.usefixtures("with_boto3")
 class TestS3:
     def test_s3_bucket(self):
         # pylint: disable=no-member
-        pytest.importorskip("boto3")
-
         dataset = verta.dataset.S3("s3://verta-starter")
         assert len(dataset._path_component_blobs) > 1
 
@@ -43,8 +49,6 @@ class TestS3:
 
     def test_s3_key(self):
         # pylint: disable=no-member
-        pytest.importorskip("boto3")
-
         dataset = verta.dataset.S3("s3://verta-starter/census-test.csv")
 
         assert len(dataset._path_component_blobs) == 1
@@ -57,8 +61,6 @@ class TestS3:
 
     def test_nonexistent_s3_folder_error(self, strs):
         # pylint: disable=no-member
-        pytest.importorskip("boto3")
-
         with pytest.raises(ValueError) as excinfo:
             verta.dataset.S3("s3://verta-starter/{}/".format(strs[0]))
         err_msg = str(excinfo.value).strip()
@@ -67,8 +69,6 @@ class TestS3:
 
     def test_s3_multiple_keys(self):
         # pylint: disable=no-member
-        pytest.importorskip("boto3")
-
         dataset = verta.dataset.S3([
             "s3://verta-starter/census-test.csv",
             "s3://verta-starter/census-train.csv",
@@ -84,8 +84,6 @@ class TestS3:
 
     def test_s3_no_duplicates(self):
         # pylint: disable=no-member
-        pytest.importorskip("boto3")
-
         multiple_dataset = verta.dataset.S3([
             "s3://verta-starter",
             "s3://verta-starter/census-test.csv",
@@ -183,8 +181,6 @@ class TestS3:
 
     def test_repr(self):
         """Tests that __repr__() executes without error"""
-        pytest.importorskip("boto3")
-
         dataset_ver = verta.dataset.S3("s3://verta-starter")
 
         assert dataset_ver.__repr__()
@@ -193,15 +189,15 @@ class TestS3:
         s3 = pytest.importorskip("boto3").client('s3')
 
         bucket = "verta-starter"
-        expected_paths = [
+        expected_paths = set(
             "s3://{}/{}".format(bucket, s3_obj['Key'])
             for s3_obj
             in s3.list_objects_v2(Bucket=bucket)['Contents']
             if not s3_obj['Key'].endswith('/')  # folder, not object
-        ]
+        )
 
         dataset = verta.dataset.S3("s3://{}".format(bucket))
-        assert dataset.list_paths() == expected_paths
+        assert set(dataset.list_paths()) == expected_paths
 
 
 class TestPath:
@@ -256,16 +252,16 @@ class TestPath:
     def test_list_paths(self):
         data_dir = "modelapi_hypothesis/"
 
-        expected_paths = list(walk_files(data_dir))
+        expected_paths = set(walk_files(data_dir))
 
         dataset = verta.dataset.Path(data_dir)
-        assert dataset.list_paths() == expected_paths
+        assert set(dataset.list_paths()) == expected_paths
 
 
+@pytest.mark.usefixtures("with_boto3", "in_tempdir")
 class TestS3ManagedVersioning:
-    def test_mngd_ver_file(self, commit, in_tempdir):
-        boto3 = pytest.importorskip("boto3")
-        s3 = boto3.client('s3')
+    def test_mngd_ver_file(self, commit):
+        s3 = pytest.importorskip("boto3").client('s3')
 
         filename = "tiny1.bin"
         bucket = "verta-versioned-bucket"
@@ -307,9 +303,8 @@ class TestS3ManagedVersioning:
             assert f.read() == FILE_CONTENTS
         assert os.path.getmtime(filepath) > last_updated
 
-    def test_mngd_ver_folder(self, commit, in_tempdir):
-        boto3 = pytest.importorskip("boto3")
-        s3 = boto3.client('s3')
+    def test_mngd_ver_folder(self, commit):
+        s3 = pytest.importorskip("boto3").client('s3')
 
         bucket = "verta-versioned-bucket"
         dirname = "tiny-files/"
@@ -354,7 +349,7 @@ class TestS3ManagedVersioning:
         assert_dirs_match(dirpath3, reference_dir)
         assert os.path.getmtime(dirpath) > last_updated
 
-    def test_not_to_s3_dir(self, commit, in_tempdir):
+    def test_not_to_s3_dir(self, commit):
         """If the user specifies "s3://", things shouldn't go into an "s3:" dir."""
         bucket = "verta-versioned-bucket"
         dirname = "tiny-files/"
@@ -370,9 +365,39 @@ class TestS3ManagedVersioning:
         dirpath = dataset.download("s3://")
         assert "s3:" not in pathlib2.Path(dirpath).parts
 
+    def test_download_all(self, commit):
+        s3 = pytest.importorskip("boto3").client('s3')
 
+        bucket = "verta-versioned-bucket"
+        dirname = "tiny-files/"
+        s3_folder = "s3://{}/{}".format(bucket, dirname)
+
+        # get files' contents directly from S3 for reference
+        reference_dir = "reference/"
+        for s3_obj in s3.list_objects_v2(Bucket=bucket, Prefix=dirname)['Contents']:
+            key = s3_obj['Key']
+            filepath = os.path.join(reference_dir, bucket, key)
+            pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # create parent dirs
+
+            s3.download_file(bucket, key, filepath)
+
+        # commit dataset blob
+        blob_path = "data"
+        dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        dirpath = dataset.download()
+        assert dirpath == os.path.abspath(_dataset.DEFAULT_DOWNLOAD_DIR)
+
+        assert os.path.isdir(dirpath)
+        assert_dirs_match(dirpath, reference_dir)
+
+
+@pytest.mark.usefixtures("in_tempdir")
 class TestPathManagedVersioning:
-    def test_mngd_ver_file(self, commit, in_tempdir):
+    def test_mngd_ver_file(self, commit):
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2**16)
         with open(filename, 'wb') as f:
@@ -407,7 +432,7 @@ class TestPathManagedVersioning:
             assert f.read() == FILE_CONTENTS
         assert os.path.getmtime(filepath) > last_updated
 
-    def test_mngd_ver_folder(self, commit, in_tempdir):
+    def test_mngd_ver_folder(self, commit):
         reference_dir = "reference/"
         dirname = "tiny-files/"
         os.mkdir(dirname)
@@ -441,7 +466,7 @@ class TestPathManagedVersioning:
         assert_dirs_match(dirpath3, reference_dir)
         assert os.path.getmtime(dirpath) > last_updated
 
-    def test_mngd_ver_rollback(self, commit, in_tempdir):
+    def test_mngd_ver_rollback(self, commit):
         """Recover a versioned file by loading a prior commit."""
         filename = "tiny1.bin"
         file1_contents = os.urandom(2**16)
@@ -476,7 +501,7 @@ class TestPathManagedVersioning:
         with open(new_filename, 'rb') as f:
             assert f.read() == file1_contents
 
-    def test_mngd_ver_to_parent_dir(self, commit, in_tempdir):
+    def test_mngd_ver_to_parent_dir(self, commit):
         """Download to parent directory works as expected."""
         child_dirname = "child"
         os.mkdir(child_dirname)
@@ -501,7 +526,7 @@ class TestPathManagedVersioning:
             with open(filepath, 'rb') as f:
                 assert f.read() == FILE_CONTENTS
 
-    def test_mngd_ver_to_sibling_dir(self, commit, in_tempdir):
+    def test_mngd_ver_to_sibling_dir(self, commit):
         """Download to sibling directory works as expected."""
         child_dirname = "child"
         os.mkdir(child_dirname)
@@ -527,3 +552,25 @@ class TestPathManagedVersioning:
             assert filepath == os.path.abspath(download_to_path)
             with open(filepath, 'rb') as f:
                 assert f.read() == FILE_CONTENTS
+
+    def test_download_all(self, commit):
+        reference_dir = "tiny-files/"
+        os.mkdir(reference_dir)
+        for filename in ["tiny{}.bin".format(i) for i in range(3)]:
+            with open(os.path.join(reference_dir, filename), 'wb') as f:
+                f.write(os.urandom(2**16))
+
+        # commit dataset blob
+        blob_path = "data"
+        dataset = verta.dataset.Path(reference_dir, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        dirpath = dataset.download()
+        assert dirpath == os.path.abspath(_dataset.DEFAULT_DOWNLOAD_DIR)
+
+        # uploaded filetree was recreated within `DEFAULT_DOWNLOAD_DIR`
+        destination_dir = os.path.join(_dataset.DEFAULT_DOWNLOAD_DIR, reference_dir)
+        assert os.path.isdir(destination_dir)
+        assert_dirs_match(destination_dir, reference_dir)
