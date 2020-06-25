@@ -82,8 +82,10 @@ class Commit(
           .filter(pair => pair._2.isDefined)
           .mapValues(_.get) // Map[String, Dataset]
 
-        toVersion.values.foreach(dataset => dataset.prepareForUpload().get)
-        val newCommit = blobsList().flatMap(list => createCommit(message = message, blobs = Some(list), updateBranch = false))
+        // trigger preparing for upload
+        val newCommit = Try(toVersion.values.foreach(dataset => dataset.prepareForUpload().get))
+          .flatMap(_ => blobsList())
+          .flatMap(list => createCommit(message = message, blobs = Some(list), updateBranch = false))
         // do not update the branch's head right away (in case uploading data fails)
 
         // upload the artifacts given by toVersion map
