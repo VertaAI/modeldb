@@ -137,7 +137,10 @@ class Path(_dataset._Dataset):
         for component_blob in self._path_component_blobs:
             component_path = component_blob.path
 
-            # TODO: when stripping base path is implemented, reconstruct original path here
+            # reconstruct original filepaths with removed `base_path`s
+            for base_path, component_paths in self._base_path_to_component_paths:
+                if component_path in component_paths:
+                    component_path = os.path.join(base_path, component_path)
             filepath = os.path.abspath(component_path)
 
             # track which file this component corresponds to
