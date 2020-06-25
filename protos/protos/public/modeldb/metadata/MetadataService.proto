@@ -58,6 +58,7 @@ message GetPropertyRequest {
     string key = 2;
 
     message Response {
+        string value = 3;
     }
 }
 
