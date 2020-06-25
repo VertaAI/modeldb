@@ -7,6 +7,7 @@ import pytest
 from .. import utils
 
 import verta.dataset
+from verta.dataset import _dataset
 
 
 @pytest.fixture
@@ -352,6 +353,35 @@ class TestS3ManagedVersioning:
         dirpath = dataset.download("s3://")
         assert "s3:" not in pathlib2.Path(dirpath).parts
 
+    def test_download_all(self, commit):
+        s3 = pytest.importorskip("boto3").client('s3')
+
+        bucket = "verta-versioned-bucket"
+        dirname = "tiny-files/"
+        s3_folder = "s3://{}/{}".format(bucket, dirname)
+
+        # get files' contents directly from S3 for reference
+        reference_dir = "reference/"
+        for s3_obj in s3.list_objects_v2(Bucket=bucket, Prefix=dirname)['Contents']:
+            key = s3_obj['Key']
+            filepath = os.path.join(reference_dir, bucket, key)
+            pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # create parent dirs
+
+            s3.download_file(bucket, key, filepath)
+
+        # commit dataset blob
+        blob_path = "data"
+        dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        dirpath = dataset.download()
+        assert dirpath == os.path.abspath(_dataset.DEFAULT_DOWNLOAD_DIR)
+
+        assert os.path.isdir(dirpath)
+        assert_dirs_match(dirpath, reference_dir)
+
 
 @pytest.mark.usefixtures("in_tempdir")
 class TestPathManagedVersioning:
@@ -520,3 +550,25 @@ class TestPathManagedVersioning:
             assert filepath == os.path.abspath(download_to_path)
             with open(filepath, 'rb') as f:
                 assert f.read() == FILE_CONTENTS
+
+    def test_download_all(self, commit):
+        reference_dir = "tiny-files/"
+        os.mkdir(reference_dir)
+        for filename in ["tiny{}.bin".format(i) for i in range(3)]:
+            with open(os.path.join(reference_dir, filename), 'wb') as f:
+                f.write(os.urandom(2**16))
+
+        # commit dataset blob
+        blob_path = "data"
+        dataset = verta.dataset.Path(reference_dir, enable_mdb_versioning=True)
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        dirpath = dataset.download()
+        assert dirpath == os.path.abspath(_dataset.DEFAULT_DOWNLOAD_DIR)
+
+        # uploaded filetree was recreated within `DEFAULT_DOWNLOAD_DIR`
+        destination_dir = os.path.join(_dataset.DEFAULT_DOWNLOAD_DIR, reference_dir)
+        assert os.path.isdir(destination_dir)
+        assert_dirs_match(destination_dir, reference_dir)
