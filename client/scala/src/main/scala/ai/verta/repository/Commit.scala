@@ -529,23 +529,21 @@ class Commit(
     datasetComponentPath: String,
     file: File
   )(implicit ec: ExecutionContext): Try[Unit] = {
-    getURLForArtifact(blobPath, datasetComponentPath)
-      .flatMap(url => Try {
-        var inputStream: Option[FileInputStream] = None
-
-        try {
-          inputStream = Some(new FileInputStream(file))
-          Await.result(clientSet.client.requestRaw(
-            "PUT",
-            url,
-            Map[String, List[String]](),
-            Map[String, String](),
-            inputStream.get
-          ), Duration.Inf).map(_ => ())
-        } finally {
-          if (inputStream.isDefined)
-            inputStream.get.close()
-        }
-      })
+    for (
+      url <- getURLForArtifact(blobPath, datasetComponentPath);
+      inputStream <- Try(new FileInputStream(file))
+    ) yield {
+      try {
+        Await.result(clientSet.client.requestRaw(
+          "PUT",
+          url,
+          Map[String, List[String]](),
+          Map[String, String](),
+          inputStream
+        ), Duration.Inf).map(_ => ())
+      } finally {
+        inputStream.close()
+      }
+    }
   }
 }
