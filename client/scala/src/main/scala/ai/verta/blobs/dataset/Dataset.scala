@@ -46,7 +46,7 @@ trait Dataset extends Blob {
         _ <- Try(file.mkdirs()); // create the ancestor directories, if necessary
         _ <- Try(file.createNewFile()); // create the new file, if necessary
         url <- commit.get.getURLForArtifact(blobPath.get, componentPath, "GET")
-      ) yield commit.get.downloadFromURL(url, file)
+      ) yield commit.get.downloadFromURL(url, file).get
     }
     else  // is a directory
       Try {
