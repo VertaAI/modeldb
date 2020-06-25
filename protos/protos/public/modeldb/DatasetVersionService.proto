@@ -6,7 +6,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 option java_multiple_files = true;
 
 import "common/CommonService.proto";
-import "modeldb/CommonService.proto";
+import "modeldb/versioning/Dataset.proto";
 import "modeldb/DatasetService.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
@@ -21,7 +21,6 @@ message DatasetVersion {
     string description = 5;
     repeated string tags = 6;
     DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 7;
-    //DatasetTypeEnum.DatasetType dataset_type = 8;// this acts as a quick check on which type of DataSetInfo to look at for more details.
     repeated common.KeyValue attributes = 9;
     string owner = 10;
     uint64 version = 11;
@@ -31,6 +30,7 @@ message DatasetVersion {
         QueryDatasetVersionInfo query_dataset_version_info = 14;
     }
     uint64 time_updated = 15;
+    versioning.DatasetBlob dataset_blob = 16;
 }
 
 message QueryDatasetVersionInfo {
@@ -85,7 +85,6 @@ message CreateDatasetVersion {
     string description = 4;
     repeated string tags = 5;
     DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 6;
-    //DatasetTypeEnum.DatasetType dataset_type = 7;// this acts as a quick check on which type of DataSetInfo to look at for more details.
     repeated common.KeyValue attributes = 8;
     uint64 version = 9;
     oneof dataset_version_info {
@@ -118,7 +117,6 @@ message DeleteDatasetVersion {
     string dataset_id = 2;
 
     message Response {
-        bool status = 1;
     }
 }
 
@@ -127,7 +125,6 @@ message DeleteDatasetVersions {
     string dataset_id = 2;
 
     message Response {
-        bool status = 1;
     }
 }
 
@@ -143,7 +140,7 @@ message GetLatestDatasetVersionByDatasetId {
 message FindDatasetVersions {
     string dataset_id = 1;
     repeated string dataset_version_ids = 2;
-    repeated KeyValueQuery predicates = 3;
+    repeated common.KeyValueQuery predicates = 3;
     bool ids_only = 4; // whether to return full experiment runs or ids only
 
     //For pagination
@@ -162,6 +159,7 @@ message FindDatasetVersions {
 message UpdateDatasetVersionDescription {
     string id = 1;
     string description = 2;
+    string dataset_id = 3;
 
     message Response {
         DatasetVersion dataset_version = 1;

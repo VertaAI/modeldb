@@ -12,19 +12,19 @@ import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbArtifactPart (
-  etag: Option[String] = None,
-  part_number: Option[BigInt] = None
+case class VersioningRepositoryNamedIdentification (
+  name: Option[String] = None,
+  workspace_name: Option[String] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbArtifactPart.toJson(this)
+  def toJson(): JValue = VersioningRepositoryNamedIdentification.toJson(this)
 }
 
-object ModeldbArtifactPart {
-  def toJson(obj: ModeldbArtifactPart): JObject = {
+object VersioningRepositoryNamedIdentification {
+  def toJson(obj: VersioningRepositoryNamedIdentification): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.etag.map(x => JField("etag", JString(x))),
-        obj.part_number.map(x => JField("part_number", JInt(x)))
+        obj.name.map(x => JField("name", JString(x))),
+        obj.workspace_name.map(x => JField("workspace_name", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -32,14 +32,14 @@ object ModeldbArtifactPart {
     )
   }
 
-  def fromJson(value: JValue): ModeldbArtifactPart =
+  def fromJson(value: JValue): VersioningRepositoryNamedIdentification =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbArtifactPart(
+        VersioningRepositoryNamedIdentification(
           // TODO: handle required
-          etag = fieldsMap.get("etag").map(JsonConverter.fromJsonString),
-          part_number = fieldsMap.get("part_number").map(JsonConverter.fromJsonInteger)
+          name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
+          workspace_name = fieldsMap.get("workspace_name").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

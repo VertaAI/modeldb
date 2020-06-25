@@ -64,16 +64,6 @@ class VersioningServiceStub(object):
         request_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitBlobsRequest.SerializeToString,
         response_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitBlobsRequest.Response.FromString,
         )
-    self.ListCommitExperimentRuns = channel.unary_unary(
-        '/ai.verta.modeldb.versioning.VersioningService/ListCommitExperimentRuns',
-        request_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitExperimentRunsRequest.SerializeToString,
-        response_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitExperimentRunsRequest.Response.FromString,
-        )
-    self.ListBlobExperimentRuns = channel.unary_unary(
-        '/ai.verta.modeldb.versioning.VersioningService/ListBlobExperimentRuns',
-        request_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListBlobExperimentRunsRequest.SerializeToString,
-        response_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListBlobExperimentRunsRequest.Response.FromString,
-        )
     self.GetCommitComponent = channel.unary_unary(
         '/ai.verta.modeldb.versioning.VersioningService/GetCommitComponent',
         request_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.GetCommitComponentRequest.SerializeToString,
@@ -240,20 +230,6 @@ class VersioningServiceServicer(object):
 
   def ListCommitBlobs(self, request, context):
     """Getting blobs and folders in a commit
-    """
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def ListCommitExperimentRuns(self, request, context):
-    """Getting ExperimentRuns linked to a commit
-    """
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def ListBlobExperimentRuns(self, request, context):
-    """Getting ExperimentRuns linked to a blob
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
@@ -444,16 +420,6 @@ def add_VersioningServiceServicer_to_server(servicer, server):
           servicer.ListCommitBlobs,
           request_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitBlobsRequest.FromString,
           response_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitBlobsRequest.Response.SerializeToString,
-      ),
-      'ListCommitExperimentRuns': grpc.unary_unary_rpc_method_handler(
-          servicer.ListCommitExperimentRuns,
-          request_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitExperimentRunsRequest.FromString,
-          response_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitExperimentRunsRequest.Response.SerializeToString,
-      ),
-      'ListBlobExperimentRuns': grpc.unary_unary_rpc_method_handler(
-          servicer.ListBlobExperimentRuns,
-          request_deserializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListBlobExperimentRunsRequest.FromString,
-          response_serializer=modeldb_dot_versioning_dot_VersioningService__pb2.ListBlobExperimentRunsRequest.Response.SerializeToString,
       ),
       'GetCommitComponent': grpc.unary_unary_rpc_method_handler(
           servicer.GetCommitComponent,
