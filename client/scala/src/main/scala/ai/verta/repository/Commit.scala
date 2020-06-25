@@ -47,7 +47,17 @@ class Commit(
     loadBlobs().flatMap(_ =>
       blobs.get(path) match {
         case None => Failure(new NoSuchElementException("No blob was stored at this path."))
-        case Some(blob) => Success(blob)
+        case Some(blob) => {
+          toMDBVersioningDataset(blob) match {
+            case Some(dataBlob) => {
+              /** TODO: remove this mutation */
+              dataBlob.commit = Some(this)
+              dataBlob.blobPath = Some(path)
+              Success(dataBlob)
+            }
+            case None => Success(blob)
+          }
+        }
       }
     )
 

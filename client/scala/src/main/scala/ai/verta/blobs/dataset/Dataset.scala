@@ -2,6 +2,7 @@ package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.blobs._
+import ai.verta.repository.Commit
 
 import java.security.{MessageDigest, DigestInputStream}
 import java.io.{File, FileInputStream}
@@ -12,6 +13,11 @@ import scala.util.{Failure, Success, Try}
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
   private[verta] val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
+
+  // mutable state, populated when getting blob from commit
+  /** TODO: Figure out a way to remove this */
+  private[verta] var commit: Option[Commit] = None
+  private[verta] var blobPath: Option[String] = None // path to the blob in the commit
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
