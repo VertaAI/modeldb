@@ -22,6 +22,7 @@ trait Dataset extends Blob {
   private[verta] var blobPath: Option[String] = None // path to the blob in the commit
 
   /** Downloads componentPath from this dataset if ModelDB-managed versioning was enabled
+   *  Currently, only support downloading a specific component to a specific path
    *  @param componentPath Original path of the file or directory in this dataset to download
    *  @param downloadToPath Path to download to
    *  @param chunkSize Number of bytes to download at a time (default: 32 MB)
@@ -38,6 +39,8 @@ trait Dataset extends Blob {
       Failure(new IllegalStateException(
         "This dataset cannot be used for downloads. Consider using `commit.get()` to obtain a download-capable dataset"
       ))
+    else if (contents.get(componentPath).isEmpty)
+      Failure(new IllegalArgumentException("This component path is not in the blob"))
     else
       Try {
         val file = new File(downloadToPath)
