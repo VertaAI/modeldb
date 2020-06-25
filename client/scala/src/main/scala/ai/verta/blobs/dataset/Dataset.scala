@@ -48,13 +48,11 @@ trait Dataset extends Blob {
         url <- commit.get.getURLForArtifact(blobPath.get, componentPath, "GET")
       ) yield commit.get.downloadFromURL(url, file)
     }
-    else {
-      // is a directory
-      Try(
+    else  // is a directory
+      Try {
         getComponentPathInside(componentPath)
           .map(comp => download(comp, f"${downloadToPath}/${removePrefixDir(comp, componentPath)}").get)
-      )
-    }
+      }
   }
 
   /** Return the set of component paths inside a directory path
