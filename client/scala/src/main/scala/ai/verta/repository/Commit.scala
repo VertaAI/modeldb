@@ -572,7 +572,6 @@ class Commit(
             try {
               inputStream = Some(new ByteArrayInputStream(response))
               Try(Files.copy(inputStream.get, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
-                .map(_ => ())
             }
             catch {
               case e: Throwable => Failure(e)

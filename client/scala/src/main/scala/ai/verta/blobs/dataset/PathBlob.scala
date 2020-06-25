@@ -114,7 +114,7 @@ object PathBlob {
 
     // if internal versioned path of a component is defined, then the blob enables MDB Versioning
     val enableMDBVersioning = pathVersioningBlob.components.get.head.internal_versioned_path.isDefined
-    new PathBlob(HashMap(metadataList: _*))
+    new PathBlob(HashMap(metadataList: _*), enableMDBVersioning)
   }
 
   /** Convert a PathBlob instance to a VersioningBlob
