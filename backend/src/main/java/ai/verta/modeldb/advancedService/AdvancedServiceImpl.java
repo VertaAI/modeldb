@@ -1,7 +1,9 @@
 package ai.verta.modeldb.advancedService;
 
 import ai.verta.common.Artifact;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AdvancedQueryDatasetVersionsResponse;
 import ai.verta.modeldb.AdvancedQueryDatasetsResponse;
@@ -39,12 +41,10 @@ import ai.verta.modeldb.HydratedExperiment;
 import ai.verta.modeldb.HydratedExperimentRun;
 import ai.verta.modeldb.HydratedProject;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceImplBase;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBConstants.UserIdentifier;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.SortExperimentRuns;
