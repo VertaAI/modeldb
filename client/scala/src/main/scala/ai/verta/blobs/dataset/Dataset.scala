@@ -51,7 +51,7 @@ trait Dataset extends Blob {
   }
 
   /** Clean up the uploaded components */
-  protected def cleanUpUploadedComponents(): Try[Unit] = Success(())
+  private[verta] def cleanUpUploadedComponents(): Try[Unit] = Success(())
 }
 
 object Dataset {

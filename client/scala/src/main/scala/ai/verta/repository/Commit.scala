@@ -94,7 +94,7 @@ class Commit(
           toVersion
             .mapValues(_.getAllMetadata) // Map[String, Iterable[FileMetadata]]
             .map(pair => pair._2.map(metadata => newCommit.uploadArtifact(pair._1, metadata.path, new File(metadata.localPath.get))))
-        })
+        }).flatMap(_ => Try(toVersion.values.foreach(_.cleanUpUploadedComponents().get)))
 
         uploadAttempt.flatMap(_ =>
           if (commitBranch.isDefined)
