@@ -543,6 +543,10 @@ public class CommitDAORdbImpl implements CommitDAO {
     }
   }
 
+  /**
+   * This add deletes a label on a commit. the commit being a datasetversion allows us to assume
+   * that it will belong to a single repo.
+   */
   @Override
   public DatasetVersion addDeleteDatasetVersionTags(
       RepositoryDAO repositoryDAO,
@@ -561,6 +565,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           RepositoryIdentification.newBuilder();
       if (datasetId == null || datasetId.isEmpty()) {
         CommitEntity commitEntity = session.get(CommitEntity.class, datasetVersionId);
+
         if (commitEntity == null) {
           throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
         }
@@ -578,7 +583,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         repositoryIdentification.setRepoId(Long.parseLong(datasetId));
       }
       repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification.build(), true);
-      addDeleteCommitTags(
+      addDeleteCommitLabels(
           repositoryEntity, datasetVersionId, metadataDAO, addTags, tagsList, deleteAll);
       return blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, datasetVersionId);
     } catch (Exception ex) {
@@ -599,12 +604,12 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   @Override
-  public void addDeleteCommitTags(
+  public void addDeleteCommitLabels(
       RepositoryEntity repositoryEntity,
       String commitHash,
       MetadataDAO metadataDAO,
-      boolean addTags,
-      List<String> tagsList,
+      boolean addLabels,
+      List<String> labelsList,
       boolean deleteAll)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -620,11 +625,11 @@ public class CommitDAORdbImpl implements CommitDAO {
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
               .setStringId(compositeId)
               .build();
-      if (addTags) {
-        metadataDAO.addLabels(identificationType, ModelDBUtils.checkEntityTagsLength(tagsList));
+      if (addLabels) {
+        metadataDAO.addLabels(identificationType, ModelDBUtils.checkEntityTagsLength(labelsList));
       } else {
         metadataDAO.deleteLabels(
-            identificationType, ModelDBUtils.checkEntityTagsLength(tagsList), deleteAll);
+            identificationType, ModelDBUtils.checkEntityTagsLength(labelsList), deleteAll);
       }
       CommitEntity commitEntity =
           getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
@@ -633,8 +638,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       session.getTransaction().commit();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        addDeleteCommitTags(
-            repositoryEntity, commitHash, metadataDAO, addTags, tagsList, deleteAll);
+        addDeleteCommitLabels(
+            repositoryEntity, commitHash, metadataDAO, addLabels, labelsList, deleteAll);
       } else {
         throw ex;
       }

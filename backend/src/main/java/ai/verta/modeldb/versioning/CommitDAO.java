@@ -62,12 +62,12 @@ public interface CommitDAO {
       boolean deleteAll)
       throws ModelDBException;
 
-  void addDeleteCommitTags(
+  void addDeleteCommitLabels(
       RepositoryEntity repositoryEntity,
       String commitHash,
       MetadataDAO metadataDAO,
-      boolean addTags,
-      List<String> tagsList,
+      boolean addLabels,
+      List<String> labelsList,
       boolean deleteAll)
       throws ModelDBException;
 
