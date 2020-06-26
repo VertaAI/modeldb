@@ -270,7 +270,7 @@ class TestPath:
             # multiple paths
             ([["../tests/modelapi_hypothesis", "../setup.py"], ".."]),
             ([["../setup.py", "../tests/modelapi_hypothesis"], ".."]),
-            ([["../tests/modelapi_hypothesis", "../tests/test_dataset.py"], "../tests"]),
+            ([["../tests/modelapi_hypothesis", "../tests/conftest.py"], "../tests"]),
         ]
     )
     def test_base_path(self, paths, base_path):
