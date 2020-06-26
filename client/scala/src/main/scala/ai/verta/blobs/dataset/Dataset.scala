@@ -42,11 +42,12 @@ trait Dataset extends Blob {
     else if (contents.contains(componentPath)) {
       val file = new File(downloadToPath)
 
-      for (
-        _ <- Try(file.mkdirs()); // create the ancestor directories, if necessary
-        _ <- Try(file.createNewFile()); // create the new file, if necessary
-        url <- commit.get.getURLForArtifact(blobPath.get, componentPath, "GET")
-      ) yield commit.get.downloadFromURL(url, file).get
+      Try({
+        file.mkdirs() // create the ancestor directories, if necessary
+        file.createNewFile() // create the new file, if necessary
+      })
+        .flatMap(_ => commit.get.getURLForArtifact(blobPath.get, componentPath, "GET"))
+        .flatMap(url =>  commit.get.downloadFromURL(url, file))
     }
     else  // is a directory
       Try {
