@@ -297,7 +297,7 @@ message GetProjectShortName {
 
 message FindProjects {
     repeated string project_ids = 1;
-    repeated KeyValueQuery predicates = 2;
+    repeated common.KeyValueQuery predicates = 2;
     bool ids_only = 3; // whether to return full experiment runs or ids only
     string workspace_name = 8;
 

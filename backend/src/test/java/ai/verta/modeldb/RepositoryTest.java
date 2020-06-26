@@ -4,6 +4,8 @@ import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
 import static org.junit.Assert.*;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
+import ai.verta.common.OperatorEnum;
 import ai.verta.common.Pagination;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;

@@ -12,15 +12,15 @@ import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbArtifactPart (
+case class CommonArtifactPart (
   etag: Option[String] = None,
   part_number: Option[BigInt] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbArtifactPart.toJson(this)
+  def toJson(): JValue = CommonArtifactPart.toJson(this)
 }
 
-object ModeldbArtifactPart {
-  def toJson(obj: ModeldbArtifactPart): JObject = {
+object CommonArtifactPart {
+  def toJson(obj: CommonArtifactPart): JObject = {
     new JObject(
       List[Option[JField]](
         obj.etag.map(x => JField("etag", JString(x))),
@@ -32,11 +32,11 @@ object ModeldbArtifactPart {
     )
   }
 
-  def fromJson(value: JValue): ModeldbArtifactPart =
+  def fromJson(value: JValue): CommonArtifactPart =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbArtifactPart(
+        CommonArtifactPart(
           // TODO: handle required
           etag = fieldsMap.get("etag").map(JsonConverter.fromJsonString),
           part_number = fieldsMap.get("part_number").map(JsonConverter.fromJsonInteger)

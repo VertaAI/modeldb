@@ -2712,6 +2712,18 @@
       ],
       "default": "UNKNOWN"
     },
+    "commonArtifactPart": {
+      "type": "object",
+      "properties": {
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "etag": {
+          "type": "string"
+        }
+      }
+    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -2724,6 +2736,23 @@
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "commonKeyValueQuery": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },
@@ -2740,35 +2769,6 @@
         }
       },
       "title": "For pagination"
-    },
-    "modeldbArtifactPart": {
-      "type": "object",
-      "properties": {
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "etag": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbKeyValueQuery": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
-        },
-        "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
-        }
-      }
     },
     "protobufAny": {
       "type": "object",
@@ -3011,7 +3011,7 @@
           "type": "string"
         },
         "artifact_part": {
-          "$ref": "#/definitions/modeldbArtifactPart"
+          "$ref": "#/definitions/commonArtifactPart"
         }
       }
     },
@@ -3282,7 +3282,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "page_number": {
@@ -3340,7 +3340,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           },
           "title": "In future requirement\nbool ascending = 8;\nstring sort_key = 9;"
         }
@@ -3445,7 +3445,7 @@
         "artifact_parts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifactPart"
+            "$ref": "#/definitions/commonArtifactPart"
           }
         }
       }

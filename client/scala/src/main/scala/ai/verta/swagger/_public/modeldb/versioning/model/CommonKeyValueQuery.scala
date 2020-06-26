@@ -15,19 +15,23 @@ import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbArtifactPart (
-  etag: Option[String] = None,
-  part_number: Option[BigInt] = None
+case class CommonKeyValueQuery (
+  key: Option[String] = None,
+  operator: Option[OperatorEnumOperator] = None,
+  value: Option[GenericObject] = None,
+  value_type: Option[ValueTypeEnumValueType] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbArtifactPart.toJson(this)
+  def toJson(): JValue = CommonKeyValueQuery.toJson(this)
 }
 
-object ModeldbArtifactPart {
-  def toJson(obj: ModeldbArtifactPart): JObject = {
+object CommonKeyValueQuery {
+  def toJson(obj: CommonKeyValueQuery): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.etag.map(x => JField("etag", JString(x))),
-        obj.part_number.map(x => JField("part_number", JInt(x)))
+        obj.key.map(x => JField("key", JString(x))),
+        obj.operator.map(x => JField("operator", ((x: OperatorEnumOperator) => OperatorEnumOperator.toJson(x))(x))),
+        obj.value.map(x => JField("value", ((x: GenericObject) => x.toJson())(x))),
+        obj.value_type.map(x => JField("value_type", ((x: ValueTypeEnumValueType) => ValueTypeEnumValueType.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -35,14 +39,16 @@ object ModeldbArtifactPart {
     )
   }
 
-  def fromJson(value: JValue): ModeldbArtifactPart =
+  def fromJson(value: JValue): CommonKeyValueQuery =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbArtifactPart(
+        CommonKeyValueQuery(
           // TODO: handle required
-          etag = fieldsMap.get("etag").map(JsonConverter.fromJsonString),
-          part_number = fieldsMap.get("part_number").map(JsonConverter.fromJsonInteger)
+          key = fieldsMap.get("key").map(JsonConverter.fromJsonString),
+          operator = fieldsMap.get("operator").map(OperatorEnumOperator.fromJson),
+          value = fieldsMap.get("value").map(GenericObject.fromJson),
+          value_type = fieldsMap.get("value_type").map(ValueTypeEnumValueType.fromJson)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

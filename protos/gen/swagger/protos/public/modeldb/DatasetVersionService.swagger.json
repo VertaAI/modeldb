@@ -579,6 +579,23 @@
         }
       }
     },
+    "commonKeyValueQuery": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
+        }
+      }
+    },
     "modeldbAddDatasetVersionAttributes": {
       "type": "object",
       "properties": {
@@ -865,7 +882,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "ids_only": {
@@ -939,23 +956,6 @@
       "properties": {
         "dataset_version": {
           "$ref": "#/definitions/modeldbDatasetVersion"
-        }
-      }
-    },
-    "modeldbKeyValueQuery": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
-        },
-        "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },
