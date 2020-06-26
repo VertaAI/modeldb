@@ -560,21 +560,14 @@ class Commit(
     Await.result(
       clientSet.client.requestRaw("GET", url, null, null, null)
         .map(resp => resp match {
-          case Success(response) => {
-            var inputStream: Option[ByteArrayInputStream] = None
-
+          case Success(response) => Try(new ByteArrayInputStream(response)).flatMap(inputStream => {
             try {
-              inputStream = Some(new ByteArrayInputStream(response))
-              Try(Files.copy(inputStream.get, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
-            }
-            catch {
-              case e: Throwable => Failure(e)
+              Try(Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
             }
             finally {
-              if (inputStream.isDefined)
-                inputStream.get.close()
+              inputStream.close()
             }
-          }
+          })
           case Failure(e) => Failure(e)
         }),
       Duration.Inf)
