@@ -627,7 +627,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       DatasetVersion updatedDatasetVersion =
-          blobDAO.addUpdateBlobAttributes(
+          blobDAO.addUpdateDatasetVersionAttributes(
               repositoryDAO,
               commitDAO,
               metadataDAO,
@@ -679,7 +679,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       DatasetVersion updatedDatasetVersion =
-          blobDAO.addUpdateBlobAttributes(
+          blobDAO.addUpdateDatasetVersionAttributes(
               repositoryDAO,
               commitDAO,
               metadataDAO,
@@ -731,8 +731,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       List<KeyValue> attributes =
-          blobDAO.getBlobAttributes(
+          blobDAO.getDatasetVersionAttributes(
               repositoryDAO,
+              commitDAO,
               request.getDatasetId().isEmpty() ? null : Long.parseLong(request.getDatasetId()),
               request.getId(),
               Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION),
@@ -781,7 +782,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       DatasetVersion updatedDatasetVersion =
-          blobDAO.deleteBlobAttributes(
+          blobDAO.deleteDatasetVersionAttributes(
               repositoryDAO,
               commitDAO,
               metadataDAO,

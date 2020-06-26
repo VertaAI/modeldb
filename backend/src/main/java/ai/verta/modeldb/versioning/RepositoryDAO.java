@@ -83,8 +83,19 @@ public interface RepositoryDAO {
   AddDatasetTags.Response addDatasetTags(MetadataDAO metadataDAO, String id, List<String> tags)
       throws ModelDBException;
 
+  void addRepositoryTags(
+      MetadataDAO metadataDAO, RepositoryIdentification repositoryIdentification, List<String> tags)
+      throws ModelDBException;
+
   Dataset deleteDatasetTags(
       MetadataDAO metadataDAO, String id, List<String> tagsList, boolean deleteAll)
+      throws ModelDBException;
+
+  void deleteRepositoryTags(
+      MetadataDAO metadataDAO,
+      RepositoryIdentification repositoryIdentification,
+      List<String> tagsList,
+      boolean deleteAll)
       throws ModelDBException;
 
   DatasetPaginationDTO findDatasets(

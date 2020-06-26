@@ -62,6 +62,15 @@ public interface CommitDAO {
       boolean deleteAll)
       throws ModelDBException;
 
+  void addDeleteCommitTags(
+      RepositoryEntity repositoryEntity,
+      String commitHash,
+      MetadataDAO metadataDAO,
+      boolean addTags,
+      List<String> tagsList,
+      boolean deleteAll)
+      throws ModelDBException;
+
   CommitPaginationDTO findCommits(
       FindRepositoriesBlobs request,
       UserInfo currentLoginUserInfo,
