@@ -153,17 +153,21 @@ public class VersioningModeldbEntityMapping implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     VersioningModeldbEntityMapping that = (VersioningModeldbEntityMapping) o;
-    return repository_id.equals(that.repository_id)
-        && commit.equals(that.commit)
-        && versioning_key.equals(that.versioning_key)
-        && versioning_location.equals(that.versioning_location)
-        && versioning_blob_type.equals(that.versioning_blob_type)
-        && experimentRunEntity.equals(that.experimentRunEntity)
-        && entity_type.equals(that.entity_type)
-        && blob_hash.equals(that.blob_hash);
+    return Objects.equals(repository_id, that.repository_id)
+        && Objects.equals(commit, that.commit)
+        && Objects.equals(versioning_key, that.versioning_key)
+        && Objects.equals(versioning_location, that.versioning_location)
+        && Objects.equals(versioning_blob_type, that.versioning_blob_type)
+        && Objects.equals(experimentRunEntity, that.experimentRunEntity)
+        && Objects.equals(entity_type, that.entity_type)
+        && Objects.equals(blob_hash, that.blob_hash);
   }
 
   @Override
