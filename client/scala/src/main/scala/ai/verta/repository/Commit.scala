@@ -529,17 +529,15 @@ class Commit(
     datasetComponentPath: String,
     file: File
   )(implicit ec: ExecutionContext): Try[Unit] = {
-    for (
-      url <- getURLForArtifact(blobPath, datasetComponentPath);
-      inputStream <- Try(new FileInputStream(file))
-    ) yield {
-      try {
-        // loan pattern
-        Await.result(clientSet.client.requestRaw("PUT", url, null, null, inputStream), Duration.Inf)
-          .map(_ => ()).get // propagate the failure out
-      } finally {
-        inputStream.close()
-      }
-    }
+    getURLForArtifact(blobPath, datasetComponentPath).flatMap(url =>
+      Try(new FileInputStream(file)).flatMap(inputStream => { // loan pattern
+        try {
+          Await.result(clientSet.client.requestRaw("PUT", url, null, null, inputStream), Duration.Inf)
+            .map(_ => ())
+        } finally {
+          inputStream.close()
+        }
+      })
+    )
   }
 }
