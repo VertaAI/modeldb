@@ -42,7 +42,7 @@ trait Dataset extends Blob {
     else if (contents.contains(componentPath)) {
       val file = new File(downloadToPath)
 
-      Try({
+      Try ({
         file.mkdirs() // create the ancestor directories, if necessary
         file.createNewFile() // create the new file, if necessary
       })
