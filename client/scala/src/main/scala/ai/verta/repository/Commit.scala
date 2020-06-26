@@ -540,7 +540,7 @@ class Commit(
     file: File
   )(implicit ec: ExecutionContext): Try[Unit] = {
     getURLForArtifact(blobPath, datasetComponentPath, "PUT").flatMap(url =>
-      Try(new FileInputStream(file)).flatMap(inputStream => { // loan pattern
+      Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
         try {
           Await.result(clientSet.client.requestRaw("PUT", url, null, null, inputStream), Duration.Inf)
             .map(_ => ())
