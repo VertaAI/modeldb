@@ -544,13 +544,9 @@ class Commit(
       inputStream <- Try(new FileInputStream(file))
     ) yield {
       try {
-        Await.result(clientSet.client.requestRaw(
-          "PUT",
-          url,
-          Map[String, List[String]](),
-          Map[String, String](),
-          inputStream
-        ), Duration.Inf).map(_ => ()).get // propagate the failure out
+        // loan pattern
+        Await.result(clientSet.client.requestRaw("PUT", url, null, null, inputStream), Duration.Inf)
+          .map(_ => ()).get // propagate the failure out
       } finally {
         inputStream.close()
       }
