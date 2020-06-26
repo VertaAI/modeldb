@@ -30,7 +30,7 @@ class Path(_dataset._Dataset):
     paths : list of str
         List of filepaths or directory paths.
     base_path : str, optional
-        Hey Michael, replace this before shipping.
+        Directory path to be removed from the beginning of all components before saving to ModelDB.
     enable_mdb_versioning : bool, default False
         Whether to upload the data itself to ModelDB to enable managed data versioning.
 
