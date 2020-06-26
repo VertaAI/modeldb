@@ -1,7 +1,5 @@
-import { bind } from 'decko';
 import * as React from 'react';
 
-import Confirm from '../Confirm/Confirm';
 import ConfirmAction from '../ConfirmAction/ConfirmAction';
 import FaiWithLabel, {
   IFaiWithLabelLocalProps,
@@ -34,7 +32,7 @@ class DeleteFAIWithLabel extends React.PureComponent<ILocalProps> {
         confirmButtonText="Delete"
         confirmText={confirmText}
       >
-        {withConfirmAction => (
+        {(withConfirmAction) => (
           <FaiWithLabel
             isDisabled={isDisabled}
             iconType="trash"

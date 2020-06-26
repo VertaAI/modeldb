@@ -1,16 +1,12 @@
 import * as React from 'react';
 
 import { IArtifactWithDatasetVersion } from 'shared/models/Artifact';
-import { IDatasetVersion } from 'shared/models/DatasetVersion';
 import {
   selectCommunications,
   selectDatasetVersion,
   loadDatasetVersion,
 } from 'features/artifactManager/store';
-import {
-  initialCommunication,
-  ICommunication,
-} from 'shared/utils/redux/communication';
+import { initialCommunication } from 'shared/utils/redux/communication';
 import { useSelector, useDispatch } from 'react-redux';
 import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';

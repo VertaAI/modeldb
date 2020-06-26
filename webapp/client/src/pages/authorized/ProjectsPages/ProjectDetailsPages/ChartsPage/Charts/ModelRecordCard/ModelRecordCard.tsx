@@ -69,6 +69,7 @@ class ModelRecordCard extends React.Component<AllProps> {
               className={styles.close}
               src={closeIcon}
               onClick={onRequestClose}
+              alt="close-icon"
             />
           </div>
           {data && data.id ? (

@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   CommitPointer,

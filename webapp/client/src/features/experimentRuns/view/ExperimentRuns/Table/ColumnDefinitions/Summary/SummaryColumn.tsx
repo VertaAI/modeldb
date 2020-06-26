@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import { makeDefaultExprNameFilter } from 'shared/models/Filters';
 import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
-import withProps from 'shared/utils/react/withProps';
 import Draggable from 'shared/view/elements/Draggable/Draggable';
 import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 import routes from 'shared/routes';
@@ -30,7 +29,6 @@ class SummaryColumn extends React.PureComponent<AllProps> {
         id,
         projectId,
         shortExperiment: experiment,
-        owner,
         name,
         tags,
         dateCreated,

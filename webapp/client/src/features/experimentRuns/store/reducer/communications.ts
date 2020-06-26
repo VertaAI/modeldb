@@ -1,4 +1,4 @@
-import { combineReducers, Reducer } from 'redux';
+import { combineReducers } from 'redux';
 
 import {
   makeCommunicationReducerFromEnum,
@@ -37,7 +37,7 @@ export default combineReducers<IExperimentRunsState['communications']>({
     >,
     string
   >(loadExperimentRunActionTypes, {
-    request: id => id,
+    request: (id) => id,
     success: ({ id }) => id,
     failure: ({ id }) => id,
   }),

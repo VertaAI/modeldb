@@ -1,6 +1,5 @@
 import { ICommunication } from 'shared/utils/redux/communication';
 import { bind } from 'decko';
-import _ from 'lodash';
 import React from 'react';
 import { connect } from 'react-redux';
 

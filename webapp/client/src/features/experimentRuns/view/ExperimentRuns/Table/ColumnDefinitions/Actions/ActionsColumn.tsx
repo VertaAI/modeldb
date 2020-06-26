@@ -54,7 +54,7 @@ class ActionsColumn extends React.PureComponent<AllProps> {
   public render() {
     const {
       row: {
-        experimentRun: { id, projectId, name, artifacts },
+        experimentRun: { id, projectId, name },
       },
     } = this.props;
 
@@ -67,21 +67,21 @@ class ActionsColumn extends React.PureComponent<AllProps> {
         <div className={styles.group_fai_block}>
           <GroupFai
             groupFai={[
-              requiredProps => (
+              (requiredProps) => (
                 <CompareClickAction
                   containerId={projectId}
                   enitityId={id}
                   {...requiredProps}
                 />
               ),
-              requiredProps => (
+              (requiredProps) => (
                 <ShowCommentsButtonWithAuthor
                   buttonType="faiWithLabel"
                   entityInfo={{ id, name }}
                   {...requiredProps}
                 />
               ),
-              requiredProps => (
+              (requiredProps) => (
                 <WithCurrentUserActionsAccesses
                   entityId={id}
                   entityType="experimentRun"

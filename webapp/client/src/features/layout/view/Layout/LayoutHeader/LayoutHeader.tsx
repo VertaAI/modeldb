@@ -25,7 +25,7 @@ class LayoutHeader extends React.PureComponent<AllProps> {
       <header className={styles.header}>
         <div className={styles.logo}>
           <Link to={'/'}>
-            <img src={logo} />
+            <img src={logo} alt="logo" />
           </Link>
         </div>
         <div className={styles.highLevelSearch}>

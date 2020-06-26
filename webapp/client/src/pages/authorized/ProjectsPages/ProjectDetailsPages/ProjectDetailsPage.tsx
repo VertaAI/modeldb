@@ -15,7 +15,6 @@ import AuthorizedLayout from 'pages/authorized/shared/AuthorizedLayout/Authorize
 import routes, { GetRouteParams } from 'shared/routes';
 import {
   loadProject,
-  selectLoadingProject,
   selectProject,
   selectLoadingProjectWithMemo,
 } from 'features/projects/store';

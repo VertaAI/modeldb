@@ -1,10 +1,7 @@
-import * as R from 'ramda';
-
 import { RecordFromUnion } from 'shared/utils/types';
 import Experiment from 'shared/models/Experiment';
 import { Project } from 'shared/models/Project';
 import { ICommunication } from 'shared/utils/redux/communication';
-import User from 'shared/models/User';
 
 import { ISorting } from '../Sorting';
 import { IRepository } from '../Versioning/Repository';
@@ -55,10 +52,10 @@ export const filterMapEntitiesBySearchFields = <
     ...entitiesBySearchFields,
     data: {
       name: (entitiesBySearchFields.data || { name: [], tag: [] }).name
-        .map(x => f(x))
+        .map((x) => f(x))
         .filter((x): x is Exclude<R, null | undefined> => Boolean(x)),
       tag: (entitiesBySearchFields.data || { name: [], tag: [] }).tag
-        .map(x => f(x))
+        .map((x) => f(x))
         .filter((x): x is Exclude<R, null | undefined> => Boolean(x)),
     },
   };

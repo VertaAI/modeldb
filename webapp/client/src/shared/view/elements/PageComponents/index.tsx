@@ -106,7 +106,7 @@ export const RecordInfo = React.memo(
 export const NA = '-';
 
 export const PageSection = React.memo(
-  ({  }: { title: string; children: React.ReactNode }) => {
+  (_: { title: string; children: React.ReactNode }) => {
     return null;
   }
 );

@@ -3,7 +3,7 @@ import { action } from 'typesafe-actions';
 import normalizeError from 'shared/utils/normalizeError';
 import { ActionResult } from 'setup/store/store';
 
-import { EntityId, IComment } from '../../../shared/models/Comment';
+import { EntityId } from '../../../shared/models/Comment';
 import {
   addCommentActionTypes,
   deleteCommentActionTypes,
@@ -35,12 +35,12 @@ export const loadComments = (
 
   await ServiceFactory.getCommentsService()
     .loadComments(entityId)
-    .then(res => {
+    .then((res) => {
       dispatch(
         action(loadCommentsActionTypes.SUCCESS, { entityId, data: res })
       );
     })
-    .catch(error => {
+    .catch((error) => {
       dispatch(
         action(loadCommentsActionTypes.FAILURE, {
           entityId,
@@ -62,10 +62,10 @@ export const addComment = (
 
   await ServiceFactory.getCommentsService()
     .addComment(entityId, message)
-    .then(comment => {
+    .then((comment) => {
       dispatch(action(addCommentActionTypes.SUCCESS, { entityId, comment }));
     })
-    .catch(error => {
+    .catch((error) => {
       dispatch(action(addCommentActionTypes.FAILURE, normalizeError(error)));
     });
 };
@@ -82,12 +82,12 @@ export const deleteComment = (
 
   await ServiceFactory.getCommentsService()
     .deleteComment(entityId, commentId)
-    .then(_ => {
+    .then((_) => {
       dispatch(
         action(deleteCommentActionTypes.SUCCESS, { entityId, commentId })
       );
     })
-    .catch(error => {
+    .catch((error) => {
       dispatch(
         action(deleteCommentActionTypes.FAILURE, {
           commentId,

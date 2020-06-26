@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import ConfirmAction from '../ConfirmAction/ConfirmAction';
-import Fai, { IFaiLocalProps } from '../Fai/Fai';
+import Fai from '../Fai/Fai';
 import { Icon } from '../Icon/Icon';
 
 interface ILocalProps {
@@ -28,7 +28,7 @@ class DeleteFAI extends React.PureComponent<ILocalProps> {
         cancelButtonText="Cancel"
         confirmButtonText="Delete"
       >
-        {withConfirmAction => (
+        {(withConfirmAction) => (
           <Fai
             theme="tertiary"
             isDisabled={isDisabled}

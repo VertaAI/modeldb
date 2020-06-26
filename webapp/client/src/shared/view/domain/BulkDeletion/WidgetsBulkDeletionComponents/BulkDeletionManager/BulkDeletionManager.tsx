@@ -46,7 +46,7 @@ class BulkDeletionManager extends React.PureComponent<AllProps, ILocalState> {
   }
 
   public render() {
-    const { entityName, entityIds, resetEntities, deleteEntities } = this.props;
+    const { entityName, entityIds, resetEntities } = this.props;
     const { isShowConfirmation } = this.state;
 
     return ReactDOM.createPortal(

@@ -1,4 +1,5 @@
 export const formatBytes = (bytes: string | number, decimals?: number) => {
+  // eslint-disable-next-line eqeqeq
   if (bytes == 0) return '0 Bytes';
   let k = 1024,
     dm,

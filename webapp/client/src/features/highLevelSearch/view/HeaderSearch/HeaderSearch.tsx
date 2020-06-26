@@ -1,18 +1,16 @@
 import { InputAdornment } from '@material-ui/core';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { useHistory, useParams } from 'react-router';
-import * as R from 'ramda';
+import { useHistory } from 'react-router';
 
 import { Icon } from 'shared/view/elements/Icon/Icon';
 import MuiTextInput from 'shared/view/elements/MuiTextInput/MuiTextInput';
-import routes, { GetRouteParams } from 'shared/routes';
+import routes from 'shared/routes';
 import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import styles from './HeaderSearch.module.css';
 import { defaultFilter } from '../../constants';
-import { defaultResultsSorting } from 'shared/models/HighLevelSearch';
 
 const mapStateToProps = (state: IApplicationState) => ({
   currentWorkspaceName: selectCurrentWorkspaceName(state),
@@ -60,13 +58,13 @@ const HeaderSearch = ({ currentWorkspaceName }: AllProps) => {
             </InputAdornment>
           ),
         }}
-        onKeyUp={e => {
+        onKeyUp={(e) => {
           // when press enter
           if (e.keyCode === 13) {
             redirectToHighLevelSearchWithValue();
           }
         }}
-        onChange={e => changeValue(e.currentTarget.value)}
+        onChange={(e) => changeValue(e.currentTarget.value)}
       />
     </div>
   );

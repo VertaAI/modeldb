@@ -1,5 +1,3 @@
-import * as R from 'ramda';
-
 import generateId from 'shared/utils/generateId';
 import { Brand } from 'shared/utils/Brand';
 

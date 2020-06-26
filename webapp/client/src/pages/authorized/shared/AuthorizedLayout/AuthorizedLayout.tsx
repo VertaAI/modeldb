@@ -1,4 +1,3 @@
-import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 

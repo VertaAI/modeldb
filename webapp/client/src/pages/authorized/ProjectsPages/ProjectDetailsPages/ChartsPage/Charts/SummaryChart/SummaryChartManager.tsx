@@ -1,5 +1,4 @@
 import { bind } from 'decko';
-import _ from 'lodash';
 import React from 'react';
 
 import ChartConfigDropdown, {

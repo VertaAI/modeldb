@@ -2,7 +2,6 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
-import * as R from 'ramda';
 
 import { IComment } from 'shared/models/Comment';
 import {

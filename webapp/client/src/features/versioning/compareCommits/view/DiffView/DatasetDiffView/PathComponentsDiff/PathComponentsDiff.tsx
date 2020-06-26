@@ -1,9 +1,6 @@
 import React, { useCallback } from 'react';
 
-import {
-  IPathDatasetComponentBlobDiff,
-  IPathDatasetComponentBlob,
-} from 'shared/models/Versioning/Blob/DatasetBlob';
+import { IPathDatasetComponentBlobDiff } from 'shared/models/Versioning/Blob/DatasetBlob';
 import LastModified from 'shared/view/domain/Versioning/Blob/DatasetBlob/LastModified/LastModified';
 import PathSize from 'shared/view/domain/Versioning/Blob/DatasetBlob/PathSize/PathSize';
 import GroupedTable from 'shared/view/elements/Table/GroupedTable/GroupedTable';
@@ -40,7 +37,7 @@ const PathComponentsDiff: React.FC<ILocalProps> = ({ diff }) => {
         {
           title: 'Path',
           type: 'path',
-          render: row => (
+          render: (row) => (
             <TextWithCopyTooltip copyText={row.path.value}>
               <span title={row.path.value}>{row.path.value}</span>
             </TextWithCopyTooltip>
@@ -51,14 +48,14 @@ const PathComponentsDiff: React.FC<ILocalProps> = ({ diff }) => {
         {
           title: 'Size',
           type: 'size',
-          render: row => <PathSize size={row.size.value} />,
+          render: (row) => <PathSize size={row.size.value} />,
           width: '15%',
           getCellStyle: getDatasetDiffCellStyle('size'),
         },
         {
           title: 'Last Modified',
           type: 'lastModifiedAtSource',
-          render: row => (
+          render: (row) => (
             <LastModified
               lastModifiedAtSource={row.lastModifiedAtSource.value}
             />
@@ -69,7 +66,7 @@ const PathComponentsDiff: React.FC<ILocalProps> = ({ diff }) => {
         {
           title: 'MD5',
           type: 'md5',
-          render: row => (
+          render: (row) => (
             <TextWithCopyTooltip copyText={row.md5.value} withEllipsis={true}>
               <span title={row.md5.value}>{row.md5.value}</span>
             </TextWithCopyTooltip>
@@ -80,7 +77,7 @@ const PathComponentsDiff: React.FC<ILocalProps> = ({ diff }) => {
         {
           title: 'SHA256',
           type: 'sha256',
-          render: row => (
+          render: (row) => (
             <TextWithCopyTooltip
               copyText={row.sha256.value}
               withEllipsis={true}

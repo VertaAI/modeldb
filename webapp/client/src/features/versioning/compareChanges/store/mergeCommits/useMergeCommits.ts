@@ -2,7 +2,6 @@ import gql from 'graphql-tag';
 import * as R from 'ramda';
 import { useMutation } from 'react-apollo';
 
-import { convertGraphqlDiffs } from 'shared/graphql/Versioning/Diff';
 import { IRepository } from 'shared/models/Versioning/Repository';
 import { SHA, CommitPointer } from 'shared/models/Versioning/RepositoryData';
 import onCompletedUpdate from 'shared/utils/graphql/onCompletedUpdate';
@@ -91,7 +90,7 @@ export const useMergeCommitsMutation = () => {
         commitBSha,
         repositoryId,
       },
-      update: onCompletedUpdate(data => {
+      update: onCompletedUpdate((data) => {
         const newCommit =
           data &&
           data.repository &&

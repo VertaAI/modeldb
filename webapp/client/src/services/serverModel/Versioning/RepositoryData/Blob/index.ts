@@ -120,6 +120,7 @@ export const convertServerBlobDataToClient = ({
         default:
           exhaustiveCheck(datasetBlobType, '');
       }
+      break;
     }
 
     case 'config':

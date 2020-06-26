@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import React from 'react';
 
-import * as RouteHelpers from 'features/versioning/repositoryData/view/RepositoryData/routeHelpers';
 import { IRepository } from 'shared/models/Versioning/Repository';
 import {
   IFolder,
@@ -16,9 +15,6 @@ import Placeholder from 'shared/view/elements/Placeholder/Placeholder';
 import CurrentCommitInfo from './CurrentCommitInfo/CurrentCommitInfo';
 import FolderElement from './FolderElement/FolderElement';
 import styles from './FolderView.module.css';
-import NavigationItem from './NavigationItem/NavigationItem';
-import { IWorkspace } from 'shared/models/Workspace';
-
 interface ILocalProps {
   fullCommitComponentLocationComponents: IFullCommitComponentLocationComponents;
   repositoryName: IRepository['name'];
@@ -52,7 +48,7 @@ const FolderView: React.FC<ILocalProps> = ({
             <Placeholder>Empty folder</Placeholder>
           </div>
         ) : (
-          orderedFolderElements.map(folderElement => (
+          orderedFolderElements.map((folderElement) => (
             <FolderElement
               repositoryName={repositoryName}
               fullCommitComponentLocationComponents={
@@ -67,26 +63,5 @@ const FolderView: React.FC<ILocalProps> = ({
     </DataBox>
   );
 };
-
-const UpTree = React.memo(
-  ({
-    fullCommitComponentLocationComponents,
-    repositoryName,
-    currentWorkspaceName,
-  }: {
-    fullCommitComponentLocationComponents: IFullCommitComponentLocationComponents;
-    repositoryName: IRepository['name'];
-    currentWorkspaceName: IWorkspace['name'];
-  }) => (
-    <NavigationItem
-      to={RouteHelpers.goBack({
-        ...fullCommitComponentLocationComponents,
-        repositoryName,
-        workspaceName: currentWorkspaceName,
-      })}
-      name=".."
-    />
-  )
-);
 
 export default FolderView;

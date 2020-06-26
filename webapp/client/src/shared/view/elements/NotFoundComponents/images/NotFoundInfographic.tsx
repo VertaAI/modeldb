@@ -103,7 +103,7 @@ class NotFoundImage extends React.PureComponent<ILocalProps> {
                 fontWeight="300"
                 fill="#C9CBD2"
               >
-                {errorCode == '' ? (
+                {!errorCode ? (
                   <tspan x="190" y="192.2">
                     &#9888;
                   </tspan>

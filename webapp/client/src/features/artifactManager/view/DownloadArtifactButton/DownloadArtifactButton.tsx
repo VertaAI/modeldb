@@ -1,4 +1,3 @@
-import { bind } from 'decko';
 import * as R from 'ramda';
 import * as React from 'react';
 

@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { useQuery, useMutation } from 'react-apollo';
+import { useMutation } from 'react-apollo';
 
 import { getCommitReference } from 'shared/graphql/Versioning/CommitReference';
 import { convertGraphqlDiffs } from 'shared/graphql/Versioning/Diff';
@@ -57,7 +57,7 @@ export const useCompareChangesMutation = ({
     });
   }, [repositoryId, commitPointerA, commitPointerB]);
 
-  return resultToCommunicationWithData(serverRes => {
+  return resultToCommunicationWithData((serverRes) => {
     if (
       serverRes.repository &&
       serverRes.repository.commitA &&

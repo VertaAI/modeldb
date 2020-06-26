@@ -5,7 +5,6 @@ import routes from 'shared/routes';
 
 import { IRepository } from 'shared/models/Versioning/Repository';
 import { IHydratedCommit } from 'shared/models/Versioning/RepositoryData';
-import Avatar from 'shared/view/elements/Avatar/Avatar';
 
 import ShortenedSHA from '../../../../../../../../shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 import styles from './CurrentCommitInfo.module.css';
@@ -18,7 +17,7 @@ interface ILocalProps {
 const CurrentCommitInfo = (props: ILocalProps) => {
   const {
     repositoryName,
-    data: { author, message, sha, dateCreated },
+    data: { message, sha, dateCreated },
   } = props;
   return (
     <div className={styles.root}>
@@ -26,8 +25,7 @@ const CurrentCommitInfo = (props: ILocalProps) => {
         <span className={styles.author__text}></span>
       </div>
       <div className={styles.row}>
-        <div className={styles.author}>
-        </div>
+        <div className={styles.author}></div>
         <div className={styles.message} title={message}>
           {message}
         </div>

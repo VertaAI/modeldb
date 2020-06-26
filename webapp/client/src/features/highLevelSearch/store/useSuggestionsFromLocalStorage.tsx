@@ -8,7 +8,7 @@ import * as actions from './actions';
 
 const useSuggestionsFromLocalStorage = (initialQuery: string) => {
   const dispatch = useDispatch();
-  const [_, forceUpdate] = React.useReducer(x => x + 1, 0);
+  const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
   const suggestions = getSuggestionsFromLocalStorage();
 
   React.useEffect(() => {
