@@ -10,6 +10,7 @@ from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 from ..external import six
 
 from .._internal_utils import _artifact_utils
+from .._internal_utils import _file_utils
 from .._internal_utils import _utils
 
 from . import _dataset
@@ -85,10 +86,8 @@ class Path(_dataset._Dataset):
     @classmethod
     def _get_path_metadata(cls, path):
         if os.path.isdir(path):
-            for root, _, filenames in os.walk(path):
-                for filename in filenames:
-                    filepath = os.path.join(root, filename)
-                    yield cls._get_file_metadata(filepath)
+            for filepath in _file_utils.walk_files(path):
+                yield cls._get_file_metadata(filepath)
         else:
             yield cls._get_file_metadata(path)
 
