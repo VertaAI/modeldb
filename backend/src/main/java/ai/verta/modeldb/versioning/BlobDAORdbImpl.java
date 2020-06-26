@@ -1349,41 +1349,36 @@ public class BlobDAORdbImpl implements BlobDAO {
   private GetUrlForArtifact.Response getPresignedUrl(
       ArtifactStoreDAO artifactStoreDAO, Session session, GetUrlForBlobVersioned request, Blob blob)
       throws ModelDBException {
-    try {
-      Map<String, String> componentWithSHAMap =
-          getDatasetComponentBlob(blob, request.getPathDatasetComponentBlobPath());
+    Map<String, String> componentWithSHAMap =
+        getDatasetComponentBlob(blob, request.getPathDatasetComponentBlobPath());
 
-      if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
-        String internalPath = componentWithSHAMap.get("internalPath");
-        String computeSha = componentWithSHAMap.get("computeSha");
-        Map.Entry<String, String> s3KeyUploadId =
-            getS3PathAndMultipartUploadId(
-                session,
-                computeSha,
-                internalPath,
-                blob.getDataset().getContentCase(),
-                request.getPartNumber() > 0,
-                key -> artifactStoreDAO.initializeMultipart(internalPath));
-        String errorMessage = "S3Key not found";
-        String s3Key = s3KeyUploadId.getKey();
-        String uploadId = s3KeyUploadId.getValue();
-        if (s3Key == null || s3Key.isEmpty()) {
-          LOGGER.warn(errorMessage);
-          throw new ModelDBException(errorMessage, Status.Code.NOT_FOUND);
-        }
-        return artifactStoreDAO.getUrlForArtifactMultipart(
-            s3Key, request.getMethod(), request.getPartNumber(), uploadId);
-      } else {
-        throw new ModelDBException("Invalid Blob type found", Status.Code.INVALID_ARGUMENT);
+    if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
+      String internalPath = componentWithSHAMap.get("internalPath");
+      String computeSha = componentWithSHAMap.get("computeSha");
+      Map.Entry<String, String> s3KeyUploadId =
+          getS3PathAndMultipartUploadId(
+              session,
+              computeSha,
+              internalPath,
+              blob.getDataset().getContentCase(),
+              request.getPartNumber() > 0,
+              key -> artifactStoreDAO.initializeMultipart(internalPath));
+      String errorMessage = "S3Key not found";
+      String s3Key = s3KeyUploadId.getKey();
+      String uploadId = s3KeyUploadId.getValue();
+      if (s3Key == null || s3Key.isEmpty()) {
+        LOGGER.warn(errorMessage);
+        throw new ModelDBException(errorMessage, Status.Code.NOT_FOUND);
       }
-    } catch (Exception e) {
-      throw new ModelDBException(e);
+      return artifactStoreDAO.getUrlForArtifactMultipart(
+          s3Key, request.getMethod(), request.getPartNumber(), uploadId);
+    } else {
+      throw new ModelDBException("Invalid Blob type found", Status.Code.INVALID_ARGUMENT);
     }
   }
 
   private Map<String, String> getDatasetComponentBlob(
-      Blob blob, String pathDatasetComponentBlobPath)
-      throws ModelDBException, NoSuchAlgorithmException {
+      Blob blob, String pathDatasetComponentBlobPath) throws ModelDBException {
     if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
       DatasetBlob datasetBlob = blob.getDataset();
       switch (datasetBlob.getContentCase()) {
@@ -1398,7 +1393,12 @@ public class BlobDAORdbImpl implements BlobDAO {
             PathDatasetComponentBlob pathDatasetComponentBlob = pathComponentBlob.get();
             AutogenPathDatasetComponentBlob autogenPathDatasetComponentBlob =
                 AutogenPathDatasetComponentBlob.fromProto(pathDatasetComponentBlob);
-            String computeSha = DatasetContainer.computeSHA(autogenPathDatasetComponentBlob);
+            String computeSha = null;
+            try {
+              computeSha = DatasetContainer.computeSHA(autogenPathDatasetComponentBlob);
+            } catch (NoSuchAlgorithmException e) {
+              throw new ModelDBException(e);
+            }
             Map<String, String> componentWithSHAMap = new HashMap<>();
             componentWithSHAMap.put(
                 "internalPath", pathDatasetComponentBlob.getInternalVersionedPath());
@@ -1417,7 +1417,12 @@ public class BlobDAORdbImpl implements BlobDAO {
               && !s3PathComponentBlob.get().getPath().getInternalVersionedPath().isEmpty()) {
             AutogenS3DatasetComponentBlob componentBlob =
                 AutogenS3DatasetComponentBlob.fromProto(s3PathComponentBlob.get());
-            String computeS3Sha = DatasetContainer.computeSHA(componentBlob);
+            String computeS3Sha = null;
+            try {
+              computeS3Sha = DatasetContainer.computeSHA(componentBlob);
+            } catch (NoSuchAlgorithmException e) {
+              throw new ModelDBException(e);
+            }
             Map<String, String> componentWithSHAMap = new HashMap<>();
             componentWithSHAMap.put(
                 "internalPath", s3PathComponentBlob.get().getPath().getInternalVersionedPath());
@@ -1431,7 +1436,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
     throw new ModelDBException(
         "Dataset component blob not found for the path: '" + pathDatasetComponentBlobPath + "'",
-        Status.Code.INVALID_ARGUMENT);
+        Status.Code.NOT_FOUND);
   }
 
   private Map.Entry<String, String> getS3PathAndMultipartUploadId(
