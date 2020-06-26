@@ -12,6 +12,7 @@ export function isAppError(error: any): error is AppError<undefined> {
 export const createCodeErrorFromError = (error: Error): CodeError => {
   const codeError = new CodeError({ message: error.message });
   codeError.stack = error.stack;
+  console.error(codeError);
   return codeError;
 };
 

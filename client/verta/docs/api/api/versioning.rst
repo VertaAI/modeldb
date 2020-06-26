@@ -30,8 +30,10 @@ Dataset
 ^^^^^^^
 .. autoclass:: verta.dataset.Path
     :members:
+    :inherited-members:
 .. autoclass:: verta.dataset.S3
     :members:
+    :inherited-members:
 
 Environment
 ^^^^^^^^^^^

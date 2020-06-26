@@ -1868,19 +1868,12 @@ class ExperimentRun(_ModelDBEntity):
         super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", expt_run.id)
 
     def __repr__(self):
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        run_msg = response_msg.experiment_run
+        run_msg = self._get_self_as_msg()
         return '\n'.join((
             "name: {}".format(run_msg.name),
             "url: {}://{}/{}/projects/{}/exp-runs/{}".format(self._conn.scheme, self._conn.socket, self.workspace, run_msg.project_id, self.id),
+            "date created: {}".format(_utils.timestamp_to_str(int(run_msg.date_created))),
+            "date updated: {}".format(_utils.timestamp_to_str(int(run_msg.date_updated))),
             "description: {}".format(run_msg.description),
             "tags: {}".format(run_msg.tags),
             "attributes: {}".format(_utils.unravel_key_values(run_msg.attributes)),
@@ -1895,14 +1888,7 @@ class ExperimentRun(_ModelDBEntity):
 
     @property
     def workspace(self):
-        response = _utils.make_request(
-            "GET",
-            "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-            self._conn, params={'id': self.id},
-        )
-        _utils.raise_for_http_error(response)
-
-        proj_id = _utils.body_to_json(response)['experiment_run']['project_id']
+        proj_id = self._get_self_as_msg().project_id
         response = _utils.make_request(
             "GET",
             "{}://{}/api/v1/modeldb/project/getProjectById".format(self._conn.scheme, self._conn.socket),
@@ -1941,16 +1927,7 @@ class ExperimentRun(_ModelDBEntity):
 
     @property
     def name(self):
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return response_msg.experiment_run.name
+        return self._get_self_as_msg().name
 
     @staticmethod
     def _generate_default_name():
@@ -2014,6 +1991,30 @@ class ExperimentRun(_ModelDBEntity):
         else:
             _utils.raise_for_http_error(response)
 
+    # TODO: use this throughout `ExperimentRun`
+    def _get_self_as_msg(self):
+        """
+        Gets the full protobuf message representation of this Experiment Run.
+
+        Returns
+        -------
+        run_msg : ExperimentRun protobuf message
+
+        """
+        Message = _ExperimentRunService.GetExperimentRunById
+        msg = Message(id=self.id)
+        data = _utils.proto_to_json(msg)
+        url = "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        response = _utils.make_request("GET", url, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        return response_msg.experiment_run
+
     def _log_artifact(self, key, artifact, artifact_type, extension=None, method=None, overwrite=False):
         """
         Logs an artifact to this Experiment Run.
@@ -2068,7 +2069,8 @@ class ExperimentRun(_ModelDBEntity):
         artifact_path = os.path.join(artifact_hash, basename)
 
         # TODO: incorporate into config
-        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR')
+        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR', "")
+        VERTA_ARTIFACT_DIR = os.path.expanduser(VERTA_ARTIFACT_DIR)
         if VERTA_ARTIFACT_DIR:
             print("set artifact directory from environment:")
             print("    " + VERTA_ARTIFACT_DIR)
@@ -2379,6 +2381,32 @@ class ExperimentRun(_ModelDBEntity):
         new_run = ExperimentRun(self._conn, self._conf, _expt_run_id=new_run_msg.id)
 
         return new_run
+
+    def get_date_created(self):
+        """
+        Gets a timestamp representing the time (in UTC) this Experiment Run was created.
+
+        Returns
+        -------
+        timestamp : int
+            Unix timestamp in milliseconds.
+
+        """
+        run_msg = self._get_self_as_msg()
+        return int(run_msg.date_created)
+
+    def get_date_updated(self):
+        """
+        Gets a timestamp representing the time (in UTC) this Experiment Run was updated.
+
+        Returns
+        -------
+        timestamp : int
+            Unix timestamp in milliseconds.
+
+        """
+        run_msg = self._get_self_as_msg()
+        return int(run_msg.date_updated)
 
     def log_tag(self, tag):
         """
@@ -3092,11 +3120,8 @@ class ExperimentRun(_ModelDBEntity):
 
         # validate that `artifacts` are actually logged
         if artifacts:
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                           self._conn, params={'id': self.id})
-            _utils.raise_for_http_error(response)
-            existing_artifact_keys = {artifact['key'] for artifact in _utils.body_to_json(response)['experiment_run'].get('artifacts', [])}
+            run_msg = self._get_self_as_msg()
+            existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
             unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
             if unlogged_artifact_keys:
                 raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
@@ -3524,16 +3549,8 @@ class ExperimentRun(_ModelDBEntity):
             Names and values of all observation series.
 
         """
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return _utils.unravel_observations(response_msg.experiment_run.observations)
+        run_msg = self._get_self_as_msg()
+        return _utils.unravel_observations(run_msg.observations)
 
     def log_requirements(self, requirements, overwrite=False):
         """
@@ -3858,11 +3875,8 @@ class ExperimentRun(_ModelDBEntity):
             raise TypeError("`keys` must be list of str, not {}".format(type(keys)))
 
         # validate that `keys` are actually logged
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params={'id': self.id})
-        _utils.raise_for_http_error(response)
-        existing_artifact_keys = {artifact['key'] for artifact in _utils.body_to_json(response)['experiment_run'].get('artifacts', [])}
+        run_msg = self._get_self_as_msg()
+        existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
         unlogged_artifact_keys = set(keys) - existing_artifact_keys
         if unlogged_artifact_keys:
             raise ValueError("`keys` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
@@ -3967,13 +3981,8 @@ class ExperimentRun(_ModelDBEntity):
         data = {}
         if path is not None:
             # get project ID for URL path
-            response = _utils.make_request(
-                "GET",
-                "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                self._conn, params={'id': self.id})
-            _utils.raise_for_http_error(response)
-
-            data.update({'url_path': "{}/{}".format(_utils.body_to_json(response)['experiment_run']['project_id'], path)})
+            run_msg = self._get_self_as_msg()
+            data.update({'url_path': "{}/{}".format(run_msg.project_id, path)})
         if no_token:
             data.update({'token': ""})
         elif token is not None:

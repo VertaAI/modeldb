@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}
+    component: graphql
+{{- if .Values.labels}}
+{{toYaml .Values.labels | indent 4 -}}
+{{- end}}
+  name: {{ .Release.Name }}-graphql
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: graphql
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: graphql
+{{- if .Values.labels}}
+{{toYaml .Values.labels | indent 8 -}}
+{{- end}}
+      annotations:
+        verta.ai/disable_anti_affinity: "true"
+    spec:
+      containers:
+        - image: {{ .Values.image }}:{{ .Values.imageTag }}
+          imagePullPolicy: "Always"
+          name: {{ .Release.Name }}
+          ports:
+            - containerPort: 3000
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          env:
+          - name: MDB_ADDRESS
+            value: "{{ .Release.Name }}-backend:8085"
+          - name: QUERY_PATH
+            value: "/api/v1/graphql/query"
+          - name: SERVER_HTTP_PORT
+            value: "3000"
+          {{- if .Values.env }}
+          {{- range $name, $value := .Values.env }}
+          - name: {{ $name | quote }}
+            value: {{ $value | quote }}
+          {{- end }}
+          {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      {{ if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+      {{- end }}

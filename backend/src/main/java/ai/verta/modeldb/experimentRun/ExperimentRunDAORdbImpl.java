@@ -748,13 +748,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+
+      Transaction transaction = session.beginTransaction();
       List<ObservationEntity> newObservationList =
           RdbmsUtils.convertObservationsFromObservationEntityList(
-              experimentRunEntityObj, ModelDBConstants.OBSERVATIONS, observations);
+              session,
+              experimentRunEntityObj,
+              ModelDBConstants.OBSERVATIONS,
+              observations,
+              ExperimentRunEntity.class.getSimpleName(),
+              experimentRunEntityObj.getId());
       experimentRunEntityObj.setObservationMapping(newObservationList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
-      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
     } catch (Exception ex) {

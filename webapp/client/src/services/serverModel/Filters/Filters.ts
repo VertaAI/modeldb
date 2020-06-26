@@ -44,6 +44,10 @@ export const getServerFilterOperator = (
           return ServerFilterOperator.NE;
         case OperatorType.EQUALS:
           return ServerFilterOperator.EQ;
+        case OperatorType.LIKE:
+          return ServerFilterOperator.CONTAIN;
+        case OperatorType.NOT_LIKE:
+          return ServerFilterOperator.NOT_CONTAIN;
         default:
           return exhaustiveCheck(experimentFilter.operator, '');
       }

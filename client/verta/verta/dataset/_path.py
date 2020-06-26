@@ -10,6 +10,7 @@ from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 from ..external import six
 
 from .._internal_utils import _artifact_utils
+from .._internal_utils import _file_utils
 from .._internal_utils import _utils
 
 from . import _dataset
@@ -51,16 +52,10 @@ class Path(_dataset._Dataset):
 
         super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
-        paths_to_metadata = dict()  # prevent duplicate objects
-        for path in paths:
-            paths_to_metadata.update({
-                file_metadata.path: file_metadata
-                for file_metadata
-                in self._get_path_metadata(path)
-            })
+        filepaths = _file_utils.flatten_file_trees(paths)
+        components = map(self._get_file_metadata, filepaths)
 
-        metadata = six.viewvalues(paths_to_metadata)
-        self._msg.path.components.extend(metadata)
+        self._msg.path.components.extend(components)
 
     def __repr__(self):
         # TODO: consolidate with S3 since they're almost identical now
@@ -81,16 +76,6 @@ class Path(_dataset._Dataset):
             for component
             in self._msg.path.components
         ]
-
-    @classmethod
-    def _get_path_metadata(cls, path):
-        if os.path.isdir(path):
-            for root, _, filenames in os.walk(path):
-                for filename in filenames:
-                    filepath = os.path.join(root, filename)
-                    yield cls._get_file_metadata(filepath)
-        else:
-            yield cls._get_file_metadata(path)
 
     @classmethod
     def _get_file_metadata(cls, filepath):
