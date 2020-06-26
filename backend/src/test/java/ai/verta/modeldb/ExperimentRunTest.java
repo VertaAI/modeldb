@@ -9764,6 +9764,35 @@ public class ExperimentRunTest {
       }
     }
 
+    hyperparameterFilter = Value.newBuilder().setNumberValue(5).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.train")
+            .setValue(hyperparameterFilter)
+            .setOperator(Operator.NE)
+            .setValueType(ValueType.NUMBER)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(keyValueQuery)
+            .setAscending(false)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.train")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        3,
+        response.getTotalRecords());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        3,
+        response.getExperimentRunsCount());
+
     DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
