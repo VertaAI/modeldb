@@ -107,7 +107,6 @@ message Repository {
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
 
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
-    RepositoryAccessModifierEnum.RepositoryAccessModifier repositoryAccessModifier = 8;
 
     string owner = 10;
     string description = 11;
