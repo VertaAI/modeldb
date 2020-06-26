@@ -1,6 +1,6 @@
 package ai.verta.modeldb.entities;
 
-import ai.verta.common.ArtifactPart;
+import ai.verta.modeldb.ArtifactPart;
 import com.amazonaws.services.s3.model.PartETag;
 import java.io.Serializable;
 import java.util.Objects;

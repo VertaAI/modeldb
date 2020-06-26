@@ -1,11 +1,11 @@
 package ai.verta.modeldb.versioning;
 
-import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
-import ai.verta.common.KeyValueQuery;
-import ai.verta.common.OperatorEnum;
+import ai.verta.modeldb.ArtifactPart;
+import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;

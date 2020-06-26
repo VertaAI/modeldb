@@ -4,7 +4,6 @@ import static ai.verta.modeldb.RepositoryTest.NAME;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
-import ai.verta.common.KeyValueQuery;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
