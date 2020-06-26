@@ -555,13 +555,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       boolean deleteAll)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      CommitEntity commitEntity = null;
       RepositoryEntity repositoryEntity;
 
       RepositoryIdentification.Builder repositoryIdentification =
           RepositoryIdentification.newBuilder();
       if (datasetId == null || datasetId.isEmpty()) {
-        commitEntity = session.get(CommitEntity.class, datasetVersionId);
+        CommitEntity commitEntity = session.get(CommitEntity.class, datasetVersionId);
         if (commitEntity == null) {
           throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
         }
@@ -579,15 +578,40 @@ public class CommitDAORdbImpl implements CommitDAO {
         repositoryIdentification.setRepoId(Long.parseLong(datasetId));
       }
       repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification.build(), true);
-
-      if (commitEntity == null) {
-        commitEntity = getCommitEntity(session, datasetVersionId, (session1 -> repositoryEntity));
+      addDeleteCommitTags(
+          repositoryEntity, datasetVersionId, metadataDAO, addTags, tagsList, deleteAll);
+      return blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, datasetVersionId);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addDeleteDatasetVersionTags(
+            repositoryDAO,
+            blobDAO,
+            metadataDAO,
+            addTags,
+            datasetId,
+            datasetVersionId,
+            tagsList,
+            deleteAll);
+      } else {
+        throw ex;
       }
+    }
+  }
 
+  @Override
+  public void addDeleteCommitTags(
+      RepositoryEntity repositoryEntity,
+      String commitHash,
+      MetadataDAO metadataDAO,
+      boolean addTags,
+      List<String> tagsList,
+      boolean deleteAll)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       String compositeId =
           VersioningUtils.getVersioningCompositeId(
               repositoryEntity.getId(),
-              commitEntity.getCommit_hash(),
+              commitHash,
               Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
 
       session.beginTransaction();
@@ -602,22 +626,15 @@ public class CommitDAORdbImpl implements CommitDAO {
         metadataDAO.deleteLabels(
             identificationType, ModelDBUtils.checkEntityTagsLength(tagsList), deleteAll);
       }
+      CommitEntity commitEntity =
+          getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
       commitEntity.setDate_updated(new Date().getTime());
       session.update(commitEntity);
       session.getTransaction().commit();
-      return blobDAO.convertToDatasetVersion(
-          metadataDAO, repositoryEntity, commitEntity.getCommit_hash());
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return addDeleteDatasetVersionTags(
-            repositoryDAO,
-            blobDAO,
-            metadataDAO,
-            addTags,
-            datasetId,
-            datasetVersionId,
-            tagsList,
-            deleteAll);
+        addDeleteCommitTags(
+            repositoryEntity, commitHash, metadataDAO, addTags, tagsList, deleteAll);
       } else {
         throw ex;
       }

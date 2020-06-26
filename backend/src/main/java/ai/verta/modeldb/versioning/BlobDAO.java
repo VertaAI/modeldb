@@ -28,7 +28,7 @@ public interface BlobDAO {
       boolean addAttribute)
       throws ModelDBException;
 
-  DatasetVersion addUpdateBlobAttributes(
+  DatasetVersion addUpdateDatasetVersionAttributes(
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       MetadataDAO metadataDAO,
@@ -38,7 +38,15 @@ public interface BlobDAO {
       boolean addAttribute)
       throws ModelDBException;
 
-  DatasetVersion deleteBlobAttributes(
+  void addUpdateBlobAttributes(
+      CommitDAO commitDAO,
+      RepositoryEntity repositoryEntity,
+      String commitHash,
+      List<KeyValue> attributes,
+      boolean addAttribute)
+      throws ModelDBException;
+
+  DatasetVersion deleteDatasetVersionAttributes(
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       MetadataDAO metadataDAO,
@@ -49,12 +57,26 @@ public interface BlobDAO {
       boolean deleteAll)
       throws ModelDBException;
 
-  List<KeyValue> getBlobAttributes(
+  void deleteBlobAttributes(
+      CommitDAO commitDAO,
+      RepositoryEntity repositoryEntity,
+      String commiHash,
+      List<String> attributesKeys,
+      List<String> location,
+      boolean deleteAll)
+      throws ModelDBException;
+
+  List<KeyValue> getDatasetVersionAttributes(
       RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
       Long repoId,
       String commitHash,
       List<String> location,
       List<String> attributeKeysList)
+      throws ModelDBException;
+
+  List<KeyValue> getBlobAttributes(
+      Long repositoryId, String commitHash, List<String> location, List<String> attributeKeysList)
       throws ModelDBException;
 
   GetCommitComponentRequest.Response getCommitComponent(

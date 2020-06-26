@@ -124,7 +124,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   @Override
-  public DatasetVersion addUpdateBlobAttributes(
+  public DatasetVersion addUpdateDatasetVersionAttributes(
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       MetadataDAO metadataDAO,
@@ -134,13 +134,12 @@ public class BlobDAORdbImpl implements BlobDAO {
       boolean addAttribute)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      CommitEntity commitEntity = null;
       RepositoryEntity repositoryEntity;
 
       RepositoryIdentification.Builder repositoryIdentification =
           RepositoryIdentification.newBuilder();
       if (repoId == null) {
-        commitEntity = session.get(CommitEntity.class, commitHash);
+        CommitEntity commitEntity = session.get(CommitEntity.class, commitHash);
         if (commitEntity == null) {
           throw new ModelDBException("DatasetVersion not found", Status.Code.NOT_FOUND);
         }
@@ -159,12 +158,27 @@ public class BlobDAORdbImpl implements BlobDAO {
         repositoryIdentification.setRepoId(repoId);
       }
       repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification.build(), true);
-
-      if (commitEntity == null) {
-        commitEntity =
-            commitDAO.getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
+      addUpdateBlobAttributes(commitDAO, repositoryEntity, commitHash, attributes, addAttribute);
+      return convertToDatasetVersion(metadataDAO, repositoryEntity, commitHash);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addUpdateDatasetVersionAttributes(
+            repositoryDAO, commitDAO, metadataDAO, repoId, commitHash, attributes, addAttribute);
+      } else {
+        throw ex;
       }
+    }
+  }
 
+  @Override
+  public void addUpdateBlobAttributes(
+      CommitDAO commitDAO,
+      RepositoryEntity repositoryEntity,
+      String commitHash,
+      List<KeyValue> attributes,
+      boolean addAttribute)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Blob.Builder blobBuilder = Blob.newBuilder();
       List<String> locations =
           Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION);
@@ -178,16 +192,16 @@ public class BlobDAORdbImpl implements BlobDAO {
                       .build()));
 
       session.beginTransaction();
+      CommitEntity commitEntity =
+          commitDAO.getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
       setBlobsAttributes(
           session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList, addAttribute);
       commitEntity.setDate_updated(new Date().getTime());
       session.update(commitEntity);
       session.getTransaction().commit();
-      return convertToDatasetVersion(metadataDAO, repositoryEntity, commitEntity.getCommit_hash());
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return addUpdateBlobAttributes(
-            repositoryDAO, commitDAO, metadataDAO, repoId, commitHash, attributes, addAttribute);
+        addUpdateBlobAttributes(commitDAO, repositoryEntity, commitHash, attributes, addAttribute);
       } else {
         throw ex;
       }
@@ -195,7 +209,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   @Override
-  public DatasetVersion deleteBlobAttributes(
+  public DatasetVersion deleteDatasetVersionAttributes(
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       MetadataDAO metadataDAO,
@@ -206,14 +220,12 @@ public class BlobDAORdbImpl implements BlobDAO {
       boolean deleteAll)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
-      CommitEntity commitEntity = null;
       RepositoryEntity repositoryEntity;
 
       RepositoryIdentification.Builder repositoryIdentification =
           RepositoryIdentification.newBuilder();
       if (repoId == null) {
-        commitEntity = session.get(CommitEntity.class, commitHash);
+        CommitEntity commitEntity = session.get(CommitEntity.class, commitHash);
         if (commitEntity == null) {
           throw new ModelDBException("DatasetVersion not found", Status.Code.NOT_FOUND);
         }
@@ -233,11 +245,39 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
       repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification.build(), true);
 
-      if (commitEntity == null) {
-        commitEntity =
-            commitDAO.getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
+      deleteBlobAttributes(
+          commitDAO, repositoryEntity, commitHash, attributesKeys, location, deleteAll);
+      return convertToDatasetVersion(metadataDAO, repositoryEntity, commitHash);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetVersionAttributes(
+            repositoryDAO,
+            commitDAO,
+            metadataDAO,
+            repoId,
+            commitHash,
+            attributesKeys,
+            location,
+            deleteAll);
+      } else {
+        throw ex;
       }
+    }
+  }
 
+  @Override
+  public void deleteBlobAttributes(
+      CommitDAO commitDAO,
+      RepositoryEntity repositoryEntity,
+      String commitHash,
+      List<String> attributesKeys,
+      List<String> location,
+      boolean deleteAll)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      CommitEntity commitEntity =
+          commitDAO.getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
       if (deleteAll) {
         String entityHash =
             VersioningUtils.getVersioningCompositeId(
@@ -258,18 +298,10 @@ public class BlobDAORdbImpl implements BlobDAO {
       commitEntity.setDate_updated(new Date().getTime());
       session.update(commitEntity);
       session.getTransaction().commit();
-      return convertToDatasetVersion(metadataDAO, repositoryEntity, commitHash);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return deleteBlobAttributes(
-            repositoryDAO,
-            commitDAO,
-            metadataDAO,
-            repoId,
-            commitHash,
-            attributesKeys,
-            location,
-            deleteAll);
+        deleteBlobAttributes(
+            commitDAO, repositoryEntity, commitHash, attributesKeys, location, deleteAll);
       } else {
         throw ex;
       }
@@ -277,8 +309,9 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   @Override
-  public List<KeyValue> getBlobAttributes(
+  public List<KeyValue> getDatasetVersionAttributes(
       RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
       Long repoId,
       String commitHash,
       List<String> location,
@@ -286,7 +319,10 @@ public class BlobDAORdbImpl implements BlobDAO {
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       CommitEntity commitEntity = null;
+      RepositoryEntity repositoryEntity;
 
+      RepositoryIdentification.Builder repositoryIdentification =
+          RepositoryIdentification.newBuilder();
       if (repoId == null) {
         commitEntity = session.get(CommitEntity.class, commitHash);
         if (commitEntity == null) {
@@ -301,21 +337,40 @@ public class BlobDAORdbImpl implements BlobDAO {
               Status.Code.INTERNAL);
         }
         assert commitEntity.getRepository() != null;
-        repoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
+        Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
+        repositoryIdentification.setRepoId(newRepoId);
+      } else {
+        repositoryIdentification.setRepoId(repoId);
+      }
+      repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification.build(), true);
+
+      if (commitEntity == null) {
+        commitEntity =
+            commitDAO.getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
       }
 
-      return VersioningUtils.getAttributes(
-          session,
-          repositoryDAO
-              .getRepositoryById(
-                  session, RepositoryIdentification.newBuilder().setRepoId(repoId).build(), false)
-              .getId(),
-          commitHash,
-          location,
-          attributeKeysList);
+      return getBlobAttributes(
+          repositoryEntity.getId(), commitEntity.getCommit_hash(), location, attributeKeysList);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return getBlobAttributes(repositoryDAO, repoId, commitHash, location, attributeKeysList);
+        return getDatasetVersionAttributes(
+            repositoryDAO, commitDAO, repoId, commitHash, location, attributeKeysList);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public List<KeyValue> getBlobAttributes(
+      Long repositoryId, String commitHash, List<String> location, List<String> attributeKeysList)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      return VersioningUtils.getAttributes(
+          session, repositoryId, commitHash, location, attributeKeysList);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getBlobAttributes(repositoryId, commitHash, location, attributeKeysList);
       } else {
         throw ex;
       }

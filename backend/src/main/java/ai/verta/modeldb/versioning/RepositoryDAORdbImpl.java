@@ -1149,6 +1149,27 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(id)).build();
+      addRepositoryTags(metadataDAO, repositoryIdentification, tags);
+      return AddDatasetTags.Response.newBuilder()
+          .setDataset(
+              convertToDataset(
+                  session, metadataDAO, getRepositoryById(session, repositoryIdentification, true)))
+          .build();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addDatasetTags(metadataDAO, id, tags);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public void addRepositoryTags(
+      MetadataDAO metadataDAO, RepositoryIdentification repositoryIdentification, List<String> tags)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = session.beginTransaction();
       RepositoryEntity repositoryEntity =
           getRepositoryById(session, repositoryIdentification, true);
       repositoryEntity.update();
@@ -1161,7 +1182,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   .build());
       List<String> uniqueTags = new ArrayList<>(tags);
       uniqueTags.removeAll(tagsOld);
-      Transaction transaction = session.beginTransaction();
       metadataDAO.addLabels(
           session,
           IdentificationType.newBuilder()
@@ -1170,13 +1190,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               .build(),
           uniqueTags);
       transaction.commit();
-
-      return AddDatasetTags.Response.newBuilder()
-          .setDataset(convertToDataset(session, metadataDAO, repositoryEntity))
-          .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return addDatasetTags(metadataDAO, id, tags);
+        addRepositoryTags(metadataDAO, repositoryIdentification, tags);
       } else {
         throw ex;
       }
@@ -1367,10 +1383,30 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(id)).build();
+      deleteRepositoryTags(metadataDAO, repositoryIdentification, tagsList, deleteAll);
+      return convertToDataset(
+          session, metadataDAO, getRepositoryById(session, repositoryIdentification, true));
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetTags(metadataDAO, id, tagsList, deleteAll);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public void deleteRepositoryTags(
+      MetadataDAO metadataDAO,
+      RepositoryIdentification repositoryIdentification,
+      List<String> tagsList,
+      boolean deleteAll)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
       RepositoryEntity repositoryEntity =
           getRepositoryById(session, repositoryIdentification, true);
       repositoryEntity.update();
-      session.beginTransaction();
       metadataDAO.deleteLabels(
           IdentificationType.newBuilder()
               .setIdType(VERSIONING_REPOSITORY)
@@ -1380,11 +1416,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           deleteAll);
       session.update(repositoryEntity);
       session.getTransaction().commit();
-
-      return convertToDataset(session, metadataDAO, repositoryEntity);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return deleteDatasetTags(metadataDAO, id, tagsList, deleteAll);
+        deleteRepositoryTags(metadataDAO, repositoryIdentification, tagsList, deleteAll);
       } else {
         throw ex;
       }
