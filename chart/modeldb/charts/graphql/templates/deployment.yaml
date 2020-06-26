@@ -33,12 +33,14 @@ spec:
             - containerPort: 3000
           resources:
 {{ toYaml .Values.resources | indent 12 }}
-          {{- if .Values.env }}
           env:
           - name: MDB_ADDRESS
-            value: "modeldb--backend:8085"
+            value: "{{ .Release.Name }}-backend:8085"
           - name: QUERY_PATH
             value: "/api/v1/graphql/query"
+          - name: SERVER_HTTP_PORT
+            value: "3000"
+          {{- if .Values.env }}
           {{- range $name, $value := .Values.env }}
           - name: {{ $name | quote }}
             value: {{ $value | quote }}
