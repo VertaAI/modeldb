@@ -29,10 +29,10 @@ class Path(_dataset._Dataset):
     ----------
     paths : list of str
         List of filepaths or directory paths.
-    enable_mdb_versioning : bool, default False
-        Whether to upload the data itself to ModelDB to enable managed data versioning.
     base_path : str, optional
         Hey Michael, replace this before shipping.
+    enable_mdb_versioning : bool, default False
+        Whether to upload the data itself to ModelDB to enable managed data versioning.
 
     Examples
     --------
@@ -48,7 +48,7 @@ class Path(_dataset._Dataset):
         ])
 
     """
-    def __init__(self, paths, enable_mdb_versioning=False, base_path=None):
+    def __init__(self, paths, base_path=None, enable_mdb_versioning=False):
         if isinstance(paths, six.string_types):
             paths = [paths]
         paths = map(os.path.expanduser, paths)
@@ -56,23 +56,24 @@ class Path(_dataset._Dataset):
         super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
         filepaths = _file_utils.flatten_file_trees(paths)
-        components = map(self._get_file_metadata, filepaths)
+        components = list(map(self._get_file_metadata, filepaths))
 
         # remove `base_path` from the beginning of component paths
         base_path_to_component_paths = collections.defaultdict(set)
-        for component in components:
-            path = _file_utils.remove_prefix_dir(component.path, prefix_dir=base_path)
-            if path == component.path:  # no change
-                raise ValueError("path {} does not begin with `base_path` {}".format(
-                    component.path,
-                    base_path,
-                ))
+        if base_path is not None:
+            for component in components:
+                path = _file_utils.remove_prefix_dir(component.path, prefix_dir=base_path)
+                if path == component.path:  # no change
+                    raise ValueError("path {} does not begin with `base_path` {}".format(
+                        component.path,
+                        base_path,
+                    ))
 
-            # update component with modified path
-            component.path = path
+                # update component with modified path
+                component.path = path
 
-            # remember base + path to reconstruct original in _prepare_components_to_upload()
-            base_path_to_component_paths[base_path].add(component.path)
+                # remember base + path to reconstruct original in _prepare_components_to_upload()
+                base_path_to_component_paths[base_path].add(component.path)
 
         self._msg.path.components.extend(components)
         self._base_path_to_component_paths = base_path_to_component_paths
