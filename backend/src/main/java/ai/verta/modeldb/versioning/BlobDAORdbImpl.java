@@ -166,7 +166,6 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
 
       Blob.Builder blobBuilder = Blob.newBuilder();
-      blobBuilder.addAllAttributes(attributes);
       List<String> locations =
           Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION);
       List<BlobContainer> blobList =
@@ -175,6 +174,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                   BlobExpanded.newBuilder()
                       .addAllLocation(locations)
                       .setBlob(blobBuilder.setDataset(DatasetBlob.newBuilder().build()).build())
+                      .addAllAttributes(attributes)
                       .build()));
 
       session.beginTransaction();
@@ -433,8 +433,10 @@ public class BlobDAORdbImpl implements BlobDAO {
           List<KeyValue> attributeEntities =
               VersioningUtils.getAttributes(
                   session, repoId, commit.getCommit_hash(), locationList, null);
-          blob = blob.toBuilder().addAllAttributes(attributeEntities).build();
-          return GetCommitComponentRequest.Response.newBuilder().setBlob(blob).build();
+          return GetCommitComponentRequest.Response.newBuilder()
+              .setBlob(blob)
+              .addAllAttributes(attributeEntities)
+              .build();
         } else {
           throw new ModelDBException(
               "No such folder found : " + locationList.get(index + 1), Status.Code.NOT_FOUND);
@@ -497,7 +499,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         }
         datasetVersionBuilder.setDatasetVersionVisibilityValue(
             repositoryEntity.getRepository_visibility());
-        datasetVersionBuilder.addAllAttributes(blob.getAttributesList());
+        datasetVersionBuilder.addAllAttributes(getComponentResponse.getAttributesList());
         datasetVersionBuilder.setOwner(commit.getAuthor());
         DatasetBlob dataset = blob.getDataset();
         PathDatasetVersionInfo.Builder builderPathDatasetVersion =
@@ -611,6 +613,20 @@ public class BlobDAORdbImpl implements BlobDAO {
                   childLocation,
                   childElementFolder.getElement_sha(),
                   blobTypeList));
+        } else {
+          if (parentLocation.containsAll(requestedLocation)
+              || childLocation.containsAll(requestedLocation)) {
+            Blob blob = getBlob(session, childElementFolder);
+            if (blobTypeList != null && !blobTypeList.isEmpty()) {
+              if (blobTypeExistsInList(blobTypeList, blob.getContentCase())) {
+                setBlobInBlobExpandMap(
+                    parentLocation, childBlobExpandedMap, childElementFolder, blob);
+              }
+            } else {
+              setBlobInBlobExpandMap(
+                  parentLocation, childBlobExpandedMap, childElementFolder, blob);
+            }
+          }
         }
       } else {
         if (parentLocation.containsAll(requestedLocation)) {
@@ -765,8 +781,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                 Collections.singletonList(location),
                 null);
         BlobExpanded blobExpanded = locationBlobMap.get(location);
-        Blob blob = blobExpanded.getBlob().toBuilder().addAllAttributes(attributes).build();
-        blobExpanded = blobExpanded.toBuilder().setBlob(blob).build();
+        blobExpanded = blobExpanded.toBuilder().addAllAttributes(attributes).build();
         blobExpandedSet.add(blobExpanded);
       }
       return ListCommitBlobsRequest.Response.newBuilder().addAllBlobs(blobExpandedSet).build();

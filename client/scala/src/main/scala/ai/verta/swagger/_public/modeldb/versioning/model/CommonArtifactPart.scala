@@ -5,28 +5,29 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.versioning.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.versioning.model.DiffStatusEnumDiffStatus._
 import ai.verta.swagger._public.modeldb.versioning.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
+import ai.verta.swagger._public.modeldb.versioning.model.RepositoryAccessModifierEnumRepositoryAccessModifier._
 import ai.verta.swagger._public.modeldb.versioning.model.RepositoryVisibilityEnumRepositoryVisibility._
-import ai.verta.swagger._public.modeldb.versioning.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.versioning.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbFeature (
-  name: Option[String] = None
+case class CommonArtifactPart (
+  etag: Option[String] = None,
+  part_number: Option[BigInt] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbFeature.toJson(this)
+  def toJson(): JValue = CommonArtifactPart.toJson(this)
 }
 
-object ModeldbFeature {
-  def toJson(obj: ModeldbFeature): JObject = {
+object CommonArtifactPart {
+  def toJson(obj: CommonArtifactPart): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.name.map(x => JField("name", JString(x)))
+        obj.etag.map(x => JField("etag", JString(x))),
+        obj.part_number.map(x => JField("part_number", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -34,13 +35,14 @@ object ModeldbFeature {
     )
   }
 
-  def fromJson(value: JValue): ModeldbFeature =
+  def fromJson(value: JValue): CommonArtifactPart =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbFeature(
+        CommonArtifactPart(
           // TODO: handle required
-          name = fieldsMap.get("name").map(JsonConverter.fromJsonString)
+          etag = fieldsMap.get("etag").map(JsonConverter.fromJsonString),
+          part_number = fieldsMap.get("part_number").map(JsonConverter.fromJsonInteger)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

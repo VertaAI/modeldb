@@ -11,8 +11,9 @@ message IDTypeEnum {
     enum IDType {
         UNKNOWN = 0; // Type 0 should always cause an error
         VERSIONING_REPOSITORY = 1;
-        VERSIONING_REPO_COMMIT_BLOB = 2;
-        VERSIONING_REPO_COMMIT = 3;
+        VERSIONING_COMMIT = 2;
+        VERSIONING_REPO_COMMIT_BLOB = 3;
+        VERSIONING_REPO_COMMIT = 4;
     }
 }
 
@@ -67,7 +68,6 @@ message AddPropertyRequest {
     string value = 3;
 
     message Response {
-        bool status = 1;
     }
 }
 
@@ -76,7 +76,6 @@ message DeletePropertyRequest {
     string key = 2;
 
     message Response {
-        bool status = 1;
     }
 }
 

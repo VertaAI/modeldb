@@ -76,4 +76,6 @@ public interface CommitDAO {
       boolean idsOnly,
       boolean rootSHAOnly)
       throws ModelDBException;
+
+  boolean isCommitExists(Session session, String commitHash);
 }

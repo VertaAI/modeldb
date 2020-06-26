@@ -37,7 +37,9 @@
             "enum": [
               "UNKNOWN",
               "VERSIONING_REPOSITORY",
-              "VERSIONING_COMMIT"
+              "VERSIONING_COMMIT",
+              "VERSIONING_REPO_COMMIT_BLOB",
+              "VERSIONING_REPO_COMMIT"
             ],
             "default": "UNKNOWN"
           },
@@ -119,6 +121,123 @@
           "MetadataService"
         ]
       }
+    },
+    "/metadata/property": {
+      "get": {
+        "operationId": "GetProperty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataGetPropertyRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.id_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "VERSIONING_REPOSITORY",
+              "VERSIONING_COMMIT",
+              "VERSIONING_REPO_COMMIT_BLOB",
+              "VERSIONING_REPO_COMMIT"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "id.int_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.string_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      },
+      "delete": {
+        "operationId": "DeleteProperty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataDeletePropertyRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/metadataDeletePropertyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      },
+      "put": {
+        "operationId": "AddProperty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataAddPropertyRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/metadataAddPropertyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -127,7 +246,9 @@
       "enum": [
         "UNKNOWN",
         "VERSIONING_REPOSITORY",
-        "VERSIONING_COMMIT"
+        "VERSIONING_COMMIT",
+        "VERSIONING_REPO_COMMIT_BLOB",
+        "VERSIONING_REPO_COMMIT"
       ],
       "default": "UNKNOWN"
     },
@@ -154,6 +275,23 @@
         }
       }
     },
+    "metadataAddPropertyRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/metadataIdentificationType"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "metadataAddPropertyRequestResponse": {
+      "type": "object"
+    },
     "metadataDeleteLabelsRequest": {
       "type": "object",
       "properties": {
@@ -177,6 +315,20 @@
         }
       }
     },
+    "metadataDeletePropertyRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/metadataIdentificationType"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "metadataDeletePropertyRequestResponse": {
+      "type": "object"
+    },
     "metadataGetLabelsRequestResponse": {
       "type": "object",
       "properties": {
@@ -185,6 +337,14 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "metadataGetPropertyRequestResponse": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string"
         }
       }
     },
