@@ -1089,6 +1089,10 @@ public class RoleServiceUtils implements RoleService {
     return workspaceDTO;
   }
 
+  /**
+   * Given the workspace id and type, returns WorkspaceDTO which has the id, name and type for the
+   * workspace.
+   */
   @Override
   public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
