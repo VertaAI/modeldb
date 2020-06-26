@@ -1,6 +1,6 @@
 # build environment
 
-FROM node:13.0.0-alpine as builder
+FROM node:12.16.2-alpine as builder
 # Create working directory
 RUN mkdir -p /usr/src/app/client
 
@@ -15,7 +15,7 @@ WORKDIR /usr/src/app/client
 COPY client /usr/src/app/client
 RUN yarn build
 
-FROM node:13.0.0-alpine
+FROM node:12.16.2-alpine
 
 RUN mkdir -p /usr/src/app/client
 WORKDIR /usr/src/app
