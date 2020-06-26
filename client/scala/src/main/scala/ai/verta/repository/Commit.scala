@@ -101,6 +101,7 @@ class Commit(
             .mapValues(_.getAllMetadata) // Map[String, Iterable[FileMetadata]]
             .map(pair => pair._2.map(metadata => newCommit.uploadArtifact(pair._1, metadata.path, new File(metadata.localPath.get))))
         })
+        /** TODO: clean up temporary files from uploading */
 
         uploadAttempt.flatMap(_ =>
           if (commitBranch.isDefined)
@@ -539,6 +540,7 @@ class Commit(
     datasetComponentPath: String,
     file: File
   )(implicit ec: ExecutionContext): Try[Unit] = {
+    /** TODO: implement multi-part upload */
     getURLForArtifact(blobPath, datasetComponentPath, "PUT").flatMap(url =>
       Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
         try {

@@ -61,7 +61,7 @@ class TestCommitDataVersioning extends FunSuite {
         case s3: S3 => s3
       }
       val downloadS3Attempt = versionedS3Blob.download(
-        "s3://verta-scala-test/testdir/testsubdir/testfile2",
+        Some("s3://verta-scala-test/testdir/testsubdir/testfile2"),
         "./somefile2"
       )
       assert(downloadS3Attempt.isSuccess)
@@ -76,7 +76,7 @@ class TestCommitDataVersioning extends FunSuite {
         case path: PathBlob => path
       }
       val downloadPathAttempt = versionedPathBlob.download(
-        "./src/test/scala/ai/verta/blobs/testdir/testfile",
+        Some("./src/test/scala/ai/verta/blobs/testdir/testfile"),
         "./somefile"
       )
       assert(downloadPathAttempt.isSuccess)
@@ -91,7 +91,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("downloading an entire folder should retrieve all the files") {
+  test("downloading an entire folder should retrieve all the files in the folder") {
     val f = fixture
 
     try {
@@ -104,7 +104,7 @@ class TestCommitDataVersioning extends FunSuite {
         case s3: S3 => s3
       }
       val downloadS3Attempt = versionedS3Blob.download(
-        "s3://verta-scala-test/testdir/testsubdir",
+        Some("s3://verta-scala-test/testdir/testsubdir"),
         "./somefiles2"
       )
       val downloadedS3MD5 = PathBlob("./somefiles2").get
@@ -119,7 +119,7 @@ class TestCommitDataVersioning extends FunSuite {
       }
 
       versionedPathBlob.download(
-        "./src/test/scala/ai/verta/blobs/testdir",
+        Some("./src/test/scala/ai/verta/blobs/testdir"),
         "./somefiles"
       )
       checkEqualFile(
@@ -131,6 +131,45 @@ class TestCommitDataVersioning extends FunSuite {
         new File("./src/test/scala/ai/verta/blobs/testdir/testsubdir/testfile2"),
         new File("./somefiles/testsubdir/testfile2")
       )
+    } finally {
+      deleteDirectory(new File("./somefiles"))
+      deleteDirectory(new File("./somefiles2"))
+      cleanup(f)
+    }
+  }
+
+  test("download entire blobs should retrieve all the components") {
+    val f = fixture
+
+    try {
+      val newCommit = f.commit
+        .update("abc", f.s3Blob)
+        .flatMap(_.update("def", f.pathBlob))
+        .flatMap(_.save("some-msg")).get
+
+        val versionedS3Blob: S3 = newCommit.get("abc").get match {
+          case s3: S3 => s3
+        }
+        versionedS3Blob.download(downloadToPath = "./somefiles2")
+        val downloadedS3MD5 = PathBlob("./somefiles2").get
+        assert(
+          downloadedS3MD5.getMetadata("./somefiles2/verta-scala-test/testdir/testsubdir/testfile2").get.md5 equals
+          f.s3Blob.getMetadata("s3://verta-scala-test/testdir/testsubdir/testfile2").get.md5
+        )
+
+        val versionedPathBlob: PathBlob = newCommit.get("def").get match {
+          case path: PathBlob => path
+        }
+        versionedPathBlob.download(downloadToPath = "./somefiles")
+        checkEqualFile(
+          new File("./src/test/scala/ai/verta/blobs/testdir/testfile"),
+          new File("./somefiles/src/test/scala/ai/verta/blobs/testdir/testfile")
+        )
+        checkEqualFile(
+          new File("./src/test/scala/ai/verta/blobs/testdir/testsubdir/testfile2"),
+          new File("./somefiles/src/test/scala/ai/verta/blobs/testdir/testsubdir/testfile2")
+        )
+
     } finally {
       deleteDirectory(new File("./somefiles"))
       deleteDirectory(new File("./somefiles2"))

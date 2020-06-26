@@ -6,6 +6,7 @@ import ai.verta.repository.Commit
 
 import java.security.{MessageDigest, DigestInputStream}
 import java.io.{File, FileInputStream}
+import java.nio.file.Paths
 
 import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
@@ -29,31 +30,72 @@ trait Dataset extends Blob {
    *  @return Whether the download attempts succeed.
    */
   def download(
-    componentPath: String,
-    downloadToPath: String,
-    chunkSize: Int = ChunkSize
+    componentPath: Option[String] = None,
+    downloadToPath: String
   )(implicit ec: ExecutionContext): Try[Unit] = {
+    /** TODO: Make downloadToPath optional */
+    /** TODO: allow for download chunk by chunk */
+
     if (!enableMDBVersioning)
       Failure(new IllegalStateException("This blob did not allow for versioning"))
     else if (commit.isEmpty || blobPath.isEmpty)
       Failure(new IllegalStateException(
         "This dataset cannot be used for downloads. Consider using `commit.get()` to obtain a download-capable dataset"
       ))
-    else if (contents.contains(componentPath)) {
-      val file = new File(downloadToPath)
-
-      Try ({
-        file.mkdirs() // create the ancestor directories, if necessary
-        file.createNewFile() // create the new file, if necessary
-      })
-        .flatMap(_ => commit.get.getURLForArtifact(blobPath.get, componentPath, "GET"))
-        .flatMap(url =>  commit.get.downloadFromURL(url, file))
-    }
-    else  // is a directory
+    else
       Try {
-        getComponentPathInside(componentPath)
-          .map(comp => download(comp, f"${downloadToPath}/${removePrefixDir(comp, componentPath)}").get)
+        determineComponentAndLocalPaths(componentPath, downloadToPath)
+          .map(pair => downloadComponent(pair._1, pair._2))
+          .map(_.get)
       }
+  }
+
+  /** Download a single component, to a determined local destination
+   *  @param componentPath Path to the component
+   *  @param downloadToPath Local path to download to
+   *  @return whether the download attempt succeeds.
+   */
+  private def downloadComponent(
+    componentPath: String,
+    downloadToPath: String
+  )(implicit ec: ExecutionContext): Try[Unit] = {
+    val file = new File(downloadToPath)
+
+    Try ({
+      file.mkdirs() // create the ancestor directories, if necessary
+      file.createNewFile() // create the new file, if necessary
+    })
+      .flatMap(_ => commit.get.getURLForArtifact(blobPath.get, componentPath, "GET"))
+      .flatMap(url =>  commit.get.downloadFromURL(url, file))
+  }
+
+  /** Identify components to be downloaded, along with their local destination paths.
+   *  @param componentPath (Optional) path to directory or file within blob.
+   *  @param downloadToPath Local path to download to
+   *  @return Map of component paths to local destination paths
+   */
+  private def determineComponentAndLocalPaths(
+    componentPath: Option[String] = None,
+    downloadToPath: String
+  ): Map[String, String] = {
+    if (componentPath.isEmpty) {
+      // download entire blob
+      val componentPaths = contents.keySet.toList
+      val downloadToPaths =
+        componentPaths.map(comp => joinPaths(downloadToPath, removePrefixDir(comp, "s3:")))
+
+      componentPaths.zip(downloadToPaths).toMap
+    }
+    else if (contents.contains(componentPath.get)) // download a component
+      Map(componentPath.get -> downloadToPath)
+    else {
+      // download a directory
+      val componentPaths = getComponentPathInside(componentPath.get)
+      val downloadToPaths =
+        componentPaths.map(comp => joinPaths(downloadToPath, removePrefixDir(comp, componentPath.get)))
+
+      componentPaths.zip(downloadToPaths).toMap
+    }
   }
 
   /** Return the set of component paths inside a directory path
@@ -107,7 +149,8 @@ trait Dataset extends Blob {
 
   /** Removes prefix from the beginning of path (leaving it unchanged if path does not contain prefix)
    *  @param path directory path
-   *  @param prefix
+   *  @param prefix the prefix to removed
+   *  @return the path with the prefix removed
    */
   private def removePrefixDir(path: String, prefix: String) = {
     val prefixDirPath = if (prefix.endsWith("/")) prefix else prefix + "/"
@@ -119,6 +162,15 @@ trait Dataset extends Blob {
     else
       path
   }
+
+  /** Joining two paths
+   *  @param prefix the first path
+   *  @param suffix the second path
+   *  @return the joined path
+   */
+  private def joinPaths(prefix: String, suffix: String): String =
+    Paths.get(prefix, suffix).toString
+
 }
 
 object Dataset {
