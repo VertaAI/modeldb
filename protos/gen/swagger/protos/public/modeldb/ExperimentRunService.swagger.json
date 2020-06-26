@@ -2193,18 +2193,6 @@
         }
       }
     },
-    "commonArtifactPart": {
-      "type": "object",
-      "properties": {
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "etag": {
-          "type": "string"
-        }
-      }
-    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -2217,23 +2205,6 @@
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
-        }
-      }
-    },
-    "commonKeyValueQuery": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
-        },
-        "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },
@@ -2298,6 +2269,18 @@
         }
       }
     },
+    "modeldbArtifactPart": {
+      "type": "object",
+      "properties": {
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "etag": {
+          "type": "string"
+        }
+      }
+    },
     "modeldbCodeVersion": {
       "type": "object",
       "properties": {
@@ -2324,7 +2307,7 @@
           "type": "string"
         },
         "artifact_part": {
-          "$ref": "#/definitions/commonArtifactPart"
+          "$ref": "#/definitions/modeldbArtifactPart"
         }
       }
     },
@@ -2701,7 +2684,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/commonKeyValueQuery"
+            "$ref": "#/definitions/modeldbKeyValueQuery"
           }
         },
         "ids_only": {
@@ -2787,7 +2770,7 @@
         "artifact_parts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/commonArtifactPart"
+            "$ref": "#/definitions/modeldbArtifactPart"
           }
         }
       }
@@ -2988,6 +2971,23 @@
         },
         "is_dirty": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
+    "modeldbKeyValueQuery": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },

@@ -7,6 +7,7 @@ option java_multiple_files = true;
 
 import "google/api/annotations.proto";
 import "common/CommonService.proto";
+import "modeldb/CommonService.proto";
 import "modeldb/versioning/Code.proto";
 import "modeldb/versioning/Config.proto";
 import "modeldb/versioning/Dataset.proto";
@@ -408,7 +409,7 @@ message RevertRepositoryCommitsRequest {
 message FindRepositories {
     repeated uint64 repo_ids = 1; //if repo_ids not present in request then the backend returns all the matching repositories, else returns a subsetfrom the list that are in the parameter repo_ids
     string workspace_name = 2; //If auth service is configured will default to Personal workspace, if authservice is not configured then parameter is ignored
-    repeated common.KeyValueQuery predicates = 3; //predicates like: {key:labels, value:Backend}, {key:name, value:repo_name}, if absent all the accessible repositories are returned.
+    repeated KeyValueQuery predicates = 3; //predicates like: {key:labels, value:Backend}, {key:name, value:repo_name}, if absent all the accessible repositories are returned.
 
     //For pagination
     int32 page_number = 6;//If not present no pagination is applied.
@@ -445,7 +446,7 @@ message FindRepositoriesBlobs {
     //In future requirement
     //bool ascending = 8;
     //string sort_key = 9;
-    repeated common.KeyValueQuery predicates = 10;
+    repeated KeyValueQuery predicates = 10;
 
     message Response {
         repeated BlobExpanded blobs = 1;
@@ -472,7 +473,7 @@ message CommitVersionedBlobArtifactPart {
     string commit_sha = 2;
     repeated string location = 3;
     string path_dataset_component_blob_path = 4;
-    common.ArtifactPart artifact_part = 5;
+    ArtifactPart artifact_part = 5;
 
     message Response{
     }
@@ -485,7 +486,7 @@ message GetCommittedVersionedBlobArtifactParts {
     string path_dataset_component_blob_path = 4;
 
     message Response {
-        repeated common.ArtifactPart artifact_parts = 1;
+        repeated ArtifactPart artifact_parts = 1;
     }
 }
 
