@@ -1070,21 +1070,55 @@ public class RoleServiceUtils implements RoleService {
       String vertaId = authService.getVertaIdFromUserInfo(currentLoginUserInfo);
       workspaceDTO.setWorkspaceId(vertaId);
       workspaceDTO.setWorkspaceType(WorkspaceType.USER);
+      workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
     } else {
       try {
         workspaceDTO.setWorkspaceId(new CollaboratorOrg(getOrgByName(workspaceName)).getId());
         workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
+        workspaceDTO.setWorkspaceName(workspaceName);
       } catch (StatusRuntimeException e) {
-        workspaceDTO.setWorkspaceId(
+        CollaboratorUser collaboratorUser =
             new CollaboratorUser(
-                    authService,
-                    authService.getUserInfo(
-                        workspaceName, ModelDBConstants.UserIdentifier.USER_NAME))
-                .getId());
+                authService,
+                authService.getUserInfo(workspaceName, ModelDBConstants.UserIdentifier.USER_NAME));
+        workspaceDTO.setWorkspaceId(collaboratorUser.getId());
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
+        workspaceDTO.setWorkspaceName(workspaceName);
       }
     }
     return workspaceDTO;
+  }
+
+  /**
+   * Given the workspace id and type, returns WorkspaceDTO which has the id, name and type for the
+   * workspace.
+   */
+  @Override
+  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
+    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
+    workspaceDTO.setWorkspaceId(workspaceId);
+
+    switch (workspaceType) {
+      case WorkspaceType.ORGANIZATION_VALUE:
+        Organization organization = (Organization) getOrgById(workspaceId);
+        workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
+        workspaceDTO.setWorkspaceName(organization.getName());
+        return workspaceDTO;
+      case WorkspaceType.USER_VALUE:
+        workspaceDTO.setWorkspaceType(WorkspaceType.USER);
+        if (workspaceId.equalsIgnoreCase(
+            authService.getVertaIdFromUserInfo(currentLoginUserInfo))) {
+          workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
+        } else {
+          UserInfo userInfo =
+              authService.getUserInfo(workspaceId, ModelDBConstants.UserIdentifier.VERTA_ID);
+          workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(userInfo));
+        }
+        return workspaceDTO;
+      default:
+        return null;
+    }
   }
 
   @Override
