@@ -145,7 +145,7 @@ trait Dataset extends Blob {
   }
 
   /** Clean up the uploaded components */
-  protected def cleanUpUploadedComponents(): Try[Unit] = Success(())
+  private[verta] def cleanUpUploadedComponents(): Try[Unit] = Success(())
 
   /** Removes prefix from the beginning of path (leaving it unchanged if path does not contain prefix)
    *  @param path directory path

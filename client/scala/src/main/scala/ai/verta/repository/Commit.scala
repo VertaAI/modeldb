@@ -95,13 +95,12 @@ class Commit(
           .flatMap(list => createCommit(message = message, blobs = Some(list), updateBranch = false))
         // do not update the branch's head right away (in case uploading data fails)
 
-        // upload the artifacts given by toVersion map
+        // upload the artifacts given by toVersion map then clean up
         val uploadAttempt: Try[Unit] = newCommit.map(newCommit => {
           toVersion
             .mapValues(_.getAllMetadata) // Map[String, Iterable[FileMetadata]]
             .map(pair => pair._2.map(metadata => newCommit.uploadArtifact(pair._1, metadata.path, new File(metadata.localPath.get))))
-        })
-        /** TODO: clean up temporary files from uploading */
+        }).flatMap(_ => Try(toVersion.values.foreach(_.cleanUpUploadedComponents().get)))
 
         uploadAttempt.flatMap(_ =>
           if (commitBranch.isDefined)
