@@ -72,7 +72,11 @@ class Path(_dataset._Dataset):
                 # update component with modified path
                 component.path = path
 
-                # remember base + path to reconstruct original in _prepare_components_to_upload()
+                # keep track of which paths correspond to which `base_path`
+                #     `base_path` needs to be tracked to reconstruct the original filepath in
+                #     _prepare_components_to_upload() so that the file can actually be located for
+                #     upload. This is a mapping because more paths could be added to this blob
+                #     using different base paths.
                 base_path_to_component_paths[base_path].add(component.path)
 
         self._msg.path.components.extend(components)
