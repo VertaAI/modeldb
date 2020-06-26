@@ -643,7 +643,7 @@ class TestPathManagedVersioning:
         commit.save("Version data.")
         dataset = commit.get(blob_path)
 
-        # `reference_dir` was dropped as base path, so this fails
+        # `reference_dir` was dropped as base path, so KeyError
         with pytest.raises(KeyError):
             dataset.download(reference_dir)
 
