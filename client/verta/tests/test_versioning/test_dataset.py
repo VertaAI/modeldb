@@ -617,3 +617,36 @@ class TestPathManagedVersioning:
         destination_dir = os.path.join(_dataset.DEFAULT_DOWNLOAD_DIR, reference_dir)
         assert os.path.isdir(destination_dir)
         assert_dirs_match(destination_dir, reference_dir)
+
+    def test_base_path(self, commit):
+        reference_dir = "tiny-files/"
+        os.mkdir(reference_dir)
+        # three .file files in tiny-files/
+        for filename in ["tiny{}.file".format(i) for i in range(3)]:
+            with open(os.path.join(reference_dir, filename), 'wb') as f:
+                f.write(os.urandom(2**16))
+
+        sub_dir = "bin/"
+        os.mkdir(os.path.join(reference_dir, sub_dir))
+        # three .bin files in tiny-files/bin/
+        for filename in ["tiny{}.bin".format(i) for i in range(3)]:
+            with open(os.path.join(reference_dir, sub_dir, filename), 'wb') as f:
+                f.write(os.urandom(2**16))
+
+        # commit dataset blob
+        blob_path = "data"
+        dataset = verta.dataset.Path(
+            reference_dir, base_path=reference_dir,
+            enable_mdb_versioning=True,
+        )
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        # `reference_dir` was dropped as base path, so this fails
+        with pytest.raises(KeyError):
+            dataset.download(reference_dir)
+
+        dirpath = dataset.download()
+        assert os.path.abspath(dirpath) != os.path.abspath(reference_dir)
+        assert_dirs_match(dirpath, reference_dir)

@@ -139,10 +139,10 @@ class Path(_dataset._Dataset):
             component_path = component_blob.path
 
             # reconstruct original filepaths with removed `base_path`s
-            for base_path, component_paths in self._base_path_to_component_paths:
+            for base_path, component_paths in self._base_path_to_component_paths.items():
                 if component_path in component_paths:
-                    component_path = os.path.join(base_path, component_path)
-            filepath = os.path.abspath(component_path)
+                    filepath = os.path.join(base_path, component_path)
+            filepath = os.path.abspath(filepath)
 
             # track which file this component corresponds to
             self._components_to_upload[component_path] = filepath
