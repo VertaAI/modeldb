@@ -21,8 +21,8 @@ cleanLocalStorageForNewVersion(localStorageVersion);
 
 const apolloClient = new ApolloClient({
   cache: apollo.makeCache(),
-  uri: `${location.protocol}//${location.hostname}${
-    location.port ? ':' + location.port : ''
+  uri: `${window.location.protocol}//${window.location.hostname}${
+    window.location.port ? ':' + window.location.port : ''
   }/api/v1/graphql/query`,
 });
 apolloClient.defaultOptions.watchQuery = {

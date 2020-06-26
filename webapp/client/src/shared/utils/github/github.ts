@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 import { URL, SHHUrl } from '../types';
 
 export type GithubRemoteRepoUrl = SHHUrl | URL;
@@ -92,8 +94,6 @@ export const makeRepoBlobUrl = (
     components.repositoryInfo.name
   }/blob/${commitHash}/${execPath}`;
 };
-
-import * as R from 'ramda';
 
 export const makeCompareCommitsUrl = ({
   repoWithCommitHash1,
