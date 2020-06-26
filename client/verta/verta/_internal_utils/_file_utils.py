@@ -106,3 +106,30 @@ def walk_files(dirpath):
     for root, _, filenames in os.walk(dirpath):
         for filename in filenames:
             yield os.path.join(root, filename)
+
+
+def flatten_file_trees(paths):
+    """
+    Converts a sequence of file and directory paths into a sequence of only filepaths.
+
+    Parameters
+    ----------
+    paths : list of str
+        File and directory paths.
+
+    Returns
+    -------
+    filepaths : set of str
+        Filepaths.
+
+    """
+    filepaths = set()
+
+    for path in paths:
+        if os.path.isdir(path):
+            for filepath in walk_files(path):
+                filepaths.add(filepath)
+        else:
+            filepaths.add(filepath)
+
+    return filepaths

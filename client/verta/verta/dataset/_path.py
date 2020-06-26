@@ -52,16 +52,10 @@ class Path(_dataset._Dataset):
 
         super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
-        paths_to_metadata = dict()  # prevent duplicate objects
-        for path in paths:
-            paths_to_metadata.update({
-                file_metadata.path: file_metadata
-                for file_metadata
-                in self._get_path_metadata(path)
-            })
+        filepaths = _file_utils.flatten_file_trees(paths)
+        components = map(self._get_file_metadata, filepaths)
 
-        metadata = six.viewvalues(paths_to_metadata)
-        self._msg.path.components.extend(metadata)
+        self._msg.path.components.extend(components)
 
     def __repr__(self):
         # TODO: consolidate with S3 since they're almost identical now
@@ -82,14 +76,6 @@ class Path(_dataset._Dataset):
             for component
             in self._msg.path.components
         ]
-
-    @classmethod
-    def _get_path_metadata(cls, path):
-        if os.path.isdir(path):
-            for filepath in _file_utils.walk_files(path):
-                yield cls._get_file_metadata(filepath)
-        else:
-            yield cls._get_file_metadata(path)
 
     @classmethod
     def _get_file_metadata(cls, filepath):
