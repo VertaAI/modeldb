@@ -69,11 +69,13 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           .append(" = :experimentName AND ee.")
           .append(ModelDBConstants.PROJECT_ID)
           .append(" = :projectId ")
+          .append(" AND ee." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String CHECK_ENTITY_BY_ID =
       new StringBuilder(CHECK_ENTITY_PREFIX)
           .append(ModelDBConstants.ID)
-          .append(" = :experimentId")
+          .append(" = :experimentId ")
+          .append(" AND ee." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String GET_KEY_VALUE_EXPERIMENT_QUERY =
       new StringBuilder("From AttributeEntity attr where attr.")
@@ -228,9 +230,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   @Override
   public Experiment insertExperiment(Experiment experiment, UserInfo userInfo)
       throws InvalidProtocolBufferException {
+    checkIfEntityAlreadyExists(experiment, true);
     createRoleBindingsForExperiment(experiment, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      checkIfEntityAlreadyExists(experiment, true);
       Transaction transaction = session.beginTransaction();
       session.save(RdbmsUtils.generateExperimentEntity(experiment));
       transaction.commit();
@@ -302,7 +304,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   public Experiment getExperiment(String experimentId) throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentEntity experimentObj = session.get(ExperimentEntity.class, experimentId);
-      if (experimentObj != null) {
+      if (experimentObj != null && !experimentObj.getDeleted()) {
         LOGGER.debug("Experiment getting successfully");
         return experimentObj.getProtoObject();
       } else {
@@ -591,6 +593,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   public Experiment getExperiment(List<KeyValue> keyValues) throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       StringBuilder stringQueryBuilder = new StringBuilder("From ExperimentEntity ee where ");
+      stringQueryBuilder.append("ee.").append(ModelDBConstants.DELETED).append(" = :deleted AND ");
       Map<String, Object> paramMap = new HashMap<>();
       for (int index = 0; index < keyValues.size(); index++) {
         KeyValue keyValue = keyValues.get(index);
@@ -622,10 +625,18 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         }
       }
       Query query = session.createQuery(stringQueryBuilder.toString());
+      query.setParameter("deleted", false);
       for (Entry<String, Object> paramEntry : paramMap.entrySet()) {
         query.setParameter(paramEntry.getKey(), paramEntry.getValue());
       }
       ExperimentEntity experimentObj = (ExperimentEntity) query.uniqueResult();
+      if (experimentObj == null) {
+        String errorMessage = "Experiment not found";
+        LOGGER.info(errorMessage);
+        Status status =
+            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
       return experimentObj.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {

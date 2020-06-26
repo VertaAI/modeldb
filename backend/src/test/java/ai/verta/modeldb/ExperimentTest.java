@@ -37,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -283,6 +284,20 @@ public class ExperimentTest {
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
+
+    DeleteExperiment deleteExperimentRequest =
+        DeleteExperiment.newBuilder().setId(response.getExperiment().getId()).build();
+    LOGGER.info("Experiment Id : " + response.getExperiment().getId());
+
+    DeleteExperiment.Response deleteExperiment =
+        experimentServiceStub.deleteExperiment(deleteExperimentRequest);
+    LOGGER.info("DeleteExperiment Response : " + deleteExperiment.getStatus());
+    assertTrue(deleteExperiment.getStatus());
+
+    createExperimentRequest =
+        createExperimentRequest.toBuilder().setName(response.getExperiment().getName()).build();
+    response = experimentServiceStub.createExperiment(createExperimentRequest);
+    Assert.assertTrue(response.hasExperiment());
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
