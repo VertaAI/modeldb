@@ -139,7 +139,6 @@ class Path(_dataset._Dataset):
             component_path = component_blob.path
 
             # reconstruct original filepaths with removed `base_path`s
-            filepath = component_path
             for base_path, component_paths in self._base_path_to_component_paths.items():
                 if component_path in component_paths:
                     filepath = os.path.join(base_path, component_path)
