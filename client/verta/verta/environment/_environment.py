@@ -22,6 +22,7 @@ class _Environment(blob.Blob):
     def __init__(self, env_vars, autocapture):
         super(_Environment, self).__init__()
 
+        # TODO: don't use proto to store data
         self._msg = _EnvironmentService.EnvironmentBlob()
 
         if env_vars is not None:
