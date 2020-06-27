@@ -77,24 +77,24 @@ class Commit(
       Failure(new IllegalCommitSavedStateException("Commit is already saved"))
     else
       loadBlobs().flatMap(_ => {
-        val toVersion = blobs
+        val blobsToVersion = blobs
           .mapValues(toMDBVersioningDataset)
           .filter(pair => pair._2.isDefined)
           .mapValues(_.get) // Map[String, Dataset]
           .filter(pair => pair._2.enableMDBVersioning)
 
         // trigger preparing for upload
-        val newCommit = Try(toVersion.values.foreach(dataset => dataset.prepareForUpload().get))
+        val newCommit = Try(blobsToVersion.values.foreach(dataset => dataset.prepareForUpload().get))
           .flatMap(_ => blobsList())
           .flatMap(list => createCommit(message = message, blobs = Some(list), updateBranch = false))
         // do not update the branch's head right away (in case uploading data fails)
 
-        // upload the artifacts given by toVersion map then clean up
+        // upload the artifacts given by blobsToVersion map then clean up
         val uploadAttempt: Try[Unit] = newCommit.map(newCommit => {
-          toVersion
+          blobsToVersion
             .mapValues(_.getAllMetadata) // Map[String, Iterable[FileMetadata]]
             .map(pair => pair._2.map(metadata => newCommit.uploadArtifact(pair._1, metadata.path, new File(metadata.localPath.get))))
-        }).flatMap(_ => Try(toVersion.values.foreach(_.cleanUpUploadedComponents().get)))
+        }).flatMap(_ => Try(blobsToVersion.values.map(_.cleanUpUploadedComponents()).map(_.get)))
 
         uploadAttempt.flatMap(_ =>
           if (commitBranch.isDefined)
