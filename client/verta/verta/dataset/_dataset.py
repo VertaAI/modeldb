@@ -302,3 +302,43 @@ class _Dataset(blob.Blob):
             for component
             in self._path_component_blobs
         ]
+
+
+class Component(object):
+    def __init__(
+            self,
+            path, size=None, last_modified_at_source=None,
+            sha256=None, md5=None,
+            s3_version_id=None,
+            internal_versioned_path=None, local_path=None):
+        # metadata
+        self.path = path
+        self.size = size
+        self.last_modified_at_source = last_modified_at_source
+
+        # checksums
+        self.sha256 = sha256
+        self.md5 = md5
+
+        # S3 versioning
+        self.s3_version_id = s3_version_id
+
+        # ModelDB versioning
+        self._internal_versioned_path = internal_versioned_path
+        self._local_path = local_path
+
+    def __repr__(self):
+        lines = [self.path]
+
+        if self.size:
+            lines.append("{} bytes".format(self.size))
+        if self.last_modified_at_source:
+            lines.append("last modified: {}".format(_utils.timestamp_to_str(self.last_modified_at_source)))
+        if self.sha256:
+            lines.append("SHA-256 checksum: {}".format(self.sha256))
+        if self.md5:
+            lines.append("MD5 checksum: {}".format(self.md5))
+        if self.s3_version_id:
+            lines.append("S3 version ID: {}".format(self.s3_version_id))
+
+        return "\n    ".join(lines)
