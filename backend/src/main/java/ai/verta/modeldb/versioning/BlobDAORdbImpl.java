@@ -157,7 +157,8 @@ public class BlobDAORdbImpl implements BlobDAO {
       } else {
         repositoryIdentification.setRepoId(repoId);
       }
-      repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification.build(), true);
+      repositoryEntity =
+          repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
       addUpdateBlobAttributes(commitDAO, repositoryEntity, commitHash, attributes, addAttribute);
       return convertToDatasetVersion(metadataDAO, repositoryEntity, commitHash);
     } catch (Exception ex) {
@@ -243,7 +244,8 @@ public class BlobDAORdbImpl implements BlobDAO {
       } else {
         repositoryIdentification.setRepoId(repoId);
       }
-      repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification.build(), true);
+      repositoryEntity =
+          repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
 
       deleteBlobAttributes(
           commitDAO, repositoryEntity, commitHash, attributesKeys, location, deleteAll);
@@ -342,7 +344,8 @@ public class BlobDAORdbImpl implements BlobDAO {
       } else {
         repositoryIdentification.setRepoId(repoId);
       }
-      repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification.build(), true);
+      repositoryEntity =
+          repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
 
       if (commitEntity == null) {
         commitEntity =

@@ -4,6 +4,8 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryModifierEnum;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
@@ -35,7 +37,7 @@ public class RepositoryEntity {
   public RepositoryEntity() {}
 
   public RepositoryEntity(
-      Repository repository, WorkspaceDTO workspaceDTO, boolean isDatasetRepository)
+      Repository repository, WorkspaceDTO workspaceDTO, RepositoryTypeEnum repositoryTypeEnum)
       throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
@@ -54,9 +56,13 @@ public class RepositoryEntity {
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, repository.getAttributesList()));
-
-    if (isDatasetRepository) {
-      this.datasetRepositoryMappingEntity = new DatasetRepositoryMappingEntity(this);
+    switch (repositoryTypeEnum) {
+      case DATASET:
+        this.datasetRepositoryMappingEntity = new DatasetRepositoryMappingEntity(this);
+        this.repositoryAccessModifier = RepositoryModifierEnum.PROTECTED.ordinal();
+        break;
+      default:
+        break;
     }
   }
 
@@ -92,6 +98,9 @@ public class RepositoryEntity {
 
   @Column(name = "repository_visibility")
   private Integer repository_visibility = null;
+
+  @Column(name = "repository_access_modifier")
+  private Integer repositoryAccessModifier = null;
 
   @Column(name = "deleted")
   private Boolean deleted = false;
@@ -234,5 +243,9 @@ public class RepositoryEntity {
 
   public boolean isDataset() {
     return datasetRepositoryMappingEntity != null;
+  }
+
+  public boolean isProtected() {
+    return repositoryAccessModifier == RepositoryModifierEnum.PROTECTED.ordinal();
   }
 }

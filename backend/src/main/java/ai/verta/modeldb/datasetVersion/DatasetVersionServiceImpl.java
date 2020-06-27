@@ -165,7 +165,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               GetBranchRequest.newBuilder()
                   .setRepositoryId(repositoryIdentification)
                   .setBranch(ModelDBConstants.MASTER_BRANCH)
-                  .build());
+                  .build(),
+              false);
       datasetVersion =
           datasetVersion
               .toBuilder()
@@ -173,7 +174,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build();
 
       RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(repositoryIdentification, true);
+          repositoryDAO.getProtectedRepositoryById(repositoryIdentification, true);
       CreateCommitRequest.Response createCommitResponse =
           commitDAO.setCommitFromDatasetVersion(
               datasetVersion, blobDAO, metadataDAO, repositoryEntity);
@@ -182,7 +183,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .setRepositoryId(repositoryIdentification)
               .setBranch(ModelDBConstants.MASTER_BRANCH)
               .setCommitSha(createCommitResponse.getCommit().getCommitSha())
-              .build());
+              .build(),
+          false);
       datasetVersion =
           blobDAO.convertToDatasetVersion(
               metadataDAO, repositoryEntity, createCommitResponse.getCommit().getCommitSha());
@@ -248,7 +250,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     ListCommitsRequest.Response listCommitsResponse =
         commitDAO.listCommits(
             listCommitsRequest.build(),
-            (session -> repositoryDAO.getRepositoryById(session, repositoryIdentification)));
+            (session ->
+                repositoryDAO.getRepositoryById(session, repositoryIdentification, false, false)));
 
     long totalRecords = listCommitsResponse.getTotalRecords();
     totalRecords = totalRecords > 0 ? totalRecords - 1 : totalRecords;
@@ -269,7 +272,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       throws ModelDBException {
     List<DatasetVersion> datasetVersions = new ArrayList<>();
     RepositoryEntity repositoryEntity =
-        repositoryDAO.getRepositoryById(repositoryIdentification, false);
+        repositoryDAO.getProtectedRepositoryById(repositoryIdentification, false);
     for (Commit commit : commitList) {
       if (commit.getParentShasList().isEmpty()) {
         continue;

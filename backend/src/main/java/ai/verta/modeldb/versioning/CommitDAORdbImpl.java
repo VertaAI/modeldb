@@ -436,7 +436,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
 
       RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(session, repositoryIdentification, true);
+          repositoryDAO.getRepositoryById(
+              session, repositoryIdentification, true, !isDatasetVersion);
 
       String getBranchByCommitHQLBuilder =
           "FROM "
@@ -582,7 +583,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       } else {
         repositoryIdentification.setRepoId(Long.parseLong(datasetId));
       }
-      repositoryEntity = repositoryDAO.getRepositoryById(repositoryIdentification.build(), true);
+      repositoryEntity =
+          repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
       addDeleteCommitLabels(
           repositoryEntity, datasetVersionId, metadataDAO, addTags, tagsList, deleteAll);
       return blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, datasetVersionId);
