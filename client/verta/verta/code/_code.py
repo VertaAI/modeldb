@@ -15,4 +15,5 @@ class _Code(blob.Blob):
         """
         super(_Code, self).__init__()
 
+        # TODO: don't use proto to store data
         self._msg = _CodeService.CodeBlob()

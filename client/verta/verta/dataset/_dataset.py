@@ -27,10 +27,7 @@ class _Dataset(blob.Blob):
     def __init__(self, enable_mdb_versioning=False):
         super(_Dataset, self).__init__()
 
-        # TODO: instead of protobuf message, store map of path to metadata
-        #     This would help with performance during blob addition & reduce dependency on
-        #     protobufs. Also keep in mind we'd need a method that takes a protobuf message and
-        #     updates the mapping for use in commit.get(). Other blobs may need to be changed too.
+        # TODO: don't use proto to store data
         self._msg = _DatasetService.DatasetBlob()
 
         self._mdb_versioned = enable_mdb_versioning
