@@ -761,7 +761,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           Long.parseLong(request.getId()),
           request.getAttributeKeysList(),
           request.getDeleteAll(),
-          true);
+          false);
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       responseObserver.onNext(

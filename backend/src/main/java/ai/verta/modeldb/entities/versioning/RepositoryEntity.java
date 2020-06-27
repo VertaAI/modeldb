@@ -9,6 +9,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
+import com.google.api.client.util.Objects;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +63,7 @@ public class RepositoryEntity {
         this.repositoryAccessModifier = RepositoryModifierEnum.PROTECTED.ordinal();
         break;
       default:
+        this.repositoryAccessModifier = RepositoryModifierEnum.REGULAR.ordinal();
         break;
     }
   }
@@ -246,6 +248,6 @@ public class RepositoryEntity {
   }
 
   public boolean isProtected() {
-    return repositoryAccessModifier == RepositoryModifierEnum.PROTECTED.ordinal();
+    return Objects.equal(repositoryAccessModifier, RepositoryModifierEnum.PROTECTED.ordinal());
   }
 }

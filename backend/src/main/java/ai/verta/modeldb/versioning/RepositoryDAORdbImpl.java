@@ -403,7 +403,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           LOGGER);
       repositoryEntity = new RepositoryEntity(repository, workspaceDTO, repositoryType);
     } else {
-      repositoryEntity = getRepositoryById(session, repoId, true);
+      repositoryEntity = getRepositoryById(session, repoId, true, false);
       if (!repository.getName().isEmpty()
           && !repositoryEntity.getName().equals(repository.getName())) {
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -494,7 +494,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository =
-          getRepositoryById(session, request.getRepositoryId(), canNotOperateOnProtected);
+          getRepositoryById(session, request.getRepositoryId(), true, canNotOperateOnProtected);
       // Get self allowed resources id where user has delete permission
       List<String> allowedRepositoryIds =
           roleService.getAccessibleResourceIdsByActions(
@@ -948,7 +948,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       GetBranchRequest request, boolean canNotOperateOnProtected) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository =
-          getRepositoryById(session, request.getRepositoryId(), canNotOperateOnProtected);
+          getRepositoryById(session, request.getRepositoryId(), false, canNotOperateOnProtected);
 
       BranchEntity branchEntity = getBranchEntity(session, repository.getId(), request.getBranch());
       CommitEntity commitEntity = session.get(CommitEntity.class, branchEntity.getCommit_hash());
@@ -1467,6 +1467,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           getRepositoryById(
               session,
               RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(id)).build(),
+              false,
               false);
       return GetDatasetById.Response.newBuilder()
           .setDataset(convertToDataset(session, metadataDAO, repositoryEntity))

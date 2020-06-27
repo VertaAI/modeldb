@@ -448,7 +448,7 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else if (e instanceof ModelDBException) {
-        LOGGER.warn("Exception occurred: {}", e.getMessage());
+        LOGGER.warn("Exception occurred:{} {}", e.getClass(), e.getMessage());
         ModelDBException ModelDBException = (ModelDBException) e;
         status =
             Status.newBuilder()
@@ -465,7 +465,8 @@ public class ModelDBUtils {
                 .build();
       }
       StackTraceElement[] stack = e.getStackTrace();
-      LOGGER.error("Stacktrace with {} elements for {}", stack.length, e.getMessage());
+      LOGGER.error(
+          "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());
       int n = 0;
       boolean isLongStack = stack.length > STACKTRACE_LENGTH;
       if (isLongStack) {
