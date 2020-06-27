@@ -3,9 +3,12 @@ package ai.verta.modeldb.artifactStore.storageservice;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -30,16 +33,35 @@ public class S3Service implements ArtifactStoreService {
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
   private AmazonS3 s3Client;
   private String bucketName;
+  private String keyName;
+  private String UploadFileName;
 
   public S3Service(String cloudBucketName) {
     App app = App.getInstance();
     String cloudAccessKey = app.getCloudAccessKey();
     String cloudSecretKey = app.getCloudSecretKey();
-    if (cloudAccessKey != null && cloudSecretKey != null) {
+    String minioEndpoint = app.getMinioEndpoint();
+    if (cloudAccessKey != null && cloudSecretKey != null && minioEndpoint == null) {
       BasicAWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
       this.s3Client =
           AmazonS3ClientBuilder.standard()
               .withRegion(Regions.US_EAST_1)
+              .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+              .build();
+
+    } else if (cloudAccessKey != null && cloudSecretKey != null && minioEndpoint != null) {
+
+      AWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+      ClientConfiguration clientConfiguration = new ClientConfiguration();
+      clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+
+      this.s3Client =
+          AmazonS3ClientBuilder.standard()
+              .withEndpointConfiguration(
+                  new AwsClientBuilder.EndpointConfiguration(
+                      minioEndpoint, Regions.US_EAST_1.name()))
+              .withPathStyleAccessEnabled(true)
+              .withClientConfiguration(clientConfiguration)
               .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
               .build();
     } else {

@@ -11,6 +11,7 @@ public interface ModelDBConstants {
   String CLOUD_ACCESS_KEY = "cloudAccessKey";
   String CLOUD_SECRET_KEY = "cloudSecretKey";
   String CLOUD_BUCKET_NAME = "cloudBucketName";
+  String MINIO_ENDPOINT = "minioEndpoint";
   String DATABASE = "database";
   String DB_TYPE = "DBType";
   String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";
