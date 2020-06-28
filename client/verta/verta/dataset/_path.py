@@ -5,6 +5,7 @@ from __future__ import print_function
 import hashlib
 import os
 
+from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
 from ..external import six
