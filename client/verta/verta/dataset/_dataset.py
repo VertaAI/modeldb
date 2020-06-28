@@ -28,54 +28,23 @@ class _Dataset(blob.Blob):
     def __init__(self, enable_mdb_versioning=False):
         super(_Dataset, self).__init__()
 
-        # TODO: don't use proto to store data
-        self._msg = _DatasetService.DatasetBlob()
+        self._components_map = dict()  # paths to Component objects
 
         self._mdb_versioned = enable_mdb_versioning
-        self._components_to_upload = dict()  # component paths to local filepaths
 
         # to be set during commit.get() to enable download() with ModelDB-managed versioning
         self._commit = None
         self._blob_path = None
 
-    @property
-    @abc.abstractmethod
-    def _path_component_blobs(self):
-        """
-        Returns path components of this dataset.
+    def __repr__(self):
+        lines = ["{} Version".format(self.__class__.__name__)]
 
-        Returns
-        -------
-        list of PathDatasetComponentBlob
-            Path components of this dataset.
+        components = self._components_map.values()
+        components = sorted(components, key=lambda component: component.path)
+        for component in components:
+            lines.extend(repr(component).splitlines())
 
-        """
-        pass
-
-    @staticmethod
-    def _path_component_to_repr_lines(path_component_msg):
-        """
-        Parameters
-        ----------
-        path_component_msg : PathDatasetComponentBlob
-
-        Returns
-        -------
-        lines : list of str
-            Lines to be used in the ``__repr__`` of a dataset blob object.
-
-        """
-        lines = [path_component_msg.path]
-        if path_component_msg.size:
-            lines.append("    {} bytes".format(path_component_msg.size))
-        if path_component_msg.last_modified_at_source:
-            lines.append("    last modified {}".format(_utils.timestamp_to_str(path_component_msg.last_modified_at_source)))
-        if path_component_msg.md5:
-            lines.append("    MD5 checksum: {}".format(path_component_msg.md5))
-        if path_component_msg.sha256:
-            lines.append("    SHA-256 checksum: {}".format(path_component_msg.sha256))
-
-        return lines
+        return "\n    ".join(lines)
 
     @abc.abstractmethod
     def _prepare_components_to_upload(self):
@@ -310,6 +279,7 @@ class Component(object):
             path, size=None, last_modified_at_source=None,
             sha256=None, md5=None,
             s3_version_id=None,
+            base_path=None,
             internal_versioned_path=None, local_path=None):
         # metadata
         self.path = path
@@ -322,6 +292,9 @@ class Component(object):
 
         # S3 versioning
         self.s3_version_id = s3_version_id
+
+        # base path
+        self._base_path = base_path
 
         # ModelDB versioning
         self._internal_versioned_path = internal_versioned_path

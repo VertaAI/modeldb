@@ -81,18 +81,6 @@ class S3(_dataset._Dataset):
         s3_metadata = six.viewvalues(obj_paths_to_metadata)
         self._msg.s3.components.extend(s3_metadata)
 
-    def __repr__(self):
-        # TODO: consolidate with Path since they're almost identical now
-        lines = ["S3 Version"]
-        components = sorted(
-            self._path_component_blobs,
-            key=lambda component_msg: component_msg.path,
-        )
-        for component in components:
-            lines.extend(self._path_component_to_repr_lines(component))
-
-        return "\n    ".join(lines)
-
     @classmethod
     def _from_proto(cls, blob_msg):
         obj = cls(paths=[])
@@ -105,15 +93,6 @@ class S3(_dataset._Dataset):
         blob_msg.dataset.CopyFrom(self._msg)
 
         return blob_msg
-
-    @property
-    def _path_component_blobs(self):
-        # S3 has its PathDatasetComponentBlob nested one lever deeper than Path
-        return [
-            component.path
-            for component
-            in self._msg.s3.components
-        ]
 
     @classmethod
     def _get_s3_loc_metadata(cls, s3_loc):

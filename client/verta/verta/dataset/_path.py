@@ -54,21 +54,13 @@ class Path(_dataset._Dataset):
         super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
         filepaths = _file_utils.flatten_file_trees(paths)
-        components = map(self._get_file_metadata, filepaths)
+        components = list(map(self._file_to_component, filepaths))
 
-        self._msg.path.components.extend(components)
-
-    def __repr__(self):
-        # TODO: consolidate with S3 since they're almost identical now
-        lines = ["Path Version"]
-        components = sorted(
-            self._path_component_blobs,
-            key=lambda component_msg: component_msg.path,
-        )
-        for component in components:
-            lines.extend(self._path_component_to_repr_lines(component))
-
-        return "\n    ".join(lines)
+        self._components_map.update({
+            component.path: component
+            for component
+            in components
+        })
 
     @classmethod
     def _from_proto(cls, blob_msg):
@@ -83,23 +75,14 @@ class Path(_dataset._Dataset):
 
         return blob_msg
 
-    @property
-    def _path_component_blobs(self):
-        return [
-            component
-            for component
-            in self._msg.path.components
-        ]
-
     @classmethod
-    def _get_file_metadata(cls, filepath):
-        msg = _DatasetService.PathDatasetComponentBlob()
-        msg.path = filepath
-        msg.size = os.stat(filepath).st_size
-        msg.last_modified_at_source = _utils.timestamp_to_ms(os.stat(filepath).st_mtime)
-        msg.md5 = cls._hash_file(filepath)
-
-        return msg
+    def _file_to_component(cls, filepath):
+        return _dataset.Component(
+            path=filepath,
+            size=os.stat(filepath).st_size,
+            last_modified_at_source=_utils.timestamp_to_ms(os.stat(filepath).st_mtime),
+            md5=cls._hash_file(filepath),
+        )
 
     @staticmethod
     def _hash_file(filepath):
