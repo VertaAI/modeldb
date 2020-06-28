@@ -300,7 +300,7 @@ class Component(object):
 
         if self.size:
             lines.append("{} bytes".format(self.size))
-        if self.last_modified_at_source:
+        if self.last_modified:
             lines.append("last modified: {}".format(_utils.timestamp_to_str(self.last_modified_at_source)))
         if self.sha256:
             lines.append("SHA-256 checksum: {}".format(self.sha256))
