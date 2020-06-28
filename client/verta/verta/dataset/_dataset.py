@@ -170,7 +170,6 @@ class _Dataset(blob.Blob):
 
         return (components_to_download, os.path.abspath(downloaded_to_path))
 
-
     def download(self, component_path=None, download_to_path=None, chunk_size=32*(10**6)):
         """
         Downloads `component_path` from this dataset if ModelDB-managed versioning was enabled.
