@@ -10,7 +10,6 @@ from ..external import six
 from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
-from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
 from .._internal_utils import _artifact_utils
 from .._internal_utils import _utils
