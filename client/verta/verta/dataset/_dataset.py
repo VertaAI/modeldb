@@ -271,7 +271,7 @@ class _Dataset(blob.Blob):
 class Component(object):
     def __init__(
             self,
-            path=None, size=None, last_modified=None,
+            path, size=None, last_modified=None,
             sha256=None, md5=None,
             base_path=None,
             internal_versioned_path=None, local_path=None):
@@ -309,21 +309,21 @@ class Component(object):
     def _from_proto(cls, component_msg):
         return cls(
             path=component_msg.path,
-            size=component_msg.size,
-            last_modified=component_msg.last_modified_at_source,
-            sha256=component_msg.sha256,
-            md5=component_msg.md5,
-            internal_versioned_path=component_msg.internal_versioned_path,
+            size=component_msg.size or None,
+            last_modified=component_msg.last_modified_at_source or None,
+            sha256=component_msg.sha256 or None,
+            md5=component_msg.md5 or None,
+            internal_versioned_path=component_msg.internal_versioned_path or None,
         )
 
     def _as_proto(self):
         return _DatasetService.PathDatasetComponentBlob(
-            path=self.path,
-            size=self.size,
-            last_modified_at_source=self.last_modified,
-            sha256=self.sha256,
-            md5=self.md5,
-            internal_versioned_path=self._internal_versioned_path,
+            path=self.path or "",
+            size=self.size or 0,
+            last_modified_at_source=self.last_modified or 0,
+            sha256=self.sha256 or "",
+            md5=self.md5 or "",
+            internal_versioned_path=self._internal_versioned_path or "",
         )
 
 
@@ -354,6 +354,6 @@ class S3Component(Component):
     def _as_proto(self):
         s3_component_msg = _DatasetService.S3DatasetComponentBlob()
         s3_component_msg.path.CopyFrom(super(S3Component, self)._as_proto())
-        s3_component_msg.s3_version_id = self.s3_version_id
+        s3_component_msg.s3_version_id = self.s3_version_id or ""
 
         return s3_component_msg
