@@ -271,9 +271,8 @@ class _Dataset(blob.Blob):
 class Component(object):
     def __init__(
             self,
-            path, size=None, last_modified=None,
+            path=None, size=None, last_modified=None,
             sha256=None, md5=None,
-            s3_version_id=None,
             base_path=None,
             internal_versioned_path=None, local_path=None):
         # metadata
@@ -284,9 +283,6 @@ class Component(object):
         # checksums
         self.sha256 = sha256
         self.md5 = md5
-
-        # S3 versioning
-        self.s3_version_id = s3_version_id
 
         # base path
         self._base_path = base_path
@@ -306,8 +302,6 @@ class Component(object):
             lines.append("SHA-256 checksum: {}".format(self.sha256))
         if self.md5:
             lines.append("MD5 checksum: {}".format(self.md5))
-        if self.s3_version_id:
-            lines.append("S3 version ID: {}".format(self.s3_version_id))
 
         return "\n    ".join(lines)
 
@@ -331,3 +325,35 @@ class Component(object):
             md5=self.md5,
             internal_versioned_path=self._internal_versioned_path,
         )
+
+
+class S3Component(Component):
+    def __init__(self, s3_version_id=None, **kwargs):
+        super(S3Component, self).__init__(**kwargs)
+
+        # S3 versioning
+        self.s3_version_id = s3_version_id
+
+    def __repr__(self):
+        repr_str = super(S3Component, self).__repr__()
+        lines = repr_str.split("\n    ")
+
+        if self.s3_version_id:
+            lines.append("S3 version ID: {}".format(self.s3_version_id))
+
+        return "\n    ".join(lines)
+
+
+    @classmethod
+    def _from_proto(cls, s3_component_msg):
+        obj = super(S3Component, cls)._from_proto(s3_component_msg.path)
+        obj.s3_version_id = s3_component_msg.s3_version_id
+
+        return obj
+
+    def _as_proto(self):
+        s3_component_msg = _DatasetService.S3DatasetComponentBlob()
+        s3_component_msg.path = super(S3Component, self)._as_proto()
+        s3_component_msg.s3_version_id = self.s3_version_id
+
+        return s3_component_msg
