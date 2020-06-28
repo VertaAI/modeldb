@@ -488,7 +488,7 @@ class Commit(object):
 
         """
         # prepare ModelDB-versioned blobs, and track for upload after commit save
-        mdb_versioned_blobs = dict()
+        mdb_versioned_blobs = dict()  # avoid duplicates
         for blob_path, blob in self._blobs.items():
             if isinstance(blob, dataset._Dataset) and blob._mdb_versioned:
                 blob._prepare_components_to_upload()
