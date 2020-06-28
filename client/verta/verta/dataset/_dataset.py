@@ -255,22 +255,17 @@ class _Dataset(blob.Blob):
         """
         Returns the paths of all components in this dataset.
 
-        .. note::
-
-            In Python 2.7, this method returns ``str`` rather than ``unicode``.  Unicode filenames
-            can be restored by calling ``.decode('utf-8')`` on the returned strings.
-
         Returns
         -------
         component_paths : list of str
             Paths of all components.
 
         """
-        return [
-            six.ensure_str(component.path)  # in Py2, protobuf had converted this to unicode str
+        return list(sorted(
+            component.path
             for component
-            in self._path_component_blobs
-        ]
+            in self._components_map.values()
+        ))
 
 
 class Component(object):

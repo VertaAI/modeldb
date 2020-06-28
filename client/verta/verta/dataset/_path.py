@@ -6,7 +6,6 @@ import hashlib
 import os
 
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
-from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
 from ..external import six
 
@@ -84,6 +83,7 @@ class Path(_dataset._Dataset):
             md5=cls._hash_file(filepath),
         )
 
+    # TODO: move to _file_utils.calc_md5()
     @staticmethod
     def _hash_file(filepath):
         """
@@ -111,19 +111,17 @@ class Path(_dataset._Dataset):
         if not self._mdb_versioned:
             return
 
-        for component_blob in self._path_component_blobs:
-            component_path = component_blob.path
-
+        for component in self._components_map.values():
             # TODO: when stripping base path is implemented, reconstruct original path here
-            filepath = os.path.abspath(component_path)
+            filepath = os.path.abspath(component.path)
 
             # track which file this component corresponds to
-            self._components_to_upload[component_path] = filepath
+            component._local_path = filepath
 
-            # add MDB path to component blob
+            # track MDB path to component
             with open(filepath, 'rb') as f:
                 artifact_hash = _artifact_utils.calc_sha256(f)
-            component_blob.internal_versioned_path = artifact_hash + '/' + os.path.basename(filepath)
+            component._internal_versioned_path = artifact_hash + '/' + os.path.basename(filepath)
 
     def _clean_up_uploaded_components(self):
         """
