@@ -310,3 +310,24 @@ class Component(object):
             lines.append("S3 version ID: {}".format(self.s3_version_id))
 
         return "\n    ".join(lines)
+
+    @classmethod
+    def _from_proto(cls, component_msg):
+        return cls(
+            path=component_msg.path,
+            size=component_msg.size,
+            last_modified=component_msg.last_modified_at_source,
+            sha256=component_msg.sha256,
+            md5=component_msg.md5,
+            internal_versioned_path=component_msg.internal_versioned_path,
+        )
+
+    def _as_proto(self):
+        return _DatasetService.PathDatasetComponentBlob(
+            path=self.path,
+            size=self.size,
+            last_modified_at_source=self.last_modified,
+            sha256=self.sha256,
+            md5=self.md5,
+            internal_versioned_path=self._internal_versioned_path,
+        )

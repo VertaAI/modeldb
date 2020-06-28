@@ -67,14 +67,7 @@ class Path(_dataset._Dataset):
         obj = cls(paths=[])
 
         for component_msg in blob_msg.dataset.path.components:
-            component = _dataset.Component(
-                path=component_msg.path,
-                size=component_msg.size,
-                last_modified=component_msg.last_modified_at_source,
-                sha256=component_msg.sha256,
-                md5=component_msg.md5,
-                internal_versioned_path=component_msg.internal_versioned_path,
-            )
+            component = _dataset.Component._from_proto(component_msg)
             obj._components_map[component.path] = component
 
         return obj
@@ -83,14 +76,7 @@ class Path(_dataset._Dataset):
         blob_msg = _VersioningService.Blob()
 
         for component in self._components_map.values():
-            component_msg = _DatasetService.PathDatasetComponentBlob(
-                path=component.path,
-                size=component.size,
-                last_modified_at_source=component.last_modified,
-                sha256=component.sha256,
-                md5=component.md5,
-                internal_versioned_path=component._internal_versioned_path,
-            )
+            component_msg = component._as_proto()
             blob_msg.dataset.path.components.append(component_msg)
 
         return blob_msg
