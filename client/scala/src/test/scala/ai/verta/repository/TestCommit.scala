@@ -68,7 +68,7 @@ class TestCommit extends FunSuite {
     }
   }
 
-  test("Update empty pathblob should work") {
+  test("Getting pathblob with empty component should succeed") {
     val f = fixture
     val emptyFile = new File("emptyfile")
 
