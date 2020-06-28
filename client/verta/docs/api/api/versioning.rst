@@ -34,6 +34,8 @@ Dataset
 .. autoclass:: verta.dataset.S3
     :members:
     :inherited-members:
+.. autoclass:: verta.dataset._dataset.Component()
+    :members:
 
 Environment
 ^^^^^^^^^^^
