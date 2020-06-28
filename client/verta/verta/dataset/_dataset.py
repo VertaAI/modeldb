@@ -267,6 +267,19 @@ class _Dataset(blob.Blob):
             in self._components_map.values()
         ))
 
+    def list_components(self):
+        """
+        Returns the components in this dataset.
+
+        Returns
+        -------
+        components : list of :class:`Component`
+            Components.
+
+        """
+        components = self._components_map.values()
+        return list(sorted(components, key=lambda component: component.path))
+
 
 class Component(object):
     def __init__(
