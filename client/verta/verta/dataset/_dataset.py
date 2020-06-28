@@ -9,6 +9,8 @@ import tempfile
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
+from ..external import six
+
 from .._internal_utils import _utils
 from .._internal_utils import _file_utils
 
@@ -170,7 +172,6 @@ class _Dataset(blob.Blob):
 
         return (components_to_download, os.path.abspath(downloaded_to_path))
 
-
     def download(self, component_path=None, download_to_path=None, chunk_size=32*(10**6)):
         """
         Downloads `component_path` from this dataset if ModelDB-managed versioning was enabled.
@@ -288,9 +289,9 @@ class Component(object):
             base_path=None,
             internal_versioned_path=None, local_path=None):
         # metadata
-        self.path = path  #:
-        self.size = size  #:
-        self.last_modified = last_modified  #:
+        self.path = path
+        self.size = size
+        self.last_modified = last_modified
 
         # checksums
         self.sha256 = sha256
