@@ -65,7 +65,17 @@ class Path(_dataset._Dataset):
     @classmethod
     def _from_proto(cls, blob_msg):
         obj = cls(paths=[])
-        # obj._msg.CopyFrom(blob_msg.dataset)
+
+        for component_msg in blob_msg.dataset.path.components:
+            component = _dataset.Component(
+                path=component_msg.path,
+                size=component_msg.size,
+                last_modified=component_msg.last_modified_at_source,
+                sha256=component_msg.sha256,
+                md5=component_msg.md5,
+                internal_versioned_path=component_msg.internal_versioned_path,
+            )
+            obj._components_map[component.path] = component
 
         return obj
 
