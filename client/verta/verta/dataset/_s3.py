@@ -82,7 +82,7 @@ class S3(_dataset._Dataset):
         obj = cls(paths=[])
 
         for component_msg in blob_msg.dataset.s3.components:
-            component = _dataset.Component._from_proto(component_msg)
+            component = _dataset.S3Component._from_proto(component_msg)
             obj._components_map[component.path] = component
 
         return obj
@@ -136,7 +136,7 @@ class S3(_dataset._Dataset):
         component = _dataset.S3Component(
             path=cls._S3_PATH.format(bucket_name, key),
             size=obj.get('Size') or obj.get('ContentLength') or 0,
-            last_modified_at_source=_utils.timestamp_to_ms(_utils.ensure_timestamp(obj['LastModified'])),
+            last_modified=_utils.timestamp_to_ms(_utils.ensure_timestamp(obj['LastModified'])),
             md5=obj['ETag'].strip('"'),
         )
         if obj.get('VersionId', 'null') != 'null':  # S3's API returns 'null' when there's no version ID

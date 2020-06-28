@@ -297,7 +297,7 @@ class Component(object):
         if self.size:
             lines.append("{} bytes".format(self.size))
         if self.last_modified:
-            lines.append("last modified: {}".format(_utils.timestamp_to_str(self.last_modified_at_source)))
+            lines.append("last modified: {}".format(_utils.timestamp_to_str(self.last_modified)))
         if self.sha256:
             lines.append("SHA-256 checksum: {}".format(self.sha256))
         if self.md5:
@@ -353,7 +353,7 @@ class S3Component(Component):
 
     def _as_proto(self):
         s3_component_msg = _DatasetService.S3DatasetComponentBlob()
-        s3_component_msg.path = super(S3Component, self)._as_proto()
+        s3_component_msg.path.CopyFrom(super(S3Component, self)._as_proto())
         s3_component_msg.s3_version_id = self.s3_version_id
 
         return s3_component_msg
