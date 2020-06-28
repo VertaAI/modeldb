@@ -25,13 +25,16 @@ public interface RepositoryDAO {
       Session session, RepositoryIdentification id, boolean checkWrite) throws ModelDBException;
 
   RepositoryEntity getRepositoryById(
-      Session session, RepositoryIdentification id, boolean checkWrite, boolean checkProtected)
+      Session session,
+      RepositoryIdentification id,
+      boolean checkWrite,
+      boolean canNotOperateOnProtected)
       throws ModelDBException;
 
   RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
       throws ModelDBException;
 
-  RepositoryEntity getRepositoryById(RepositoryIdentification id, boolean checkWrite)
+  RepositoryEntity getProtectedRepositoryById(RepositoryIdentification id, boolean checkWrite)
       throws ModelDBException;
 
   SetRepository.Response setRepository(
@@ -39,7 +42,10 @@ public interface RepositoryDAO {
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException;
 
   DeleteRepositoryRequest.Response deleteRepository(
-      DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
+      DeleteRepositoryRequest request,
+      CommitDAO commitDAO,
+      ExperimentRunDAO experimentRunDAO,
+      boolean canNotOperateOnProtected)
       throws ModelDBException;
 
   Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
@@ -65,12 +71,14 @@ public interface RepositoryDAO {
 
   DeleteTagRequest.Response deleteTag(DeleteTagRequest request) throws ModelDBException;
 
-  SetBranchRequest.Response setBranch(SetBranchRequest request) throws ModelDBException;
+  SetBranchRequest.Response setBranch(SetBranchRequest request, boolean canNotOperateOnProtected)
+      throws ModelDBException;
 
   BranchEntity getBranchEntity(Session session, Long repoId, String branchName)
       throws ModelDBException;
 
-  GetBranchRequest.Response getBranch(GetBranchRequest request) throws ModelDBException;
+  GetBranchRequest.Response getBranch(GetBranchRequest request, boolean canNotOperateOnProtected)
+      throws ModelDBException;
 
   DeleteBranchRequest.Response deleteBranch(DeleteBranchRequest request) throws ModelDBException;
 
@@ -87,8 +95,23 @@ public interface RepositoryDAO {
   AddDatasetTags.Response addDatasetTags(MetadataDAO metadataDAO, String id, List<String> tags)
       throws ModelDBException;
 
+  void addRepositoryTags(
+      MetadataDAO metadataDAO,
+      RepositoryIdentification repositoryIdentification,
+      List<String> tags,
+      boolean canNotOperateOnProtected)
+      throws ModelDBException;
+
   Dataset deleteDatasetTags(
       MetadataDAO metadataDAO, String id, List<String> tagsList, boolean deleteAll)
+      throws ModelDBException;
+
+  void deleteRepositoryTags(
+      MetadataDAO metadataDAO,
+      RepositoryIdentification repositoryIdentification,
+      List<String> tagsList,
+      boolean deleteAll,
+      boolean canNotOperateOnProtected)
       throws ModelDBException;
 
   DatasetPaginationDTO findDatasets(
@@ -98,6 +121,10 @@ public interface RepositoryDAO {
   GetDatasetById.Response getDatasetById(MetadataDAO metadataDAO, String id)
       throws ModelDBException, InvalidProtocolBufferException;
 
-  void deleteRepositoryAttributes(Long repositoryId, List<String> attributesKeys, boolean deleteAll)
+  void deleteRepositoryAttributes(
+      Long repositoryId,
+      List<String> attributesKeys,
+      boolean deleteAll,
+      boolean canNotOperateOnProtected)
       throws ModelDBException;
 }

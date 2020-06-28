@@ -176,7 +176,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
         DeleteRepositoryRequest.Response response =
-            repositoryDAO.deleteRepository(request, commitDAO, experimentRunDAO);
+            repositoryDAO.deleteRepository(request, commitDAO, experimentRunDAO, true);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -453,7 +453,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        GetBranchRequest.Response response = repositoryDAO.getBranch(request);
+        GetBranchRequest.Response response = repositoryDAO.getBranch(request, true);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -470,7 +470,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        SetBranchRequest.Response response = repositoryDAO.setBranch(request);
+        SetBranchRequest.Response response = repositoryDAO.setBranch(request, true);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
