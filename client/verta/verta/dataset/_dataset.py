@@ -271,7 +271,7 @@ class _Dataset(blob.Blob):
 class Component(object):
     def __init__(
             self,
-            path, size=None, last_modified_at_source=None,
+            path, size=None, last_modified=None,
             sha256=None, md5=None,
             s3_version_id=None,
             base_path=None,
@@ -279,7 +279,7 @@ class Component(object):
         # metadata
         self.path = path
         self.size = size
-        self.last_modified_at_source = last_modified_at_source
+        self.last_modified = last_modified
 
         # checksums
         self.sha256 = sha256

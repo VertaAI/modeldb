@@ -5,6 +5,7 @@ from __future__ import print_function
 import hashlib
 import os
 
+from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
 from ..external import six
@@ -64,13 +65,23 @@ class Path(_dataset._Dataset):
     @classmethod
     def _from_proto(cls, blob_msg):
         obj = cls(paths=[])
-        obj._msg.CopyFrom(blob_msg.dataset)
+        # obj._msg.CopyFrom(blob_msg.dataset)
 
         return obj
 
     def _as_proto(self):
         blob_msg = _VersioningService.Blob()
-        blob_msg.dataset.CopyFrom(self._msg)
+
+        for component in self._components_map.values():
+            component_msg = _DatasetService.PathDatasetComponentBlob(
+                path=component.path,
+                size=component.size,
+                last_modified_at_source=component.last_modified,
+                sha256=component.sha256,
+                md5=component.md5,
+                internal_versioned_path=component._internal_versioned_path,
+            )
+            blob_msg.dataset.path.components.append(component_msg)
 
         return blob_msg
 
@@ -79,7 +90,7 @@ class Path(_dataset._Dataset):
         return _dataset.Component(
             path=filepath,
             size=os.stat(filepath).st_size,
-            last_modified_at_source=_utils.timestamp_to_ms(os.stat(filepath).st_mtime),
+            last_modified=_utils.timestamp_to_ms(os.stat(filepath).st_mtime),
             md5=cls._hash_file(filepath),
         )
 
