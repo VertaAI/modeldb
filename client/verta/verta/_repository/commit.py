@@ -328,10 +328,10 @@ class Commit(object):
         msg.commit.message = commit_message
 
         for path, blob in six.viewitems(self._blobs):
-            blob_expanded_msg = _VersioningService.BlobExpanded()
-            blob_expanded_msg.location.extend(path_to_location(path))  # pylint: disable=no-member
-            blob_expanded_msg.blob.CopyFrom(blob._as_proto())
-            msg.blobs.append(blob_expanded_msg)  # pylint: disable=no-member
+            blob_msg = _VersioningService.BlobExpanded()
+            blob_msg.location.extend(path_to_location(path))  # pylint: disable=no-member
+            blob_msg.blob.CopyFrom(blob._as_proto())
+            msg.blobs.append(blob_msg)  # pylint: disable=no-member
 
         return msg
 
