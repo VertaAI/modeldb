@@ -13,7 +13,7 @@ RUN yarn install
 # Copy app source
 WORKDIR /usr/src/app/client
 COPY client /usr/src/app/client
-RUN yarn build
+RUN REACT_APP_OSS=1 yarn build
 
 FROM node:13.0.0-alpine
 
