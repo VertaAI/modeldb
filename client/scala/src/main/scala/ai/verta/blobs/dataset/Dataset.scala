@@ -61,7 +61,7 @@ trait Dataset extends Blob {
     val file = new File(downloadToPath)
 
     Try ({
-      file.mkdirs() // create the ancestor directories, if necessary
+      Option(file.getParentFile()).map(_.mkdirs()) // create the ancestor directories, if necessary
       file.createNewFile() // create the new file, if necessary
     })
       .flatMap(_ => commit.get.getURLForArtifact(blobPath.get, componentPath, "GET"))

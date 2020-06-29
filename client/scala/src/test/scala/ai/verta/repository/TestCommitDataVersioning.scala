@@ -8,9 +8,10 @@ import scala.concurrent.ExecutionContext
 import scala.language.reflectiveCalls
 import scala.util.{Try, Success, Failure}
 
-import java.io.File
+import java.io.{File, FileOutputStream}
 import java.nio.file.{Files, Path}
 import java.util.Arrays
+import java.util.Random
 
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
@@ -35,15 +36,40 @@ class TestCommitDataVersioning extends FunSuite {
     f.client.close()
   }
 
+  /** Delete the directory */
   def deleteDirectory(dir: File): Unit = {
     Option(dir.listFiles()).map(_.foreach(deleteDirectory))
     dir.delete()
   }
 
+  /** Check to see if two files have the same content */
   def checkEqualFile(firstFile: File, secondFile: File) = {
     val first: Array[Byte] = Files.readAllBytes(firstFile.toPath)
     val second = Files.readAllBytes(secondFile.toPath)
     Arrays.equals(first, second)
+  }
+
+  /** Generate a random file to the given path */
+  def generateRandomFile(path: String, size: Int = 1024 * 1024): Try[Array[Byte]] = {
+    val random = new Random()
+    val contents = new Array[Byte](size)
+    random.nextBytes(contents)
+
+    val file = new File(path)
+    var fileStream: Option[FileOutputStream] = None
+
+    try {
+      Option(file.getParentFile()).map(_.mkdirs()) // create the ancestor directories, if necessary
+      file.createNewFile()
+
+      fileStream = Some(new FileOutputStream(file, false)) // overwrite, if already exists
+      fileStream.get.write(contents)
+
+      Success(contents)
+    } finally {
+      if (fileStream.isDefined)
+        fileStream.get.close()
+    }
   }
 
   test("downloading an uploaded file should not corrupt it") {
@@ -79,10 +105,10 @@ class TestCommitDataVersioning extends FunSuite {
         "./somefile"
       )
       assert(downloadPathAttempt.isSuccess)
-      checkEqualFile(
+      assert(checkEqualFile(
         new File("./src/test/scala/ai/verta/blobs/testdir/testfile"),
         new File("./somefile")
-      )
+      ))
     } finally {
       (new File("./somefile")).delete()
       (new File("./somefile2")).delete()
@@ -121,15 +147,15 @@ class TestCommitDataVersioning extends FunSuite {
         Some("./src/test/scala/ai/verta/blobs/testdir"),
         "./somefiles"
       )
-      checkEqualFile(
+      assert(checkEqualFile(
         new File("./src/test/scala/ai/verta/blobs/testdir/testfile"),
         new File("./somefiles/testfile")
-      )
+      ))
 
-      checkEqualFile(
+      assert(checkEqualFile(
         new File("./src/test/scala/ai/verta/blobs/testdir/testsubdir/testfile2"),
         new File("./somefiles/testsubdir/testfile2")
-      )
+      ))
     } finally {
       deleteDirectory(new File("./somefiles"))
       deleteDirectory(new File("./somefiles2"))
@@ -160,18 +186,45 @@ class TestCommitDataVersioning extends FunSuite {
           case path: PathBlob => path
         }
         versionedPathBlob.download(downloadToPath = "./somefiles")
-        checkEqualFile(
+        assert(checkEqualFile(
           new File("./src/test/scala/ai/verta/blobs/testdir/testfile"),
           new File("./somefiles/src/test/scala/ai/verta/blobs/testdir/testfile")
-        )
-        checkEqualFile(
+        ))
+        assert(checkEqualFile(
           new File("./src/test/scala/ai/verta/blobs/testdir/testsubdir/testfile2"),
           new File("./somefiles/src/test/scala/ai/verta/blobs/testdir/testsubdir/testfile2")
-        )
+        ))
 
     } finally {
       deleteDirectory(new File("./somefiles"))
       deleteDirectory(new File("./somefiles2"))
+      cleanup(f)
+    }
+  }
+
+  test("downloading a versioned blob should recover the original content") {
+    val f = fixture
+
+    try {
+      val originalContent = generateRandomFile("somefile").get
+      val pathBlob = PathBlob("somefile", true).get
+      val commit = f.commit
+        .update("file", pathBlob)
+        .flatMap(_.save("some-msg")).get
+
+      // create a new file with same name
+      val updatedContent = generateRandomFile("somefile").get
+      // check that the content is now different:
+      assert(!Files.readAllBytes((new File("somefile")).toPath).sameElements(originalContent))
+
+      // recover the old versioned file:
+      val retrievedBlob: Dataset = commit.get("file").get match {
+        case path: PathBlob => path
+      }
+      retrievedBlob.download(Some("somefile"), "somefile")
+      assert(Files.readAllBytes((new File("somefile")).toPath).sameElements(originalContent))
+    } finally {
+      (new File("somefile")).delete()
       cleanup(f)
     }
   }
