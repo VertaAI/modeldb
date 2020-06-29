@@ -58,13 +58,13 @@ class TestCommitDataVersioning extends FunSuite {
     var fileStream: Option[FileOutputStream] = None
 
     try {
-      Option(file.getParentFile()).map(_.mkdirs()) // create the ancestor directories, if necessary
-      file.createNewFile()
+      Try({
+        Option(file.getParentFile()).map(_.mkdirs()) // create the ancestor directories, if necessary
+        file.createNewFile()
 
-      fileStream = Some(new FileOutputStream(file, false)) // overwrite, if already exists
-      fileStream.get.write(contents)
-
-      Success(contents)
+        fileStream = Some(new FileOutputStream(file, false)) // overwrite, if already exists
+        fileStream.get.write(contents)
+      }).map(_ => contents)
     } finally {
       if (fileStream.isDefined)
         fileStream.get.close()
