@@ -19,6 +19,7 @@ import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
+import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -78,7 +79,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(" AND dsv." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String DATASET_VERSION_BY_DATA_SET_IDS_QUERY =
-      "From DatasetVersionEntity ds where ds.dataset_id IN (:datasetIds) ";
+      "From DatasetVersionEntity ds where ds.dataset_id IN (:datasetIds) AND ds."
+          + ModelDBConstants.DELETED
+          + " = false ";
   private static final String DATASET_VERSION_BY_IDS_QUERY =
       "From DatasetVersionEntity ds where ds.id IN (:ids) AND ds."
           + ModelDBConstants.DELETED
@@ -438,7 +441,15 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       Root<DatasetVersionEntity> datasetVersionRoot =
           criteriaQuery.from(DatasetVersionEntity.class);
       datasetVersionRoot.alias("ds");
+
+      Root<DatasetEntity> datasetEntityRoot = criteriaQuery.from(DatasetEntity.class);
+      datasetEntityRoot.alias("dt");
+
       List<Predicate> finalPredicatesList = new ArrayList<>();
+      finalPredicatesList.add(
+          builder.equal(
+              datasetVersionRoot.get(ModelDBConstants.DATASET_ID),
+              datasetEntityRoot.get(ModelDBConstants.ID)));
 
       List<String> datasetIds = new ArrayList<>();
       if (!queryParameters.getDatasetId().isEmpty()) {
@@ -502,6 +513,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       finalPredicatesList.add(
           builder.equal(datasetVersionRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(datasetEntityRoot.get(ModelDBConstants.DELETED), false));
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {
