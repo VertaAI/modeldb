@@ -9,8 +9,6 @@ import tempfile
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
-from ..external import six
-
 from .._internal_utils import _utils
 from .._internal_utils import _file_utils
 
@@ -273,7 +271,7 @@ class _Dataset(blob.Blob):
 
         Returns
         -------
-        components : list of :class:`Component`
+        components : list of :class:`~verta.dataset._dataset.Component`
             Components.
 
         """
@@ -282,6 +280,23 @@ class _Dataset(blob.Blob):
 
 
 class Component(object):
+    """
+    A dataset component returned by ``dataset.list_components()``.
+
+    Attributes
+    ----------
+    path : str
+        File path.
+    size : int
+        File size.
+    last_modified : int
+        Unix time when this file was last modified.
+    sha256 : str
+        SHA-256 checksum.
+    md5 : str
+        MD5 checksum.
+
+    """
     def __init__(
             self,
             path, size=None, last_modified=None,

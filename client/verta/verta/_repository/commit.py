@@ -5,7 +5,6 @@ from __future__ import print_function
 import collections
 from datetime import datetime
 import heapq
-import os
 import time
 
 import requests
