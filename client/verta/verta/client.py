@@ -2806,41 +2806,20 @@ class ExperimentRun(_ModelDBEntity):
         return _utils.unravel_key_values(response_msg.hyperparameters)
 
     def log_dataset(self, key, dataset, overwrite=False):
-        """
-        Logs a dataset artifact to this Experiment Run.
-
-        Parameters
-        ----------
-        key : str
-            Name of the dataset.
-        dataset : str or file-like or object
-            Dataset or some representation thereof.
-                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
-                  and uploaded as an artifact.
-                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
-                - If type is Dataset, then it will log a dataset version
-                - Otherwise, the object will be serialized and uploaded as an artifact.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing dataset with key `key`.
-
-        """
-        _artifact_utils.validate_key(key)
-        _utils.validate_flat_key(key)
-
+        """Alias for :meth:`~ExperimentRun.log_dataset_version`."""
         if isinstance(dataset, _dataset.Dataset):
-            raise ValueError("directly logging a Dataset is not supported;"
-                             " consider using run.log_dataset_version() instead")
+            raise TypeError(
+                "directly logging a Dataset is not supported;"
+                " please create a DatasetVersion for logging"
+            )
 
-        if isinstance(dataset, _dataset.DatasetVersion):
-            # TODO: maybe raise a warning pointing to log_dataset_version()
-            self.log_dataset_version(key, dataset, overwrite=overwrite)
+        if not isinstance(dataset, _dataset.DatasetVersion):
+            raise TypeError(
+                "`dataset` must be of type DatasetVersion;"
+                " to log an artifact, consider using run.log_artifact() instead"
+            )
 
-        # log `dataset` as artifact
-        try:
-            extension = _artifact_utils.get_file_ext(dataset)
-        except (TypeError, ValueError):
-            extension = None
-        self._log_artifact(key, dataset, _CommonCommonService.ArtifactTypeEnum.DATA, extension, overwrite=overwrite)
+        self.log_dataset_version(key=key, dataset_version=dataset, overwrite=overwrite)
 
     def log_dataset_version(self, key, dataset_version, overwrite=False):
         """
@@ -2855,7 +2834,7 @@ class ExperimentRun(_ModelDBEntity):
 
         """
         if not isinstance(dataset_version, _dataset.DatasetVersion):
-            raise ValueError("`dataset_version` must be of type DatasetVersion")
+            raise TypeError("`dataset_version` must be of type DatasetVersion")
 
         # TODO: hack because path_only artifact needs a placeholder path
         dataset_path = "See attached dataset version"
