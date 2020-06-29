@@ -24,7 +24,7 @@ import java.io.{File, FileOutputStream}
  */
 case class S3(
   protected val contents: HashMap[String, FileMetadata],
-  protected val enableMDBVersioning: Boolean = false
+  private[verta] val enableMDBVersioning: Boolean = false
 ) extends Dataset {
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"

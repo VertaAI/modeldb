@@ -11,7 +11,7 @@ import scala.util.{Failure, Success, Try}
 
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
-  protected val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
+  private[verta] val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
@@ -51,7 +51,7 @@ trait Dataset extends Blob {
   }
 
   /** Clean up the uploaded components */
-  protected def cleanUpUploadedComponents(): Try[Unit] = Success(())
+  private[verta] def cleanUpUploadedComponents(): Try[Unit] = Success(())
 }
 
 object Dataset {

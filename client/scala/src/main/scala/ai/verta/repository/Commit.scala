@@ -8,6 +8,10 @@ import ai.verta.blobs.dataset._
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 import scala.collection.immutable.Map
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration.Duration
+
+import java.io.{File, FileInputStream}
 
 /** Commit within a ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
@@ -72,7 +76,33 @@ class Commit(
     if (saved)
       Failure(new IllegalCommitSavedStateException("Commit is already saved"))
     else
-      blobsList().flatMap(list => createCommit(message = message, blobs = Some(list)))
+      loadBlobs().flatMap(_ => {
+        val blobsToVersion = blobs
+          .mapValues(toMDBVersioningDataset)
+          .filter(pair => pair._2.isDefined)
+          .mapValues(_.get) // Map[String, Dataset]
+          .filter(pair => pair._2.enableMDBVersioning)
+
+        // trigger preparing for upload
+        val newCommit = Try(blobsToVersion.values.foreach(dataset => dataset.prepareForUpload().get))
+          .flatMap(_ => blobsList())
+          .flatMap(list => createCommit(message = message, blobs = Some(list), updateBranch = false))
+        // do not update the branch's head right away (in case uploading data fails)
+
+        // upload the artifacts given by blobsToVersion map then clean up
+        val uploadAttempt: Try[Unit] = newCommit.map(newCommit => {
+          blobsToVersion
+            .mapValues(_.getAllMetadata) // Map[String, Iterable[FileMetadata]]
+            .map(pair => pair._2.map(metadata => newCommit.uploadArtifact(pair._1, metadata.path, new File(metadata.localPath.get))))
+        }).flatMap(_ => Try(blobsToVersion.values.map(_.cleanUpUploadedComponents()).map(_.get)))
+
+        uploadAttempt.flatMap(_ =>
+          if (commitBranch.isDefined)
+            newCommit.flatMap(_.newBranch(commitBranch.get))
+          else
+            newCommit
+        ) // if uploading fails, return the failure instead
+      })
   }
 
   /** Helper function to create a new commit and assign to current instance.
@@ -80,13 +110,15 @@ class Commit(
    *  @param blobs The list of blobs to assign to the new commit (optional)
    *  @param commitBase base for the new commit (optional)
    *  @param diffs a list of diffs (optional)
+   *  @param updateBranch whether to set the new commit to head of the current commit's branch. Default is true
    *  @return the new commit (if succeeds), set to the current branch's head (if there is a branch)
    */
   private def createCommit(
     message: String,
     blobs: Option[List[VersioningBlobExpanded]] = None,
     commitBase: Option[String] = None,
-    diffs: Option[List[VersioningBlobDiff]] = None
+    diffs: Option[List[VersioningBlobDiff]] = None,
+    updateBranch: Boolean = true
   )(implicit ec: ExecutionContext) = {
       clientSet.versioningService.CreateCommit2(
         body = VersioningCreateCommitRequest(
@@ -96,7 +128,7 @@ class Commit(
           diffs = diffs
         ),
         repository_id_repo_id = repo.id
-      ).flatMap(r => versioningCommitToCommit(r.commit.get))
+      ).flatMap(r => versioningCommitToCommit(r.commit.get, updateBranch))
   }
 
   /** Convert a location to "repeated string" representation
@@ -268,12 +300,16 @@ class Commit(
    *  If the current instance has a branch associated with it, the new commit will become the head of the branch.
    *  Useful for createCommit, merge, and revert
    *  @param versioningCommit the versioning commit instance
+   *  @param updateBranch whether to set the new commit to head of the current commit's branch. Default is true
    *  @return the corresponding commit instance
    */
-  private def versioningCommitToCommit(versioningCommit: VersioningCommit)(implicit ec: ExecutionContext) = {
+  private def versioningCommitToCommit(
+    versioningCommit: VersioningCommit,
+    updateBranch: Boolean = true
+  )(implicit ec: ExecutionContext) = {
     val newCommit = new Commit(clientSet, repo, versioningCommit, commitBranch)
 
-    if (commitBranch.isDefined)
+    if (updateBranch && commitBranch.isDefined)
       newCommit.newBranch(commitBranch.get)
     else
       Success(newCommit)
@@ -451,5 +487,57 @@ class Commit(
         }
       }
     }
+  }
+
+  /** Convert the blob to a dataset (if the blob is a dataset)
+   *  @param blob the blob
+   *  @return Some dataset, if the blob is a dataset; otherwise None
+   */
+  private def toMDBVersioningDataset(blob: Blob): Option[Dataset] = blob match {
+    case PathBlob(contents, enableMDBVersioning) => Some(PathBlob(contents, enableMDBVersioning))
+    case S3(contents, enableMDBVersioning) => Some(S3(contents, enableMDBVersioning))
+    case _ => None
+  }
+
+  /** Helper method to retrieve URL to upload the file.
+   *  @param blobPath path to the blob in the commit
+   *  @param datasetComponentPath path to the component in the blob
+   *  @return The URL, if succeeds
+   */
+  private def getURLForArtifact(blobPath: String, datasetComponentPath: String)(implicit ec: ExecutionContext): Try[String] = {
+    clientSet.versioningService.getUrlForBlobVersioned2(
+      VersioningGetUrlForBlobVersioned(
+        commit_sha = id,
+        location = Some(pathToLocation(blobPath)),
+        method = Some("PUT"),
+        part_number = Some(BigInt(0)),
+        path_dataset_component_blob_path = Some(datasetComponentPath),
+        repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
+      ),
+      id.get,
+      repoId
+    ).map(_.url.get)
+  }
+
+  /** Helper method to upload the file to ModelDB. Currently not supporting multi-part upload
+   *  @param blobPath path to the blob in the commit
+   *  @param datasetComponentPath path to the component in the blob
+   *  @return whether the upload attempt succeeds
+   */
+  private def uploadArtifact(
+    blobPath: String,
+    datasetComponentPath: String,
+    file: File
+  )(implicit ec: ExecutionContext): Try[Unit] = {
+    getURLForArtifact(blobPath, datasetComponentPath).flatMap(url =>
+      Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
+        try {
+          Await.result(clientSet.client.requestRaw("PUT", url, null, null, inputStream), Duration.Inf)
+            .map(_ => ())
+        } finally {
+          inputStream.close()
+        }
+      })
+    )
   }
 }
