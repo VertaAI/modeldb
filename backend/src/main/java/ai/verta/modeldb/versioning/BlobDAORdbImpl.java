@@ -715,7 +715,9 @@ public class BlobDAORdbImpl implements BlobDAO {
         String mergeMessage = request.getContent().getMessage();
         List<String> parentSHAs =
             Arrays.asList(internalCommitB.getCommit_hash(), internalCommitA.getCommit_hash());
-        List<CommitEntity> parentCommits = Arrays.asList(internalCommitB, internalCommitA);
+        Map<Integer, CommitEntity> parentCommits = new HashMap<>();
+        parentCommits.put(0, internalCommitB);
+        parentCommits.put(1, internalCommitA);
         if (mergeMessage.isEmpty()) {
           mergeMessage = "Merge " + branchOrCommitA + " into " + branchOrCommitB;
         }
@@ -757,7 +759,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       Session writeSession,
       RepositoryEntity repositoryEntity,
       List<String> parentSHAs,
-      List<CommitEntity> parentCommits,
+      Map<Integer, CommitEntity> parentCommits,
       List<BlobContainer> blobContainerList,
       String commitMessage)
       throws NoSuchAlgorithmException, ModelDBException {
@@ -829,8 +831,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         throw new ModelDBException(
             "No parent found for commit : " + request.getCommitToRevertSha(), Status.Code.INTERNAL);
       }
-      CommitEntity firstParentOfCommitToRevert =
-          new ArrayList<>(commitToRevertEntity.getParent_commits()).get(0);
+      CommitEntity firstParentOfCommitToRevert = commitToRevertEntity.getParent_commits().get(0);
 
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapFirstParentCommit =
           getCommitBlobMapWithHash(
@@ -874,7 +875,8 @@ public class BlobDAORdbImpl implements BlobDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<String> parentSHAs = Collections.singletonList(request.getBaseCommitSha());
-      List<CommitEntity> parentCommits = Collections.singletonList(baseCommitEntity);
+      Map<Integer, CommitEntity> parentCommits = new HashMap<>();
+      parentCommits.put(0, baseCommitEntity);
       String revertMessage = request.getContent().getMessage();
       if (revertMessage.isEmpty()) {
         revertMessage = VersioningUtils.revertCommitMessage(commitToRevertEntity.toCommitProto());
