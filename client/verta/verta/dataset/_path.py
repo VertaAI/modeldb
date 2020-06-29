@@ -137,6 +137,7 @@ class Path(_dataset._Dataset):
             return
 
         for component in self._components_map.values():
+            # reconstruct original filepaths with removed `base_path`s
             if component._base_path:
                 filepath = os.path.join(component._base_path, component.path)
             else:
