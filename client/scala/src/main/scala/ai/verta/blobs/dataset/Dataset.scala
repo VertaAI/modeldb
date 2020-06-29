@@ -94,11 +94,11 @@ trait Dataset extends Blob {
     }
   }
 
-  /** Return the set of component paths inside a directory path
+  /** Return the list of component paths inside a directory path
    *  @param path directory path
    *  @return Set of component paths inside the directory
    */
-  def getComponentPathInside(path: String): List[String] = {
+  private def getComponentPathInside(path: String): List[String] = {
     val dirPath = if(path.endsWith("/")) path else path + "/"
     listPaths.filter(_.startsWith(dirPath))
   }
