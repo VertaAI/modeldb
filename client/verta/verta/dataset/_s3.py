@@ -222,7 +222,7 @@ class S3(_dataset._Dataset):
             return
 
         for component in self._components_map.values():
-            if component._local_path:
+            if component._local_path and os.path.isfile(component._local_path):
                 os.remove(component._local_path)
 
 
