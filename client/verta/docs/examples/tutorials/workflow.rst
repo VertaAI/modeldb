@@ -118,7 +118,7 @@ But logging doesn't need to occur all at once at the end. Let's do another *Expe
 linear kernel—this time interweaving the logging statements with our training process:
 
 .. code-block:: python
-    :emphasize-lines: 1,2,4,6,8
+    :emphasize-lines: 1,3,5,7
 
     run = client.set_experiment_run("Linear Kernel")
     hyperparams['kernel'] = 'linear'
