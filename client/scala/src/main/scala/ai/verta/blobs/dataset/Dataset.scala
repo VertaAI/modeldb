@@ -25,7 +25,6 @@ trait Dataset extends Blob {
    *  Currently, only support downloading to a specific path
    *  @param componentPath Original path of the file or directory in this dataset to download
    *  @param downloadToPath Path to download to
-   *  @param chunkSize Number of bytes to download at a time (default: 32 MB)
    *  @return Whether the download attempts succeed.
    */
   def download(
