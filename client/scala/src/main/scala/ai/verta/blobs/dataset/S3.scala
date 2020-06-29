@@ -94,6 +94,17 @@ case class S3(
     }
   }
 
+  /** Deletes temporary files that had been downloaded for ModelDB-managed versioning
+   *  This method does nothing if ModelDB-managed versioning was not enabled.
+   *  @return whether the delete attempts succeeds.
+   */
+  override private[verta] def cleanUpUploadedComponents(): Try[Unit] = {
+    if (enableMDBVersioning)
+      Try(contents.values.map(_.localPath.get).map(path => Try((new File(path)).delete())).map(_.get))
+    else
+      Success(())
+  }
+
   override def equals(other: Any) = other match {
     case other: S3 => contents.equals(other.contents)
     case _ => false
