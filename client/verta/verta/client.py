@@ -2806,7 +2806,14 @@ class ExperimentRun(_ModelDBEntity):
         return _utils.unravel_key_values(response_msg.hyperparameters)
 
     def log_dataset(self, key, dataset, overwrite=False):
-        """Alias for :meth:`~ExperimentRun.log_dataset_version`."""
+        """
+        Alias for :meth:`~ExperimentRun.log_dataset_version`.
+
+        .. deprecated:: 0.14.12
+            ``log_dataset()`` can no longer be used to log artifacts.
+            :meth:`~ExperimentRun.log_artifact` should be used instead.
+
+        """
         if isinstance(dataset, _dataset.Dataset):
             raise TypeError(
                 "directly logging a Dataset is not supported;"
