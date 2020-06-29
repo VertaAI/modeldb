@@ -5,7 +5,6 @@ from __future__ import print_function
 import collections
 from datetime import datetime
 import heapq
-import os
 import time
 
 import requests
@@ -499,12 +498,10 @@ class Commit(object):
 
         # upload ModelDB-versioned blobs
         for blob_path, blob in mdb_versioned_blobs.items():
-            for component_blob in blob._path_component_blobs:
-                if component_blob.internal_versioned_path:
-                    component_path = component_blob.path
-                    downloaded_filepath = blob._components_to_upload[component_path]
-                    with open(downloaded_filepath, 'rb') as f:
-                        self._upload_artifact(blob_path, component_path, f)
+            for component in blob._components_map.values():
+                if component._internal_versioned_path:
+                    with open(component._local_path, 'rb') as f:
+                        self._upload_artifact(blob_path, component.path, f)
 
             blob._clean_up_uploaded_components()
 
