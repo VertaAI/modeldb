@@ -99,7 +99,7 @@ case class S3(
    */
   override private[verta] def cleanUpUploadedComponents(): Try[Unit] = {
     if (enableMDBVersioning)
-      Try(contents.values.map(_.localPath.get).map(path => (new File(path)).delete()))
+      Try(contents.values.map(_.localPath.get).map(path => Try((new File(path)).delete())).map(_.get))
     else
       Success(())
   }
