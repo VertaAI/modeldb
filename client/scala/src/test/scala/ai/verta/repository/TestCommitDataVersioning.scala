@@ -91,7 +91,7 @@ class TestCommitDataVersioning extends FunSuite {
       }
       val downloadS3Attempt = versionedS3Blob.download(
         Some("s3://verta-scala-test/testdir/testsubdir/testfile2"),
-        "./somefile2"
+        Some("./somefile2")
       )
       assert(downloadS3Attempt.isSuccess)
       val downloadedS3MD5 = PathBlob("./somefile2").get
@@ -106,7 +106,7 @@ class TestCommitDataVersioning extends FunSuite {
       }
       val downloadPathAttempt = versionedPathBlob.download(
         Some("./src/test/scala/ai/verta/blobs/testdir/testfile"),
-        "./somefile"
+        Some("./somefile")
       )
       assert(downloadPathAttempt.isSuccess)
       assert(checkEqualFile(
@@ -127,7 +127,7 @@ class TestCommitDataVersioning extends FunSuite {
       }
       val downloadS3Attempt = versionedS3Blob.download(
         Some("s3://verta-scala-test/testdir/testsubdir"),
-        "./somefiles2"
+        Some("./somefiles2")
       )
       val downloadedS3MD5 = PathBlob("./somefiles2").get
       assert(
@@ -141,7 +141,7 @@ class TestCommitDataVersioning extends FunSuite {
 
       versionedPathBlob.download(
         Some("./src/test/scala/ai/verta/blobs/testdir"),
-        "./somefiles"
+        Some("./somefiles")
       )
       assert(checkEqualFile(
         new File("./src/test/scala/ai/verta/blobs/testdir/testfile"),
@@ -164,7 +164,7 @@ class TestCommitDataVersioning extends FunSuite {
         val versionedS3Blob: S3 = f.commit.get("abc").get match {
           case s3: S3 => s3
         }
-        versionedS3Blob.download(downloadToPath = "./somefiles2")
+        versionedS3Blob.download(downloadToPath = Some("./somefiles2"))
         val downloadedS3MD5 = PathBlob("./somefiles2").get
         assert(
           downloadedS3MD5.getMetadata("./somefiles2/verta-scala-test/testdir/testsubdir/testfile2").get.md5 equals
@@ -174,7 +174,7 @@ class TestCommitDataVersioning extends FunSuite {
         val versionedPathBlob: PathBlob = f.commit.get("def").get match {
           case path: PathBlob => path
         }
-        versionedPathBlob.download(downloadToPath = "./somefiles")
+        versionedPathBlob.download(downloadToPath = Some("./somefiles"))
         assert(checkEqualFile(
           new File("./src/test/scala/ai/verta/blobs/testdir/testfile"),
           new File("./somefiles/src/test/scala/ai/verta/blobs/testdir/testfile")
@@ -208,10 +208,18 @@ class TestCommitDataVersioning extends FunSuite {
       val retrievedBlob: Dataset = commit.get("file").get match {
         case path: PathBlob => path
       }
-      retrievedBlob.download(Some("somefile"), "somefile")
+      retrievedBlob.download(Some("somefile"), Some("somefile"))
       assert(Files.readAllBytes((new File("somefile")).toPath).sameElements(originalContent))
     } finally {
       cleanup(f)
     }
+  }
+
+  test("if componentPath is provided but not downloadToPath, then it is used to determine the latter") {
+
+  }
+
+  test("if neither is provided, then default path is used") {
+    
   }
 }

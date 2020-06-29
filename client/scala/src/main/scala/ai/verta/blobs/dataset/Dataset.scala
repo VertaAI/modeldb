@@ -15,6 +15,7 @@ import scala.concurrent.ExecutionContext
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
   private[verta] val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
+  private val DefaultDownloadDir: String = "mdb-data-download"
 
   // mutable state, populated when getting blob from commit
   /** TODO: Figure out a way to remove this */
@@ -29,7 +30,7 @@ trait Dataset extends Blob {
    */
   def download(
     componentPath: Option[String] = None,
-    downloadToPath: String
+    downloadToPath: Option[String] = None
   )(implicit ec: ExecutionContext): Try[Unit] = {
     /** TODO: Make downloadToPath optional */
     /** TODO: allow for download chunk by chunk */
@@ -73,25 +74,67 @@ trait Dataset extends Blob {
    */
   private def determineComponentAndLocalPaths(
     componentPath: Option[String] = None,
-    downloadToPath: String
+    downloadToPath: Option[String] = None
   ): Map[String, String] = {
+    val safeDownloadToPath = determineDownloadToPath(componentPath, downloadToPath)
+
     if (componentPath.isEmpty) {
       // download entire blob
       val downloadToPaths =
-        listPaths.map(comp => joinPaths(downloadToPath, removePrefixDir(comp, "s3:")))
+        listPaths.map(comp => joinPaths(safeDownloadToPath, removePrefixDir(comp, "s3:")))
 
       listPaths.zip(downloadToPaths).toMap
     }
     else if (contents.contains(componentPath.get)) // download a component
-      Map(componentPath.get -> downloadToPath)
+      Map(componentPath.get -> safeDownloadToPath)
     else {
       // download a directory
       val componentPaths = getComponentPathInside(componentPath.get)
       val downloadToPaths =
-        componentPaths.map(comp => joinPaths(downloadToPath, removePrefixDir(comp, componentPath.get)))
+        componentPaths.map(comp => joinPaths(safeDownloadToPath, removePrefixDir(comp, componentPath.get)))
 
       componentPaths.zip(downloadToPaths).toMap
     }
+  }
+
+  /** Determine a safe local path to download to.
+   *  If the user explicitly passes a downloadToPath, it will be used
+   *  Otherwise, it will be determine as follows:
+   *
+   *  1. If componentPath is defined and does not refer to current directory, use it
+   *
+   *  2. Else, use the default path, which is "mdb-data-download"
+   *
+   *  If the download-to-path has to be inferred, then it is incremented until collision is avoided
+   *  (i.e no such file/directory exists in that path)
+   */
+  private def determineDownloadToPath(
+    componentPath: Option[String] = None,
+    downloadToPath: Option[String] = None
+  ): String = downloadToPath.getOrElse({
+    val originalPath =
+      if (componentPath.isEmpty)
+        DefaultDownloadDir
+      else if (Set(".", "..", "/", "s3:").contains(componentPath.get))
+        DefaultDownloadDir // rather than dump everything into current directory
+      else
+        (new File(componentPath.get)).getName
+
+    avoidCollision(originalPath)
+  })
+
+  /** Increments the base path until collision is avoided
+   *  @param path base path
+   *  @param inc current incremented
+   *  @return the first incremented path which does not exist in local file system
+   */
+  private def avoidCollision(path: String, inc: Int = 0): String = {
+    val incrementedPath = if (inc == 0) path else f"${path} ${inc}"
+
+    if ((new File(incrementedPath)).exists())
+      avoidCollision(path, inc + 1)
+    else
+      incrementedPath
   }
 
   /** Return the set of component paths inside a directory path
