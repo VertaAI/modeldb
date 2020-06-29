@@ -35,6 +35,12 @@ class TestCommitDataVersioning extends FunSuite {
   def cleanup(
     f: AnyRef{val client: Client; val repo: Repository; val commit: Commit; val pathBlob: PathBlob; val s3Blob: S3}
   ) = {
+    deleteDirectory(new File("./somefiles"))
+    deleteDirectory(new File("./somefiles2"))
+
+    (new File("./somefile")).delete()
+    (new File("./somefile2")).delete()
+
     f.client.deleteRepository(f.repo.id)
     f.client.close()
   }
@@ -108,8 +114,6 @@ class TestCommitDataVersioning extends FunSuite {
         new File("./somefile")
       ))
     } finally {
-      (new File("./somefile")).delete()
-      (new File("./somefile2")).delete()
       cleanup(f)
     }
   }
@@ -149,8 +153,6 @@ class TestCommitDataVersioning extends FunSuite {
         new File("./somefiles/testsubdir/testfile2")
       ))
     } finally {
-      deleteDirectory(new File("./somefiles"))
-      deleteDirectory(new File("./somefiles2"))
       cleanup(f)
     }
   }
@@ -183,8 +185,6 @@ class TestCommitDataVersioning extends FunSuite {
         ))
 
     } finally {
-      deleteDirectory(new File("./somefiles"))
-      deleteDirectory(new File("./somefiles2"))
       cleanup(f)
     }
   }
@@ -211,7 +211,6 @@ class TestCommitDataVersioning extends FunSuite {
       retrievedBlob.download(Some("somefile"), "somefile")
       assert(Files.readAllBytes((new File("somefile")).toPath).sameElements(originalContent))
     } finally {
-      (new File("somefile")).delete()
       cleanup(f)
     }
   }
