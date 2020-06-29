@@ -9,8 +9,7 @@ import scala.language.reflectiveCalls
 import scala.util.{Try, Success, Failure}
 
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 import java.util.Arrays
 
 import org.scalatest.FunSuite
