@@ -68,6 +68,7 @@ class TestS3 extends FunSuite {
 
     val s3File = s3Blob.getMetadata(f.testfilePath).get
     TestMetadata.assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
+    assert(s3Blob.listPaths equals List(f.testfilePath))
   }
 
   test("S3 blob should retrieve a folder correctly") {
@@ -76,6 +77,7 @@ class TestS3 extends FunSuite {
 
     TestMetadata.assertMetadata(s3Blob.getMetadata(f.testfilePath2).get, f.testfilePath2)
     assert(s3Blob.getMetadata(f.testfilePath).isEmpty)
+    assert(s3Blob.listPaths equals List(f.testfilePath2))
   }
 
   test("S3 blob should retrieve the entire bucket correctly") {
@@ -84,6 +86,7 @@ class TestS3 extends FunSuite {
 
     TestMetadata.assertMetadata(s3Blob.getMetadata(f.testfilePath).get, f.testfilePath)
     TestMetadata.assertMetadata(s3Blob.getMetadata(f.testfilePath2).get, f.testfilePath2)
+    assert(s3Blob.listPaths.toSet equals Set(f.testfilePath, f.testfilePath2))
   }
 
   // testdir/testfile has two versions
@@ -118,6 +121,7 @@ class TestS3 extends FunSuite {
 
     val s3Blob2 = S3(List(f.testfileLoc, f.testfileLoc2)).get
     assert(s3Blob1 equals s3Blob2)
+    assert(s3Blob1.listPaths.toSet equals Set(f.testfilePath, f.testfilePath2))
   }
 
   test("S3 blob construction should fail when an invalid path is passed") {
@@ -151,6 +155,7 @@ class TestS3 extends FunSuite {
     val s3BlobCombined = S3.reduce(S3(f.testfileLoc).get, S3(f.testsubdirLoc).get).get
 
     assert(s3Blob equals s3BlobCombined)
+    assert(s3BlobCombined.listPaths.toSet equals Set(f.testfilePath, f.testfilePath2))
   }
 
   test("Reducing S3 blobs with conflicting contents should fail") {
