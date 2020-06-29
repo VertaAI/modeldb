@@ -588,6 +588,7 @@ public class BlobDAORdbImpl implements BlobDAO {
             builderPathDatasetVersion
                 .setBasePath(locationList.get(0))
                 .addAllDatasetPartInfos(components));
+        datasetVersionBuilder.setDatasetBlob(dataset);
         return datasetVersionBuilder.build();
       } else {
         throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
