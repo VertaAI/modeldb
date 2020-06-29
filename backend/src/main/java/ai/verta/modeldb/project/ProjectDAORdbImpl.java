@@ -1374,6 +1374,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               ProjectVisibility.PRIVATE,
               ModelDBServiceResourceTypes.PROJECT,
               Collections.EMPTY_LIST);
+      LOGGER.debug(
+          "accessible Project Ids in function getWorkspaceProjectIDs : {}", accessibleProjectIds);
 
       // resolve workspace
       WorkspaceDTO workspaceDTO =
@@ -1390,15 +1392,23 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         resultProjects = query.list();
 
         // in personal workspace show projects directly shared
-        if (workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        if (workspaceDTO
+            .getWorkspaceName()
+            .equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          LOGGER.debug("Workspace and current login user match");
           List<String> directlySharedProjects =
               roleService.getSelfDirectlyAllowedResources(
                   ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
           query = session.createQuery(NON_DELETED_PROJECT_IDS_BY_IDS);
           query.setParameterList(ModelDBConstants.PROJECT_IDS, directlySharedProjects);
           resultProjects.addAll(query.list());
+          LOGGER.debug(
+              "accessible directlySharedProjects Ids in function getWorkspaceProjectIDs : {}",
+              directlySharedProjects);
         }
       }
+      LOGGER.debug(
+          "Total accessible project Ids in function getWorkspaceProjectIDs : {}", resultProjects);
       return resultProjects;
     }
   }

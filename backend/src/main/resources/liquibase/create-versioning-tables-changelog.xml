@@ -199,4 +199,15 @@
                                  referencedColumnNames="id"
                                  referencedTableName="repository"/>
     </changeSet>
+
+    <changeSet id="add-parent-order-column-to-commit-parent" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="commit_parent" columnName="parent_order"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="commit_parent">
+            <column name="parent_order" type="int4"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

@@ -1580,7 +1580,11 @@ public class RdbmsUtils {
                     operator,
                     subqueryVersion);
             predicatesArr[1] = newHyperparameterPredicate;
-            keyValuePredicates.add(builder.or(predicatesArr));
+            if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
+              keyValuePredicates.add(builder.and(predicatesArr));
+            } else {
+              keyValuePredicates.add(builder.or(predicatesArr));
+            }
             break;
           case ModelDBConstants.METRICS:
             LOGGER.debug("switch case : Metrics");

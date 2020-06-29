@@ -130,6 +130,6 @@ def flatten_file_trees(paths):
             for filepath in walk_files(path):
                 filepaths.add(filepath)
         else:
-            filepaths.add(filepath)
+            filepaths.add(path)
 
     return filepaths

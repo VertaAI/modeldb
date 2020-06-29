@@ -6,7 +6,7 @@ import collections
 import hashlib
 import os
 
-from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
 from ..external import six
 
@@ -56,10 +56,9 @@ class Path(_dataset._Dataset):
         super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
         filepaths = _file_utils.flatten_file_trees(paths)
-        components = list(map(self._get_file_metadata, filepaths))
+        components = list(map(self._file_to_component, filepaths))
 
         # remove `base_path` from the beginning of component paths
-        base_path_to_component_paths = collections.defaultdict(set)
         if base_path is not None:
             for component in components:
                 path = _file_utils.remove_prefix_dir(component.path, prefix_dir=base_path)
@@ -72,46 +71,44 @@ class Path(_dataset._Dataset):
                 # update component with modified path
                 component.path = path
 
-                # keep track of which paths correspond to which `base_path`
-                #     `base_path` needs to be tracked to reconstruct the original filepath in
-                #     _prepare_components_to_upload() so that the file can actually be located for
-                #     upload. This is a mapping because more paths could be added to this blob
-                #     using different base paths.
-                base_path_to_component_paths[base_path].add(component.path)
+                # track base path
+                component._base_path = base_path
 
-        self._msg.path.components.extend(components)
-        self._base_path_to_component_paths = base_path_to_component_paths
-
-    def __repr__(self):
-        # TODO: consolidate with S3 since they're almost identical now
-        lines = ["Path Version"]
-        components = sorted(
-            self._path_component_blobs,
-            key=lambda component_msg: component_msg.path,
-        )
-        for component in components:
-            lines.extend(self._path_component_to_repr_lines(component))
-
-        return "\n    ".join(lines)
-
-    @property
-    def _path_component_blobs(self):
-        return [
-            component
+        self._components_map.update({
+            component.path: component
             for component
-            in self._msg.path.components
-        ]
+            in components
+        })
 
     @classmethod
-    def _get_file_metadata(cls, filepath):
-        msg = _DatasetService.PathDatasetComponentBlob()
-        msg.path = filepath
-        msg.size = os.stat(filepath).st_size
-        msg.last_modified_at_source = _utils.timestamp_to_ms(os.stat(filepath).st_mtime)
-        msg.md5 = cls._hash_file(filepath)
+    def _from_proto(cls, blob_msg):
+        obj = cls(paths=[])
 
-        return msg
+        for component_msg in blob_msg.dataset.path.components:
+            component = _dataset.Component._from_proto(component_msg)
+            obj._components_map[component.path] = component
 
+        return obj
+
+    def _as_proto(self):
+        blob_msg = _VersioningService.Blob()
+
+        for component in self._components_map.values():
+            component_msg = component._as_proto()
+            blob_msg.dataset.path.components.append(component_msg)
+
+        return blob_msg
+
+    @classmethod
+    def _file_to_component(cls, filepath):
+        return _dataset.Component(
+            path=filepath,
+            size=os.stat(filepath).st_size,
+            last_modified=_utils.timestamp_to_ms(os.stat(filepath).st_mtime),
+            md5=cls._hash_file(filepath),
+        )
+
+    # TODO: move to _file_utils.calc_md5()
     @staticmethod
     def _hash_file(filepath):
         """
@@ -139,25 +136,20 @@ class Path(_dataset._Dataset):
         if not self._mdb_versioned:
             return
 
-        for component_blob in self._path_component_blobs:
-            component_path = component_blob.path
-
-            # reconstruct original filepaths with removed `base_path`s
-            for base_path, component_paths in self._base_path_to_component_paths.items():
-                if component_path in component_paths:
-                    filepath = os.path.join(base_path, component_path)
-                    break
+        for component in self._components_map.values():
+            if component._base_path:
+                filepath = os.path.join(component._base_path, component.path)
             else:
-                filepath = component_path
+                filepath = component.path
             filepath = os.path.abspath(filepath)
 
             # track which file this component corresponds to
-            self._components_to_upload[component_path] = filepath
+            component._local_path = filepath
 
-            # add MDB path to component blob
+            # track MDB path to component
             with open(filepath, 'rb') as f:
                 artifact_hash = _artifact_utils.calc_sha256(f)
-            component_blob.internal_versioned_path = artifact_hash + '/' + os.path.basename(filepath)
+            component._internal_versioned_path = artifact_hash + '/' + os.path.basename(filepath)
 
     def _clean_up_uploaded_components(self):
         """

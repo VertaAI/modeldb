@@ -108,7 +108,6 @@ That's not much better than purely guessing! So how do we keep a more permanent 
 
 .. code-block:: python
 
-    run.log_dataset("train_data", digits)
     run.log_hyperparameters(hyperparams)
     run.log_model(model)
     run.log_metric("train_acc", train_acc)
@@ -122,7 +121,6 @@ linear kernel—this time interweaving the logging statements with our training 
     :emphasize-lines: 1,2,4,6,8
 
     run = client.set_experiment_run("Linear Kernel")
-    run.log_dataset("train_data", digits)
     hyperparams['kernel'] = 'linear'
     run.log_hyperparameters(hyperparams)
     clf = SVC(**hyperparams).fit(X, y)
