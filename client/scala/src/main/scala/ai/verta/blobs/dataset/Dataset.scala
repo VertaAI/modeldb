@@ -56,7 +56,7 @@ trait Dataset extends Blob {
   /** Returns the paths of all components in this dataset
    *  @return Paths of all components
    */
-  def listPaths: List[String] = contents.keySet.toList
+  def listPaths: List[String] = contents.keySet.toList.sorted
 }
 
 object Dataset {
