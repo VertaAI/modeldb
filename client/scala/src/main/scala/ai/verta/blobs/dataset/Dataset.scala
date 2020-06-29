@@ -79,11 +79,10 @@ trait Dataset extends Blob {
   ): Map[String, String] = {
     if (componentPath.isEmpty) {
       // download entire blob
-      val componentPaths = contents.keySet.toList
       val downloadToPaths =
-        componentPaths.map(comp => joinPaths(downloadToPath, removePrefixDir(comp, "s3:")))
+        listPaths.map(comp => joinPaths(downloadToPath, removePrefixDir(comp, "s3:")))
 
-      componentPaths.zip(downloadToPaths).toMap
+      listPaths.zip(downloadToPaths).toMap
     }
     else if (contents.contains(componentPath.get)) // download a component
       Map(componentPath.get -> downloadToPath)
@@ -101,9 +100,9 @@ trait Dataset extends Blob {
    *  @param path directory path
    *  @return Set of component paths inside the directory
    */
-  def getComponentPathInside(path: String): Iterable[String] = {
+  def getComponentPathInside(path: String): List[String] = {
     val dirPath = if(path.endsWith("/")) path else path + "/"
-    contents.keySet.filter(_.startsWith(dirPath))
+    listPaths.filter(_.startsWith(dirPath))
   }
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
@@ -170,6 +169,10 @@ trait Dataset extends Blob {
   private def joinPaths(prefix: String, suffix: String): String =
     Paths.get(prefix, suffix).toString
 
+  /** Returns the paths of all components in this dataset
+   *  @return Paths of all components
+   */
+  def listPaths: List[String] = contents.keySet.toList
 }
 
 object Dataset {

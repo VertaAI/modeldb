@@ -25,6 +25,7 @@ class TestPathBlob extends FunSuite {
     var pathBlob = PathBlob(f.testfile).get
 
     TestMetadata.assertMetadata(pathBlob.getMetadata(f.testfile).get, f.testfile)
+    assert(pathBlob.listPaths equals List(f.testfile))
   }
 
   test("PathBlob should retrieve multiple files correctly") {
@@ -33,6 +34,7 @@ class TestPathBlob extends FunSuite {
 
     TestMetadata.assertMetadata(pathBlob.getMetadata(f.testfile).get, f.testfile)
     TestMetadata.assertMetadata(pathBlob.getMetadata(f.testfile2).get, f.testfile2)
+    assert(pathBlob.listPaths.toSet equals Set(f.testfile, f.testfile2))
   }
 
   test("PathBlob should not store directory") {
@@ -62,6 +64,7 @@ class TestPathBlob extends FunSuite {
     val pathBlob2 = PathBlob(List(f.testfile, f.testfile2)).get
 
     assert(pathBlob1 equals pathBlob2)
+    assert(pathBlob1.listPaths.toSet equals Set(f.testfile, f.testfile2))
   }
 
   test("Reducing PathBlobs should retain the contents of both") {
@@ -73,5 +76,6 @@ class TestPathBlob extends FunSuite {
     ).get
 
     assert(pathBlob equals pathBlobCombined)
+    assert(pathBlobCombined.listPaths.toSet equals Set(f.testfile, f.testfile2))
   }
 }
