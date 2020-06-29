@@ -4,6 +4,8 @@ from __future__ import print_function
 
 import os
 
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+
 from .._internal_utils import _git_utils
 from .._internal_utils import _utils
 from ..dataset import _path
@@ -83,3 +85,16 @@ class Notebook(_code._Code):
             )
 
         return "\n    ".join(lines)
+
+    @classmethod
+    def _from_proto(cls, blob_msg):
+        obj = cls(_autocapture=False)
+        obj._msg.CopyFrom(blob_msg.code)
+
+        return obj
+
+    def _as_proto(self):
+        blob_msg = _VersioningService.Blob()
+        blob_msg.code.CopyFrom(self._msg)
+
+        return blob_msg

@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-from .._protos.public.modeldb.versioning import Code_pb2 as _CodeService
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
 from .._internal_utils import _git_utils
 from . import _code
@@ -80,3 +80,16 @@ class Git(_code._Code):
             lines.append("in repo {}".format(self._msg.git.repo))
 
         return "\n    ".join(lines)
+
+    @classmethod
+    def _from_proto(cls, blob_msg):
+        obj = cls(_autocapture=False)
+        obj._msg.CopyFrom(blob_msg.code)
+
+        return obj
+
+    def _as_proto(self):
+        blob_msg = _VersioningService.Blob()
+        blob_msg.code.CopyFrom(self._msg)
+
+        return blob_msg

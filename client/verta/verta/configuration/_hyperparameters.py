@@ -4,6 +4,7 @@ from __future__ import print_function
 
 from ..external import six
 
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 from .._protos.public.modeldb.versioning import Config_pb2 as _ConfigService
 
 from . import _configuration
@@ -104,6 +105,19 @@ class Hyperparameters(_configuration._Configuration):
         )
 
         return "\n    ".join(lines)
+
+    @classmethod
+    def _from_proto(cls, blob_msg):
+        obj = cls()
+        obj._msg.CopyFrom(blob_msg.config)
+
+        return obj
+
+    def _as_proto(self):
+        blob_msg = _VersioningService.Blob()
+        blob_msg.config.CopyFrom(self._msg)
+
+        return blob_msg
 
     @staticmethod
     def _value_to_msg(value):

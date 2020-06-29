@@ -5,6 +5,7 @@ from __future__ import print_function
 import hashlib
 import os
 
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
 from ..external import six
@@ -68,6 +69,19 @@ class Path(_dataset._Dataset):
             lines.extend(self._path_component_to_repr_lines(component))
 
         return "\n    ".join(lines)
+
+    @classmethod
+    def _from_proto(cls, blob_msg):
+        obj = cls(paths=[])
+        obj._msg.CopyFrom(blob_msg.dataset)
+
+        return obj
+
+    def _as_proto(self):
+        blob_msg = _VersioningService.Blob()
+        blob_msg.dataset.CopyFrom(self._msg)
+
+        return blob_msg
 
     @property
     def _path_component_blobs(self):

@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import abc
 import os
 import pathlib2
 import tempfile
@@ -27,6 +28,7 @@ class _Dataset(blob.Blob):
     def __init__(self, enable_mdb_versioning=False):
         super(_Dataset, self).__init__()
 
+        # TODO: don't use proto to store data
         self._msg = _DatasetService.DatasetBlob()
 
         self._mdb_versioned = enable_mdb_versioning
@@ -37,6 +39,7 @@ class _Dataset(blob.Blob):
         self._blob_path = None
 
     @property
+    @abc.abstractmethod
     def _path_component_blobs(self):
         """
         Returns path components of this dataset.
@@ -47,8 +50,7 @@ class _Dataset(blob.Blob):
             Path components of this dataset.
 
         """
-        # This shall be implemented by subclasses, but shouldn't halt execution if called.
-        return []
+        pass
 
     @staticmethod
     def _path_component_to_repr_lines(path_component_msg):
@@ -75,13 +77,13 @@ class _Dataset(blob.Blob):
 
         return lines
 
+    @abc.abstractmethod
     def _prepare_components_to_upload(self):
-        # This shall be implemented by subclasses, but shouldn't halt execution if called.
-        return
+        pass
 
+    @abc.abstractmethod
     def _clean_up_uploaded_components(self):
-        # This shall be implemented by subclasses, but shouldn't halt execution if called.
-        return
+        pass
 
     def _set_commit_and_blob_path(self, commit, blob_path):
         """
