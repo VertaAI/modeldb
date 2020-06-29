@@ -508,9 +508,10 @@ class Commit(
   /** Helper method to retrieve URL to upload the file.
    *  @param blobPath path to the blob in the commit
    *  @param datasetComponentPath path to the component in the blob
+   *  @param method either PUT or GET
    *  @return The URL, if succeeds
    */
-  private[verta] def getURLForArtifact(
+  private def getURLForArtifact(
     blobPath: String,
     datasetComponentPath: String,
     method: String
@@ -552,25 +553,32 @@ class Commit(
     )
   }
 
-  /** Helper method to download a file from an URL.
-   *  @param url the url
-   *  @param file Place to store the file
+  /** Helper method to download a component of a blob.
+   *  @param blobPath path to the blob in the commit
+   *  @param datasetComponentPath path to the component in the blob
+   *  @param file File to write the downloaded content to
    *  @return whether the download attempt succeeds
    */
-  private[verta] def downloadFromURL(url: String, file: File)(implicit ec: ExecutionContext): Try[Unit] = {
-    Await.result(
-      clientSet.client.requestRaw("GET", url, null, null, null)
-        .map(resp => resp match {
-          case Success(response) => Try(new ByteArrayInputStream(response)).flatMap(inputStream => {
-            try {
-              Try(Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
-            }
-            finally {
-              inputStream.close()
-            }
-          })
-          case Failure(e) => Failure(e)
-        }),
-      Duration.Inf)
-    }
+  private[verta] def downloadComponent(
+    blobPath: String,
+    datasetComponentPath: String,
+    file: File
+  )(implicit ec: ExecutionContext): Try[Unit] = {
+    getURLForArtifact(blobPath, datasetComponentPath, "GET").flatMap(url =>
+      Await.result(
+        clientSet.client.requestRaw("GET", url, null, null, null)
+          .map(resp => resp match {
+            case Success(response) => Try(new ByteArrayInputStream(response)).flatMap(inputStream => {
+              try {
+                Try(Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
+              }
+              finally {
+                inputStream.close()
+              }
+            })
+            case Failure(e) => Failure(e)
+          }),
+        Duration.Inf)
+    )
+  }
 }

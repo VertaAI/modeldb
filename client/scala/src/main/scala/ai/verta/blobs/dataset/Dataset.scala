@@ -64,8 +64,7 @@ trait Dataset extends Blob {
       Option(file.getParentFile()).map(_.mkdirs()) // create the ancestor directories, if necessary
       file.createNewFile() // create the new file, if necessary
     })
-      .flatMap(_ => commit.get.getURLForArtifact(blobPath.get, componentPath, "GET"))
-      .flatMap(url =>  commit.get.downloadFromURL(url, file))
+      .flatMap(_ => commit.get.downloadComponent(blobPath.get, componentPath, file))
   }
 
   /** Identify components to be downloaded, along with their local destination paths.
