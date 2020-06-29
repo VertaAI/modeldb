@@ -16,7 +16,6 @@ import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -81,6 +80,10 @@ public class CommitDAORdbImpl implements CommitDAO {
         }
       }
     }
+    Map<Integer, CommitEntity> parentOrderMap = new HashMap<>();
+    for (int index = 0; index < commit.getParentShasCount(); index++) {
+      parentOrderMap.put(index, parentCommitEntities.get(commit.getParentShas(index)));
+    }
 
     Commit internalCommit =
         Commit.newBuilder()
@@ -90,11 +93,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             .setCommitSha(commitSha)
             .build();
     CommitEntity commitEntity =
-        new CommitEntity(
-            repositoryEntity,
-            new ArrayList<>(parentCommitEntities.values()),
-            internalCommit,
-            rootSha);
+        new CommitEntity(repositoryEntity, parentOrderMap, internalCommit, rootSha);
     session.saveOrUpdate(commitEntity);
     return commitEntity;
   }

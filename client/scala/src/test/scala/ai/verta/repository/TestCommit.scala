@@ -68,6 +68,21 @@ class TestCommit extends FunSuite {
     }
   }
 
+  test("Getting pathblob with empty component should succeed") {
+    val f = fixture
+    val emptyFile = new File("emptyfile")
+
+    try {
+      emptyFile.createNewFile()
+      val newCommit =
+        f.commit.update("emptyfile", PathBlob("emptyfile").get).flatMap(_.save("save empty blob")).get
+      assert(newCommit.get("emptyfile").isSuccess)
+    } finally {
+      emptyFile.delete()
+      cleanup(f)
+    }
+  }
+
   test("Tagging unsaved commit should fail") {
     val f = fixture
 

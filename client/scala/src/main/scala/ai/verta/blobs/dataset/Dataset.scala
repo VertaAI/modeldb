@@ -61,10 +61,10 @@ object Dataset {
      component: VersioningPathDatasetComponentBlob,
      versionId: Option[String] = None
    ) = new FileMetadata(
-     component.last_modified_at_source.get,
-     component.md5.get,
-     component.path.get,
-     component.size.get,
+     component.last_modified_at_source.getOrElse(0),
+     component.md5.getOrElse(""),
+     component.path.getOrElse(""),
+     component.size.getOrElse(0),
      versionId
    )
 
