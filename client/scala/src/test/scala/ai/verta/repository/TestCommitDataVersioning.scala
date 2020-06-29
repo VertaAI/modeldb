@@ -22,10 +22,14 @@ class TestCommitDataVersioning extends FunSuite {
     new {
         val client = new Client(ClientConnection.fromEnvironment())
         val repo = client.getOrCreateRepository("My Repo").get
-        val commit = repo.getCommitByBranch().get
 
         val pathBlob = PathBlob("./src/test/scala/ai/verta/blobs/testdir", true).get
         val s3Blob = S3(S3Location("s3://verta-scala-test/testdir/").get, true).get
+
+        val commit = repo.getCommitByBranch()
+          .flatMap(_.update("abc", s3Blob))
+          .flatMap(_.update("def", pathBlob))
+          .flatMap(_.save("some-msg")).get
     }
 
   def cleanup(
@@ -75,13 +79,8 @@ class TestCommitDataVersioning extends FunSuite {
     val f = fixture
 
     try {
-      val newCommit = f.commit
-        .update("abc", f.s3Blob)
-        .flatMap(_.update("def", f.pathBlob))
-        .flatMap(_.save("some-msg")).get
-
       // check for s3:
-      val versionedS3Blob: S3 = newCommit.get("abc").get match {
+      val versionedS3Blob: S3 = f.commit.get("abc").get match {
         case s3: S3 => s3
       }
       val downloadS3Attempt = versionedS3Blob.download(
@@ -96,7 +95,7 @@ class TestCommitDataVersioning extends FunSuite {
       )
 
       // check for path:
-      val versionedPathBlob: PathBlob = newCommit.get("def").get match {
+      val versionedPathBlob: PathBlob = f.commit.get("def").get match {
         case path: PathBlob => path
       }
       val downloadPathAttempt = versionedPathBlob.download(
@@ -119,12 +118,7 @@ class TestCommitDataVersioning extends FunSuite {
     val f = fixture
 
     try {
-      val newCommit = f.commit
-        .update("abc", f.s3Blob)
-        .flatMap(_.update("def", f.pathBlob))
-        .flatMap(_.save("some-msg")).get
-
-      val versionedS3Blob: S3 = newCommit.get("abc").get match {
+      val versionedS3Blob: S3 = f.commit.get("abc").get match {
         case s3: S3 => s3
       }
       val downloadS3Attempt = versionedS3Blob.download(
@@ -137,8 +131,7 @@ class TestCommitDataVersioning extends FunSuite {
         f.s3Blob.getMetadata("s3://verta-scala-test/testdir/testsubdir/testfile2").get.md5
       )
 
-
-      val versionedPathBlob: PathBlob = newCommit.get("def").get match {
+      val versionedPathBlob: PathBlob = f.commit.get("def").get match {
         case path: PathBlob => path
       }
 
@@ -166,12 +159,7 @@ class TestCommitDataVersioning extends FunSuite {
     val f = fixture
 
     try {
-      val newCommit = f.commit
-        .update("abc", f.s3Blob)
-        .flatMap(_.update("def", f.pathBlob))
-        .flatMap(_.save("some-msg")).get
-
-        val versionedS3Blob: S3 = newCommit.get("abc").get match {
+        val versionedS3Blob: S3 = f.commit.get("abc").get match {
           case s3: S3 => s3
         }
         versionedS3Blob.download(downloadToPath = "./somefiles2")
@@ -181,7 +169,7 @@ class TestCommitDataVersioning extends FunSuite {
           f.s3Blob.getMetadata("s3://verta-scala-test/testdir/testsubdir/testfile2").get.md5
         )
 
-        val versionedPathBlob: PathBlob = newCommit.get("def").get match {
+        val versionedPathBlob: PathBlob = f.commit.get("def").get match {
           case path: PathBlob => path
         }
         versionedPathBlob.download(downloadToPath = "./somefiles")
