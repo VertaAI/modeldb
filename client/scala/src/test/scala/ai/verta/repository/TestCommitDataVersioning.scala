@@ -10,8 +10,7 @@ import scala.util.{Try, Success, Failure}
 
 import java.io.{File, FileOutputStream}
 import java.nio.file.{Files, Path}
-import java.util.Arrays
-import java.util.Random
+import java.util.{Arrays, Random}
 
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
