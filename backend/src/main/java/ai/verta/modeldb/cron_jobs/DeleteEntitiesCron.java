@@ -22,6 +22,8 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import com.google.rpc.Code;
+import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -74,8 +76,16 @@ public class DeleteEntitiesCron extends TimerTask {
       // Update repository timestamp
       deleteRepositories(session);
     } catch (Exception ex) {
-      ex.printStackTrace();
-      LOGGER.error("DeleteEntitiesCron Exception: ", ex);
+      if (ex instanceof StatusRuntimeException) {
+        StatusRuntimeException exception = (StatusRuntimeException) ex;
+        if (exception.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
+          LOGGER.error("DeleteEntitiesCron Exception: {}", ex.getMessage());
+        } else {
+          LOGGER.error("DeleteEntitiesCron Exception: ", ex);
+        }
+      } else {
+        LOGGER.error("DeleteEntitiesCron Exception: ", ex);
+      }
     }
     isBackgroundUtilsCall = false;
     LOGGER.info("DeleteEntitiesCron finish tasks and reschedule");
