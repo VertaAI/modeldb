@@ -50,7 +50,7 @@ class Commit(
         case None => Failure(new NoSuchElementException("No blob was stored at this path."))
         case Some(blob) => toMDBVersioningDataset(blob).fold(Success(blob))(dataBlob => {
           /** TODO: remove this mutation */
-          dataBlob.commit = Some(this)
+          dataBlob.downloadFunction = Some(this.downloadComponent)
           dataBlob.blobPath = Some(path)
           Success(dataBlob)
         })
@@ -559,7 +559,7 @@ class Commit(
    *  @param file File to write the downloaded content to
    *  @return whether the download attempt succeeds
    */
-  private[verta] def downloadComponent(
+  private def downloadComponent(
     blobPath: String,
     datasetComponentPath: String,
     file: File
