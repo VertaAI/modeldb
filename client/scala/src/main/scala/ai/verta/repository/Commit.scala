@@ -556,29 +556,29 @@ class Commit(
   /** Helper method to download a component of a blob.
    *  @param blobPath path to the blob in the commit
    *  @param datasetComponentPath path to the component in the blob
-   *  @param file File to write the downloaded content to
-   *  @return whether the download attempt succeeds
+   *  @return The temporary file which the downloaded content were written to, if the download attempt succeeds
    */
   private def downloadComponent(
     blobPath: String,
-    datasetComponentPath: String,
-    file: File
-  )(implicit ec: ExecutionContext): Try[Unit] = {
+    datasetComponentPath: String
+  )(implicit ec: ExecutionContext): Try[File] = {
     getURLForArtifact(blobPath, datasetComponentPath, "GET").flatMap(url =>
-      Await.result(
-        clientSet.client.requestRaw("GET", url, null, null, null)
-          .map(resp => resp match {
-            case Success(response) => Try(new ByteArrayInputStream(response)).flatMap(inputStream => {
-              try {
-                Try(Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
-              }
-              finally {
-                inputStream.close()
-              }
-            })
-            case Failure(e) => Failure(e)
-          }),
-        Duration.Inf)
-    )
+      Try(File.createTempFile(datasetComponentPath, null)).flatMap(file =>
+        Await.result(
+          clientSet.client.requestRaw("GET", url, null, null, null)
+            .map(resp => resp match {
+              case Success(response) => Try(new ByteArrayInputStream(response)).flatMap(inputStream => {
+                try {
+                  Try(Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
+                    .map(_ => file)
+                }
+                finally {
+                  inputStream.close()
+                }
+              })
+              case Failure(e) => Failure(e)
+            }),
+          Duration.Inf)
+    ))
   }
 }
