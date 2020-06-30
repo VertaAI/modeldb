@@ -233,7 +233,7 @@ class Commit(object):
                         continue  # try again
                     else:
                         break
-                response.raise_for_status()
+                _utils.raise_for_http_error(response)
 
                 # commit part
                 url = "{}://{}/api/v1/modeldb/versioning/commitVersionedBlobArtifactPart".format(

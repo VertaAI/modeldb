@@ -892,12 +892,13 @@ class TestDeploy:
         experiment_run.log_requirements(['scikit-learn'])
 
         # delete model
-        _utils.make_request(
+        response = _utils.make_request(
             "DELETE",
             "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(experiment_run._conn.scheme,
                                                               experiment_run._conn.socket),
             experiment_run._conn, json={'id': experiment_run.id, 'key': "model.pkl"}
-        ).raise_for_status()
+        )
+        _utils.raise_for_http_error(response)
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
@@ -914,12 +915,13 @@ class TestDeploy:
         experiment_run.log_requirements(['scikit-learn'])
 
         # delete model API
-        _utils.make_request(
+        response = _utils.make_request(
             "DELETE",
             "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(experiment_run._conn.scheme,
                                                               experiment_run._conn.socket),
             experiment_run._conn, json={'id': experiment_run.id, 'key': "model_api.json"}
-        ).raise_for_status()
+        )
+        _utils.raise_for_http_error(response)
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
