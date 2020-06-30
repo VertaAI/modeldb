@@ -104,7 +104,7 @@ trait Dataset extends Blob {
 
   /** Determine a safe local path to download to.
    *  If the user explicitly passes a downloadToPath, it will be used
-   *  Otherwise, it will be determine as follows:
+   *  Otherwise, it will be determined as follows:
    *
    *  1. If componentPath is defined and does not refer to current directory, use it
    *
