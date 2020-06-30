@@ -111,6 +111,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private static final Logger LOGGER =
       LogManager.getLogger(ExperimentRunDAORdbImpl.class.getName());
+  private static final boolean DO_OVERWRITE = false;
   private final AuthService authService;
   private final RoleService roleService;
   private final RepositoryDAO repositoryDAO;
@@ -2079,6 +2080,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               || !existingFirstEntityMapping
                   .getCommit()
                   .equals(versioningModeldbFirstEntityMapping.getCommit())) {
+            if (!DO_OVERWRITE) {
+              throw new ModelDBException(
+                  ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE,
+                  io.grpc.Status.Code.ALREADY_EXISTS);
+            }
             CriteriaBuilder cb = session.getCriteriaBuilder();
             CriteriaDelete<VersioningModeldbEntityMapping> delete =
                 cb.createCriteriaDelete(VersioningModeldbEntityMapping.class);
