@@ -329,10 +329,15 @@ def raise_for_http_error(response):
     try:
         response.raise_for_status()
     except requests.HTTPError as e:
+        # get current time in UTC to display alongside exception
+        curr_time = timestamp_to_str(now(), utc=True)
+        time_str = " at {} UTC".format(curr_time)
+
         try:
             reason = body_to_json(response)['message']
         except (ValueError,  # not JSON response
                 KeyError):  # no 'message' from back end
+            e.args = (e.args[0] + time_str,) + e.args[1:]  # attach time to error message
             six.raise_from(e, None)  # use default reason
         else:
             # replicate https://github.com/psf/requests/blob/428f7a/requests/models.py#L954
@@ -343,6 +348,7 @@ def raise_for_http_error(response):
             else:  # should be impossible here, but sure okay
                 cause = "Unexpected"
             message = "{} {} Error: {} for url: {}".format(response.status_code, cause, reason, response.url)
+            message += time_str  # attach time to error message
             six.raise_from(requests.HTTPError(message, response=response), None)
 
 
@@ -840,7 +846,7 @@ def ensure_timestamp(timestamp):
         raise TypeError("unable to parse timestamp of type {}".format(type(timestamp)))
 
 
-def timestamp_to_str(timestamp):
+def timestamp_to_str(timestamp, utc=False):
     """
     Converts a Unix timestamp into a human-readable string representation.
 
@@ -856,7 +862,12 @@ def timestamp_to_str(timestamp):
 
     """
     num_digits = len(str(timestamp))
-    return str(datetime.datetime.fromtimestamp(timestamp*10**(10 - num_digits)))
+    ts_as_sec = timestamp*10**(10 - num_digits)
+    if utc:
+        datetime_obj = datetime.datetime.utcfromtimestamp(ts_as_sec)
+    else:
+        datetime_obj = datetime.datetime.fromtimestamp(ts_as_sec)
+    return str(datetime_obj)
 
 
 def now():
