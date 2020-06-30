@@ -49,7 +49,7 @@ trait Dataset extends Blob {
           .map(pair => downloadComponent(pair._1, pair._2))
           .map(_.get)
       }) match {
-        case Success(()) => Success(())
+        case Success(_) => Success(())
         case Failure(e) => {
           componentToLocalPath.values.map(path => Try((new File(path)).delete()))
           Failure(e)
