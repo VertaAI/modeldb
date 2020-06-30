@@ -231,9 +231,11 @@ class TestCommitDataVersioning extends FunSuite {
       val retrievedBlob: Dataset = commit.get("file").get match {
         case path: PathBlob => path
       }
-      retrievedBlob.download(Some("somefile"))
+      val downloadToPath = retrievedBlob.download(Some("somefile")).get
+
+      assert(downloadToPath equals (new File("somefile 1")).getAbsolutePath)
       // old file should not be overritten
-      assert(Files.readAllBytes((new File("somefile 1")).toPath).sameElements(originalContent))
+      assert(Files.readAllBytes((new File(downloadToPath)).toPath).sameElements(originalContent))
       assert(!Files.readAllBytes((new File("somefile")).toPath).sameElements(originalContent))
     } finally {
       (new File("somefile 1")).delete()
@@ -256,11 +258,33 @@ class TestCommitDataVersioning extends FunSuite {
       val retrievedBlob: Dataset = commit.get("file").get match {
         case path: PathBlob => path
       }
-      retrievedBlob.download()
-      // old file should not be overritten
+      val downloadToPath = retrievedBlob.download().get
+
+      assert(downloadToPath equals (new File(f"${Dataset.DefaultDownloadDir}")).getAbsolutePath)
       assert(
-        Files.readAllBytes((new File(f"${Dataset.DefaultDownloadDir}/somefile")).toPath).sameElements(originalContent)
+        Files.readAllBytes((new File(f"${downloadToPath}/somefile")).toPath).sameElements(originalContent)
       )
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("s3 downloadToPath inference should be correct") {
+    val f = fixture
+
+    try {
+      val retrievedS3Blob: Dataset = f.commit.get("s3-blob").get match {
+        case s3Blob: S3 => s3Blob
+      }
+
+      val downloadToPath = retrievedS3Blob.download(Some("s3://")).get
+      // should NOT be s3:
+      assert(downloadToPath equals (new File(f"${Dataset.DefaultDownloadDir}")).getAbsolutePath)
+
+      val downloadToPath2 = retrievedS3Blob.download(
+        Some("s3://verta-scala-test/testdir/testsubdir/testfile2")
+      )
+      assert(downloadToPath2 equals (new File("testfile2")))
     } finally {
       cleanup(f)
     }

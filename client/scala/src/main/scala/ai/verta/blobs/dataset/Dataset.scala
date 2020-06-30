@@ -126,10 +126,14 @@ trait Dataset extends Blob {
     val originalPath =
       if (componentPath.isEmpty)
         Dataset.DefaultDownloadDir
-      else if (Set(".", "..", "/", "s3:").contains(componentPath.get))
-        Dataset.DefaultDownloadDir // rather than dump everything into current directory
-      else
-        (new File(componentPath.get)).getName
+      else {
+        val componentPathName = (new File(componentPath.get)).getName
+
+        if (Set(".", "..", "/", "s3:").contains(componentPathName))
+          Dataset.DefaultDownloadDir // rather than dump everything into current directory
+        else
+          componentPathName
+      }
 
     avoidCollision(originalPath)
   })
@@ -251,7 +255,8 @@ trait Dataset extends Blob {
 }
 
 object Dataset {
-  val DefaultDownloadDir: String = "mdb-data-download" // default download directory
+  /** Default download directory */
+  val DefaultDownloadDir: String = "mdb-data-download"
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
