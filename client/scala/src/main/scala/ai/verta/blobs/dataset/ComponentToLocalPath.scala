@@ -5,5 +5,5 @@ package ai.verta.blobs.dataset
  *  @param absoluteLocalPath absolute local path to the downloaded file(s)
  */
 private[dataset] case class ComponentToLocalPath(
-  val componentToLocalPath: Map[String, String], val absoluteLocalPath: String
+  val componentToLocalPathMap: Map[String, String], val absoluteLocalPath: String
 )
