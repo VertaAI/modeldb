@@ -1049,3 +1049,18 @@ class TestGitOps:
 
         model_api = json.loads(config_map['data']['model_api.json'])
         assert model_api == model_for_deployment['model_api'].to_dict()
+
+    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir):
+        download_to_path = "context.tgz"
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        filepath = experiment_run.download_docker_context(download_to_path)
+        assert filepath == os.path.abspath(download_to_path)
+
+        # can be loaded as tgz
+        with tarfile.open(filepath, 'r:gz') as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths
