@@ -28,6 +28,8 @@ class Path(_dataset._Dataset):
     ----------
     paths : list of str
         List of filepaths or directory paths.
+    base_path : str, optional
+        Directory path to be removed from the beginning of all components before saving to ModelDB.
     enable_mdb_versioning : bool, default False
         Whether to upload the data itself to ModelDB to enable managed data versioning.
 
@@ -45,7 +47,7 @@ class Path(_dataset._Dataset):
         ])
 
     """
-    def __init__(self, paths, enable_mdb_versioning=False):
+    def __init__(self, paths, base_path=None, enable_mdb_versioning=False):
         if isinstance(paths, six.string_types):
             paths = [paths]
         paths = map(os.path.expanduser, paths)
@@ -54,6 +56,22 @@ class Path(_dataset._Dataset):
 
         filepaths = _file_utils.flatten_file_trees(paths)
         components = list(map(self._file_to_component, filepaths))
+
+        # remove `base_path` from the beginning of component paths
+        if base_path is not None:
+            for component in components:
+                path = _file_utils.remove_prefix_dir(component.path, prefix_dir=base_path)
+                if path == component.path:  # no change
+                    raise ValueError("path {} does not begin with `base_path` {}".format(
+                        component.path,
+                        base_path,
+                    ))
+
+                # update component with modified path
+                component.path = path
+
+                # track base path
+                component._base_path = base_path
 
         self._components_map.update({
             component.path: component
@@ -118,8 +136,12 @@ class Path(_dataset._Dataset):
             return
 
         for component in self._components_map.values():
-            # TODO: when stripping base path is implemented, reconstruct original path here
-            filepath = os.path.abspath(component.path)
+            # reconstruct original filepaths with removed `base_path`s
+            if component._base_path:
+                filepath = os.path.join(component._base_path, component.path)
+            else:
+                filepath = component.path
+            filepath = os.path.abspath(filepath)
 
             # track which file this component corresponds to
             component._local_path = filepath
