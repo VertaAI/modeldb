@@ -2,7 +2,6 @@ package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.blobs._
-import ai.verta.repository.Commit
 
 import java.security.{MessageDigest, DigestInputStream}
 import java.io.{File, FileInputStream}
@@ -18,7 +17,7 @@ trait Dataset extends Blob {
 
   // mutable state, populated when getting blob from commit
   /** TODO: Figure out a way to remove this */
-  private[verta] var commit: Option[Commit] = None
+  private[verta] var downloadFunction: Option[(String, String, File) => Try[Unit]] = None
   private[verta] var blobPath: Option[String] = None // path to the blob in the commit
 
   /** Downloads componentPath from this dataset if ModelDB-managed versioning was enabled
@@ -32,7 +31,7 @@ trait Dataset extends Blob {
   )(implicit ec: ExecutionContext): Try[Unit] = {
     if (!enableMDBVersioning)
       Failure(new IllegalStateException("This blob did not allow for versioning"))
-    else if (commit.isEmpty || blobPath.isEmpty)
+    else if (downloadFunction.isEmpty || blobPath.isEmpty)
       Failure(new IllegalStateException(
         "This dataset cannot be used for downloads. Consider using `commit.get()` to obtain a download-capable dataset"
       ))
@@ -68,7 +67,7 @@ trait Dataset extends Blob {
       Option(file.getParentFile()).map(_.mkdirs()) // create the ancestor directories, if necessary
       file.createNewFile() // create the new file, if necessary
     })
-      .flatMap(_ => commit.get.downloadComponent(blobPath.get, componentPath, file))
+      .flatMap(_ => downloadFunction.get(blobPath.get, componentPath, file))
   }
 
   /** Identify components to be downloaded, along with their local destination paths.
