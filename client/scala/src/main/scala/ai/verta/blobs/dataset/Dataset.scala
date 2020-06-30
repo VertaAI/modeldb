@@ -134,9 +134,8 @@ trait Dataset extends Blob {
     avoidCollision(originalPath)
   })
 
-  /** Increments the base path until collision is avoided
-   *  @param basepath base path
-   *  @param inc current incremented
+  /** Increments the original path until collision is avoided
+   *  @param path original path
    *  @return the first incremented path which does not exist in local file system
    */
   private def avoidCollision(path: String): String = {
