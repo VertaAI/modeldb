@@ -2,13 +2,12 @@
 
 from __future__ import print_function
 
+import abc
 import os
 import pathlib2
 import tempfile
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
-
-from ..external import six
 
 from .._internal_utils import _utils
 from .._internal_utils import _file_utils
@@ -27,61 +26,31 @@ class _Dataset(blob.Blob):
     def __init__(self, enable_mdb_versioning=False):
         super(_Dataset, self).__init__()
 
-        self._msg = _DatasetService.DatasetBlob()
+        self._components_map = dict()  # paths to Component objects
 
         self._mdb_versioned = enable_mdb_versioning
-        self._components_to_upload = dict()  # component paths to local filepaths
 
         # to be set during commit.get() to enable download() with ModelDB-managed versioning
         self._commit = None
         self._blob_path = None
 
-    @property
-    def _path_component_blobs(self):
-        """
-        Returns path components of this dataset.
+    def __repr__(self):
+        lines = ["{} Version".format(self.__class__.__name__)]
 
-        Returns
-        -------
-        list of PathDatasetComponentBlob
-            Path components of this dataset.
+        components = self._components_map.values()
+        components = sorted(components, key=lambda component: component.path)
+        for component in components:
+            lines.extend(repr(component).splitlines())
 
-        """
-        # This shall be implemented by subclasses, but shouldn't halt execution if called.
-        return []
+        return "\n    ".join(lines)
 
-    @staticmethod
-    def _path_component_to_repr_lines(path_component_msg):
-        """
-        Parameters
-        ----------
-        path_component_msg : PathDatasetComponentBlob
-
-        Returns
-        -------
-        lines : list of str
-            Lines to be used in the ``__repr__`` of a dataset blob object.
-
-        """
-        lines = [path_component_msg.path]
-        if path_component_msg.size:
-            lines.append("    {} bytes".format(path_component_msg.size))
-        if path_component_msg.last_modified_at_source:
-            lines.append("    last modified {}".format(_utils.timestamp_to_str(path_component_msg.last_modified_at_source)))
-        if path_component_msg.md5:
-            lines.append("    MD5 checksum: {}".format(path_component_msg.md5))
-        if path_component_msg.sha256:
-            lines.append("    SHA-256 checksum: {}".format(path_component_msg.sha256))
-
-        return lines
-
+    @abc.abstractmethod
     def _prepare_components_to_upload(self):
-        # This shall be implemented by subclasses, but shouldn't halt execution if called.
-        return
+        pass
 
+    @abc.abstractmethod
     def _clean_up_uploaded_components(self):
-        # This shall be implemented by subclasses, but shouldn't halt execution if called.
-        return
+        pass
 
     def _set_commit_and_blob_path(self, commit, blob_path):
         """
@@ -284,19 +253,135 @@ class _Dataset(blob.Blob):
         """
         Returns the paths of all components in this dataset.
 
-        .. note::
-
-            In Python 2.7, this method returns ``str`` rather than ``unicode``.  Unicode filenames
-            can be restored by calling ``.decode('utf-8')`` on the returned strings.
-
         Returns
         -------
         component_paths : list of str
             Paths of all components.
 
         """
-        return [
-            six.ensure_str(component.path)  # in Py2, protobuf had converted this to unicode str
+        return list(sorted(
+            component.path
             for component
-            in self._path_component_blobs
-        ]
+            in self._components_map.values()
+        ))
+
+    def list_components(self):
+        """
+        Returns the components in this dataset.
+
+        Returns
+        -------
+        components : list of :class:`~verta.dataset._dataset.Component`
+            Components.
+
+        """
+        components = self._components_map.values()
+        return list(sorted(components, key=lambda component: component.path))
+
+
+class Component(object):
+    """
+    A dataset component returned by ``dataset.list_components()``.
+
+    Attributes
+    ----------
+    path : str
+        File path.
+    size : int
+        File size.
+    last_modified : int
+        Unix time when this file was last modified.
+    sha256 : str
+        SHA-256 checksum.
+    md5 : str
+        MD5 checksum.
+
+    """
+    def __init__(
+            self,
+            path, size=None, last_modified=None,
+            sha256=None, md5=None,
+            base_path=None,
+            internal_versioned_path=None, local_path=None):
+        # metadata
+        self.path = path
+        self.size = size
+        self.last_modified = last_modified
+
+        # checksums
+        self.sha256 = sha256
+        self.md5 = md5
+
+        # base path
+        self._base_path = base_path
+
+        # ModelDB versioning
+        self._internal_versioned_path = internal_versioned_path
+        self._local_path = local_path
+
+    def __repr__(self):
+        lines = [self.path]
+
+        if self.size:
+            lines.append("{} bytes".format(self.size))
+        if self.last_modified:
+            lines.append("last modified: {}".format(_utils.timestamp_to_str(self.last_modified)))
+        if self.sha256:
+            lines.append("SHA-256 checksum: {}".format(self.sha256))
+        if self.md5:
+            lines.append("MD5 checksum: {}".format(self.md5))
+
+        return "\n    ".join(lines)
+
+    @classmethod
+    def _from_proto(cls, component_msg):
+        return cls(
+            path=component_msg.path,
+            size=component_msg.size or None,
+            last_modified=component_msg.last_modified_at_source or None,
+            sha256=component_msg.sha256 or None,
+            md5=component_msg.md5 or None,
+            internal_versioned_path=component_msg.internal_versioned_path or None,
+        )
+
+    def _as_proto(self):
+        return _DatasetService.PathDatasetComponentBlob(
+            path=self.path or "",
+            size=self.size or 0,
+            last_modified_at_source=self.last_modified or 0,
+            sha256=self.sha256 or "",
+            md5=self.md5 or "",
+            internal_versioned_path=self._internal_versioned_path or "",
+        )
+
+
+class S3Component(Component):
+    def __init__(self, s3_version_id=None, **kwargs):
+        super(S3Component, self).__init__(**kwargs)
+
+        # S3 versioning
+        self.s3_version_id = s3_version_id
+
+    def __repr__(self):
+        repr_str = super(S3Component, self).__repr__()
+        lines = repr_str.split("\n    ")
+
+        if self.s3_version_id:
+            lines.append("S3 version ID: {}".format(self.s3_version_id))
+
+        return "\n    ".join(lines)
+
+
+    @classmethod
+    def _from_proto(cls, s3_component_msg):
+        obj = super(S3Component, cls)._from_proto(s3_component_msg.path)
+        obj.s3_version_id = s3_component_msg.s3_version_id
+
+        return obj
+
+    def _as_proto(self):
+        s3_component_msg = _DatasetService.S3DatasetComponentBlob()
+        s3_component_msg.path.CopyFrom(super(S3Component, self)._as_proto())
+        s3_component_msg.s3_version_id = self.s3_version_id or ""
+
+        return s3_component_msg

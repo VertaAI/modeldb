@@ -441,16 +441,6 @@ class TestImages:
                 experiment_run.log_image_path(key, artifact)
 
 
-class TestDatasets:
-    def test_blacklisted_key_error(self, experiment_run, all_values):
-        all_values = (value  # log_artifact treats str value as filepath to open
-                      for value in all_values if not isinstance(value, str))
-
-        for key, artifact in zip(_artifact_utils.BLACKLISTED_KEYS, all_values):
-            with pytest.raises(ValueError):
-                experiment_run.log_dataset(key, artifact)
-
-
 class TestOverwrite:
     def test_artifact(self, experiment_run):
         artifact = ['banana']

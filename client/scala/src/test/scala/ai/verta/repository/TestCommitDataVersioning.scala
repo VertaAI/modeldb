@@ -225,7 +225,7 @@ class TestCommitDataVersioning extends FunSuite {
       val commit = f.commit
         .update("file", pathBlob)
         .flatMap(_.save("some-msg")).get
-      generateRandomFile("somefile").get
+      generateRandomFile("somefile").get // change content of original file
 
       // recover the old versioned file:
       val retrievedBlob: Dataset = commit.get("file").get match {
