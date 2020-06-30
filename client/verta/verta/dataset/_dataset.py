@@ -99,8 +99,7 @@ class _Dataset(blob.Blob):
                         local_path = os.path.basename(component_path)
 
                         # avoid collision with existing file
-                        while os.path.exists(local_path):
-                            local_path = _file_utils.increment_path(local_path)
+                        local_path = _file_utils.without_collision(local_path)
                     else:
                         # exactly where the user requests
                         local_path = download_to_path
@@ -114,8 +113,7 @@ class _Dataset(blob.Blob):
                 downloaded_to_path = DEFAULT_DOWNLOAD_DIR
 
                 # avoid collision with existing directory
-                while os.path.exists(downloaded_to_path):
-                    downloaded_to_path = _file_utils.increment_path(downloaded_to_path)
+                downloaded_to_path = _file_utils.without_collision(downloaded_to_path)
             else:  # need to automatically determine directory
                 # NOTE: if `component_path` == "s3://" with any trailing slashes, it becomes "s3:"
                 downloaded_to_path = pathlib2.Path(component_path).name  # final path component
@@ -125,8 +123,7 @@ class _Dataset(blob.Blob):
                     downloaded_to_path = DEFAULT_DOWNLOAD_DIR
 
                 # avoid collision with existing directory
-                while os.path.exists(downloaded_to_path):
-                    downloaded_to_path = _file_utils.increment_path(downloaded_to_path)
+                downloaded_to_path = _file_utils.without_collision(downloaded_to_path)
         else:
             # exactly where the user requests
             downloaded_to_path = download_to_path
@@ -229,8 +226,7 @@ class _Dataset(blob.Blob):
                     if (implicit_download_to_path
                             and len(components_to_download) == 1):  # single file download
                         # check for destination collision again in case taken during download
-                        while os.path.exists(local_path):
-                            local_path = _file_utils.increment_path(local_path)
+                        local_path = _file_utils.without_collision(local_path)
 
                         # update `downloaded_to_path`
                         downloaded_to_path = local_path
