@@ -41,12 +41,21 @@ trait Dataset extends Blob {
       Failure(new IllegalStateException(
         "This dataset cannot be used for downloads. Consider using `commit.get()` to obtain a download-capable dataset"
       ))
-    else
-      Try {
-        determineComponentAndLocalPaths(componentPath, downloadToPath)
+    else {
+      val componentToLocalPath = determineComponentAndLocalPaths(componentPath, downloadToPath)
+
+      Try ({
+        componentToLocalPath
           .map(pair => downloadComponent(pair._1, pair._2))
           .map(_.get)
+      }) match {
+        case Success(()) => Success(())
+        case Failure(e) => {
+          componentToLocalPath.values.map(path => Try((new File(path)).delete()))
+          Failure(e)
+        }
       }
+    }
   }
 
   /** Download a single component, to a determined local destination
