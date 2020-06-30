@@ -61,7 +61,7 @@ trait Dataset extends Blob {
             Success(componentToLocalPath.absoluteLocalPath)
           }
           case Failure(e) => {
-            // remove partially downloaded file:
+            // remove downloaded files:
             downloadAttempts.values
               .filter(file => file.isSuccess)
               .map(file => Try(file.get.delete()))
