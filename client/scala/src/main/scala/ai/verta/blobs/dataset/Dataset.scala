@@ -6,7 +6,7 @@ import ai.verta.repository.Commit
 
 import java.security.{MessageDigest, DigestInputStream}
 import java.io.{File, FileInputStream}
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths, Files}
 
 import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
@@ -133,17 +133,38 @@ trait Dataset extends Blob {
   })
 
   /** Increments the base path until collision is avoided
-   *  @param path base path
+   *  @param basepath base path
    *  @param inc current incremented
    *  @return the first incremented path which does not exist in local file system
    */
-  private def avoidCollision(path: String, inc: Int = 0): String = {
-    val incrementedPath = if (inc == 0) path else f"${path} ${inc}"
+  private def avoidCollision(path: String): String = {
+    val components = separateExtension(path)
+    val base = components(0)
+    val extension = components(1)
 
-    if ((new File(incrementedPath)).exists())
-      avoidCollision(path, inc + 1)
-    else
-      incrementedPath
+    var file: Path = Paths.get(path)
+    var inc = 1
+
+    while (Files.exists(file)) {
+      file = Paths.get(f"${base} ${inc}${extension}")
+      inc += 1
+    }
+
+    file.toString()
+  }
+
+  /** Separate the extension from the base of path
+   *  @param path path
+   *  @return an array, where first entry is base, and second entry is extension
+   */
+  private def separateExtension(path: String) = {
+    val components = new Array[String](2)
+    val delimiterIndex = path.lastIndexOf(".")
+
+    components(0) = if (delimiterIndex == -1) path else path.substring(0, delimiterIndex)
+    components(1) = if (delimiterIndex == -1) "" else path.substring(delimiterIndex)
+
+    components
   }
 
   /** Return the set of component paths inside a directory path
