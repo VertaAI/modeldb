@@ -17,6 +17,8 @@ trait Dataset extends Blob {
 
   // mutable state, populated when getting blob from commit
   /** TODO: Figure out a way to remove this */
+  // Function to downwload a component, given its path in the blob, the blob's path in the commit
+  // and the file pointing to local path to download to:
   private[verta] var downloadFunction: Option[(String, String, File) => Try[Unit]] = None
   private[verta] var blobPath: Option[String] = None // path to the blob in the commit
 
