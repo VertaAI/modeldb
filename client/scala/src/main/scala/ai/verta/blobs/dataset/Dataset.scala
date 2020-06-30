@@ -32,7 +32,6 @@ trait Dataset extends Blob {
     downloadToPath: String
   )(implicit ec: ExecutionContext): Try[Unit] = {
     /** TODO: Make downloadToPath optional */
-    /** TODO: allow for download chunk by chunk */
 
     if (!enableMDBVersioning)
       Failure(new IllegalStateException("This blob did not allow for versioning"))
