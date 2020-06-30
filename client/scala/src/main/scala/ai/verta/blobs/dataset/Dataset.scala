@@ -41,7 +41,7 @@ trait Dataset extends Blob {
       ))
     else {
       val componentToLocalPath = determineComponentAndLocalPaths(componentPath, downloadToPath)
-      
+
       if (componentToLocalPath.componentToLocalPath.isEmpty)
         Failure(new NoSuchElementException("Components not found."))
       else
@@ -79,7 +79,7 @@ trait Dataset extends Blob {
 
   /** Identify components to be downloaded, along with their local destination paths.
    *  @param componentPath (Optional) path to directory or file within blob.
-   *  @param downloadToPath Local path to download to
+   *  @param downloadToPath (Optional) Local path to download to
    *  @return Map of component paths to local destination paths,
    *  along with absolute local path to the downloaded file(s)
    */
