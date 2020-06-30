@@ -1027,7 +1027,11 @@ class TestGitOps:
     def test_download_deployment_crd(self, experiment_run, model_for_deployment, in_tempdir):
         download_to_path = "deployment.yaml"
 
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_model(
+            model_for_deployment['model'],
+            custom_modules=[],
+            model_api=model_for_deployment['model_api'],
+        )
         experiment_run.log_requirements(['scikit-learn'])
 
         filepath = experiment_run.download_deployment_crd(download_to_path)
@@ -1036,3 +1040,12 @@ class TestGitOps:
         # can be loaded as YAML
         with open(filepath, 'rb') as f:
             model_deployment, config_map = yaml.safe_load_all(f)
+
+        assert model_deployment['kind'] == "ModelDeployment"
+        assert model_deployment['metadata']['name'] == experiment_run.id
+
+        assert config_map['kind'] == "ConfigMap"
+        assert config_map['metadata']['name'] == "model--{}".format(experiment_run.id)
+
+        model_api = json.loads(config_map['data']['model_api.json'])
+        assert model_api == model_for_deployment['model_api'].to_dict()
