@@ -281,11 +281,20 @@ class TestCommitDataVersioning extends FunSuite {
       // should NOT be s3:
       assert(downloadToPath equals (new File(f"${Dataset.DefaultDownloadDir}")).getAbsolutePath)
 
+      // folder:
       val downloadToPath2 = retrievedS3Blob.download(
-        Some("s3://verta-scala-test/testdir/testsubdir/testfile2")
-      )
-      assert(downloadToPath2 equals (new File("testfile2")))
+        Some("s3://verta-scala-test/testdir/testsubdir/")
+      ).get
+      assert(downloadToPath2 equals (new File("testsubdir")).getAbsolutePath)
+
+      // entire blob:
+      val downloadToPath3 = retrievedS3Blob.download().get
+      // note that the default download directory is incremented to avoid overwritting:
+      assert(downloadToPath3 equals (new File(f"${Dataset.DefaultDownloadDir} 1")).getAbsolutePath)
+
     } finally {
+      deleteDirectory(new File("testsubdir"))
+      deleteDirectory((new File(f"${Dataset.DefaultDownloadDir} 1")))
       cleanup(f)
     }
   }
