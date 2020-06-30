@@ -277,23 +277,29 @@ class TestCommitDataVersioning extends FunSuite {
         case s3Blob: S3 => s3Blob
       }
 
-      val downloadToPath = retrievedS3Blob.download(Some("s3://")).get
+      // single file:
+      val downloadToPath = retrievedS3Blob.download(Some("s3://verta-scala-test/testdir/testfile")).get
+      assert(downloadToPath equals (new File("testfile")).getAbsolutePath)
+
+      // s3 root:
+      val downloadToPath2 = retrievedS3Blob.download(Some("s3://")).get
       // should NOT be s3:
-      assert(downloadToPath equals (new File(f"${Dataset.DefaultDownloadDir}")).getAbsolutePath)
+      assert(downloadToPath2 equals (new File(f"${Dataset.DefaultDownloadDir}")).getAbsolutePath)
 
       // folder:
-      val downloadToPath2 = retrievedS3Blob.download(
+      val downloadToPath3 = retrievedS3Blob.download(
         Some("s3://verta-scala-test/testdir/testsubdir/")
       ).get
-      assert(downloadToPath2 equals (new File("testsubdir")).getAbsolutePath)
+      assert(downloadToPath3 equals (new File("testsubdir")).getAbsolutePath)
 
       // entire blob:
-      val downloadToPath3 = retrievedS3Blob.download().get
+      val downloadToPath4 = retrievedS3Blob.download().get
       // note that the default download directory is incremented to avoid overwritting:
-      assert(downloadToPath3 equals (new File(f"${Dataset.DefaultDownloadDir} 1")).getAbsolutePath)
+      assert(downloadToPath4 equals (new File(f"${Dataset.DefaultDownloadDir} 1")).getAbsolutePath)
 
     } finally {
       deleteDirectory(new File("testsubdir"))
+      (new File("testfile")).delete()
       deleteDirectory((new File(f"${Dataset.DefaultDownloadDir} 1")))
       cleanup(f)
     }
