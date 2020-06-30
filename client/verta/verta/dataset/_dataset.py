@@ -5,12 +5,14 @@ from __future__ import print_function
 import abc
 import os
 import pathlib2
-import tempfile
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
-from .._internal_utils import _utils
-from .._internal_utils import _file_utils
+from .._internal_utils import (
+    _file_utils,
+    _request_utils,
+    _utils,
+)
 
 from .._repository import blob
 
@@ -167,7 +169,7 @@ class _Dataset(blob.Blob):
 
         return (components_to_download, os.path.abspath(downloaded_to_path))
 
-    def download(self, component_path=None, download_to_path=None, chunk_size=32*(10**6)):
+    def download(self, component_path=None, download_to_path=None):
         """
         Downloads `component_path` from this dataset if ModelDB-managed versioning was enabled.
 
@@ -179,8 +181,6 @@ class _Dataset(blob.Blob):
         download_to_path : str, optional
             Path to download to. If not provided, the file(s) will be downloaded into a new path in
             the current directory. If provided and the path already exists, it will be overwritten.
-        chunk_size : int, default 32 MB
-            Number of bytes to download at a time.
 
         Returns
         -------
@@ -211,37 +211,19 @@ class _Dataset(blob.Blob):
             url = self._commit._get_url_for_artifact(self._blob_path, path, "GET").url
 
             # stream download to avoid overwhelming memory
-            response = _utils.make_request("GET", url, self._commit._conn, stream=True)
-            try:
+            with _utils.make_request("GET", url, self._commit._conn, stream=True) as response:
                 _utils.raise_for_http_error(response)
 
                 print("downloading {} from ModelDB".format(path))
-                tempf = None  # declare first in case NamedTemporaryFile init fails
-                try:
-                    # read response stream into temp file
-                    with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
-                        for chunk in response.iter_content(chunk_size=chunk_size):
-                            tempf.write(chunk)
-
-                    if (implicit_download_to_path
-                            and len(components_to_download) == 1):  # single file download
-                        # check for destination collision again in case taken during download
-                        local_path = _file_utils.without_collision(local_path)
-
-                        # update `downloaded_to_path`
-                        downloaded_to_path = local_path
-
-                    # move written contents to `filepath`
-                    os.rename(tempf.name, local_path)
-                except Exception as e:
-                    # delete partially-downloaded file
-                    if tempf is not None and os.path.isfile(tempf.name):
-                        os.remove(tempf.name)
-                    raise e
+                if (implicit_download_to_path
+                        and len(components_to_download) == 1):  # single file download
+                    # update `downloaded_to_path` in case changed to avoid overwrite
+                    downloaded_to_path = _request_utils.download(response, local_path, overwrite_ok=False)
                 else:
-                    print("download complete; file written to {}".format(local_path))
-            finally:
-                response.close()
+                    # don't update `downloaded_to_path` here because we are either downloading:
+                    #     - single file with an explicit destination, so `local_path` won't change
+                    #     - directory, so individual path's `local_path` isn't important
+                    _request_utils.download(response, local_path, overwrite_ok=True)
 
         return os.path.abspath(downloaded_to_path)
 

@@ -37,12 +37,15 @@ from .external import six
 from .external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
 from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
-from ._internal_utils import _artifact_utils
-from ._internal_utils import _config_utils
-from ._internal_utils import _git_utils
-from ._internal_utils import _histogram_utils
-from ._internal_utils import _pip_requirements_utils
-from ._internal_utils import _utils
+from ._internal_utils import (
+    _artifact_utils,
+    _config_utils,
+    _git_utils,
+    _histogram_utils,
+    _pip_requirements_utils,
+    _request_utils,
+    _utils,
+)
 
 from . import _dataset
 from . import _repository
@@ -3371,7 +3374,7 @@ class ExperimentRun(_ModelDBEntity):
             except:
                 return six.BytesIO(artifact)
 
-    def download_artifact(self, key, download_to_path, chunk_size=32*(10**6)):
+    def download_artifact(self, key, download_to_path):
         """
         Downloads the artifact with name `key` to path `download_to_path`.
 
@@ -3381,8 +3384,6 @@ class ExperimentRun(_ModelDBEntity):
             Name of the artifact.
         download_to_path : str
             Path to download to.
-        chunk_size : int, default 32 MB
-            Number of bytes to download at a time.
 
         Returns
         -------
@@ -3427,20 +3428,15 @@ class ExperimentRun(_ModelDBEntity):
                     "artifact {} appears to have been logged as path-only,"
                     " and cannot be downloaded".format(key)
                 )
+            print("download complete; file written to {}".format(download_to_path))
         else:
             # download artifact from artifact store
             url = self._get_url_for_artifact(key, "GET").url
-            response = _utils.make_request("GET", url, self._conn, stream=True)
-            try:
+            with _utils.make_request("GET", url, self._conn, stream=True) as response:
                 _utils.raise_for_http_error(response)
 
-                # TODO: use a tempfile first, and also delete if failed
-                with open(download_to_path, 'wb') as dest_f:
-                    for chunk in response.iter_content(chunk_size=chunk_size):
-                        dest_f.write(chunk)
-            finally:
-                response.close()
-        print("download complete; file written to {}".format(download_to_path))
+                # user-specified filepath, so overwrite
+                _request_utils.download(response, download_to_path, overwrite_ok=True)
 
         return download_to_path
 

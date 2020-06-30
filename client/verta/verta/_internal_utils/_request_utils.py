@@ -9,7 +9,6 @@ from . import _file_utils
 # TODO: migrate request utils from _utils
 
 
-# TODO: use this for dataset_blob.download() and run.download_artifact()
 def download(response, filepath, chunk_size=32*(10**6), overwrite_ok=False):
     """
     Downloads the contents of `response` to `filepath`.
