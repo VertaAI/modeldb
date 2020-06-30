@@ -50,11 +50,12 @@ trait Dataset extends Blob {
 
         Try(downloadAttempts.mapValues(_.get)) match {
           case Success(downloadAttempts) => {
+            // move the temporary files to correct locations:
             downloadAttempts.foreach(pair =>
               Files.move(
-                  pair._2.toPath,
-                  Paths.get(pair._1),
-                  StandardCopyOption.REPLACE_EXISTING
+                pair._2.toPath, // temporary file
+                Paths.get(pair._1), // correct location
+                StandardCopyOption.REPLACE_EXISTING
               )
             )
 
