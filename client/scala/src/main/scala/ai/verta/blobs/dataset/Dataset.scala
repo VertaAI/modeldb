@@ -41,18 +41,21 @@ trait Dataset extends Blob {
       ))
     else {
       val componentToLocalPath = determineComponentAndLocalPaths(componentPath, downloadToPath)
-
-      Try ({
-        componentToLocalPath.componentToLocalPath
-          .map(pair => downloadComponent(pair._1, pair._2))
-          .map(_.get)
-      }) match {
-        case Success(_) => Success(componentToLocalPath.absoluteLocalPath)
-        case Failure(e) => {
-          componentToLocalPath.componentToLocalPath.values.map(path => Try((new File(path)).delete()))
-          Failure(e)
+      
+      if (componentToLocalPath.componentToLocalPath.isEmpty)
+        Failure(new NoSuchElementException("Components not found."))
+      else
+        Try ({
+          componentToLocalPath.componentToLocalPath
+            .map(pair => downloadComponent(pair._1, pair._2))
+            .map(_.get)
+        }) match {
+          case Success(_) => Success(componentToLocalPath.absoluteLocalPath)
+          case Failure(e) => {
+            componentToLocalPath.componentToLocalPath.values.map(path => Try((new File(path)).delete()))
+            Failure(e)
+          }
         }
-      }
     }
   }
 

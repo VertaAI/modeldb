@@ -304,4 +304,26 @@ class TestCommitDataVersioning extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("passing in a non-existing componentPath should fail") {
+    val f = fixture
+
+    try {
+      val retrievedPathBlob: Dataset = f.commit.get("path-blob").get match {
+        case path: PathBlob => path
+      }
+      val downloadAttempt = retrievedPathBlob.download(Some("non-existing"), Some("somefile"))
+      assert(downloadAttempt.isFailure)
+      assert(downloadAttempt match {case Failure(e) => e.getMessage contains "Components not found."})
+
+      val retrievedS3Blob: Dataset = f.commit.get("s3-blob").get match {
+        case s3: S3 => s3
+      }
+      val downloadAttempt2 = retrievedS3Blob.download(Some("non-existing"), Some("somefile"))
+      assert(downloadAttempt2.isFailure)
+      assert(downloadAttempt2 match {case Failure(e) => e.getMessage contains "Components not found."})
+    } finally {
+      cleanup(f)
+    }
+  }
 }
