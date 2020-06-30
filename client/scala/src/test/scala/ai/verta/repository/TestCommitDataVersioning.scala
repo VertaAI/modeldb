@@ -37,6 +37,7 @@ class TestCommitDataVersioning extends FunSuite {
   ) = {
     deleteDirectory(new File("./somefiles"))
     deleteDirectory(new File("./somefiles2"))
+    deleteDirectory(new File(Dataset.DefaultDownloadDir))
 
     (new File("./somefile")).delete()
     (new File("./somefile2")).delete()
@@ -216,10 +217,52 @@ class TestCommitDataVersioning extends FunSuite {
   }
 
   test("if componentPath is provided but not downloadToPath, then it is used to determine the latter") {
+    val f = fixture
 
+    try {
+      val originalContent = generateRandomFile("somefile").get
+      val pathBlob = PathBlob("somefile", true).get
+      val commit = f.commit
+        .update("file", pathBlob)
+        .flatMap(_.save("some-msg")).get
+      generateRandomFile("somefile").get
+
+      // recover the old versioned file:
+      val retrievedBlob: Dataset = commit.get("file").get match {
+        case path: PathBlob => path
+      }
+      retrievedBlob.download(Some("somefile"))
+      // old file should not be overritten
+      assert(Files.readAllBytes((new File("somefile 1")).toPath).sameElements(originalContent))
+      assert(!Files.readAllBytes((new File("somefile")).toPath).sameElements(originalContent))
+    } finally {
+      (new File("somefile 1")).delete()
+      cleanup(f)
+    }
   }
 
   test("if neither is provided, then default path is used") {
-    
+    val f = fixture
+
+    try {
+      val originalContent = generateRandomFile("somefile").get
+      val pathBlob = PathBlob("somefile", true).get
+      val commit = f.commit
+        .update("file", pathBlob)
+        .flatMap(_.save("some-msg")).get
+      generateRandomFile("somefile").get
+
+      // recover the old versioned file:
+      val retrievedBlob: Dataset = commit.get("file").get match {
+        case path: PathBlob => path
+      }
+      retrievedBlob.download()
+      // old file should not be overritten
+      assert(
+        Files.readAllBytes((new File(f"${Dataset.DefaultDownloadDir}/somefile")).toPath).sameElements(originalContent)
+      )
+    } finally {
+      cleanup(f)
+    }
   }
 }

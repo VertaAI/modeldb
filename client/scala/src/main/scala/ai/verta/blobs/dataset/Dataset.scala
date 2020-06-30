@@ -15,7 +15,6 @@ import scala.concurrent.ExecutionContext
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
   private[verta] val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
-  private val DefaultDownloadDir: String = "mdb-data-download"
 
   // mutable state, populated when getting blob from commit
   /** TODO: Figure out a way to remove this */
@@ -123,9 +122,9 @@ trait Dataset extends Blob {
   ): String = downloadToPath.getOrElse({
     val originalPath =
       if (componentPath.isEmpty)
-        DefaultDownloadDir
+        Dataset.DefaultDownloadDir
       else if (Set(".", "..", "/", "s3:").contains(componentPath.get))
-        DefaultDownloadDir // rather than dump everything into current directory
+        Dataset.DefaultDownloadDir // rather than dump everything into current directory
       else
         (new File(componentPath.get)).getName
 
@@ -247,6 +246,8 @@ trait Dataset extends Blob {
 }
 
 object Dataset {
+  val DefaultDownloadDir: String = "mdb-data-download" // default download directory
+
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
    private[dataset] def toMetadata(
