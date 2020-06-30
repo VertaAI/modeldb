@@ -111,6 +111,10 @@ public class CommitEntity {
     return parent_commits;
   }
 
+  public void setParent_commits(Set<CommitEntity> parent_commits) {
+    this.parent_commits = parent_commits;
+  }
+
   public String getRootSha() {
     return rootSha;
   }
@@ -121,6 +125,10 @@ public class CommitEntity {
 
   public Set<CommitEntity> getChild_commits() {
     return child_commits;
+  }
+
+  public void setChild_commits(Set<CommitEntity> child_commits) {
+    this.child_commits = child_commits;
   }
 
   private List<String> getParentCommitIds() {

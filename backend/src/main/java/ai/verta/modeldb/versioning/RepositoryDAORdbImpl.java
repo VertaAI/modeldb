@@ -120,7 +120,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(ModelDBConstants.REPOSITORY_ID)
           .append(" = :repoId ")
           .toString();
-  private static final String CHECK_BRANCH_IN_REPOSITORY_HQL =
+  public static final String CHECK_BRANCH_IN_REPOSITORY_HQL =
       new StringBuilder("From ")
           .append(BranchEntity.class.getSimpleName())
           .append(" br ")

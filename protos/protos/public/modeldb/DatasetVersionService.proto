@@ -93,6 +93,7 @@ message CreateDatasetVersion {
         QueryDatasetVersionInfo query_dataset_version_info = 12;
     }
     uint64 time_created = 13;
+    versioning.DatasetBlob dataset_blob = 14;
     message Response {
         DatasetVersion dataset_version = 1;
     }
