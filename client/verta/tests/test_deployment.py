@@ -14,6 +14,8 @@ import zipfile
 
 import requests
 
+import yaml
+
 import verta
 from verta._internal_utils import _histogram_utils
 from verta._internal_utils import _utils
@@ -1019,3 +1021,18 @@ class TestGetDeployedModel:
             "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
             headers=conn.auth,
         )
+
+
+class TestGitOps:
+    def test_download_deployment_crd(self, experiment_run, model_for_deployment, in_tempdir):
+        download_to_path = "deployment.yaml"
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        filepath = experiment_run.download_deployment_crd(download_to_path)
+        assert filepath == os.path.abspath(download_to_path)
+
+        # can be loaded as YAML
+        with open(filepath, 'rb') as f:
+            model_deployment, config_map = yaml.safe_load_all(f)
