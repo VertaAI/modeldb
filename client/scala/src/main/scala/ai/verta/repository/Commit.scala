@@ -514,20 +514,21 @@ class Commit(
   private def getURLForArtifact(
     blobPath: String,
     datasetComponentPath: String,
-    method: String
-  )(implicit ec: ExecutionContext): Try[String] = {
+    method: String,
+    partNum: Int = 0
+  )(implicit ec: ExecutionContext): Try[VersioningGetUrlForBlobVersionedResponse] = {
     clientSet.versioningService.getUrlForBlobVersioned2(
       VersioningGetUrlForBlobVersioned(
         commit_sha = id,
         location = Some(pathToLocation(blobPath)),
         method = Some(method),
-        part_number = Some(BigInt(0)),
+        part_number = Some(BigInt(partNum)),
         path_dataset_component_blob_path = Some(datasetComponentPath),
         repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
       ),
       id.get,
       repoId
-    ).map(_.url.get)
+    )
   }
 
   /** Helper method to upload the file to ModelDB. Currently not supporting multi-part upload
@@ -538,19 +539,46 @@ class Commit(
   private def uploadArtifact(
     blobPath: String,
     datasetComponentPath: String,
-    file: File
+    file: File,
+    partSize: Long = 1024 * 1024 * 64 // 64 MB
   )(implicit ec: ExecutionContext): Try[Unit] = {
     /** TODO: implement multi-part upload */
-    getURLForArtifact(blobPath, datasetComponentPath, "PUT").flatMap(url =>
-      Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
-        try {
-          Await.result(clientSet.client.requestRaw("PUT", url, null, null, inputStream), Duration.Inf)
-            .map(_ => ())
-        } finally {
-          inputStream.close()
-        }
-      })
-    )
+    getURLForArtifact(blobPath, datasetComponentPath, "PUT", 1).flatMap(resp => {
+      if (resp.multipart_upload_ok.isDefined && resp.multipart_upload_ok.get) {
+        var buffer = new Array[Byte](partSize)
+
+        Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
+          try {
+            uploadPart(inputStream, buffer, 1)
+          } finally {
+            inputStream.close()
+          }
+        })
+      }
+      else {
+        Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
+          try {
+            Await.result(clientSet.client.requestRaw("PUT", resp.url.get, null, null, inputStream), Duration.Inf)
+              .map(_ => ())
+          } finally {
+            inputStream.close()
+          }
+        })
+      }
+    })
+  }
+
+  private def uploadPart(inputStream: InputStream, buffer: Array[Byte], partNum: Int = 1): Try[Int] = {
+    getURLForArtifact(blobPath, datasetComponentPath, "PUT", partNum).map(_.url.get).flatMap(url => {
+      var readLen = inputStream.read(buffer)
+
+      if (readlen < 0)
+        Success(partNum - 1)
+      else
+        Try(new ByteArrayInputStream(buffer)).flatMap(filepart => {
+          Await.result(clientSet.client.requestRaw("PUT", url, null, null, filepart), Duration.Inf)
+        }).flatMap(_ => uploadPart(inputStream, buffer, partNum + 1))
+    })
   }
 
   /** Helper method to download a component of a blob.
@@ -562,7 +590,7 @@ class Commit(
     blobPath: String,
     datasetComponentPath: String
   )(implicit ec: ExecutionContext): Try[File] = {
-    getURLForArtifact(blobPath, datasetComponentPath, "GET").flatMap(url =>
+    getURLForArtifact(blobPath, datasetComponentPath, "GET").map(_.url.get).flatMap(url =>
       Try(File.createTempFile(datasetComponentPath, null)).flatMap(file =>
         Await.result(
           clientSet.client.requestRaw("GET", url, null, null, null)
