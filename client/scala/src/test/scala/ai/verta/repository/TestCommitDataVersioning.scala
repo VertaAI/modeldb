@@ -51,11 +51,26 @@ class TestCommitDataVersioning extends FunSuite {
     dir.delete()
   }
 
-  /** Check to see if two files have the same content */
-  def checkEqualFile(firstFile: File, secondFile: File) = {
-    val first: Array[Byte] = Files.readAllBytes(firstFile.toPath)
-    val second = Files.readAllBytes(secondFile.toPath)
-    Arrays.equals(first, second)
+  /** Check to see if two files or directories have the same content */
+  def checkEqualFile(firstFile: File, secondFile: File): Boolean = {
+    if (firstFile.isDirectory && secondFile.isDirectory) {
+      val firstContents = firstFile.listFiles.map(file => file.getName -> file).toMap
+      val secondContents = secondFile.listFiles.map(file => file.getName -> file).toMap
+
+      if (firstContents.size != secondContents.size)
+        false
+      else {
+        firstContents.forall(pair =>
+          secondContents.get(pair._1).isDefined && checkEqualFile(pair._2, secondContents.get(pair._1).get)
+        )
+      }
+    }
+    else if (firstFile.isFile && secondFile.isFile) {
+      val first: Array[Byte] = Files.readAllBytes(firstFile.toPath)
+      val second = Files.readAllBytes(secondFile.toPath)
+      Arrays.equals(first, second)
+    }
+    else false
   }
 
   /** Generate a random file to the given path */
@@ -143,15 +158,7 @@ class TestCommitDataVersioning extends FunSuite {
         Some("./src/test/scala/ai/verta/blobs/testdir"),
         "./somefiles"
       )
-      assert(checkEqualFile(
-        new File("./src/test/scala/ai/verta/blobs/testdir/testfile"),
-        new File("./somefiles/testfile")
-      ))
-
-      assert(checkEqualFile(
-        new File("./src/test/scala/ai/verta/blobs/testdir/testsubdir/testfile2"),
-        new File("./somefiles/testsubdir/testfile2")
-      ))
+      assert(checkEqualFile(new File("./src/test/scala/ai/verta/blobs/testdir"), new File("./somefiles")))
     } finally {
       cleanup(f)
     }
@@ -175,15 +182,11 @@ class TestCommitDataVersioning extends FunSuite {
           case path: PathBlob => path
         }
         versionedPathBlob.download(downloadToPath = "./somefiles")
+        // src/test/scala/ai/verta/blobs/testdir is downwloaded into somefiles directory:
         assert(checkEqualFile(
-          new File("./src/test/scala/ai/verta/blobs/testdir/testfile"),
-          new File("./somefiles/src/test/scala/ai/verta/blobs/testdir/testfile")
+          new File("./src/test/scala/ai/verta/blobs/testdir"),
+          new File("./somefiles/src/test/scala/ai/verta/blobs/testdir")
         ))
-        assert(checkEqualFile(
-          new File("./src/test/scala/ai/verta/blobs/testdir/testsubdir/testfile2"),
-          new File("./somefiles/src/test/scala/ai/verta/blobs/testdir/testsubdir/testfile2")
-        ))
-
     } finally {
       cleanup(f)
     }
