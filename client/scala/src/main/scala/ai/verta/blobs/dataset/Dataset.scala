@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext
 
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
-  private[verta] val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
+  val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
 
   // mutable state, populated when getting blob from commit
   /** TODO: Figure out a way to remove this */
