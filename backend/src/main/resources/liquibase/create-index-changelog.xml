@@ -1066,7 +1066,7 @@
         </createIndex>
     </changeSet>
 
-    <changeSet author="anandJ" id="index_experiment_exp_deleted">
+    <changeSet author="anandJ" id="index_experiment_deleted">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="index_experiment_deleted"/>
@@ -1090,7 +1090,7 @@
         </createIndex>
     </changeSet>
 
-    <changeSet author="anandJ" id="index_dataset_dataset_deleted">
+    <changeSet author="anandJ" id="index_dataset_deleted">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="index_dataset_deleted"/>
@@ -1117,10 +1117,10 @@
     <changeSet author="anandJ" id="index_project_date_updated">
         <preConditions onFail="MARK_RAN">
             <not>
-                <indexExists indexName="index_project_p_date_updated"/>
+                <indexExists indexName="index_project_date_updated"/>
             </not>
         </preConditions>
-        <createIndex indexName="index_project_p_date_updated"
+        <createIndex indexName="index_project_date_updated"
                      tableName="project">
             <column name="date_updated"/>
         </createIndex>
