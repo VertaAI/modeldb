@@ -1042,6 +1042,42 @@
         </createIndex>
     </changeSet>
 
+    <changeSet author="anandJ" id="index_project_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_project_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_project_deleted"
+                     tableName="project">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_repository_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_repository_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_repository_deleted"
+                     tableName="repository">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_experiment_exp_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_experiment_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_experiment_deleted"
+                     tableName="experiment">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
     <changeSet author="anandJ" id="index_experiment_run_deleted">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -1050,6 +1086,30 @@
         </preConditions>
         <createIndex indexName="index_experiment_run_deleted"
                      tableName="experiment_run">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dataset_dataset_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dataset_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dataset_deleted"
+                     tableName="dataset">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dataset_version_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dataset_version_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dataset_version_deleted"
+                     tableName="dataset_version">
             <column name="deleted"/>
         </createIndex>
     </changeSet>
