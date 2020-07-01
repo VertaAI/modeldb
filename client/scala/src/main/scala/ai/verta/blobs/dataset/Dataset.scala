@@ -11,13 +11,13 @@ import scala.util.{Failure, Success, Try}
 
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
-  protected val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
+  private[verta] val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
-  protected def toComponent(metadata: FileMetadata, internalVersionedPath: Option[String] = None) =
+  protected def toComponent(metadata: FileMetadata) =
     VersioningPathDatasetComponentBlob(
-      internal_versioned_path = internalVersionedPath,
+      internal_versioned_path = metadata.internalVersionedPath,
       last_modified_at_source = Some(metadata.lastModified),
       md5 = Some(metadata.md5),
       path = Some(metadata.path),
@@ -25,10 +25,9 @@ trait Dataset extends Blob {
     )
 
   /** Prepare the components and data for upload.
-   *  @return a map of paths (in the blob) to instances of UploadComponent
-   *  which contains the path to the object in local file system and the versioning component
+   *  @return whether the attempt succeeds.
    */
-  private[verta] def prepareForUpload(): Try[Map[String, UploadComponent]]
+  private[verta] def prepareForUpload(): Try[Unit]
 
   /** Get the metadata of a certain file stored in the dataset blob
    *  @param path path to the file
@@ -37,7 +36,7 @@ trait Dataset extends Blob {
   def getMetadata(path: String) = contents.get(path)
 
   /** Get all the Dataset blob's corresponding list of components */
-  protected def components = getAllMetadata.map(toComponent(_)).toList
+  protected def components = getAllMetadata.map(toComponent).toList
 
   /** Get the set of all the files' metadata managed by the Dataset blob  */
   def getAllMetadata = contents.values
@@ -52,7 +51,12 @@ trait Dataset extends Blob {
   }
 
   /** Clean up the uploaded components */
-  protected def cleanUpUploadedComponents(uploadMap: Map[String, UploadComponent]): Try[Unit] = Success(())
+  private[verta] def cleanUpUploadedComponents(): Try[Unit] = Success(())
+
+  /** Returns the paths of all components in this dataset
+   *  @return Paths of all components
+   */
+  def listPaths: List[String] = contents.keySet.toList.sorted
 }
 
 object Dataset {
@@ -62,10 +66,10 @@ object Dataset {
      component: VersioningPathDatasetComponentBlob,
      versionId: Option[String] = None
    ) = new FileMetadata(
-     component.last_modified_at_source.get,
-     component.md5.get,
-     component.path.get,
-     component.size.get,
+     component.last_modified_at_source.getOrElse(0),
+     component.md5.getOrElse(""),
+     component.path.getOrElse(""),
+     component.size.getOrElse(0),
      versionId
    )
 

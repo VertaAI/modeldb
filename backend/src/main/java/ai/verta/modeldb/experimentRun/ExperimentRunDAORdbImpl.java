@@ -34,13 +34,16 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
+import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
+import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
+import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
@@ -180,12 +183,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append("From ExperimentRunEntity ere where ere.")
           .append(ModelDBConstants.PROJECT_ID)
           .append(" IN (:projectIds) ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String GET_EXPERIMENT_RUN_BY_EXPERIMENT_ID_HQL =
       new StringBuilder()
           .append("From ExperimentRunEntity ere where ere.")
           .append(ModelDBConstants.EXPERIMENT_ID)
           .append(" IN (:experimentIds) ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING =
       new StringBuilder("UPDATE ")
@@ -311,9 +316,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
+    checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      checkIfEntityAlreadyExists(experimentRun, true);
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
         Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
@@ -1359,7 +1364,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           builder.createQuery(ExperimentRunEntity.class);
       Root<ExperimentRunEntity> experimentRunRoot = criteriaQuery.from(ExperimentRunEntity.class);
       experimentRunRoot.alias("exp");
+
+      Root<ProjectEntity> projectEntityRoot = criteriaQuery.from(ProjectEntity.class);
+      projectEntityRoot.alias("pr");
+
+      Root<ExperimentEntity> experimentEntityRoot = criteriaQuery.from(ExperimentEntity.class);
+      projectEntityRoot.alias("ex");
+
       List<Predicate> finalPredicatesList = new ArrayList<>();
+      finalPredicatesList.add(
+          builder.equal(
+              experimentRunRoot.get(ModelDBConstants.PROJECT_ID),
+              projectEntityRoot.get(ModelDBConstants.ID)));
+      finalPredicatesList.add(
+          builder.equal(
+              experimentRunRoot.get(ModelDBConstants.EXPERIMENT_ID),
+              experimentEntityRoot.get(ModelDBConstants.ID)));
 
       List<String> projectIds = new ArrayList<>();
       if (!queryParameters.getProjectId().isEmpty()) {
@@ -1433,6 +1453,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       finalPredicatesList.add(
           builder.equal(experimentRunRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(projectEntityRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(experimentEntityRoot.get(ModelDBConstants.DELETED), false));
 
       Order[] orderBy =
           RdbmsUtils.getOrderArrBasedOnSortKey(
@@ -2202,17 +2226,30 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setValueType(ValueTypeEnum.ValueType.STRING)
               .build();
 
-      FindExperimentRuns findExperimentRuns =
+      FindExperimentRuns.Builder findExperimentRuns =
           FindExperimentRuns.newBuilder()
               .setPageNumber(request.getPagination().getPageNumber())
               .setPageLimit(request.getPagination().getPageLimit())
               .setAscending(true)
               .setSortKey(ModelDBConstants.DATE_UPDATED)
               .addPredicates(repositoryIdPredicate)
-              .addPredicates(commitHashPredicate)
-              .build();
+              .addPredicates(commitHashPredicate);
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      if (request.getRepositoryId().hasNamedId()) {
+        findExperimentRuns.setWorkspaceName(
+            request.getRepositoryId().getNamedId().getWorkspaceName());
+      } else {
+        WorkspaceDTO workspaceDTO =
+            roleService.getWorkspaceDTOByWorkspaceId(
+                currentLoginUserInfo,
+                repositoryEntity.getWorkspace_id(),
+                repositoryEntity.getWorkspace_type());
+        if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
+          findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());
+        }
+      }
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns);
+          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
       return ListCommitExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
@@ -2264,7 +2301,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setValueType(ValueTypeEnum.ValueType.STRING)
               .build();
 
-      FindExperimentRuns findExperimentRuns =
+      FindExperimentRuns.Builder findExperimentRuns =
           FindExperimentRuns.newBuilder()
               .setPageNumber(request.getPagination().getPageNumber())
               .setPageLimit(request.getPagination().getPageLimit())
@@ -2272,10 +2309,25 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setSortKey(ModelDBConstants.DATE_UPDATED)
               .addPredicates(repositoryIdPredicate)
               .addPredicates(commitHashPredicate)
-              .addPredicates(locationPredicate)
-              .build();
+              .addPredicates(locationPredicate);
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      if (request.getRepositoryId().hasNamedId()) {
+        findExperimentRuns.setWorkspaceName(
+            request.getRepositoryId().getNamedId().getWorkspaceName());
+      } else {
+        WorkspaceDTO workspaceDTO =
+            roleService.getWorkspaceDTOByWorkspaceId(
+                currentLoginUserInfo,
+                repositoryEntity.getWorkspace_id(),
+                repositoryEntity.getWorkspace_type());
+        if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
+          findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());
+        }
+      }
+
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns);
+          findExperimentRuns(
+              projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns.build());
 
       return ListBlobExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())

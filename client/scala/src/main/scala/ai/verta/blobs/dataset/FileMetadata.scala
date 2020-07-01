@@ -14,6 +14,11 @@ case class FileMetadata(
   val size: BigInt,
   val versionId: Option[String] = None
 ) {
+  // mutable fields, which are updated when preparing for uploading:
+  /** TODO: remove these mutable fields to make FileMetadata immutable again */
+  private[verta] var internalVersionedPath: Option[String] = None // MDB internal versioned path
+  private[verta] var localPath: Option[String] = None // path to file in local system
+
   override def equals(other: Any) = other match {
     case other: FileMetadata => lastModified == other.lastModified &&
       md5 == other.md5 && path == other.path && size == other.size &&

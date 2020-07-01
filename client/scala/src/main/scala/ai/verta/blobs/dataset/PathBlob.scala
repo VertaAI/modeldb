@@ -19,9 +19,26 @@ import scala.annotation.tailrec
  */
 case class PathBlob(
   protected val contents: HashMap[String, FileMetadata],
-  protected val enableMDBVersioning: Boolean = false
+  private[verta] val enableMDBVersioning: Boolean = false
 ) extends Dataset {
-  override def prepareForUpload() = ???
+  /** Prepare the PathBlob for uploading
+   *  @return whether the attempt succeeds
+   */
+  override def prepareForUpload() =
+    if (enableMDBVersioning)
+      Try(contents.values.map(updateMetadata).map(_.get))
+    else
+      Success(())
+
+  /** Update metadata for uploading
+   *  @param metadata metadata of the file
+   *  @return whether the attempt succeeds
+   */
+  private def updateMetadata(metadata: FileMetadata) = Try {
+    val file = (new File(metadata.path)).getAbsoluteFile()
+    metadata.internalVersionedPath = Some(f"${Dataset.hash(file, "SHA-256").get}/${file.getName}")
+    metadata.localPath = Some(file.getPath)
+  }
 
   override def equals(other: Any) = other match {
     case other: PathBlob => contents.equals(other.contents)

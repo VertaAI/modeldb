@@ -24,7 +24,7 @@ import java.io.{File, FileOutputStream}
  */
 case class S3(
   protected val contents: HashMap[String, FileMetadata],
-  protected val enableMDBVersioning: Boolean = false
+  private[verta] val enableMDBVersioning: Boolean = false
 ) extends Dataset {
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"
@@ -32,25 +32,27 @@ case class S3(
    */
   def getVersionId(path: String) = contents.get(path).flatMap(_.versionId)
 
-  /** Preparing for uploading by downloading the stored objects from S3.
-   *  @return A map from the s3 path to the path of the stored object, if succeeds
+  /** Preparing for uploading by downloading the stored objects from S3 and update metadata
+   *  @return Whether the attempt succeeds
    */
-  override def prepareForUpload(): Try[Map[String, UploadComponent]] = {
-    Try(contents
-      .mapValues(metadata =>
-        toUploadComponent(S3Location(metadata.path, metadata.versionId).get, S3.s3, metadata).get
+  override def prepareForUpload(): Try[Unit] = {
+    if (enableMDBVersioning)
+      Try(
+        contents
+          .values
+          .map(metadata => downloadFromS3(S3Location(metadata.path, metadata.versionId).get, S3.s3, metadata).get)
       )
-      .toMap
-    )
+    else Success(())
   }
 
-  /** Helper method to download the object stored in a S3 location and construct the corresponding upload component
+  /** Helper method to download the object stored in a S3 location and update the metadata
    *  Based on https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/examples-s3-objects.html#download-object
    *  @param location the S3 location. Must correspond to a file
    *  @param s3 The s3 client
-   *  @return the path of the saved object, computed based on the s3 location, if succeeds.
+   *  @param metadata the FileMetadata instance
+   *  @return whether the attempt succeeds.
    */
-  private def toUploadComponent(location: S3Location, s3: AmazonS3, metadata: FileMetadata) = Try {
+  private def downloadFromS3(location: S3Location, s3: AmazonS3, metadata: FileMetadata) = Try {
     // follow the pattern given here:
     // https://alvinalexander.com/scala/how-declare-variable-option-before-try-catch-finally-scala/
     // finally block cannot refer to variable declared in try block
@@ -80,11 +82,26 @@ case class S3(
       }
 
       val internalVersionedPath = f"${Dataset.hash(file, "SHA-256").get}/${location.key.get}"
-      UploadComponent(file.getPath(), toComponent(metadata, Some(internalVersionedPath)))
+
+      /** TODO: remove these  */
+      // mutating internal field:
+      metadata.internalVersionedPath = Some(internalVersionedPath)
+      metadata.localPath = Some(file.getPath)
     } finally {
       if (s3InputStream.isDefined) s3InputStream.get.close()
       if (fileOutputStream.isDefined) fileOutputStream.get.close()
     }
+  }
+
+  /** Deletes temporary files that had been downloaded for ModelDB-managed versioning
+   *  This method does nothing if ModelDB-managed versioning was not enabled.
+   *  @return whether the delete attempts succeeds.
+   */
+  override private[verta] def cleanUpUploadedComponents(): Try[Unit] = {
+    if (enableMDBVersioning)
+      Try(contents.values.map(_.localPath.get).map(path => Try((new File(path)).delete())).map(_.get))
+    else
+      Success(())
   }
 
   override def equals(other: Any) = other match {

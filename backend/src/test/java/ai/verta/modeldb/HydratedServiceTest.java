@@ -5169,6 +5169,7 @@ public class HydratedServiceTest {
   }
 
   @Test
+  @Ignore
   public void findHydratedProjectsByUserTest() {
     LOGGER.info("FindHydratedProjectsByUser test start................................");
     ProjectTest projectTest = new ProjectTest();

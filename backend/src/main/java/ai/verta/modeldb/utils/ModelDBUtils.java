@@ -554,9 +554,10 @@ public class ModelDBUtils {
 
   public static Object retryOrThrowException(
       StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
-    String errorMessage = "UAC Service unavailable : " + ex.getMessage();
-    LOGGER.warn(errorMessage, ex);
+    String errorMessage = ex.getMessage();
+    LOGGER.warn(errorMessage);
     if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
+      errorMessage = "UAC Service unavailable : " + errorMessage;
       if (retry && retryCallInterface != null) {
         try {
           App app = App.getInstance();

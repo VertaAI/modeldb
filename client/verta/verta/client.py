@@ -37,12 +37,15 @@ from .external import six
 from .external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
 from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
-from ._internal_utils import _artifact_utils
-from ._internal_utils import _config_utils
-from ._internal_utils import _git_utils
-from ._internal_utils import _histogram_utils
-from ._internal_utils import _pip_requirements_utils
-from ._internal_utils import _utils
+from ._internal_utils import (
+    _artifact_utils,
+    _config_utils,
+    _git_utils,
+    _histogram_utils,
+    _pip_requirements_utils,
+    _request_utils,
+    _utils,
+)
 
 from . import _dataset
 from . import _repository
@@ -2157,7 +2160,7 @@ class ExperimentRun(_ModelDBEntity):
                         continue  # try again
                     else:
                         break
-                response.raise_for_status()
+                _utils.raise_for_http_error(response)
 
                 # commit part
                 url = "{}://{}/api/v1/modeldb/experiment-run/commitArtifactPart".format(
@@ -2807,40 +2810,26 @@ class ExperimentRun(_ModelDBEntity):
 
     def log_dataset(self, key, dataset, overwrite=False):
         """
-        Logs a dataset artifact to this Experiment Run.
+        Alias for :meth:`~ExperimentRun.log_dataset_version`.
 
-        Parameters
-        ----------
-        key : str
-            Name of the dataset.
-        dataset : str or file-like or object
-            Dataset or some representation thereof.
-                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
-                  and uploaded as an artifact.
-                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
-                - If type is Dataset, then it will log a dataset version
-                - Otherwise, the object will be serialized and uploaded as an artifact.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing dataset with key `key`.
+        .. deprecated:: 0.14.12
+            ``log_dataset()`` can no longer be used to log artifacts.
+            :meth:`~ExperimentRun.log_artifact` should be used instead.
 
         """
-        _artifact_utils.validate_key(key)
-        _utils.validate_flat_key(key)
-
         if isinstance(dataset, _dataset.Dataset):
-            raise ValueError("directly logging a Dataset is not supported;"
-                             " consider using run.log_dataset_version() instead")
+            raise TypeError(
+                "directly logging a Dataset is not supported;"
+                " please create a DatasetVersion for logging"
+            )
 
-        if isinstance(dataset, _dataset.DatasetVersion):
-            # TODO: maybe raise a warning pointing to log_dataset_version()
-            self.log_dataset_version(key, dataset, overwrite=overwrite)
+        if not isinstance(dataset, _dataset.DatasetVersion):
+            raise TypeError(
+                "`dataset` must be of type DatasetVersion;"
+                " to log an artifact, consider using run.log_artifact() instead"
+            )
 
-        # log `dataset` as artifact
-        try:
-            extension = _artifact_utils.get_file_ext(dataset)
-        except (TypeError, ValueError):
-            extension = None
-        self._log_artifact(key, dataset, _CommonCommonService.ArtifactTypeEnum.DATA, extension, overwrite=overwrite)
+        self.log_dataset_version(key=key, dataset_version=dataset, overwrite=overwrite)
 
     def log_dataset_version(self, key, dataset_version, overwrite=False):
         """
@@ -2855,7 +2844,7 @@ class ExperimentRun(_ModelDBEntity):
 
         """
         if not isinstance(dataset_version, _dataset.DatasetVersion):
-            raise ValueError("`dataset_version` must be of type DatasetVersion")
+            raise TypeError("`dataset_version` must be of type DatasetVersion")
 
         # TODO: hack because path_only artifact needs a placeholder path
         dataset_path = "See attached dataset version"
@@ -3385,7 +3374,7 @@ class ExperimentRun(_ModelDBEntity):
             except:
                 return six.BytesIO(artifact)
 
-    def download_artifact(self, key, download_to_path, chunk_size=32*(10**6)):
+    def download_artifact(self, key, download_to_path):
         """
         Downloads the artifact with name `key` to path `download_to_path`.
 
@@ -3395,8 +3384,6 @@ class ExperimentRun(_ModelDBEntity):
             Name of the artifact.
         download_to_path : str
             Path to download to.
-        chunk_size : int, default 32 MB
-            Number of bytes to download at a time.
 
         Returns
         -------
@@ -3441,20 +3428,15 @@ class ExperimentRun(_ModelDBEntity):
                     "artifact {} appears to have been logged as path-only,"
                     " and cannot be downloaded".format(key)
                 )
+            print("download complete; file written to {}".format(download_to_path))
         else:
             # download artifact from artifact store
             url = self._get_url_for_artifact(key, "GET").url
-            response = _utils.make_request("GET", url, self._conn, stream=True)
-            try:
+            with _utils.make_request("GET", url, self._conn, stream=True) as response:
                 _utils.raise_for_http_error(response)
 
-                # TODO: use a tempfile first, and also delete if failed
-                with open(download_to_path, 'wb') as dest_f:
-                    for chunk in response.iter_content(chunk_size=chunk_size):
-                        dest_f.write(chunk)
-            finally:
-                response.close()
-        print("download complete; file written to {}".format(download_to_path))
+                # user-specified filepath, so overwrite
+                _request_utils.download(response, download_to_path, overwrite_ok=True)
 
         return download_to_path
 
@@ -4083,6 +4065,95 @@ class ExperimentRun(_ModelDBEntity):
 
         status = self.get_deployment_status()
         return deployment.DeployedModel.from_url(status['url'], status['token'])
+
+    def download_deployment_yaml(self, download_to_path, path=None, token=None, no_token=False):
+        """
+        Downloads this Experiment Run's model deployment CRD YAML.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download deployment YAML to.
+        path : str, optional
+            Suffix for the prediction endpoint URL. If not provided, one will be generated
+            automatically.
+        token : str, optional
+            Token to use to authorize predictions requests. If not provided and `no_token` is
+            ``False``, one will be generated automatically.
+        no_token : bool, default False
+            Whether to not require a token for predictions.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where deployment YAML was downloaded to. Matches `download_to_path`.
+
+        """
+        # NOTE: this param-handling block was copied verbatim from deploy()
+        data = {}
+        if path is not None:
+            # get project ID for URL path
+            run_msg = self._get_self_as_msg()
+            data.update({'url_path': "{}/{}".format(run_msg.project_id, path)})
+        if no_token:
+            data.update({'token': ""})
+        elif token is not None:
+            data.update({'token': token})
+
+        endpoint = "{}://{}/api/v1/deployment/models/{}/crd".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+        )
+        with _utils.make_request("POST", endpoint, self._conn, json=data, stream=True) as response:
+            try:
+                _utils.raise_for_http_error(response)
+            except requests.HTTPError as e:
+                # propagate error caused by missing artifact
+                error_text = e.response.text.strip()
+                if error_text.startswith("missing artifact"):
+                    new_e = RuntimeError("unable to obtain deployment CRD due to " + error_text)
+                    six.raise_from(new_e, None)
+                else:
+                    raise e
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
+
+    def download_docker_context(self, download_to_path):
+        """
+        Downloads this Experiment Run's Docker context ``tgz``.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download Docker context to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where Docker context was downloaded to. Matches `download_to_path`.
+
+        """
+        endpoint = "{}://{}/api/v1/deployment/models/{}/dockercontext".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+        )
+        with _utils.make_request("GET", endpoint, self._conn, stream=True) as response:
+            try:
+                _utils.raise_for_http_error(response)
+            except requests.HTTPError as e:
+                # propagate error caused by missing artifact
+                error_text = e.response.text.strip()
+                if error_text.startswith("missing artifact"):
+                    new_e = RuntimeError("unable to obtain Docker context due to " + error_text)
+                    six.raise_from(new_e, None)
+                else:
+                    raise e
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
 
     def log_commit(self, commit, key_paths=None):
         """

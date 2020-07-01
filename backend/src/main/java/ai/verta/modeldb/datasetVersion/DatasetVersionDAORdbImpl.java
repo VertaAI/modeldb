@@ -15,6 +15,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
+import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -305,7 +306,15 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       Root<DatasetVersionEntity> datasetVersionRoot =
           criteriaQuery.from(DatasetVersionEntity.class);
       datasetVersionRoot.alias("ds");
+
+      Root<DatasetEntity> datasetEntityRoot = criteriaQuery.from(DatasetEntity.class);
+      datasetEntityRoot.alias("dt");
+
       List<Predicate> finalPredicatesList = new ArrayList<>();
+      finalPredicatesList.add(
+          builder.equal(
+              datasetVersionRoot.get(ModelDBConstants.DATASET_ID),
+              datasetEntityRoot.get(ModelDBConstants.ID)));
 
       List<String> datasetIds = new ArrayList<>();
       if (!queryParameters.getDatasetId().isEmpty()) {
@@ -369,6 +378,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       finalPredicatesList.add(
           builder.equal(datasetVersionRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(datasetEntityRoot.get(ModelDBConstants.DELETED), false));
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {

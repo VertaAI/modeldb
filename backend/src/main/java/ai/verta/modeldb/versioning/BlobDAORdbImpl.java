@@ -524,8 +524,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         DatasetVersion.Builder datasetVersionBuilder = DatasetVersion.newBuilder();
         datasetVersionBuilder.setId(commit.getCommit_hash());
         if (commit.getParent_commits().size() != 0) {
-          datasetVersionBuilder.setParentId(
-              commit.getParent_commits().iterator().next().getCommit_hash());
+          datasetVersionBuilder.setParentId(commit.getParent_commits().get(0).getCommit_hash());
         }
         datasetVersionBuilder.setDatasetId(String.valueOf(repositoryEntity.getId()));
         datasetVersionBuilder.setTimeLogged(commit.getDate_created());
@@ -1141,7 +1140,9 @@ public class BlobDAORdbImpl implements BlobDAO {
         String mergeMessage = request.getContent().getMessage();
         List<String> parentSHAs =
             Arrays.asList(internalCommitB.getCommit_hash(), internalCommitA.getCommit_hash());
-        List<CommitEntity> parentCommits = Arrays.asList(internalCommitB, internalCommitA);
+        Map<Integer, CommitEntity> parentCommits = new HashMap<>();
+        parentCommits.put(0, internalCommitB);
+        parentCommits.put(1, internalCommitA);
         if (mergeMessage.isEmpty()) {
           mergeMessage = "Merge " + branchOrCommitA + " into " + branchOrCommitB;
         }
@@ -1183,7 +1184,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       Session writeSession,
       RepositoryEntity repositoryEntity,
       List<String> parentSHAs,
-      List<CommitEntity> parentCommits,
+      Map<Integer, CommitEntity> parentCommits,
       List<BlobContainer> blobContainerList,
       String commitMessage)
       throws NoSuchAlgorithmException, ModelDBException {
@@ -1255,8 +1256,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         throw new ModelDBException(
             "No parent found for commit : " + request.getCommitToRevertSha(), Status.Code.INTERNAL);
       }
-      CommitEntity firstParentOfCommitToRevert =
-          new ArrayList<>(commitToRevertEntity.getParent_commits()).get(0);
+      CommitEntity firstParentOfCommitToRevert = commitToRevertEntity.getParent_commits().get(0);
 
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapFirstParentCommit =
           getCommitBlobMapWithHash(
@@ -1300,7 +1300,8 @@ public class BlobDAORdbImpl implements BlobDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<String> parentSHAs = Collections.singletonList(request.getBaseCommitSha());
-      List<CommitEntity> parentCommits = Collections.singletonList(baseCommitEntity);
+      Map<Integer, CommitEntity> parentCommits = new HashMap<>();
+      parentCommits.put(0, baseCommitEntity);
       String revertMessage = request.getContent().getMessage();
       if (revertMessage.isEmpty()) {
         revertMessage = VersioningUtils.revertCommitMessage(commitToRevertEntity.toCommitProto());
@@ -1679,41 +1680,36 @@ public class BlobDAORdbImpl implements BlobDAO {
   private GetUrlForArtifact.Response getPresignedUrl(
       ArtifactStoreDAO artifactStoreDAO, Session session, GetUrlForBlobVersioned request, Blob blob)
       throws ModelDBException {
-    try {
-      Map<String, String> componentWithSHAMap =
-          getDatasetComponentBlob(blob, request.getPathDatasetComponentBlobPath());
+    Map<String, String> componentWithSHAMap =
+        getDatasetComponentBlob(blob, request.getPathDatasetComponentBlobPath());
 
-      if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
-        String internalPath = componentWithSHAMap.get("internalPath");
-        String computeSha = componentWithSHAMap.get("computeSha");
-        Map.Entry<String, String> s3KeyUploadId =
-            getS3PathAndMultipartUploadId(
-                session,
-                computeSha,
-                internalPath,
-                blob.getDataset().getContentCase(),
-                request.getPartNumber() > 0,
-                key -> artifactStoreDAO.initializeMultipart(internalPath));
-        String errorMessage = "S3Key not found";
-        String s3Key = s3KeyUploadId.getKey();
-        String uploadId = s3KeyUploadId.getValue();
-        if (s3Key == null || s3Key.isEmpty()) {
-          LOGGER.warn(errorMessage);
-          throw new ModelDBException(errorMessage, Status.Code.NOT_FOUND);
-        }
-        return artifactStoreDAO.getUrlForArtifactMultipart(
-            s3Key, request.getMethod(), request.getPartNumber(), uploadId);
-      } else {
-        throw new ModelDBException("Invalid Blob type found", Status.Code.INVALID_ARGUMENT);
+    if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
+      String internalPath = componentWithSHAMap.get("internalPath");
+      String computeSha = componentWithSHAMap.get("computeSha");
+      Map.Entry<String, String> s3KeyUploadId =
+          getS3PathAndMultipartUploadId(
+              session,
+              computeSha,
+              internalPath,
+              blob.getDataset().getContentCase(),
+              request.getPartNumber() > 0,
+              key -> artifactStoreDAO.initializeMultipart(internalPath));
+      String errorMessage = "S3Key not found";
+      String s3Key = s3KeyUploadId.getKey();
+      String uploadId = s3KeyUploadId.getValue();
+      if (s3Key == null || s3Key.isEmpty()) {
+        LOGGER.warn(errorMessage);
+        throw new ModelDBException(errorMessage, Status.Code.NOT_FOUND);
       }
-    } catch (Exception e) {
-      throw new ModelDBException(e);
+      return artifactStoreDAO.getUrlForArtifactMultipart(
+          s3Key, request.getMethod(), request.getPartNumber(), uploadId);
+    } else {
+      throw new ModelDBException("Invalid Blob type found", Status.Code.INVALID_ARGUMENT);
     }
   }
 
   private Map<String, String> getDatasetComponentBlob(
-      Blob blob, String pathDatasetComponentBlobPath)
-      throws ModelDBException, NoSuchAlgorithmException {
+      Blob blob, String pathDatasetComponentBlobPath) throws ModelDBException {
     if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
       DatasetBlob datasetBlob = blob.getDataset();
       switch (datasetBlob.getContentCase()) {
@@ -1728,7 +1724,12 @@ public class BlobDAORdbImpl implements BlobDAO {
             PathDatasetComponentBlob pathDatasetComponentBlob = pathComponentBlob.get();
             AutogenPathDatasetComponentBlob autogenPathDatasetComponentBlob =
                 AutogenPathDatasetComponentBlob.fromProto(pathDatasetComponentBlob);
-            String computeSha = DatasetContainer.computeSHA(autogenPathDatasetComponentBlob);
+            String computeSha = null;
+            try {
+              computeSha = DatasetContainer.computeSHA(autogenPathDatasetComponentBlob);
+            } catch (NoSuchAlgorithmException e) {
+              throw new ModelDBException(e);
+            }
             Map<String, String> componentWithSHAMap = new HashMap<>();
             componentWithSHAMap.put(
                 "internalPath", pathDatasetComponentBlob.getInternalVersionedPath());
@@ -1747,7 +1748,12 @@ public class BlobDAORdbImpl implements BlobDAO {
               && !s3PathComponentBlob.get().getPath().getInternalVersionedPath().isEmpty()) {
             AutogenS3DatasetComponentBlob componentBlob =
                 AutogenS3DatasetComponentBlob.fromProto(s3PathComponentBlob.get());
-            String computeS3Sha = DatasetContainer.computeSHA(componentBlob);
+            String computeS3Sha = null;
+            try {
+              computeS3Sha = DatasetContainer.computeSHA(componentBlob);
+            } catch (NoSuchAlgorithmException e) {
+              throw new ModelDBException(e);
+            }
             Map<String, String> componentWithSHAMap = new HashMap<>();
             componentWithSHAMap.put(
                 "internalPath", s3PathComponentBlob.get().getPath().getInternalVersionedPath());
@@ -1761,7 +1767,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
     throw new ModelDBException(
         "Dataset component blob not found for the path: '" + pathDatasetComponentBlobPath + "'",
-        Status.Code.INVALID_ARGUMENT);
+        Status.Code.NOT_FOUND);
   }
 
   private Map.Entry<String, String> getS3PathAndMultipartUploadId(

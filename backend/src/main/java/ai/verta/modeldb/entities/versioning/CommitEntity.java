@@ -1,8 +1,10 @@
 package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.modeldb.versioning.Commit;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
@@ -12,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 
 @Entity
@@ -21,7 +24,7 @@ public class CommitEntity {
 
   public CommitEntity(
       RepositoryEntity repositoryEntity,
-      List<CommitEntity> parentCommits,
+      Map<Integer, CommitEntity> parentCommits,
       Commit internalCommit,
       String rootSha) {
     this.commit_hash = internalCommit.getCommitSha();
@@ -33,7 +36,7 @@ public class CommitEntity {
     this.rootSha = rootSha;
 
     if (parentCommits != null) {
-      this.parent_commits.addAll(parentCommits);
+      this.parent_commits.putAll(parentCommits);
     }
   }
 
@@ -68,9 +71,12 @@ public class CommitEntity {
   @ManyToMany(targetEntity = CommitEntity.class, cascade = CascadeType.PERSIST)
   @JoinTable(
       name = "commit_parent",
-      joinColumns = @JoinColumn(name = "child_hash"),
-      inverseJoinColumns = @JoinColumn(name = "parent_hash"))
-  private Set<CommitEntity> parent_commits = new HashSet<>();
+      joinColumns = {@JoinColumn(name = "child_hash", referencedColumnName = "commit_hash")},
+      inverseJoinColumns = {
+        @JoinColumn(name = "parent_hash", referencedColumnName = "commit_hash")
+      })
+  @MapKeyColumn(name = "parent_order")
+  private Map<Integer, CommitEntity> parent_commits = new HashMap<>();
 
   @ManyToMany(mappedBy = "parent_commits")
   private Set<CommitEntity> child_commits = new HashSet<>();
@@ -107,12 +113,8 @@ public class CommitEntity {
     return repository;
   }
 
-  public Set<CommitEntity> getParent_commits() {
+  public Map<Integer, CommitEntity> getParent_commits() {
     return parent_commits;
-  }
-
-  public void setParent_commits(Set<CommitEntity> parent_commits) {
-    this.parent_commits = parent_commits;
   }
 
   public String getRootSha() {
@@ -127,12 +129,10 @@ public class CommitEntity {
     return child_commits;
   }
 
-  public void setChild_commits(Set<CommitEntity> child_commits) {
-    this.child_commits = child_commits;
-  }
-
   private List<String> getParentCommitIds() {
-    return parent_commits.stream().map(CommitEntity::getCommit_hash).collect(Collectors.toList());
+    return parent_commits.values().stream()
+        .map(CommitEntity::getCommit_hash)
+        .collect(Collectors.toList());
   }
 
   public Commit toCommitProto() {

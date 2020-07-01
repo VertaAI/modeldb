@@ -235,6 +235,10 @@ public class CommitDAORdbImpl implements CommitDAO {
         }
       }
     }
+    Map<Integer, CommitEntity> parentOrderMap = new HashMap<>();
+    for (int index = 0; index < commit.getParentShasCount(); index++) {
+      parentOrderMap.put(index, parentCommitEntities.get(commit.getParentShas(index)));
+    }
 
     Commit internalCommit =
         Commit.newBuilder()
@@ -245,11 +249,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             .setCommitSha(generateCommitSHA(rootSha, commit, timeCreated))
             .build();
     CommitEntity commitEntity =
-        new CommitEntity(
-            repositoryEntity,
-            new ArrayList<>(parentCommitEntities.values()),
-            internalCommit,
-            rootSha);
+        new CommitEntity(repositoryEntity, parentOrderMap, internalCommit, rootSha);
     session.saveOrUpdate(commitEntity);
     return commitEntity;
   }
@@ -467,8 +467,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         query.setParameter("branch", ModelDBConstants.MASTER_BRANCH);
         BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
 
-        CommitEntity parentDatasetVersion =
-            new ArrayList<>(commitEntity.getParent_commits()).get(0);
+        CommitEntity parentDatasetVersion = commitEntity.getParent_commits().get(0);
 
         if (branchEntity != null
             && branchEntity.getCommit_hash().equals(commitEntity.getCommit_hash())) {
