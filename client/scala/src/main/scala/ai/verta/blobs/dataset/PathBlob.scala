@@ -20,7 +20,7 @@ import scala.annotation.tailrec
  */
 case class PathBlob(
   protected val contents: HashMap[String, FileMetadata],
-  private[verta] val enableMDBVersioning: Boolean = false
+  val enableMDBVersioning: Boolean = false
 ) extends Dataset {
   /** Prepare the PathBlob for uploading
    *  @return whether the attempt succeeds
