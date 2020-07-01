@@ -133,7 +133,7 @@ Deploying
 .. automethod:: ExperimentRun.deploy
 .. automethod:: ExperimentRun.undeploy
 .. automethod:: ExperimentRun.get_deployed_model
-.. automethod:: ExperimentRun.download_deployment_crd
+.. automethod:: ExperimentRun.download_deployment_yaml
 
 Deprecated
 """"""""""

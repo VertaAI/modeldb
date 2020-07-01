@@ -1024,7 +1024,7 @@ class TestGetDeployedModel:
 
 
 class TestGitOps:
-    def test_download_deployment_crd(self, experiment_run, model_for_deployment, in_tempdir):
+    def test_download_deployment_yaml(self, experiment_run, model_for_deployment, in_tempdir):
         download_to_path = "deployment.yaml"
 
         experiment_run.log_model(
@@ -1034,7 +1034,7 @@ class TestGitOps:
         )
         experiment_run.log_requirements(['scikit-learn'])
 
-        filepath = experiment_run.download_deployment_crd(download_to_path)
+        filepath = experiment_run.download_deployment_yaml(download_to_path)
         assert filepath == os.path.abspath(download_to_path)
 
         # can be loaded as YAML
