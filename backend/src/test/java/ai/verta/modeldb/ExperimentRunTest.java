@@ -8772,8 +8772,7 @@ public class ExperimentRunTest {
             .setCommitSha(commit.getCommitSha())
             .build();
     listCommitExperimentRunsResponse =
-        versioningServiceBlockingStubClient2.listCommitExperimentRuns(
-            listCommitExperimentRunsRequest);
+        experimentRunServiceStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
     assertEquals(
         "ExperimentRun total records not match with expected ExperimentRun total records",
         3,

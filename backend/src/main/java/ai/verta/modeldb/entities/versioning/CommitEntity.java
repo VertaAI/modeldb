@@ -75,7 +75,7 @@ public class CommitEntity {
       inverseJoinColumns = {
         @JoinColumn(name = "parent_hash", referencedColumnName = "commit_hash")
       })
-  @MapKeyColumn(name = "parent_order")
+  @MapKeyColumn(name = "parent_order", nullable = true)
   private Map<Integer, CommitEntity> parent_commits = new HashMap<>();
 
   @ManyToMany(mappedBy = "parent_commits")
