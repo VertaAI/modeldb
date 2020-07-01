@@ -389,6 +389,23 @@ public class CommitDAORdbImpl implements CommitDAO {
     return session.load(CommitEntity.class, commitHash);
   }
 
+  /**
+   * Deleting dataversiosn stored as commits
+   *
+   * <p>1. get Repo
+   *
+   * <p>2. Iterate through each dataset version 2.1 get Commit
+   *
+   * <p>2.2 commit since representing datasetversion verify commit belongs to a single repo and
+   * match with repo id from 1.
+   *
+   * <p>2.3 get parent commit , since it is dataset assume just single commit
+   *
+   * <p>2.4 if commit to be deleted is pointed to by a branch , move branch to parent.
+   *
+   * <p>2.5 if commit has children move them to parent 2.5 delete label , tag , attributes for the
+   * commit
+   */
   @Override
   public void deleteDatasetVersions(
       RepositoryIdentification repositoryIdentification,
@@ -412,6 +429,8 @@ public class CommitDAORdbImpl implements CommitDAO {
         getCommitQuery.setParameter("commitHash", datasetVersionId);
         CommitEntity commitEntity = getCommitQuery.uniqueResult();
         if (commitEntity == null || commitEntity.getParent_commits().isEmpty()) {
+          LOGGER.warn(
+              "skipping deleting commit corresponding to dataset version {}", datasetVersionId);
           continue;
         }
 
@@ -421,8 +440,9 @@ public class CommitDAORdbImpl implements CommitDAO {
                   + commitEntity.getCommit_hash()
                   + "' associated with multiple datasets",
               Code.INTERNAL);
+        } else if (commitEntity.getRepository() == null) {
+          throw new ModelDBException("DatasetVersion not associated with datasets", Code.INTERNAL);
         }
-        assert commitEntity.getRepository() != null;
         Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
         if (repositoryIdentification == null) {
           repositoryIdentification =
@@ -447,7 +467,6 @@ public class CommitDAORdbImpl implements CommitDAO {
         query.setParameter("branch", ModelDBConstants.MASTER_BRANCH);
         BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
 
-        session.beginTransaction();
         CommitEntity parentDatasetVersion =
             new ArrayList<>(commitEntity.getParent_commits()).get(0);
 
@@ -462,32 +481,26 @@ public class CommitDAORdbImpl implements CommitDAO {
               false);
         }
 
+        session.beginTransaction();
         if (!commitEntity.getChild_commits().isEmpty()) {
-          List<CommitEntity> childCommits = new ArrayList<>(commitEntity.getChild_commits());
+          CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
           String updateChildEntity =
               "UPDATE commit_parent cp SET cp.parent_hash = :parentHash WHERE cp.child_hash = :childHash";
           Query updateChildQuery = session.createSQLQuery(updateChildEntity);
           updateChildQuery.setParameter("parentHash", parentDatasetVersion.getCommit_hash());
-          updateChildQuery.setParameter("childHash", childCommits.get(0).getCommit_hash());
+          updateChildQuery.setParameter("childHash", childCommit.getCommit_hash());
           updateChildQuery.executeUpdate();
         }
 
-        if (commitEntity.getRepository().size() == 1) {
-          String compositeId =
-              VersioningUtils.getVersioningCompositeId(
-                  repositoryEntity.getId(),
-                  commitEntity.getCommit_hash(),
-                  Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
-          DeleteEntitiesCron.deleteLabels(
-              session, compositeId, IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB);
-          DeleteEntitiesCron.deleteAttribute(session, compositeId);
-          DeleteEntitiesCron.deleteTagEntities(
-              session, repositoryEntity.getId(), commitEntity.getCommit_hash());
-          session.delete(commitEntity);
-        } else {
-          commitEntity.getRepository().remove(repositoryEntity);
-          session.update(commitEntity);
-        }
+        String compositeId =
+            VersioningUtils.getVersioningCompositeId(
+                repositoryEntity.getId(),
+                commitEntity.getCommit_hash(),
+                Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
+        DeleteEntitiesCron.deleteLabels(
+            session, compositeId, IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB);
+        DeleteEntitiesCron.deleteAttribute(session, compositeId);
+        session.delete(commitEntity);
         session.getTransaction().commit();
       }
     } catch (Exception ex) {
