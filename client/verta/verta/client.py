@@ -4066,14 +4066,14 @@ class ExperimentRun(_ModelDBEntity):
         status = self.get_deployment_status()
         return deployment.DeployedModel.from_url(status['url'], status['token'])
 
-    def download_deployment_crd(self, download_to_path, path=None, token=None, no_token=False):
+    def download_deployment_yaml(self, download_to_path, path=None, token=None, no_token=False):
         """
         Downloads this Experiment Run's model deployment CRD YAML.
 
         Parameters
         ----------
         download_to_path : str
-            Path to download CRD to.
+            Path to download deployment YAML to.
         path : str, optional
             Suffix for the prediction endpoint URL. If not provided, one will be generated
             automatically.
@@ -4086,7 +4086,7 @@ class ExperimentRun(_ModelDBEntity):
         Returns
         -------
         downloaded_to_path : str
-            Absolute path where CRD was downloaded to. Matches `download_to_path`.
+            Absolute path where deployment YAML was downloaded to. Matches `download_to_path`.
 
         """
         # NOTE: this param-handling block was copied verbatim from deploy()

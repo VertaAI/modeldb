@@ -134,7 +134,7 @@ Deploying
 .. automethod:: ExperimentRun.undeploy
 .. automethod:: ExperimentRun.get_deployed_model
 .. automethod:: ExperimentRun.download_docker_context
-.. automethod:: ExperimentRun.download_deployment_crd
+.. automethod:: ExperimentRun.download_deployment_yaml
 
 Deprecated
 """"""""""
