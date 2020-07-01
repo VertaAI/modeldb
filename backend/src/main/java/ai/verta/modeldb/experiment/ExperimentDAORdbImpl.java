@@ -19,6 +19,7 @@ import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.entities.ExperimentEntity;
+import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -120,6 +121,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       new StringBuffer("From ExperimentEntity ere where ere.")
           .append(ModelDBConstants.ID)
           .append(" IN (:experimentIds) ")
+          .append(" AND ere.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = :deleted ")
           .toString();
   private static final String DELETED_STATUS_EXPERIMENT_QUERY_STRING =
       new StringBuilder("UPDATE ")
@@ -830,7 +834,15 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       CriteriaQuery<ExperimentEntity> criteriaQuery = builder.createQuery(ExperimentEntity.class);
       Root<ExperimentEntity> experimentRoot = criteriaQuery.from(ExperimentEntity.class);
       experimentRoot.alias("exp");
+
+      Root<ProjectEntity> projectEntityRoot = criteriaQuery.from(ProjectEntity.class);
+      projectEntityRoot.alias("pr");
+
       List<Predicate> finalPredicatesList = new ArrayList<>();
+      finalPredicatesList.add(
+          builder.equal(
+              experimentRoot.get(ModelDBConstants.PROJECT_ID),
+              projectEntityRoot.get(ModelDBConstants.ID)));
 
       List<String> projectIds = new ArrayList<>();
       if (!queryParameters.getProjectId().isEmpty()) {
@@ -893,6 +905,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       }
 
       finalPredicatesList.add(builder.equal(experimentRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(projectEntityRoot.get(ModelDBConstants.DELETED), false));
 
       Order orderBy =
           RdbmsUtils.getOrderBasedOnSortKey(
@@ -1065,6 +1079,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Query experimentQuery = session.createQuery(PROJ_IDS_BY_EXP_IDS_HQL);
       experimentQuery.setParameterList("experimentIds", experimentIds);
+      experimentQuery.setParameter("deleted", false);
       List<ExperimentEntity> experimentEntities = experimentQuery.list();
 
       Map<String, String> projectIdFromExperimentMap = new HashMap<>();

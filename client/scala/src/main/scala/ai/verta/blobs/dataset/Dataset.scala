@@ -11,7 +11,7 @@ import scala.util.{Failure, Success, Try}
 
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
-  protected val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
+  private[verta] val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
 
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
@@ -51,7 +51,12 @@ trait Dataset extends Blob {
   }
 
   /** Clean up the uploaded components */
-  protected def cleanUpUploadedComponents(): Try[Unit] = Success(())
+  private[verta] def cleanUpUploadedComponents(): Try[Unit] = Success(())
+
+  /** Returns the paths of all components in this dataset
+   *  @return Paths of all components
+   */
+  def listPaths: List[String] = contents.keySet.toList.sorted
 }
 
 object Dataset {
@@ -61,10 +66,10 @@ object Dataset {
      component: VersioningPathDatasetComponentBlob,
      versionId: Option[String] = None
    ) = new FileMetadata(
-     component.last_modified_at_source.get,
-     component.md5.get,
-     component.path.get,
-     component.size.get,
+     component.last_modified_at_source.getOrElse(0),
+     component.md5.getOrElse(""),
+     component.path.getOrElse(""),
+     component.size.getOrElse(0),
      versionId
    )
 

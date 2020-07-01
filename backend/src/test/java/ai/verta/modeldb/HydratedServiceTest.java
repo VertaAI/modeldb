@@ -56,6 +56,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -5185,6 +5186,7 @@ public class HydratedServiceTest {
   }
 
   @Test
+  @Ignore
   public void findHydratedProjectsByUserTest() {
     LOGGER.info("FindHydratedProjectsByUser test start................................");
     ProjectTest projectTest = new ProjectTest();

@@ -694,7 +694,7 @@ public class DeleteEntitiesCron extends TimerTask {
                         session,
                         commitEntity.getCommit_hash(),
                         IDTypeEnum.IDType.VERSIONING_COMMIT);
-                    session.delete(commitEntity);
+                    deleteTagEntities(session, repository.getId(), commitEntity.getCommit_hash());session.delete(commitEntity);
                   } else {
                     session.update(commitEntity);
                   }
@@ -725,6 +725,19 @@ public class DeleteEntitiesCron extends TimerTask {
     deleteLabelsQuery.setParameter("entityHash", entityHash);
     deleteLabelsQuery.setParameter("entityType", idType.getNumber());
     deleteLabelsQuery.executeUpdate();
+  }
+
+  private static void deleteTagEntities(Session session, Long repoId, String commitHash) {
+    String getTagsHql =
+        "From TagsEntity te where te.id."
+            + ModelDBConstants.REPOSITORY_ID
+            + " = :repoId "
+            + " AND te.commit_hash = :commitHash";
+    Query<TagsEntity> getTagsQuery = session.createQuery(getTagsHql, TagsEntity.class);
+    getTagsQuery.setParameter("repoId", repoId);
+    getTagsQuery.setParameter("commitHash", commitHash);
+    List<TagsEntity> tagsEntities = getTagsQuery.list();
+    tagsEntities.forEach(session::delete);
   }
 
   private void deleteRoleBindingsOfRepositories(List<RepositoryEntity> allowedResources) {

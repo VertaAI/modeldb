@@ -52,6 +52,27 @@ def increment_path(path):
     return base + " 1" + ext
 
 
+def without_collision(path):
+    """
+    Returns a modified `path` that avoids collisions with existing paths.
+
+    Parameters
+    ----------
+    path : str
+        Desired file or directory path.
+
+    Returns
+    -------
+    path_without_collision : str
+        Variant of `path` that is unique at the time of execution.
+
+    """
+    while os.path.exists(path):
+        path = increment_path(path)
+
+    return path
+
+
 def remove_prefix_dir(path, prefix_dir):
     """
     Removes `prefix_dir` from the beginning of `path`.

@@ -37,9 +37,11 @@ import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
+import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
+import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
@@ -181,12 +183,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append("From ExperimentRunEntity ere where ere.")
           .append(ModelDBConstants.PROJECT_ID)
           .append(" IN (:projectIds) ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String GET_EXPERIMENT_RUN_BY_EXPERIMENT_ID_HQL =
       new StringBuilder()
           .append("From ExperimentRunEntity ere where ere.")
           .append(ModelDBConstants.EXPERIMENT_ID)
           .append(" IN (:experimentIds) ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING =
       new StringBuilder("UPDATE ")
@@ -1360,7 +1364,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           builder.createQuery(ExperimentRunEntity.class);
       Root<ExperimentRunEntity> experimentRunRoot = criteriaQuery.from(ExperimentRunEntity.class);
       experimentRunRoot.alias("exp");
+
+      Root<ProjectEntity> projectEntityRoot = criteriaQuery.from(ProjectEntity.class);
+      projectEntityRoot.alias("pr");
+
+      Root<ExperimentEntity> experimentEntityRoot = criteriaQuery.from(ExperimentEntity.class);
+      projectEntityRoot.alias("ex");
+
       List<Predicate> finalPredicatesList = new ArrayList<>();
+      finalPredicatesList.add(
+          builder.equal(
+              experimentRunRoot.get(ModelDBConstants.PROJECT_ID),
+              projectEntityRoot.get(ModelDBConstants.ID)));
+      finalPredicatesList.add(
+          builder.equal(
+              experimentRunRoot.get(ModelDBConstants.EXPERIMENT_ID),
+              experimentEntityRoot.get(ModelDBConstants.ID)));
 
       List<String> projectIds = new ArrayList<>();
       if (!queryParameters.getProjectId().isEmpty()) {
@@ -1434,6 +1453,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       finalPredicatesList.add(
           builder.equal(experimentRunRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(projectEntityRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(experimentEntityRoot.get(ModelDBConstants.DELETED), false));
 
       Order[] orderBy =
           RdbmsUtils.getOrderArrBasedOnSortKey(

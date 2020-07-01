@@ -8,6 +8,7 @@ import sys
 
 from ..external import six
 
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
 
 from .._internal_utils import _pip_requirements_utils
@@ -101,6 +102,19 @@ class Python(_environment._Environment):
             )
 
         return "\n    ".join(lines)
+
+    @classmethod
+    def _from_proto(cls, blob_msg):
+        obj = cls(_autocapture=False)
+        obj._msg.CopyFrom(blob_msg.environment)
+
+        return obj
+
+    def _as_proto(self):
+        blob_msg = _VersioningService.Blob()
+        blob_msg.environment.CopyFrom(self._msg)
+
+        return blob_msg
 
     @staticmethod
     def _req_spec_to_msg(req_spec):

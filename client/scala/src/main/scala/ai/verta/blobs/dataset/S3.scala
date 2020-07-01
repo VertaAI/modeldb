@@ -24,7 +24,7 @@ import java.io.{File, FileOutputStream}
  */
 case class S3(
   protected val contents: HashMap[String, FileMetadata],
-  protected val enableMDBVersioning: Boolean = false
+  private[verta] val enableMDBVersioning: Boolean = false
 ) extends Dataset {
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"
@@ -91,6 +91,17 @@ case class S3(
       if (s3InputStream.isDefined) s3InputStream.get.close()
       if (fileOutputStream.isDefined) fileOutputStream.get.close()
     }
+  }
+
+  /** Deletes temporary files that had been downloaded for ModelDB-managed versioning
+   *  This method does nothing if ModelDB-managed versioning was not enabled.
+   *  @return whether the delete attempts succeeds.
+   */
+  override private[verta] def cleanUpUploadedComponents(): Try[Unit] = {
+    if (enableMDBVersioning)
+      Try(contents.values.map(_.localPath.get).map(path => Try((new File(path)).delete())).map(_.get))
+    else
+      Success(())
   }
 
   override def equals(other: Any) = other match {
