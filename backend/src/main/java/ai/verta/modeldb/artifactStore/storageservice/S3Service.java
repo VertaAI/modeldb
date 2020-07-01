@@ -33,37 +33,36 @@ public class S3Service implements ArtifactStoreService {
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
   private AmazonS3 s3Client;
   private String bucketName;
-  private String keyName;
-  private String UploadFileName;
 
   public S3Service(String cloudBucketName) {
     App app = App.getInstance();
     String cloudAccessKey = app.getCloudAccessKey();
     String cloudSecretKey = app.getCloudSecretKey();
     String minioEndpoint = app.getMinioEndpoint();
-    if (cloudAccessKey != null && cloudSecretKey != null && minioEndpoint == null) {
-      BasicAWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
-      this.s3Client =
-          AmazonS3ClientBuilder.standard()
-              .withRegion(Regions.US_EAST_1)
-              .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-              .build();
+    if (cloudAccessKey != null && cloudSecretKey != null) {
+      if (minioEndpoint == null) {
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+        this.s3Client =
+            AmazonS3ClientBuilder.standard()
+                .withRegion(Regions.US_EAST_1)
+                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                .build();
+      } else {
 
-    } else if (cloudAccessKey != null && cloudSecretKey != null && minioEndpoint != null) {
+        AWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+        ClientConfiguration clientConfiguration = new ClientConfiguration();
+        clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
-      AWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
-      ClientConfiguration clientConfiguration = new ClientConfiguration();
-      clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-
-      this.s3Client =
-          AmazonS3ClientBuilder.standard()
-              .withEndpointConfiguration(
-                  new AwsClientBuilder.EndpointConfiguration(
-                      minioEndpoint, Regions.US_EAST_1.name()))
-              .withPathStyleAccessEnabled(true)
-              .withClientConfiguration(clientConfiguration)
-              .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-              .build();
+        this.s3Client =
+            AmazonS3ClientBuilder.standard()
+                .withEndpointConfiguration(
+                    new AwsClientBuilder.EndpointConfiguration(
+                        minioEndpoint, Regions.US_EAST_1.name()))
+                .withPathStyleAccessEnabled(true)
+                .withClientConfiguration(clientConfiguration)
+                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                .build();
+      }
     } else {
       // reads credential from OS Environment
       s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
