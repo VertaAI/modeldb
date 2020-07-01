@@ -263,6 +263,7 @@ trait Dataset extends Blob {
   private def joinPaths(prefix: String, suffix: String): String =
     Paths.get(prefix, suffix).toString
 
+  /** Return the absolute path of path */
   private def getAbsolutePath(path: String): String =
     (new File(path)).getAbsolutePath()
 
