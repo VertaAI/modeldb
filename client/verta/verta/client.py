@@ -37,12 +37,15 @@ from .external import six
 from .external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
 from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
-from ._internal_utils import _artifact_utils
-from ._internal_utils import _config_utils
-from ._internal_utils import _git_utils
-from ._internal_utils import _histogram_utils
-from ._internal_utils import _pip_requirements_utils
-from ._internal_utils import _utils
+from ._internal_utils import (
+    _artifact_utils,
+    _config_utils,
+    _git_utils,
+    _histogram_utils,
+    _pip_requirements_utils,
+    _request_utils,
+    _utils,
+)
 
 from . import _dataset
 from . import _repository
@@ -3371,7 +3374,7 @@ class ExperimentRun(_ModelDBEntity):
             except:
                 return six.BytesIO(artifact)
 
-    def download_artifact(self, key, download_to_path, chunk_size=32*(10**6)):
+    def download_artifact(self, key, download_to_path):
         """
         Downloads the artifact with name `key` to path `download_to_path`.
 
@@ -3381,8 +3384,6 @@ class ExperimentRun(_ModelDBEntity):
             Name of the artifact.
         download_to_path : str
             Path to download to.
-        chunk_size : int, default 32 MB
-            Number of bytes to download at a time.
 
         Returns
         -------
@@ -3427,20 +3428,15 @@ class ExperimentRun(_ModelDBEntity):
                     "artifact {} appears to have been logged as path-only,"
                     " and cannot be downloaded".format(key)
                 )
+            print("download complete; file written to {}".format(download_to_path))
         else:
             # download artifact from artifact store
             url = self._get_url_for_artifact(key, "GET").url
-            response = _utils.make_request("GET", url, self._conn, stream=True)
-            try:
+            with _utils.make_request("GET", url, self._conn, stream=True) as response:
                 _utils.raise_for_http_error(response)
 
-                # TODO: use a tempfile first, and also delete if failed
-                with open(download_to_path, 'wb') as dest_f:
-                    for chunk in response.iter_content(chunk_size=chunk_size):
-                        dest_f.write(chunk)
-            finally:
-                response.close()
-        print("download complete; file written to {}".format(download_to_path))
+                # user-specified filepath, so overwrite
+                _request_utils.download(response, download_to_path, overwrite_ok=True)
 
         return download_to_path
 
@@ -4069,6 +4065,95 @@ class ExperimentRun(_ModelDBEntity):
 
         status = self.get_deployment_status()
         return deployment.DeployedModel.from_url(status['url'], status['token'])
+
+    def download_deployment_yaml(self, download_to_path, path=None, token=None, no_token=False):
+        """
+        Downloads this Experiment Run's model deployment CRD YAML.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download deployment YAML to.
+        path : str, optional
+            Suffix for the prediction endpoint URL. If not provided, one will be generated
+            automatically.
+        token : str, optional
+            Token to use to authorize predictions requests. If not provided and `no_token` is
+            ``False``, one will be generated automatically.
+        no_token : bool, default False
+            Whether to not require a token for predictions.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where deployment YAML was downloaded to. Matches `download_to_path`.
+
+        """
+        # NOTE: this param-handling block was copied verbatim from deploy()
+        data = {}
+        if path is not None:
+            # get project ID for URL path
+            run_msg = self._get_self_as_msg()
+            data.update({'url_path': "{}/{}".format(run_msg.project_id, path)})
+        if no_token:
+            data.update({'token': ""})
+        elif token is not None:
+            data.update({'token': token})
+
+        endpoint = "{}://{}/api/v1/deployment/models/{}/crd".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+        )
+        with _utils.make_request("POST", endpoint, self._conn, json=data, stream=True) as response:
+            try:
+                _utils.raise_for_http_error(response)
+            except requests.HTTPError as e:
+                # propagate error caused by missing artifact
+                error_text = e.response.text.strip()
+                if error_text.startswith("missing artifact"):
+                    new_e = RuntimeError("unable to obtain deployment CRD due to " + error_text)
+                    six.raise_from(new_e, None)
+                else:
+                    raise e
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
+
+    def download_docker_context(self, download_to_path):
+        """
+        Downloads this Experiment Run's Docker context ``tgz``.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download Docker context to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where Docker context was downloaded to. Matches `download_to_path`.
+
+        """
+        endpoint = "{}://{}/api/v1/deployment/models/{}/dockercontext".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+        )
+        with _utils.make_request("GET", endpoint, self._conn, stream=True) as response:
+            try:
+                _utils.raise_for_http_error(response)
+            except requests.HTTPError as e:
+                # propagate error caused by missing artifact
+                error_text = e.response.text.strip()
+                if error_text.startswith("missing artifact"):
+                    new_e = RuntimeError("unable to obtain Docker context due to " + error_text)
+                    six.raise_from(new_e, None)
+                else:
+                    raise e
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
 
     def log_commit(self, commit, key_paths=None):
         """
