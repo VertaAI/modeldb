@@ -236,9 +236,48 @@ public class DatasetVersionTest {
         dataset.getId(),
         datasetVersion1.getDatasetId());
 
+    createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    createDatasetVersionResponse =
+        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
+    DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
+    LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion2);
+    assertEquals(
+        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
+        dataset.getId(),
+        datasetVersion2.getDatasetId());
+
     DeleteDatasetVersion deleteDatasetVersionRequest =
         DeleteDatasetVersion.newBuilder().setId(datasetVersion1.getId()).build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =
+        datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
+    LOGGER.info("DeleteDatasetVersion deleted successfully");
+    LOGGER.info(deleteDatasetVersionResponse.toString());
+
+    deleteDatasetVersionRequest =
+        DeleteDatasetVersion.newBuilder().setId(datasetVersion2.getId()).build();
+    deleteDatasetVersionResponse =
+        datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
+    LOGGER.info("DeleteDatasetVersion deleted successfully");
+    LOGGER.info(deleteDatasetVersionResponse.toString());
+
+    createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    createDatasetVersionRequest =
+        createDatasetVersionRequest
+            .toBuilder()
+            .setDatasetBlob(CommitTest.getDatasetBlobFromPath("datasetVersion").getDataset())
+            .build();
+    createDatasetVersionResponse =
+        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
+    datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
+    LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion1);
+    assertEquals(
+        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
+        createDatasetVersionRequest.getDatasetBlob(),
+        datasetVersion1.getDatasetBlob());
+
+    deleteDatasetVersionRequest =
+        DeleteDatasetVersion.newBuilder().setId(datasetVersion1.getId()).build();
+    deleteDatasetVersionResponse =
         datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
     LOGGER.info("DeleteDatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionResponse.toString());

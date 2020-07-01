@@ -44,11 +44,16 @@ public interface CommitDAO {
       Session session, String commitHash, RepositoryFunction getRepositoryFunction)
       throws ModelDBException;
 
+  void deleteDatasetVersions(
+      RepositoryIdentification repositoryIdentification,
+      List<String> datasetVersionIds,
+      RepositoryDAO repositoryDAO)
+      throws ModelDBException;
+
   boolean deleteCommits(
       RepositoryIdentification repositoryIdentification,
       List<String> commitShas,
-      RepositoryDAO repositoryDAO,
-      boolean isDatasetVersion)
+      RepositoryDAO repositoryDAO)
       throws ModelDBException;
 
   DatasetVersion addDeleteDatasetVersionTags(

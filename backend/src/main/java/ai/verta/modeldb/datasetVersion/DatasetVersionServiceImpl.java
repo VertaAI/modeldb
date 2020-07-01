@@ -120,10 +120,14 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       datasetVersionBuilder.setOwner(authService.getVertaIdFromUserInfo(userInfo));
     }
 
-    if (!request.hasPathDatasetVersionInfo()) {
+    if (!request.hasPathDatasetVersionInfo() && !request.hasDatasetBlob()) {
       throw new ModelDBException("Not supported", io.grpc.Status.Code.UNIMPLEMENTED);
     }
     datasetVersionBuilder.setPathDatasetVersionInfo(request.getPathDatasetVersionInfo());
+
+    if (request.hasDatasetBlob()) {
+      datasetVersionBuilder.setDatasetBlob(request.getDatasetBlob());
+    }
 
     return datasetVersionBuilder.build();
   }
@@ -303,16 +307,14 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus =
-          commitDAO.deleteCommits(
-              request.getDatasetId().isEmpty()
-                  ? null
-                  : RepositoryIdentification.newBuilder()
-                      .setRepoId(Long.parseLong(request.getDatasetId()))
-                      .build(),
-              Collections.singletonList(request.getId()),
-              repositoryDAO,
-              true);
+      commitDAO.deleteDatasetVersions(
+          request.getDatasetId().isEmpty()
+              ? null
+              : RepositoryIdentification.newBuilder()
+                  .setRepoId(Long.parseLong(request.getDatasetId()))
+                  .build(),
+          Collections.singletonList(request.getId()),
+          repositoryDAO);
 
       responseObserver.onNext(DeleteDatasetVersion.Response.getDefaultInstance());
       responseObserver.onCompleted();
@@ -864,16 +866,14 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             Any.pack(DeleteDatasetVersions.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus =
-          commitDAO.deleteCommits(
-              request.getDatasetId().isEmpty()
-                  ? null
-                  : RepositoryIdentification.newBuilder()
-                      .setRepoId(Long.parseLong(request.getDatasetId()))
-                      .build(),
-              request.getIdsList(),
-              repositoryDAO,
-              true);
+      commitDAO.deleteDatasetVersions(
+          request.getDatasetId().isEmpty()
+              ? null
+              : RepositoryIdentification.newBuilder()
+                  .setRepoId(Long.parseLong(request.getDatasetId()))
+                  .build(),
+          request.getIdsList(),
+          repositoryDAO);
 
       responseObserver.onNext(DeleteDatasetVersions.Response.getDefaultInstance());
       responseObserver.onCompleted();

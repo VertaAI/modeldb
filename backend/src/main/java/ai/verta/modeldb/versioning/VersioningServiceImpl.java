@@ -314,8 +314,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         commitDAO.deleteCommits(
             request.getRepositoryId(),
             Collections.singletonList(request.getCommitSha()),
-            repositoryDAO,
-            false);
+            repositoryDAO);
         responseObserver.onNext(DeleteCommitRequest.Response.newBuilder().build());
         responseObserver.onCompleted();
       }
