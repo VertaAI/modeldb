@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb',
   syntax='proto3',
   serialized_options=b'P\001Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb',
-  serialized_pb=b'\n#modeldb/DatasetVersionService.proto\x12\x10\x61i.verta.modeldb\x1a\x1a\x63ommon/CommonService.proto\x1a modeldb/versioning/Dataset.proto\x1a\x1cmodeldb/DatasetService.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x84\x05\n\x0e\x44\x61tasetVersion\x12\n\n\x02id\x18\x01 \x01(\t\x12\x11\n\tparent_id\x18\x02 \x01(\t\x12\x12\n\ndataset_id\x18\x03 \x01(\t\x12\x13\n\x0btime_logged\x18\x04 \x01(\x04\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x0c\n\x04tags\x18\x06 \x03(\t\x12]\n\x1a\x64\x61taset_version_visibility\x18\x07 \x01(\x0e\x32\x39.ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility\x12-\n\nattributes\x18\t \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\r\n\x05owner\x18\n \x01(\t\x12\x0f\n\x07version\x18\x0b \x01(\x04\x12K\n\x18raw_dataset_version_info\x18\x0c \x01(\x0b\x32\'.ai.verta.modeldb.RawDatasetVersionInfoH\x00\x12M\n\x19path_dataset_version_info\x18\r \x01(\x0b\x32(.ai.verta.modeldb.PathDatasetVersionInfoH\x00\x12O\n\x1aquery_dataset_version_info\x18\x0e \x01(\x0b\x32).ai.verta.modeldb.QueryDatasetVersionInfoH\x00\x12\x14\n\x0ctime_updated\x18\x0f \x01(\x04\x12>\n\x0c\x64\x61taset_blob\x18\x10 \x01(\x0b\x32(.ai.verta.modeldb.versioning.DatasetBlobB\x16\n\x14\x64\x61taset_version_info\"\xc7\x01\n\x17QueryDatasetVersionInfo\x12\r\n\x05query\x18\x01 \x01(\t\x12\x16\n\x0equery_template\x18\x02 \x01(\t\x12:\n\x10query_parameters\x18\x03 \x03(\x0b\x32 .ai.verta.modeldb.QueryParameter\x12\x17\n\x0f\x64\x61ta_source_uri\x18\x04 \x01(\t\x12\x1b\n\x13\x65xecution_timestamp\x18\x05 \x01(\x04\x12\x13\n\x0bnum_records\x18\x06 \x01(\x04\"\x91\x01\n\x0eQueryParameter\x12\x16\n\x0eparameter_name\x18\x01 \x01(\t\x12@\n\x0eparameter_type\x18\x02 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12%\n\x05value\x18\x03 \x01(\x0b\x32\x16.google.protobuf.Value\"s\n\x15RawDatasetVersionInfo\x12\x0c\n\x04size\x18\x01 \x01(\x04\x12\x10\n\x08\x66\x65\x61tures\x18\x02 \x03(\t\x12\x13\n\x0bnum_records\x18\x03 \x01(\x04\x12\x13\n\x0bobject_path\x18\x04 \x01(\t\x12\x10\n\x08\x63hecksum\x18\x05 \x01(\t\"\x86\x01\n\x14PathLocationTypeEnum\"n\n\x10PathLocationType\x12\x15\n\x11LOCAL_FILE_SYSTEM\x10\x00\x12\x17\n\x13NETWORK_FILE_SYSTEM\x10\x01\x12\x16\n\x12HADOOP_FILE_SYSTEM\x10\x02\x12\x12\n\x0eS3_FILE_SYSTEM\x10\x03\"\xc8\x01\n\x16PathDatasetVersionInfo\x12N\n\rlocation_type\x18\x01 \x01(\x0e\x32\x37.ai.verta.modeldb.PathLocationTypeEnum.PathLocationType\x12\x0c\n\x04size\x18\x02 \x01(\x04\x12=\n\x12\x64\x61taset_part_infos\x18\x03 \x03(\x0b\x32!.ai.verta.modeldb.DatasetPartInfo\x12\x11\n\tbase_path\x18\x04 \x01(\t\"`\n\x0f\x44\x61tasetPartInfo\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0c\n\x04size\x18\x02 \x01(\x04\x12\x10\n\x08\x63hecksum\x18\x03 \x01(\t\x12\x1f\n\x17last_modified_at_source\x18\x04 \x01(\x04\"\xe1\x04\n\x14\x43reateDatasetVersion\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12\x11\n\tparent_id\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x0c\n\x04tags\x18\x05 \x03(\t\x12]\n\x1a\x64\x61taset_version_visibility\x18\x06 \x01(\x0e\x32\x39.ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility\x12-\n\nattributes\x18\x08 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x0f\n\x07version\x18\t \x01(\x04\x12K\n\x18raw_dataset_version_info\x18\n \x01(\x0b\x32\'.ai.verta.modeldb.RawDatasetVersionInfoH\x00\x12M\n\x19path_dataset_version_info\x18\x0b \x01(\x0b\x32(.ai.verta.modeldb.PathDatasetVersionInfoH\x00\x12O\n\x1aquery_dataset_version_info\x18\x0c \x01(\x0b\x32).ai.verta.modeldb.QueryDatasetVersionInfoH\x00\x12\x14\n\x0ctime_created\x18\r \x01(\x04\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersionB\x16\n\x14\x64\x61taset_version_info\"\xe3\x01\n GetAllDatasetVersionsByDatasetId\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x06 \x01(\x05\x12\x12\n\npage_limit\x18\x07 \x01(\x05\x12\x11\n\tascending\x18\t \x01(\x08\x12\x10\n\x08sort_key\x18\n \x01(\t\x1a]\n\x08Response\x12:\n\x10\x64\x61taset_versions\x18\x01 \x03(\x0b\x32 .ai.verta.modeldb.DatasetVersion\x12\x15\n\rtotal_records\x18\x02 \x01(\x04\"B\n\x14\x44\x65leteDatasetVersion\x12\n\n\x02id\x18\x01 \x01(\t\x12\x12\n\ndataset_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"D\n\x15\x44\x65leteDatasetVersions\x12\x0b\n\x03ids\x18\x01 \x03(\t\x12\x12\n\ndataset_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"\xa4\x01\n\"GetLatestDatasetVersionByDatasetId\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12\x11\n\tascending\x18\t \x01(\x08\x12\x10\n\x08sort_key\x18\n \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xd1\x02\n\x13\x46indDatasetVersions\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12\x1b\n\x13\x64\x61taset_version_ids\x18\x02 \x03(\t\x12\x32\n\npredicates\x18\x03 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12\x10\n\x08ids_only\x18\x04 \x01(\x08\x12\x13\n\x0bpage_number\x18\x05 \x01(\x05\x12\x12\n\npage_limit\x18\x06 \x01(\x05\x12\x11\n\tascending\x18\x07 \x01(\x08\x12\x10\n\x08sort_key\x18\x08 \x01(\t\x12\x16\n\x0eworkspace_name\x18\t \x01(\t\x1a]\n\x08Response\x12:\n\x10\x64\x61taset_versions\x18\x01 \x03(\x0b\x32 .ai.verta.modeldb.DatasetVersion\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x9d\x01\n\x1fUpdateDatasetVersionDescription\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x12\n\ndataset_id\x18\x03 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\x8c\x01\n\x15\x41\x64\x64\x44\x61tasetVersionTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x12\x12\n\ndataset_id\x18\x03 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xa3\x01\n\x18\x44\x65leteDatasetVersionTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x12\x12\n\ndataset_id\x18\x04 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xb3\x01\n\x1b\x41\x64\x64\x44\x61tasetVersionAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x12\n\ndataset_id\x18\x03 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xb5\x01\n\x1eUpdateDatasetVersionAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tattribute\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x12\n\ndataset_id\x18\x03 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xa1\x01\n\x1bGetDatasetVersionAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x0f\n\x07get_all\x18\x03 \x01(\x08\x12\x12\n\ndataset_id\x18\x04 \x01(\t\x1a\x39\n\x08Response\x12-\n\nattributes\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"\xb3\x01\n\x1e\x44\x65leteDatasetVersionAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x12\x12\n\ndataset_id\x18\x04 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xce\x01\n\x1aSetDatasetVersionVisibilty\x12\n\n\x02id\x18\x01 \x01(\t\x12]\n\x1a\x64\x61taset_version_visibility\x18\x02 \x01(\x0e\x32\x39.ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion2\xfa\x14\n\x15\x44\x61tasetVersionService\x12\xa4\x01\n\x14\x63reateDatasetVersion\x12&.ai.verta.modeldb.CreateDatasetVersion\x1a/.ai.verta.modeldb.CreateDatasetVersion.Response\"3\x82\xd3\xe4\x93\x02-\"(/v1/dataset-version/createDatasetVersion:\x01*\x12\xd1\x01\n getAllDatasetVersionsByDatasetId\x12\x32.ai.verta.modeldb.GetAllDatasetVersionsByDatasetId\x1a;.ai.verta.modeldb.GetAllDatasetVersionsByDatasetId.Response\"<\x82\xd3\xe4\x93\x02\x36\x12\x34/v1/dataset-version/getAllDatasetVersionsByDatasetId\x12\xa4\x01\n\x14\x64\x65leteDatasetVersion\x12&.ai.verta.modeldb.DeleteDatasetVersion\x1a/.ai.verta.modeldb.DeleteDatasetVersion.Response\"3\x82\xd3\xe4\x93\x02-*(/v1/dataset-version/deleteDatasetVersion:\x01*\x12\xa8\x01\n\x15\x64\x65leteDatasetVersions\x12\'.ai.verta.modeldb.DeleteDatasetVersions\x1a\x30.ai.verta.modeldb.DeleteDatasetVersions.Response\"4\x82\xd3\xe4\x93\x02.*)/v1/dataset-version/deleteDatasetVersions:\x01*\x12\xd9\x01\n\"getLatestDatasetVersionByDatasetId\x12\x34.ai.verta.modeldb.GetLatestDatasetVersionByDatasetId\x1a=.ai.verta.modeldb.GetLatestDatasetVersionByDatasetId.Response\">\x82\xd3\xe4\x93\x02\x38\x12\x36/v1/dataset-version/getLatestDatasetVersionByDatasetId\x12\xa0\x01\n\x13\x66indDatasetVersions\x12%.ai.verta.modeldb.FindDatasetVersions\x1a..ai.verta.modeldb.FindDatasetVersions.Response\"2\x82\xd3\xe4\x93\x02,\"\'/v1/dataset-version/findDatasetVersions:\x01*\x12\xd0\x01\n\x1fupdateDatasetVersionDescription\x12\x31.ai.verta.modeldb.UpdateDatasetVersionDescription\x1a:.ai.verta.modeldb.UpdateDatasetVersionDescription.Response\">\x82\xd3\xe4\x93\x02\x38\"3/v1/dataset-version/updateDatasetVersionDescription:\x01*\x12\xa8\x01\n\x15\x61\x64\x64\x44\x61tasetVersionTags\x12\'.ai.verta.modeldb.AddDatasetVersionTags\x1a\x30.ai.verta.modeldb.AddDatasetVersionTags.Response\"4\x82\xd3\xe4\x93\x02.\")/v1/dataset-version/addDatasetVersionTags:\x01*\x12\xb4\x01\n\x18\x64\x65leteDatasetVersionTags\x12*.ai.verta.modeldb.DeleteDatasetVersionTags\x1a\x33.ai.verta.modeldb.DeleteDatasetVersionTags.Response\"7\x82\xd3\xe4\x93\x02\x31*,/v1/dataset-version/deleteDatasetVersionTags:\x01*\x12\xc0\x01\n\x1b\x61\x64\x64\x44\x61tasetVersionAttributes\x12-.ai.verta.modeldb.AddDatasetVersionAttributes\x1a\x36.ai.verta.modeldb.AddDatasetVersionAttributes.Response\":\x82\xd3\xe4\x93\x02\x34\"//v1/dataset-version/addDatasetVersionAttributes:\x01*\x12\xcc\x01\n\x1eupdateDatasetVersionAttributes\x12\x30.ai.verta.modeldb.UpdateDatasetVersionAttributes\x1a\x39.ai.verta.modeldb.UpdateDatasetVersionAttributes.Response\"=\x82\xd3\xe4\x93\x02\x37\"2/v1/dataset-version/updateDatasetVersionAttributes:\x01*\x12\xbd\x01\n\x1bgetDatasetVersionAttributes\x12-.ai.verta.modeldb.GetDatasetVersionAttributes\x1a\x36.ai.verta.modeldb.GetDatasetVersionAttributes.Response\"7\x82\xd3\xe4\x93\x02\x31\x12//v1/dataset-version/getDatasetVersionAttributes\x12\xcc\x01\n\x1e\x64\x65leteDatasetVersionAttributes\x12\x30.ai.verta.modeldb.DeleteDatasetVersionAttributes\x1a\x39.ai.verta.modeldb.DeleteDatasetVersionAttributes.Response\"=\x82\xd3\xe4\x93\x02\x37*2/v1/dataset-version/deleteDatasetVersionAttributes:\x01*\x12\xbe\x01\n\x1bsetDatasetVersionVisibility\x12,.ai.verta.modeldb.SetDatasetVersionVisibilty\x1a\x35.ai.verta.modeldb.SetDatasetVersionVisibilty.Response\":\x82\xd3\xe4\x93\x02\x34\"//v1/dataset-version/setDatasetVersionVisibility:\x01*BBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
+  serialized_pb=b'\n#modeldb/DatasetVersionService.proto\x12\x10\x61i.verta.modeldb\x1a\x1a\x63ommon/CommonService.proto\x1a modeldb/versioning/Dataset.proto\x1a\x1cmodeldb/DatasetService.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x84\x05\n\x0e\x44\x61tasetVersion\x12\n\n\x02id\x18\x01 \x01(\t\x12\x11\n\tparent_id\x18\x02 \x01(\t\x12\x12\n\ndataset_id\x18\x03 \x01(\t\x12\x13\n\x0btime_logged\x18\x04 \x01(\x04\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x0c\n\x04tags\x18\x06 \x03(\t\x12]\n\x1a\x64\x61taset_version_visibility\x18\x07 \x01(\x0e\x32\x39.ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility\x12-\n\nattributes\x18\t \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\r\n\x05owner\x18\n \x01(\t\x12\x0f\n\x07version\x18\x0b \x01(\x04\x12K\n\x18raw_dataset_version_info\x18\x0c \x01(\x0b\x32\'.ai.verta.modeldb.RawDatasetVersionInfoH\x00\x12M\n\x19path_dataset_version_info\x18\r \x01(\x0b\x32(.ai.verta.modeldb.PathDatasetVersionInfoH\x00\x12O\n\x1aquery_dataset_version_info\x18\x0e \x01(\x0b\x32).ai.verta.modeldb.QueryDatasetVersionInfoH\x00\x12\x14\n\x0ctime_updated\x18\x0f \x01(\x04\x12>\n\x0c\x64\x61taset_blob\x18\x10 \x01(\x0b\x32(.ai.verta.modeldb.versioning.DatasetBlobB\x16\n\x14\x64\x61taset_version_info\"\xc7\x01\n\x17QueryDatasetVersionInfo\x12\r\n\x05query\x18\x01 \x01(\t\x12\x16\n\x0equery_template\x18\x02 \x01(\t\x12:\n\x10query_parameters\x18\x03 \x03(\x0b\x32 .ai.verta.modeldb.QueryParameter\x12\x17\n\x0f\x64\x61ta_source_uri\x18\x04 \x01(\t\x12\x1b\n\x13\x65xecution_timestamp\x18\x05 \x01(\x04\x12\x13\n\x0bnum_records\x18\x06 \x01(\x04\"\x91\x01\n\x0eQueryParameter\x12\x16\n\x0eparameter_name\x18\x01 \x01(\t\x12@\n\x0eparameter_type\x18\x02 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12%\n\x05value\x18\x03 \x01(\x0b\x32\x16.google.protobuf.Value\"s\n\x15RawDatasetVersionInfo\x12\x0c\n\x04size\x18\x01 \x01(\x04\x12\x10\n\x08\x66\x65\x61tures\x18\x02 \x03(\t\x12\x13\n\x0bnum_records\x18\x03 \x01(\x04\x12\x13\n\x0bobject_path\x18\x04 \x01(\t\x12\x10\n\x08\x63hecksum\x18\x05 \x01(\t\"\x86\x01\n\x14PathLocationTypeEnum\"n\n\x10PathLocationType\x12\x15\n\x11LOCAL_FILE_SYSTEM\x10\x00\x12\x17\n\x13NETWORK_FILE_SYSTEM\x10\x01\x12\x16\n\x12HADOOP_FILE_SYSTEM\x10\x02\x12\x12\n\x0eS3_FILE_SYSTEM\x10\x03\"\xc8\x01\n\x16PathDatasetVersionInfo\x12N\n\rlocation_type\x18\x01 \x01(\x0e\x32\x37.ai.verta.modeldb.PathLocationTypeEnum.PathLocationType\x12\x0c\n\x04size\x18\x02 \x01(\x04\x12=\n\x12\x64\x61taset_part_infos\x18\x03 \x03(\x0b\x32!.ai.verta.modeldb.DatasetPartInfo\x12\x11\n\tbase_path\x18\x04 \x01(\t\"`\n\x0f\x44\x61tasetPartInfo\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0c\n\x04size\x18\x02 \x01(\x04\x12\x10\n\x08\x63hecksum\x18\x03 \x01(\t\x12\x1f\n\x17last_modified_at_source\x18\x04 \x01(\x04\"\xa1\x05\n\x14\x43reateDatasetVersion\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12\x11\n\tparent_id\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x0c\n\x04tags\x18\x05 \x03(\t\x12]\n\x1a\x64\x61taset_version_visibility\x18\x06 \x01(\x0e\x32\x39.ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility\x12-\n\nattributes\x18\x08 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x0f\n\x07version\x18\t \x01(\x04\x12K\n\x18raw_dataset_version_info\x18\n \x01(\x0b\x32\'.ai.verta.modeldb.RawDatasetVersionInfoH\x00\x12M\n\x19path_dataset_version_info\x18\x0b \x01(\x0b\x32(.ai.verta.modeldb.PathDatasetVersionInfoH\x00\x12O\n\x1aquery_dataset_version_info\x18\x0c \x01(\x0b\x32).ai.verta.modeldb.QueryDatasetVersionInfoH\x00\x12\x14\n\x0ctime_created\x18\r \x01(\x04\x12>\n\x0c\x64\x61taset_blob\x18\x0e \x01(\x0b\x32(.ai.verta.modeldb.versioning.DatasetBlob\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersionB\x16\n\x14\x64\x61taset_version_info\"\xe3\x01\n GetAllDatasetVersionsByDatasetId\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x06 \x01(\x05\x12\x12\n\npage_limit\x18\x07 \x01(\x05\x12\x11\n\tascending\x18\t \x01(\x08\x12\x10\n\x08sort_key\x18\n \x01(\t\x1a]\n\x08Response\x12:\n\x10\x64\x61taset_versions\x18\x01 \x03(\x0b\x32 .ai.verta.modeldb.DatasetVersion\x12\x15\n\rtotal_records\x18\x02 \x01(\x04\"B\n\x14\x44\x65leteDatasetVersion\x12\n\n\x02id\x18\x01 \x01(\t\x12\x12\n\ndataset_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"D\n\x15\x44\x65leteDatasetVersions\x12\x0b\n\x03ids\x18\x01 \x03(\t\x12\x12\n\ndataset_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"\xa4\x01\n\"GetLatestDatasetVersionByDatasetId\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12\x11\n\tascending\x18\t \x01(\x08\x12\x10\n\x08sort_key\x18\n \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xd1\x02\n\x13\x46indDatasetVersions\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12\x1b\n\x13\x64\x61taset_version_ids\x18\x02 \x03(\t\x12\x32\n\npredicates\x18\x03 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12\x10\n\x08ids_only\x18\x04 \x01(\x08\x12\x13\n\x0bpage_number\x18\x05 \x01(\x05\x12\x12\n\npage_limit\x18\x06 \x01(\x05\x12\x11\n\tascending\x18\x07 \x01(\x08\x12\x10\n\x08sort_key\x18\x08 \x01(\t\x12\x16\n\x0eworkspace_name\x18\t \x01(\t\x1a]\n\x08Response\x12:\n\x10\x64\x61taset_versions\x18\x01 \x03(\x0b\x32 .ai.verta.modeldb.DatasetVersion\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x9d\x01\n\x1fUpdateDatasetVersionDescription\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x12\n\ndataset_id\x18\x03 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\x8c\x01\n\x15\x41\x64\x64\x44\x61tasetVersionTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x12\x12\n\ndataset_id\x18\x03 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xa3\x01\n\x18\x44\x65leteDatasetVersionTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x12\x12\n\ndataset_id\x18\x04 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xb3\x01\n\x1b\x41\x64\x64\x44\x61tasetVersionAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x12\n\ndataset_id\x18\x03 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xb5\x01\n\x1eUpdateDatasetVersionAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tattribute\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x12\n\ndataset_id\x18\x03 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xa1\x01\n\x1bGetDatasetVersionAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x0f\n\x07get_all\x18\x03 \x01(\x08\x12\x12\n\ndataset_id\x18\x04 \x01(\t\x1a\x39\n\x08Response\x12-\n\nattributes\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"\xb3\x01\n\x1e\x44\x65leteDatasetVersionAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x12\x12\n\ndataset_id\x18\x04 \x01(\t\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\"\xce\x01\n\x1aSetDatasetVersionVisibilty\x12\n\n\x02id\x18\x01 \x01(\t\x12]\n\x1a\x64\x61taset_version_visibility\x18\x02 \x01(\x0e\x32\x39.ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility\x1a\x45\n\x08Response\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion2\xfa\x14\n\x15\x44\x61tasetVersionService\x12\xa4\x01\n\x14\x63reateDatasetVersion\x12&.ai.verta.modeldb.CreateDatasetVersion\x1a/.ai.verta.modeldb.CreateDatasetVersion.Response\"3\x82\xd3\xe4\x93\x02-\"(/v1/dataset-version/createDatasetVersion:\x01*\x12\xd1\x01\n getAllDatasetVersionsByDatasetId\x12\x32.ai.verta.modeldb.GetAllDatasetVersionsByDatasetId\x1a;.ai.verta.modeldb.GetAllDatasetVersionsByDatasetId.Response\"<\x82\xd3\xe4\x93\x02\x36\x12\x34/v1/dataset-version/getAllDatasetVersionsByDatasetId\x12\xa4\x01\n\x14\x64\x65leteDatasetVersion\x12&.ai.verta.modeldb.DeleteDatasetVersion\x1a/.ai.verta.modeldb.DeleteDatasetVersion.Response\"3\x82\xd3\xe4\x93\x02-*(/v1/dataset-version/deleteDatasetVersion:\x01*\x12\xa8\x01\n\x15\x64\x65leteDatasetVersions\x12\'.ai.verta.modeldb.DeleteDatasetVersions\x1a\x30.ai.verta.modeldb.DeleteDatasetVersions.Response\"4\x82\xd3\xe4\x93\x02.*)/v1/dataset-version/deleteDatasetVersions:\x01*\x12\xd9\x01\n\"getLatestDatasetVersionByDatasetId\x12\x34.ai.verta.modeldb.GetLatestDatasetVersionByDatasetId\x1a=.ai.verta.modeldb.GetLatestDatasetVersionByDatasetId.Response\">\x82\xd3\xe4\x93\x02\x38\x12\x36/v1/dataset-version/getLatestDatasetVersionByDatasetId\x12\xa0\x01\n\x13\x66indDatasetVersions\x12%.ai.verta.modeldb.FindDatasetVersions\x1a..ai.verta.modeldb.FindDatasetVersions.Response\"2\x82\xd3\xe4\x93\x02,\"\'/v1/dataset-version/findDatasetVersions:\x01*\x12\xd0\x01\n\x1fupdateDatasetVersionDescription\x12\x31.ai.verta.modeldb.UpdateDatasetVersionDescription\x1a:.ai.verta.modeldb.UpdateDatasetVersionDescription.Response\">\x82\xd3\xe4\x93\x02\x38\"3/v1/dataset-version/updateDatasetVersionDescription:\x01*\x12\xa8\x01\n\x15\x61\x64\x64\x44\x61tasetVersionTags\x12\'.ai.verta.modeldb.AddDatasetVersionTags\x1a\x30.ai.verta.modeldb.AddDatasetVersionTags.Response\"4\x82\xd3\xe4\x93\x02.\")/v1/dataset-version/addDatasetVersionTags:\x01*\x12\xb4\x01\n\x18\x64\x65leteDatasetVersionTags\x12*.ai.verta.modeldb.DeleteDatasetVersionTags\x1a\x33.ai.verta.modeldb.DeleteDatasetVersionTags.Response\"7\x82\xd3\xe4\x93\x02\x31*,/v1/dataset-version/deleteDatasetVersionTags:\x01*\x12\xc0\x01\n\x1b\x61\x64\x64\x44\x61tasetVersionAttributes\x12-.ai.verta.modeldb.AddDatasetVersionAttributes\x1a\x36.ai.verta.modeldb.AddDatasetVersionAttributes.Response\":\x82\xd3\xe4\x93\x02\x34\"//v1/dataset-version/addDatasetVersionAttributes:\x01*\x12\xcc\x01\n\x1eupdateDatasetVersionAttributes\x12\x30.ai.verta.modeldb.UpdateDatasetVersionAttributes\x1a\x39.ai.verta.modeldb.UpdateDatasetVersionAttributes.Response\"=\x82\xd3\xe4\x93\x02\x37\"2/v1/dataset-version/updateDatasetVersionAttributes:\x01*\x12\xbd\x01\n\x1bgetDatasetVersionAttributes\x12-.ai.verta.modeldb.GetDatasetVersionAttributes\x1a\x36.ai.verta.modeldb.GetDatasetVersionAttributes.Response\"7\x82\xd3\xe4\x93\x02\x31\x12//v1/dataset-version/getDatasetVersionAttributes\x12\xcc\x01\n\x1e\x64\x65leteDatasetVersionAttributes\x12\x30.ai.verta.modeldb.DeleteDatasetVersionAttributes\x1a\x39.ai.verta.modeldb.DeleteDatasetVersionAttributes.Response\"=\x82\xd3\xe4\x93\x02\x37*2/v1/dataset-version/deleteDatasetVersionAttributes:\x01*\x12\xbe\x01\n\x1bsetDatasetVersionVisibility\x12,.ai.verta.modeldb.SetDatasetVersionVisibilty\x1a\x35.ai.verta.modeldb.SetDatasetVersionVisibilty.Response\":\x82\xd3\xe4\x93\x02\x34\"//v1/dataset-version/setDatasetVersionVisibility:\x01*BBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
   ,
   dependencies=[common_dot_CommonService__pb2.DESCRIPTOR,modeldb_dot_versioning_dot_Dataset__pb2.DESCRIPTOR,modeldb_dot_DatasetService__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
 
@@ -517,8 +517,8 @@ _CREATEDATASETVERSION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2278,
-  serialized_end=2347,
+  serialized_start=2342,
+  serialized_end=2411,
 )
 
 _CREATEDATASETVERSION = _descriptor.Descriptor(
@@ -605,6 +605,13 @@ _CREATEDATASETVERSION = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='dataset_blob', full_name='ai.verta.modeldb.CreateDatasetVersion.dataset_blob', index=11,
+      number=14, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -621,7 +628,7 @@ _CREATEDATASETVERSION = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=1762,
-  serialized_end=2371,
+  serialized_end=2435,
 )
 
 
@@ -658,8 +665,8 @@ _GETALLDATASETVERSIONSBYDATASETID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2508,
-  serialized_end=2601,
+  serialized_start=2572,
+  serialized_end=2665,
 )
 
 _GETALLDATASETVERSIONSBYDATASETID = _descriptor.Descriptor(
@@ -716,8 +723,8 @@ _GETALLDATASETVERSIONSBYDATASETID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2374,
-  serialized_end=2601,
+  serialized_start=2438,
+  serialized_end=2665,
 )
 
 
@@ -740,8 +747,8 @@ _DELETEDATASETVERSION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2278,
-  serialized_end=2288,
+  serialized_start=2342,
+  serialized_end=2352,
 )
 
 _DELETEDATASETVERSION = _descriptor.Descriptor(
@@ -777,8 +784,8 @@ _DELETEDATASETVERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2603,
-  serialized_end=2669,
+  serialized_start=2667,
+  serialized_end=2733,
 )
 
 
@@ -801,8 +808,8 @@ _DELETEDATASETVERSIONS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2278,
-  serialized_end=2288,
+  serialized_start=2342,
+  serialized_end=2352,
 )
 
 _DELETEDATASETVERSIONS = _descriptor.Descriptor(
@@ -838,8 +845,8 @@ _DELETEDATASETVERSIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2671,
-  serialized_end=2739,
+  serialized_start=2735,
+  serialized_end=2803,
 )
 
 
@@ -869,8 +876,8 @@ _GETLATESTDATASETVERSIONBYDATASETID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2278,
-  serialized_end=2347,
+  serialized_start=2342,
+  serialized_end=2411,
 )
 
 _GETLATESTDATASETVERSIONBYDATASETID = _descriptor.Descriptor(
@@ -913,8 +920,8 @@ _GETLATESTDATASETVERSIONBYDATASETID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2742,
-  serialized_end=2906,
+  serialized_start=2806,
+  serialized_end=2970,
 )
 
 
@@ -951,8 +958,8 @@ _FINDDATASETVERSIONS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3153,
-  serialized_end=3246,
+  serialized_start=3217,
+  serialized_end=3310,
 )
 
 _FINDDATASETVERSIONS = _descriptor.Descriptor(
@@ -1037,8 +1044,8 @@ _FINDDATASETVERSIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2909,
-  serialized_end=3246,
+  serialized_start=2973,
+  serialized_end=3310,
 )
 
 
@@ -1068,8 +1075,8 @@ _UPDATEDATASETVERSIONDESCRIPTION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2278,
-  serialized_end=2347,
+  serialized_start=2342,
+  serialized_end=2411,
 )
 
 _UPDATEDATASETVERSIONDESCRIPTION = _descriptor.Descriptor(
@@ -1112,8 +1119,8 @@ _UPDATEDATASETVERSIONDESCRIPTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3249,
-  serialized_end=3406,
+  serialized_start=3313,
+  serialized_end=3470,
 )
 
 
@@ -1143,8 +1150,8 @@ _ADDDATASETVERSIONTAGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2278,
-  serialized_end=2347,
+  serialized_start=2342,
+  serialized_end=2411,
 )
 
 _ADDDATASETVERSIONTAGS = _descriptor.Descriptor(
@@ -1187,8 +1194,8 @@ _ADDDATASETVERSIONTAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3409,
-  serialized_end=3549,
+  serialized_start=3473,
+  serialized_end=3613,
 )
 
 
@@ -1218,8 +1225,8 @@ _DELETEDATASETVERSIONTAGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2278,
-  serialized_end=2347,
+  serialized_start=2342,
+  serialized_end=2411,
 )
 
 _DELETEDATASETVERSIONTAGS = _descriptor.Descriptor(
@@ -1269,8 +1276,8 @@ _DELETEDATASETVERSIONTAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3552,
-  serialized_end=3715,
+  serialized_start=3616,
+  serialized_end=3779,
 )
 
 
@@ -1300,8 +1307,8 @@ _ADDDATASETVERSIONATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2278,
-  serialized_end=2347,
+  serialized_start=2342,
+  serialized_end=2411,
 )
 
 _ADDDATASETVERSIONATTRIBUTES = _descriptor.Descriptor(
@@ -1344,8 +1351,8 @@ _ADDDATASETVERSIONATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3718,
-  serialized_end=3897,
+  serialized_start=3782,
+  serialized_end=3961,
 )
 
 
@@ -1375,8 +1382,8 @@ _UPDATEDATASETVERSIONATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2278,
-  serialized_end=2347,
+  serialized_start=2342,
+  serialized_end=2411,
 )
 
 _UPDATEDATASETVERSIONATTRIBUTES = _descriptor.Descriptor(
@@ -1419,8 +1426,8 @@ _UPDATEDATASETVERSIONATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3900,
-  serialized_end=4081,
+  serialized_start=3964,
+  serialized_end=4145,
 )
 
 
@@ -1450,8 +1457,8 @@ _GETDATASETVERSIONATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4188,
-  serialized_end=4245,
+  serialized_start=4252,
+  serialized_end=4309,
 )
 
 _GETDATASETVERSIONATTRIBUTES = _descriptor.Descriptor(
@@ -1501,8 +1508,8 @@ _GETDATASETVERSIONATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4084,
-  serialized_end=4245,
+  serialized_start=4148,
+  serialized_end=4309,
 )
 
 
@@ -1532,8 +1539,8 @@ _DELETEDATASETVERSIONATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2278,
-  serialized_end=2347,
+  serialized_start=2342,
+  serialized_end=2411,
 )
 
 _DELETEDATASETVERSIONATTRIBUTES = _descriptor.Descriptor(
@@ -1583,8 +1590,8 @@ _DELETEDATASETVERSIONATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4248,
-  serialized_end=4427,
+  serialized_start=4312,
+  serialized_end=4491,
 )
 
 
@@ -1614,8 +1621,8 @@ _SETDATASETVERSIONVISIBILTY_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2278,
-  serialized_end=2347,
+  serialized_start=2342,
+  serialized_end=2411,
 )
 
 _SETDATASETVERSIONVISIBILTY = _descriptor.Descriptor(
@@ -1651,8 +1658,8 @@ _SETDATASETVERSIONVISIBILTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4430,
-  serialized_end=4636,
+  serialized_start=4494,
+  serialized_end=4700,
 )
 
 _DATASETVERSION.fields_by_name['dataset_version_visibility'].enum_type = modeldb_dot_DatasetService__pb2._DATASETVISIBILITYENUM_DATASETVISIBILITY
@@ -1683,6 +1690,7 @@ _CREATEDATASETVERSION.fields_by_name['attributes'].message_type = common_dot_Com
 _CREATEDATASETVERSION.fields_by_name['raw_dataset_version_info'].message_type = _RAWDATASETVERSIONINFO
 _CREATEDATASETVERSION.fields_by_name['path_dataset_version_info'].message_type = _PATHDATASETVERSIONINFO
 _CREATEDATASETVERSION.fields_by_name['query_dataset_version_info'].message_type = _QUERYDATASETVERSIONINFO
+_CREATEDATASETVERSION.fields_by_name['dataset_blob'].message_type = modeldb_dot_versioning_dot_Dataset__pb2._DATASETBLOB
 _CREATEDATASETVERSION.oneofs_by_name['dataset_version_info'].fields.append(
   _CREATEDATASETVERSION.fields_by_name['raw_dataset_version_info'])
 _CREATEDATASETVERSION.fields_by_name['raw_dataset_version_info'].containing_oneof = _CREATEDATASETVERSION.oneofs_by_name['dataset_version_info']
@@ -2011,8 +2019,8 @@ _DATASETVERSIONSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=4639,
-  serialized_end=7321,
+  serialized_start=4703,
+  serialized_end=7385,
   methods=[
   _descriptor.MethodDescriptor(
     name='createDatasetVersion',

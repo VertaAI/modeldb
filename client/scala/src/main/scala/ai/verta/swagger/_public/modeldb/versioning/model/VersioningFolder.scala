@@ -8,7 +8,6 @@ import net.liftweb.json._
 import ai.verta.swagger._public.modeldb.versioning.model.DiffStatusEnumDiffStatus._
 import ai.verta.swagger._public.modeldb.versioning.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
-import ai.verta.swagger._public.modeldb.versioning.model.RepositoryAccessModifierEnumRepositoryAccessModifier._
 import ai.verta.swagger._public.modeldb.versioning.model.RepositoryVisibilityEnumRepositoryVisibility._
 import ai.verta.swagger._public.modeldb.versioning.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._

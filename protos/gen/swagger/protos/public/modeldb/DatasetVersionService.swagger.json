@@ -689,6 +689,9 @@
         "time_created": {
           "type": "string",
           "format": "uint64"
+        },
+        "dataset_blob": {
+          "$ref": "#/definitions/versioningDatasetBlob"
         }
       }
     },
