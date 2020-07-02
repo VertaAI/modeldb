@@ -72,6 +72,17 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
   }
 
   def requestRaw(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
+    makeRawRequest(method, url, query, localHeaders, body).map(response => {
+      response.body match {
+        case Left(failureBody) => Failure(HttpException(response.code, failureBody))
+        case Right(successBody) => {
+          Success(successBody)
+        }
+      }
+    })
+  }
+
+  def makeRawRequest(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
     val request = (if (body != null) basicRequest.body(body) else basicRequest).response(asByteArray)
     val uriPath = Uri(new URI(url))
     val request2 = method match {
@@ -82,16 +93,11 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
       case _ => throw new IllegalArgumentException(s"unknown method $method")
     }
 
-    val futureResponse = (if (localHeaders != null && localHeaders.nonEmpty) request2.headers(localHeaders) else request2).send()
+    (if (localHeaders != null && localHeaders.nonEmpty) request2.headers(localHeaders) else request2).send()
+  }
 
-    futureResponse.map(response => {
-      response.body match {
-        case Left(failureBody) => Failure(HttpException(response.code, failureBody))
-        case Right(successBody) => {
-          Success(successBody)
-        }
-      }
-    })
+  def getRawRequestHeader(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
+    makeRawRequest(method, url, query, localHeaders, body).map(response => Success(response.header(_)))
   }
 
   def toQuery[T](value: T): List[String] = value match {

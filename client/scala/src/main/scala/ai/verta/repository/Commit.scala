@@ -11,7 +11,7 @@ import scala.collection.immutable.Map
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 
-import java.io.{File, FileInputStream, FileOutputStream, ByteArrayInputStream}
+import java.io.{File, InputStream, FileInputStream, FileOutputStream, ByteArrayInputStream}
 import java.nio.file.{Files, StandardCopyOption}
 
 /** Commit within a ModelDB Repository
@@ -531,7 +531,7 @@ class Commit(
     )
   }
 
-  /** Helper method to upload the file to ModelDB. Currently not supporting multi-part upload
+  /** Helper method to upload the file to ModelDB.
    *  @param blobPath path to the blob in the commit
    *  @param datasetComponentPath path to the component in the blob
    *  @return whether the upload attempt succeeds
@@ -540,7 +540,7 @@ class Commit(
     blobPath: String,
     datasetComponentPath: String,
     file: File,
-    partSize: Long = 1024 * 1024 * 64 // 64 MB
+    partSize: Int = 1024 * 1024 * 64 // 64 MB
   )(implicit ec: ExecutionContext): Try[Unit] = {
     /** TODO: implement multi-part upload */
     getURLForArtifact(blobPath, datasetComponentPath, "PUT", 1).flatMap(resp => {
@@ -549,15 +549,16 @@ class Commit(
 
         Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
           try {
-            uploadPart(inputStream, buffer, 1)
-              .flatMap(_ => commitMultipartVersionedBlobArtifact(
+            uploadPart(blobPath, datasetComponentPath, inputStream, buffer)
+              .flatMap(_ => clientSet.versioningService.commitMultipartVersionedBlobArtifact(
                 VersioningCommitMultipartVersionedBlobArtifact(
                   commit_sha = id,
                   location = Some(pathToLocation(blobPath)),
                   path_dataset_component_blob_path = Some(datasetComponentPath),
-                  repository_id = Some(repoId)
+                  repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
                 )
               ))
+              .map(_ => ())
           } finally {
             inputStream.close()
           }
@@ -576,16 +577,47 @@ class Commit(
     })
   }
 
-  private def uploadPart(inputStream: InputStream, buffer: Array[Byte], partNum: Int = 1): Try[Int] = {
+  /** Upload a part of the input stream
+   *  @param blobPath path to the blob in the commit
+   *  @param datasetComponentPath path to the component in the blob
+   *  @param inputStream the stream of input to uploaded
+   *  @param partNum the index of the current part
+   *  @return whether the upload attempt succeeds
+   */
+  private def uploadPart(
+    blobPath: String,
+    datasetComponentPath: String,
+    inputStream: InputStream,
+    buffer: Array[Byte],
+    partNum: Int = 1
+  )(implicit ec: ExecutionContext): Try[Int] = {
     getURLForArtifact(blobPath, datasetComponentPath, "PUT", partNum).map(_.url.get).flatMap(url => {
       var readLen = inputStream.read(buffer)
 
-      if (readlen < 0)
+      if (readLen < 0)
         Success(partNum - 1)
       else
         Try(new ByteArrayInputStream(buffer)).flatMap(filepart => {
-          Await.result(clientSet.client.requestRaw("PUT", url, null, null, filepart), Duration.Inf)
-        }).flatMap(_ => uploadPart(inputStream, buffer, partNum + 1))
+          try {
+            /** TODO: retry 3 times when fail */
+            Await.result(clientSet.client.getRawRequestHeader("PUT", url, null, null, filepart), Duration.Inf)
+              .flatMap(headers => clientSet.versioningService.commitVersionedBlobArtifactPart(
+                VersioningCommitVersionedBlobArtifactPart(
+                  artifact_part = Some(ModeldbArtifactPart(
+                    etag = Some(headers("ETag").get),
+                    part_number = Some(BigInt(partNum))
+                  )),
+                  commit_sha = id,
+                  location = Some(pathToLocation(blobPath)),
+                  path_dataset_component_blob_path = Some(datasetComponentPath),
+                  repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
+                )
+              ))
+              .flatMap(_ => uploadPart(blobPath, datasetComponentPath, inputStream, buffer, partNum + 1))
+          } finally {
+            filepart.close()
+          }
+        })
     })
   }
 
