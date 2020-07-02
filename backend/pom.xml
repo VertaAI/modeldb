@@ -218,7 +218,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>modeldb-${version}-client-build</finalName>
+		<finalName>modeldb-${project.version}-client-build</finalName>
 		<!-- follow gRPC git repo URL link for plugin (kr.motd.maven, protobuf-maven-plugin)
 			https://github.com/grpc/grpc-java At the maven build time this plugin converted
 			.proto implementation of service to java code. -->
@@ -248,6 +248,14 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
 			</plugin>
 			<plugin>
 				<!-- Build an default executable JAR -->
