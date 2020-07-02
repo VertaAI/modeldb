@@ -2080,7 +2080,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               || !existingFirstEntityMapping
                   .getCommit()
                   .equals(versioningModeldbFirstEntityMapping.getCommit())) {
-            if (!DO_OVERWRITE) {
+            if (!OVERWRITE_VERSION_MAP) {
               throw new ModelDBException(
                   ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE,
                   io.grpc.Status.Code.ALREADY_EXISTS);
