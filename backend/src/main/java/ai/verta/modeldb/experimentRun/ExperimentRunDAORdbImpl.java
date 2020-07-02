@@ -111,7 +111,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private static final Logger LOGGER =
       LogManager.getLogger(ExperimentRunDAORdbImpl.class.getName());
-  private static final boolean DO_OVERWRITE = false;
+  private static final boolean OVERWRITE_VERSION_MAP = false;
   private final AuthService authService;
   private final RoleService roleService;
   private final RepositoryDAO repositoryDAO;
