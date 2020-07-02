@@ -8489,6 +8489,17 @@ public class ExperimentRunTest {
             .build();
     experimentRunServiceStub.logVersionedInput(logVersionedInput);
 
+    logVersionedInput =
+        LogVersionedInput.newBuilder()
+            .setId(experimentRun.getId())
+            .setVersionedInputs(
+                VersioningEntry.newBuilder()
+                    .setRepositoryId(repoId)
+                    .setCommit(commitResponse.getCommit().getParentShasList().get(0))
+                    .build())
+            .build();
+    experimentRunServiceStub.logVersionedInput(logVersionedInput);
+
     GetExperimentRunById getExperimentRunById =
         GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     GetExperimentRunById.Response response =
