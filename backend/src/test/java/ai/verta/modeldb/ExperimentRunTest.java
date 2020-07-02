@@ -9586,6 +9586,11 @@ public class ExperimentRunTest {
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
+            .addHyperparameters(
+                KeyValue.newBuilder()
+                    .setKey("C")
+                    .setValue(Value.newBuilder().setStringValue("abc").build())
+                    .build())
             .setVersionedInputs(
                 VersioningEntry.newBuilder()
                     .setRepositoryId(repoId)
@@ -9873,6 +9878,35 @@ public class ExperimentRunTest {
     assertEquals(
         "ExperimentRun count not match with expected experimentRun count",
         3,
+        response.getExperimentRunsCount());
+
+    hyperparameterFilter = Value.newBuilder().setStringValue("abc").build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.C")
+            .setValue(hyperparameterFilter)
+            .setOperator(Operator.CONTAIN)
+            .setValueType(ValueType.STRING)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(keyValueQuery)
+            .setAscending(false)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.train")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        1,
         response.getExperimentRunsCount());
 
     DeleteRepositoryRequest deleteRepository =
