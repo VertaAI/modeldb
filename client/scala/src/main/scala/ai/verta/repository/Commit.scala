@@ -550,6 +550,14 @@ class Commit(
         Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
           try {
             uploadPart(inputStream, buffer, 1)
+              .flatMap(_ => commitMultipartVersionedBlobArtifact(
+                VersioningCommitMultipartVersionedBlobArtifact(
+                  commit_sha = id,
+                  location = Some(pathToLocation(blobPath)),
+                  path_dataset_component_blob_path = Some(datasetComponentPath),
+                  repository_id = Some(repoId)
+                )
+              ))
           } finally {
             inputStream.close()
           }
