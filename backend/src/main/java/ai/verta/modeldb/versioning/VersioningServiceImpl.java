@@ -22,11 +22,12 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class VersioningServiceImpl extends VersioningServiceImplBase {
 
@@ -638,7 +639,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         GetUrlForBlobVersioned.Response response =
             blobDAO.getUrlForVersionedBlob(
                 artifactStoreDAO,
-                (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+                (session) ->
+                    repositoryDAO.getRepositoryById(
+                        session, request.getRepositoryId(), false, false),
                 (session, repository) ->
                     commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
                 request);
@@ -703,7 +706,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       CommitVersionedBlobArtifactPart.Response response =
           blobDAO.commitVersionedBlobArtifactPart(
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session) ->
+                  repositoryDAO.getRepositoryById(session, request.getRepositoryId(), false, false),
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
               request);
@@ -739,7 +743,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       GetCommittedVersionedBlobArtifactParts.Response response =
           blobDAO.getCommittedVersionedBlobArtifactParts(
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session) ->
+                  repositoryDAO.getRepositoryById(session, request.getRepositoryId(), false, false),
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
               request);
@@ -781,7 +786,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       CommitMultipartVersionedBlobArtifact.Response response =
           blobDAO.commitMultipartVersionedBlobArtifact(
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session) ->
+                  repositoryDAO.getRepositoryById(session, request.getRepositoryId(), false, false),
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
               request,
