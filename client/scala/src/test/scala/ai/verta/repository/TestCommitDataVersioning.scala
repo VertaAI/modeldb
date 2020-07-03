@@ -25,12 +25,12 @@ class TestCommitDataVersioning extends FunSuite {
 
         val pathBlob = PathBlob("./src/test/scala/ai/verta/blobs/testdir", true).get
         val s3Blob = S3(S3Location("s3://verta-scala-test/testdir/").get, true).get
-        // val s3Blob2 = S3(S3Location("s3://verta-scala-test/testdir/").get).get
+        val pathBlob2 = PathBlob("./src/test/scala/ai/verta/blobs/testdir2").get
 
         val commit = repo.getCommitByBranch()
           .flatMap(_.update("s3-blob", s3Blob))
           .flatMap(_.update("path-blob", pathBlob))
-          .flatMap(_.update("s3-blob2", s3Blob2))
+          .flatMap(_.update("path-blob2", pathBlob2))
           .flatMap(_.save("some-msg")).get
     }
 
@@ -255,12 +255,12 @@ class TestCommitDataVersioning extends FunSuite {
       assert(downloadAttempt2 match {case Failure(e) => e.getMessage contains "This dataset cannot be used for downloads"})
 
       // this check currently fails. Will need to revisit later
-      // val retrievedS3Blob2: Dataset = f.commit.get("s3-blob2").get match {
-      //   case s3: S3 => s3
-      // }
-      // val downloadAttempt3 = retrievedS3Blob2.download(downloadToPath = "some-path")
-      // assert(downloadAttempt3.isFailure)
-      // assert(downloadAttempt3 match {case Failure(e) => e.getMessage contains "This blob did not allow for versioning"})
+      val retrievedPathBlob2: Dataset = f.commit.get("path-blob2").get match {
+        case path: PathBlob => path
+      }
+      val downloadAttempt3 = retrievedPathBlob2.download(downloadToPath = "some-path")
+      assert(downloadAttempt3.isFailure)
+      assert(downloadAttempt3 match {case Failure(e) => e.getMessage contains "This blob did not allow for versioning"})
     } finally {
       cleanup(f)
     }
