@@ -12,6 +12,7 @@ import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
+import ai.verta.modeldb.GetExperimentRunById.Response;
 import ai.verta.modeldb.OperatorEnum.Operator;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.AuthService;
@@ -8489,29 +8490,36 @@ public class ExperimentRunTest {
             .build();
     experimentRunServiceStub.logVersionedInput(logVersionedInput);
 
-    logVersionedInput =
-        LogVersionedInput.newBuilder()
-            .setId(experimentRun.getId())
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getParentShasList().get(0))
-                    .build())
-            .build();
-    experimentRunServiceStub.logVersionedInput(logVersionedInput);
+    LogVersionedInput logVersionedInputFail = LogVersionedInput.newBuilder()
+        .setId(experimentRun.getId())
+        .setVersionedInputs(
+            VersioningEntry.newBuilder()
+                .setRepositoryId(repoId)
+                .setCommit(commitResponse.getCommit().getParentShasList().get(0))
+                .build())
+        .build();
+    try {
+      experimentRunServiceStub.logVersionedInput(logVersionedInputFail);
+      fail();
+    } catch (StatusRuntimeException e) {
+      Status status = Status.fromThrowable(e);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+    }
+
+    try {
+      experimentRunServiceStub.logVersionedInput(logVersionedInputFail);
+      fail();
+    } catch (StatusRuntimeException e) {
+      Status status = Status.fromThrowable(e);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+    }
 
     GetExperimentRunById getExperimentRunById =
         GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
-    GetExperimentRunById.Response response =
-        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    assertEquals(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-        logVersionedInput.getVersionedInputs(),
-        response.getExperimentRun().getVersionedInputs());
-
-    experimentRunServiceStub.logVersionedInput(logVersionedInput);
-
-    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    Response response = experimentRunServiceStub
+        .getExperimentRunById(getExperimentRunById);
     assertEquals(
         "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         logVersionedInput.getVersionedInputs(),
