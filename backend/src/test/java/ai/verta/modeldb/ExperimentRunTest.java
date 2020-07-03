@@ -45,6 +45,7 @@ import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
@@ -2932,7 +2933,7 @@ public class ExperimentRunTest {
   }
 
   @Test
-  public void h_LogObservationEpochTest() {
+  public void h_LogObservationEpochTest() throws InvalidProtocolBufferException {
     LOGGER.info("Get Observation from ExperimentRun test start................................");
 
     ProjectTest projectTest = new ProjectTest();
@@ -2994,6 +2995,7 @@ public class ExperimentRunTest {
         GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     GetExperimentRunById.Response response =
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    System.out.println("Return ExperimentRun with 1 observation: " + ModelDBUtils.getStringFromProtoObject(response));
     assertEquals(
         "there should be exactly one observation",
         1,
@@ -3028,6 +3030,7 @@ public class ExperimentRunTest {
 
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    System.out.println("Return ExperimentRun with 2 observation: " + ModelDBUtils.getStringFromProtoObject(response));
     assertEquals(
         "there should be two observations", 2, response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 1
@@ -3060,6 +3063,7 @@ public class ExperimentRunTest {
 
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    System.out.println("Return ExperimentRun with 3 observation: " + ModelDBUtils.getStringFromProtoObject(response));
     assertEquals(
         "there should be three observations",
         3,
@@ -3094,6 +3098,7 @@ public class ExperimentRunTest {
 
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    System.out.println("Return ExperimentRun with 4 observation: " + ModelDBUtils.getStringFromProtoObject(response));
     assertEquals(
         "there should be four observations", 4, response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 3
