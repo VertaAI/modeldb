@@ -694,7 +694,8 @@ public class DeleteEntitiesCron extends TimerTask {
                         session,
                         commitEntity.getCommit_hash(),
                         IDTypeEnum.IDType.VERSIONING_COMMIT);
-                    deleteTagEntities(session, repository.getId(), commitEntity.getCommit_hash());session.delete(commitEntity);
+                    deleteTagEntities(session, repository.getId(), commitEntity.getCommit_hash());
+                    session.delete(commitEntity);
                   } else {
                     session.update(commitEntity);
                   }
