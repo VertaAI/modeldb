@@ -348,7 +348,7 @@ class TestCommitDataVersioning extends FunSuite {
       val retrievedPathBlob2: Dataset = f.commit.get("path-blob2").get match {
         case path: PathBlob => path
       }
-      val downloadAttempt3 = retrievedPathBlob2.download(downloadToPath = "some-path")
+      val downloadAttempt3 = retrievedPathBlob2.download(downloadToPath = Some("some-path"))
       assert(downloadAttempt3.isFailure)
       assert(downloadAttempt3 match {case Failure(e) => e.getMessage contains "This blob did not allow for versioning"})
     } finally {
