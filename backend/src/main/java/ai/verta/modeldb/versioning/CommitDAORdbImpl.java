@@ -648,31 +648,9 @@ public class CommitDAORdbImpl implements CommitDAO {
       boolean deleteAll)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity;
-
-      RepositoryIdentification.Builder repositoryIdentification =
-          RepositoryIdentification.newBuilder();
-      if (datasetId == null || datasetId.isEmpty()) {
-        CommitEntity commitEntity = session.get(CommitEntity.class, datasetVersionId);
-
-        if (commitEntity == null) {
-          throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
-        }
-
-        if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
-          throw new ModelDBException(
-              "DatasetVersion '"
-                  + commitEntity.getCommit_hash()
-                  + "' associated with multiple datasets",
-              Code.INTERNAL);
-        }
-        Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
-        repositoryIdentification.setRepoId(newRepoId);
-      } else {
-        repositoryIdentification.setRepoId(Long.parseLong(datasetId));
-      }
-      repositoryEntity =
-          repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
+      RepositoryEntity repositoryEntity =
+          VersioningUtils.getDatasetRepositoryEntity(
+              session, repositoryDAO, datasetId, datasetVersionId);
       addDeleteCommitLabels(
           repositoryEntity, datasetVersionId, metadataDAO, addTags, tagsList, deleteAll);
       return blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, datasetVersionId);
