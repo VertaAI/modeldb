@@ -24,8 +24,8 @@ class TestCommitDataVersioning extends FunSuite {
         val repo = client.getOrCreateRepository("My Repo").get
 
         val pathBlob = PathBlob("./src/test/scala/ai/verta/blobs/testdir", true).get
-        val s3Blob2 = S3(S3Location("s3://verta-scala-test/testdir/").get, true).get
         val s3Blob = S3(S3Location("s3://verta-scala-test/testdir/").get, true).get
+        // val s3Blob2 = S3(S3Location("s3://verta-scala-test/testdir/").get).get
 
         val commit = repo.getCommitByBranch()
           .flatMap(_.update("s3-blob", s3Blob))
