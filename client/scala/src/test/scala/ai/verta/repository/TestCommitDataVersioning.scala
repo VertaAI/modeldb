@@ -25,10 +25,12 @@ class TestCommitDataVersioning extends FunSuite {
 
         val pathBlob = PathBlob("./src/test/scala/ai/verta/blobs/testdir", true).get
         val s3Blob = S3(S3Location("s3://verta-scala-test/testdir/").get, true).get
+        val pathBlob2 = PathBlob("./src/test/scala/ai/verta/blobs/testdir2").get
 
         val commit = repo.getCommitByBranch()
           .flatMap(_.update("s3-blob", s3Blob))
           .flatMap(_.update("path-blob", pathBlob))
+          .flatMap(_.update("path-blob2", pathBlob2))
           .flatMap(_.save("some-msg")).get
     }
 
@@ -330,29 +332,52 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("multipart-upload should work") {
+  test("only blobs enabling versioning and obtained by commit.get can download") {
     val f = fixture
 
     try {
-      val originalContent = generateRandomFile("somefile", 128 * 1024 * 1024).get // 128 MB
-      val pathBlob = PathBlob("somefile", true).get
-      val commit = f.commit
-        .update("file", pathBlob)
-        .flatMap(_.save("some-msg")).get
-      generateRandomFile("somefile").get
+      val downloadAttempt = f.pathBlob.download(downloadToPath = Some("some-path"))
+      assert(downloadAttempt.isFailure)
+      assert(downloadAttempt match {case Failure(e) => e.getMessage contains "This dataset cannot be used for downloads"})
 
-      // recover the old versioned file:
-      val retrievedBlob: Dataset = commit.get("file").get match {
+      val downloadAttempt2 = f.s3Blob.download(downloadToPath = Some("some-path"))
+      assert(downloadAttempt2.isFailure)
+      assert(downloadAttempt2 match {case Failure(e) => e.getMessage contains "This dataset cannot be used for downloads"})
+
+      val retrievedPathBlob2: Dataset = f.commit.get("path-blob2").get match {
         case path: PathBlob => path
       }
-      val downloadToPath = retrievedBlob.download().get
-
-      assert(downloadToPath equals (new File(f"${Dataset.DefaultDownloadDir}")).getAbsolutePath)
-      assert(
-        Files.readAllBytes((new File(f"${downloadToPath}/somefile")).toPath).sameElements(originalContent)
-      )
+      val downloadAttempt3 = retrievedPathBlob2.download(downloadToPath = Some("some-path"))
+      assert(downloadAttempt3.isFailure)
+      assert(downloadAttempt3 match {case Failure(e) => e.getMessage contains "This blob did not allow for versioning"})
     } finally {
       cleanup(f)
     }
   }
+
+  // test("multipart-upload should work") {
+  //   val f = fixture
+  //
+  //   try {
+  //     val originalContent = generateRandomFile("somefile", 128 * 1024 * 1024).get // 128 MB
+  //     val pathBlob = PathBlob("somefile", true).get
+  //     val commit = f.commit
+  //       .update("file", pathBlob)
+  //       .flatMap(_.save("some-msg")).get
+  //     generateRandomFile("somefile").get
+  //
+  //     // recover the old versioned file:
+  //     val retrievedBlob: Dataset = commit.get("file").get match {
+  //       case path: PathBlob => path
+  //     }
+  //     val downloadToPath = retrievedBlob.download().get
+  //
+  //     assert(downloadToPath equals (new File(f"${Dataset.DefaultDownloadDir}")).getAbsolutePath)
+  //     assert(
+  //       Files.readAllBytes((new File(f"${downloadToPath}/somefile")).toPath).sameElements(originalContent)
+  //     )
+  //   } finally {
+  //     cleanup(f)
+  //   }
+  // }
 }

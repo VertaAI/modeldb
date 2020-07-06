@@ -14,9 +14,14 @@ import zipfile
 
 import requests
 
+import yaml
+
 import verta
 from verta._internal_utils import _histogram_utils
 from verta._internal_utils import _utils
+
+
+pytestmark = pytest.mark.not_oss
 
 
 @pytest.fixture
@@ -53,7 +58,6 @@ def model_packaging():
     }
 
 
-@pytest.mark.not_oss
 class TestLogModelForDeployment:
     def test_model(self, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
@@ -82,7 +86,6 @@ class TestLogModelForDeployment:
             assert set(f.read().split()) <= set(retrieved_requirements.split())
 
 
-@pytest.mark.not_oss
 class TestLogModel:
     def test_model(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'])
@@ -228,7 +231,6 @@ class TestLogModel:
             )
 
 
-@pytest.mark.not_oss
 class TestFetchArtifacts:
     def test_fetch_artifacts(self, experiment_run, strs, flat_dicts):
         for key, artifact in zip(strs, flat_dicts):
@@ -417,7 +419,6 @@ class TestFetchArtifacts:
             experiment_run.fetch_artifacts(strs[1:])
 
 
-@pytest.mark.not_oss
 class TestLogRequirements:
     NONSPECIFIC_REQ = "verta>0.1.0"
     INVALID_REQ = "@==1.2.3"
@@ -524,7 +525,6 @@ class TestLogRequirements:
         assert set(self.VALID_REQS) == reqs
 
 
-@pytest.mark.not_oss
 class TestLogTrainingData:
     def test_numpy_error(self, experiment_run, model_for_deployment):
         with pytest.raises(TypeError):
@@ -566,7 +566,6 @@ class TestLogTrainingData:
         experiment_run.log_training_data(X_train, y_train)
 
 
-@pytest.mark.not_oss
 class TestHistogram:
     @staticmethod
     def assert_histograms_match_dataframe(histograms, df):
@@ -756,7 +755,6 @@ class TestHistogram:
         assert float_hist['count'] == retrieved_float_hist['count']
 
 
-@pytest.mark.not_oss
 class TestDeploy:
     def test_auto_path_auto_token_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -892,12 +890,13 @@ class TestDeploy:
         experiment_run.log_requirements(['scikit-learn'])
 
         # delete model
-        _utils.make_request(
+        response = _utils.make_request(
             "DELETE",
             "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(experiment_run._conn.scheme,
                                                               experiment_run._conn.socket),
             experiment_run._conn, json={'id': experiment_run.id, 'key': "model.pkl"}
-        ).raise_for_status()
+        )
+        _utils.raise_for_http_error(response)
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
@@ -914,12 +913,13 @@ class TestDeploy:
         experiment_run.log_requirements(['scikit-learn'])
 
         # delete model API
-        _utils.make_request(
+        response = _utils.make_request(
             "DELETE",
             "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(experiment_run._conn.scheme,
                                                               experiment_run._conn.socket),
             experiment_run._conn, json={'id': experiment_run.id, 'key': "model_api.json"}
-        ).raise_for_status()
+        )
+        _utils.raise_for_http_error(response)
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
@@ -961,7 +961,6 @@ class TestDeploy:
         )
 
 
-@pytest.mark.not_oss
 class TestUndeploy:
     def test_undeploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -984,7 +983,6 @@ class TestUndeploy:
         experiment_run.undeploy()
 
 
-@pytest.mark.not_oss
 class TestGetDeployedModel:
     def test_get(self, experiment_run, model_for_deployment):
         model = model_for_deployment['model'].fit(
@@ -1025,3 +1023,46 @@ class TestGetDeployedModel:
             "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
             headers=conn.auth,
         )
+
+
+class TestGitOps:
+    def test_download_deployment_yaml(self, experiment_run, model_for_deployment, in_tempdir):
+        download_to_path = "deployment.yaml"
+
+        experiment_run.log_model(
+            model_for_deployment['model'],
+            custom_modules=[],
+            model_api=model_for_deployment['model_api'],
+        )
+        experiment_run.log_requirements(['scikit-learn'])
+
+        filepath = experiment_run.download_deployment_yaml(download_to_path)
+        assert filepath == os.path.abspath(download_to_path)
+
+        # can be loaded as YAML
+        with open(filepath, 'rb') as f:
+            model_deployment, config_map = yaml.safe_load_all(f)
+
+        assert model_deployment['kind'] == "ModelDeployment"
+        assert model_deployment['metadata']['name'] == experiment_run.id
+
+        assert config_map['kind'] == "ConfigMap"
+        assert config_map['metadata']['name'] == "model--{}".format(experiment_run.id)
+
+        model_api = json.loads(config_map['data']['model_api.json'])
+        assert model_api == model_for_deployment['model_api'].to_dict()
+
+    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir):
+        download_to_path = "context.tgz"
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        filepath = experiment_run.download_docker_context(download_to_path)
+        assert filepath == os.path.abspath(download_to_path)
+
+        # can be loaded as tgz
+        with tarfile.open(filepath, 'r:gz') as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths

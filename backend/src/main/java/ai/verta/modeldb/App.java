@@ -123,6 +123,7 @@ public class App implements ApplicationContextAware {
   // S3 Artifact store
   private String cloudAccessKey = null;
   private String cloudSecretKey = null;
+  private String minioEndpoint = null;
 
   // NFS Artifact store
   private Boolean pickNFSHostFromConfig = null;
@@ -566,6 +567,7 @@ public class App implements ApplicationContextAware {
             (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.S3);
         app.cloudAccessKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_ACCESS_KEY);
         app.cloudSecretKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_SECRET_KEY);
+        app.minioEndpoint = (String) s3ConfigMap.get(ModelDBConstants.MINIO_ENDPOINT);
         String cloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
         artifactStoreService = new S3Service(cloudBucketName);
         app.storeTypePathPrefix = "s3://" + cloudBucketName + ModelDBConstants.PATH_DELIMITER;
@@ -719,6 +721,10 @@ public class App implements ApplicationContextAware {
 
   public String getCloudSecretKey() {
     return cloudSecretKey;
+  }
+
+  public String getMinioEndpoint() {
+    return minioEndpoint;
   }
 
   public Boolean getStoreClientCreationTimestamp() {

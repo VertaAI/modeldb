@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext
 
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
-  private[verta] val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
+  val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
 
   // mutable state, populated when getting blob from commit
   /** TODO: Figure out a way to remove this */
@@ -263,6 +263,7 @@ trait Dataset extends Blob {
   private def joinPaths(prefix: String, suffix: String): String =
     Paths.get(prefix, suffix).toString
 
+  /** Return the absolute path of path */
   private def getAbsolutePath(path: String): String =
     (new File(path)).getAbsolutePath()
 
