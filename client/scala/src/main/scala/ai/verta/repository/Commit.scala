@@ -14,7 +14,7 @@ import scala.concurrent.duration.Duration
 import java.io.{File, FileInputStream, FileOutputStream, ByteArrayInputStream}
 import java.nio.file.{Files, StandardCopyOption}
 
-/** Commit within a ModelDB Repository
+/** Commit within a ModelDB Repository.
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
  */
 class Commit(
@@ -401,7 +401,7 @@ class Commit(
    *  @param message error message if this commit is not saved
    *  @return Failure if the commit is not saved. Success otherwise
    */
-  def checkSaved(message: String): Try[Unit] = {
+  private[verta] def checkSaved(message: String): Try[Unit] = {
     if (!saved)
       Failure(new IllegalCommitSavedStateException(message))
     else

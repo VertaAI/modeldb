@@ -6,7 +6,7 @@ import ai.verta.swagger._public.modeldb.versioning.model.VersioningRepository
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
-/** ModelDB Repository
+/** ModelDB Repository.
  *  There should not be a need to instantiate this class directly; please use Client's getOrCreateRepository
  */
 class Repository(private val clientSet: ClientSet, private val repo: VersioningRepository) {
