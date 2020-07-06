@@ -344,7 +344,6 @@ class TestCommitDataVersioning extends FunSuite {
       assert(downloadAttempt2.isFailure)
       assert(downloadAttempt2 match {case Failure(e) => e.getMessage contains "This dataset cannot be used for downloads"})
 
-      // this check currently fails. Will need to revisit later
       val retrievedPathBlob2: Dataset = f.commit.get("path-blob2").get match {
         case path: PathBlob => path
       }
