@@ -542,6 +542,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public ExperimentRun getExperimentRun(String experimentRunId)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      return getExperimentRun(session, experimentRunId).getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getExperimentRun(experimentRunId);

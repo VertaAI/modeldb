@@ -25,10 +25,10 @@ import ai.verta.modeldb.entities.lineage.LineageElementEntity;
 import ai.verta.modeldb.entities.lineage.LineageExperimentRunEntity;
 import ai.verta.modeldb.entities.lineage.LineageVersioningBlobEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.blob.diff.Function3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolStringList;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
@@ -93,7 +93,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       return AddLineage.Response.newBuilder().setId(lineageElementEntity.getId()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return addLineage(addLineage, isExistsPredicate);
+        return addLineage(addLineage, resourceExistsCheckConsumer);
       } else {
         throw ex;
       }
@@ -155,7 +155,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       session.getTransaction().commit();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return deleteLineage(deleteLineage);
+        return deleteLineage(deleteLineage, resourceExistsCheckConsumer);
       } else {
         throw ex;
       }
@@ -428,7 +428,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       return filter.apply(session, response.build());
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return findAllInputs(findAllInputs);
+        return findAllInputs(findAllInputs, resourceExistsCheckConsumer, filter);
       } else {
         throw ex;
       }
@@ -457,7 +457,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       return filter.apply(session, response.build());
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return findAllOutputs(findAllOutputs);
+        return findAllOutputs(findAllOutputs, resourceExistsCheckConsumer, filter);
       } else {
         throw ex;
       }
@@ -491,7 +491,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       return filter.apply(session, response.build());
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return findAllInputsOutputs(findAllInputsOutputs);
+        return findAllInputsOutputs(findAllInputsOutputs, resourceExistsCheckConsumer, filter);
       } else {
         throw ex;
       }
