@@ -4060,8 +4060,9 @@ class ExperimentRun(_ModelDBEntity):
             If the model is not currently deployed.
 
         """
-        if self.get_deployment_status()['status'] != "deployed":
-            raise RuntimeError("model is not currently deployed")
+        status = self.get_deployment_status().get('status', "<no status>")
+        if status != "deployed":
+            raise RuntimeError("model is not currently deployed (status: {})".format(status))
 
         status = self.get_deployment_status()
         return deployment.DeployedModel.from_url(status['url'], status['token'])
