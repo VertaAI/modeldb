@@ -239,6 +239,7 @@ public interface ModelDBConstants {
   String VERSIONING_REPO_COMMIT_BLOB = "versioning_repo_commit_blob";
   String VERSIONING_REPO_COMMIT = "versioning_repo_commit";
   String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
+  String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second

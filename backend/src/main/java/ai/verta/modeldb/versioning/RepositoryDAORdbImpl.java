@@ -21,6 +21,7 @@ import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -723,6 +724,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       finalPredicatesList.add(
           criteriaBuilder.equal(repositoryEntityRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          criteriaBuilder.equal(
+              repositoryEntityRoot.get(ModelDBConstants.REPOSITORY_ACCESS_MODIFIER),
+              RepositoryEnums.RepositoryModifierEnum.REGULAR.ordinal()));
 
       Order orderBy = criteriaBuilder.desc(repositoryEntityRoot.get(ModelDBConstants.DATE_UPDATED));
 
@@ -1347,6 +1352,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
 
       finalPredicatesList.add(builder.equal(repositoryRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(
+              repositoryRoot.get(ModelDBConstants.REPOSITORY_ACCESS_MODIFIER),
+              RepositoryEnums.RepositoryModifierEnum.PROTECTED.ordinal()));
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {

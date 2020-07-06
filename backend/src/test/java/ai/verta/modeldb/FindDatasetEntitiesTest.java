@@ -1,5 +1,6 @@
 package ai.verta.modeldb;
 
+import static ai.verta.modeldb.RepositoryTest.NAME;
 import static org.junit.Assert.*;
 
 import ai.verta.common.KeyValue;
@@ -17,6 +18,8 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
@@ -32,6 +35,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -1630,5 +1634,40 @@ public class FindDatasetEntitiesTest {
         response.getTotalRecords());
 
     LOGGER.info("FindDatasetVersions by workspace test stop................................");
+  }
+
+  @Test
+  public void findDatasetsWithMarkedAsProtectedRepositoryTest() {
+    LOGGER.info("FindDatasets test start................................");
+
+    long id = RepositoryTest.createRepository(versioningServiceBlockingStub, NAME);
+
+    FindDatasets findDatasets = FindDatasets.newBuilder().build();
+
+    FindDatasets.Response response = datasetServiceStub.findDatasets(findDatasets);
+    LOGGER.info("FindDatasets Response : " + response.getDatasetsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        datasetVersionMap.size(),
+        response.getTotalRecords());
+
+    response
+        .getDatasetsList()
+        .forEach(
+            dataset -> {
+              if (dataset.getId().equals(String.valueOf(id))) {
+                fail("Regular repository should not visible in protected repository list");
+              }
+            });
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    LOGGER.info("FindDatasets test stop................................");
   }
 }
