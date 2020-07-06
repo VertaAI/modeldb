@@ -641,6 +641,8 @@
         </addColumn>
     </changeSet>
 
+    <include file="src/main/resources/liquibase/db-changelog-deleted-bool-to-tinyint.xml"/>
+
     <!-- keep the line below at the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 </databaseChangeLog>

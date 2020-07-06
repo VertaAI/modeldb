@@ -1,0 +1,78 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+        logicalFilePath="src/main/resources/liquibase/db-changelog-deleted-bool-to-tinyint.xml">
+
+    <!-- Migrate deleted column for project-->
+    <changeSet id="add-dummy-column-convert-deleted-bool-to-int-project" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="int_deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="int_deleted" type="tinyint(1)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="copy-deleted-bool-to-dummy-int-deleted-project" author="anandJ">
+        <sql>
+            UPDATE project SET int_deleted = CASE WHEN deleted = 1 THEN 1 ELSE 0 END
+        </sql>
+    </changeSet>
+
+    <changeSet id="drop-index_project_deleted" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <indexExists tableName="project" indexName="index_project_deleted"/>
+        </preConditions>
+        <dropIndex tableName="project" indexName="index_project_deleted"/>
+    </changeSet>
+
+    <changeSet id="drop-index_project_id_deleted" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <indexExists tableName="project" indexName="index_project_id_deleted"/>
+        </preConditions>
+        <dropIndex tableName="project" indexName="index_project_id_deleted"/>
+    </changeSet>
+
+    <changeSet id="drop-index_p_name_wspace_wspace_type_deleted" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <indexExists tableName="project" indexName="p_name_wspace_wspace_type_deleted"/>
+        </preConditions>
+        <dropIndex tableName="project" indexName="p_name_wspace_wspace_type_deleted"/>
+    </changeSet>
+
+    <changeSet id="drop-deleted-bool-column-project" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="project" columnName="deleted"/>
+        </preConditions>
+        <dropColumn tableName="project" columnName="deleted"/>
+    </changeSet>
+
+    <changeSet id="add-tinyint-deleted-project" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="deleted" type="tinyint(1)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="copy-dummy-deleted-to-int-deleted-project" author="anandJ">
+        <sql>
+            UPDATE project SET deleted = int_deleted
+        </sql>
+    </changeSet>
+
+    <changeSet id="drop-dummy-int-deleted-column-project" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="project" columnName="int_deleted"/>
+        </preConditions>
+        <dropColumn tableName="project" columnName="int_deleted"/>
+    </changeSet>
+
+</databaseChangeLog>
