@@ -8490,23 +8490,15 @@ public class ExperimentRunTest {
             .build();
     experimentRunServiceStub.logVersionedInput(logVersionedInput);
 
-    LogVersionedInput logVersionedInputFail = LogVersionedInput.newBuilder()
-        .setId(experimentRun.getId())
-        .setVersionedInputs(
-            VersioningEntry.newBuilder()
-                .setRepositoryId(repoId)
-                .setCommit(commitResponse.getCommit().getParentShasList().get(0))
-                .build())
-        .build();
-    try {
-      experimentRunServiceStub.logVersionedInput(logVersionedInputFail);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
-    }
-
+    LogVersionedInput logVersionedInputFail =
+        LogVersionedInput.newBuilder()
+            .setId(experimentRun.getId())
+            .setVersionedInputs(
+                VersioningEntry.newBuilder()
+                    .setRepositoryId(repoId)
+                    .setCommit(commitResponse.getCommit().getParentShasList().get(0))
+                    .build())
+            .build();
     try {
       experimentRunServiceStub.logVersionedInput(logVersionedInputFail);
       fail();
@@ -8518,8 +8510,7 @@ public class ExperimentRunTest {
 
     GetExperimentRunById getExperimentRunById =
         GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
-    Response response = experimentRunServiceStub
-        .getExperimentRunById(getExperimentRunById);
+    Response response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertEquals(
         "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         logVersionedInput.getVersionedInputs(),
