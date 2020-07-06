@@ -1847,29 +1847,31 @@ public class RdbmsUtils {
     configBlobEntityRootPredicates.add(keyPredicate);
 
     List<Predicate> orPredicates = new ArrayList<>();
-    try {
-      Predicate intValuePredicate =
-          getValuePredicate(
-              builder,
-              ModelDBConstants.HYPERPARAMETERS,
-              elementMappingEntityRoot.get("int_value"),
-              predicate,
-              false);
-      orPredicates.add(intValuePredicate);
-    } catch (Exception e) {
-      LOGGER.debug("Value could not be cast to int");
-    }
-    try {
-      Predicate floatValuePredicate =
-          getValuePredicate(
-              builder,
-              ModelDBConstants.HYPERPARAMETERS,
-              elementMappingEntityRoot.get("float_value"),
-              predicate,
-              false);
-      orPredicates.add(floatValuePredicate);
-    } catch (Exception e) {
-      LOGGER.debug("Value could not be cast to float");
+    if (predicate.getValue().getKindCase().equals(KindCase.NUMBER_VALUE)) {
+      try {
+        Predicate intValuePredicate =
+            getValuePredicate(
+                builder,
+                ModelDBConstants.HYPERPARAMETERS,
+                elementMappingEntityRoot.get("int_value"),
+                predicate,
+                false);
+        orPredicates.add(intValuePredicate);
+      } catch (Exception e) {
+        LOGGER.debug("Value could not be cast to int");
+      }
+      try {
+        Predicate floatValuePredicate =
+            getValuePredicate(
+                builder,
+                ModelDBConstants.HYPERPARAMETERS,
+                elementMappingEntityRoot.get("float_value"),
+                predicate,
+                false);
+        orPredicates.add(floatValuePredicate);
+      } catch (Exception e) {
+        LOGGER.debug("Value could not be cast to float");
+      }
     }
     Predicate stringValuePredicate =
         getValuePredicate(

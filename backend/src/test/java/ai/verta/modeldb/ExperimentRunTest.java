@@ -12,6 +12,7 @@ import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
+import ai.verta.modeldb.GetExperimentRunById.Response;
 import ai.verta.modeldb.OperatorEnum.Operator;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.AuthService;
@@ -8489,18 +8490,27 @@ public class ExperimentRunTest {
             .build();
     experimentRunServiceStub.logVersionedInput(logVersionedInput);
 
+    LogVersionedInput logVersionedInputFail =
+        LogVersionedInput.newBuilder()
+            .setId(experimentRun.getId())
+            .setVersionedInputs(
+                VersioningEntry.newBuilder()
+                    .setRepositoryId(repoId)
+                    .setCommit(commitResponse.getCommit().getParentShasList().get(0))
+                    .build())
+            .build();
+    try {
+      experimentRunServiceStub.logVersionedInput(logVersionedInputFail);
+      fail();
+    } catch (StatusRuntimeException e) {
+      Status status = Status.fromThrowable(e);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+    }
+
     GetExperimentRunById getExperimentRunById =
         GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
-    GetExperimentRunById.Response response =
-        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    assertEquals(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-        logVersionedInput.getVersionedInputs(),
-        response.getExperimentRun().getVersionedInputs());
-
-    experimentRunServiceStub.logVersionedInput(logVersionedInput);
-
-    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    Response response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     assertEquals(
         "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         logVersionedInput.getVersionedInputs(),
@@ -9575,6 +9585,11 @@ public class ExperimentRunTest {
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
+            .addHyperparameters(
+                KeyValue.newBuilder()
+                    .setKey("C")
+                    .setValue(Value.newBuilder().setStringValue("abc").build())
+                    .build())
             .setVersionedInputs(
                 VersioningEntry.newBuilder()
                     .setRepositoryId(repoId)
@@ -9862,6 +9877,35 @@ public class ExperimentRunTest {
     assertEquals(
         "ExperimentRun count not match with expected experimentRun count",
         3,
+        response.getExperimentRunsCount());
+
+    hyperparameterFilter = Value.newBuilder().setStringValue("abc").build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.C")
+            .setValue(hyperparameterFilter)
+            .setOperator(Operator.CONTAIN)
+            .setValueType(ValueType.STRING)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(keyValueQuery)
+            .setAscending(false)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.train")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        1,
         response.getExperimentRunsCount());
 
     DeleteRepositoryRequest deleteRepository =

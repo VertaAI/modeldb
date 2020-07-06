@@ -259,6 +259,47 @@ class TestPath:
         dataset = verta.dataset.Path(data_dir)
         assert set(dataset.list_paths()) == expected_paths
 
+    @pytest.mark.parametrize(
+        "paths, base_path",
+        [
+            # single path
+            ([["../tests/modelapi_hypothesis"], ".."]),
+            ([["../tests/modelapi_hypothesis"], "../tests"]),
+            ([["../tests/modelapi_hypothesis"], "../tests/modelapi_hypothesis"]),
+            ([["../tests/modelapi_hypothesis/"], "../tests/modelapi_hypothesis"]),
+            # multiple paths
+            ([["../tests/modelapi_hypothesis", "../setup.py"], ".."]),
+            ([["../setup.py", "../tests/modelapi_hypothesis"], ".."]),
+            ([["../tests/modelapi_hypothesis", "../tests/conftest.py"], "../tests"]),
+        ]
+    )
+    def test_base_path(self, paths, base_path):
+        filepaths = _file_utils.flatten_file_trees(paths)
+        expected_paths = set(
+            os.path.relpath(path, base_path)
+            for path in filepaths
+        )
+
+        dataset = verta.dataset.Path(paths, base_path)
+        assert set(dataset.list_paths()) == expected_paths
+
+    @pytest.mark.parametrize(
+        "paths, base_path",
+        [
+            # single path
+            ([["../tests/modelapi_hypothesis"], "foo"]),
+            ([["../tests/modelapi_hypothesis"], "../foo"]),
+            ([["../tests/modelapi_hypothesis"], "../tests/modelapi_"]),
+            # multiple unrelated paths
+            ([["../tests/modelapi_hypothesis", "conftest.py"], ".."]),
+            ([["conftest.py", "../tests/modelapi_hypothesis"], ".."]),
+            ([["modelapi_hypothesis", "test_versioning"], "modelapi_hypothesis"]),
+        ]
+    )
+    def test_invalid_base_path_error(self, paths, base_path):
+        with pytest.raises(ValueError):
+            verta.dataset.Path(paths, base_path)
+
 
 @pytest.mark.usefixtures("with_boto3", "in_tempdir")
 class TestS3ManagedVersioning:
@@ -576,3 +617,36 @@ class TestPathManagedVersioning:
         destination_dir = os.path.join(_dataset.DEFAULT_DOWNLOAD_DIR, reference_dir)
         assert os.path.isdir(destination_dir)
         assert_dirs_match(destination_dir, reference_dir)
+
+    def test_base_path(self, commit):
+        reference_dir = "tiny-files/"
+        os.mkdir(reference_dir)
+        # three .file files in tiny-files/
+        for filename in ["tiny{}.file".format(i) for i in range(3)]:
+            with open(os.path.join(reference_dir, filename), 'wb') as f:
+                f.write(os.urandom(2**16))
+
+        sub_dir = "bin/"
+        os.mkdir(os.path.join(reference_dir, sub_dir))
+        # three .bin files in tiny-files/bin/
+        for filename in ["tiny{}.bin".format(i) for i in range(3)]:
+            with open(os.path.join(reference_dir, sub_dir, filename), 'wb') as f:
+                f.write(os.urandom(2**16))
+
+        # commit dataset blob
+        blob_path = "data"
+        dataset = verta.dataset.Path(
+            reference_dir, base_path=reference_dir,
+            enable_mdb_versioning=True,
+        )
+        commit.update(blob_path, dataset)
+        commit.save("Version data.")
+        dataset = commit.get(blob_path)
+
+        # `reference_dir` was dropped as base path, so KeyError
+        with pytest.raises(KeyError):
+            dataset.download(reference_dir)
+
+        dirpath = dataset.download()
+        assert os.path.abspath(dirpath) != os.path.abspath(reference_dir)
+        assert_dirs_match(dirpath, reference_dir)
