@@ -1,5 +1,7 @@
 package ai.verta.modeldb.dataset;
 
+import static io.grpc.Status.Code.INVALID_ARGUMENT;
+
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
@@ -466,25 +468,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
-      String errorMessage = null;
-      if (request.getId().isEmpty() && request.getDescription().isEmpty()) {
-        errorMessage =
-            "Dataset ID and Dataset description not found in UpdateDatasetDescription request";
-      } else if (request.getId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
-      } else if (request.getDescription().isEmpty()) {
-        errorMessage = "Dataset description not found in UpdateDatasetDescription request";
-      }
-
-      if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateDatasetDescription.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+      if (request.getId().isEmpty()) {
+        throw new ModelDBException(
+            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST, INVALID_ARGUMENT);
       }
 
       // Validate if current user has access to the entity or not
