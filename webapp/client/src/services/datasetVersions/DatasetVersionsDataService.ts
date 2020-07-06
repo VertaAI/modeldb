@@ -1,14 +1,14 @@
-import { BaseDataService } from 'core/services/BaseDataService';
-import { EntityErrorType } from 'core/shared/models/Common';
-import { IFilterData } from 'core/features/filter/Model';
-import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
+import { BaseDataService } from 'services/BaseDataService';
+import { EntityErrorType } from 'shared/models/Common';
+import { IFilterData } from 'shared/models/Filters';
+import { DataWithPagination, IPagination } from 'shared/models/Pagination';
 import {
   IDatasetVersion,
   IPathBasedDatasetVersionInfo,
   IQueryDatasetVersionInfo,
   IRawDatasetVersionInfo,
   DatasetVersionPathLocationTypes,
-} from 'models/DatasetVersion';
+} from 'shared/models/DatasetVersion';
 
 import makeLoadDatasetVersionsRequest from './responseRequest/makeLoadDatasetVersionsRequest';
 
@@ -43,6 +43,7 @@ export default class DatasetVersionsDataService extends BaseDataService {
   }
 
   public async loadDatasetVersion(
+    workspaceName: any,
     datasetVersionId: string,
     datasetId?: string
   ): Promise<IDatasetVersion> {

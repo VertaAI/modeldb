@@ -13,11 +13,11 @@ import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbCreateExperimentRun (
-  artifacts: Option[List[ModeldbArtifact]] = None,
+  artifacts: Option[List[CommonArtifact]] = None,
   attributes: Option[List[CommonKeyValue]] = None,
   code_version: Option[String] = None,
   code_version_snapshot: Option[ModeldbCodeVersion] = None,
-  datasets: Option[List[ModeldbArtifact]] = None,
+  datasets: Option[List[CommonArtifact]] = None,
   date_created: Option[BigInt] = None,
   date_updated: Option[BigInt] = None,
   description: Option[String] = None,
@@ -42,11 +42,11 @@ object ModeldbCreateExperimentRun {
   def toJson(obj: ModeldbCreateExperimentRun): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.artifacts.map(x => JField("artifacts", ((x: List[ModeldbArtifact]) => JArray(x.map(((x: ModeldbArtifact) => ModeldbArtifact.toJson(x)))))(x))),
+        obj.artifacts.map(x => JField("artifacts", ((x: List[CommonArtifact]) => JArray(x.map(((x: CommonArtifact) => CommonArtifact.toJson(x)))))(x))),
         obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
         obj.code_version.map(x => JField("code_version", JString(x))),
         obj.code_version_snapshot.map(x => JField("code_version_snapshot", ((x: ModeldbCodeVersion) => ModeldbCodeVersion.toJson(x))(x))),
-        obj.datasets.map(x => JField("datasets", ((x: List[ModeldbArtifact]) => JArray(x.map(((x: ModeldbArtifact) => ModeldbArtifact.toJson(x)))))(x))),
+        obj.datasets.map(x => JField("datasets", ((x: List[CommonArtifact]) => JArray(x.map(((x: CommonArtifact) => CommonArtifact.toJson(x)))))(x))),
         obj.date_created.map(x => JField("date_created", JInt(x))),
         obj.date_updated.map(x => JField("date_updated", JInt(x))),
         obj.description.map(x => JField("description", JString(x))),
@@ -76,11 +76,11 @@ object ModeldbCreateExperimentRun {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbCreateExperimentRun(
           // TODO: handle required
-          artifacts = fieldsMap.get("artifacts").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          artifacts = fieldsMap.get("artifacts").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           code_version = fieldsMap.get("code_version").map(JsonConverter.fromJsonString),
           code_version_snapshot = fieldsMap.get("code_version_snapshot").map(ModeldbCodeVersion.fromJson),
-          datasets = fieldsMap.get("datasets").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          datasets = fieldsMap.get("datasets").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           date_created = fieldsMap.get("date_created").map(JsonConverter.fromJsonInteger),
           date_updated = fieldsMap.get("date_updated").map(JsonConverter.fromJsonInteger),
           description = fieldsMap.get("description").map(JsonConverter.fromJsonString),

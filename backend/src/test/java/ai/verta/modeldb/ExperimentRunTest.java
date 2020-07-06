@@ -3,13 +3,13 @@ package ai.verta.modeldb;
 import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInterceptor;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertTrue;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.OperatorEnum.Operator;
@@ -37,12 +37,17 @@ import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
+import ai.verta.uac.GetUser;
+import ai.verta.uac.UACServiceGrpc;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
+import com.google.protobuf.Value.KindCase;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
@@ -178,7 +183,10 @@ public class ExperimentRunTest {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+      assertTrue(
+          Status.PERMISSION_DENIED.getCode() == status.getCode()
+              || Status.NOT_FOUND.getCode()
+                  == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
@@ -312,9 +320,9 @@ public class ExperimentRunTest {
                 Artifact.newBuilder()
                     .setKey("Google developer Observation artifact")
                     .setPath("This is data artifact type in Google developer Observation artifact")
-                    .setArtifactType(ArtifactType.DATA)
-                    .build())
+                    .setArtifactType(ArtifactType.DATA))
             .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(1))
             .build());
     stringValue =
         Value.newBuilder()
@@ -328,6 +336,7 @@ public class ExperimentRunTest {
                     .setValue(stringValue)
                     .setValueType(ValueType.STRING))
             .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(123))
             .build());
 
     List<Feature> features = new ArrayList<>();
@@ -2416,6 +2425,7 @@ public class ExperimentRunTest {
                     .setValueType(ValueType.NUMBER)
                     .build())
             .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(2L))
             .build();
 
     LogObservation logObservationRequest =
@@ -2606,6 +2616,7 @@ public class ExperimentRunTest {
                     .setValueType(ValueType.NUMBER)
                     .build())
             .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(234L))
             .build();
     observations.add(observation1);
 
@@ -2622,6 +2633,7 @@ public class ExperimentRunTest {
                     .setValueType(ValueType.STRING)
                     .build())
             .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(2134L))
             .build();
     observations.add(observation2);
 
@@ -2797,7 +2809,7 @@ public class ExperimentRunTest {
   }
 
   @Test
-  public void h_getLogObservationTest() {
+  public void h_getObservationTest() {
     LOGGER.info("Get Observation from ExperimentRun test start................................");
 
     ProjectTest projectTest = new ProjectTest();
@@ -2844,14 +2856,14 @@ public class ExperimentRunTest {
         createExperimentRunRequest.getName(),
         experimentRun.getName());
 
-    GetObservations getLogObservationRequest =
+    GetObservations getObservationRequest =
         GetObservations.newBuilder()
             .setId(experimentRun.getId())
             .setObservationKey("Google developer Observation artifact")
             .build();
 
     GetObservations.Response response =
-        experimentRunServiceStub.getObservations(getLogObservationRequest);
+        experimentRunServiceStub.getObservations(getObservationRequest);
 
     LOGGER.info("GetObservations Response : " + response.getObservationsCount());
     for (Observation observation : response.getObservationsList()) {
@@ -2879,20 +2891,20 @@ public class ExperimentRunTest {
   }
 
   @Test
-  public void h_getLogObservationNegativeTest() {
+  public void h_getObservationNegativeTest() {
     LOGGER.info(
         "Get Observation from ExperimentRun Negative test start................................");
 
     ExperimentRunServiceBlockingStub experimentRunServiceStub =
         ExperimentRunServiceGrpc.newBlockingStub(channel);
 
-    GetObservations getLogObservationRequest =
+    GetObservations getObservationRequest =
         GetObservations.newBuilder()
             .setObservationKey("Google developer Observation artifact")
             .build();
 
     try {
-      experimentRunServiceStub.getObservations(getLogObservationRequest);
+      experimentRunServiceStub.getObservations(getObservationRequest);
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
@@ -2900,14 +2912,14 @@ public class ExperimentRunTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    getLogObservationRequest =
+    getObservationRequest =
         GetObservations.newBuilder()
             .setId("dfsdfs")
             .setObservationKey("Google developer Observation artifact")
             .build();
 
     try {
-      experimentRunServiceStub.getObservations(getLogObservationRequest);
+      experimentRunServiceStub.getObservations(getObservationRequest);
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
@@ -2917,6 +2929,248 @@ public class ExperimentRunTest {
 
     LOGGER.info(
         "Get Observation from ExperimentRun Negative tags test stop................................");
+  }
+
+  @Test
+  public void h_LogObservationEpochTest() {
+    LOGGER.info("Get Observation from ExperimentRun test start................................");
+
+    ProjectTest projectTest = new ProjectTest();
+    ExperimentTest experimentTest = new ExperimentTest();
+
+    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    ExperimentServiceBlockingStub experimentServiceStub =
+        ExperimentServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStub =
+        ExperimentRunServiceGrpc.newBlockingStub(channel);
+
+    // Create project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("experimentRun_project_h_loet");
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project = createProjectResponse.getProject();
+    LOGGER.info("Project created successfully");
+
+    // Create an experiment of above project
+    CreateExperiment createExperimentRequest =
+        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_h_loet_abc");
+    CreateExperiment.Response createExperimentResponse =
+        experimentServiceStub.createExperiment(createExperimentRequest);
+    Experiment experiment = createExperimentResponse.getExperiment();
+    LOGGER.info("Experiment created successfully");
+
+    CreateExperimentRun createExperimentRunRequest =
+        getCreateExperimentRunRequestSimple(
+            project.getId(), experiment.getId(), "ExperimentRun_h_loet");
+    CreateExperimentRun.Response createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
+    LOGGER.info("ExperimentRun created successfully");
+
+    Value intValue =
+        Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
+    // First Observation without epoch should get epoch number to zero
+    Observation observation =
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("key1")
+                    .setValue(intValue)
+                    .setValueType(ValueType.NUMBER)
+                    .build())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .build();
+
+    LogObservation logObservationRequest =
+        LogObservation.newBuilder()
+            .setId(experimentRun.getId())
+            .setObservation(observation)
+            .build();
+
+    experimentRunServiceStub.logObservation(logObservationRequest);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    Assert.assertTrue(
+        "there should be exactly one observation",
+        response.getExperimentRun().getObservationsCount() == 1);
+    Observation responseObservation = response.getExperimentRun().getObservations(0);
+    Assert.assertTrue(
+        "observation epoch should be 0",
+        responseObservation.getEpochNumber().getNumberValue() == 0);
+
+    // observation with epoch should set the value passed
+    observation =
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("key1")
+                    .setValue(intValue)
+                    .setValueType(ValueType.NUMBER)
+                    .build())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(123))
+            .build();
+
+    logObservationRequest =
+        LogObservation.newBuilder()
+            .setId(experimentRun.getId())
+            .setObservation(observation)
+            .build();
+
+    experimentRunServiceStub.logObservation(logObservationRequest);
+
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    Assert.assertTrue(
+        "there should be two observations",
+        response.getExperimentRun().getObservationsCount() == 2);
+    // Observations are sorted by auto incr id so the observation of interest is on index 1
+    responseObservation = response.getExperimentRun().getObservations(1);
+    Assert.assertTrue(
+        "observation epoch should be 123",
+        (long) responseObservation.getEpochNumber().getNumberValue() == 123);
+
+    // Subsequent call to log observation without epoch should set value to old max +1
+    observation =
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("key1")
+                    .setValue(intValue)
+                    .setValueType(ValueType.NUMBER)
+                    .build())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .build();
+
+    logObservationRequest =
+        LogObservation.newBuilder()
+            .setId(experimentRun.getId())
+            .setObservation(observation)
+            .build();
+
+    experimentRunServiceStub.logObservation(logObservationRequest);
+
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    Assert.assertTrue(
+        "there should be three observations",
+        response.getExperimentRun().getObservationsCount() == 3);
+    // Observations are sorted by auto incr id so the observation of interest is on index 2
+    responseObservation = response.getExperimentRun().getObservations(2);
+    Assert.assertTrue(
+        "observation epoch should be 123 + 1",
+        (long) responseObservation.getEpochNumber().getNumberValue() == 124);
+
+    // call to log observation with epoch but o not a different key should set value to 0
+    observation =
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("key2")
+                    .setValue(intValue)
+                    .setValueType(ValueType.NUMBER)
+                    .build())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .build();
+
+    logObservationRequest =
+        LogObservation.newBuilder()
+            .setId(experimentRun.getId())
+            .setObservation(observation)
+            .build();
+
+    experimentRunServiceStub.logObservation(logObservationRequest);
+
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    Assert.assertTrue(
+        "there should be four observations",
+        response.getExperimentRun().getObservationsCount() == 4);
+    // Observations are sorted by auto incr id so the observation of interest is on index 3
+    responseObservation = response.getExperimentRun().getObservations(3);
+    Assert.assertTrue(
+        "observation epoch should be 0",
+        (long) responseObservation.getEpochNumber().getNumberValue() == 0);
+
+    // same epoch_number, same key stores duplicate
+    observation =
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("key1")
+                    .setValue(Value.newBuilder().setNumberValue(1))
+                    .setValueType(ValueType.NUMBER)
+                    .build())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(123))
+            .build();
+
+    logObservationRequest =
+        LogObservation.newBuilder()
+            .setId(experimentRun.getId())
+            .setObservation(observation)
+            .build();
+
+    experimentRunServiceStub.logObservation(logObservationRequest);
+
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    Assert.assertTrue(
+        "there should be five observations",
+        response.getExperimentRun().getObservationsCount() == 5);
+    // Observations are sorted by auto incr id so the observation of interest is on index 3
+    responseObservation = response.getExperimentRun().getObservations(1);
+    Observation responseObservation2 = response.getExperimentRun().getObservations(4);
+    Assert.assertTrue(
+        "observations have same key",
+        responseObservation
+            .getAttribute()
+            .getKey()
+            .equals(responseObservation2.getAttribute().getKey()));
+    Assert.assertTrue(
+        "observations have same epoch number",
+        responseObservation.getEpochNumber().equals(responseObservation2.getEpochNumber()));
+
+    // call to log observation with non numeric epoch throws error
+    observation =
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("key2")
+                    .setValue(intValue)
+                    .setValueType(ValueType.NUMBER)
+                    .build())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setStringValue("125"))
+            .build();
+
+    logObservationRequest =
+        LogObservation.newBuilder()
+            .setId(experimentRun.getId())
+            .setObservation(observation)
+            .build();
+
+    try {
+      experimentRunServiceStub.logObservation(logObservationRequest);
+      fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
+
+    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project deleted successfully");
+    LOGGER.info(deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+
+    LOGGER.info(
+        "Get Observation from ExperimentRun tags test stop................................");
   }
 
   @Test
@@ -7462,7 +7716,7 @@ public class ExperimentRunTest {
                         Artifact.newBuilder()
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
-                            .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                            .setArtifactType(ArtifactType.CODE)
                             .build())
                     .build())
             .build();
@@ -7600,7 +7854,7 @@ public class ExperimentRunTest {
                         Artifact.newBuilder()
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
-                            .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                            .setArtifactType(ArtifactType.CODE)
                             .build())
                     .build())
             .build();
@@ -8235,6 +8489,17 @@ public class ExperimentRunTest {
             .build();
     experimentRunServiceStub.logVersionedInput(logVersionedInput);
 
+    logVersionedInput =
+        LogVersionedInput.newBuilder()
+            .setId(experimentRun.getId())
+            .setVersionedInputs(
+                VersioningEntry.newBuilder()
+                    .setRepositoryId(repoId)
+                    .setCommit(commitResponse.getCommit().getParentShasList().get(0))
+                    .build())
+            .build();
+    experimentRunServiceStub.logVersionedInput(logVersionedInput);
+
     GetExperimentRunById getExperimentRunById =
         GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     GetExperimentRunById.Response response =
@@ -8311,9 +8576,23 @@ public class ExperimentRunTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStubClient2 =
+        VersioningServiceGrpc.newBlockingStub(client2Channel);
 
     long repoId =
         RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+
+    String testUser1UserName = null;
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      UACServiceGrpc.UACServiceBlockingStub uacServiceStub =
+          UACServiceGrpc.newBlockingStub(authServiceChannel);
+
+      GetUser getUserRequest =
+          GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+      // Get the user info by vertaId form the AuthService
+      UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
+      testUser1UserName = testUser1.getVertaInfo().getUsername();
+    }
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -8362,6 +8641,25 @@ public class ExperimentRunTest {
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
+
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
+      AddCollaboratorRequest addCollaboratorRequest =
+          CollaboratorTest.addCollaboratorRequestProject(
+              project, authClientInterceptor.getClient2Email(), CollaboratorType.READ_WRITE);
+      collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+      LOGGER.info("\n Collaborator1 added in project successfully \n");
+
+      addCollaboratorRequest =
+          CollaboratorTest.addCollaboratorRequestUser(
+              String.valueOf(repoId),
+              authClientInterceptor.getClient2Email(),
+              CollaboratorType.READ_WRITE,
+              "This is a repo collaborator description");
+      collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+      LOGGER.info("\n Collaborator1 added in repository successfully \n");
+    }
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
@@ -8466,6 +8764,40 @@ public class ExperimentRunTest {
         "ExperimentRun not match with expected ExperimentRun",
         experimentRun3.getId(),
         listCommitExperimentRunsResponse.getRuns(0).getId());
+
+    RepositoryIdentification repositoryIdentification;
+    if (testUser1UserName != null) {
+      repositoryIdentification =
+          RepositoryIdentification.newBuilder()
+              .setNamedId(
+                  RepositoryNamedIdentification.newBuilder()
+                      .setName(RepositoryTest.NAME)
+                      .setWorkspaceName(testUser1UserName)
+                      .build())
+              .build();
+    } else {
+      repositoryIdentification = RepositoryIdentification.newBuilder().setRepoId(repoId).build();
+    }
+    listCommitExperimentRunsRequest =
+        ListCommitExperimentRunsRequest.newBuilder()
+            .setRepositoryId(repositoryIdentification)
+            .setCommitSha(commit.getCommitSha())
+            .build();
+    listCommitExperimentRunsResponse =
+        versioningServiceBlockingStubClient2.listCommitExperimentRuns(
+            listCommitExperimentRunsRequest);
+    assertEquals(
+        "ExperimentRun total records not match with expected ExperimentRun total records",
+        3,
+        listCommitExperimentRunsResponse.getTotalRecords());
+    assertEquals(
+        "ExperimentRun not match with expected ExperimentRun",
+        experimentRun1,
+        listCommitExperimentRunsResponse.getRuns(0));
+    assertEquals(
+        "ExperimentRun not match with expected ExperimentRun",
+        experimentRun3.getId(),
+        listCommitExperimentRunsResponse.getRuns(2).getId());
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
@@ -9254,6 +9586,11 @@ public class ExperimentRunTest {
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
+            .addHyperparameters(
+                KeyValue.newBuilder()
+                    .setKey("C")
+                    .setValue(Value.newBuilder().setStringValue("abc").build())
+                    .build())
             .setVersionedInputs(
                 VersioningEntry.newBuilder()
                     .setRepositoryId(repoId)
@@ -9514,6 +9851,64 @@ public class ExperimentRunTest {
       }
     }
 
+    hyperparameterFilter = Value.newBuilder().setNumberValue(5).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.train")
+            .setValue(hyperparameterFilter)
+            .setOperator(Operator.NE)
+            .setValueType(ValueType.NUMBER)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(keyValueQuery)
+            .setAscending(false)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.train")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        3,
+        response.getTotalRecords());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        3,
+        response.getExperimentRunsCount());
+
+    hyperparameterFilter = Value.newBuilder().setStringValue("abc").build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.C")
+            .setValue(hyperparameterFilter)
+            .setOperator(Operator.CONTAIN)
+            .setValueType(ValueType.STRING)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(keyValueQuery)
+            .setAscending(false)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.train")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        1,
+        response.getExperimentRunsCount());
+
     DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
@@ -9757,6 +10152,317 @@ public class ExperimentRunTest {
             .getGitSnapshot()
             .getFilepathsList()
             .isEmpty());
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project deleted successfully");
+    LOGGER.info(deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+
+    LOGGER.info("FindExperimentRuns test stop................................");
+  }
+
+  @Test
+  public void findExperimentRunsHyperparameterWithStringNumberFloat()
+      throws ModelDBException, NoSuchAlgorithmException {
+    LOGGER.info("FindExperimentRuns test start................................");
+
+    ProjectTest projectTest = new ProjectTest();
+    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    ExperimentServiceBlockingStub experimentServiceStub =
+        ExperimentServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStub =
+        ExperimentRunServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long repoId =
+        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+    Commit commit =
+        Commit.newBuilder()
+            .setMessage("this is the test commit message")
+            .setDateCreated(111)
+            .addParentShas(getBranchResponse.getCommit().getCommitSha())
+            .build();
+    Location location1 = Location.newBuilder().addLocation("dataset").addLocation("train").build();
+    Location location2 =
+        Location.newBuilder().addLocation("test-1").addLocation("test1.json").build();
+    Location location3 =
+        Location.newBuilder().addLocation("test-2").addLocation("test2.json").build();
+    Location location4 =
+        Location.newBuilder().addLocation("test-location-4").addLocation("test4.json").build();
+
+    CreateCommitRequest createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setCommit(commit)
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .addAllLocation(location1.getLocationList())
+                    .build())
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getHyperparameterConfigBlob(3F, 3F))
+                    .addAllLocation(location2.getLocationList())
+                    .build())
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .addAllLocation(location3.getLocationList())
+                    .build())
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getHyperparameterConfigBlob(5.1F, 2.5F))
+                    .addAllLocation(location4.getLocationList())
+                    .build())
+            .build();
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+    commit = commitResponse.getCommit();
+
+    // Create project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("experimentRun_project_ferh");
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project = createProjectResponse.getProject();
+    LOGGER.info("Project created successfully");
+
+    // Create two experiment of above project
+    CreateExperiment createExperimentRequest =
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_1");
+    CreateExperiment.Response createExperimentResponse =
+        experimentServiceStub.createExperiment(createExperimentRequest);
+    Experiment experiment1 = createExperimentResponse.getExperiment();
+    LOGGER.info("Experiment created successfully");
+
+    Map<String, Location> locationMap = new HashMap<>();
+    locationMap.put("location-1", location1);
+
+    CreateExperimentRun createExperimentRunRequest =
+        getCreateExperimentRunRequestSimple(
+            project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+    KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+    KeyValue hyperparameter2 =
+        KeyValue.newBuilder()
+            .setKey("C")
+            .setValue(Value.newBuilder().setStringValue("2.5").build())
+            .build();
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .setVersionedInputs(
+                VersioningEntry.newBuilder()
+                    .setRepositoryId(repoId)
+                    .setCommit(commitResponse.getCommit().getCommitSha())
+                    .putAllKeyLocationMap(locationMap)
+                    .build())
+            .addHyperparameters(hyperparameter1)
+            .addHyperparameters(hyperparameter2)
+            .build();
+    CreateExperimentRun.Response createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    LOGGER.info("ExperimentRun created successfully");
+
+    locationMap.put("location-2", location2);
+
+    createExperimentRunRequest =
+        getCreateExperimentRunRequestSimple(
+            project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .setVersionedInputs(
+                VersioningEntry.newBuilder()
+                    .setRepositoryId(repoId)
+                    .setCommit(commitResponse.getCommit().getCommitSha())
+                    .putAllKeyLocationMap(locationMap)
+                    .build())
+            .addHyperparameters(
+                KeyValue.newBuilder()
+                    .setKey("C")
+                    .setValue(Value.newBuilder().setStringValue("3").build())
+                    .build())
+            .build();
+    createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    LOGGER.info("ExperimentRun created successfully");
+    ExperimentRun experimentRunConfig1 = createExperimentRunResponse.getExperimentRun();
+
+    // experiment2 of above project
+    createExperimentRequest =
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
+    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
+    Experiment experiment2 = createExperimentResponse.getExperiment();
+    LOGGER.info("Experiment created successfully");
+
+    createExperimentRunRequest =
+        getCreateExperimentRunRequestSimple(
+            project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
+    hyperparameter1 = generateNumericKeyValue("C", 0.0002);
+    Map<String, Location> locationMap2 = new HashMap<>();
+    locationMap2.put("location-4", location4);
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .setVersionedInputs(
+                VersioningEntry.newBuilder()
+                    .setRepositoryId(repoId)
+                    .setCommit(commitResponse.getCommit().getCommitSha())
+                    .putAllKeyLocationMap(locationMap2)
+                    .build())
+            .addHyperparameters(hyperparameter1)
+            .addHyperparameters(
+                KeyValue.newBuilder()
+                    .setKey("D")
+                    .setValue(Value.newBuilder().setStringValue("test_hyper").build())
+                    .build())
+            .build();
+    createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    LOGGER.info("ExperimentRun created successfully");
+    ExperimentRun experimentRunConfig2 = createExperimentRunResponse.getExperimentRun();
+
+    createExperimentRunRequest =
+        getCreateExperimentRunRequestSimple(
+            project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
+    hyperparameter1 = generateNumericKeyValue("C", 0.0003);
+    createExperimentRunRequest =
+        createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
+    createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    LOGGER.info("ExperimentRun created successfully");
+
+    Value hyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
+    KeyValueQuery keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.c")
+            .setValue(hyperparameterFilter)
+            .setOperator(Operator.GTE)
+            .setValueType(ValueType.NUMBER)
+            .build();
+
+    FindExperimentRuns findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(keyValueQuery)
+            .setAscending(false)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.train")
+            .build();
+
+    FindExperimentRuns.Response response =
+        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.d")
+            .setValue(Value.newBuilder().setStringValue("test_hyper").build())
+            .setOperator(Operator.EQ)
+            .setValueType(ValueType.STRING)
+            .build();
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(keyValueQuery)
+            .setAscending(true)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.train")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.c")
+            .setValue(Value.newBuilder().setNumberValue(2.5).build())
+            .setOperator(Operator.EQ)
+            .setValueType(ValueType.STRING)
+            .build();
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(keyValueQuery)
+            .setAscending(false)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.train")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    KeyValueQuery oldKeyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.C")
+            .setValue(Value.newBuilder().setNumberValue(0.0002).build())
+            .setOperator(Operator.GTE)
+            .setValueType(ValueType.NUMBER)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(oldKeyValueQuery)
+            .setAscending(true)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.C")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    Value oldHyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
+    oldKeyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("hyperparameters.train")
+            .setValue(oldHyperparameterFilter)
+            .setOperator(Operator.GTE)
+            .setValueType(ValueType.NUMBER)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project.getId())
+            .addPredicates(oldKeyValueQuery)
+            .setAscending(false)
+            .setIdsOnly(false)
+            .setSortKey("hyperparameters.C")
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        2,
+        response.getTotalRecords());
+
+    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+      ExperimentRun exprRun = response.getExperimentRuns(index);
+      for (KeyValue kv : exprRun.getHyperparametersList()) {
+        if (kv.getKey().equals("C")) {
+          assertTrue(
+              "Value should be GTE 0.0001 " + kv,
+              (kv.getValue().getKindCase() == KindCase.STRING_VALUE
+                      ? Double.parseDouble(kv.getValue().getStringValue())
+                      : kv.getValue().getNumberValue())
+                  > 0.0001);
+        }
+      }
+    }
 
     DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()

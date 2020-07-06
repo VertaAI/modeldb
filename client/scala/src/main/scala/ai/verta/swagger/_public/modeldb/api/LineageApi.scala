@@ -12,7 +12,7 @@ import ai.verta.swagger._public.modeldb.model._
 
 class LineageApi(client: HttpClient, val basePath: String = "/v1") {
   def addLineageAsync(body: ModeldbAddLineage)(implicit ec: ExecutionContext): Future[Try[ModeldbAddLineageResponse]] = {
-    var __query = new mutable.HashMap[String,String]
+    var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
     return client.request[ModeldbAddLineage, ModeldbAddLineageResponse]("POST", basePath + s"/lineage/addLineage", __query.toMap, body, ModeldbAddLineageResponse.fromJson)
   }
@@ -20,7 +20,7 @@ class LineageApi(client: HttpClient, val basePath: String = "/v1") {
   def addLineage(body: ModeldbAddLineage)(implicit ec: ExecutionContext): Try[ModeldbAddLineageResponse] = Await.result(addLineageAsync(body), Duration.Inf)
 
   def deleteLineageAsync(body: ModeldbDeleteLineage)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteLineageResponse]] = {
-    var __query = new mutable.HashMap[String,String]
+    var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
     return client.request[ModeldbDeleteLineage, ModeldbDeleteLineageResponse]("POST", basePath + s"/lineage/deleteLineage", __query.toMap, body, ModeldbDeleteLineageResponse.fromJson)
   }
@@ -28,7 +28,7 @@ class LineageApi(client: HttpClient, val basePath: String = "/v1") {
   def deleteLineage(body: ModeldbDeleteLineage)(implicit ec: ExecutionContext): Try[ModeldbDeleteLineageResponse] = Await.result(deleteLineageAsync(body), Duration.Inf)
 
   def findAllInputsAsync(body: ModeldbFindAllInputs)(implicit ec: ExecutionContext): Future[Try[ModeldbFindAllInputsResponse]] = {
-    var __query = new mutable.HashMap[String,String]
+    var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
     return client.request[ModeldbFindAllInputs, ModeldbFindAllInputsResponse]("POST", basePath + s"/lineage/findAllInputs", __query.toMap, body, ModeldbFindAllInputsResponse.fromJson)
   }
@@ -36,7 +36,7 @@ class LineageApi(client: HttpClient, val basePath: String = "/v1") {
   def findAllInputs(body: ModeldbFindAllInputs)(implicit ec: ExecutionContext): Try[ModeldbFindAllInputsResponse] = Await.result(findAllInputsAsync(body), Duration.Inf)
 
   def findAllInputsOutputsAsync(body: ModeldbFindAllInputsOutputs)(implicit ec: ExecutionContext): Future[Try[ModeldbFindAllInputsOutputsResponse]] = {
-    var __query = new mutable.HashMap[String,String]
+    var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
     return client.request[ModeldbFindAllInputsOutputs, ModeldbFindAllInputsOutputsResponse]("POST", basePath + s"/lineage/findAllInputsOutputs", __query.toMap, body, ModeldbFindAllInputsOutputsResponse.fromJson)
   }
@@ -44,7 +44,7 @@ class LineageApi(client: HttpClient, val basePath: String = "/v1") {
   def findAllInputsOutputs(body: ModeldbFindAllInputsOutputs)(implicit ec: ExecutionContext): Try[ModeldbFindAllInputsOutputsResponse] = Await.result(findAllInputsOutputsAsync(body), Duration.Inf)
 
   def findAllOutputsAsync(body: ModeldbFindAllOutputs)(implicit ec: ExecutionContext): Future[Try[ModeldbFindAllOutputsResponse]] = {
-    var __query = new mutable.HashMap[String,String]
+    var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
     return client.request[ModeldbFindAllOutputs, ModeldbFindAllOutputsResponse]("POST", basePath + s"/lineage/findAllOutputs", __query.toMap, body, ModeldbFindAllOutputsResponse.fromJson)
   }

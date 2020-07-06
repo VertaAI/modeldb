@@ -1,0 +1,238 @@
+{
+  "data": {
+    "__schema": {
+      "types": [
+        {
+          "kind": "OBJECT",
+          "name": "AllowedActions",
+          "possibleTypes": []
+        },
+        {
+          "kind": "INPUT_OBJECT",
+          "name": "PaginationQuery",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Repositories",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "CommitColor",
+          "possibleTypes": []
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Float",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "FloatKeyValue",
+          "possibleTypes": []
+        },
+        {
+          "kind": "INPUT_OBJECT",
+          "name": "RepositoriesQuery",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Projects",
+          "possibleTypes": []
+        },
+        {
+          "kind": "INPUT_OBJECT",
+          "name": "ProjectsQuery",
+          "possibleTypes": []
+        },
+        {
+          "kind": "UNION",
+          "name": "Collaborator",
+          "possibleTypes": [
+            {
+              "name": "UserCollaborator"
+            },
+            {
+              "name": "TeamCollaborator"
+            }
+          ]
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Experiment",
+          "possibleTypes": []
+        },
+        {
+          "kind": "INPUT_OBJECT",
+          "name": "ExperimentRunsQuery",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Mutation",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Query",
+          "possibleTypes": []
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Int",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "StringKeyValue",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Observation",
+          "possibleTypes": []
+        },
+        {
+          "kind": "ENUM",
+          "name": "ProjectVisibility",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "User",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "UserCollaborator",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "ExperimentRun",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Artifact",
+          "possibleTypes": []
+        },
+        {
+          "kind": "ENUM",
+          "name": "AccessType",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Organization",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "EdgeColor",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "BranchesHistory",
+          "possibleTypes": []
+        },
+        {
+          "kind": "SCALAR",
+          "name": "String",
+          "possibleTypes": []
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Boolean",
+          "possibleTypes": []
+        },
+        {
+          "kind": "ENUM",
+          "name": "ArtifactType",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Experiments",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Feature",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Repository",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Project",
+          "possibleTypes": []
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Date",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Team",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Workspace",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "BranchColor",
+          "possibleTypes": []
+        },
+        {
+          "kind": "SCALAR",
+          "name": "ID",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "TeamCollaborator",
+          "possibleTypes": []
+        },
+        {
+          "kind": "INPUT_OBJECT",
+          "name": "ExperimentsQuery",
+          "possibleTypes": []
+        },
+        {
+          "kind": "OBJECT",
+          "name": "ExperimentRuns",
+          "possibleTypes": []
+        },
+        {
+          "kind": "UNION",
+          "name": "KeyValue",
+          "possibleTypes": [
+            {
+              "name": "StringKeyValue"
+            },
+            {
+              "name": "FloatKeyValue"
+            }
+          ]
+        },
+        {
+          "kind": "OBJECT",
+          "name": "PaginationResponse",
+          "possibleTypes": []
+        }
+      ]
+    }
+  },
+  "extensions": {}
+}

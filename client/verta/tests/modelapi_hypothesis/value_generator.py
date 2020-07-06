@@ -47,7 +47,7 @@ def verta_type_to_dtype(name):
     return map[name]
 
 def _sized_series_from_api(api, size):
-    values = st.lists(value_from_api(api), size, size)
+    values = st.lists(value_from_api(api), min_size=size, max_size=size)
     return values.map(lambda vals: pd.Series(data=vals, name=api['name'], dtype=verta_type_to_dtype(api['type'])))
 
 def series_from_api(api):
@@ -61,7 +61,7 @@ def dataframe_from_api(api):
     return dataframe
 
 # Converts a generator to a model api to a generator of (model api, list of samples)
-api_and_values = model_api.flatmap(lambda api: st.tuples(st.just(api), st.lists(value_from_api(api), 1, 100)))
+api_and_values = model_api.flatmap(lambda api: st.tuples(st.just(api), st.lists(value_from_api(api), min_size=1, max_size=100)))
 
 series_api_and_values = model_api_series.flatmap(lambda api: st.tuples(st.just(api), series_from_api(api)))
 dataframe_api_and_values = model_api_dataframe.flatmap(lambda api: st.tuples(st.just(api), dataframe_from_api(api)))

@@ -1,0 +1,55 @@
+.root {
+  display: flex;
+  justify-content: space-between;
+}
+
+.commitsInfo {
+}
+
+.commit {
+  display: grid;
+  grid-template-columns: 134px min-content;
+  grid-column-gap: 5px;
+  align-items: center;
+  font-size: 13px;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 7px;
+}
+
+.commitTitle {
+  font-size: 15px;
+  font-weight: 500;
+  text-align: right;
+  color: var(--main-text-color2);
+  font-weight: 500;
+}
+
+.commitSha {
+  color: var(--main-text-color1);
+  font-weight: 500;
+}
+
+.diffColorKeys {
+  display: flex;
+  flex-direction: column;
+}
+
+.diffColorKey {
+  display: flex;
+  margin-bottom: 7px;
+  justify-content: flex-end;
+}
+
+.diffColorKey__name {
+  margin-right: 8px;
+  font-size: 14px;
+  color: var(--main-text-color3);
+}
+
+.diffColorKey__value {
+  width: 19px;
+  height: 19px;
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Group</title>
+    <g id="Runs" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="0-Run-ID-default-1" transform="translate(-360.000000, -1021.000000)" fill="#514EB5">
+            <g id="attributes" transform="translate(358.000000, 1021.000000)">
+                <g id="Group" transform="translate(2.000000, 0.000000)">
+                    <path d="M9.5483871,3.35483871 L9.5483871,4.12903226 L12.0549677,6.80206452 C13.5055484,8.25264516 13.5055484,10.6043871 12.0549677,12.0549677 C10.6043871,13.5055484 8.25264516,13.5055484 6.80206452,12.0549677 L4.12903226,9.5483871 L3.35483871,9.5483871 L3.35483871,16 L16,16 L16,3.35483871 L9.5483871,3.35483871 Z" id="Path"></path>
+                    <circle id="Oval" cx="3.74193548" cy="3.74193548" r="3.74193548"></circle>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

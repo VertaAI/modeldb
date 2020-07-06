@@ -44,7 +44,7 @@ class Repository(object):
         response = _utils.make_request("GET", self._endpoint_prefix, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.GetRepositoryRequest.Response)
         return response_msg.repository.name
 
@@ -66,7 +66,7 @@ class Repository(object):
         response = _utils.make_request("POST", endpoint, conn, json=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.SetRepository.Response)
         return cls(conn, response_msg.repository.id)
 
@@ -91,13 +91,13 @@ class Repository(object):
         response = _utils.make_request("GET", endpoint, conn)
 
         if not response.ok:
-            if ((response.status_code == 403 and response.json()['code'] == 7)
-                    or (response.status_code == 404 and response.json()['code'] == 5)):
+            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
                 return None
             else:
                 _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.GetRepositoryRequest.Response)
         return cls(conn, response_msg.repository.id)
 
@@ -155,5 +155,5 @@ class Repository(object):
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
         return commit.Commit._from_id(self._conn, self, response_msg.commit.commit_sha, branch_name=branch)

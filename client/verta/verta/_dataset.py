@@ -111,10 +111,10 @@ class Dataset(object):
                                            conn, params=data)
 
             if response.ok:
-                dataset = _utils.json_to_proto(response.json(), Message.Response).dataset
+                dataset = _utils.json_to_proto(_utils.body_to_json(response), Message.Response).dataset
                 return dataset
             else:
-                if response.status_code == 404 and response.json()['code'] == 5:
+                if response.status_code == 404 and _utils.body_to_json(response)['code'] == 5:
                     return None
                 else:
                     _utils.raise_for_http_error(response)
@@ -127,7 +127,7 @@ class Dataset(object):
                                            conn, params=data)
 
             if response.ok:
-                response_json = response.json()
+                response_json = _utils.body_to_json(response)
                 response_msg = _utils.json_to_proto(response_json, Message.Response)
                 if workspace is None or response_json.get('dataset_by_user'):
                     # user's personal workspace
@@ -141,7 +141,7 @@ class Dataset(object):
 
                 return dataset
             else:
-                if response.status_code == 404 and response.json()['code'] == 5:
+                if response.status_code == 404 and _utils.body_to_json(response)['code'] == 5:
                     return None
                 else:
                     _utils.raise_for_http_error(response)
@@ -150,6 +150,8 @@ class Dataset(object):
 
     @staticmethod
     def _create(conn, dataset_name, dataset_type, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -174,7 +176,7 @@ class Dataset(object):
                                        conn, json=data)
 
         if response.ok:
-            dataset = _utils.json_to_proto(response.json(), Message.Response).dataset
+            dataset = _utils.json_to_proto(_utils.body_to_json(response), Message.Response).dataset
             return dataset
         else:
             _utils.raise_for_http_error(response)
@@ -223,7 +225,7 @@ class Dataset(object):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return DatasetVersion(self._conn, self._conf, _dataset_version_id=response_msg.dataset_version.id)
 
 
@@ -547,7 +549,7 @@ class DatasetVersion(object):
                 conn, params=data
             )
             if response.ok:
-                dataset_version = _utils.json_to_proto(response.json(), Message.Response).dataset_version
+                dataset_version = _utils.json_to_proto(_utils.body_to_json(response), Message.Response).dataset_version
 
                 if not dataset_version.id:  # 200, but empty message
                     raise RuntimeError("unable to retrieve DatasetVersion {};"
@@ -555,7 +557,7 @@ class DatasetVersion(object):
 
                 return dataset_version
             else:
-                if response.status_code == 404 and response.json()['code'] == 5:
+                if response.status_code == 404 and _utils.body_to_json(response)['code'] == 5:
                     return None
                 else:
                     _utils.raise_for_http_error(response)
@@ -569,6 +571,8 @@ class DatasetVersion(object):
                 parent_id=None,
                 desc=None, tags=None, attrs=None,
                 version=None):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -604,7 +608,7 @@ class DatasetVersion(object):
                                        conn, json=data)
 
         if response.ok:
-            dataset_version = _utils.json_to_proto(response.json(),
+            dataset_version = _utils.json_to_proto(_utils.body_to_json(response),
                                                    _DatasetVersionService.CreateDatasetVersion.Response).dataset_version
             return dataset_version
         else:
@@ -632,6 +636,8 @@ class RawDatasetVersion(DatasetVersion):
                             parent_id=None,
                             desc=None, tags=None, attrs=None,
                             version=None):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         Message = _DatasetVersionService.CreateDatasetVersion
         version_msg = _DatasetVersionService.RawDatasetVersionInfo
         converted_dataset_version_info = version_msg(
@@ -659,6 +665,8 @@ class PathDatasetVersion(DatasetVersion):
                             parent_id=None,
                             desc=None, tags=None, attrs=None,
                             version=None):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         Message = _DatasetVersionService.CreateDatasetVersion
         # turn dataset_version_info into proto format
         version_msg = _DatasetVersionService.PathDatasetVersionInfo
@@ -688,6 +696,8 @@ class QueryDatasetVersion(DatasetVersion):
                             parent_id=None,
                             desc=None, tags=None, attrs=None,
                             version=None):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         Message = _DatasetVersionService.CreateDatasetVersion
         version_msg = _DatasetVersionService.QueryDatasetVersionInfo
         converted_dataset_version_info = version_msg(
@@ -857,7 +867,7 @@ class AtlasHiveDatasetVersionInfo(QueryDatasetVersionInfo):
         response = requests.get(atlas_url + atlas_entity_endpoint,
                                 auth=(atlas_user_name, atlas_password),
                                 params={'guid': guid})
-        return response.json()
+        return _utils.body_to_json(response)
 
     @staticmethod
     def generate_query(table_obj):

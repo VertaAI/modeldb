@@ -68,7 +68,7 @@ Features:
 * Flexible metadata logging including metrics, artifacts, tags and user information
 * Pluggable storage systems
 * Integration into state-of-the-art frameworks like Tensorflow and PyTorch
-* Battle-tested in productionn environments
+* Battle-tested in production environments
 
 If you are looking for a hosted version of ModelDB, please reach out at modeldb@verta.ai.
 
@@ -203,7 +203,7 @@ We are open to contributions to any of the modules in form of Pull Requests.
 
 The main skill sets for each module are as below:
 
-1. backend: If you are interested in `Java` development or are interested in database design using technologies like `Hibernate` and `Liquibase` please take a look at [backed README](backend/README.md) for setup and development instructions.
+1. backend: If you are interested in `Java` development or are interested in database design using technologies like `Hibernate` and `Liquibase` please take a look at [backend README](backend/README.md) for setup and development instructions.
 1. client: If you are interested in `Python` or `Scala` development or are interested in building examples notebooks on various ML frameworks logging data to Modeldb please take a look at [client CONTRIBUTING guide](client/CONTRIBUTING.md) for contribution instructions.
 1. frontend: If you are interested  in `Node`,`React` or `Redux` based development please take a look at [webapp README](webapp/README.md)
 

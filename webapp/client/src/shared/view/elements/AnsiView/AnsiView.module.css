@@ -1,0 +1,32 @@
+.root {
+  height: 100%;
+  overflow: auto;
+  background-color: #222;
+  font-size: 13px;
+}
+
+.root a {
+  color: #f1f1f1;
+}
+.root a:before {
+  color: #666;
+  cursor: default;
+}
+
+.root :global #log {
+  margin: 0;
+  clear: none;
+  min-height: auto;
+  padding: 5px 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.root :global #log > div {
+  display: flex;
+  align-items: center;
+}
+
+.root > div > div:nth-child(2) {
+  display: none;
+}

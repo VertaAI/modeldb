@@ -1,0 +1,100 @@
+image: vertaaiofficial/modeldb-backend
+imageTag: latest
+tolerations: []
+resources:
+  limits:
+    cpu: 750m
+    memory: 1Gi
+  requests:
+    cpu: 750m
+    memory: 1Gi
+affinity: {}
+env: {}
+
+service:
+  annotations: {}
+
+proxy:
+  image: vertaaiofficial/modeldb-proxy
+  imageTag: latest
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 500m
+      memory: 256Mi
+  env: {}
+
+artifactStore:
+  enabled: true
+  # This should be configured to the same path that artifact store will use
+  path: /artifact-store/
+  storage: 100Gi
+
+hpa:
+  enabled: false
+pdb:
+  enabled: false
+labels: {}
+
+config:
+  grpcServer:
+    port: 8085
+
+  springServer:
+    port: 8086
+    shutdownTimeout: 30 #time in second
+
+  artifactStoreConfig:
+    artifactStoreType: NFS #S3, GCP, NFS
+    NFS:
+      nfsUrlProtocol: http
+      nfsRootPath: /artifact-store/
+      artifactEndpoint:
+        getArtifact: "api/v1/artifact/getArtifact"
+        storeArtifact: "api/v1/artifact/storeArtifact"
+
+  # Database settings (type mongodb, couchbasedb, relational etc..)
+  database:
+    DBType: relational
+    timeout: 4
+    liquibaseLockThreshold: 60 #time in second
+    RdbConfiguration:
+      RdbDatabaseName: postgres
+      RdbDriver: "org.postgresql.Driver"
+      RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
+      RdbUrl: "jdbc:postgresql://modeldb-postgresql:5432"
+      RdbUsername: postgres
+      RdbPassword: postgres
+
+  # Test Database settings (type mongodb, couchbasedb etc..)
+  test:
+    test-database:
+      DBType: relational
+      timeout: 4
+      liquibaseLockThreshold: 60 #time in second
+      RdbConfiguration:
+        RdbDatabaseName: postgres
+        RdbDriver: "org.postgresql.Driver"
+        RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
+        RdbUrl: "jdbc:postgresql://modeldb-postgresql:5432"
+        RdbUsername: postgres
+        RdbPassword: postgres
+
+  #ArtifactStore Properties
+  artifactStore_grpcServer:
+    host: localhost
+    port: 8086
+
+  cron_job:
+    update_parent_timestamp:
+      frequency: 10 #frequency to update parent timestamp in second, default 60
+      record_update_limit: 100
+    delete_entities:
+      frequency: 60 #frequency to update parent timestamp in second, default 60
+      record_update_limit: 100
+  telemetry:
+    opt_in: true
+    frequency: 1 #frequency to share data in hours, default 1
+    consumer: https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry

@@ -1,0 +1,9 @@
+@value ADiff: #F7E8D2;
+@value BDiff: #E5EFFF;
+@value CDiff: #FFFFFF;
+
+:export {
+  ADiff: ADiff;
+  BDiff: BDiff;
+  CDiff: CDiff;
+}

@@ -13,7 +13,7 @@ import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbLogDataset (
-  dataset: Option[ModeldbArtifact] = None,
+  dataset: Option[CommonArtifact] = None,
   id: Option[String] = None,
   overwrite: Option[Boolean] = None
 ) extends BaseSwagger {
@@ -24,7 +24,7 @@ object ModeldbLogDataset {
   def toJson(obj: ModeldbLogDataset): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.dataset.map(x => JField("dataset", ((x: ModeldbArtifact) => ModeldbArtifact.toJson(x))(x))),
+        obj.dataset.map(x => JField("dataset", ((x: CommonArtifact) => CommonArtifact.toJson(x))(x))),
         obj.id.map(x => JField("id", JString(x))),
         obj.overwrite.map(x => JField("overwrite", JBool(x)))
       ).flatMap(x => x match {
@@ -40,7 +40,7 @@ object ModeldbLogDataset {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbLogDataset(
           // TODO: handle required
-          dataset = fieldsMap.get("dataset").map(ModeldbArtifact.fromJson),
+          dataset = fieldsMap.get("dataset").map(CommonArtifact.fromJson),
           id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
           overwrite = fieldsMap.get("overwrite").map(JsonConverter.fromJsonBoolean)
         )

@@ -14,7 +14,8 @@ lazy val root = (project in file("."))
 libraryDependencies ++= Seq(
   "net.liftweb" %% "lift-json" % "3.3.0",
   "com.softwaremill.sttp.client" %% "core" % "2.0.0-RC11",
-  "com.softwaremill.sttp.client" %% "async-http-client-backend-future" % "2.0.0-RC11"
+  "com.softwaremill.sttp.client" %% "async-http-client-backend-future" % "2.0.0-RC11",
+  "com.amazonaws" % "aws-java-sdk" % "1.11.70"
 )
 
 resolvers ++= Seq(
@@ -28,6 +29,7 @@ scalacOptions := Seq(
 )
 
 publishArtifact in(Compile, packageDoc) := false
+parallelExecution in Test := false
 
 assemblyMergeStrategy in assembly := {
  case PathList("META-INF", xs @ _*) => MergeStrategy.discard

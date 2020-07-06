@@ -1,0 +1,19 @@
+image: vertaaiofficial/modeldb-graphql
+imageTag: latest
+tolerations: []
+resources:
+  limits:
+    cpu: 100m
+    memory: 64Mi
+  requests:
+    cpu: 100m
+    memory: 64Mi
+env: {}
+service:
+  annotations: {}
+affinity: {}
+hpa:
+  enabled: false
+pdb:
+  enabled: false
+labels: {}

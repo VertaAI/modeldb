@@ -365,7 +365,7 @@
           "type": "string"
         },
         "pagination": {
-          "$ref": "#/definitions/uacPagination"
+          "$ref": "#/definitions/vertauacPagination"
         }
       }
     },
@@ -394,20 +394,6 @@
           }
         }
       }
-    },
-    "uacPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
     },
     "uacUpdateUser": {
       "type": "object",
@@ -491,6 +477,20 @@
           "$ref": "#/definitions/uacFlagEnum"
         }
       }
+    },
+    "vertauacPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     }
   },
   "basePath": "/v1"

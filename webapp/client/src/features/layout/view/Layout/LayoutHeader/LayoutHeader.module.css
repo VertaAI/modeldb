@@ -1,0 +1,16 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  padding: 0 39px 0 var(--layout-horizontal-padding);
+  background-color: var(--main-color2);
+}
+
+.highLevelSearch {
+  margin-left: auto;
+  margin-right: 23px;
+}
+
+.logo {
+}

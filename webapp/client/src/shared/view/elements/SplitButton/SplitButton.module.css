@@ -1,0 +1,47 @@
+.root {
+  display: flex;
+  position: relative;
+}
+
+.toggler {
+  width: 44px;
+}
+.loading .toggler {
+  opacity: 0.4;
+}
+
+.primaryAction {
+  width: 145px;
+}
+.primaryAction button {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 1px solid rgb(17, 82, 147);
+}
+.toggler button {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.otherActions {
+  display: none;
+}
+.otherActions.opened {
+  display: block;
+  width: 100%;
+  position: absolute;
+  top: 34px;
+  z-index: 1000;
+  box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2),
+    0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+}
+.otherAction {
+  color: rgb(51, 51, 51);
+  display: block;
+  padding: 8px 10px;
+  text-align: center;
+  cursor: pointer;
+  background-color: white;
+}
+.otherAction:hover {
+  background-color: #ececfd;
+}

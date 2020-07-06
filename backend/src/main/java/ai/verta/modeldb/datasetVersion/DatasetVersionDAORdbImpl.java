@@ -1,6 +1,7 @@
 package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetTypeEnum;
@@ -18,6 +19,7 @@ import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
+import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -25,7 +27,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -78,7 +79,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(" AND dsv." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String DATASET_VERSION_BY_DATA_SET_IDS_QUERY =
-      "From DatasetVersionEntity ds where ds.dataset_id IN (:datasetIds) ";
+      "From DatasetVersionEntity ds where ds.dataset_id IN (:datasetIds) AND ds."
+          + ModelDBConstants.DELETED
+          + " = false ";
   private static final String DATASET_VERSION_BY_IDS_QUERY =
       "From DatasetVersionEntity ds where ds.id IN (:ids) AND ds."
           + ModelDBConstants.DELETED
@@ -185,8 +188,19 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         LOGGER.debug("DatasetVersion created successfully");
         return datasetVersionEntity.getProtoObject();
       }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        if (createDatasetVersionLock.isLocked()) {
+          createDatasetVersionLock.unlock();
+        }
+        return createDatasetVersion(request, dataset, userInfo);
+      } else {
+        throw ex;
+      }
     } finally {
-      createDatasetVersionLock.unlock();
+      if (createDatasetVersionLock.isLocked()) {
+        createDatasetVersionLock.unlock();
+      }
     }
   }
 
@@ -235,6 +249,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       transaction.commit();
       LOGGER.debug("DatasetVersion deleted successfully");
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetVersions(datasetVersionIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -249,6 +269,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       transaction.commit();
       LOGGER.debug("DatasetVersion deleted successfully, updated Row: {}", updatedCount);
       return true;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetVersionsByDatasetIDs(datasetIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -259,7 +285,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       if (datasetVersionObj == null || datasetVersionObj.getDeleted()) {
-        LOGGER.warn(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
+        LOGGER.info(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -269,6 +295,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       }
       LOGGER.debug("DatasetVersion getting successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetVersion(datasetVersionId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -303,6 +335,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       List<DatasetVersionEntity> datasetEntities = query.list();
       LOGGER.debug("DatasetVersion by Ids getting successfully");
       return RdbmsUtils.convertDatasetVersionsFromDatasetVersionEntityList(datasetEntities);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetVersionsByBatchIds(datasetVersionIds);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -403,7 +441,15 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       Root<DatasetVersionEntity> datasetVersionRoot =
           criteriaQuery.from(DatasetVersionEntity.class);
       datasetVersionRoot.alias("ds");
+
+      Root<DatasetEntity> datasetEntityRoot = criteriaQuery.from(DatasetEntity.class);
+      datasetEntityRoot.alias("dt");
+
       List<Predicate> finalPredicatesList = new ArrayList<>();
+      finalPredicatesList.add(
+          builder.equal(
+              datasetVersionRoot.get(ModelDBConstants.DATASET_ID),
+              datasetEntityRoot.get(ModelDBConstants.ID)));
 
       List<String> datasetIds = new ArrayList<>();
       if (!queryParameters.getDatasetId().isEmpty()) {
@@ -457,7 +503,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       } catch (ModelDBException ex) {
         if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
-          LOGGER.warn(ex.getMessage());
+          LOGGER.info(ex.getMessage());
           DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
           datasetVersionDTO.setDatasetVersions(Collections.emptyList());
           datasetVersionDTO.setTotalRecords(0L);
@@ -467,6 +513,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       finalPredicatesList.add(
           builder.equal(datasetVersionRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(datasetEntityRoot.get(ModelDBConstants.DELETED), false));
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {
@@ -558,6 +606,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       datasetVersionPaginationDTO.setDatasetVersions(datasetVersions);
       datasetVersionPaginationDTO.setTotalRecords(totalRecords);
       return datasetVersionPaginationDTO;
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return findDatasetVersions(datasetDAO, queryParameters, currentLoginUserInfo);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -566,16 +620,22 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       String datasetVersionId, String datasetVersionDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       datasetVersionObj.setDescription(datasetVersionDescription);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.update(datasetVersionObj);
       transaction.commit();
       LOGGER.debug("DatasetVersion updated successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateDatasetVersionDescription(datasetVersionId, datasetVersionDescription);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -583,11 +643,10 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public DatasetVersion addDatasetVersionTags(String datasetVersionId, List<String> tagsList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       if (datasetVersionObj == null) {
-        LOGGER.warn(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
+        LOGGER.info(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -608,11 +667,18 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
             RdbmsUtils.convertTagListFromTagMappingList(datasetVersionObj, newTags);
         datasetVersionObj.getTags().addAll(newTagMappings);
         datasetVersionObj.setTime_updated(currentTimestamp);
+        Transaction transaction = session.beginTransaction();
         session.saveOrUpdate(datasetVersionObj);
+        transaction.commit();
       }
-      transaction.commit();
       LOGGER.debug("DatasetVersion tags added successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addDatasetVersionTags(datasetVersionId, tagsList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -624,6 +690,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           session.get(DatasetVersionEntity.class, datasetVersionId);
       LOGGER.debug("DatasetVersion getting successfully");
       return datasetVersionObj.getProtoObject().getTagsList();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetVersionTags(datasetVersionId);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -655,6 +727,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       transaction.commit();
       LOGGER.debug("DatasetVersion tags deleted successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetVersionTags(datasetVersionId, datasetVersionTagList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -663,7 +741,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       String datasetVersionId, List<KeyValue> attributesList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       datasetVersionObj.setAttributeMapping(
@@ -671,10 +748,17 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
               datasetVersionObj, ModelDBConstants.ATTRIBUTES, attributesList));
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(datasetVersionObj);
       transaction.commit();
       LOGGER.debug("DatasetVersion attributes added successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addDatasetVersionAttributes(datasetVersionId, attributesList);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -682,11 +766,10 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public DatasetVersion updateDatasetVersionAttributes(String datasetVersionId, KeyValue attribute)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       if (datasetVersionObj == null) {
-        LOGGER.warn(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
+        LOGGER.info(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -719,9 +802,16 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       }
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(datasetVersionObj);
       transaction.commit();
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateDatasetVersionAttributes(datasetVersionId, attribute);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -743,6 +833,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         @SuppressWarnings("unchecked")
         List<AttributeEntity> attributeEntities = query.list();
         return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetVersionAttributes(datasetVersionId, attributeKeyList, getAll);
+      } else {
+        throw ex;
       }
     }
   }
@@ -776,6 +872,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       session.update(datasetVersionObj);
       transaction.commit();
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetVersionAttributes(datasetVersionId, attributeKeyList, deleteAll);
+      } else {
+        throw ex;
+      }
     }
   }
 
@@ -784,16 +886,22 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       String datasetVersionId, DatasetVisibilityEnum.DatasetVisibility datasetVersionVisibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       datasetVersionObj.setDataset_version_visibility(datasetVersionVisibility.ordinal());
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
+      Transaction transaction = session.beginTransaction();
       session.update(datasetVersionObj);
       transaction.commit();
       LOGGER.debug("DatasetVersion updated successfully");
       return datasetVersionObj.getProtoObject();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return setDatasetVersionVisibility(datasetVersionId, datasetVersionVisibility);
+      } else {
+        throw ex;
+      }
     }
   }
 

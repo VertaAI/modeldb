@@ -64,9 +64,6 @@ for hyperparam_num, hyperparams in enumerate(hyperparam_sets):
         run.log_hyperparameter(key, val)
     print(hyperparams, end=' ')
 
-    # log data
-    run.log_dataset("data", data_path)
-
     # create and train model
     model = linear_model.LogisticRegression(**hyperparams)
     model.fit(X_train, y_train)

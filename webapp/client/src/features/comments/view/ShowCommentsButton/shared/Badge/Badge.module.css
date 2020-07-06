@@ -1,0 +1,10 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  min-width: 27px;
+  border-radius: 10.5px;
+  font-size: 12px;
+  background-color: #cccccc;
+}

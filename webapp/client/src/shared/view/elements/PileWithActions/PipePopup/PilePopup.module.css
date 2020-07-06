@@ -1,0 +1,37 @@
+.root {
+  display: grid;
+  grid-template-rows: auto auto;
+}
+
+.fields {
+}
+
+.field {
+  display: grid;
+  display: grid;
+  grid-template-columns: 1.2fr 6fr;
+  grid-column-gap: 5px;
+  padding: 10px 0px;
+  font-size: 13.6px;
+}
+.field__label {
+  color: #aaaaaa;
+  font-size: 15px;
+  font-weight: 500;
+}
+.field__value {
+  align-self: center;
+  word-break: break-all;
+  word-wrap: break-word;
+  color: var(--main-text-color1);
+  font-size: 15px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}

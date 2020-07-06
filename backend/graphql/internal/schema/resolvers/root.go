@@ -14,12 +14,14 @@ type Resolver struct {
 func (r *Resolver) Artifact() schema.ArtifactResolver {
 	return &artifactResolver{r}
 }
+
 func (r *Resolver) Commit() schema.CommitResolver {
 	return &commitResolver{r}
 }
 func (r *Resolver) CommitBlob() schema.CommitBlobResolver {
 	return &commitBlobResolver{r}
 }
+
 func (r *Resolver) Experiment() schema.ExperimentResolver {
 	return &experimentResolver{r}
 }

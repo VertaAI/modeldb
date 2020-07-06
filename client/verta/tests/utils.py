@@ -106,26 +106,26 @@ def chdir(new_dir):
 def delete_project(id_, conn):
     request_url = "{}://{}/api/v1/modeldb/project/deleteProject".format(conn.scheme, conn.socket)
     response = requests.delete(request_url, json={'id': id_}, headers=conn.auth)
-    response.raise_for_status()
+    _utils.raise_for_http_error(response)
 
 
 def delete_experiment(id_, conn):
     request_url = "{}://{}/api/v1/modeldb/experiment/deleteExperiment".format(conn.scheme, conn.socket)
     response = requests.delete(request_url, json={'id': id_}, headers=conn.auth)
-    response.raise_for_status()
+    _utils.raise_for_http_error(response)
 
 
 def delete_experiment_run(id_, conn):
     request_url = "{}://{}/api/v1/modeldb/experiment-run/deleteExperimentRun".format(conn.scheme, conn.socket)
     response = requests.delete(request_url, json={'id': id_}, headers=conn.auth)
-    response.raise_for_status()
+    _utils.raise_for_http_error(response)
 
 def delete_datasets(ids, conn):
     request_url = "{}://{}/api/v1/modeldb/dataset/deleteDatasets".format(conn.scheme, conn.socket)
     response = requests.delete(request_url, json={'ids': ids}, headers=conn.auth)
-    response.raise_for_status()
+    _utils.raise_for_http_error(response)
 
 def delete_repository(id_, conn):
     request_url = "{}://{}/api/v1/modeldb/versioning/repositories/{}".format(conn.scheme, conn.socket, id_)
     response = requests.delete(request_url, headers=conn.auth)
-    response.raise_for_status()
+    _utils.raise_for_http_error(response)

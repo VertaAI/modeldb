@@ -1,0 +1,18 @@
+.content {
+  display: grid;
+  grid-column-gap: 34px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.modelMetaWithId__content {
+  display: grid;
+  width: 100%;
+  align-items: center;
+  grid-template-columns: calc(70% - 5px) 30%;
+  grid-column-gap: 5px;
+}
+
+.link {
+  text-decoration: none;
+  color: var(--link-color);
+}

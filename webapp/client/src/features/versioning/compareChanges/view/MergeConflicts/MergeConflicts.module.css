@@ -1,0 +1,13 @@
+.commitsInfo {
+  padding: 10px 0;
+}
+
+.comparingInfo {
+  display: flex;
+  border-bottom: 1px solid var(--main-text-color3);
+  margin-bottom: 14px;
+}
+
+.button {
+  margin-left: auto;
+}
