@@ -1,9 +1,13 @@
-import { IServerFiltersInRequest } from 'core/features/filter/service/serverModel/Filters/converters';
-import { IFilterData } from 'core/features/filter/Model';
-import { IPagination } from 'core/shared/models/Pagination';
-import { makeAddFiltersToRequestWithDefaultFilters } from 'features/filter/service/serverModel/Filter/converters';
+import { IServerFiltersInRequest } from 'services/serverModel/Filters/converters';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination } from 'shared/models/Pagination';
+import { makeAddFiltersToRequest } from 'services/serverModel/Filters/converters';
 import { addPaginationToRequest } from 'services/serverModel/Pagination/converters';
 import { IServerPaginationInRequest } from 'services/serverModel/Pagination/Pagination';
+import { IWorkspace } from 'shared/models/Workspace';
+import { addWorkspaceName } from 'services/serverModel/Workspace/converters';
+import { ISorting } from 'shared/models/Sorting';
+import { addSorting } from 'services/serverModel/Sorting/Sorting';
 
 export type IGetExperimentsRequest = {
   project_id: string;
@@ -29,7 +33,7 @@ const addPagination = (
 ): TransformGetExperimentRunsRequest => request =>
   Promise.resolve(addPaginationToRequest(pagination)(request));
 
-const addFilters = makeAddFiltersToRequestWithDefaultFilters();
+const addFilters = makeAddFiltersToRequest();
 
 const makeGetExperimentsRequest = (
   projectId: string,
@@ -41,5 +45,25 @@ const makeGetExperimentsRequest = (
     .then(addPagination(pagination))
     .then(addFilters(filters)) as Promise<IGetExperimentsRequest>;
 };
+
+const makeGetExperimentsByWorkspaceRequest = ({
+  filters,
+  pagination,
+  workspaceName,
+  sorting,
+}: {
+  workspaceName: IWorkspace['name'];
+  filters: IFilterData[];
+  pagination: IPagination;
+  sorting?: ISorting;
+}) => {
+  return Promise.resolve({})
+    .then(addWorkspaceName(workspaceName))
+    .then(addPagination(pagination) as any)
+    .then(addFilters(filters) as any)
+    .then(sorting ? addSorting(sorting) : request => request);
+};
+
+export { makeGetExperimentsByWorkspaceRequest };
 
 export default makeGetExperimentsRequest;

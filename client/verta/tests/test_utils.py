@@ -2,15 +2,121 @@
 
 import six
 
+import pathlib2
 import subprocess
 import sys
 
 import verta
 from verta._internal_utils import _utils
+from verta._internal_utils import _file_utils
 from verta._internal_utils import _pip_requirements_utils
 
 import pytest
 from . import utils
+
+
+class TestMakeRequest:
+    def test_200_no_history(self, client):
+        """
+        The util manually tracks and assigns the response history after resolving redirects.
+
+        If no redirects occurred, the history should be empty.
+
+        """
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/status/200",
+            client._conn,
+        )
+
+        assert response.status_code == 200
+        assert not response.history
+
+    # https://github.com/postmanlabs/httpbin/issues/617
+    @pytest.mark.skip(reason="httpbin's /redirect-to is currently returning 404s")
+    def test_301_continue(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/redirect-to",
+            client._conn,
+            params={
+                'url': "http://httpbin.org/get",
+                'status_code': 301,
+            },
+        )
+
+        assert response.status_code == 200
+        assert len(response.history) == 1
+        assert response.history[0].status_code == 301
+
+    # https://github.com/postmanlabs/httpbin/issues/617
+    @pytest.mark.skip(reason="httpbin's /redirect-to is currently returning 404s")
+    def test_302_stop(self, client):
+        with pytest.raises(RuntimeError) as excinfo:
+            _utils.make_request(
+                "GET",
+                "http://httpbin.org/redirect-to",
+                client._conn,
+                params={
+                    'url': "http://httpbin.org/get",
+                    'status_code': 302,
+                },
+            )
+        assert str(excinfo.value).strip().startswith("received status 302")
+
+    @pytest.mark.parametrize("status_code", [302, 400, 500])
+    def test_ignore_conn_err(self, client, status_code):
+        previous_setting = client.ignore_conn_err
+
+        client.ignore_conn_err = True
+        try:
+            response = _utils.make_request(
+                "GET",
+                "http://httpbin.org/status/{}".format(status_code),
+                client._conn,
+            )
+
+            assert response.status_code == 200
+            assert response.json() == {}
+        finally:
+            client.ignore_conn_err = previous_setting
+
+
+class TestBodyToJson:
+    def test_json_response(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/json",
+            client._conn,
+        )
+
+        assert isinstance(_utils.body_to_json(response), dict)
+
+    def test_empty_response_error(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/status/200",
+            client._conn,
+        )
+
+        with pytest.raises(ValueError) as excinfo:
+            _utils.body_to_json(response)
+        msg = str(excinfo.value).strip()
+        assert msg.startswith("expected JSON response")
+        assert "<empty response>" in msg
+
+    def test_html_response_error(self, client):
+        response = _utils.make_request(
+            "GET",
+            "http://httpbin.org/html",
+            client._conn,
+        )
+
+        with pytest.raises(ValueError) as excinfo:
+            _utils.body_to_json(response)
+        msg = str(excinfo.value).strip()
+        assert msg.startswith("expected JSON response")
+        assert "<!DOCTYPE html>" in msg
 
 
 class TestToBuiltin:
@@ -183,3 +289,64 @@ class TestPipRequirementsUtils:
             _pip_requirements_utils.SPACY_MODEL_REGEX.match,
             _pip_requirements_utils.get_pip_freeze(),
         ))
+
+
+class TestFileUtils:
+    @pytest.mark.parametrize(
+        "input_filepath, expected_filepath",
+        [
+            ("data.csv", "data 1.csv"),
+            ("data 1.csv", "data 2.csv"),
+            ("my data.csv", "my data 1.csv"),
+            ("my data 1.csv", "my data 2.csv"),
+            ("archive.tar.gz", "archive.tar 1.gz"),
+            ("archive.tar 1.gz", "archive.tar 2.gz"),
+            ("my archive.tar.gz", "my archive.tar 1.gz"),
+            ("my archive.tar 1.gz", "my archive.tar 2.gz"),
+        ],
+    )
+    def test_increment_path(self, input_filepath, expected_filepath):
+        assert expected_filepath == _file_utils.increment_path(input_filepath)
+
+    @pytest.mark.parametrize(
+        "path, prefix_dir, expected",
+        [
+            # simple removal cases
+            ("files/data.csv",      "files",      "data.csv"),
+            ("files/data/data.csv", "files/data", "data.csv"),
+            # simple no-change cases
+            ("files/data.csv",      "foo",            "files/data.csv"),
+            ("files/data.csv",      "fil",            "files/data.csv"),
+            ("files/data/data.csv", "files/data.csv", "files/data/data.csv"),
+            # edge cases
+            ("data.csv", "data.csv", "data.csv"),
+            # examples from comments in fn
+            ("data/census-train.csv", "data/census", "data/census-train.csv"),
+            ("data/census/train.csv", "data/census", "train.csv"),
+            # remove "s3://"
+            ("s3://verta-starter/census-train.csv", "s3:",   "verta-starter/census-train.csv"),
+            ("s3://verta-starter/census-train.csv", "s3:/",  "verta-starter/census-train.csv"),
+            ("s3://verta-starter/census-train.csv", "s3://", "verta-starter/census-train.csv"),
+        ]
+    )
+    def test_remove_prefix_dir(self, path, prefix_dir, expected):
+        assert _file_utils.remove_prefix_dir(path, prefix_dir) == expected
+
+    def test_flatten_file_trees(self, in_tempdir):
+        filepaths = {
+            "README.md",
+            "data/train.csv",
+            "data/test.csv",
+            "script.py",
+            "utils/data/clean.py",
+            "utils/misc/misc.py",
+        }
+        paths = ["README.md", "data", "script.py", "utils"]
+
+        # create files
+        for filepath in filepaths:
+            filepath = pathlib2.Path(filepath)
+            filepath.parent.mkdir(parents=True, exist_ok=True)
+            filepath.touch()
+
+        assert _file_utils.flatten_file_trees(paths) == filepaths

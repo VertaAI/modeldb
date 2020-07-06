@@ -14,6 +14,7 @@ object ArtifactTypeEnumArtifactType {
   val BLOB: ArtifactTypeEnumArtifactType = "BLOB"
   val STRING: ArtifactTypeEnumArtifactType = "STRING"
   val CODE: ArtifactTypeEnumArtifactType = "CODE"
+  val CONTAINER: ArtifactTypeEnumArtifactType = "CONTAINER"
 
   def toJson(obj: ArtifactTypeEnumArtifactType): JString = JString(obj)
 

@@ -58,3 +58,51 @@ message EntitiesEnum {
     }
 };
 
+message ModelDBResourceEnum {
+    enum ModelDBServiceResourceTypes {
+        UNKNOWN = 0; // Resource 0 should always cause an error
+        ALL = 1;
+        PROJECT = 2;
+        EXPERIMENT = 3;
+        EXPERIMENT_RUN = 4;
+        DATASET = 5;
+        DATASET_VERSION = 6;
+        DASHBOARD = 7;
+        REPOSITORY = 8;
+    }
+};
+
+// For pagination
+message Pagination {
+    int32 page_number = 2;
+    int32 page_limit = 3;
+}
+
+message WorkspaceTypeEnum {
+    enum WorkspaceType {
+        UNKNOWN = 0;
+        ORGANIZATION = 1;
+        USER = 2;
+    }
+}
+message ArtifactTypeEnum{
+    enum ArtifactType {
+        IMAGE = 0;
+        MODEL = 1;
+        TENSORBOARD = 2;
+        DATA = 3;
+        BLOB = 4;
+        STRING = 5;
+        CODE = 6;
+        CONTAINER = 7;
+    }
+}
+
+message Artifact {
+    string key = 1;
+    string path = 2;
+    bool path_only = 3;
+    ArtifactTypeEnum.ArtifactType artifact_type = 4;
+    string linked_artifact_id = 5;
+    string filename_extension = 6;
+}

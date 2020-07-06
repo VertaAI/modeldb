@@ -3,6 +3,8 @@ package ai.verta.modeldb;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -181,7 +183,7 @@ public class NFSArtifactStoreTest {
                 Artifact.newBuilder()
                     .setKey(artifactKey)
                     .setPath(artifactKey)
-                    .setArtifactType(ArtifactTypeEnum.ArtifactType.IMAGE)
+                    .setArtifactType(ArtifactType.IMAGE)
                     .build())
             .build();
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -203,7 +205,7 @@ public class NFSArtifactStoreTest {
               .setId(experimentRun.getId())
               .setKey(artifactKey)
               .setMethod("PUT")
-              .setArtifactType(ArtifactTypeEnum.ArtifactType.IMAGE)
+              .setArtifactType(ArtifactType.IMAGE)
               .build();
       GetUrlForArtifact.Response getUrlForArtifactResponse =
           experimentRunServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
@@ -252,7 +254,7 @@ public class NFSArtifactStoreTest {
               .setId(experimentRun.getId())
               .setKey(artifactKey)
               .setMethod("GET")
-              .setArtifactType(ArtifactTypeEnum.ArtifactType.IMAGE)
+              .setArtifactType(ArtifactType.IMAGE)
               .build();
       GetUrlForArtifact.Response getUrlForArtifactResponse =
           experimentRunServiceStub.getUrlForArtifact(getUrlForArtifactRequest);

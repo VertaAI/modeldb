@@ -3,12 +3,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
 
-import { Dataset } from 'models/Dataset';
-import { IDatasetVersion } from 'models/DatasetVersion';
-import routes, { GetRouteParams } from 'routes';
-import { selectDatasets } from 'store/datasets';
-import { selectDatasetVersions } from 'store/datasetVersions';
-import { IApplicationState } from 'store/store';
+import { Dataset } from 'shared/models/Dataset';
+import { IDatasetVersion } from 'shared/models/DatasetVersion';
+import routes, { GetRouteParams } from 'shared/routes';
+import { selectDatasets } from 'features/datasets/store';
+import { selectDatasetVersions } from 'features/datasetVersions/store';
+import { IApplicationState } from 'setup/store/store';
 
 import {
   AuthorizedLayout,
@@ -45,11 +45,17 @@ class DatasetsPagesLayout extends React.PureComponent<AllProps> {
     const { datasets, datasetVersions } = this.props;
     return BreadcrumbsBuilder()
       .then({
-        routes: [routes.datasets],
+        type: 'single',
+        route: routes.datasets,
         getName: () => 'Datasets',
       })
       .then({
-        routes: [routes.datasetSummary, routes.datasetVersions],
+        type: 'multiple',
+        routes: [
+          routes.datasetSummary,
+          routes.datasetVersions,
+          routes.datasetSettings,
+        ],
         checkLoaded: () => Boolean(datasets),
         getName: params => {
           const targetDataset = (datasets || []).find(
@@ -57,14 +63,17 @@ class DatasetsPagesLayout extends React.PureComponent<AllProps> {
           );
           return targetDataset ? targetDataset.name : '';
         },
+        redirectTo: routes.datasetSummary,
       })
       .thenOr([
         {
-          routes: [routes.compareDatasetVersions],
+          type: 'single',
+          route: routes.compareDatasetVersions,
           getName: () => 'Compare versions',
         },
         {
-          routes: [routes.datasetVersion],
+          type: 'single',
+          route: routes.datasetVersion,
           checkLoaded: params =>
             Boolean(
               datasetVersions &&

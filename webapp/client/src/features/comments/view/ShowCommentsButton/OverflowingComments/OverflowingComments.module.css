@@ -1,0 +1,25 @@
+.root {
+  position: fixed;
+  width: 353px;
+  display: flex;
+  bottom: 0;
+  right: 0;
+  height: 100%;
+  z-index: 100;
+  background-color: #ffffff;
+  box-shadow: -3px 3px 10px 3px rgba(204, 204, 204, 0.35);
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.comments {
+  display: flex;
+  width: 100%;
+  z-index: 1;
+}

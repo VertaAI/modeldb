@@ -1,8 +1,7 @@
 package ai.verta.modeldb.entities;
 
+import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.Artifact;
-import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,10 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "artifact")
@@ -101,13 +97,6 @@ public class ArtifactEntity {
 
   @Column(name = "field_type", length = 50)
   private String field_type;
-
-  @OneToMany(
-      targetEntity = ArtifactPartEntity.class,
-      mappedBy = "artifactEntity",
-      cascade = CascadeType.ALL)
-  @LazyCollection(LazyCollectionOption.FALSE)
-  Set<ArtifactPartEntity> artifactPartEntities;
 
   public Long getId() {
     return id;
@@ -218,10 +207,6 @@ public class ArtifactEntity {
 
   public void setUploadCompleted(boolean uploadCompleted) {
     this.uploadCompleted = uploadCompleted;
-  }
-
-  public Set<ArtifactPartEntity> getArtifactPartEntities() {
-    return artifactPartEntities;
   }
 
   public Artifact getProtoObject() {

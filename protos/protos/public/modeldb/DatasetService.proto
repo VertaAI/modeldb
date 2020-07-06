@@ -23,7 +23,7 @@ message Dataset {
     uint64 time_created = 9;
     uint64 time_updated = 10;
     string workspace_id = 11;
-    WorkspaceTypeEnum.WorkspaceType workspace_type = 12;
+    common.WorkspaceTypeEnum.WorkspaceType workspace_type = 12;
 }
 
 message DatasetTypeEnum {

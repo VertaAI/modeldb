@@ -1,0 +1,28 @@
+.root {
+  display: flex;
+}
+
+.input div {
+  cursor: pointer;
+  height: 32px;
+  width: 84px;
+  border: 1px solid #ebebeb;
+}
+
+.operator {
+  width: 55px;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+.readonly .input div {
+  width: auto;
+}
+
+.readonly .operator {
+  width: auto;
+}
+
+.input input {
+  background-color: #ffffff !important;
+}

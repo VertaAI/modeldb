@@ -1,6 +1,8 @@
 package ai.verta.modeldb.authservice;
 
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -17,7 +19,6 @@ import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Organization;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
@@ -26,7 +27,10 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
 import io.grpc.Metadata;
+import io.grpc.protobuf.StatusProto;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +77,16 @@ public class PublicRoleServiceUtils implements RoleService {
       CollaboratorBase collaborator,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
+
+  @Override
+  public void createPublicRoleBinding(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
+
+  @Override
+  public String buildPublicRoleBindingName(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return null;
+  }
 
   @Override
   public void isSelfAllowed(
@@ -125,7 +139,12 @@ public class PublicRoleServiceUtils implements RoleService {
       throws InvalidProtocolBufferException {
     if (resourceId != null && !resourceId.isEmpty()) {
       if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
-        projectDAO.getProjectByID(resourceId);
+        if (!projectDAO.projectExistsInDB(resourceId)) {
+          String errorMessage = ModelDBMessages.PROJECT_NOT_FOUND_FOR_ID;
+          Status status =
+              Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
+          throw StatusProto.toStatusRuntimeException(status);
+        }
       } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
         datasetDAO.getDatasetById(resourceId);
       }
@@ -226,6 +245,15 @@ public class PublicRoleServiceUtils implements RoleService {
       UserInfo currentLoginUserInfo, String workspaceName) {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceName(workspaceName);
+    return workspaceDTO;
+  }
+
+  @Override
+  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
+    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
+    workspaceDTO.setWorkspaceId(workspaceId);
+    workspaceDTO.setWorkspaceType(WorkspaceType.forNumber(workspaceType));
     return workspaceDTO;
   }
 

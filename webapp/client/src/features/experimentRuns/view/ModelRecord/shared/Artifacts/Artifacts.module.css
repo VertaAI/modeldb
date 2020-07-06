@@ -1,0 +1,8 @@
+.root {
+  display: inline-block;
+}
+
+.artifacts {
+  display: inline-flex;
+  flex-direction: column;
+}

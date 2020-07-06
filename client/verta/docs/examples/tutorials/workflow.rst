@@ -108,7 +108,6 @@ That's not much better than purely guessing! So how do we keep a more permanent 
 
 .. code-block:: python
 
-    run.log_dataset("train_data", digits)
     run.log_hyperparameters(hyperparams)
     run.log_model(model)
     run.log_metric("train_acc", train_acc)
@@ -119,10 +118,9 @@ But logging doesn't need to occur all at once at the end. Let's do another *Expe
 linear kernel—this time interweaving the logging statements with our training process:
 
 .. code-block:: python
-    :emphasize-lines: 1,2,4,6,8
+    :emphasize-lines: 1,3,5,7
 
     run = client.set_experiment_run("Linear Kernel")
-    run.log_dataset("train_data", digits)
     hyperparams['kernel'] = 'linear'
     run.log_hyperparameters(hyperparams)
     clf = SVC(**hyperparams).fit(X, y)

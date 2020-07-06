@@ -3,6 +3,7 @@
 import datetime
 import glob
 import inspect
+import itertools
 import json
 import numbers
 import os
@@ -23,7 +24,7 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 from ..external import six
 from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
-from .._protos.public.modeldb import CommonService_pb2 as _CommonService
+from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 try:
     import pandas as pd
@@ -72,6 +73,9 @@ THREAD_LOCALS = threading.local()
 THREAD_LOCALS.active_experiment_run = None
 
 SAVED_MODEL_DIR = "/app/tf_saved_model/"
+
+# TODO: remove this in favor of _config_utils when #635 is merged
+HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
 
 
 class Connection:
@@ -212,7 +216,7 @@ class LazyList(object):
             )
         raise_for_http_error(response)
 
-        response_msg = json_to_proto(response.json(), msg.Response)
+        response_msg = json_to_proto(body_to_json(response), msg.Response)
         return response_msg
 
     def _get_ids(self, response_msg):
@@ -227,7 +231,7 @@ class LazyList(object):
         raise NotImplementedError
 
 
-def make_request(method, url, conn, **kwargs):
+def make_request(method, url, conn, stream=False, **kwargs):
     """
     Makes a REST request.
 
@@ -239,8 +243,10 @@ def make_request(method, url, conn, **kwargs):
         URL.
     conn : Connection
         Connection authentication and configuration.
+    stream : bool, default False
+        Whether to stream the response contents.
     **kwargs
-        Parameters to requests.request().
+        Initialization parameters to requests.Request().
 
     Returns
     -------
@@ -250,26 +256,59 @@ def make_request(method, url, conn, **kwargs):
     if method.upper() not in _VALID_HTTP_METHODS:
         raise ValueError("`method` must be one of {}".format(_VALID_HTTP_METHODS))
 
-    if conn.auth is not None:
-        # add auth to `kwargs['headers']`
-        kwargs.setdefault('headers', {}).update(conn.auth)
+    # add auth to headers
+    kwargs.setdefault('headers', {}).update(conn.auth)
 
     with requests.Session() as s:
         s.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
-            response = s.request(method, url, **kwargs)
+            request = requests.Request(method, url, **kwargs).prepare()
+            response = s.send(request, stream=stream, allow_redirects=False)
+
+            # manually inspect initial response and subsequent redirects to stop on 302s
+            history = []  # track history because `requests` doesn't since we're redirecting manually
+            responses = itertools.chain([response], s.resolve_redirects(response, request))
+            for response in responses:
+                if response.status_code == 302:
+                    if not conn.ignore_conn_err:
+                        raise RuntimeError(
+                            "received status 302 from {},"
+                            " which is not supported by the Client".format(response.url)
+                        )
+                    else:
+                        return fabricate_200()
+
+                history.append(response)
+            # set full history
+            response.history = history[:-1]  # last element is this response, so drop it
         except (requests.exceptions.BaseHTTPError,
                 requests.exceptions.RequestException) as e:
             if not conn.ignore_conn_err:
                 raise e
+            # else fall through to fabricate 200 response
         else:
             if response.ok or not conn.ignore_conn_err:
                 return response
-        # fabricate response
-        response = requests.Response()
-        response.status_code = 200  # success
-        response._content = six.ensure_binary("{}")  # empty contents
-        return response
+            # else fall through to fabricate 200 response
+        return fabricate_200()
+
+
+def fabricate_200():
+    """
+    Returns an HTTP response with ``status_code`` 200 and empty JSON contents.
+
+    This is used when the Client has ``ignore_conn_err=True``, so that backend responses can be
+    spoofed to minimize execution-halting errors.
+
+    Returns
+    -------
+    :class:`requests.Response`
+
+    """
+    response = requests.Response()
+    response.status_code = 200  # success
+    response._content = six.ensure_binary("{}")  # empty contents
+    return response
 
 
 def raise_for_http_error(response):
@@ -290,10 +329,15 @@ def raise_for_http_error(response):
     try:
         response.raise_for_status()
     except requests.HTTPError as e:
+        # get current time in UTC to display alongside exception
+        curr_time = timestamp_to_str(now(), utc=True)
+        time_str = " at {} UTC".format(curr_time)
+
         try:
-            reason = response.json()['message']
+            reason = body_to_json(response)['message']
         except (ValueError,  # not JSON response
                 KeyError):  # no 'message' from back end
+            e.args = (e.args[0] + time_str,) + e.args[1:]  # attach time to error message
             six.raise_from(e, None)  # use default reason
         else:
             # replicate https://github.com/psf/requests/blob/428f7a/requests/models.py#L954
@@ -304,7 +348,41 @@ def raise_for_http_error(response):
             else:  # should be impossible here, but sure okay
                 cause = "Unexpected"
             message = "{} {} Error: {} for url: {}".format(response.status_code, cause, reason, response.url)
+            message += time_str  # attach time to error message
             six.raise_from(requests.HTTPError(message, response=response), None)
+
+
+def body_to_json(response):
+    """
+    Returns the JSON-encoded contents of `response`, raising a detailed error on failure.
+
+    Parameters
+    ----------
+    response : :class:`requests.Response`
+        HTTP response.
+
+    Returns
+    -------
+    contents : dict
+        JSON-encoded contents of `response`.
+
+    Raises
+    ------
+    ValueError
+        If `response`'s contents are not JSON-encoded.
+
+    """
+    try:
+        return response.json()
+    except ValueError:  # not JSON response
+        msg = '\n'.join([
+            "expected JSON response from {}, but instead got:".format(response.url),
+            response.text or "<empty response>",
+            "",
+            "Please notify the Verta development team.",
+        ])
+        msg = six.ensure_str(msg)
+        six.raise_from(ValueError(msg), None)
 
 
 def is_hidden(path):  # to avoid "./".startswith('.')
@@ -619,11 +697,12 @@ def unravel_observation(obs_msg):
         value = obs_msg.attribute.value
     elif obs_msg.WhichOneof("oneOf") == "artifact":
         key = obs_msg.artifact.key
-        value = "{} artifact".format(_CommonService.ArtifactTypeEnum.ArtifactType.Name(obs_msg.artifact.artifact_type))
+        value = "{} artifact".format(_CommonCommonService.ArtifactTypeEnum.ArtifactType.Name(obs_msg.artifact.artifact_type))
     return (
         key,
         val_proto_to_python(value),
         timestamp_to_str(obs_msg.timestamp),
+        int(obs_msg.epoch_number.number_value),
     )
 
 
@@ -644,8 +723,9 @@ def unravel_observations(rpt_obs_msg):
     """
     observations = {}
     for obs_msg in rpt_obs_msg:
-        key, value, timestamp = unravel_observation(obs_msg)
-        observations.setdefault(key, []).append((value, timestamp))
+        obs_tuple = unravel_observation(obs_msg)
+        key = obs_tuple[0]
+        observations.setdefault(key, []).append(obs_tuple[1:])
     return observations
 
 
@@ -766,7 +846,7 @@ def ensure_timestamp(timestamp):
         raise TypeError("unable to parse timestamp of type {}".format(type(timestamp)))
 
 
-def timestamp_to_str(timestamp):
+def timestamp_to_str(timestamp, utc=False):
     """
     Converts a Unix timestamp into a human-readable string representation.
 
@@ -782,7 +862,12 @@ def timestamp_to_str(timestamp):
 
     """
     num_digits = len(str(timestamp))
-    return str(datetime.datetime.fromtimestamp(timestamp*10**(10 - num_digits)))
+    ts_as_sec = timestamp*10**(10 - num_digits)
+    if utc:
+        datetime_obj = datetime.datetime.utcfromtimestamp(ts_as_sec)
+    else:
+        datetime_obj = datetime.datetime.fromtimestamp(ts_as_sec)
+    return str(datetime_obj)
 
 
 def now():
@@ -898,7 +983,7 @@ def get_notebook_filepath():
             response = requests.get(urljoin(server['url'], 'api/sessions'),
                                     params={'token': server.get('token', '')})
             if response.ok:
-                for session in response.json():
+                for session in body_to_json(response):
                     if session['kernel']['id'] == kernel_id:
                         relative_path = session['notebook']['path']
                         return os.path.join(server['notebook_dir'], relative_path)
@@ -941,3 +1026,37 @@ def is_org(workspace_name, conn):
     )
 
     return response.status_code != 404
+
+
+def as_list_of_str(tags):
+    """
+    Ensures that `tags` is a list of str.
+
+    Parameters
+    ----------
+    tags : str or list of str
+        If list of str, return unchanged. If str, return wrapped in a list.
+
+    Returns
+    -------
+    tags : list of str
+        Tags.
+
+    Raises
+    ------
+    TypeError
+        If `tags` is neither str nor list of str.
+
+    """
+    # TODO: make error messages more general so this can be used for any similar var
+    if isinstance(tags, six.string_types):
+        tags = [tags]
+    else:
+        if not isinstance(tags, (list, tuple, set)):
+            raise TypeError("`tags` should be list of str, not {}".format(type(tags)))
+
+        for tag in tags:
+            if not isinstance(tag, six.string_types):
+                raise TypeError("`tags` must be list of str, but found {}".format(type(tag)))
+
+    return tags

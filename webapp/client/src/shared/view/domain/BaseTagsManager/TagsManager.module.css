@@ -1,0 +1,38 @@
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 15px;
+
+  --tag-margin-bottom: 3px;
+}
+.root_empty {
+}
+
+.open_add_tag_modal_wrapper {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.open_add_tag_icon {
+  display: inline-block;
+  margin-bottom: var(--tag-margin-bottom);
+  font-size: 17px;
+}
+.root_empty .open_add_tag_icon {
+  margin-bottom: 0;
+}
+.root:not(.root_alwaysShowAddTagButton) .open_add_tag_icon {
+  opacity: 0;
+}
+.root:hover:not(.root_alwaysShowAddTagButton) .open_add_tag_icon {
+  opacity: 1;
+}
+
+.tags_placeholder {
+  display: inline-flex;
+  color: var(--text-color5);
+  margin-right: 5px;
+  position: relative;
+}

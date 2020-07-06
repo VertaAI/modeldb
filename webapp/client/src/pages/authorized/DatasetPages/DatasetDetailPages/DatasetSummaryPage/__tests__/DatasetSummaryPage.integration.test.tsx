@@ -7,18 +7,18 @@ import { cleanup } from '@testing-library/react';
 import * as React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { Store } from 'redux';
-import routes from 'routes';
+import routes from 'shared/routes';
 
-import { HttpError } from 'core/shared/models/Error';
-import delay from 'core/shared/utils/delay';
-import flushAllPromises from 'core/shared/utils/tests/integrations/flushAllPromises';
-import { IDataset, Dataset } from 'models/Dataset';
+import { HttpError } from 'shared/models/Error';
+import delay from 'shared/utils/delay';
+import flushAllPromises from 'shared/utils/tests/integrations/flushAllPromises';
+import { IDataset, Dataset } from 'shared/models/Dataset';
 import { DatasetsDataService } from 'services/datasets';
-import { makeComponentForIntegratingTest } from 'utils/tests/integrations/makeMountComponentForIntegratingTest';
-import { makeDataset } from 'utils/tests/mocks/models/datasetMocks';
-import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
+import { makeComponentForIntegratingTest } from 'shared/utils/tests/integrations/makeMountComponentForIntegratingTest';
+import { makeDataset } from 'shared/utils/tests/mocks/models/datasetMocks';
+import { userWorkspacesWithCurrentUser } from 'shared/utils/tests/mocks/models/workspace';
 
-import DatasetsPage from '../../../DatasetsPage';
+import DatasetsPage from '../../../DatasetsPage/DatasetsPage';
 import DatasetDetailPages from '../../DatasetDetailPages';
 
 // need for testing portals

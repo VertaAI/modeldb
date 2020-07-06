@@ -1,13 +1,14 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddAttributes;
 import ai.verta.modeldb.AddExperimentAttributes;
 import ai.verta.modeldb.AddExperimentTag;
 import ai.verta.modeldb.AddExperimentTags;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.Artifact;
-import ai.verta.modeldb.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DeleteExperiment;
@@ -46,7 +47,6 @@ import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -196,6 +196,18 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(errorMessage)
+                .addDetails(Any.pack(GetExperimentsInProject.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+
+      if (!projectDAO.projectExistsInDB(request.getProjectId())) {
+        String errorMessage = "Project ID not found.";
+        LOGGER.warn(errorMessage);
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.NOT_FOUND_VALUE)
                 .setMessage(errorMessage)
                 .addDetails(Any.pack(GetExperimentsInProject.Response.getDefaultInstance()))
                 .build();
@@ -1127,6 +1139,19 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+
+      Map<String, String> projectIdFromExperimentMap =
+          experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
+      if (projectIdFromExperimentMap.size() == 0) {
+        errorMessage = "Experiment '" + request.getId() + "' is not associated with any project";
+        ModelDBUtils.logAndThrowError(
+            errorMessage, Code.NOT_FOUND_VALUE, Any.pack(GetUrlForArtifact.getDefaultInstance()));
+      }
+
+      String projectId = projectIdFromExperimentMap.get(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       String s3Key = null;
 

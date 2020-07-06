@@ -1,0 +1,90 @@
+.root {
+  height: 100%;
+  position: relative;
+}
+
+.quick_filter_input {
+  padding-left: var(--layout-horizontal-padding);
+  padding-right: calc(var(--layout-horizontal-padding) - 6px);
+}
+
+.filters {
+  padding-left: var(--layout-horizontal-padding);
+  padding-right: calc(var(--layout-horizontal-padding) - 6px);
+}
+.collapsed .filters {
+  display: none;
+}
+
+.dragAndDropArea {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 72px;
+  width: 184px;
+  border: 1px solid var(--main-text-color3);
+  margin-top: 16px;
+  border-radius: 2px;
+  padding: 12px;
+  position: relative;
+}
+.dragAndDropAreaPlaceholder {
+  width: 135px;
+  color: var(--main-text-color3);
+  font-size: 14px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.placeholderText {
+  max-width: 100px;
+}
+
+.dragIcon {
+  font-size: 22px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 15px;
+  color: #444444;
+  display: flex;
+  align-items: center;
+}
+
+.filtersIcon {
+  font-size: 18px;
+  margin-right: 18px;
+  flex-shrink: 0;
+}
+
+.filtersCollapsed .filtersIcon {
+  margin: 0;
+}
+
+.filtersCollapsed {
+  padding: 0 var(--layout-horizontal-padding);
+  padding-bottom: 16px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.filtersCollapsedCounter {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  height: 20px;
+  width: 22px;
+  border-radius: 10.5px;
+  background-color: #dedede;
+  color: #222222;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

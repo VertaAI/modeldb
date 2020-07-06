@@ -1,4 +1,4 @@
-FROM golang:1.13.7-alpine3.11 as builder
+FROM golang:1.12.5-alpine3.9 as builder
 RUN apk add --no-cache git mercurial bash
 
 WORKDIR /tmp/build

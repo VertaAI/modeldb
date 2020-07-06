@@ -7,10 +7,10 @@ import {
   IAuthorizedLayoutLocalProps,
   BreadcrumbsBuilder,
 } from 'pages/authorized/shared/AuthorizedLayout';
-import routes from 'routes';
-import { selectExperimentRuns } from 'store/experimentRuns';
-import { selectProjects } from 'store/projects';
-import { IApplicationState } from 'store/store';
+import routes from 'shared/routes';
+import { selectExperimentRuns } from 'features/experimentRuns/store';
+import { selectProjects } from 'features/projects/store';
+import { IApplicationState } from 'setup/store/store';
 
 type ILocalProps = IAuthorizedLayoutLocalProps;
 
@@ -40,15 +40,18 @@ class ProjectsPagesLayout extends React.Component<AllProps> {
 
     return BreadcrumbsBuilder()
       .then({
-        routes: [routes.projects],
+        type: 'single',
+        route: routes.projects,
         getName: () => 'Projects',
       })
       .then({
+        type: 'multiple',
         routes: [
           routes.projectSummary,
           routes.experimentRuns,
           routes.charts,
           routes.experiments,
+          routes.projectSettings,
         ],
         checkLoaded: params =>
           Boolean(
@@ -61,18 +64,22 @@ class ProjectsPagesLayout extends React.Component<AllProps> {
           )!;
           return targetProject ? targetProject.name : '';
         },
+        redirectTo: routes.projectSummary,
       })
       .thenOr([
         {
-          routes: [routes.experimentCreation],
+          type: 'single',
+          route: routes.experimentCreation,
           getName: () => 'Experiment creation',
         },
         {
-          routes: [routes.compareModels],
+          type: 'single',
+          route: routes.compareModels,
           getName: () => 'Compare models',
         },
         {
-          routes: [routes.modelRecord],
+          type: 'single',
+          route: routes.modelRecord,
           checkLoaded: ({ modelRecordId }) => {
             const experimentRun = (experimentRuns || []).find(
               exprRun => exprRun.id === modelRecordId

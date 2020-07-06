@@ -2,6 +2,8 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
@@ -186,7 +188,10 @@ public class ProjectTest {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+      assertTrue(
+          Status.PERMISSION_DENIED.getCode() == status.getCode()
+              || Status.NOT_FOUND.getCode()
+                  == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
@@ -246,14 +251,14 @@ public class ProjectTest {
             .setKey("Google developer Artifact")
             .setPath(
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Flh3.googleusercontent.com%2FFyZA5SbKPJA7Y3XCeb9-uGwow8pugxj77Z1xvs8vFS6EI3FABZDCDtA9ScqzHKjhU8av_Ck95ET-P_rPJCbC2v_OswCN8A%3Ds688&imgrefurl=https%3A%2F%2Fdevelopers.google.com%2F&docid=1MVaWrOPIjYeJM&tbnid=I7xZkRN5m6_z-M%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw..i&w=688&h=387&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw&iact=mrc&uact=8")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.BLOB)
+            .setArtifactType(ArtifactType.BLOB)
             .build());
     artifactList.add(
         Artifact.newBuilder()
             .setKey("Google Pay Artifact")
             .setPath(
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Fpay.google.com%2Fabout%2Fstatic%2Fimages%2Fsocial%2Fknowledge_graph_logo.png&imgrefurl=https%3A%2F%2Fpay.google.com%2Fabout%2F&docid=zmoE9BrSKYr4xM&tbnid=eCL1Y6f9xrPtDM%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg..i&w=1200&h=630&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg&iact=mrc&uact=8")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.IMAGE)
+            .setArtifactType(ArtifactType.IMAGE)
             .build());
 
     return CreateProject.newBuilder()
@@ -2905,6 +2910,9 @@ public class ProjectTest {
       assertTrue(deleteProjectResponse.getStatus());
 
       // Delete entities by cron job
+      // 3 calls to ensure all P, E and ER are deleted.
+      deleteEntitiesCron.run();
+      deleteEntitiesCron.run();
       deleteEntitiesCron.run();
 
       // Start cross-checking of deleted the project all data from DB from here.
@@ -2945,19 +2953,25 @@ public class ProjectTest {
       // For experimentRun1
       GetComments getCommentsRequest =
           GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
-      GetComments.Response getCommentsResponse =
-          commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-      LOGGER.info(
-          "experimentRun1 getExperimentRunComment Response : \n"
-              + getCommentsResponse.getCommentsList());
-      assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+      GetComments.Response getCommentsResponse;
+      try {
+        getCommentsResponse =
+            commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          fail();
+        }
+      } catch (StatusRuntimeException e) {
+        checkEqualsAssert(e);
+      }
       // For experimentRun3
       getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
-      getCommentsResponse = commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-      LOGGER.info(
-          "experimentRun3 getExperimentRunComment Response : \n"
-              + getCommentsResponse.getCommentsList());
-      assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+      try {
+        getCommentsResponse =
+            commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+        assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+      } catch (StatusRuntimeException e) {
+        checkEqualsAssert(e);
+      }
 
       // Start cross-checking for project collaborator
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
@@ -3068,6 +3082,8 @@ public class ProjectTest {
 
       // Delete entities by cron job
       deleteEntitiesCron.run();
+      deleteEntitiesCron.run();
+      deleteEntitiesCron.run();
 
       for (String projectId : projectIds) {
         // Start cross-checking of deleted the project all data from DB from here.
@@ -3108,20 +3124,27 @@ public class ProjectTest {
         // Start cross-checking for comment of experimentRun
         // For experimentRun1
         getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
-        getCommentsResponse =
-            commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-        LOGGER.info(
-            "experimentRun1 getExperimentRunComment Response : \n"
-                + getCommentsResponse.getCommentsList());
-        assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+        try {
+          getCommentsResponse =
+              commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+            fail();
+          }
+        } catch (StatusRuntimeException e) {
+          checkEqualsAssert(e);
+        }
+
         // For experimentRun3
         getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
-        getCommentsResponse =
-            commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-        LOGGER.info(
-            "experimentRun3 getExperimentRunComment Response : \n"
-                + getCommentsResponse.getCommentsList());
-        assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+        try {
+          getCommentsResponse =
+              commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+            fail();
+          }
+        } catch (StatusRuntimeException e) {
+          checkEqualsAssert(e);
+        }
 
         // Start cross-checking for project collaborator
         if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
@@ -3132,8 +3155,6 @@ public class ProjectTest {
                 CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
             GetCollaborator.Response getCollaboratorResponse =
                 collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
-            LOGGER.info(
-                "getCollaboratorResponse Response : \n" + getCommentsResponse.getCommentsList());
             assertTrue(getCollaboratorResponse.getSharedUsersList().isEmpty());
             fail();
           } catch (StatusRuntimeException e) {
@@ -3300,7 +3321,7 @@ public class ProjectTest {
                         Artifact.newBuilder()
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
-                            .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                            .setArtifactType(ArtifactType.CODE)
                             .build())
                     .build())
             .build();
@@ -3322,7 +3343,7 @@ public class ProjectTest {
                           Artifact.newBuilder()
                               .setKey("code_version_image")
                               .setPath("https://xyz_path_string.com/image.png")
-                              .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                              .setArtifactType(ArtifactType.CODE)
                               .build())
                       .build())
               .build();
@@ -3369,7 +3390,7 @@ public class ProjectTest {
                         Artifact.newBuilder()
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
-                            .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                            .setArtifactType(ArtifactType.CODE)
                             .build())
                     .build())
             .build();
@@ -3422,14 +3443,14 @@ public class ProjectTest {
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.MODEL)
+            .setArtifactType(ArtifactType.MODEL)
             .build();
     artifacts.add(artifact1);
     Artifact artifact2 =
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .build();
     artifacts.add(artifact2);
 
@@ -3480,14 +3501,14 @@ public class ProjectTest {
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.MODEL)
+            .setArtifactType(ArtifactType.MODEL)
             .build();
     artifacts.add(artifact1);
     Artifact artifact2 =
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .build();
     artifacts.add(artifact2);
 

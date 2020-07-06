@@ -1,4 +1,4 @@
-import { IEntityWithLogging as IEntityWithLoggedDates } from 'core/shared/models/Common';
+import { IEntityWithLogging as IEntityWithLoggedDates } from 'shared/models/Common';
 
 export const convertServerEntityWithLoggedDates = ({
   date_created,

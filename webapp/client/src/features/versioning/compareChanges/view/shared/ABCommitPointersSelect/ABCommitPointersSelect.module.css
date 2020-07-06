@@ -1,0 +1,10 @@
+.root {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-bottom: 24px;
+  color: var(--main-text-color1);
+}
+
+.commitPointer {
+}

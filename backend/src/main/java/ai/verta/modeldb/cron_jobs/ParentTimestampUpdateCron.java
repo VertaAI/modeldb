@@ -2,6 +2,7 @@ package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.TimerTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,6 +44,9 @@ public class ParentTimestampUpdateCron extends TimerTask {
       session.getTransaction().commit();
     } catch (Exception ex) {
       LOGGER.warn("ParentTimestampUpdateCron Exception: ", ex);
+      if (ModelDBUtils.needToRetry(ex)) {
+        run();
+      }
     }
 
     LOGGER.info("ParentTimestampUpdateCron finish tasks and reschedule");

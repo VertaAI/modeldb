@@ -2,6 +2,8 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
@@ -174,7 +176,10 @@ public class DatasetTest {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+      assertTrue(
+          Status.PERMISSION_DENIED.getCode() == status.getCode()
+              || Status.NOT_FOUND.getCode()
+                  == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
@@ -1863,7 +1868,7 @@ public class DatasetTest {
         Artifact.newBuilder()
             .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion2.getId())
             .build();
 
@@ -1890,7 +1895,7 @@ public class DatasetTest {
         Artifact.newBuilder()
             .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion1.getId())
             .build();
 
@@ -2086,7 +2091,7 @@ public class DatasetTest {
         Artifact.newBuilder()
             .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion2.getId())
             .build();
 
@@ -2113,7 +2118,7 @@ public class DatasetTest {
         Artifact.newBuilder()
             .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion1.getId())
             .build();
 

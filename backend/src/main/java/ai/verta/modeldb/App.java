@@ -31,9 +31,6 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunServiceImpl;
 import ai.verta.modeldb.health.HealthServiceImpl;
 import ai.verta.modeldb.health.HealthStatusManager;
-import ai.verta.modeldb.job.JobDAO;
-import ai.verta.modeldb.job.JobDAORdbImpl;
-import ai.verta.modeldb.job.JobServiceImpl;
 import ai.verta.modeldb.lineage.LineageDAO;
 import ai.verta.modeldb.lineage.LineageDAORdbImpl;
 import ai.verta.modeldb.lineage.LineageServiceImpl;
@@ -126,6 +123,7 @@ public class App implements ApplicationContextAware {
   // S3 Artifact store
   private String cloudAccessKey = null;
   private String cloudSecretKey = null;
+  private String minioEndpoint = null;
 
   // NFS Artifact store
   private Boolean pickNFSHostFromConfig = null;
@@ -143,7 +141,9 @@ public class App implements ApplicationContextAware {
 
   // Feature flags
   private Boolean disabledAuthz = false;
+  private Boolean publicSharingEnabled = false;
   private Boolean storeClientCreationTimestamp = false;
+  private Integer requestTimeout = 30;
 
   private Boolean traceEnabled = false;
   private static TracingServerInterceptor tracingInterceptor;
@@ -212,9 +212,12 @@ public class App implements ApplicationContextAware {
       LOGGER.trace("grpc server port number found");
       ServerBuilder<?> serverBuilder = ServerBuilder.forPort(grpcServerPort);
 
+      App app = App.getInstance();
+      app.requestTimeout =
+          (Integer) grpcServerMap.getOrDefault(ModelDBConstants.REQUEST_TIMEOUT, 30);
+
       Map<String, Object> featureFlagMap =
           (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
-      App app = App.getInstance();
       if (featureFlagMap != null) {
         app.setDisabledAuthz(
             (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
@@ -334,6 +337,8 @@ public class App implements ApplicationContextAware {
     if (featureFlagMap != null) {
       app.setDisabledAuthz(
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
+      app.setPublicSharingEnabled(
+          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
     }
 
     Map<String, Object> starterProjectDetail =
@@ -400,7 +405,6 @@ public class App implements ApplicationContextAware {
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
     ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
-    JobDAO jobDAO = new JobDAORdbImpl(authService);
     CommentDAO commentDAO = new CommentDAORdbImpl(authService);
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
     LineageDAO lineageDAO = new LineageDAORdbImpl();
@@ -416,7 +420,6 @@ public class App implements ApplicationContextAware {
         datasetDAO,
         datasetVersionDAO,
         artifactStoreDAO,
-        jobDAO,
         commentDAO,
         lineageDAO,
         metadataDAO,
@@ -435,7 +438,6 @@ public class App implements ApplicationContextAware {
       DatasetDAO datasetDAO,
       DatasetVersionDAO datasetVersionDAO,
       ArtifactStoreDAO artifactStoreDAO,
-      JobDAO jobDAO,
       CommentDAO commentDAO,
       LineageDAO lineageDAO,
       MetadataDAO metadataDAO,
@@ -466,9 +468,9 @@ public class App implements ApplicationContextAware {
             artifactStoreDAO,
             datasetVersionDAO));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
-    wrapService(serverBuilder, new JobServiceImpl(authService, jobDAO));
-    LOGGER.trace("Job serviceImpl initialized");
-    wrapService(serverBuilder, new CommentServiceImpl(authService, commentDAO));
+    wrapService(
+        serverBuilder,
+        new CommentServiceImpl(authService, commentDAO, experimentRunDAO, roleService));
     LOGGER.trace("Comment serviceImpl initialized");
     wrapService(
         serverBuilder,
@@ -515,7 +517,8 @@ public class App implements ApplicationContextAware {
             experimentDAO,
             experimentRunDAO,
             new ModelDBAuthInterceptor(),
-            new FileHasher()));
+            new FileHasher(),
+            artifactStoreDAO));
     LOGGER.trace("Versioning serviceImpl initialized");
     wrapService(serverBuilder, new MetadataServiceImpl(metadataDAO));
     LOGGER.trace("Metadata serviceImpl initialized");
@@ -565,6 +568,7 @@ public class App implements ApplicationContextAware {
             (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.S3);
         app.cloudAccessKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_ACCESS_KEY);
         app.cloudSecretKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_SECRET_KEY);
+        app.minioEndpoint = (String) s3ConfigMap.get(ModelDBConstants.MINIO_ENDPOINT);
         String cloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
         artifactStoreService = new S3Service(cloudBucketName);
         app.storeTypePathPrefix = "s3://" + cloudBucketName + ModelDBConstants.PATH_DELIMITER;
@@ -637,7 +641,7 @@ public class App implements ApplicationContextAware {
     if (optIn) {
       // creating an instance of task to be scheduled
       TimerTask task = new TelemetryCron(consumer);
-      ModelDBUtils.scheduleTask(task, frequency, TimeUnit.HOURS);
+      ModelDBUtils.scheduleTask(task, frequency, frequency, TimeUnit.HOURS);
       LOGGER.info("Telemetry scheduled successfully");
     } else {
       LOGGER.info("Telemetry opt out by user");
@@ -704,12 +708,24 @@ public class App implements ApplicationContextAware {
     this.disabledAuthz = disabledAuthz;
   }
 
+  public Boolean getPublicSharingEnabled() {
+    return publicSharingEnabled;
+  }
+
+  public void setPublicSharingEnabled(Boolean publicSharingEnabled) {
+    this.publicSharingEnabled = publicSharingEnabled;
+  }
+
   public String getCloudAccessKey() {
     return cloudAccessKey;
   }
 
   public String getCloudSecretKey() {
     return cloudSecretKey;
+  }
+
+  public String getMinioEndpoint() {
+    return minioEndpoint;
   }
 
   public Boolean getStoreClientCreationTimestamp() {
@@ -726,5 +742,9 @@ public class App implements ApplicationContextAware {
 
   public Boolean getTraceEnabled() {
     return traceEnabled;
+  }
+
+  public Integer getRequestTimeout() {
+    return requestTimeout;
   }
 }

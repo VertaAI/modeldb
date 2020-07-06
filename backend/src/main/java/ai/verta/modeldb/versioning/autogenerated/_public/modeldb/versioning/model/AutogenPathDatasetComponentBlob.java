@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenPathDatasetComponentBlob implements ProtoType {
+  private String InternalVersionedPath;
   private Long LastModifiedAtSource;
   private String Md5;
   private String Path;
@@ -23,6 +24,7 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
   private Long Size;
 
   public AutogenPathDatasetComponentBlob() {
+    this.InternalVersionedPath = "";
     this.LastModifiedAtSource = 0l;
     this.Md5 = "";
     this.Path = "";
@@ -31,6 +33,9 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
   }
 
   public Boolean isEmpty() {
+    if (this.InternalVersionedPath != null && !this.InternalVersionedPath.equals("")) {
+      return false;
+    }
     if (this.LastModifiedAtSource != null && !this.LastModifiedAtSource.equals(0l)) {
       return false;
     }
@@ -54,6 +59,11 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
     StringBuilder sb = new StringBuilder();
     sb.append("{\"class\": \"AutogenPathDatasetComponentBlob\", \"fields\": {");
     boolean first = true;
+    if (this.InternalVersionedPath != null && !this.InternalVersionedPath.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"InternalVersionedPath\": " + "\"" + InternalVersionedPath + "\"");
+      first = false;
+    }
     if (this.LastModifiedAtSource != null && !this.LastModifiedAtSource.equals(0l)) {
       if (!first) sb.append(", ");
       sb.append("\"LastModifiedAtSource\": " + LastModifiedAtSource);
@@ -104,6 +114,14 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
     AutogenPathDatasetComponentBlob other = (AutogenPathDatasetComponentBlob) o;
 
     {
+      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
+      if (this.InternalVersionedPath != null || other.InternalVersionedPath != null) {
+        if (this.InternalVersionedPath == null && other.InternalVersionedPath != null) return false;
+        if (this.InternalVersionedPath != null && other.InternalVersionedPath == null) return false;
+        if (!f.apply(this.InternalVersionedPath, other.InternalVersionedPath)) return false;
+      }
+    }
+    {
       Function3<Long, Long, Boolean> f = (x, y) -> x.equals(y);
       if (this.LastModifiedAtSource != null || other.LastModifiedAtSource != null) {
         if (this.LastModifiedAtSource == null && other.LastModifiedAtSource != null) return false;
@@ -144,6 +162,15 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
       }
     }
     return true;
+  }
+
+  public AutogenPathDatasetComponentBlob setInternalVersionedPath(String value) {
+    this.InternalVersionedPath = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public String getInternalVersionedPath() {
+    return this.InternalVersionedPath;
   }
 
   public AutogenPathDatasetComponentBlob setLastModifiedAtSource(Long value) {
@@ -199,6 +226,11 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
 
     AutogenPathDatasetComponentBlob obj = new AutogenPathDatasetComponentBlob();
     {
+      Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, String> f =
+          x -> (blob.getInternalVersionedPath());
+      obj.setInternalVersionedPath(f.apply(blob));
+    }
+    {
       Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, Long> f =
           x -> (blob.getLastModifiedAtSource());
       obj.setLastModifiedAtSource(f.apply(blob));
@@ -229,6 +261,16 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
   public ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder toProto() {
     ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder builder =
         ai.verta.modeldb.versioning.PathDatasetComponentBlob.newBuilder();
+    {
+      if (this.InternalVersionedPath != null && !this.InternalVersionedPath.equals("")) {
+        Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
+            x -> {
+              builder.setInternalVersionedPath(this.InternalVersionedPath);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     {
       if (this.LastModifiedAtSource != null && !this.LastModifiedAtSource.equals(0l)) {
         Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
@@ -288,6 +330,7 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
+    visitor.preVisitDeepString(this.InternalVersionedPath);
     visitor.preVisitDeepLong(this.LastModifiedAtSource);
     visitor.preVisitDeepString(this.Md5);
     visitor.preVisitDeepString(this.Path);
@@ -300,6 +343,7 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
   }
 
   public AutogenPathDatasetComponentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
+    this.setInternalVersionedPath(visitor.postVisitDeepString(this.InternalVersionedPath));
     this.setLastModifiedAtSource(visitor.postVisitDeepLong(this.LastModifiedAtSource));
     this.setMd5(visitor.postVisitDeepString(this.Md5));
     this.setPath(visitor.postVisitDeepString(this.Path));

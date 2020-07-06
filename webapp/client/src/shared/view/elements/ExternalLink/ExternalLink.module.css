@@ -1,0 +1,14 @@
+.root {
+  color: var(--link-color);
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.text {
+  text-decoration: underline;
+}
+
+.icon {
+  color: var(--link-color);
+}

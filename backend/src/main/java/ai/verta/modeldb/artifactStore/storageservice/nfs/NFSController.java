@@ -77,7 +77,7 @@ public class NFSController {
               "attachment; filename=\"" + resource.getFilename() + "\"")
           .body(resource);
     } catch (ModelDBException e) {
-      LOGGER.warn(e.getMessage(), e);
+      LOGGER.info(e.getMessage(), e);
       ErrorCountResource.inc(e);
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
     }

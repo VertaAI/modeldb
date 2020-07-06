@@ -6,6 +6,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 option java_multiple_files = true;
 
 import "google/api/annotations.proto";
+import "common/CommonService.proto";
 import "modeldb/CommonService.proto";
 import "modeldb/ExperimentRunService.proto";
 import "modeldb/versioning/Code.proto";
@@ -102,7 +103,7 @@ message Repository {
     uint64 date_updated = 4;
 
     string workspace_id = 5;
-    WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
+    common.WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
 
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
 
@@ -468,6 +469,52 @@ message FindRepositoriesBlobs {
     }
 }
 
+message GetUrlForBlobVersioned {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+    string method = 5; //This is either GET or PUT
+    uint64 part_number = 6; // if 0, don’t do multipart
+
+    message Response {
+        string url = 1;
+        bool multipart_upload_ok = 3;  // for backcompat: new Client, old Backend
+    }
+}
+
+message CommitVersionedBlobArtifactPart {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+    ArtifactPart artifact_part = 5;
+
+    message Response{
+    }
+}
+
+message GetCommittedVersionedBlobArtifactParts {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+
+    message Response {
+        repeated ArtifactPart artifact_parts = 1;
+    }
+}
+
+message CommitMultipartVersionedBlobArtifact {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+
+    message Response {
+    }
+}
+
 service VersioningService {
     // CRUD for repositories
     rpc ListRepositories(ListRepositoriesRequest) returns (ListRepositoriesRequest.Response) {
@@ -730,6 +777,37 @@ service VersioningService {
     rpc findRepositoriesBlobs(FindRepositoriesBlobs) returns (FindRepositoriesBlobs.Response){
         option (google.api.http) = {
             post: "/v1/versioning/workspaces/{workspace_name}/findRepositoriesBlobs"
+            body: "*"
+        };
+    };
+
+    rpc getUrlForBlobVersioned (GetUrlForBlobVersioned) returns (GetUrlForBlobVersioned.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/getUrlForBlobVersioned"
+            body: "*"
+            additional_bindings {
+                post: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForBlobVersioned"
+            	body: "*"
+            }
+        };
+    };
+
+    rpc commitVersionedBlobArtifactPart(CommitVersionedBlobArtifactPart) returns (CommitVersionedBlobArtifactPart.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/commitVersionedBlobArtifactPart"
+            body: "*"
+        };
+    };
+
+    rpc getCommittedVersionedBlobArtifactParts(GetCommittedVersionedBlobArtifactParts) returns (GetCommittedVersionedBlobArtifactParts.Response) {
+        option (google.api.http) = {
+            get: "/v1/versioning/getCommittedVersionedBlobArtifactParts"
+        };
+    };
+
+    rpc commitMultipartVersionedBlobArtifact(CommitMultipartVersionedBlobArtifact) returns (CommitMultipartVersionedBlobArtifact.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/commitMultipartVersionedBlobArtifact"
             body: "*"
         };
     };

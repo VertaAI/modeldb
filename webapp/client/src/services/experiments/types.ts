@@ -1,6 +1,4 @@
-import Experiment from 'models/Experiment';
+import Experiment from 'shared/models/Experiment';
+import { DataWithPagination } from 'shared/models/Pagination';
 
-export interface ILoadExperimentsResponse {
-  experiments: Experiment[];
-  totalCount: number;
-}
+export type ILoadExperimentsResponse = DataWithPagination<Experiment>;

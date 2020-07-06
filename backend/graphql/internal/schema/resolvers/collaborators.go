@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"context"
+	"sync"
 
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/dataloaders"
@@ -12,6 +13,8 @@ import (
 	ai_verta_uac "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type userCollaboratorResolver struct{ *Resolver }
@@ -61,7 +64,7 @@ func getConvertedCollaborators(r *Resolver, ctx context.Context, id string, gett
 		case common.EntitiesEnum_USER:
 			ret[i] = models.UserCollaborator{c}
 		default:
-			err := errors.UnknownCollaboratorType(c.GetAuthzEntityType())
+			err := errors.UnknownCollaboratorType(ctx, c.GetAuthzEntityType())
 			r.Logger.Error(err.Error())
 			return nil, err
 		}
@@ -82,3 +85,63 @@ func getCollaborators(r *Resolver, ctx context.Context, id string, getter Collab
 }
 
 type CollaboratorGetter func(ctx context.Context, in *uac.GetCollaborator, opts ...grpc.CallOption) (*uac.GetCollaborator_Response, error)
+
+type collaboratorReference struct {
+	teamID string
+	userID string
+}
+
+func (r *Resolver) resolveCollaborator(ctx context.Context, ref schema.CollaboratorReference) (*collaboratorReference, error) {
+	ret := collaboratorReference{}
+	var gerr error
+
+	var wg sync.WaitGroup
+
+	wg.Add(3)
+
+	go func() {
+		defer wg.Done()
+		if ref.UsernameOrEmail != nil && r.Connections.HasUac() {
+			res, err := r.Connections.UAC.GetUser(ctx, &uac.GetUser{
+				Email: *ref.UsernameOrEmail,
+			})
+			if err != nil && status.Code(err) != codes.NotFound {
+				gerr = err
+			} else if err == nil {
+				ret.userID = res.GetVertaInfo().GetUserId()
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if ref.UsernameOrEmail != nil && r.Connections.HasUac() {
+			res, err := r.Connections.UAC.GetUser(ctx, &uac.GetUser{
+				Username: *ref.UsernameOrEmail,
+			})
+			if err != nil && status.Code(err) != codes.NotFound {
+				gerr = err
+			} else if err == nil {
+				ret.userID = res.GetVertaInfo().GetUserId()
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if ref.TeamID != nil && r.Connections.HasUac() {
+			res, err := r.Connections.Team.GetTeamById(ctx, &uac.GetTeamById{
+				TeamId: *ref.TeamID,
+			})
+			if err != nil && status.Code(err) != codes.NotFound {
+				gerr = err
+			} else if err == nil {
+				ret.teamID = res.GetTeam().GetId()
+			}
+		}
+	}()
+
+	wg.Wait()
+
+	return &ret, gerr
+}

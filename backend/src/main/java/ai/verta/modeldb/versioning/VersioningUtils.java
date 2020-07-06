@@ -1,9 +1,13 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.modeldb.ArtifactPart;
+import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -99,5 +103,28 @@ public class VersioningUtils {
         + " ("
         + revertCommit.getCommitSha().substring(0, 7)
         + ")\"";
+  }
+
+  public static void saveOrUpdateArtifactPartEntity(
+      ArtifactPart artifactPart, Session session, String artifactId, int artifactType) {
+    ArtifactPartEntity artifactPartEntity =
+        new ArtifactPartEntity(
+            artifactId, artifactType, artifactPart.getPartNumber(), artifactPart.getEtag());
+    session.beginTransaction();
+    session.saveOrUpdate(artifactPartEntity);
+    session.getTransaction().commit();
+  }
+
+  public static Set<ArtifactPartEntity> getArtifactPartEntities(
+      Session session, String artifactId, int artifactType) {
+    String queryString =
+        "From "
+            + ArtifactPartEntity.class.getSimpleName()
+            + " arp WHERE arp.artifact_type = :artifactType AND arp.artifact_id = :artifactId";
+    Query query = session.createQuery(queryString);
+    query.setParameter("artifactType", artifactType);
+    query.setParameter("artifactId", artifactId);
+    List<ArtifactPartEntity> artifactPartEntities = query.list();
+    return new HashSet<>(artifactPartEntities);
   }
 }

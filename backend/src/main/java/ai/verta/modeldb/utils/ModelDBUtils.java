@@ -1,8 +1,10 @@
 package ai.verta.modeldb.utils;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.common.ValueTypeEnum;
-import ai.verta.modeldb.Artifact;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.GetHydratedProjects;
@@ -11,7 +13,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.UpdateProjectName;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -34,6 +35,7 @@ import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
@@ -142,7 +144,7 @@ public class ModelDBUtils {
     if (entityName != null && entityName.length() > ModelDBConstants.NAME_LENGTH) {
       String errorMessage =
           "Entity name can not be more than " + ModelDBConstants.NAME_LENGTH + " characters";
-      LOGGER.warn(errorMessage);
+      LOGGER.info(errorMessage);
       Status status =
           Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE).setMessage(errorMessage).build();
       throw StatusProto.toStatusRuntimeException(status);
@@ -154,7 +156,7 @@ public class ModelDBUtils {
     for (String tag : tags) {
       if (tag.isEmpty()) {
         String errorMessage = "Invalid tag found, Tag shouldn't be empty";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -167,7 +169,7 @@ public class ModelDBUtils {
                 + ModelDBConstants.TAG_LENGTH
                 + " characters. Limit exceeded tag is: "
                 + tag;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -252,7 +254,7 @@ public class ModelDBUtils {
               if (userInfoValue != null) {
                 collaborator1 = new CollaboratorUser(authService, userInfoValue);
               } else {
-                LOGGER.error("skipping " + collaborator.getVertaId() + " because it is not found");
+                LOGGER.info("skipping " + collaborator.getVertaId() + " because it is not found");
               }
               break;
             case ORGANIZATION:
@@ -288,7 +290,7 @@ public class ModelDBUtils {
                     + collaborator.getVertaId()
                     + " because the current user doesn't have access to it");
           } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
-            LOGGER.error("skipping " + collaborator.getVertaId() + " because it is not found");
+            LOGGER.info("skipping " + collaborator.getVertaId() + " because it is not found");
           } else {
             LOGGER.error(ex.getMessage(), ex);
             throw ex;
@@ -407,10 +409,11 @@ public class ModelDBUtils {
     return workspaceQueries;
   }
 
-  public static void scheduleTask(TimerTask task, int frequency, TimeUnit timeUnit) {
+  public static void scheduleTask(
+      TimerTask task, long initialDelay, long frequency, TimeUnit timeUnit) {
     // scheduling the timer instance
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    executor.scheduleAtFixedRate(task, frequency, frequency, timeUnit);
+    executor.scheduleAtFixedRate(task, initialDelay, frequency, timeUnit);
   }
 
   public static Throwable findRootCause(Throwable throwable) {
@@ -436,7 +439,7 @@ public class ModelDBUtils {
       // SocketException'
       if (throwable instanceof SocketException) {
         String errorMessage = "Database Connection not found: ";
-        LOGGER.warn(errorMessage + "{}", e.getMessage());
+        LOGGER.info(errorMessage + "{}", e.getMessage());
         status =
             Status.newBuilder()
                 .setCode(Code.UNAVAILABLE_VALUE)
@@ -480,6 +483,32 @@ public class ModelDBUtils {
     responseObserver.onError(statusRuntimeException);
   }
 
+  public static boolean needToRetry(Exception ex) {
+    Throwable communicationsException = findCommunicationsFailedCause(ex);
+    if ((communicationsException.getCause() instanceof CommunicationsException)
+        || (communicationsException.getCause() instanceof SocketException)) {
+      LOGGER.warn(communicationsException.getMessage());
+      if (ModelDBHibernateUtil.checkDBConnection()) {
+        ModelDBHibernateUtil.resetSessionFactory();
+      }
+      return true;
+    }
+    return false;
+  }
+
+  public static Throwable findCommunicationsFailedCause(Throwable throwable) {
+    if (throwable == null) {
+      return null;
+    }
+    Throwable rootCause = throwable;
+    while (rootCause.getCause() != null
+        && !(rootCause.getCause() instanceof CommunicationsException
+            || rootCause.getCause() instanceof SocketException)) {
+      rootCause = rootCause.getCause();
+    }
+    return rootCause;
+  }
+
   /**
    * If so throws an error if the workspace type is USER and the workspaceId and userID do not
    * match. Is a NO-OP if userinfo is null.
@@ -507,5 +536,38 @@ public class ModelDBUtils {
 
   public static String getLocationWithSlashOperator(List<String> locations) {
     return String.join("/", locations);
+  }
+
+  public interface RetryCallInterface<T> {
+    T retryCall(boolean retry);
+  }
+
+  public static Object retryOrThrowException(
+      StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
+    String errorMessage = ex.getMessage();
+    LOGGER.warn(errorMessage);
+    if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
+      errorMessage = "UAC Service unavailable : " + errorMessage;
+      if (retry && retryCallInterface != null) {
+        try {
+          App app = App.getInstance();
+          Thread.sleep(app.getRequestTimeout() * 1000);
+          retry = false;
+        } catch (InterruptedException e) {
+          Status status =
+              Status.newBuilder()
+                  .setCode(Code.INTERNAL_VALUE)
+                  .setMessage("Thread interrupted while UAC retrying call")
+                  .build();
+          throw StatusProto.toStatusRuntimeException(status);
+        }
+        return retryCallInterface.retryCall(retry);
+      }
+
+      Status status =
+          Status.newBuilder().setCode(Code.UNAVAILABLE_VALUE).setMessage(errorMessage).build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+    throw ex;
   }
 }

@@ -8,7 +8,7 @@ option java_multiple_files = true;
 import "common/CommonService.proto";
 import "modeldb/CommonService.proto";
 import "google/api/annotations.proto";
-// import "google/protobuf/struct.proto";
+import "google/protobuf/struct.proto";
 
 /*
 * ExperimentRun Entity
@@ -32,8 +32,8 @@ message ExperimentRun {
     repeated string tags = 20;
     repeated common.KeyValue attributes = 21;
     repeated common.KeyValue hyperparameters = 22;
-    repeated Artifact artifacts = 23;
-    repeated Artifact datasets = 24;
+    repeated common.Artifact artifacts = 23;
+    repeated common.Artifact datasets = 24;
     repeated common.KeyValue metrics = 25;
     repeated Observation observations = 26;
     repeated Feature features = 27;
@@ -70,9 +70,10 @@ message GetVersionedInput {
 message Observation {
     oneof oneOf {
         common.KeyValue attribute = 1;
-        Artifact artifact = 2;
+        common.Artifact artifact = 2;
     }
     int64 timestamp = 3;
+    google.protobuf.Value epoch_number = 4;
 }
 
 message CreateExperimentRun {
@@ -92,8 +93,8 @@ message CreateExperimentRun {
     repeated string tags = 20;
     repeated common.KeyValue attributes = 21;
     repeated common.KeyValue hyperparameters = 22;
-    repeated Artifact artifacts = 23;
-    repeated Artifact datasets = 24;
+    repeated common.Artifact artifacts = 23;
+    repeated common.Artifact datasets = 24;
     repeated common.KeyValue metrics = 25;
     repeated Observation observations = 26;
     repeated Feature features = 27;
@@ -302,7 +303,7 @@ message GetMetrics {
 // dataset
 message LogDataset {
     string id = 1;
-    Artifact dataset = 2;
+    common.Artifact dataset = 2;
     bool overwrite = 3;
 
     message Response {
@@ -312,7 +313,7 @@ message LogDataset {
 // datasets
 message LogDatasets {
     string id = 1;
-    repeated Artifact datasets = 2;
+    repeated common.Artifact datasets = 2;
     bool overwrite = 3;
 
     message Response {
@@ -323,14 +324,14 @@ message GetDatasets {
     string id = 1;
 
     message Response {
-        repeated Artifact datasets = 1;
+        repeated common.Artifact datasets = 1;
     }
 }
 
 // artifact
 message LogArtifact {
     string id = 1;
-    Artifact artifact = 2;
+    common.Artifact artifact = 2;
 
     message Response {
     }
@@ -339,7 +340,7 @@ message LogArtifact {
 // artifacts
 message LogArtifacts {
     string id = 1;
-    repeated Artifact artifacts = 2;
+    repeated common.Artifact artifacts = 2;
 
     message Response {
     }

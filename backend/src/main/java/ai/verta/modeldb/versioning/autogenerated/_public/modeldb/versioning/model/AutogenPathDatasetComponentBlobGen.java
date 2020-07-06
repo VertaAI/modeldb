@@ -20,6 +20,9 @@ public class AutogenPathDatasetComponentBlobGen extends Generator<AutogenPathDat
 
     AutogenPathDatasetComponentBlob obj = new AutogenPathDatasetComponentBlob();
     if (r.nextBoolean()) {
+      obj.setInternalVersionedPath(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+    }
+    if (r.nextBoolean()) {
       obj.setLastModifiedAtSource(Utils.removeEmpty(gen().type(Long.class).generate(r, status)));
     }
     if (r.nextBoolean()) {

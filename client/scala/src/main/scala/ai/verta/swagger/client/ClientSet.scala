@@ -2,6 +2,8 @@ package ai.verta.swagger.client
 
 import ai.verta.swagger._public.artifactstore.api._
 import ai.verta.swagger._public.modeldb.api._
+import ai.verta.swagger._public.modeldb.versioning.api.VersioningServiceApi
+import ai.verta.swagger._public.uac.api.UACServiceApi
 
 class ClientSet(val client: HttpClient) {
   val artifactStoreService = new ArtifactStoreApi(client, "/api/v1/modeldb")
@@ -14,4 +16,6 @@ class ClientSet(val client: HttpClient) {
   val jobService = new JobApi(client, "/api/v1/modeldb")
   val lineageService = new LineageApi(client, "/api/v1/modeldb")
   val projectService = new ProjectServiceApi(client, "/api/v1/modeldb")
+  val versioningService = new VersioningServiceApi(client, "/api/v1/modeldb")
+  val uacService = new UACServiceApi(client, "/api/v1/uac-proxy")
 }

@@ -22,3 +22,27 @@ type PaginationResponse {
   limit: Int!
   totalRecords: Int!
 }
+
+input StringPredicate {
+  key: String!
+  value: String!
+  operator: PredicateOperator!
+}
+
+input FloatPredicate {
+  key: String!
+  value: Float!
+  operator: PredicateOperator!
+}
+
+enum PredicateOperator {
+  EQ
+  NE
+  GT
+  GTE
+  LT
+  LTE
+  CONTAIN
+  NOT_CONTAIN
+  IN
+}

@@ -1,0 +1,537 @@
+"""
+Direct the client to resolve this field locally, either from the cache or local resolvers.
+"""
+directive @client(
+  """
+  When true, the client will never use the cache for this value. See
+  https://www.apollographql.com/docs/react/essentials/local-state/#forcing-resolvers-with-clientalways-true
+  """
+  always: Boolean
+) on FIELD | FRAGMENT_DEFINITION | INLINE_FRAGMENT
+
+"""
+Export this locally resolved field as a variable to be used in the remainder of this query. See
+https://www.apollographql.com/docs/react/essentials/local-state/#using-client-fields-as-variables
+"""
+directive @export(
+  """The variable name to export this field as."""
+  as: String!
+) on FIELD
+
+"""
+Specify a custom store key for this result. See
+https://www.apollographql.com/docs/react/advanced/caching/#the-connection-directive
+"""
+directive @connection(
+  """Specify the store key."""
+  key: String!
+
+  """
+  An array of query argument names to include in the generated custom store key.
+  """
+  filter: [String!]
+) on FIELD
+
+enum AccessType {
+  OWNER
+  READ_ONLY
+  READ_WRITE
+}
+
+type AllowedActions {
+  create: Boolean!
+  update: Boolean!
+  delete: Boolean!
+  deploy: Boolean!
+}
+
+type Artifact {
+  key: String!
+  path: String!
+  type: ArtifactType!
+  pathOnly: Boolean!
+}
+
+enum ArtifactType {
+  IMAGE
+  MODEL
+  TENSORBOARD
+  DATA
+  BLOB
+  STRING
+}
+
+type BranchesNetwork {
+  branches: [NetworkBranchColor!]!
+  commits: [NetworkCommitColor!]!
+  edges: [NetworkEdgeColor!]!
+}
+
+type Build {
+  id: ID!
+  status: BuildStatus!
+  message: String!
+  experimentRun: ExperimentRun!
+  dateCreated: Date!
+  dateUpdated: Date!
+}
+
+type Builds {
+  builds: [Build!]!
+}
+
+enum BuildStatus {
+  BUILDING
+  DELETING
+  ERROR
+  FINISHED
+}
+
+union Collaborator = UserCollaborator | TeamCollaborator
+
+input CollaboratorReference {
+  usernameOrEmail: String
+  teamID: String
+}
+
+type Commit {
+  id: String!
+  message: String!
+  date: Date!
+  author: User!
+  getLocation(location: [String!]!): CommitElement
+  asDiff: CommitAsDiff
+  runs(query: ExperimentRunsQuery): ExperimentRuns!
+  setTag(name: String!): Repository!
+  setBranch(name: String!): Repository!
+}
+
+type CommitAsDiff {
+  parent: String!
+  diff: [String!]
+}
+
+type CommitBlob {
+  content: String!
+  runs(query: ExperimentRunsQuery): ExperimentRuns!
+}
+
+union CommitElement = CommitFolder | CommitBlob
+
+type CommitFolder {
+  subfolders: [NamedCommitFolder!]!
+  blobs: [NamedCommitBlob!]!
+}
+
+input CommitReference {
+  commit: ID
+  tag: String
+  branch: String
+}
+
+type Commits {
+  commits: [Commit!]!
+}
+
+scalar Date
+
+type Endpoint {
+  id: ID!
+  path: String!
+  description: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+  labels: [String!]!
+  addLabels(labels: [String!]!): Endpoint!
+  deleteLabels(labels: [String!]!): Endpoint!
+  owner: User!
+  allowedActions: AllowedActions!
+  collaborators: [Collaborator!]!
+  updateCollaborator(ref: CollaboratorReference!, access: AccessType!): Endpoint!
+  deleteCollaborator(ref: CollaboratorReference!): Endpoint!
+  environment(id: ID!): EndpointEnvironment
+  environments: [EndpointEnvironment!]!
+  createEnvironment(name: String!): EndpointEnvironment!
+  delete: Boolean!
+  changeDescription(description: String!): Endpoint!
+  changePath(path: String!): Endpoint!
+}
+
+type EndpointEnvironment {
+  id: ID!
+  name: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+  status: EndpointEnvironmentStatus!
+  components: [EndpointEnvironmentComponent]!
+  createBuild(runId: String!, config: EndpointEnvironmentUpdateConfig): Build!
+  update(buildId: ID!, config: EndpointEnvironmentUpdateConfig): EndpointEnvironment!
+  token(tokenId: ID!): EndpointEnvironmentToken!
+  createToken(value: String): EndpointEnvironment!
+  deleteToken(tokenId: ID!): EndpointEnvironment!
+  tokens: [EndpointEnvironmentToken!]!
+}
+
+type EndpointEnvironmentComponent {
+  buildID: ID!
+  build: Build
+  ratio: Float!
+  status: EndpointEnvironmentComponentStatus!
+  message: String!
+}
+
+enum EndpointEnvironmentComponentStatus {
+  INTERNAL_ERROR
+  ERROR
+  RUNNING
+  CREATING
+}
+
+enum EndpointEnvironmentStatus {
+  INACTIVE
+  ACTIVE
+  UPDATING
+  CREATING
+  ERROR
+  UNKNOWN
+}
+
+type EndpointEnvironmentToken {
+  id: ID!
+  value: String!
+}
+
+input EndpointEnvironmentUpdateConfig {
+  strategy: EndpointEnvironmentUpdateStrategy
+}
+
+enum EndpointEnvironmentUpdateStrategy {
+  ROLLOUT
+}
+
+type Endpoints {
+  endpoints: [Endpoint!]!
+}
+
+type Experiment {
+  id: ID!
+  projectId: String!
+  project: Project!
+  name: String!
+  description: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+  attributes: [KeyValue!]!
+  tags: [String!]!
+  owner: User!
+  runs(next: String, query: ExperimentRunsQuery): ExperimentRuns!
+}
+
+type ExperimentRun {
+  id: ID!
+  projectId: String!
+  project: Project!
+  experimentId: String!
+  experiment: Experiment!
+  name: String!
+  description: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+  attributes: [KeyValue!]!
+  tags: [String!]!
+  hyperparameters: [KeyValue!]!
+  artifacts: [Artifact!]!
+  datasets: [Artifact!]!
+  metrics: [KeyValue!]!
+  observations: [Observation!]!
+  features: [Feature!]!
+  jobId: String
+  owner: User!
+  codeVersion: String
+}
+
+type ExperimentRuns {
+  runs: [ExperimentRun!]!
+  next: String
+  pagination: PaginationResponse!
+}
+
+input ExperimentRunsQuery {
+  pagination: PaginationQuery
+}
+
+type Experiments {
+  experiments: [Experiment!]!
+  next: String
+}
+
+input ExperimentsQuery {
+  pagination: PaginationQuery
+}
+
+type Feature {
+  name: String
+}
+
+type FloatKeyValue {
+  key: String!
+  value: Float!
+}
+
+input FloatPredicate {
+  key: String!
+  value: Float!
+  operator: PredicateOperator!
+}
+
+union KeyValue = StringKeyValue | FloatKeyValue
+
+type MergeResult {
+  commit: Commit
+  commonBase: Commit
+  conflicts: [String!]
+}
+
+type Mutation {
+  editRunDescription(id: ID!, description: String!): ExperimentRun
+  addRunTag(id: ID!, tag: String!): ExperimentRun
+  delRunTag(id: ID!, tag: String!): ExperimentRun
+  setCollaboratorProject(projid: ID!, email: String!, type: AccessType!): Project
+  delCollaboratorProject(projid: ID!, collid: ID!): Project
+  editProjectDescription(id: ID!, description: String!): Project
+  editProjectReadme(id: ID!, readme: String!): Project
+  addProjectTag(id: ID!, tag: String!): Project
+  delProjectTag(id: ID!, tag: String!): Project
+  delProject(id: ID!): Boolean!
+  repository(id: ID!): Repository
+  workspace(name: String): Workspace
+}
+
+type NamedCommitBlob {
+  name: String!
+  content: CommitBlob!
+}
+
+type NamedCommitFolder {
+  name: String!
+  content: CommitFolder!
+}
+
+type NetworkBranchColor {
+  branch: String!
+  color: Int!
+  commitIndex: Int!
+}
+
+type NetworkCommitColor {
+  commit: Commit!
+  color: Int!
+}
+
+type NetworkEdgeColor {
+  fromCommitIndex: Int!
+  toCommitIndex: Int!
+  color: Int!
+  edgeType: NetworkEdgeType!
+}
+
+enum NetworkEdgeType {
+  DEFAULT
+  BRANCH
+  MERGE
+}
+
+type Observation {
+  attribute: KeyValue
+  artifact: Artifact
+  timestamp: Date
+}
+
+type Organization {
+  id: ID!
+  name: String!
+  shortName: String!
+  description: String!
+  owner: User!
+  dateCreated: Date!
+  dateUpdated: Date!
+  teams: [Team!]!
+}
+
+input PaginationQuery {
+  page: Int
+  limit: Int
+}
+
+type PaginationResponse {
+  page: Int!
+  limit: Int!
+  totalRecords: Int!
+}
+
+enum PredicateOperator {
+  EQ
+  NE
+  GT
+  GTE
+  LT
+  LTE
+  CONTAIN
+  NOT_CONTAIN
+  IN
+}
+
+type Project {
+  id: ID!
+  name: String!
+  description: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+  shortName: String!
+  readmeText: String!
+  projectVisibility: ProjectVisibility!
+  access: AccessType!
+  attributes: [KeyValue!]!
+  tags: [String!]!
+  owner: User!
+  collaborators: [Collaborator!]!
+  experiments(next: String, query: ExperimentsQuery): Experiments!
+  runs(next: String, query: ExperimentRunsQuery): ExperimentRuns!
+}
+
+type Projects {
+  projects: [Project!]!
+  next: String
+}
+
+input ProjectsQuery {
+  pagination: PaginationQuery
+}
+
+enum ProjectVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+type Query {
+  organizations: [Organization!]!
+  teams: [Team!]!
+  self: User
+  project(id: ID!): Project
+  experiment(id: ID!): Experiment
+  run(id: ID!): ExperimentRun
+  repository(id: ID!): Repository
+  organization(id: ID!): Organization
+  workspace(name: String): Workspace
+}
+
+type Repositories {
+  repositories: [Repository!]!
+  next: String
+  pagination: PaginationResponse!
+}
+
+input RepositoriesQuery {
+  pagination: PaginationQuery
+  stringPredicates: [StringPredicate!]
+  floatPredicates: [FloatPredicate!]
+  ids: [Int!]
+}
+
+type Repository {
+  id: ID!
+  name: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+  labels: [String!]!
+  owner: User!
+  collaborators: [Collaborator!]!
+  allowedActions: AllowedActions!
+  tags: [RepositoryTag!]!
+  branches: [RepositoryBranch!]!
+  commit(id: ID!): Commit
+  tag(name: String!): Commit
+  branch(name: String!): Commit
+  commitByReference(ref: CommitReference!): Commit
+  diff(a: CommitReference!, b: CommitReference!): [String!]
+  log(commit: CommitReference!): Commits!
+  network: BranchesNetwork!
+  delete: Boolean!
+  addLabels(labels: [String!]!): Repository!
+  deleteLabels(labels: [String!]!): Repository!
+  merge(a: CommitReference!, b: CommitReference!, message: String, isDryRun: Boolean): MergeResult!
+}
+
+type RepositoryBranch {
+  name: String!
+  commit: Commit!
+}
+
+type RepositoryTag {
+  name: String!
+  commit: Commit!
+}
+
+type StringKeyValue {
+  key: String!
+  value: String!
+}
+
+input StringPredicate {
+  key: String!
+  value: String!
+  operator: PredicateOperator!
+}
+
+type Team {
+  id: ID!
+  organizationId: String!
+  organization: Organization!
+  name: String!
+  shortName: String!
+  description: String!
+  owner: User!
+  dateCreated: Date!
+  dateUpdated: Date!
+}
+
+type TeamCollaborator {
+  team: Team!
+  type: AccessType!
+  canDeploy: Boolean!
+}
+
+type User {
+  id: ID!
+  name: String
+  email: String!
+  picture: String
+  roles: [String!]!
+  username: String!
+}
+
+type UserCollaborator {
+  user: User!
+  type: AccessType!
+  canDeploy: Boolean!
+}
+
+enum Visibility {
+  PRIVATE
+  PUBLIC
+  ORG_SCOPED_PUBLIC
+}
+
+type Workspace {
+  name: String!
+  projects(next: String, query: ProjectsQuery): Projects!
+  repositories(next: String, query: RepositoriesQuery): Repositories!
+  repository(name: String!): Repository
+  createRepository(name: String!, visibility: Visibility!): Repository!
+  endpoints: Endpoints!
+  endpoint(id: ID!): Endpoint
+  createBuild(runId: String!): Build!
+  builds(runId: String): Builds!
+  build(id: ID!): Build!
+  createEndpoint(path: String!, description: String): Endpoint!
+}

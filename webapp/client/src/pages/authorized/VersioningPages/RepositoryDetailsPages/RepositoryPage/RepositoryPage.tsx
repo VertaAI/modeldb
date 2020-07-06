@@ -1,37 +1,20 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { connect } from 'react-redux';
 import { useLocation } from 'react-router';
-import { bindActionCreators, Dispatch } from 'redux';
 
-import { selectors } from 'core/features/versioning/repositories';
-import { RepositoryData } from 'core/features/versioning/repositoryData';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
+import { RepositoryData } from 'features/versioning/repositoryData';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
 import { AuthorizedLayout } from 'pages/authorized/shared/AuthorizedLayout';
-import { IApplicationState } from 'store/store';
-import { RepositoryNavigation } from 'core/features/versioning/repositoryNavigation';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import { RepositoryNavigation } from 'features/versioning/repositoryNavigation';
 
 import RepositoryDetailsPagesLayout from '../shared/RepositoryDetailsPagesLayout/RepositoryDetailsPagesLayout';
 
-interface ILocalProps {}
+interface ILocalProps {
+  repository: IRepository;
+}
 
-const mapStateToProps = (state: IApplicationState, props: any) => {
-  const repository = selectors.selectRepositoryByName(
-    state,
-    props.match.params.repositoryName
-  )!;
-  return {
-    repository,
-  };
-};
-
-const mapDispatchToProps = (dispatch: Dispatch) => {
-  return bindActionCreators({}, dispatch);
-};
-
-type AllProps = ILocalProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>;
+type AllProps = ILocalProps;
 
 const RepositoryPage = (props: AllProps) => {
   const [entityError, changeEntityError] = useState(null);
@@ -73,7 +56,4 @@ const RepositoryPage = (props: AllProps) => {
   );
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(RepositoryPage);
+export default RepositoryPage;

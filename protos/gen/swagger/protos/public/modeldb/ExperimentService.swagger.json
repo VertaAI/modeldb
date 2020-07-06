@@ -883,7 +883,8 @@
         "DATA",
         "BLOB",
         "STRING",
-        "CODE"
+        "CODE",
+        "CONTAINER"
       ],
       "default": "IMAGE"
     },
@@ -920,6 +921,30 @@
         "BLOB"
       ],
       "default": "STRING"
+    },
+    "commonArtifact": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "path_only": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "linked_artifact_id": {
+          "type": "string"
+        },
+        "filename_extension": {
+          "type": "string"
+        }
+      }
     },
     "commonKeyValue": {
       "type": "object",
@@ -1020,30 +1045,6 @@
         }
       }
     },
-    "modeldbArtifact": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "path_only": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
-        },
-        "linked_artifact_id": {
-          "type": "string"
-        },
-        "filename_extension": {
-          "type": "string"
-        }
-      }
-    },
     "modeldbCodeVersion": {
       "type": "object",
       "properties": {
@@ -1051,7 +1052,7 @@
           "$ref": "#/definitions/modeldbGitSnapshot"
         },
         "code_archive": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         },
         "date_logged": {
           "type": "string",
@@ -1095,7 +1096,7 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       }
@@ -1261,7 +1262,7 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       }
@@ -1330,7 +1331,7 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       }
@@ -1481,7 +1482,7 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       },

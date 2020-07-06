@@ -1,9 +1,9 @@
 import { bind } from 'decko';
 import * as React from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'shared/routes';
 
-import Charts from 'components/Charts/Charts';
+import Charts from 'pages/authorized/ProjectsPages/ProjectDetailsPages/ChartsPage/Charts/Charts';
 
 import LayoutWithExprRunsFilter from '../shared/LayoutWithExprRunsFilter/LayoutWithExprRunsFilter';
 

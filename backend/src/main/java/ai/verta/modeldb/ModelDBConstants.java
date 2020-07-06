@@ -11,6 +11,7 @@ public interface ModelDBConstants {
   String CLOUD_ACCESS_KEY = "cloudAccessKey";
   String CLOUD_SECRET_KEY = "cloudSecretKey";
   String CLOUD_BUCKET_NAME = "cloudBucketName";
+  String MINIO_ENDPOINT = "minioEndpoint";
   String DATABASE = "database";
   String DB_TYPE = "DBType";
   String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";
@@ -40,6 +41,7 @@ public interface ModelDBConstants {
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
   String STORE_CLIENT_CREATION_TIMESTAMP = "store-client-creation-timestamp";
+  String PUBLIC_SHARING_ENABLED = "public_sharing_enabled";
 
   // Threshold Constant
   Long DEFAULT_SHUTDOWN_TIMEOUT = 30L; // timeout in second
@@ -47,6 +49,8 @@ public interface ModelDBConstants {
   Integer NAME_LENGTH = 256;
   String PATH_DELIMITER = "/";
   Integer TAG_LENGTH = 40;
+  int INITIAL_CRON_DELAY = 300; // 300second = 5min : timeout in second
+  String INITIAL_DELAY = "initial_delay";
 
   // String Constants
   String STRING_COLON = ":";
@@ -113,6 +117,7 @@ public interface ModelDBConstants {
   String CODE_ARCHIVE = "code_archive";
   String CODE_VERSION = "code_version";
   String DATASET_ID = "dataset_id";
+  String DATASET_IDS = "dataset_ids";
   String DATA_LIST = "data_list";
   String DATE_TIME = "date_time";
   String DATASET_ID_STR = "datasetId";
@@ -141,6 +146,7 @@ public interface ModelDBConstants {
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
   String DELETED = "deleted";
   String DEV_KEY = "devKey";
+  String REQUEST_TIMEOUT = "requestTimeout";
 
   // Set to true to export the liquibase schema as sql statements
   Boolean EXPORT_SCHEMA = false;
@@ -172,6 +178,8 @@ public interface ModelDBConstants {
   String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
   String POSTGRES_DB_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
+  String DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE =
+      "Can't add new versioning entry, because an existing one has different repository or commit";
 
   enum UserIdentifier {
     VERTA_ID,

@@ -1,0 +1,34 @@
+.tags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.tags li {
+  float: left;
+  overflow: hidden;
+  padding: 2px;
+}
+
+.tag {
+  font-size: 15px;
+  color: var(--main-text-color1);
+  border-radius: 2px;
+  border-width: 0 !important;
+  background-color: #a4dbd4;
+  opacity: 0.95;
+  display: inline-block;
+  min-height: 20px;
+  line-height: 20px;
+  padding: 3px 7px 3px 7px;
+  position: relative;
+  word-break: break-all;
+}
+.tag.draggable {
+  transition: color 0.05s;
+  cursor: move;
+}
+.tag.draggable:hover {
+  background-color: #a4dbd473;
+}
