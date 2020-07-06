@@ -597,28 +597,40 @@ class Commit(
       if (readLen < 0)
         Success(partNum - 1)
       else
-        Try(new ByteArrayInputStream(buffer)).flatMap(filepart => {
-          try {
-            /** TODO: retry 3 times when fail */
-            Await.result(clientSet.client.getRawRequestHeader("PUT", url, null, null, filepart), Duration.Inf)
-              .flatMap(headers => clientSet.versioningService.commitVersionedBlobArtifactPart(
-                VersioningCommitVersionedBlobArtifactPart(
-                  artifact_part = Some(ModeldbArtifactPart(
-                    etag = Some(headers("ETag").get),
-                    part_number = Some(BigInt(partNum))
-                  )),
-                  commit_sha = id,
-                  location = Some(pathToLocation(blobPath)),
-                  path_dataset_component_blob_path = Some(datasetComponentPath),
-                  repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
-                )
-              ))
-              .flatMap(_ => uploadPart(blobPath, datasetComponentPath, inputStream, buffer, partNum + 1))
-          } finally {
-            filepart.close()
-          }
-        })
+        retry (
+          Try(new ByteArrayInputStream(buffer)).flatMap(filepart => {
+            try {
+              Await.result(clientSet.client.getRawRequestHeader("PUT", url, null, null, filepart), Duration.Inf)
+                .flatMap(headers => clientSet.versioningService.commitVersionedBlobArtifactPart(
+                  VersioningCommitVersionedBlobArtifactPart(
+                    artifact_part = Some(ModeldbArtifactPart(
+                      etag = Some(headers("ETag").get),
+                      part_number = Some(BigInt(partNum))
+                    )),
+                    commit_sha = id,
+                    location = Some(pathToLocation(blobPath)),
+                    path_dataset_component_blob_path = Some(datasetComponentPath),
+                    repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
+                  )
+                ))
+                .flatMap(_ => uploadPart(blobPath, datasetComponentPath, inputStream, buffer, partNum + 1))
+            } finally {
+              filepart.close()
+            }
+          }),
+          3, // number of upload attempts
+          f"Uploading part ${partNum} of component ${datasetComponentPath} of blob at ${blobPath} has fails."
+        )
     })
+  }
+
+  /** Helper function to retry failable function.
+   */
+  private def retry[T](f: => Try[T], attempt: Int, errorMessage: String): Try[T] = {
+    if (attempt <= 0)
+      Failure(new IllegalArgumentException(errorMessage))
+    else
+      f.orElse(retry(f, attempt - 1, errorMessage))
   }
 
   /** Helper method to download a component of a blob.
