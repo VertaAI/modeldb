@@ -1,6 +1,7 @@
 package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
+import ai.verta.repository.Commit
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3._
@@ -24,7 +25,7 @@ import java.io.{File, FileOutputStream}
  */
 case class S3(
   protected val contents: HashMap[String, FileMetadata],
-  private[verta] val enableMDBVersioning: Boolean = false
+  val enableMDBVersioning: Boolean = false
 ) extends Dataset {
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"
@@ -161,7 +162,9 @@ object S3 {
       comp => comp.path.get.path.get -> Dataset.toMetadata(comp.path.get, comp.s3_version_id)
     )
 
-    new S3(HashMap(metadataList: _*))
+    // if internal versioned path of a component is defined, then the blob enables MDB Versioning
+    val enableMDBVersioning = componentList.head.path.get.internal_versioned_path.isDefined
+    new S3(HashMap(metadataList: _*), enableMDBVersioning)
   }
 
   /** Combine two S3 instances

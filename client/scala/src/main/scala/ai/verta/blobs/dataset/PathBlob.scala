@@ -1,6 +1,7 @@
 package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
+import ai.verta.repository.Commit
 
 import java.io.{File, FileInputStream}
 
@@ -19,7 +20,7 @@ import scala.annotation.tailrec
  */
 case class PathBlob(
   protected val contents: HashMap[String, FileMetadata],
-  private[verta] val enableMDBVersioning: Boolean = false
+  val enableMDBVersioning: Boolean = false
 ) extends Dataset {
   /** Prepare the PathBlob for uploading
    *  @return whether the attempt succeeds
@@ -110,7 +111,10 @@ object PathBlob {
     val metadataList = pathVersioningBlob.components.get.map(
       comp => comp.path.get -> Dataset.toMetadata(comp)
     )
-    new PathBlob(HashMap(metadataList: _*))
+
+    // if internal versioned path of a component is defined, then the blob enables MDB Versioning
+    val enableMDBVersioning = pathVersioningBlob.components.get.head.internal_versioned_path.isDefined
+    new PathBlob(HashMap(metadataList: _*), enableMDBVersioning)
   }
 
   /** Convert a PathBlob instance to a VersioningBlob

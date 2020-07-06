@@ -11,7 +11,8 @@ import scala.collection.immutable.Map
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 
-import java.io.{File, FileInputStream}
+import java.io.{File, FileInputStream, FileOutputStream, ByteArrayInputStream}
+import java.nio.file.{Files, StandardCopyOption}
 
 /** Commit within a ModelDB Repository
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
@@ -47,7 +48,12 @@ class Commit(
     loadBlobs().flatMap(_ =>
       blobs.get(path) match {
         case None => Failure(new NoSuchElementException("No blob was stored at this path."))
-        case Some(blob) => Success(blob)
+        case Some(blob) => toMDBVersioningDataset(blob).fold(Success(blob))(dataBlob => {
+          /** TODO: remove this mutation */
+          dataBlob.downloadFunction = Some(this.downloadComponent)
+          dataBlob.blobPath = Some(path)
+          Success(dataBlob)
+        })
       }
     )
 
@@ -502,14 +508,19 @@ class Commit(
   /** Helper method to retrieve URL to upload the file.
    *  @param blobPath path to the blob in the commit
    *  @param datasetComponentPath path to the component in the blob
+   *  @param method either PUT or GET
    *  @return The URL, if succeeds
    */
-  private def getURLForArtifact(blobPath: String, datasetComponentPath: String)(implicit ec: ExecutionContext): Try[String] = {
+  private def getURLForArtifact(
+    blobPath: String,
+    datasetComponentPath: String,
+    method: String
+  )(implicit ec: ExecutionContext): Try[String] = {
     clientSet.versioningService.getUrlForBlobVersioned2(
       VersioningGetUrlForBlobVersioned(
         commit_sha = id,
         location = Some(pathToLocation(blobPath)),
-        method = Some("PUT"),
+        method = Some(method),
         part_number = Some(BigInt(0)),
         path_dataset_component_blob_path = Some(datasetComponentPath),
         repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
@@ -529,7 +540,8 @@ class Commit(
     datasetComponentPath: String,
     file: File
   )(implicit ec: ExecutionContext): Try[Unit] = {
-    getURLForArtifact(blobPath, datasetComponentPath).flatMap(url =>
+    /** TODO: implement multi-part upload */
+    getURLForArtifact(blobPath, datasetComponentPath, "PUT").flatMap(url =>
       Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
         try {
           Await.result(clientSet.client.requestRaw("PUT", url, null, null, inputStream), Duration.Inf)
@@ -538,6 +550,35 @@ class Commit(
           inputStream.close()
         }
       })
+    )
+  }
+
+  /** Helper method to download a component of a blob.
+   *  @param blobPath path to the blob in the commit
+   *  @param datasetComponentPath path to the component in the blob
+   *  @param file File to write the downloaded content to
+   *  @return whether the download attempt succeeds
+   */
+  private def downloadComponent(
+    blobPath: String,
+    datasetComponentPath: String,
+    file: File
+  )(implicit ec: ExecutionContext): Try[Unit] = {
+    getURLForArtifact(blobPath, datasetComponentPath, "GET").flatMap(url =>
+      Await.result(
+        clientSet.client.requestRaw("GET", url, null, null, null)
+          .map(resp => resp match {
+            case Success(response) => Try(new ByteArrayInputStream(response)).flatMap(inputStream => {
+              try {
+                Try(Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
+              }
+              finally {
+                inputStream.close()
+              }
+            })
+            case Failure(e) => Failure(e)
+          }),
+        Duration.Inf)
     )
   }
 }
