@@ -170,9 +170,10 @@ class Path(_dataset._Dataset):
             Directory path to be removed from the beginning of `paths` before saving to ModelDB.
 
         """
+        # re-use logic in __init__
         other = self.__class__(
             paths=paths, base_path=base_path,
             enable_mdb_versioning=self._mdb_versioned,
         )
 
-        self._add_blob(other)
+        self._add_dataset_blob(other)

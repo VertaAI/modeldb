@@ -235,12 +235,13 @@ class S3(_dataset._Dataset):
             objects returned by :meth:`S3.location`.
 
         """
+        # re-use logic in __init__
         other = self.__class__(
             paths=paths,
             enable_mdb_versioning=self._mdb_versioned,
         )
 
-        self._add_blob(other)
+        self._add_dataset_blob(other)
 
 
 class S3Location(object):
