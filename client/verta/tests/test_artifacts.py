@@ -101,8 +101,7 @@ class TestArtifacts:
         with tempfile.NamedTemporaryFile(suffix='.bin', dir=".", delete=False) as tempf:
             # write 6 MB file in 1 MB chunks
             for _ in range(6):
-                tempf.write(b'c'*(1*(10**6)))
-                # tempf.write(os.urandom(1*(10**6)))
+                tempf.write(os.urandom(1*(10**6)))
 
         # log artifact
         # TODO: set part size in config file when supported

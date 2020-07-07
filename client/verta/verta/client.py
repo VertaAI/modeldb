@@ -3456,6 +3456,10 @@ class ExperimentRun(_ModelDBEntity):
         _utils.raise_for_http_error(response)
 
         committed_parts = _utils.body_to_json(response).get('artifact_parts', [])
+        committed_parts = list(sorted(
+            committed_parts,
+            key=lambda part: int(part['part_number']),
+        ))
         return committed_parts
 
     def log_observation(self, key, value, timestamp=None, epoch_num=None):
