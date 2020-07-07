@@ -224,6 +224,15 @@ class S3(_dataset._Dataset):
             if component._local_path and os.path.isfile(component._local_path):
                 os.remove(component._local_path)
 
+    def add(self, path):
+        other = self.__class__(paths=path, enable_mdb_versioning=self._mdb_versioned)
+
+        path_overlap = _utils.overlapping_keys(self._components_map, other._components_map)
+        if path_overlap:
+            raise ValueError("dataset already contains paths: {}".format(path_overlap))
+
+        self._components_map.update(other._components_map)
+
 
 class S3Location(object):
     # TODO: handle prefixes
