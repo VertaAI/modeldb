@@ -272,7 +272,15 @@ public class DatasetToRepositoryMigration {
             try {
               DatasetVersion newDatasetVersion = datasetVersionEntity.getProtoObject();
               if (newDatasetVersion.hasPathDatasetVersionInfo()) {
-                createCommitAndBlobsFromDatsetVersion(session1, newDatasetVersion, repoId);
+                String commitHash =
+                    createCommitAndBlobsFromDatsetVersion(session1, newDatasetVersion, repoId);
+
+                String updateDatasetsLinkedArtifactId =
+                    "UPDATE ArtifactEntity ar SET ar.linked_artifact_id = :commitHash WHERE ar.linked_artifact_id = :datasetVersionId";
+                Query linekedArtifactQuery = session1.createQuery(updateDatasetsLinkedArtifactId);
+                linekedArtifactQuery.setParameter("commitHash", commitHash);
+                linekedArtifactQuery.setParameter("datasetVersionId", datasetVersionEntity.getId());
+                linekedArtifactQuery.executeUpdate();
               } else {
                 LOGGER.warn(
                     "DatasetVersion found with versionInfo type : {}",
@@ -301,7 +309,7 @@ public class DatasetToRepositoryMigration {
     LOGGER.info("DatasetVersionVersions To Commits and Blobs migration finished");
   }
 
-  private static void createCommitAndBlobsFromDatsetVersion(
+  private static String createCommitAndBlobsFromDatsetVersion(
       Session session, DatasetVersion newDatasetVersion, Long repoId)
       throws ModelDBException, NoSuchAlgorithmException {
     RepositoryEntity repositoryEntity = session.get(RepositoryEntity.class, repoId);
@@ -311,6 +319,7 @@ public class DatasetToRepositoryMigration {
     LOGGER.debug(
         "Migration done for datasetVersion to commit - commit hash : {}",
         createCommitResponse.getCommit().getCommitSha());
+    return createCommitResponse.getCommit().getCommitSha();
   }
 
   private static Long getEntityCount(Class<?> klass) {
