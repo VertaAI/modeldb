@@ -95,7 +95,14 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   public void addProperty(Session session, IdentificationType id, String key, String value) {
     MetadataPropertyMappingEntity.LabelMappingId id0 =
         MetadataPropertyMappingEntity.createId(id, key);
-    session.saveOrUpdate(new MetadataPropertyMappingEntity(id0, value));
+    MetadataPropertyMappingEntity existingEntity =
+        session.get(MetadataPropertyMappingEntity.class, id0);
+    if (existingEntity == null) {
+      session.saveOrUpdate(new MetadataPropertyMappingEntity(id0, value));
+    } else {
+      existingEntity.setValue(value);
+      session.update(existingEntity);
+    }
   }
 
   @Override

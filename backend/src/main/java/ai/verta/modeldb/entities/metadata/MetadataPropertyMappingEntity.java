@@ -38,6 +38,10 @@ public class MetadataPropertyMappingEntity {
     return value;
   }
 
+  public void setValue(String value) {
+    this.value = value;
+  }
+
   @Embeddable
   public static class LabelMappingId implements Serializable {
 

@@ -452,44 +452,23 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void updateDatasetVersionDescription(
       UpdateDatasetVersionDescription request,
       StreamObserver<UpdateDatasetVersionDescription.Response> responseObserver) {
-    LOGGER.info("updateDatasetVersionDescription not supported");
-    super.updateDatasetVersionDescription(request, responseObserver);
-    /*QPSCountResource.inc();
+    QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
-      String errorMessage = null;
-      if (request.getId().isEmpty() && request.getDescription().isEmpty()) {
-        errorMessage =
-            "DatasetVersion ID and DatasetVersion description not found in UpdateDatasetVersionDescription request";
-      } else if (request.getId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST;
-      } else if (request.getDescription().isEmpty()) {
-        errorMessage =
-            "DatasetVersion description not found in UpdateDatasetVersionDescription request";
+      if (request.getId().isEmpty()) {
+        throw new ModelDBException(
+            ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST, Code.INVALID_ARGUMENT);
       }
 
-      if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateDatasetVersionDescription.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      DatasetVersion datasetVersion = datasetVersionDAO.getDatasetVersion(request.getId());
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET,
-          datasetVersion.getDatasetId(),
-          ModelDBServiceActions.UPDATE);
-
-      datasetVersion =
-          datasetVersionDAO.updateDatasetVersionDescription(
-              request.getId(), request.getDescription());
+      DatasetVersion datasetVersion =
+          commitDAO.updateDatasetVersionDescription(
+              repositoryDAO,
+              blobDAO,
+              metadataDAO,
+              request.getDatasetId(),
+              request.getId(),
+              request.getDescription());
 
       responseObserver.onNext(
           UpdateDatasetVersionDescription.Response.newBuilder()
@@ -500,7 +479,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, UpdateDatasetVersionDescription.Response.getDefaultInstance());
-    }*/
+    }
   }
 
   @Override
