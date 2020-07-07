@@ -1,21 +1,18 @@
 import { History } from 'history';
 import { action, createAction } from 'typesafe-actions';
 
-import { IFilterData } from 'core/features/filter/Model';
-import { IPagination } from 'core/shared/models/Pagination';
-import { ISorting } from 'core/shared/models/Sorting';
-import normalizeError from 'core/shared/utils/normalizeError';
-import {
-  ISetEntitiesCommentsWithAuthor,
-  setEntitiesCommentsWithAuthor,
-} from 'features/comments';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination } from 'shared/models/Pagination';
+import { ISorting } from 'shared/models/Sorting';
+import normalizeError from 'shared/utils/normalizeError';
+import { ISetEntitiesComments, setEntitiesComments } from 'features/comments';
 import {
   resetCurrentContextFilters,
   selectCurrentContextAppliedFilters,
-} from 'core/features/filter';
-import { ActionResult } from 'store/store';
+} from 'features/filter';
+import { ActionResult } from 'setup/store/store';
 
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from 'shared/models/ModelRecord';
 import {
   selectExperimentRunsPagination,
   selectExperimentRunsSorting,
@@ -68,7 +65,7 @@ export const loadExperimentRuns = (
   filters?: IFilterData[]
 ): ActionResult<
   void,
-  ILoadExperimentRunsActions | ISetEntitiesCommentsWithAuthor
+  ILoadExperimentRunsActions | ISetEntitiesComments
 > => async (dispatch, getState, { ServiceFactory }) => {
   dispatch(action(loadExperimentRunsActionTypes.REQUEST));
 
@@ -84,7 +81,7 @@ export const loadExperimentRuns = (
       };
       dispatch(action(loadExperimentRunsActionTypes.SUCCESS, payload));
       dispatch(
-        setEntitiesCommentsWithAuthor(
+        setEntitiesComments(
           data.map(({ comments, experimentRun }) => ({
             comments,
             entityId: experimentRun.id,
@@ -200,7 +197,7 @@ export const loadExperimentRun = (
   modelId: string
 ): ActionResult<
   void,
-  ILoadExperimentRunActions | ISetEntitiesCommentsWithAuthor
+  ILoadExperimentRunActions | ISetEntitiesComments
 > => async (dispatch, getState, { ServiceFactory }) => {
   dispatch(action(loadExperimentRunActionTypes.REQUEST, modelId));
 
@@ -209,7 +206,7 @@ export const loadExperimentRun = (
     .then(res => {
       dispatch(action(loadExperimentRunActionTypes.SUCCESS, res.experimentRun));
       dispatch(
-        setEntitiesCommentsWithAuthor([
+        setEntitiesComments([
           { entityId: res.experimentRun.id, comments: res.comments },
         ])
       );

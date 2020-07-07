@@ -2,15 +2,15 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import WidgetBulkDeletion from 'core/shared/view/domain/BulkDeletion/WidgetsBulkDeletionComponents/WidgetBulkDeletion/WidgetBulkDeletion';
-import { ICommunication } from 'core/shared/utils/redux/communication';
+import WidgetBulkDeletion from 'shared/view/domain/BulkDeletion/WidgetsBulkDeletionComponents/WidgetBulkDeletion/WidgetBulkDeletion';
+import { ICommunication } from 'shared/utils/redux/communication';
 import {
   selectExperimentIdsForDeleting,
   selectExperimentForDeleting,
   unselectExperimentForDeleting,
   selectDeletingExperiment,
 } from 'features/experiments/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 interface ILocalProps {
   id: string;

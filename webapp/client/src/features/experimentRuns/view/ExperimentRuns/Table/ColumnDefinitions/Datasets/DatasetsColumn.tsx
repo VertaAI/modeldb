@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import Datasets from 'core/shared/view/domain/ModelRecord/ModelRecordProps/Datasets/Datasets';
+import Datasets from 'shared/view/domain/ModelRecord/ModelRecordProps/Datasets/Datasets';
 
 import { IRow } from '../types';
 

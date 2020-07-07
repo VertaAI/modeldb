@@ -1,14 +1,14 @@
 import { History } from 'history';
 import { action, createAction } from 'typesafe-actions';
 
-import { IFilterData } from 'core/features/filter/Model';
-import normalizeError from 'core/shared/utils/normalizeError';
-import { Markdown } from 'core/shared/utils/types';
-import { Project } from 'models/Project';
-import { ActionResult } from 'store/store';
+import { IFilterData } from 'shared/models/Filters';
+import normalizeError from 'shared/utils/normalizeError';
+import { Markdown } from 'shared/utils/types';
+import { Project } from 'shared/models/Project';
+import { ActionResult } from 'setup/store/store';
 
-import { IWorkspace } from 'models/Workspace';
-import { selectCurrentContextFilters } from 'core/features/filter';
+import { IWorkspace } from 'shared/models/Workspace';
+import { selectCurrentContextFilters } from 'features/filter';
 import { handleDeleteEntities } from 'features/shared/deletion';
 
 import { selectProjectsPagination } from './selectors';

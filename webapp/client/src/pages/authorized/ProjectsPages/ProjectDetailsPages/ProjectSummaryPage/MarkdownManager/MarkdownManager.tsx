@@ -1,7 +1,7 @@
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { Markdown } from 'core/shared/utils/types';
+import { Markdown } from 'shared/utils/types';
 
 import MarkdownDisplayModeView from './MarkdownDisplayModeView/MarkdownDisplayModeView';
 import MarkdownEditorModeView from './MarkdownEditorModeView/MarkdownEditorModeView';

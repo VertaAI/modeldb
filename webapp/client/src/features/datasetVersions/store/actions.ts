@@ -1,11 +1,11 @@
 import { History } from 'history';
 import { action } from 'typesafe-actions';
 
-import { IFilterData } from 'core/features/filter/Model';
-import normalizeError from 'core/shared/utils/normalizeError';
-import { ActionResult } from 'store/store';
+import { IFilterData } from 'shared/models/Filters';
+import normalizeError from 'shared/utils/normalizeError';
+import { ActionResult } from 'setup/store/store';
 
-import { selectCurrentContextFilters } from 'core/features/filter';
+import { selectCurrentContextFilters } from 'features/filter';
 import { handleDeleteEntities } from 'features/shared/deletion';
 import { selectDatasetVersionsPagination } from './selectors';
 import {
@@ -38,7 +38,7 @@ import {
   ILoadDatasetVersionExperimentRunsActions,
   loadDatasetVersionExperimentRunsActionTypes,
 } from './types';
-import { WorkspaceName } from 'models/Workspace';
+import { WorkspaceName } from 'shared/models/Workspace';
 
 export const loadDatasetVersions = (
   datasetId: string,

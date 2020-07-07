@@ -9,7 +9,7 @@ import tempfile
 from ..external import six
 from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
-from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
 from .._internal_utils import _artifact_utils
 from .._internal_utils import _utils
@@ -58,7 +58,6 @@ class S3(_dataset._Dataset):
 
         super(S3, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
-        obj_paths_to_metadata = dict()  # prevent duplicate objects
         for path in paths:
             # convert paths to S3Location
             if isinstance(path, six.string_types):
@@ -71,38 +70,33 @@ class S3(_dataset._Dataset):
                     " not {} ({})".format(type(path), path)
                 )
 
-            obj_paths_to_metadata.update({
-                obj_metadata.path.path: obj_metadata
-                for obj_metadata
-                in self._get_s3_loc_metadata(s3_loc)
+            self._components_map.update({
+                component.path: component
+                for component
+                in self._get_s3_components(s3_loc)
             })
 
-        s3_metadata = six.viewvalues(obj_paths_to_metadata)
-        self._msg.s3.components.extend(s3_metadata)
+    @classmethod
+    def _from_proto(cls, blob_msg):
+        obj = cls(paths=[])
 
-    def __repr__(self):
-        # TODO: consolidate with Path since they're almost identical now
-        lines = ["S3 Version"]
-        components = sorted(
-            self._path_component_blobs,
-            key=lambda component_msg: component_msg.path,
-        )
-        for component in components:
-            lines.extend(self._path_component_to_repr_lines(component))
+        for component_msg in blob_msg.dataset.s3.components:
+            component = _dataset.S3Component._from_proto(component_msg)
+            obj._components_map[component.path] = component
 
-        return "\n    ".join(lines)
+        return obj
 
-    @property
-    def _path_component_blobs(self):
-        # S3 has its PathDatasetComponentBlob nested one lever deeper than Path
-        return [
-            component.path
-            for component
-            in self._msg.s3.components
-        ]
+    def _as_proto(self):
+        blob_msg = _VersioningService.Blob()
+
+        for component in self._components_map.values():
+            component_msg = component._as_proto()
+            blob_msg.dataset.s3.components.append(component_msg)
+
+        return blob_msg
 
     @classmethod
-    def _get_s3_loc_metadata(cls, s3_loc):
+    def _get_s3_components(cls, s3_loc):
         try:
             import boto3
         except ImportError:
@@ -126,7 +120,7 @@ class S3(_dataset._Dataset):
                     continue
                 if not obj['IsLatest']:
                     continue
-                yield cls._get_s3_obj_metadata(obj, s3_loc.bucket, obj['Key'])
+                yield cls._s3_obj_to_component(obj, s3_loc.bucket, obj['Key'])
         else:
             # TODO: handle `key` not found
             if s3_loc.version_id is not None:
@@ -134,20 +128,20 @@ class S3(_dataset._Dataset):
                 obj = s3.head_object(Bucket=s3_loc.bucket, Key=s3_loc.key, VersionId=s3_loc.version_id)
             else:
                 obj = s3.head_object(Bucket=s3_loc.bucket, Key=s3_loc.key)
-            yield cls._get_s3_obj_metadata(obj, s3_loc.bucket, s3_loc.key)
+            yield cls._s3_obj_to_component(obj, s3_loc.bucket, s3_loc.key)
 
     @classmethod
-    def _get_s3_obj_metadata(cls, obj, bucket_name, key):
-        # pylint: disable=no-member
-        msg = _DatasetService.S3DatasetComponentBlob()
-        msg.path.path = cls._S3_PATH.format(bucket_name, key)
-        msg.path.size = obj.get('Size') or obj.get('ContentLength') or 0
-        msg.path.last_modified_at_source = _utils.timestamp_to_ms(_utils.ensure_timestamp(obj['LastModified']))
-        msg.path.md5 = obj['ETag'].strip('"')
+    def _s3_obj_to_component(cls, obj, bucket_name, key):
+        component = _dataset.S3Component(
+            path=cls._S3_PATH.format(bucket_name, key),
+            size=obj.get('Size') or obj.get('ContentLength') or 0,
+            last_modified=_utils.timestamp_to_ms(_utils.ensure_timestamp(obj['LastModified'])),
+            md5=obj['ETag'].strip('"'),
+        )
         if obj.get('VersionId', 'null') != 'null':  # S3's API returns 'null' when there's no version ID
-            msg.s3_version_id = obj['VersionId']
+            component.s3_version_id = obj['VersionId']
 
-        return msg
+        return component
 
     @staticmethod
     def location(path, version_id=None):
@@ -192,14 +186,13 @@ class S3(_dataset._Dataset):
         s3 = boto3.client('s3')
 
         # download files to local disk
-        for s3_obj in self._msg.s3.components:
-            s3_path = s3_obj.path.path
-            s3_loc = S3Location(s3_path, s3_obj.s3_version_id)
+        for component in self._components_map.values():
+            s3_loc = S3Location(component.path, component.s3_version_id)
 
             # download to file in ~/.verta/temp/
             tempdir = os.path.join(_utils.HOME_VERTA_DIR, "temp")
             pathlib2.Path(tempdir).mkdir(parents=True, exist_ok=True)
-            print("downloading {} from S3".format(s3_path))
+            print("downloading {} from S3".format(component.path))
             with tempfile.NamedTemporaryFile('w+b', dir=tempdir, delete=False) as tempf:
                 s3.download_fileobj(
                     Bucket=s3_loc.bucket,
@@ -210,12 +203,12 @@ class S3(_dataset._Dataset):
             print("download complete")
 
             # track which downloaded file this component corresponds to
-            self._components_to_upload[s3_path] = tempf.name
+            component._local_path = tempf.name
 
             # add MDB path to component blob
             with open(tempf.name, 'rb') as f:
                 artifact_hash = _artifact_utils.calc_sha256(f)
-            s3_obj.path.internal_versioned_path = artifact_hash + '/' + s3_loc.key
+            component._internal_versioned_path = artifact_hash + '/' + s3_loc.key
 
     def _clean_up_uploaded_components(self):
         """
@@ -227,8 +220,9 @@ class S3(_dataset._Dataset):
         if not self._mdb_versioned:
             return
 
-        for filepath in self._components_to_upload.values():
-            os.remove(filepath)
+        for component in self._components_map.values():
+            if component._local_path and os.path.isfile(component._local_path):
+                os.remove(component._local_path)
 
 
 class S3Location(object):

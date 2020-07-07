@@ -37,6 +37,51 @@ Release Notes
      <>`__
 
 
+v0.14.11 (2020-06-26)
+---------------------
+
+New Features
+^^^^^^^^^^^^
+- `add visibility for date created & updated on ExperimentRuns
+  <https://github.com/VertaAI/modeldb/pull/843>`__
+
+
+v0.14.10 (2020-06-22)
+---------------------
+
+Bug Fixes
+^^^^^^^^^
+- `use a proper default for VERTA_ARTIFACT_DIR
+  <https://github.com/VertaAI/modeldb/pull/844>`__
+
+
+v0.14.9 (2020-06-22)
+--------------------
+
+Bug Fixes
+^^^^^^^^^
+- `expand user directory for clientside artifact storage environment variable
+  <https://github.com/VertaAI/modeldb/pull/840>`__
+
+
+v0.14.8 (2020-06-22)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `enable clientside artifact storage
+  <https://github.com/VertaAI/modeldb/pull/823>`__
+- `add epoch_num parameter to run.log_observations()
+  <https://github.com/VertaAI/modeldb/pull/827>`__
+- `add run.download_artifact()
+  <https://github.com/VertaAI/modeldb/pull/828>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `add fixture for running tests in isolated directories
+  <https://github.com/VertaAI/modeldb/pull/822>`__
+
+
 v0.14.7 (2020-06-18)
 --------------------
 

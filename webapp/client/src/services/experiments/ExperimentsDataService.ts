@@ -1,26 +1,26 @@
 import { JsonConvert } from 'json2typescript';
 import * as R from 'ramda';
 
-import { IArtifact } from 'core/shared/models/Artifact';
-import { IFilterData } from 'core/features/filter/Model';
-import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
-import * as Experiment from 'models/Experiment';
+import { IArtifact } from 'shared/models/Artifact';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination, DataWithPagination } from 'shared/models/Pagination';
+import * as Experiment from 'shared/models/Experiment';
 import { convertServerCodeVersion } from 'services/serverModel/CodeVersion/converters';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
-import { convertServerUser } from 'core/services/serverModel/User/converters';
-import * as EntityAlreadyExistError from '../../core/services/shared/EntityAlreadyExistError';
+import { convertServerUser } from 'services/serverModel/User/converters';
+import * as EntityAlreadyExistError from '../shared/EntityAlreadyExistError';
 
-import { BaseDataService } from 'core/services/BaseDataService';
+import { BaseDataService } from 'services/BaseDataService';
 import makeLoadExperimentsRequest, {
   makeGetExperimentsByWorkspaceRequest,
 } from './responseRequest/makeLoadExperimentsRequest';
 import { ILoadExperimentsResponse } from './types';
-import { IWorkspace } from 'models/Workspace';
-import { ISorting } from 'core/shared/models/Sorting';
+import { IWorkspace } from 'shared/models/Workspace';
+import { ISorting } from 'shared/models/Sorting';
 import {
   IServerPaginatedResponse,
   convertServerPaginationResponse,
-} from 'core/services/serverModel/Pagination/Pagination';
+} from 'services/serverModel/Pagination/Pagination';
 
 export default class ExperimentsDataService extends BaseDataService {
   constructor() {

@@ -234,15 +234,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         new CollaboratorUser(authService, userInfo),
         project.getId(),
         ModelDBServiceResourceTypes.PROJECT);
+
     if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
-      Role publicReadRole =
-          roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_PUBLIC_READ, null);
-      UserInfo unsignedUser = authService.getUnsignedUser();
-      roleService.createRoleBinding(
-          publicReadRole,
-          new CollaboratorUser(authService, unsignedUser),
-          project.getId(),
-          ModelDBServiceResourceTypes.PROJECT);
+      roleService.createPublicRoleBinding(project.getId(), ModelDBServiceResourceTypes.PROJECT);
     }
 
     createWorkspaceRoleBinding(
@@ -952,13 +946,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         }
         break;
       case PUBLIC:
-        Role publicReadRole =
-            roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_PUBLIC_READ, null);
-        roleService.createRoleBinding(
-            publicReadRole,
-            new CollaboratorUser(authService, authService.getUnsignedUser()),
-            projectId,
-            ModelDBServiceResourceTypes.PROJECT);
+        roleService.createPublicRoleBinding(projectId, ModelDBServiceResourceTypes.PROJECT);
 
         break;
       case PRIVATE:
@@ -986,11 +974,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         break;
       case PUBLIC:
         String roleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_PROJECT_PUBLIC_READ,
-                projectId,
-                authService.getVertaIdFromUserInfo(authService.getUnsignedUser()),
-                ModelDBServiceResourceTypes.PROJECT.name());
+            roleService.buildPublicRoleBindingName(projectId, ModelDBServiceResourceTypes.PROJECT);
         RoleBinding publicReadRoleBinding = roleService.getRoleBindingByName(roleBindingName);
         if (publicReadRoleBinding != null && !publicReadRoleBinding.getId().isEmpty()) {
           roleService.deleteRoleBinding(publicReadRoleBinding.getId());
@@ -1390,6 +1374,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               ProjectVisibility.PRIVATE,
               ModelDBServiceResourceTypes.PROJECT,
               Collections.EMPTY_LIST);
+      LOGGER.debug(
+          "accessible Project Ids in function getWorkspaceProjectIDs : {}", accessibleProjectIds);
 
       // resolve workspace
       WorkspaceDTO workspaceDTO =
@@ -1406,15 +1392,23 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         resultProjects = query.list();
 
         // in personal workspace show projects directly shared
-        if (workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        if (workspaceDTO
+            .getWorkspaceName()
+            .equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          LOGGER.debug("Workspace and current login user match");
           List<String> directlySharedProjects =
               roleService.getSelfDirectlyAllowedResources(
                   ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
           query = session.createQuery(NON_DELETED_PROJECT_IDS_BY_IDS);
           query.setParameterList(ModelDBConstants.PROJECT_IDS, directlySharedProjects);
           resultProjects.addAll(query.list());
+          LOGGER.debug(
+              "accessible directlySharedProjects Ids in function getWorkspaceProjectIDs : {}",
+              directlySharedProjects);
         }
       }
+      LOGGER.debug(
+          "Total accessible project Ids in function getWorkspaceProjectIDs : {}", resultProjects);
       return resultProjects;
     }
   }

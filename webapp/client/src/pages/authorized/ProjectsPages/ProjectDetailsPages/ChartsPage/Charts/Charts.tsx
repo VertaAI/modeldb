@@ -1,4 +1,4 @@
-import { ICommunication } from 'core/shared/utils/redux/communication';
+import { ICommunication } from 'shared/utils/redux/communication';
 import { bind } from 'decko';
 import _ from 'lodash';
 import React from 'react';
@@ -6,10 +6,10 @@ import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Dispatch, bindActionCreators } from 'redux';
 
-import { IFilterData } from 'core/features/filter/Model';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import ModelRecord from 'models/ModelRecord';
+import { IFilterData } from 'shared/models/Filters';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import ModelRecord from 'shared/models/ModelRecord';
 import {
   resetExperimentRunsSettings,
   selectSequentialChartData,
@@ -17,8 +17,8 @@ import {
   selectLazyChartData,
   selectLoadingLazyChartData,
 } from 'features/experimentRuns/store';
-import { selectCurrentContextAppliedFilters } from 'core/features/filter';
-import { IApplicationState } from 'store/store';
+import { selectCurrentContextAppliedFilters } from 'features/filter';
+import { IApplicationState } from 'setup/store/store';
 
 import AggregationChartManager from './AggregationChart/AggregationChartManager';
 import ChartRangeFilter from './ChartRangeFilter/ChartRangeFilterManager';

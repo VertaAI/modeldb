@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { IArtifactWithPath } from 'core/shared/models/Artifact';
-import { initialCommunication } from 'core/shared/utils/redux/communication';
+import { IArtifactWithPath } from 'shared/models/Artifact';
+import { initialCommunication } from 'shared/utils/redux/communication';
 
 import { selectDownloadingArtifact } from '../selectors';
 import { reset, downloadArtifact } from '../actions';

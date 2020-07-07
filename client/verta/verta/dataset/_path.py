@@ -5,11 +5,12 @@ from __future__ import print_function
 import hashlib
 import os
 
-from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
 from ..external import six
 
 from .._internal_utils import _artifact_utils
+from .._internal_utils import _file_utils
 from .._internal_utils import _utils
 
 from . import _dataset
@@ -27,6 +28,8 @@ class Path(_dataset._Dataset):
     ----------
     paths : list of str
         List of filepaths or directory paths.
+    base_path : str, optional
+        Directory path to be removed from the beginning of all components before saving to ModelDB.
     enable_mdb_versioning : bool, default False
         Whether to upload the data itself to ModelDB to enable managed data versioning.
 
@@ -44,64 +47,67 @@ class Path(_dataset._Dataset):
         ])
 
     """
-    def __init__(self, paths, enable_mdb_versioning=False):
+    def __init__(self, paths, base_path=None, enable_mdb_versioning=False):
         if isinstance(paths, six.string_types):
             paths = [paths]
         paths = map(os.path.expanduser, paths)
 
         super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
-        paths_to_metadata = dict()  # prevent duplicate objects
-        for path in paths:
-            paths_to_metadata.update({
-                file_metadata.path: file_metadata
-                for file_metadata
-                in self._get_path_metadata(path)
-            })
+        filepaths = _file_utils.flatten_file_trees(paths)
+        components = list(map(self._file_to_component, filepaths))
 
-        metadata = six.viewvalues(paths_to_metadata)
-        self._msg.path.components.extend(metadata)
+        # remove `base_path` from the beginning of component paths
+        if base_path is not None:
+            for component in components:
+                path = _file_utils.remove_prefix_dir(component.path, prefix_dir=base_path)
+                if path == component.path:  # no change
+                    raise ValueError("path {} does not begin with `base_path` {}".format(
+                        component.path,
+                        base_path,
+                    ))
 
-    def __repr__(self):
-        # TODO: consolidate with S3 since they're almost identical now
-        lines = ["Path Version"]
-        components = sorted(
-            self._path_component_blobs,
-            key=lambda component_msg: component_msg.path,
-        )
-        for component in components:
-            lines.extend(self._path_component_to_repr_lines(component))
+                # update component with modified path
+                component.path = path
 
-        return "\n    ".join(lines)
+                # track base path
+                component._base_path = base_path
 
-    @property
-    def _path_component_blobs(self):
-        return [
-            component
+        self._components_map.update({
+            component.path: component
             for component
-            in self._msg.path.components
-        ]
+            in components
+        })
 
     @classmethod
-    def _get_path_metadata(cls, path):
-        if os.path.isdir(path):
-            for root, _, filenames in os.walk(path):
-                for filename in filenames:
-                    filepath = os.path.join(root, filename)
-                    yield cls._get_file_metadata(filepath)
-        else:
-            yield cls._get_file_metadata(path)
+    def _from_proto(cls, blob_msg):
+        obj = cls(paths=[])
+
+        for component_msg in blob_msg.dataset.path.components:
+            component = _dataset.Component._from_proto(component_msg)
+            obj._components_map[component.path] = component
+
+        return obj
+
+    def _as_proto(self):
+        blob_msg = _VersioningService.Blob()
+
+        for component in self._components_map.values():
+            component_msg = component._as_proto()
+            blob_msg.dataset.path.components.append(component_msg)
+
+        return blob_msg
 
     @classmethod
-    def _get_file_metadata(cls, filepath):
-        msg = _DatasetService.PathDatasetComponentBlob()
-        msg.path = filepath
-        msg.size = os.stat(filepath).st_size
-        msg.last_modified_at_source = _utils.timestamp_to_ms(os.stat(filepath).st_mtime)
-        msg.md5 = cls._hash_file(filepath)
+    def _file_to_component(cls, filepath):
+        return _dataset.Component(
+            path=filepath,
+            size=os.stat(filepath).st_size,
+            last_modified=_utils.timestamp_to_ms(os.stat(filepath).st_mtime),
+            md5=cls._hash_file(filepath),
+        )
 
-        return msg
-
+    # TODO: move to _file_utils.calc_md5()
     @staticmethod
     def _hash_file(filepath):
         """
@@ -129,19 +135,21 @@ class Path(_dataset._Dataset):
         if not self._mdb_versioned:
             return
 
-        for component_blob in self._path_component_blobs:
-            component_path = component_blob.path
-
-            # TODO: when stripping base path is implemented, reconstruct original path here
-            filepath = os.path.abspath(component_path)
+        for component in self._components_map.values():
+            # reconstruct original filepaths with removed `base_path`s
+            if component._base_path:
+                filepath = os.path.join(component._base_path, component.path)
+            else:
+                filepath = component.path
+            filepath = os.path.abspath(filepath)
 
             # track which file this component corresponds to
-            self._components_to_upload[component_path] = filepath
+            component._local_path = filepath
 
-            # add MDB path to component blob
+            # track MDB path to component
             with open(filepath, 'rb') as f:
                 artifact_hash = _artifact_utils.calc_sha256(f)
-            component_blob.internal_versioned_path = artifact_hash + '/' + os.path.basename(filepath)
+            component._internal_versioned_path = artifact_hash + '/' + os.path.basename(filepath)
 
     def _clean_up_uploaded_components(self):
         """

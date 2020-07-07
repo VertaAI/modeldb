@@ -8,18 +8,18 @@ import {
 } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { matchRemoteData } from 'core/shared/utils/redux/communication/remoteData';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
+import { matchRemoteData } from 'shared/utils/redux/communication/remoteData';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
 import AuthorizedLayout from 'pages/authorized/shared/AuthorizedLayout/AuthorizedLayout';
-import routes, { GetRouteParams } from 'routes';
+import routes, { GetRouteParams } from 'shared/routes';
 import {
   loadProject,
   selectLoadingProject,
   selectProject,
   selectLoadingProjectWithMemo,
 } from 'features/projects/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import ChartsPage from './ChartsPage/ChartsPage';

@@ -61,9 +61,11 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
+import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,6 +95,12 @@ public class RdbmsUtils {
   private RdbmsUtils() {}
 
   private static final Logger LOGGER = LogManager.getLogger(RdbmsUtils.class);
+  private static final String MAX_EPOCH_NUMBER_SQL_1 =
+      "select max(o.epoch_number) From (select keyvaluemapping_id, epoch_number from observation where experiment_run_id ='";
+  private static final String MAX_EPOCH_NUMBER_SQL_2 =
+      "' and entity_name = 'ExperimentRunEntity') o, (select id from keyvalue where kv_key ='";
+  private static final String MAX_EPOCH_NUMBER_SQL_3 =
+      "' and  entity_name IS NULL) k where o.keyvaluemapping_id = k.id ";
 
   public static JobEntity generateJobEntity(Job job) throws InvalidProtocolBufferException {
     return new JobEntity(job);
@@ -237,13 +245,68 @@ public class RdbmsUtils {
   }
 
   public static ObservationEntity generateObservationEntity(
-      Object entity, String fieldType, Observation observation)
+      Session session,
+      Object entity,
+      String fieldType,
+      Observation observation,
+      String entity_name,
+      String entity_id)
       throws InvalidProtocolBufferException {
-    return new ObservationEntity(entity, fieldType, observation);
+    if (session == null // request came from creating the entire ExperimentRun
+        || observation.hasEpochNumber()) {
+      if (observation.getEpochNumber().getKindCase() != KindCase.NUMBER_VALUE) {
+        String invalidEpochMessage =
+            "Observations can only have numeric epoch_number, condition not met in " + observation;
+        LOGGER.info(invalidEpochMessage);
+        Status invalidEpoch =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(invalidEpochMessage)
+                .build();
+        throw StatusProto.toStatusRuntimeException(invalidEpoch);
+      }
+      return new ObservationEntity(entity, fieldType, observation);
+    } else {
+      if (entity_name.equalsIgnoreCase("ExperimentRunEntity") && observation.hasAttribute()) {
+        String MAX_EPOCH_NUMBER_SQL =
+            MAX_EPOCH_NUMBER_SQL_1
+                + entity_id
+                + MAX_EPOCH_NUMBER_SQL_2
+                + observation.getAttribute().getKey()
+                + MAX_EPOCH_NUMBER_SQL_3;
+        Query sqlQuery = session.createSQLQuery(MAX_EPOCH_NUMBER_SQL);
+        BigInteger maxEpochNumber = (BigInteger) sqlQuery.uniqueResult();
+        Long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber.longValue() + 1;
+
+        Observation new_observation =
+            Observation.newBuilder(observation)
+                .setEpochNumber(Value.newBuilder().setNumberValue(newEpochValue))
+                .build();
+        return new ObservationEntity(entity, fieldType, new_observation);
+      } else {
+        String unimplementedErrorMessage =
+            "Observations not supported for non ExperimentRun entities, found "
+                + entity_name
+                + " in "
+                + observation;
+        LOGGER.warn(unimplementedErrorMessage);
+        Status unimplementedError =
+            Status.newBuilder()
+                .setCode(Code.UNIMPLEMENTED_VALUE)
+                .setMessage(unimplementedErrorMessage)
+                .build();
+        throw StatusProto.toStatusRuntimeException(unimplementedError);
+      }
+    }
   }
 
   public static List<ObservationEntity> convertObservationsFromObservationEntityList(
-      Object entity, String fieldType, List<Observation> observationList)
+      Session session,
+      Object entity,
+      String fieldType,
+      List<Observation> observationList,
+      String entity_name,
+      String entity_id)
       throws InvalidProtocolBufferException {
     LOGGER.trace("Converting ObservationsFromObservationEntityList");
     LOGGER.trace("fieldType {}", fieldType);
@@ -252,7 +315,8 @@ public class RdbmsUtils {
       LOGGER.trace("observationList size {}", observationList.size());
       for (Observation observation : observationList) {
         ObservationEntity observationEntity =
-            generateObservationEntity(entity, fieldType, observation);
+            generateObservationEntity(
+                session, entity, fieldType, observation, entity_name, entity_id);
         observationEntityList.add(observationEntity);
       }
     }
@@ -1516,7 +1580,11 @@ public class RdbmsUtils {
                     operator,
                     subqueryVersion);
             predicatesArr[1] = newHyperparameterPredicate;
-            keyValuePredicates.add(builder.or(predicatesArr));
+            if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
+              keyValuePredicates.add(builder.and(predicatesArr));
+            } else {
+              keyValuePredicates.add(builder.or(predicatesArr));
+            }
             break;
           case ModelDBConstants.METRICS:
             LOGGER.debug("switch case : Metrics");
@@ -1779,29 +1847,31 @@ public class RdbmsUtils {
     configBlobEntityRootPredicates.add(keyPredicate);
 
     List<Predicate> orPredicates = new ArrayList<>();
-    try {
-      Predicate intValuePredicate =
-          getValuePredicate(
-              builder,
-              ModelDBConstants.HYPERPARAMETERS,
-              elementMappingEntityRoot.get("int_value"),
-              predicate,
-              false);
-      orPredicates.add(intValuePredicate);
-    } catch (Exception e) {
-      LOGGER.debug("Value could not be cast to int");
-    }
-    try {
-      Predicate floatValuePredicate =
-          getValuePredicate(
-              builder,
-              ModelDBConstants.HYPERPARAMETERS,
-              elementMappingEntityRoot.get("float_value"),
-              predicate,
-              false);
-      orPredicates.add(floatValuePredicate);
-    } catch (Exception e) {
-      LOGGER.debug("Value could not be cast to float");
+    if (predicate.getValue().getKindCase().equals(KindCase.NUMBER_VALUE)) {
+      try {
+        Predicate intValuePredicate =
+            getValuePredicate(
+                builder,
+                ModelDBConstants.HYPERPARAMETERS,
+                elementMappingEntityRoot.get("int_value"),
+                predicate,
+                false);
+        orPredicates.add(intValuePredicate);
+      } catch (Exception e) {
+        LOGGER.debug("Value could not be cast to int");
+      }
+      try {
+        Predicate floatValuePredicate =
+            getValuePredicate(
+                builder,
+                ModelDBConstants.HYPERPARAMETERS,
+                elementMappingEntityRoot.get("float_value"),
+                predicate,
+                false);
+        orPredicates.add(floatValuePredicate);
+      } catch (Exception e) {
+        LOGGER.debug("Value could not be cast to float");
+      }
     }
     Predicate stringValuePredicate =
         getValuePredicate(

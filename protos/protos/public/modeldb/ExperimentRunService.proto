@@ -8,7 +8,7 @@ option java_multiple_files = true;
 import "common/CommonService.proto";
 import "modeldb/CommonService.proto";
 import "google/api/annotations.proto";
-// import "google/protobuf/struct.proto";
+import "google/protobuf/struct.proto";
 
 /*
 * ExperimentRun Entity
@@ -73,6 +73,7 @@ message Observation {
         common.Artifact artifact = 2;
     }
     int64 timestamp = 3;
+    google.protobuf.Value epoch_number = 4;
 }
 
 message CreateExperimentRun {

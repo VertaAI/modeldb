@@ -167,15 +167,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         new CollaboratorUser(authService, userInfo),
         dataset.getId(),
         ModelDBServiceResourceTypes.DATASET);
+
     if (dataset.getDatasetVisibility().equals(DatasetVisibility.PUBLIC)) {
-      Role publicReadRole =
-          roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_PUBLIC_READ, null);
-      UserInfo unsignedUser = authService.getUnsignedUser();
-      roleService.createRoleBinding(
-          publicReadRole,
-          new CollaboratorUser(authService, unsignedUser),
-          dataset.getId(),
-          ModelDBServiceResourceTypes.DATASET);
+      roleService.createPublicRoleBinding(dataset.getId(), ModelDBServiceResourceTypes.DATASET);
     }
 
     createWorkspaceRoleBinding(
@@ -900,13 +894,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         }
         break;
       case PUBLIC:
-        Role publicReadRole =
-            roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_PUBLIC_READ, null);
-        roleService.createRoleBinding(
-            publicReadRole,
-            new CollaboratorUser(authService, authService.getUnsignedUser()),
-            datasetId,
-            ModelDBServiceResourceTypes.DATASET);
+        roleService.createPublicRoleBinding(datasetId, ModelDBServiceResourceTypes.DATASET);
         break;
       case PRIVATE:
       case UNRECOGNIZED:
@@ -933,11 +921,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         break;
       case PUBLIC:
         String roleBindingName =
-            roleService.buildRoleBindingName(
-                ModelDBConstants.ROLE_DATASET_PUBLIC_READ,
-                datasetId,
-                authService.getVertaIdFromUserInfo(authService.getUnsignedUser()),
-                ModelDBServiceResourceTypes.DATASET.name());
+            roleService.buildPublicRoleBindingName(datasetId, ModelDBServiceResourceTypes.DATASET);
         RoleBinding publicReadRoleBinding = roleService.getRoleBindingByName(roleBindingName);
         if (publicReadRoleBinding != null && !publicReadRoleBinding.getId().isEmpty()) {
           roleService.deleteRoleBinding(publicReadRoleBinding.getId());

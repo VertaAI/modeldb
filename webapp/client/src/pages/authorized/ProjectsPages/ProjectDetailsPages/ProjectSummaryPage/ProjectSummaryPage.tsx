@@ -5,13 +5,13 @@ import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import CodeVersion from 'core/shared/view/domain/CodeVersion/CodeVersion';
+import CodeVersion from 'shared/view/domain/CodeVersion/CodeVersion';
 import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
-import { Markdown } from 'core/shared/utils/types';
-import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import routes, { GetRouteParams } from 'routes';
+import { Markdown } from 'shared/utils/types';
+import DeleteFAI from 'shared/view/elements/DeleteFAI/DeleteFAI';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import routes, { GetRouteParams } from 'shared/routes';
 import {
   selectLoadingProject,
   selectProject,
@@ -20,15 +20,15 @@ import {
   deleteProject,
   loadProject,
 } from 'features/projects/store';
-import { IApplicationState } from 'store/store';
+import { IApplicationState } from 'setup/store/store';
 
 import ProjectsPagesLayout from '../../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 import ProjectPageTabs from '../shared/ProjectPageTabs/ProjectPageTabs';
 import MarkdownManager from './MarkdownManager/MarkdownManager';
 import styles from './ProjectSummaryPage.module.css';
 import ProjectEntityDescriptionManager from 'features/descriptionManager/view/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
-import SummaryInfo from 'core/shared/view/elements/SummaryViewComponents/SummaryInfo/SummaryInfo';
-import Reloading from 'core/shared/view/elements/Reloading/Reloading';
+import SummaryInfo from 'shared/view/elements/SummaryViewComponents/SummaryInfo/SummaryInfo';
+import Reloading from 'shared/view/elements/Reloading/Reloading';
 
 const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
   const projectId = localProps.match.params.projectId;
@@ -40,7 +40,10 @@ const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) =>
-  bindActionCreators({ updateProjectReadme, loadProject, deleteProject }, dispatch);
+  bindActionCreators(
+    { updateProjectReadme, loadProject, deleteProject },
+    dispatch
+  );
 
 type RouteProps = RouteComponentProps<
   GetRouteParams<typeof routes.projectSummary>
@@ -64,7 +67,7 @@ class ProjectSummaryPage extends React.PureComponent<AllProps> {
     } = this.props;
     return (
       <ProjectsPagesLayout>
-                    <Reloading onReload={this.loadProject}>
+        <Reloading onReload={this.loadProject}>
           <ProjectPageTabs
             projectId={projectId}
             isDisabled={deletingCommunication.isRequesting}

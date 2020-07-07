@@ -70,6 +70,7 @@ migration:
 
 feature-flag:
   disabled-authz: true
+  public_sharing_enabled: false
 
 cron_job:
   update_parent_timestamp:

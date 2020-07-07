@@ -35,6 +35,12 @@ public interface RoleService {
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
+  void createPublicRoleBinding(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  String buildPublicRoleBindingName(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
   void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
@@ -127,6 +133,9 @@ public interface RoleService {
    * @return {@link WorkspaceDTO} : workspace dto
    */
   WorkspaceDTO getWorkspaceDTOByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
+
+  WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
 
   List<Organization> listMyOrganizations();
 

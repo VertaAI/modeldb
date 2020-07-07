@@ -1,4 +1,4 @@
-import { IApplicationState } from '../../../store/store';
+import { IApplicationState } from '../../../setup/store/store';
 import { IArtifactManagerState } from './types';
 
 const selectState = (state: IApplicationState): IArtifactManagerState =>

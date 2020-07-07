@@ -79,6 +79,16 @@ public class PublicRoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
 
   @Override
+  public void createPublicRoleBinding(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
+
+  @Override
+  public String buildPublicRoleBindingName(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return null;
+  }
+
+  @Override
   public void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
@@ -235,6 +245,15 @@ public class PublicRoleServiceUtils implements RoleService {
       UserInfo currentLoginUserInfo, String workspaceName) {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceName(workspaceName);
+    return workspaceDTO;
+  }
+
+  @Override
+  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
+    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
+    workspaceDTO.setWorkspaceId(workspaceId);
+    workspaceDTO.setWorkspaceType(WorkspaceType.forNumber(workspaceType));
     return workspaceDTO;
   }
 

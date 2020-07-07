@@ -123,6 +123,7 @@ public class App implements ApplicationContextAware {
   // S3 Artifact store
   private String cloudAccessKey = null;
   private String cloudSecretKey = null;
+  private String minioEndpoint = null;
 
   // NFS Artifact store
   private Boolean pickNFSHostFromConfig = null;
@@ -140,6 +141,7 @@ public class App implements ApplicationContextAware {
 
   // Feature flags
   private Boolean disabledAuthz = false;
+  private Boolean publicSharingEnabled = false;
   private Boolean storeClientCreationTimestamp = false;
   private Integer requestTimeout = 30;
 
@@ -335,6 +337,8 @@ public class App implements ApplicationContextAware {
     if (featureFlagMap != null) {
       app.setDisabledAuthz(
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
+      app.setPublicSharingEnabled(
+          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
     }
 
     Map<String, Object> starterProjectDetail =
@@ -563,6 +567,7 @@ public class App implements ApplicationContextAware {
             (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.S3);
         app.cloudAccessKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_ACCESS_KEY);
         app.cloudSecretKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_SECRET_KEY);
+        app.minioEndpoint = (String) s3ConfigMap.get(ModelDBConstants.MINIO_ENDPOINT);
         String cloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
         artifactStoreService = new S3Service(cloudBucketName);
         app.storeTypePathPrefix = "s3://" + cloudBucketName + ModelDBConstants.PATH_DELIMITER;
@@ -702,12 +707,24 @@ public class App implements ApplicationContextAware {
     this.disabledAuthz = disabledAuthz;
   }
 
+  public Boolean getPublicSharingEnabled() {
+    return publicSharingEnabled;
+  }
+
+  public void setPublicSharingEnabled(Boolean publicSharingEnabled) {
+    this.publicSharingEnabled = publicSharingEnabled;
+  }
+
   public String getCloudAccessKey() {
     return cloudAccessKey;
   }
 
   public String getCloudSecretKey() {
     return cloudSecretKey;
+  }
+
+  public String getMinioEndpoint() {
+    return minioEndpoint;
   }
 
   public Boolean getStoreClientCreationTimestamp() {

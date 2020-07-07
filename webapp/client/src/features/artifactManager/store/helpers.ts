@@ -1,4 +1,4 @@
-import { IArtifact } from 'core/shared/models/Artifact';
+import { IArtifact } from 'shared/models/Artifact';
 
 import {
   ArtifactPreviewFileExtension,
