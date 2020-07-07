@@ -94,52 +94,43 @@ class TestArtifacts:
             assert filepaths == set(zipf.namelist())
 
     @pytest.mark.not_oss
-    # NOTE: `capsys` prevents prints within this test from being output to logs
-    def test_upload_multipart(self, capsys, experiment_run, strs):
-        key = strs[0]
+    def test_upload_multipart(self, experiment_run, in_tempdir):
+        key = "large"
 
-        # for verifying that multipart upload occurs
-        get_parts_url = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
-            experiment_run._conn.scheme,
-            experiment_run._conn.socket,
-        )
-        get_parts_params = {
-            'id': experiment_run.id,
-            'key': key,
-        }
+        # create artifact
+        with tempfile.NamedTemporaryFile(suffix='.bin', dir=".", delete=False) as tempf:
+            # write 6 MB file in 1 MB chunks
+            for _ in range(6):
+                tempf.write(b'c'*(1*(10**6)))
+                # tempf.write(os.urandom(1*(10**6)))
 
-        FILE_SIZE = 6*10**6  # 6 MB
-        with tempfile.NamedTemporaryFile(suffix='.txt') as tempf:
-            tempf.truncate(FILE_SIZE)  # zero-filled
-            tempf.flush()  # flush object buffer
-            os.fsync(tempf.fileno())  # flush OS buffer
+        # log artifact
+        # TODO: set part size in config file when supported
+        PART_SIZE = int(5.4*(10**6))  # 5.4 MB; S3 parts must be > 5 MB
+        os.environ['VERTA_ARTIFACT_PART_SIZE'] = str(PART_SIZE)
+        try:
+            experiment_run.log_artifact(key, tempf.name)
+        finally:
+            del os.environ['VERTA_ARTIFACT_PART_SIZE']
 
-            # no committed artifact parts yet
-            response = _utils.make_request("GET", get_parts_url, experiment_run._conn, params=get_parts_params)
-            assert response.status_code == 404
-            assert "Can't find specified artifact" in response.text
+        # get artifact parts
+        committed_parts = experiment_run.get_artifact_parts(key)
+        assert committed_parts
 
-            # log artifact
-            experiment_run.log_artifact(key, tempf)
+        # part checksums match actual file contents
+        with open(tempf.name, 'rb') as f:
+            file_parts = iter(lambda: f.read(PART_SIZE), b'')
+            for file_part, committed_part in zip(file_parts, committed_parts):
+                part_hash = hashlib.md5(file_part).hexdigest()
+                assert part_hash == committed_part['etag'].strip('"')
 
-            # Client entered multipart loop
-            assert "uploading part " in capsys.readouterr().out
-
-            # artifact parts ModelDB entry exists
-            response = _utils.make_request("GET", get_parts_url, experiment_run._conn, params=get_parts_params)
-            _utils.raise_for_http_error(response)  # no error
-            parts = _utils.body_to_json(response).get('artifact_parts', [])
-
-            assert len(parts) == 1  # small artifact, should only have one part
-            part = parts[0]
-
-            tempf.seek(0)
-            md5 = hashlib.md5(tempf.read()).hexdigest()
-            assert part['etag'].strip('"') == md5  # checksum matches committed part
-
-        artifact = experiment_run.get_artifact(key)
-        md5 = hashlib.md5(artifact.read()).hexdigest()
-        assert part['etag'].strip('"') == md5  # checksum also matches retrieved artifact
+        # retrieved artifact matches original file
+        filepath = experiment_run.download_artifact(key, download_to_path=key)
+        with open(filepath, 'rb') as f:
+            file_parts = iter(lambda: f.read(PART_SIZE), b'')
+            for file_part, committed_part in zip(file_parts, committed_parts):
+                part_hash = hashlib.md5(file_part).hexdigest()
+                assert part_hash == committed_part['etag'].strip('"')
 
     def test_empty(self, experiment_run, strs):
         """uploading empty data, e.g. an empty file, raises an error"""
