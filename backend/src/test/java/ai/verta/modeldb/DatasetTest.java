@@ -1,5 +1,6 @@
 package ai.verta.modeldb;
 
+import static ai.verta.modeldb.RepositoryTest.NAME;
 import static org.junit.Assert.*;
 
 import ai.verta.common.Artifact;
@@ -22,6 +23,9 @@ import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.DeleteOrganization;
@@ -2149,5 +2153,43 @@ public class DatasetTest {
     assertTrue(deleteOrganization.getStatus());
 
     LOGGER.info("Global organization Dataset test stop................................");
+  }
+
+  @Test
+  public void createDatasetAndRepositoryWithSameNameTest() {
+    LOGGER.info("Create and delete Dataset test start................................");
+
+    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
+        DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = RepositoryTest.createRepository(versioningServiceBlockingStub, NAME);
+
+    CreateDataset createDatasetRequest = getDatasetRequest(NAME);
+    CreateDataset.Response createDatasetResponse =
+        datasetServiceStub.createDataset(createDatasetRequest);
+
+    LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
+
+    assertEquals(
+        "Dataset name not match with expected dataset name",
+        createDatasetRequest.getName(),
+        createDatasetResponse.getDataset().getName());
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    versioningServiceBlockingStub.deleteRepository(deleteRepository);
+
+    DeleteDataset deleteDataset =
+        DeleteDataset.newBuilder().setId(createDatasetResponse.getDataset().getId()).build();
+    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
+    LOGGER.info("Dataset deleted successfully");
+    LOGGER.info(deleteDatasetResponse.toString());
+    assertTrue(deleteDatasetResponse.getStatus());
+
+    LOGGER.info("Create and delete Dataset test stop................................");
   }
 }
