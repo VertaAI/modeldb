@@ -10,6 +10,7 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.GetCommittedArtifactParts;
+import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
 import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.ListCommitExperimentRunsRequest;
@@ -490,5 +491,9 @@ public interface ExperimentRunDAO {
 
   CommitMultipartArtifact.Response commitMultipartArtifact(
       CommitMultipartArtifact request, CommitMultipartFunction commitMultipart)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  ExperimentRunPaginationDTO getExperimentRunsByDatasetVersionId(
+      ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request)
       throws ModelDBException, InvalidProtocolBufferException;
 }
