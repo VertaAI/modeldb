@@ -567,7 +567,7 @@ class Commit(
       else {
         Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
           try {
-            Await.result(clientSet.client.requestRaw("PUT", resp.url.get, null, null, inputStream), Duration.Inf)
+            Await.result(clientSet.client.requestRaw("PUT", resp.url.get, null, Map("Content-Length" -> file.length.toString), inputStream), Duration.Inf)
               .map(_ => ())
           } finally {
             inputStream.close()
@@ -600,7 +600,7 @@ class Commit(
         retry (
           Try(new ByteArrayInputStream(buffer)).flatMap(filepart => {
             try {
-              Await.result(clientSet.client.getRawRequestHeader("PUT", url, null, null, filepart), Duration.Inf)
+              Await.result(clientSet.client.getRawRequestHeader("PUT", url, null, Map("Content-Length" -> readLen.toString), filepart), Duration.Inf)
                 .flatMap(headers => clientSet.versioningService.commitVersionedBlobArtifactPart(
                   VersioningCommitVersionedBlobArtifactPart(
                     artifact_part = Some(ModeldbArtifactPart(

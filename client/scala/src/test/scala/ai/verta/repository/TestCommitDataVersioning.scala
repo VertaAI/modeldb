@@ -355,6 +355,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
+  // This test is comment out because it is big. Uncomment it with caution!
   // test("multipart-upload should work") {
   //   val f = fixture
   //
