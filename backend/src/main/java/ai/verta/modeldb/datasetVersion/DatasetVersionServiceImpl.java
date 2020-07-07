@@ -6,6 +6,8 @@ import ai.verta.common.Pagination;
 import ai.verta.modeldb.AddDatasetVersionAttributes;
 import ai.verta.modeldb.AddDatasetVersionTags;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.CommitMultipartVersionedDatasetBlobArtifact;
+import ai.verta.modeldb.CommitVersionedDatasetBlobArtifactPart;
 import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.CreateDatasetVersion.Response;
 import ai.verta.modeldb.DatasetVersion;
@@ -17,8 +19,10 @@ import ai.verta.modeldb.DeleteDatasetVersions;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.GetAllDatasetVersionsByDatasetId;
 import ai.verta.modeldb.GetAttributes;
+import ai.verta.modeldb.GetCommittedVersionedDatasetBlobArtifactParts;
 import ai.verta.modeldb.GetDatasetVersionAttributes;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
+import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -27,9 +31,9 @@ import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.SetDatasetVersionVisibilty;
 import ai.verta.modeldb.UpdateDatasetVersionAttributes;
 import ai.verta.modeldb.UpdateDatasetVersionDescription;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -73,16 +77,16 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
   private final MetadataDAO metadataDAO;
+  private final ArtifactStoreDAO artifactStoreDAO;
 
   public DatasetVersionServiceImpl(
       AuthService authService,
       RoleService roleService,
-      DatasetDAO datasetDAO,
-      DatasetVersionDAO datasetVersionDAO,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       BlobDAO blobDAO,
-      MetadataDAO metadataDAO) {
+      MetadataDAO metadataDAO,
+      ArtifactStoreDAO artifactStoreDAO) {
     this.authService = authService;
     this.roleService = roleService;
     // this.datasetDAO = datasetDAO;
@@ -91,6 +95,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
     this.metadataDAO = metadataDAO;
+    this.artifactStoreDAO = artifactStoreDAO;
   }
 
   private DatasetVersion getDatasetVersionFromRequest(
@@ -882,6 +887,140 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteDatasetVersions.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getUrlForDatasetBlobVersioned(
+      GetUrlForDatasetBlobVersioned request,
+      StreamObserver<GetUrlForDatasetBlobVersioned.Response> responseObserver) {
+    QPSCountResource.inc();
+    try {
+      try (RequestLatencyResource latencyResource =
+          new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+
+        // Validate request parameters
+        validateGetUrlForVersionedDatasetBlobRequest(request);
+
+        GetUrlForDatasetBlobVersioned.Response response =
+            blobDAO.getUrlForVersionedDatasetBlob(
+                artifactStoreDAO,
+                repositoryDAO,
+                request.getDatasetId(),
+                (session, repository) ->
+                    commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
+                request);
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+      }
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetUrlForDatasetBlobVersioned.Response.getDefaultInstance());
+    }
+  }
+
+  private void validateGetUrlForVersionedDatasetBlobRequest(GetUrlForDatasetBlobVersioned request)
+      throws ModelDBException {
+    String errorMessage = null;
+    if (request.getMethod().isEmpty() && request.getPathDatasetComponentBlobPath().isEmpty()) {
+      errorMessage =
+          "Method type AND DatasetBlob path not found in GetUrlForDatasetBlobVersioned request";
+    } else if (request.getPathDatasetComponentBlobPath().isEmpty()) {
+      errorMessage = "DatasetBlob path not found in GetUrlForDatasetBlobVersioned request";
+    } else if (request.getMethod().isEmpty()) {
+      errorMessage = "Method is not found in GetUrlForDatasetBlobVersioned request";
+    }
+    if (errorMessage != null) {
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+    }
+  }
+
+  @Override
+  public void commitVersionedDatasetBlobArtifactPart(
+      CommitVersionedDatasetBlobArtifactPart request,
+      StreamObserver<CommitVersionedDatasetBlobArtifactPart.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (!request.hasArtifactPart()) {
+        errorMessage = "Artifact Part not found in CommitVersionedDatasetBlobArtifactPart request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.warn(errorMessage);
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      blobDAO.commitVersionedDatasetBlobArtifactPart(
+          repositoryDAO,
+          request.getDatasetId(),
+          (session, repository) ->
+              commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
+          request);
+      responseObserver.onNext(CommitVersionedDatasetBlobArtifactPart.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver,
+          e,
+          CommitVersionedDatasetBlobArtifactPart.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getCommittedVersionedDatasetBlobArtifactParts(
+      GetCommittedVersionedDatasetBlobArtifactParts request,
+      StreamObserver<GetCommittedVersionedDatasetBlobArtifactParts.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      GetCommittedVersionedDatasetBlobArtifactParts.Response response =
+          blobDAO.getCommittedVersionedDatasetBlobArtifactParts(
+              repositoryDAO,
+              request.getDatasetId(),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
+              request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver,
+          e,
+          GetCommittedVersionedDatasetBlobArtifactParts.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void commitMultipartVersionedDatasetBlobArtifact(
+      CommitMultipartVersionedDatasetBlobArtifact request,
+      StreamObserver<CommitMultipartVersionedDatasetBlobArtifact.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getPathDatasetComponentBlobPath().isEmpty()) {
+        String errorMessage =
+            "Path not found in CommitMultipartVersionedDatasetBlobArtifact request";
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      }
+
+      blobDAO.commitMultipartVersionedDatasetBlobArtifact(
+          repositoryDAO,
+          request.getDatasetId(),
+          (session, repository) ->
+              commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
+          request,
+          artifactStoreDAO::commitMultipart);
+      responseObserver.onNext(
+          CommitMultipartVersionedDatasetBlobArtifact.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver,
+          e,
+          CommitMultipartVersionedDatasetBlobArtifact.Response.getDefaultInstance());
     }
   }
 }

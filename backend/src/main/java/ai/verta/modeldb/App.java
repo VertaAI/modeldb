@@ -492,12 +492,11 @@ public class App implements ApplicationContextAware {
         new DatasetVersionServiceImpl(
             authService,
             roleService,
-            datasetDAO,
-            datasetVersionDAO,
             repositoryDAO,
             commitDAO,
             blobDAO,
-            metadataDAO));
+            metadataDAO,
+            artifactStoreDAO));
     LOGGER.trace("Dataset Version serviceImpl initialized");
     wrapService(
         serverBuilder,

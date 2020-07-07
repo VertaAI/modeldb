@@ -4,6 +4,7 @@ import static ai.verta.modeldb.RepositoryTest.NAME;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
+import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.authservice.AuthService;
@@ -27,6 +28,8 @@ import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.BlobType;
 import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.Commit;
+import ai.verta.modeldb.versioning.CommitMultipartVersionedBlobArtifact;
+import ai.verta.modeldb.versioning.CommitVersionedBlobArtifactPart;
 import ai.verta.modeldb.versioning.ConfigBlob;
 import ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
@@ -42,6 +45,8 @@ import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GetCommitComponentRequest;
 import ai.verta.modeldb.versioning.GetCommitRequest;
+import ai.verta.modeldb.versioning.GetCommittedVersionedBlobArtifactParts;
+import ai.verta.modeldb.versioning.GetUrlForBlobVersioned;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.HyperparameterConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
@@ -78,6 +83,9 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,6 +102,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -2615,6 +2624,187 @@ public class CommitTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Create blob with attributes test end................................");
+  }
+
+  @Test
+  @Ignore
+  public void getURLForVersionedBlob() throws IOException {
+    LOGGER.info("Get Url for VersionedBlob test start................................");
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+    String path1 = "verta/test/test1.txt";
+    String path2 = "verta/test/test2.txt";
+    String internalPath1 = "test/internalBlobPaths/blobs/test1.txt";
+    String internalPath2 = "test/internalBlobPaths/blobs/test2.txt";
+    List<String> location = new ArrayList<>();
+    location.add("versioned");
+    location.add("s3_versioned");
+    // location.add("test.txt");
+    Blob blob =
+        Blob.newBuilder()
+            .setDataset(
+                DatasetBlob.newBuilder()
+                    .setS3(
+                        S3DatasetBlob.newBuilder()
+                            .addComponents(
+                                S3DatasetComponentBlob.newBuilder()
+                                    .setS3VersionId("1.0")
+                                    .setPath(
+                                        PathDatasetComponentBlob.newBuilder()
+                                            .setPath(path1)
+                                            .setSize(2)
+                                            .setLastModifiedAtSource(time)
+                                            .setInternalVersionedPath(internalPath1)
+                                            .build())
+                                    .build())
+                            .addComponents(
+                                S3DatasetComponentBlob.newBuilder()
+                                    .setS3VersionId("1.0")
+                                    .setPath(
+                                        PathDatasetComponentBlob.newBuilder()
+                                            .setPath(path2)
+                                            .setSize(2)
+                                            .setLastModifiedAtSource(time)
+                                            .setInternalVersionedPath(internalPath2)
+                                            .build())
+                                    .build())
+                            .build())
+                    .build())
+            .build();
+    BlobExpanded blobExpanded =
+        BlobExpanded.newBuilder().setBlob(blob).addAllLocation(location).build();
+    Commit.Builder commitBuilder =
+        Commit.newBuilder()
+            .setMessage("this is the test commit message")
+            .setDateCreated(Calendar.getInstance().getTimeInMillis())
+            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
+    }
+    CreateCommitRequest createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommit(commitBuilder.build())
+            .addBlobs(blobExpanded)
+            .build();
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+    try {
+      GetUrlForBlobVersioned getUrlForVersionedBlob =
+          GetUrlForBlobVersioned.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setCommitSha(commitResponse.getCommit().getCommitSha())
+              .addAllLocation(location)
+              .setPathDatasetComponentBlobPath(path1)
+              .setMethod(ModelDBConstants.PUT)
+              .setPartNumber(1)
+              .build();
+      GetUrlForBlobVersioned.Response getUrlForVersionedBlobResponse =
+          versioningServiceBlockingStub.getUrlForBlobVersioned(getUrlForVersionedBlob);
+      String presignedUrl1 = getUrlForVersionedBlobResponse.getUrl();
+      assertNotNull("Presigned url not match with expected presigned url", presignedUrl1);
+      getUrlForVersionedBlob = getUrlForVersionedBlob.toBuilder().setPartNumber(2).build();
+      getUrlForVersionedBlobResponse =
+          versioningServiceBlockingStub.getUrlForBlobVersioned(getUrlForVersionedBlob);
+      String presignedUrl2 = getUrlForVersionedBlobResponse.getUrl();
+      assertNotNull("Presigned url not match with expected presigned url", presignedUrl2);
+      // Create the connection and use it to upload the new object using the pre-signed URL.
+      HttpURLConnection connection = (HttpURLConnection) new URL(presignedUrl1).openConnection();
+      connection.setDoOutput(true);
+      connection.setRequestMethod("PUT");
+      OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
+      for (int i = 0; i < 130000; ++i) {
+        out.write("This text uploaded as an object via presigned URL.");
+      }
+      out.close();
+      // Check the HTTP response code. To complete the upload and make the object available,
+      // you must interact with the connection object in some way.
+      connection.getResponseCode();
+      String etag1 = connection.getHeaderField("ETag");
+      connection = (HttpURLConnection) new URL(presignedUrl2).openConnection();
+      connection.setDoOutput(true);
+      connection.setRequestMethod("PUT");
+      out = new OutputStreamWriter(connection.getOutputStream());
+      for (int i = 0; i < 120000; ++i) {
+        out.write("This text uploaded as an object via presigned URL2.");
+      }
+      out.close();
+      // Check the HTTP response code. To complete the upload and make the object available,
+      // you must interact with the connection object in some way.
+      connection.getResponseCode();
+      String etag2 = connection.getHeaderField("ETag");
+      CommitVersionedBlobArtifactPart.Response p1 =
+          versioningServiceBlockingStub.commitVersionedBlobArtifactPart(
+              CommitVersionedBlobArtifactPart.newBuilder()
+                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                  .setCommitSha(commitResponse.getCommit().getCommitSha())
+                  .addAllLocation(location)
+                  .setPathDatasetComponentBlobPath(path1)
+                  .setArtifactPart(
+                      ArtifactPart.newBuilder()
+                          .setEtag(etag1.replaceAll("\"", ""))
+                          .setPartNumber(1))
+                  .build());
+      CommitVersionedBlobArtifactPart.Response p2 =
+          versioningServiceBlockingStub.commitVersionedBlobArtifactPart(
+              CommitVersionedBlobArtifactPart.newBuilder()
+                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                  .setCommitSha(commitResponse.getCommit().getCommitSha())
+                  .addAllLocation(location)
+                  .setPathDatasetComponentBlobPath(path1)
+                  .setArtifactPart(
+                      ArtifactPart.newBuilder()
+                          .setEtag(etag2.replaceAll("\"", ""))
+                          .setPartNumber(2))
+                  .build());
+      GetCommittedVersionedBlobArtifactParts.Response committedArtifactParts =
+          versioningServiceBlockingStub.getCommittedVersionedBlobArtifactParts(
+              GetCommittedVersionedBlobArtifactParts.newBuilder()
+                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                  .setCommitSha(commitResponse.getCommit().getCommitSha())
+                  .addAllLocation(location)
+                  .setPathDatasetComponentBlobPath(path1)
+                  .build());
+      CommitMultipartVersionedBlobArtifact.Response commitMultipartArtifact =
+          versioningServiceBlockingStub.commitMultipartVersionedBlobArtifact(
+              CommitMultipartVersionedBlobArtifact.newBuilder()
+                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                  .setCommitSha(commitResponse.getCommit().getCommitSha())
+                  .addAllLocation(location)
+                  .setPathDatasetComponentBlobPath(path1)
+                  .build());
+      GetCommittedVersionedBlobArtifactParts.Response committedVersionedBlobArtifactParts =
+          versioningServiceBlockingStub.getCommittedVersionedBlobArtifactParts(
+              GetCommittedVersionedBlobArtifactParts.newBuilder()
+                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                  .setCommitSha(commitResponse.getCommit().getCommitSha())
+                  .addAllLocation(location)
+                  .setPathDatasetComponentBlobPath(path1)
+                  .build());
+    } finally {
+      DeleteCommitRequest deleteCommitRequest =
+          DeleteCommitRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setCommitSha(commitResponse.getCommit().getCommitSha())
+              .build();
+      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
+    LOGGER.info("Get Url for VersionedBlob test stop................................");
   }
 
   @Test

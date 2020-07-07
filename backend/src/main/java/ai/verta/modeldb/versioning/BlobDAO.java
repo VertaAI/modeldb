@@ -1,7 +1,12 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
+import ai.verta.modeldb.CommitMultipartVersionedDatasetBlobArtifact;
+import ai.verta.modeldb.CommitVersionedDatasetBlobArtifactPart;
 import ai.verta.modeldb.DatasetVersion;
+import ai.verta.modeldb.GetCommittedVersionedDatasetBlobArtifactParts;
+import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -115,6 +120,14 @@ public interface BlobDAO {
       RepositoryDAO repositoryDAO, RevertRepositoryCommitsRequest request)
       throws ModelDBException, NoSuchAlgorithmException;
 
+  GetUrlForDatasetBlobVersioned.Response getUrlForVersionedDatasetBlob(
+      ArtifactStoreDAO artifactStoreDAO,
+      RepositoryDAO repositoryDAO,
+      String datasetId,
+      CommitFunction commitFunction,
+      GetUrlForDatasetBlobVersioned request)
+      throws ModelDBException;
+
   GetUrlForBlobVersioned.Response getUrlForVersionedBlob(
       ArtifactStoreDAO artifactStoreDAO,
       RepositoryFunction repositoryFunction,
@@ -122,22 +135,49 @@ public interface BlobDAO {
       GetUrlForBlobVersioned request)
       throws ModelDBException;
 
+  void commitVersionedDatasetBlobArtifactPart(
+      RepositoryDAO repositoryDAO,
+      String datasetId,
+      CommitFunction commitFunction,
+      CommitVersionedDatasetBlobArtifactPart request)
+      throws ModelDBException;
+
   CommitVersionedBlobArtifactPart.Response commitVersionedBlobArtifactPart(
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction,
-      CommitVersionedBlobArtifactPart request)
+      List<String> location,
+      String pathDatasetComponentBlobPath,
+      ArtifactPart artifactPart)
       throws ModelDBException;
+
+  GetCommittedVersionedDatasetBlobArtifactParts.Response
+      getCommittedVersionedDatasetBlobArtifactParts(
+          RepositoryDAO repositoryDAO,
+          String datasetId,
+          CommitFunction commitFunction,
+          GetCommittedVersionedDatasetBlobArtifactParts request)
+          throws ModelDBException;
 
   GetCommittedVersionedBlobArtifactParts.Response getCommittedVersionedBlobArtifactParts(
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction,
-      GetCommittedVersionedBlobArtifactParts request)
+      List<String> location,
+      String pathDatasetComponentBlobPath)
+      throws ModelDBException;
+
+  void commitMultipartVersionedDatasetBlobArtifact(
+      RepositoryDAO repositoryDAO,
+      String datasetId,
+      CommitFunction commitFunction,
+      CommitMultipartVersionedDatasetBlobArtifact request,
+      CommitMultipartFunction commitMultipartFunction)
       throws ModelDBException;
 
   CommitMultipartVersionedBlobArtifact.Response commitMultipartVersionedBlobArtifact(
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction,
-      CommitMultipartVersionedBlobArtifact request,
+      List<String> location,
+      String pathDatasetComponentBlobPath,
       CommitMultipartFunction commitMultipartFunction)
       throws ModelDBException;
 

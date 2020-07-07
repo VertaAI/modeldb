@@ -706,7 +706,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
-              request);
+              request.getLocationList(),
+              request.getPathDatasetComponentBlobPath(),
+              request.getArtifactPart());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -742,7 +744,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
-              request);
+              request.getLocationList(),
+              request.getPathDatasetComponentBlobPath());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -784,7 +787,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
-              request,
+              request.getLocationList(),
+              request.getPathDatasetComponentBlobPath(),
               artifactStoreDAO::commitMultipart);
       responseObserver.onNext(response);
       responseObserver.onCompleted();

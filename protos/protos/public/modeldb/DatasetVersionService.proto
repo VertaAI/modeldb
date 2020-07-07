@@ -239,6 +239,48 @@ message SetDatasetVersionVisibilty {
     }
 }
 
+message GetUrlForDatasetBlobVersioned {
+    string dataset_id = 1;
+    string dataset_version_id = 2;
+    string path_dataset_component_blob_path = 3;
+    string method = 4; //This is either GET or PUT
+    uint64 part_number = 5; // if 0, don’t do multipart
+
+    message Response {
+        string url = 1;
+        bool multipart_upload_ok = 3;  // for backcompat: new Client, old Backend
+    }
+}
+
+message CommitVersionedDatasetBlobArtifactPart {
+    string dataset_id = 1;
+    string dataset_version_id = 2;
+    string path_dataset_component_blob_path = 3;
+    common.ArtifactPart artifact_part = 4;
+
+    message Response{
+    }
+}
+
+message GetCommittedVersionedDatasetBlobArtifactParts {
+    string dataset_id = 1;
+    string dataset_version_id = 2;
+    string path_dataset_component_blob_path = 3;
+
+    message Response {
+        repeated common.ArtifactPart artifact_parts = 1;
+    }
+}
+
+message CommitMultipartVersionedDatasetBlobArtifact {
+    string dataset_id = 1;
+    string dataset_version_id = 2;
+    string path_dataset_component_blob_path = 3;
+
+    message Response {
+    }
+}
+
 service DatasetVersionService {
 
     rpc createDatasetVersion (CreateDatasetVersion) returns (CreateDatasetVersion.Response) {
@@ -333,6 +375,37 @@ service DatasetVersionService {
     rpc setDatasetVersionVisibility(SetDatasetVersionVisibilty) returns (SetDatasetVersionVisibilty.Response) {
         option (google.api.http) = {
             post: "/v1/dataset-version/setDatasetVersionVisibility"
+            body: "*"
+        };
+    };
+
+    rpc getUrlForDatasetBlobVersioned (GetUrlForDatasetBlobVersioned) returns (GetUrlForDatasetBlobVersioned.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset-version/workspaces/{workspace_name}/dataset/{dataset_id}/datasetVersion/{dataset_version_id}/getUrlForDatasetBlobVersioned"
+            body: "*"
+            additional_bindings {
+                post: "/v1/dataset-version/dataset/{dataset_id}/datasetVersion/{dataset_version_id}/getUrlForDatasetBlobVersioned"
+            	body: "*"
+            }
+        };
+    };
+
+    rpc commitVersionedDatasetBlobArtifactPart(CommitVersionedDatasetBlobArtifactPart) returns (CommitVersionedDatasetBlobArtifactPart.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset-version/commitVersionedDatasetBlobArtifactPart"
+            body: "*"
+        };
+    };
+
+    rpc getCommittedVersionedDatasetBlobArtifactParts(GetCommittedVersionedDatasetBlobArtifactParts) returns (GetCommittedVersionedDatasetBlobArtifactParts.Response) {
+        option (google.api.http) = {
+            get: "/v1/dataset-version/getCommittedVersionedDatasetBlobArtifactParts"
+        };
+    };
+
+    rpc commitMultipartVersionedDatasetBlobArtifact(CommitMultipartVersionedDatasetBlobArtifact) returns (CommitMultipartVersionedDatasetBlobArtifact.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset-version/commitMultipartVersionedDatasetBlobArtifact"
             body: "*"
         };
     };
