@@ -619,7 +619,7 @@ class Commit(
             }
           }),
           3, // number of upload attempts
-          f"Uploading part ${partNum} of component ${datasetComponentPath} of blob at ${blobPath} has fails."
+          f"Uploading part ${partNum} of component ${datasetComponentPath} of blob at ${blobPath} fails."
         )
     })
   }
