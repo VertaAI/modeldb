@@ -32,6 +32,7 @@ import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunById;
 import ai.verta.modeldb.GetExperimentRunByName;
 import ai.verta.modeldb.GetExperimentRunCodeVersion;
+import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
 import ai.verta.modeldb.GetExperimentRunsInExperiment;
 import ai.verta.modeldb.GetExperimentRunsInProject;
 import ai.verta.modeldb.GetHyperparameters;
@@ -2474,6 +2475,32 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getExperimentRunsByDatasetVersionId(
+      GetExperimentRunsByDatasetVersionId request,
+      StreamObserver<GetExperimentRunsByDatasetVersionId.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getDatsetVersionId().isEmpty()) {
+        throw new ModelDBException("DatasetVersion Id should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+          experimentRunDAO.getExperimentRunsByDatasetVersionId(projectDAO, request);
+      GetExperimentRunsByDatasetVersionId.Response response =
+          GetExperimentRunsByDatasetVersionId.Response.newBuilder()
+              .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
+              .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
+              .build();
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetExperimentRunsByDatasetVersionId.Response.getDefaultInstance());
     }
   }
 }
