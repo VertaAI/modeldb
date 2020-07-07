@@ -332,6 +332,12 @@ class Component(object):
 
         return "\n    ".join(lines)
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self.__dict__ == other.__dict__
+
     @classmethod
     def _from_proto(cls, component_msg):
         return cls(
