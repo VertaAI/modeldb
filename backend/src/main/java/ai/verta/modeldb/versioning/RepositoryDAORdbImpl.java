@@ -78,7 +78,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   private static final String SHORT_NAME = "repo";
 
-  private static final String GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL =
+  private static final StringBuilder GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL =
       new StringBuilder("Select count(*) From ")
           .append(RepositoryEntity.class.getSimpleName())
           .append(" ")
@@ -88,8 +88,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(SHORT_NAME)
           .append(".")
           .append(ModelDBConstants.NAME)
-          .append(" = :repositoryName ")
-          .toString();
+          .append(" = :repositoryName ");
 
   private static final String GET_REPOSITORY_BY_NAME_PREFIX_HQL =
       new StringBuilder("From ")
@@ -391,10 +390,22 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       if (workspaceDTO == null) {
         workspaceDTO = verifyAndGetWorkspaceDTO(repoId, false, true);
       }
+      GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL
+          .append(" AND ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append("repositoryAccessModifier = ");
+      if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
+        GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL.append(
+            RepositoryEnums.RepositoryModifierEnum.PROTECTED.ordinal());
+      } else {
+        GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL.append(
+            RepositoryEnums.RepositoryModifierEnum.REGULAR.ordinal());
+      }
       ModelDBHibernateUtil.checkIfEntityAlreadyExists(
           session,
           SHORT_NAME,
-          GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
+          GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL.toString(),
           RepositoryEntity.class.getSimpleName(),
           "repositoryName",
           repository.getName(),
@@ -410,7 +421,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
             session,
             SHORT_NAME,
-            GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
+            GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL.toString(),
             RepositoryEntity.class.getSimpleName(),
             "repositoryName",
             repository.getName(),
