@@ -567,6 +567,19 @@ class TestS3ManagedVersioning:
         dirpath = dataset.download()
         assert_dirs_match(dirpath, reference_dir)
 
+    def test_concat_arg_mismatch_error(self):
+        dataset1 = verta.dataset.S3(
+            "s3://verta-starter/",
+            enable_mdb_versioning=True,
+        )
+        dataset2 = verta.dataset.S3(
+            "s3://verta-versioned-bucket/",
+            enable_mdb_versioning=False,
+        )
+
+        with pytest.raises(ValueError):
+            dataset1 + dataset2  # pylint: disable=pointless-statement
+
 
 @pytest.mark.usefixtures("in_tempdir")
 class TestPathManagedVersioning:
@@ -808,3 +821,23 @@ class TestPathManagedVersioning:
         dirpath = dataset.download()
         dirpath = os.path.join(dirpath, reference_dir)  # "tiny-files/" nested in new dir
         assert_dirs_match(dirpath, reference_dir)
+
+    def test_concat_arg_mismatch_error(self):
+        reference_dir = "tiny-files/"
+        os.mkdir(reference_dir)
+        # two .file files in tiny-files/
+        for filename in ["tiny{}.file".format(i) for i in range(2)]:
+            with open(os.path.join(reference_dir, filename), 'wb') as f:
+                f.write(os.urandom(2**16))
+
+        dataset1 = verta.dataset.Path(
+            "tiny-files/tiny0.file",
+            enable_mdb_versioning=True,
+        )
+        dataset2 = verta.dataset.Path(
+            "tiny-files/tiny1.file",
+            enable_mdb_versioning=False,
+        )
+
+        with pytest.raises(ValueError):
+            dataset1 + dataset2  # pylint: disable=pointless-statement
