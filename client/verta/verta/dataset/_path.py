@@ -164,8 +164,4 @@ class Path(_dataset._Dataset):
             enable_mdb_versioning=self._mdb_versioned,
         )
 
-        path_overlap = _utils.overlapping_keys(self._components_map, other._components_map)
-        if path_overlap:
-            raise ValueError("dataset already contains paths: {}".format(path_overlap))
-
-        self._components_map.update(other._components_map)
+        self._add_blob(other)

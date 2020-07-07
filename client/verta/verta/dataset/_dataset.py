@@ -186,6 +186,14 @@ class _Dataset(blob.Blob):
 
         return (components_to_download, os.path.abspath(downloaded_to_path))
 
+    def _add_blob(self, other):
+        """Helper for :meth:`add`."""
+        path_overlap = _utils.overlapping_keys(self._components_map, other._components_map)
+        if path_overlap:
+            raise ValueError("dataset already contains paths: {}".format(path_overlap))
+
+        self._components_map.update(other._components_map)
+
     @abc.abstractmethod
     def add(self, path):
         pass
