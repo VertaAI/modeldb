@@ -1107,4 +1107,73 @@ public class CommitDAORdbImpl implements CommitDAO {
     Long count = (Long) query.uniqueResult();
     return count > 0;
   }
+
+  @Override
+  public DatasetVersion updateDatasetVersionDescription(
+      RepositoryDAO repositoryDAO,
+      BlobDAO blobDAO,
+      MetadataDAO metadataDAO,
+      String datasetId,
+      String datasetVersionId,
+      String description)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      RepositoryEntity repositoryEntity;
+      CommitEntity commitEntity = null;
+
+      RepositoryIdentification.Builder repositoryIdentification =
+          RepositoryIdentification.newBuilder();
+      if (datasetId == null || datasetId.isEmpty()) {
+        commitEntity = session.get(CommitEntity.class, datasetVersionId);
+
+        if (commitEntity == null) {
+          throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
+        }
+
+        if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
+          throw new ModelDBException(
+              "DatasetVersion '"
+                  + commitEntity.getCommit_hash()
+                  + "' associated with multiple datasets",
+              Code.INTERNAL);
+        }
+        Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
+        repositoryIdentification.setRepoId(newRepoId);
+      } else {
+        repositoryIdentification.setRepoId(Long.parseLong(datasetId));
+      }
+      repositoryEntity =
+          repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
+
+      if (commitEntity == null) {
+        commitEntity = getCommitEntity(session, datasetVersionId, (session1 -> repositoryEntity));
+      }
+      String compositeId =
+          VersioningUtils.getVersioningCompositeId(
+              repositoryEntity.getId(),
+              commitEntity.getCommit_hash(),
+              Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
+
+      session.beginTransaction();
+      metadataDAO.addProperty(
+          session,
+          IdentificationType.newBuilder()
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+              .setStringId(compositeId)
+              .build(),
+          "description",
+          description);
+      commitEntity.setDate_updated(new Date().getTime());
+      session.update(commitEntity);
+      session.getTransaction().commit();
+      return blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, datasetVersionId);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return updateDatasetVersionDescription(
+            repositoryDAO, blobDAO, metadataDAO, datasetId, datasetVersionId, description);
+      } else {
+        throw ex;
+      }
+    }
+  }
 }

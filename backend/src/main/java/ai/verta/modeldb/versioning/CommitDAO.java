@@ -92,4 +92,13 @@ public interface CommitDAO {
       throws ModelDBException;
 
   boolean isCommitExists(Session session, String commitHash);
+
+  DatasetVersion updateDatasetVersionDescription(
+      RepositoryDAO repositoryDAO,
+      BlobDAO blobDAO,
+      MetadataDAO metadataDAO,
+      String datasetId,
+      String datasetVersionId,
+      String description)
+      throws ModelDBException;
 }

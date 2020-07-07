@@ -9,6 +9,7 @@ import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.uac.UserInfo;
 import java.util.ArrayList;
@@ -222,6 +223,10 @@ public class FindRepositoriesQuery {
         parametersMap.put("repoIds", this.repoIds);
       }
       whereClauseList.add(alias + "." + ModelDBConstants.DELETED + " = false ");
+      whereClauseList.add(
+          alias
+              + ".repositoryAccessModifier = "
+              + RepositoryEnums.RepositoryModifierEnum.REGULAR.ordinal());
 
       StringBuilder whereClause = new StringBuilder();
       whereClause.append(

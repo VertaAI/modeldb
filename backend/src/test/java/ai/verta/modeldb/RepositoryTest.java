@@ -330,26 +330,32 @@ public class RepositoryTest {
     long id = createRepository(versioningServiceBlockingStub, NAME);
 
     try {
+      GetRepositoryRequest getRepositoryRequest =
+          GetRepositoryRequest.newBuilder()
+              .setId(RepositoryIdentification.newBuilder().setRepoId(id))
+              .build();
+      GetRepositoryRequest.Response getByNameResult =
+          versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+
       SetRepository setRepository =
           SetRepository.newBuilder()
               .setId(
                   RepositoryIdentification.newBuilder()
                       .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME).build())
                       .build())
-              .setRepository(Repository.newBuilder().setName(NAME_2))
+              .setRepository(getByNameResult.getRepository().toBuilder().setName(NAME_2).build())
               .build();
       SetRepository.Response result = versioningServiceBlockingStub.updateRepository(setRepository);
       Assert.assertTrue(result.hasRepository());
       Assert.assertEquals(NAME_2, result.getRepository().getName());
 
-      GetRepositoryRequest getRepositoryRequest =
+      getRepositoryRequest =
           GetRepositoryRequest.newBuilder()
               .setId(
                   RepositoryIdentification.newBuilder()
                       .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME_2)))
               .build();
-      GetRepositoryRequest.Response getByNameResult =
-          versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+      getByNameResult = versioningServiceBlockingStub.getRepository(getRepositoryRequest);
       Assert.assertEquals(
           "Repository Id not match with expected repository Id",
           id,
@@ -384,19 +390,6 @@ public class RepositoryTest {
     long id = createRepository(versioningServiceBlockingStub, NAME);
 
     try {
-      String description = "this is test repository description from update repository call";
-      SetRepository setRepository =
-          SetRepository.newBuilder()
-              .setId(
-                  RepositoryIdentification.newBuilder()
-                      .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME).build())
-                      .build())
-              .setRepository(Repository.newBuilder().setName(NAME).setDescription(description))
-              .build();
-      SetRepository.Response result = versioningServiceBlockingStub.updateRepository(setRepository);
-      Assert.assertTrue(result.hasRepository());
-      Assert.assertEquals(description, result.getRepository().getDescription());
-
       GetRepositoryRequest getRepositoryRequest =
           GetRepositoryRequest.newBuilder()
               .setId(
@@ -405,6 +398,33 @@ public class RepositoryTest {
               .build();
       GetRepositoryRequest.Response getByNameResult =
           versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+
+      String description = "this is test repository description from update repository call";
+      SetRepository setRepository =
+          SetRepository.newBuilder()
+              .setId(
+                  RepositoryIdentification.newBuilder()
+                      .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME).build())
+                      .build())
+              .setRepository(
+                  getByNameResult
+                      .getRepository()
+                      .toBuilder()
+                      .setName(NAME)
+                      .setDescription(description)
+                      .build())
+              .build();
+      SetRepository.Response result = versioningServiceBlockingStub.updateRepository(setRepository);
+      Assert.assertTrue(result.hasRepository());
+      Assert.assertEquals(description, result.getRepository().getDescription());
+
+      getRepositoryRequest =
+          GetRepositoryRequest.newBuilder()
+              .setId(
+                  RepositoryIdentification.newBuilder()
+                      .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME)))
+              .build();
+      getByNameResult = versioningServiceBlockingStub.getRepository(getRepositoryRequest);
       Assert.assertEquals(
           "Repository Id not match with expected repository Id",
           id,
@@ -591,10 +611,21 @@ public class RepositoryTest {
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
+    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
+        DatasetServiceGrpc.newBlockingStub(channel);
 
     long repoId1 = createRepository(versioningServiceBlockingStub, NAME);
     long repoId2 = createRepository(versioningServiceBlockingStub, NAME_2);
     long repoId3 = createRepository(versioningServiceBlockingStub, NAME_3);
+
+    DatasetTest datasetTest = new DatasetTest();
+    CreateDataset createDatasetRequest =
+        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
+    CreateDataset.Response createDatasetResponse =
+        datasetServiceStub.createDataset(createDatasetRequest);
+    LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
+    Dataset dataset = createDatasetResponse.getDataset();
+
     Long[] repoIds = new Long[3];
     repoIds[0] = repoId1;
     repoIds[1] = repoId2;
@@ -774,6 +805,13 @@ public class RepositoryTest {
       deleteLabels(id1, Collections.singletonList(labels.get(0)));
       deleteLabels(id2, Collections.singletonList(labels.get(1)));
       deleteLabels(id3, labels);
+
+      DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
+      DeleteDataset.Response deleteDatasetResponse =
+          datasetServiceStub.deleteDataset(deleteDataset);
+      LOGGER.info("Dataset deleted successfully");
+      LOGGER.info(deleteDatasetResponse.toString());
+      assertTrue(deleteDatasetResponse.getStatus());
 
       for (long repoId : repoIds) {
         DeleteRepositoryRequest deleteRepository =

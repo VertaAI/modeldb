@@ -21,6 +21,7 @@ import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -77,7 +78,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   private static final String SHORT_NAME = "repo";
 
-  private static final String GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL =
+  private static final StringBuilder GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL =
       new StringBuilder("Select count(*) From ")
           .append(RepositoryEntity.class.getSimpleName())
           .append(" ")
@@ -87,8 +88,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(SHORT_NAME)
           .append(".")
           .append(ModelDBConstants.NAME)
-          .append(" = :repositoryName ")
-          .toString();
+          .append(" = :repositoryName ");
 
   private static final String GET_REPOSITORY_BY_NAME_PREFIX_HQL =
       new StringBuilder("From ")
@@ -390,10 +390,22 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       if (workspaceDTO == null) {
         workspaceDTO = verifyAndGetWorkspaceDTO(repoId, false, true);
       }
+      GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL
+          .append(" AND ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append("repositoryAccessModifier = ");
+      if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
+        GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL.append(
+            RepositoryEnums.RepositoryModifierEnum.PROTECTED.ordinal());
+      } else {
+        GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL.append(
+            RepositoryEnums.RepositoryModifierEnum.REGULAR.ordinal());
+      }
       ModelDBHibernateUtil.checkIfEntityAlreadyExists(
           session,
           SHORT_NAME,
-          GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
+          GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL.toString(),
           RepositoryEntity.class.getSimpleName(),
           "repositoryName",
           repository.getName(),
@@ -409,7 +421,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
             session,
             SHORT_NAME,
-            GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL,
+            GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL.toString(),
             RepositoryEntity.class.getSimpleName(),
             "repositoryName",
             repository.getName(),
@@ -723,6 +735,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       finalPredicatesList.add(
           criteriaBuilder.equal(repositoryEntityRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          criteriaBuilder.equal(
+              repositoryEntityRoot.get(ModelDBConstants.REPOSITORY_ACCESS_MODIFIER),
+              RepositoryEnums.RepositoryModifierEnum.REGULAR.ordinal()));
 
       Order orderBy = criteriaBuilder.desc(repositoryEntityRoot.get(ModelDBConstants.DATE_UPDATED));
 
@@ -1347,6 +1363,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
 
       finalPredicatesList.add(builder.equal(repositoryRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(
+              repositoryRoot.get(ModelDBConstants.REPOSITORY_ACCESS_MODIFIER),
+              RepositoryEnums.RepositoryModifierEnum.PROTECTED.ordinal()));
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {
