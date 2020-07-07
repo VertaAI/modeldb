@@ -563,7 +563,6 @@ public class DatasetVersionTest {
   }
 
   @Test
-  @Ignore
   public void updateDatasetVersionDescription() {
     LOGGER.info("Update DatasetVersion Description test start................................");
 
@@ -616,6 +615,20 @@ public class DatasetVersionTest {
             .setId(datasetVersion.getId())
             .setDescription("DatasetVersion Description Update 2")
             .build();
+
+    response = datasetVersionServiceStub.updateDatasetVersionDescription(updateDescriptionRequest);
+    LOGGER.info("UpdateDatasetVersionDescription Response : " + response.getDatasetVersion());
+    assertEquals(
+        "DatasetVersion description not match with expected datasetVersion description",
+        updateDescriptionRequest.getDescription(),
+        response.getDatasetVersion().getDescription());
+    assertNotEquals(
+        "DatasetVersion date_updated field not update on database",
+        datasetVersion.getTimeUpdated(),
+        response.getDatasetVersion().getTimeUpdated());
+
+    updateDescriptionRequest =
+        UpdateDatasetVersionDescription.newBuilder().setId(datasetVersion.getId()).build();
 
     response = datasetVersionServiceStub.updateDatasetVersionDescription(updateDescriptionRequest);
     LOGGER.info("UpdateDatasetVersionDescription Response : " + response.getDatasetVersion());
