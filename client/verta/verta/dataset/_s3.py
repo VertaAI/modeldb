@@ -224,8 +224,11 @@ class S3(_dataset._Dataset):
             if component._local_path and os.path.isfile(component._local_path):
                 os.remove(component._local_path)
 
-    def add(self, path):
-        other = self.__class__(paths=path, enable_mdb_versioning=self._mdb_versioned)
+    def add(self, paths):
+        other = self.__class__(
+            paths=paths,
+            enable_mdb_versioning=self._mdb_versioned,
+        )
 
         self._add_blob(other)
 

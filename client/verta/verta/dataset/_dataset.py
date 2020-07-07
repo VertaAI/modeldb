@@ -195,7 +195,7 @@ class _Dataset(blob.Blob):
         self._components_map.update(other._components_map)
 
     @abc.abstractmethod
-    def add(self, path):
+    def add(self, paths):
         pass
 
     def download(self, component_path=None, download_to_path=None):

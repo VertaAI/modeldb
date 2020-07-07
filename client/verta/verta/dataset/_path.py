@@ -158,9 +158,9 @@ class Path(_dataset._Dataset):
         """
         return
 
-    def add(self, path, base_path=None):
+    def add(self, paths, base_path=None):
         other = self.__class__(
-            paths=path, base_path=base_path,
+            paths=paths, base_path=base_path,
             enable_mdb_versioning=self._mdb_versioned,
         )
 
