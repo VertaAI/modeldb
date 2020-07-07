@@ -50,11 +50,9 @@ class _Dataset(blob.Blob):
         if not isinstance(other, type(self)):
             return NotImplemented
 
-        self_keys = set(self._components_map.keys())
-        other_keys = set(other._components_map.keys())
-        intersection = list(self_keys & other_keys)
-        if intersection:
-            raise ValueError("datasets contain overlapping paths: {}".format(intersection))
+        path_overlap = _utils.overlapping_keys(self._components_map, other._components_map)
+        if path_overlap:
+            raise ValueError("datasets contain overlapping paths: {}".format(path_overlap))
 
         if self._mdb_versioned != other._mdb_versioned:
             raise ValueError("datasets must have same value for `enable_mdb_versioning`")
@@ -187,6 +185,10 @@ class _Dataset(blob.Blob):
             raise KeyError("no components found for path {}".format(component_path))
 
         return (components_to_download, os.path.abspath(downloaded_to_path))
+
+    @abc.abstractmethod
+    def add(self):
+        pass
 
     def download(self, component_path=None, download_to_path=None):
         """

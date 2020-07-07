@@ -1060,3 +1060,7 @@ def as_list_of_str(tags):
                 raise TypeError("`tags` must be list of str, but found {}".format(type(tag)))
 
     return tags
+
+
+def overlapping_keys(dict1, dict2):
+    return set(dict1.keys()) & set(dict2.keys())
