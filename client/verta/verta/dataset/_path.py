@@ -29,7 +29,7 @@ class Path(_dataset._Dataset):
     paths : list of str
         List of filepaths or directory paths.
     base_path : str, optional
-        Directory path to be removed from the beginning of all components before saving to ModelDB.
+        Directory path to be removed from the beginning of `paths` before saving to ModelDB.
     enable_mdb_versioning : bool, default False
         Whether to upload the data itself to ModelDB to enable managed data versioning.
 
@@ -159,6 +159,17 @@ class Path(_dataset._Dataset):
         return
 
     def add(self, paths, base_path=None):
+        """
+        Adds `paths` to this dataset.
+
+        Parameters
+        ----------
+        paths : list of str
+            List of filepaths or directory paths.
+        base_path : str, optional
+            Directory path to be removed from the beginning of `paths` before saving to ModelDB.
+
+        """
         other = self.__class__(
             paths=paths, base_path=base_path,
             enable_mdb_versioning=self._mdb_versioned,

@@ -225,6 +225,16 @@ class S3(_dataset._Dataset):
                 os.remove(component._local_path)
 
     def add(self, paths):
+        """
+        Adds `paths` to this dataset.
+
+        Parameters
+        ----------
+        paths : list
+            List of S3 URLs of the form ``"s3://<bucket-name>"`` or ``"s3://<bucket-name>/<key>"``, or
+            objects returned by :meth:`S3.location`.
+
+        """
         other = self.__class__(
             paths=paths,
             enable_mdb_versioning=self._mdb_versioned,
