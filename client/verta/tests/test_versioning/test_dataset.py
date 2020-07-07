@@ -233,6 +233,13 @@ class TestS3:
         with pytest.raises(ValueError):
             dataset1 += dataset2
 
+    def test_concat_type_mismatch_error(self):
+        dataset1 = verta.dataset.S3("s3://verta-starter/")
+        dataset2 = verta.dataset.Path("modelapi_hypothesis/")
+
+        with pytest.raises(TypeError):
+            dataset1 + dataset2  # pylint: disable=pointless-statement
+
 
 class TestPath:
     def test_dirpath(self):
