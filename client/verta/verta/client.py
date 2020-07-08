@@ -4194,6 +4194,9 @@ class ExperimentRun(_ModelDBEntity):
             used for this Experiment Run.
 
         """
+        if commit.id is None:
+            raise RuntimeError("Commit must be saved before it can be logged to an Experiment Run")
+
         msg = _ExperimentRunService.LogVersionedInput()
         msg.id = self.id
         msg.versioned_inputs.repository_id = commit._repo.id
