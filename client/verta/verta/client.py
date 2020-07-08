@@ -697,18 +697,23 @@ class Client(object):
         return _dataset.DatasetVersion(self._conn, self._conf, _dataset_version_id=id)
 
     # get entities
-    def get_project(self, *args, **kwargs):
-        raise ValueError
+    def get_project(self, name=None, workspace=None, id=None):
+        # TODO: check combination of params
 
-    def get_experiment(self, *args, **kwargs):
-        raise ValueError
+        if Project._get(self._conn) is None:
+            raise ValueError("Project not found")  # TODO: mention name+workspace/id
 
-    def get_experiment_run(self, *args, **kwargs):
-        raise ValueError
+        return Project(self._conn, self._conf, proj_name=name, workspace=workspace, _proj_id=id)
+
+    def get_experiment(self, name=None, id=None):
+        raise NotImplementedError
+
+    def get_experiment_run(self, name=None, id=None):
+        raise NotImplementedError
 
     def get_dataset(self, name=None, id=None):
         """
-        Retrieve an already created Dataset. Only one of name or id can be provided.
+        Retrieve an existing Dataset. Only one of `name` or `id` can be provided.
 
         Parameters
         ----------
@@ -720,11 +725,12 @@ class Client(object):
         Returns
         -------
         :class:`Dataset`
-        """
-        return _dataset.Dataset(self._conn, self._conf, name=name, _dataset_id=id)
 
-    def get_repository(self, *args, **kwargs):
-        raise ValueError
+        """
+        raise NotImplementedError
+
+    def get_repository(self, name=None, workspace=None, id=None):
+        raise NotImplementedError
 
     # aliases for get-or-create functions for API compatibility
     def get_or_create_project(self, *args, **kwargs):
