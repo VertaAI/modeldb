@@ -192,7 +192,8 @@ class TestCommit:
 
     def test_log_to_run(self, experiment_run, commit):
         blob1 = verta.dataset.Path(__file__)
-        blob2 = verta.environment.Python()
+        reqs = verta.environment.Python.read_pip_environment()
+        blob2 = verta.environment.Python(reqs)
         path1 = "data/1"
         path2 = "env/1"
 
