@@ -26,6 +26,11 @@ try:
 except ImportError:  # Pillow not installed
     PIL = None
 
+try:
+    import torch
+except ImportError:  # PyTorch not installed
+    torch = None
+
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
 from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService
@@ -2124,6 +2129,15 @@ class ExperimentRun(_ModelDBEntity):
             If using multipart upload, number of bytes to upload per part.
 
         """
+        # TODO: add to Client config
+        env_part_size = os.environ.get('VERTA_ARTIFACT_PART_SIZE', "")
+        try:
+            part_size = int(float(env_part_size))
+        except ValueError:  # not an int
+            pass
+        else:
+            print("set artifact part size {} from environment".format(part_size))
+
         artifact_stream.seek(0)
         if self._conf.debug:
             print("[DEBUG] uploading {} bytes ({})".format(_artifact_utils.get_stream_length(artifact_stream), key))
@@ -3357,22 +3371,35 @@ class ExperimentRun(_ModelDBEntity):
         """
         artifact, path_only = self._get_artifact(key)
         if path_only:
-            # might be clientside storage
-            # NOTE: can cause problem if accidentally picks up unrelated file w/ same name
-            if os.path.exists(artifact):
-                try:
-                    with open(artifact, 'rb') as f:
-                        return pickle.load(f)
-                except:
-                    # return bytestream b/c that's what this fn does with MDB artifacts
-                    return open(artifact, 'rb')
-
-            return artifact
+            if not os.path.exists(artifact):
+                # path-only artifact; `artifact` is its path
+                return artifact
+            else:
+                # clientside storage; `artifact` is its path
+                # NOTE: can cause problem if accidentally picks up unrelated file w/ same name
+                artifact_stream = open(artifact, 'rb')
         else:
+            # uploaded artifact; `artifact` is its bytes
+            artifact_stream = six.BytesIO(artifact)
+
+        if torch is not None:
             try:
-                return pickle.loads(artifact)
-            except:
-                return six.BytesIO(artifact)
+                obj = torch.load(artifact_stream)
+            except:  # not something torch can deserialize
+                artifact_stream.seek(0)
+            else:
+                artifact_stream.close()
+                return obj
+
+        try:
+            obj = pickle.load(artifact_stream)
+        except:  # not something pickle can deserialize
+            artifact_stream.seek(0)
+        else:
+            artifact_stream.close()
+            return obj
+
+        return artifact_stream
 
     def download_artifact(self, key, download_to_path):
         """
@@ -3439,6 +3466,22 @@ class ExperimentRun(_ModelDBEntity):
                 _request_utils.download(response, download_to_path, overwrite_ok=True)
 
         return download_to_path
+
+    def get_artifact_parts(self, key):
+        endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+        data = {'id': self.id, 'key': key}
+        response = _utils.make_request("GET", endpoint, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        committed_parts = _utils.body_to_json(response).get('artifact_parts', [])
+        committed_parts = list(sorted(
+            committed_parts,
+            key=lambda part: int(part['part_number']),
+        ))
+        return committed_parts
 
     def log_observation(self, key, value, timestamp=None, epoch_num=None):
         """
@@ -4060,8 +4103,9 @@ class ExperimentRun(_ModelDBEntity):
             If the model is not currently deployed.
 
         """
-        if self.get_deployment_status()['status'] != "deployed":
-            raise RuntimeError("model is not currently deployed")
+        status = self.get_deployment_status().get('status', "<no status>")
+        if status != "deployed":
+            raise RuntimeError("model is not currently deployed (status: {})".format(status))
 
         status = self.get_deployment_status()
         return deployment.DeployedModel.from_url(status['url'], status['token'])
@@ -4171,6 +4215,9 @@ class ExperimentRun(_ModelDBEntity):
             used for this Experiment Run.
 
         """
+        if commit.id is None:
+            raise RuntimeError("Commit must be saved before it can be logged to an Experiment Run")
+
         msg = _ExperimentRunService.LogVersionedInput()
         msg.id = self.id
         msg.versioned_inputs.repository_id = commit._repo.id

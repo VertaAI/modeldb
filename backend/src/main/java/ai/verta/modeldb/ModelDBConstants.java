@@ -12,6 +12,8 @@ public interface ModelDBConstants {
   String CLOUD_SECRET_KEY = "cloudSecretKey";
   String CLOUD_BUCKET_NAME = "cloudBucketName";
   String MINIO_ENDPOINT = "minioEndpoint";
+  String AWS_REGION = "aws_region";
+  String DEFAULT_AWS_REGION = "us-east-1";
   String DATABASE = "database";
   String DB_TYPE = "DBType";
   String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";

@@ -544,7 +544,7 @@ class Commit(
     getURLForArtifact(blobPath, datasetComponentPath, "PUT").flatMap(url =>
       Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
         try {
-          Await.result(clientSet.client.requestRaw("PUT", url, null, null, inputStream), Duration.Inf)
+          Await.result(clientSet.client.requestRaw("PUT", url, null, Map("Content-Length" -> file.length.toString), inputStream), Duration.Inf)
             .map(_ => ())
         } finally {
           inputStream.close()
