@@ -11,6 +11,7 @@ import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.ExecutionContext
 
+/** Base class for dataset versioning */
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
   val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
