@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import hashlib
 import os
 import tempfile
 
@@ -19,15 +20,52 @@ try:
     import tensorflow as tf
 except ImportError:
     tf = None
-    TF_MAJOR_VERSION = None
+    TF_MAJOR_VERSION_STR = None
 else:
-    TF_MAJOR_VERSION = int(tf.__version__.split('.')[0])  # TODO: use in TF integration module
+    # TODO: use in TF integration module
+    TF_MAJOR_VERSION_STR = tf.__version__.split('.')[0]  # don't cast to int at module scope; breaks autodoc
 
 # TODO: use the newly-added tf = None above for this module's install checks
 try:
     from tensorflow import keras
 except ImportError:  # TensorFlow not installed
     pass
+
+
+# default for chunked utils
+CHUNK_SIZE = 5*10**6
+
+
+# NOTE: keep up-to-date with Deployment API
+BLACKLISTED_KEYS = {
+    'model_api.json',
+    'model.pkl',
+    'requirements.txt',
+    'train_data',
+    'tf_saved_model',
+    'custom_modules',
+    'setup_script',
+}
+
+
+def validate_key(key):
+    """
+    Validates user-specified artifact key.
+
+    Parameters
+    ----------
+    key : str
+        Name of artifact.
+
+    Raises
+    ------
+    ValueError
+        If `key` is blacklisted.
+
+    """
+    if key in BLACKLISTED_KEYS:
+        msg = "\"{}\" is reserved for internal use; please use a different key".format(key)
+        raise ValueError(msg)
 
 
 def get_file_ext(file):
@@ -145,9 +183,25 @@ def ensure_bytestream(obj):
     """
     if hasattr(obj, 'read'):  # if `obj` is file-like
         reset_stream(obj)  # reset cursor to beginning in case user forgot
+
+        # read first element to check if bytes
+        try:
+            chunk = obj.read(1)
+        except TypeError:  # read() doesn't take an argument
+            pass  # fall through to read & cast full stream
+        else:
+            if chunk and isinstance(chunk, bytes):  # contents are indeed bytes
+                reset_stream(obj)
+                return obj, None
+            else:
+                pass  # fall through to read & cast full stream
+
+        # read full stream and cast to bytes
+        reset_stream(obj)
         contents = obj.read()  # read to cast into binary
         reset_stream(obj)  # reset cursor to beginning as a courtesy
         if not len(contents):
+            # S3 raises unhelpful error on empty upload, so catch here
             raise ValueError("object contains no data")
         bytestring = six.ensure_binary(contents)
         bytestream = six.BytesIO(bytestring)
@@ -238,8 +292,8 @@ def serialize_model(model):
         elif module_name.startswith("tensorflow.python.keras"):
             model_type = "tensorflow"
             tempf = tempfile.NamedTemporaryFile()
-            if (TF_MAJOR_VERSION is not None
-                    and TF_MAJOR_VERSION >= 2):  # save_format param may not exist in TF 1.X
+            if (TF_MAJOR_VERSION_STR is not None
+                    and TF_MAJOR_VERSION_STR == '2'):  # save_format param may not exist in TF 1.X
                 model.save(tempf.name, save_format='h5')  # TF 2.X uses SavedModel by default
             else:
                 model.save(tempf.name)
@@ -294,3 +348,74 @@ def deserialize_model(bytestring):
         bytestream.seek(0)
 
     return bytestream
+
+
+def get_stream_length(stream, chunk_size=CHUNK_SIZE):
+    """
+    Get the length of the contents of a stream.
+
+    Parameters
+    ----------
+    stream : file-like
+        Stream.
+    chunk_size : int, default 5 MB
+        Number of bytes (or whatever `stream` contains) to read into memory at a time.
+
+    Returns
+    -------
+    length : int
+        Length of `stream`.
+
+    """
+    # if it's file handle, get file size without reading stream
+    filename = getattr(stream, 'name', None)
+    if filename is not None:
+        try:
+            return os.path.getsize(filename)
+        except OSError:  # can't access file
+            pass
+
+    # read stream in chunks to get length
+    length = 0
+    try:
+        part_lengths = iter(lambda: len(stream.read(chunk_size)), 0)
+        for part_length in part_lengths:  # could be sum() but not sure GC runs during builtin one-liner
+            length += part_length
+    finally:
+        reset_stream(stream)  # reset cursor to beginning as a courtesy
+
+    return length
+
+
+def calc_sha256(bytestream, chunk_size=CHUNK_SIZE):
+    """
+    Calculates the SHA-256 checksum of a bytestream.
+
+    Parameters
+    ----------
+    bytestream : file-like opened in binary mode
+        Bytestream.
+    chunk_size : int, default 5 MB
+        Number of bytes to read into memory at a time.
+
+    Returns
+    -------
+    checksum : str
+        SHA-256 hash of `bytestream`'s contents.
+
+    Raises
+    ------
+    TypeError
+        If `bytestream` is opened in text mode instead of binary mode.
+
+    """
+    checksum = hashlib.sha256()
+
+    try:
+        parts = iter(lambda: bytestream.read(chunk_size), b'')
+        for part in parts:
+            checksum.update(part)
+    finally:
+        reset_stream(bytestream)  # reset cursor to beginning as a courtesy
+
+    return checksum.hexdigest()

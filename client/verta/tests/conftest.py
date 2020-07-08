@@ -260,6 +260,17 @@ def dir_and_files(strs, tmp_path):
 
 
 @pytest.fixture
+def in_tempdir():
+    """Moves test to execute inside a temporary directory."""
+    dirpath = tempfile.mkdtemp()
+    try:
+        with utils.chdir(dirpath):
+            yield dirpath
+    finally:
+        shutil.rmtree(dirpath)
+
+
+@pytest.fixture
 def client(host, port, email, dev_key):
     print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
     client = Client(host, port, email, dev_key, debug=True)
@@ -278,7 +289,7 @@ def experiment_run(client):
     client.set_experiment()
     run = client.set_experiment_run()
     print("[TEST LOG] Run ID is {}".format(run.id))
-    
+
     return run
 
 

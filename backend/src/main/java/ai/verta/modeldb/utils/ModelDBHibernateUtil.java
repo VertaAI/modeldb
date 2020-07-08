@@ -1,14 +1,16 @@
 package ai.verta.modeldb.utils;
 
-import static ai.verta.modeldb.authservice.AuthServiceChannel.isMigrationUtilsCall;
+import static ai.verta.modeldb.authservice.AuthServiceChannel.isBackgroundUtilsCall;
 
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.entities.ArtifactEntity;
+import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.ArtifactStoreMapping;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -30,6 +32,7 @@ import ai.verta.modeldb.entities.QueryDatasetVersionInfoEntity;
 import ai.verta.modeldb.entities.QueryParameterEntity;
 import ai.verta.modeldb.entities.RawDatasetVersionInfoEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.entities.UploadStatusEntity;
 import ai.verta.modeldb.entities.UserCommentEntity;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
@@ -102,8 +105,9 @@ public class ModelDBHibernateUtil {
   private static StandardServiceRegistry registry;
   private static SessionFactory sessionFactory;
   private static String databaseName;
-  public static String rDBDriver;
+  private static String rDBDriver;
   private static String rDBUrl;
+  public static String rDBDialect;
   private static String configUsername;
   private static String configPassword;
   private static Integer timeout = 4;
@@ -115,6 +119,7 @@ public class ModelDBHibernateUtil {
     ExperimentRunEntity.class,
     KeyValueEntity.class,
     ArtifactEntity.class,
+    ArtifactPartEntity.class,
     FeatureEntity.class,
     TagsMapping.class,
     ObservationEntity.class,
@@ -154,7 +159,8 @@ public class ModelDBHibernateUtil {
     NotebookCodeBlobEntity.class,
     BranchEntity.class,
     VersioningModeldbEntityMapping.class,
-    HyperparameterElementMappingEntity.class
+    HyperparameterElementMappingEntity.class,
+    UploadStatusEntity.class
   };
 
   private ModelDBHibernateUtil() {}
@@ -167,7 +173,7 @@ public class ModelDBHibernateUtil {
         .getConnection();
   }
 
-  public static SessionFactory getSessionFactory() {
+  public static SessionFactory createOrGetSessionFactory() throws ModelDBException {
     if (sessionFactory == null) {
       LOGGER.info("Fetching sessionFactory");
       try {
@@ -178,9 +184,13 @@ public class ModelDBHibernateUtil {
             (Map<String, Object>) databasePropMap.get("RdbConfiguration");
 
         databaseName = (String) rDBPropMap.get("RdbDatabaseName");
-        rDBDriver = (String) rDBPropMap.get("RdbDriver");
+        if (!app.getTraceEnabled()) {
+          rDBDriver = (String) rDBPropMap.get("RdbDriver");
+        } else {
+          rDBDriver = "io.opentracing.contrib.jdbc.TracingDriver";
+        }
         rDBUrl = (String) rDBPropMap.get("RdbUrl");
-        String rDBDialect = (String) rDBPropMap.get("RdbDialect");
+        rDBDialect = (String) rDBPropMap.get("RdbDialect");
         configUsername = (String) rDBPropMap.get("RdbUsername");
         configPassword = (String) rDBPropMap.get("RdbPassword");
         if (databasePropMap.containsKey("timeout")) {
@@ -250,31 +260,39 @@ public class ModelDBHibernateUtil {
         isReady = true;
         return sessionFactory;
       } catch (Exception e) {
-        e.printStackTrace();
         LOGGER.warn(
             "ModelDBHibernateUtil getSessionFactory() getting error : {}", e.getMessage(), e);
         if (registry != null) {
           StandardServiceRegistryBuilder.destroy(registry);
         }
-        Status status =
-            Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new ModelDBException(e.getMessage());
       }
     } else {
       return loopBack(sessionFactory);
     }
   }
 
+  public static SessionFactory getSessionFactory() {
+    try {
+      return createOrGetSessionFactory();
+    } catch (Exception e) {
+      Status status =
+          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+  }
+
   private static SessionFactory loopBack(SessionFactory sessionFactory) {
     try {
-      boolean dbConnectionLive = ping();
+      boolean dbConnectionLive =
+          checkDBConnection(
+              rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
       if (dbConnectionLive) {
         return sessionFactory;
       }
       // Check DB connection based on the periodic time logic
       checkDBConnectionInLoop(false);
-      ModelDBHibernateUtil.sessionFactory = null;
-      sessionFactory = getSessionFactory();
+      sessionFactory = resetSessionFactory();
       LOGGER.debug("ModelDBHibernateUtil getSessionFactory() DB connection got successfully");
       return sessionFactory;
     } catch (Exception ex) {
@@ -283,6 +301,12 @@ public class ModelDBHibernateUtil {
           Status.newBuilder().setCode(Code.UNAVAILABLE_VALUE).setMessage(ex.getMessage()).build();
       throw StatusProto.toStatusRuntimeException(status);
     }
+  }
+
+  public static SessionFactory resetSessionFactory() {
+    isReady = false;
+    ModelDBHibernateUtil.sessionFactory = null;
+    return getSessionFactory();
   }
 
   private static void checkDBConnectionInLoop(boolean isStartUpTime) throws InterruptedException {
@@ -431,6 +455,11 @@ public class ModelDBHibernateUtil {
     }
   }
 
+  public static boolean checkDBConnection() {
+    return checkDBConnection(
+        rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
+  }
+
   private static boolean checkDBConnection(
       String rDBDriver,
       String rDBUrl,
@@ -460,18 +489,21 @@ public class ModelDBHibernateUtil {
     }
   }
 
-  private static boolean ping() {
-    try (Session session = sessionFactory.openSession()) {
-      final boolean[] valid = {false};
-      session.doWork(
-          connection -> {
-            if (connection.isValid(timeout)) {
-              valid[0] = true;
-            }
-          });
+  public static boolean ping() {
+    if (sessionFactory != null) {
+      try (Session session = sessionFactory.openSession()) {
+        final boolean[] valid = {false};
+        session.doWork(
+            connection -> {
+              if (connection.isValid(timeout)) {
+                valid[0] = true;
+              }
+            });
 
-      return valid[0];
+        return valid[0];
+      }
     }
+    return false;
   }
 
   public static HealthCheckResponse.ServingStatus checkReady() {
@@ -526,7 +558,7 @@ public class ModelDBHibernateUtil {
 
     if (count > 0) {
       // Throw error if it is an insert request and project with same name already exists
-      logger.warn(entityName + " with name {} already exists", name);
+      logger.info(entityName + " with name {} already exists", name);
       Status status =
           Status.newBuilder()
               .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -548,6 +580,12 @@ public class ModelDBHibernateUtil {
       boolean shouldSetName,
       List<String> ordering) {
     StringBuilder stringQueryBuilder = new StringBuilder(command);
+    stringQueryBuilder
+        .append(" AND ")
+        .append(shortName)
+        .append(".")
+        .append(ModelDBConstants.DELETED)
+        .append(" = false ");
     if (workspaceId != null && !workspaceId.isEmpty()) {
       if (shouldSetName) {
         stringQueryBuilder.append(" AND ");
@@ -594,7 +632,7 @@ public class ModelDBHibernateUtil {
     if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
       new Thread(
               () -> {
-                isMigrationUtilsCall = true;
+                isBackgroundUtilsCall = true;
                 int index = 0;
                 try {
                   CompletableFuture<Boolean>[] completableFutures =
@@ -634,13 +672,13 @@ public class ModelDBHibernateUtil {
                     CompletableFuture<Void> combinedFuture =
                         CompletableFuture.allOf(completableFutures);
                     combinedFuture.get();
-                    LOGGER.warn("Finished all the future tasks");
+                    LOGGER.info("Finished all the future tasks");
                   }
                 } catch (InterruptedException | ExecutionException e) {
                   LOGGER.warn(
                       "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
                 }
-                isMigrationUtilsCall = false;
+                isBackgroundUtilsCall = false;
               })
           .start();
     }

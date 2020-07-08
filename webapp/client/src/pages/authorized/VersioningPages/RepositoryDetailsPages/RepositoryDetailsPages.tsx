@@ -1,112 +1,53 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, Switch, Route } from 'react-router';
-import { bindActionCreators, Dispatch } from 'redux';
 
-import { actions, selectors } from 'core/features/versioning/repositories';
-import { initialCommunication } from 'core/shared/utils/redux/communication';
-import { matchRemoteData } from 'core/shared/utils/redux/communication/remoteData';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
+import { useRepositoryQuery } from 'features/versioning/repositories/store/repositoryQuery/repositoryQuery';
+import { matchRemoteData } from 'shared/utils/redux/communication/remoteData';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import NotFoundPage from 'pages/authorized/NotFoundPage/NotFoundPage';
 import { AuthorizedLayout } from 'pages/authorized/shared/AuthorizedLayout';
-import routes, { GetRouteParams } from 'routes';
-import { IApplicationState } from 'store/store';
+import routes, { GetRouteParams } from 'shared/routes';
+import { IApplicationState } from 'setup/store/store';
+import { selectCurrentWorkspace } from 'features/workspaces/store';
 
 import CommitPage from './CommitPage/CommitPage';
 import CommitsHistoryPage from './CommitsHistoryPage/CommitsHistoryPage';
 import CompareChangesPage from './CompareChangesPage/CompareChangesPage';
+import MergeConflictsPage from './MergeConflictsPage/MergeConflictsPage';
+import NetworkPage from './NetworkPage/NetworkPage';
 import RepositoryPage from './RepositoryPage/RepositoryPage';
 import RepositorySettingsPage from './RepositorySettingsPage/RepositorySettingsPage';
-import NotFoundPage from 'pages/authorized/NotFoundPage/NotFoundPage';
 
 const mapStateToProps = (state: IApplicationState, props: RouteProps) => {
-  const repository = selectors.selectRepositoryByName(
-    state,
-    props.match.params.repositoryName
-  );
   return {
-    repository,
-    loadingRepository:
-      selectors.selectCommunications(state).loadingRepositoryByName[
-        props.match.params.repositoryName
-      ] || initialCommunication,
+    workspace: selectCurrentWorkspace(state),
   };
-};
-
-const mapDispatchToProps = (dispatch: Dispatch) => {
-  return bindActionCreators(
-    {
-      loadRepositoryByName: actions.loadRepositoryByName,
-      resetLoadingRepositoryByName: actions.loadRepositoryByName.reset,
-    },
-    dispatch
-  );
 };
 
 type RouteProps = RouteComponentProps<
   GetRouteParams<typeof routes.repositoryData>
 >;
 
-type AllProps = ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps> &
-  RouteProps;
+type AllProps = ReturnType<typeof mapStateToProps> & RouteProps;
 
-const RepositoryDetailsPages = (props: AllProps) => {
+const RepositoryDetailsPages = ({ workspace, match: { params } }: AllProps) => {
   const {
-    loadingRepository,
-    repository,
-    loadRepositoryByName,
-    resetLoadingRepositoryByName,
-    history,
-    match: { params },
-  } = props;
+    data: repository,
+    communication: loadingRepository,
+  } = useRepositoryQuery({ name: params.repositoryName, workspace });
 
-  React.useEffect(() => {
-    loadRepositoryByName({
-      name: params.repositoryName,
-      workspaceName: params.workspaceName,
-    });
-  }, [params.repositoryName, params.workspaceName]);
-  React.useEffect(() => {
-    return () => {
-      if (repository && loadingRepository.error) {
-        resetLoadingRepositoryByName(repository);
-      }
-    };
-  }, []);
-
-  React.useEffect(() => {
-    // when repository is deleted
-    if (loadingRepository.isSuccess && !repository) {
-      history.replace(
-        routes.repositories.getRedirectPathWithCurrentWorkspace({})
+  const RepositoryNetwork = React.useCallback(
+    props => {
+      return (
+        <NetworkPage
+          workspaceName={params.workspaceName}
+          repository={repository!}
+        />
       );
-    }
-  }, [loadingRepository.isSuccess, repository]);
-
-  const RepositoryPageWithRepository = React.useCallback(
-    props => {
-      return <RepositoryPage {...props} repository={repository!} />;
     },
-    [repository]
-  );
-  const RepositoryCommitsHistoryPageWithRepository = React.useCallback(
-    props => {
-      return <CommitsHistoryPage {...props} repository={repository!} />;
-    },
-    [repository]
-  );
-  const RepositoryCommit = React.useCallback(
-    props => {
-      return <CommitPage {...props} repository={repository!} />;
-    },
-    [repository]
-  );
-  const RepositoryCompareChanges = React.useCallback(
-    props => {
-      return <CompareChangesPage {...props} repository={repository!} />;
-    },
-    [repository]
+    [repository, params.workspaceName]
   );
 
   return matchRemoteData(loadingRepository, repository, {
@@ -131,17 +72,36 @@ const RepositoryDetailsPages = (props: AllProps) => {
           <Route
             exact={true}
             path={routes.repositoryCompareChanges.getPath()}
-            component={RepositoryCompareChanges}
+            render={props => {
+              return (
+                <CompareChangesPage {...props} repository={loadedRepository} />
+              );
+            }}
           />
           <Route
             exact={true}
             path={routes.repositoryCommit.getPath()}
-            component={RepositoryCommit}
+            render={props => {
+              return <CommitPage {...props} repository={loadedRepository} />;
+            }}
           />
           <Route
             exact={true}
             path={routes.repositoryCommitsHistory.getPath()}
-            component={RepositoryCommitsHistoryPageWithRepository}
+            render={props => {
+              return (
+                <CommitsHistoryPage {...props} repository={loadedRepository} />
+              );
+            }}
+          />
+          <Route
+            exact={true}
+            path={routes.repositoryMergeConflicts.getPath()}
+            render={props => {
+              return (
+                <MergeConflictsPage {...props} repository={loadedRepository} />
+              );
+            }}
           />
           <Route
             exact={true}
@@ -149,17 +109,21 @@ const RepositoryDetailsPages = (props: AllProps) => {
               routes.repositoryData.getPath(),
               routes.repositoryDataWithLocation.getPath(),
             ]}
-            component={RepositoryPageWithRepository}
+            render={props => {
+              return (
+                <RepositoryPage {...props} repository={loadedRepository} />
+              );
+            }}
+          />
+          <Route
+            exact={true}
+            path={routes.repositoryNetworkGraph.getPath()}
+            component={RepositoryNetwork}
           />
           <Route
             exact={true}
             path={routes.repositorySettings.getPath()}
-            repository={repository}
-            render={(
-              props: RouteComponentProps<
-                GetRouteParams<typeof routes.repositorySettings>
-              >
-            ) => {
+            render={props => {
               return (
                 <RepositorySettingsPage
                   {...props}
@@ -175,7 +139,4 @@ const RepositoryDetailsPages = (props: AllProps) => {
   });
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(RepositoryDetailsPages);
+export default connect(mapStateToProps)(RepositoryDetailsPages);

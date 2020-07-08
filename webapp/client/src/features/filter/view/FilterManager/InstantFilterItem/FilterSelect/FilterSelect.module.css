@@ -1,0 +1,66 @@
+.root {
+  width: 100%;
+  height: 32px;
+  color: #444444;
+  border: 1px solid #ebebeb;
+  border-radius: 2px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 0 5px;
+  justify-content: space-between;
+  font-size: 13px;
+  position: relative;
+  cursor: pointer;
+}
+
+.readonly .icon {
+  display: none;
+}
+
+.icon {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.open .icon svg {
+  transform: rotate(180deg);
+}
+
+.optionsList {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 32px;
+  border: 1px solid #ebebeb;
+  border-radius: 2px;
+  background-color: #ffffff;
+  box-shadow: 2px 2px 2px 0 #ebebeb;
+  font-size: 13px;
+}
+
+.option {
+  height: 32px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+}
+
+.option:hover {
+  background-color: #ebebeb;
+}
+
+.option:first-child {
+  border-radius: 2px 2px 0 0;
+}
+
+.option:last-child {
+  border-radius: 0 0 2px 2px;
+}
+
+.current {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

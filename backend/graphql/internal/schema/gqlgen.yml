@@ -17,7 +17,7 @@ models:
   ExperimentRun:
     model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.ExperimentRun
   Artifact:
-    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.Artifact
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/common.Artifact
   Feature:
     model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.Feature
   Observation:

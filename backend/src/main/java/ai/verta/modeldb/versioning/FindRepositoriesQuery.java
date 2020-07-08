@@ -224,6 +224,8 @@ public class FindRepositoriesQuery {
         whereClauseList.add(alias + "." + ModelDBConstants.ID + " IN (:repoIds) ");
         parametersMap.put("repoIds", this.repoIds);
       }
+      whereClauseList.add(alias + "." + ModelDBConstants.DELETED + " = false ");
+
       StringBuilder whereClause = new StringBuilder();
       setPredicatesWithQueryOperator(whereClause, "AND", whereClauseList.toArray(new String[0]));
 

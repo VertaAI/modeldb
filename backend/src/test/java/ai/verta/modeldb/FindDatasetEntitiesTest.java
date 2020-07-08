@@ -12,6 +12,8 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
@@ -64,6 +66,7 @@ public class FindDatasetEntitiesTest {
   private static DatasetVersion datasetVersion3;
   private static DatasetVersion datasetVersion4;
   private static Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -102,6 +105,8 @@ public class FindDatasetEntitiesTest {
 
     serverBuilder.build().start();
     ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
 
     // Create all service blocking stub
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
@@ -118,6 +123,8 @@ public class FindDatasetEntitiesTest {
 
     // Remove all entities
     removeEntities();
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
 
     // shutdown test server
     serverBuilder.build().shutdownNow();
@@ -1618,5 +1625,41 @@ public class FindDatasetEntitiesTest {
         response.getDatasetVersions(0).getId());
 
     LOGGER.info("Find Public DatasetVersions test stop................................");
+  }
+
+  /** Find datasetVersions by workspace */
+  @Test
+  public void findDatasetVersionsByWorkspaceTest() {
+    LOGGER.info("FindDatasetVersions by workspace test start................................");
+
+    FindDatasetVersions findDatasetVersions = FindDatasetVersions.newBuilder().build();
+
+    FindDatasetVersions.Response response =
+        datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        datasetVersionMap.size(),
+        response.getDatasetVersionsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        datasetVersionMap.size(),
+        response.getTotalRecords());
+
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder().addDatasetVersionIds(datasetVersion1.getId()).build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        1,
+        response.getDatasetVersionsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+
+    LOGGER.info("FindDatasetVersions by workspace test stop................................");
   }
 }

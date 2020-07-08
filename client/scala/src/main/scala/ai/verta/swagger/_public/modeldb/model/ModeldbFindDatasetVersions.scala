@@ -12,15 +12,15 @@ import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibi
 import ai.verta.swagger._public.modeldb.model.EntitiesEnumEntitiesTypes._
 import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProvider._
 import ai.verta.swagger._public.modeldb.model.ModelDBActionEnumModelDBServiceActions._
+import ai.verta.swagger._public.modeldb.model.ModeldbProjectVisibility._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.model.PathLocationTypeEnumPathLocationType._
+import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger._public.modeldb.model.ServiceEnumService._
 import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
+import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.model.WorkspaceTypeEnumWorkspaceType._
-import ai.verta.swagger._public.modeldb.model.ModeldbProjectVisibility._
-import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
-import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbFindDatasetVersions (
@@ -31,7 +31,8 @@ case class ModeldbFindDatasetVersions (
   page_limit: Option[BigInt] = None,
   page_number: Option[BigInt] = None,
   predicates: Option[List[ModeldbKeyValueQuery]] = None,
-  sort_key: Option[String] = None
+  sort_key: Option[String] = None,
+  workspace_name: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbFindDatasetVersions.toJson(this)
 }
@@ -47,7 +48,8 @@ object ModeldbFindDatasetVersions {
         obj.page_limit.map(x => JField("page_limit", JInt(x))),
         obj.page_number.map(x => JField("page_number", JInt(x))),
         obj.predicates.map(x => JField("predicates", ((x: List[ModeldbKeyValueQuery]) => JArray(x.map(((x: ModeldbKeyValueQuery) => ModeldbKeyValueQuery.toJson(x)))))(x))),
-        obj.sort_key.map(x => JField("sort_key", JString(x)))
+        obj.sort_key.map(x => JField("sort_key", JString(x))),
+        obj.workspace_name.map(x => JField("workspace_name", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -68,7 +70,8 @@ object ModeldbFindDatasetVersions {
           page_limit = fieldsMap.get("page_limit").map(JsonConverter.fromJsonInteger),
           page_number = fieldsMap.get("page_number").map(JsonConverter.fromJsonInteger),
           predicates = fieldsMap.get("predicates").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbKeyValueQuery.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          sort_key = fieldsMap.get("sort_key").map(JsonConverter.fromJsonString)
+          sort_key = fieldsMap.get("sort_key").map(JsonConverter.fromJsonString),
+          workspace_name = fieldsMap.get("workspace_name").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

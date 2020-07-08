@@ -1144,7 +1144,8 @@
         "DATA",
         "BLOB",
         "STRING",
-        "CODE"
+        "CODE",
+        "CONTAINER"
       ],
       "default": "IMAGE"
     },
@@ -1190,6 +1191,30 @@
         "USER"
       ],
       "default": "UNKNOWN"
+    },
+    "commonArtifact": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "path_only": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "linked_artifact_id": {
+          "type": "string"
+        },
+        "filename_extension": {
+          "type": "string"
+        }
+      }
     },
     "commonKeyValue": {
       "type": "object",
@@ -1269,30 +1294,6 @@
         }
       }
     },
-    "modeldbArtifact": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "path_only": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
-        },
-        "linked_artifact_id": {
-          "type": "string"
-        },
-        "filename_extension": {
-          "type": "string"
-        }
-      }
-    },
     "modeldbCodeVersion": {
       "type": "object",
       "properties": {
@@ -1300,7 +1301,7 @@
           "$ref": "#/definitions/modeldbGitSnapshot"
         },
         "code_archive": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         },
         "date_logged": {
           "type": "string",
@@ -1339,7 +1340,7 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "workspace_name": {
@@ -1563,7 +1564,7 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       }
@@ -1705,6 +1706,10 @@
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
@@ -1719,6 +1724,10 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -1780,7 +1789,7 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       },
@@ -1886,7 +1895,7 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       }

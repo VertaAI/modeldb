@@ -1,0 +1,107 @@
+.root {
+  position: relative;
+}
+
+:global .react-select__control {
+  border: 1px solid #bbbbbb !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+  font-size: 0.875rem;
+  cursor: pointer !important;
+}
+
+:global .react-select__control--is-disabled {
+  background: #fff !important;
+  color: var(--main-text-color1) !important;
+  border: 1px solid #bbbbbb;
+}
+
+.optionLabel {
+  font-size: 14px;
+  color: var(--main-text-color1);
+  font-weight: 400;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 100%;
+  display: inline-block;
+}
+
+.optionDescription {
+  font-size: 12px;
+  color: var(--main-text-color2);
+  margin-top: 5px;
+  font-weight: 400 !important;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 100%;
+  display: inline-block;
+}
+
+:global .react-select__option {
+  position: relative;
+  display: flex !important;
+  align-items: center !important;
+  background: transparent !important;
+  cursor: pointer !important;
+}
+
+.optionCheckmark {
+  position: absolute;
+  left: 8px;
+  color: #888888;
+  font-size: 12px;
+}
+
+.optionLabel {
+  margin-left: 15px;
+}
+
+.optionIcon {
+  font-size: 25px;
+  color: #888888;
+  margin-left: 5px;
+}
+
+:global .react-select__option:hover,
+:global .react-select__option:focus,
+:global .react-select__option:active,
+:global .react-select__option--is-selected {
+  background: #ebebeb !important;
+}
+
+.root.menuWithDynamicWidth :global .react-select__menu {
+  width: 100% !important;
+}
+:global .react-select__menu {
+  background: #ffffff !important;
+  width: 216px !important;
+  border-radius: 2px !important;
+  box-shadow: 0 2px 4px 0 #cccccc !important;
+  border: none !important;
+  margin-top: 0 !important;
+  z-index: 1000;
+}
+
+:global .react-select__value-container {
+  padding-right: 0 !important;
+}
+
+:global .react-select__indicator-separator {
+  display: none;
+}
+
+:global .react-select__dropdown-indicator svg {
+  transform: scale(1.1);
+}
+
+:global .react-select__dropdown-indicator path {
+  fill: var(--main-text-color3);
+}
+
+:global
+  .react-select__control--is-disabled
+  .react-select__dropdown-indicator
+  path {
+  fill: #bbbbbb;
+}

@@ -11,10 +11,10 @@ public interface ModelDBMessages {
   String EXPERIMENT_NOT_FOUND_ERROR_MSG = "Experiment not found for given ID : ";
   String EXP_RUN_NOT_FOUND_ERROR_MSG = "ExperimentRun not found for given ID";
   String JOB_NOT_FOUND_ERROR_MSG = "Job not found for given ID";
-  String GETTING_PROJECT_BY_ID_MSG_STR = "Project by Id getting successfully";
+  String GETTING_PROJECT_BY_ID_MSG_STR = "Got Project by Id successfully";
   String GET_DATASET_VERSION_MSG = "Getting dataset version.";
   String VALUE_ALREADY_PRESENT_IN_DATASET_MSG = "Updated value is already present in Dataset";
-  String ACCESS_IS_DENIDE_DATASET_VERSION_ENTITIES_MSG =
+  String ACCESS_IS_DENIED_DATASET_VERSION_ENTITIES_MSG =
       "Access is denied. User is unauthorized for given DatasetVersion entities : ";
   String ACCESS_IS_DENIDE_DATASET_ENTITITY_MSG =
       "Access is denied. User is unauthorized for given Dataset entity";
@@ -40,4 +40,5 @@ public interface ModelDBMessages {
   String CALL_TO_ROLE_SERVICE_MSG = "Making a call to RoleService";
   String MODIFICATION_OF_ORG_ADMIN_COLLABORATOR_DENIED =
       "Can not modify collaboration settings of organization admin user.";
+  String PROJECT_NOT_FOUND_FOR_ID = "Project not found for given ID";
 }

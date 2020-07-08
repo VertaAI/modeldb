@@ -11,6 +11,135 @@
     "application/json"
   ],
   "paths": {
+    "/versioning/commitMultipartVersionedBlobArtifact": {
+      "post": {
+        "operationId": "commitMultipartVersionedBlobArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningCommitMultipartVersionedBlobArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningCommitMultipartVersionedBlobArtifact"
+            }
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
+    "/versioning/commitVersionedBlobArtifactPart": {
+      "post": {
+        "operationId": "commitVersionedBlobArtifactPart",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningCommitVersionedBlobArtifactPartResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningCommitVersionedBlobArtifactPart"
+            }
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
+    "/versioning/getCommittedVersionedBlobArtifactParts": {
+      "get": {
+        "operationId": "getCommittedVersionedBlobArtifactParts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningGetCommittedVersionedBlobArtifactPartsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "commit_sha",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "path_dataset_component_blob_path",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
     "/versioning/repositories": {
       "get": {
         "summary": "CRUD for repositories",
@@ -677,6 +806,51 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForBlobVersioned": {
+      "post": {
+        "operationId": "getUrlForBlobVersioned2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningGetUrlForBlobVersionedResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "commit_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningGetUrlForBlobVersioned"
+            }
           }
         ],
         "tags": [
@@ -1964,6 +2138,56 @@
         ]
       }
     },
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/getUrlForBlobVersioned": {
+      "post": {
+        "operationId": "getUrlForBlobVersioned",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningGetUrlForBlobVersionedResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commit_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningGetUrlForBlobVersioned"
+            }
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/log": {
       "get": {
         "operationId": "ListCommitsLog3",
@@ -2710,7 +2934,8 @@
         "DATA",
         "BLOB",
         "STRING",
-        "CODE"
+        "CODE",
+        "CONTAINER"
       ],
       "default": "IMAGE"
     },
@@ -2777,22 +3002,7 @@
       ],
       "default": "UNKNOWN"
     },
-    "commonKeyValue": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType",
-          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
-        }
-      }
-    },
-    "modeldbArtifact": {
+    "commonArtifact": {
       "type": "object",
       "properties": {
         "key": {
@@ -2816,6 +3026,33 @@
         }
       }
     },
+    "commonKeyValue": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "modeldbArtifactPart": {
+      "type": "object",
+      "properties": {
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "etag": {
+          "type": "string"
+        }
+      }
+    },
     "modeldbCodeVersion": {
       "type": "object",
       "properties": {
@@ -2823,7 +3060,7 @@
           "$ref": "#/definitions/modeldbGitSnapshot"
         },
         "code_archive": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         },
         "date_logged": {
           "type": "string",
@@ -2896,13 +3133,13 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "datasets": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "metrics": {
@@ -2993,11 +3230,14 @@
           "$ref": "#/definitions/commonKeyValue"
         },
         "artifact": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         },
         "timestamp": {
           "type": "string",
           "format": "int64"
+        },
+        "epoch_number": {
+          "type": "object"
         }
       },
       "title": "observations with the same key are not overwritten, the are appended to a list"
@@ -3019,6 +3259,20 @@
           }
         }
       }
+    },
+    "modeldbversioningPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     },
     "protobufAny": {
       "type": "object",
@@ -3207,6 +3461,55 @@
         }
       },
       "title": "Base commit for the versioning system\nDO NOT USE TO COMPUTE SHA"
+    },
+    "versioningCommitMultipartVersionedBlobArtifact": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "$ref": "#/definitions/versioningRepositoryIdentification"
+        },
+        "commit_sha": {
+          "type": "string"
+        },
+        "location": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "path_dataset_component_blob_path": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningCommitMultipartVersionedBlobArtifactResponse": {
+      "type": "object"
+    },
+    "versioningCommitVersionedBlobArtifactPart": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "$ref": "#/definitions/versioningRepositoryIdentification"
+        },
+        "commit_sha": {
+          "type": "string"
+        },
+        "location": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "path_dataset_component_blob_path": {
+          "type": "string"
+        },
+        "artifact_part": {
+          "$ref": "#/definitions/modeldbArtifactPart"
+        }
+      }
+    },
+    "versioningCommitVersionedBlobArtifactPartResponse": {
+      "type": "object"
     },
     "versioningComputeRepositoryDiffRequestResponse": {
       "type": "object",
@@ -3616,6 +3919,17 @@
         }
       }
     },
+    "versioningGetCommittedVersionedBlobArtifactPartsResponse": {
+      "type": "object",
+      "properties": {
+        "artifact_parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbArtifactPart"
+          }
+        }
+      }
+    },
     "versioningGetRepositoryRequestResponse": {
       "type": "object",
       "properties": {
@@ -3629,6 +3943,45 @@
       "properties": {
         "commit": {
           "$ref": "#/definitions/versioningCommit"
+        }
+      }
+    },
+    "versioningGetUrlForBlobVersioned": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "$ref": "#/definitions/versioningRepositoryIdentification"
+        },
+        "commit_sha": {
+          "type": "string"
+        },
+        "location": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "path_dataset_component_blob_path": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "versioningGetUrlForBlobVersionedResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -3933,20 +4286,6 @@
         }
       }
     },
-    "versioningPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
-    },
     "versioningPathDatasetBlob": {
       "type": "object",
       "properties": {
@@ -3976,6 +4315,9 @@
           "type": "string"
         },
         "md5": {
+          "type": "string"
+        },
+        "internal_versioned_path": {
           "type": "string"
         }
       }

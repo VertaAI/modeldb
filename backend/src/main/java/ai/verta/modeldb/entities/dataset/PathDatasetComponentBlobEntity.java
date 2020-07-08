@@ -23,12 +23,16 @@ public class PathDatasetComponentBlobEntity {
     this.last_modified_at_source = pathDatasetComponentBlob.getLastModifiedAtSource();
     this.sha256 = pathDatasetComponentBlob.getSha256();
     this.md5 = pathDatasetComponentBlob.getMd5();
+    this.internal_versioned_path = pathDatasetComponentBlob.getInternalVersionedPath();
   }
 
   @EmbeddedId private PathDatasetComponentBlobId id;
 
   @Column(name = "path", columnDefinition = "TEXT")
   private String path;
+
+  @Column(name = "internal_versioned_path", columnDefinition = "TEXT")
+  private String internal_versioned_path;
 
   @Column(name = "size")
   private Long size;
@@ -63,13 +67,17 @@ public class PathDatasetComponentBlobEntity {
   }
 
   public PathDatasetComponentBlob toProto() {
-    return PathDatasetComponentBlob.newBuilder()
-        .setPath(this.path)
-        .setSize(this.size)
-        .setLastModifiedAtSource(this.last_modified_at_source)
-        .setSha256(this.sha256)
-        .setMd5(this.md5)
-        .build();
+    PathDatasetComponentBlob.Builder pathDatasetComponentBlob =
+        PathDatasetComponentBlob.newBuilder()
+            .setPath(this.path)
+            .setSize(this.size)
+            .setLastModifiedAtSource(this.last_modified_at_source)
+            .setSha256(this.sha256)
+            .setMd5(this.md5);
+    if (this.internal_versioned_path != null) {
+      pathDatasetComponentBlob.setInternalVersionedPath(this.internal_versioned_path);
+    }
+    return pathDatasetComponentBlob.build();
   }
 }
 

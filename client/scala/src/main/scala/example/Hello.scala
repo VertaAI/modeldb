@@ -14,7 +14,7 @@ object Hello extends App {
       .flatMap(_.getOrCreateExperiment("experiment"))
       .flatMap(_.getOrCreateExperimentRun())
       .flatMap(run => {
-        //        run.hyperparameters += (("foo", 2), ("bar", "baz"))
+        run.hyperparameters += (("foo", 2), ("bar", "baz"))
         run.logArtifactObj("dummy", new DummyArtifact("hello")).get
         Try(run.getArtifactObj("dummy").get.asInstanceOf[DummyArtifact])
       })

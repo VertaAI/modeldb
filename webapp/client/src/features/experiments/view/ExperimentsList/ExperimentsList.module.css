@@ -1,0 +1,15 @@
+.preloader {
+}
+
+.experiment {
+}
+
+.experiments {
+  padding-bottom: 62px;
+}
+
+.pagination {
+  display: flex;
+  margin-top: 10px;
+  justify-content: center;
+}

@@ -1,17 +1,26 @@
 import { JsonConvert } from 'json2typescript';
 import * as R from 'ramda';
 
-import { IArtifact } from 'core/shared/models/Artifact';
-import { IFilterData } from 'core/features/filter/Model';
-import { IPagination } from 'core/shared/models/Pagination';
-import * as Experiment from 'models/Experiment';
+import { IArtifact } from 'shared/models/Artifact';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination, DataWithPagination } from 'shared/models/Pagination';
+import * as Experiment from 'shared/models/Experiment';
 import { convertServerCodeVersion } from 'services/serverModel/CodeVersion/converters';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
+import { convertServerUser } from 'services/serverModel/User/converters';
 import * as EntityAlreadyExistError from '../shared/EntityAlreadyExistError';
 
-import { BaseDataService } from 'core/services/BaseDataService';
-import makeLoadExperimentsRequest from './responseRequest/makeLoadExperimentsRequest';
+import { BaseDataService } from 'services/BaseDataService';
+import makeLoadExperimentsRequest, {
+  makeGetExperimentsByWorkspaceRequest,
+} from './responseRequest/makeLoadExperimentsRequest';
 import { ILoadExperimentsResponse } from './types';
+import { IWorkspace } from 'shared/models/Workspace';
+import { ISorting } from 'shared/models/Sorting';
+import {
+  IServerPaginatedResponse,
+  convertServerPaginationResponse,
+} from 'services/serverModel/Pagination/Pagination';
 
 export default class ExperimentsDataService extends BaseDataService {
   constructor() {
@@ -53,7 +62,7 @@ export default class ExperimentsDataService extends BaseDataService {
   }
 
   public async loadExperiment(projectId: string, experimentId: string) {
-    const response = await this.post({
+    const response = await this.post<IServerExperimentsResponse>({
       url: '/v1/modeldb/hydratedData/findHydratedExperiments',
       data: { project_id: projectId, experiment_ids: [experimentId] },
     });
@@ -70,22 +79,23 @@ export default class ExperimentsDataService extends BaseDataService {
       filters,
       pagination
     );
-    const response = await this.post({
+    const response = await this.post<IServerExperimentsResponse>({
       url: '/v1/modeldb/hydratedData/findHydratedExperiments',
       data: request,
     });
-    const res: ILoadExperimentsResponse = {
-      experiments: this.convertServerExperiments(response.data),
-      totalCount: response.data.total_records,
-    };
-    return res;
+
+    return convertServerPaginationResponse(
+      this.convertServerExperiment,
+      d => d.hydrated_experiments,
+      response.data
+    );
   }
 
   public async loadExperimentsByIds(
     projectId: string,
     experimentIds: string[]
   ): Promise<Experiment.default[]> {
-    const response = await this.post({
+    const response = await this.post<IServerExperimentsResponse>({
       url: '/v1/modeldb/hydratedData/findHydratedExperiments',
       data: {
         project_id: projectId,
@@ -93,6 +103,47 @@ export default class ExperimentsDataService extends BaseDataService {
       },
     });
     return this.convertServerExperiments(response.data);
+  }
+
+  public async loadExperimentsByIdsAndWorkspace(
+    workspaceName: IWorkspace['name'],
+    experimentIds: string[]
+  ): Promise<Experiment.default[]> {
+    if (experimentIds.length === 0) {
+      return [];
+    }
+    const response = await this.post<IServerExperimentsResponse>({
+      url: '/v1/modeldb/hydratedData/findHydratedExperiments',
+      data: {
+        workspace: workspaceName,
+        experiment_ids: experimentIds,
+      },
+    });
+    return this.convertServerExperiments(response.data);
+  }
+
+  public async loadExperimentsByWorkspace(
+    filters: IFilterData[],
+    pagination: IPagination,
+    workspaceName: IWorkspace['name'],
+    sorting?: ISorting
+  ): Promise<DataWithPagination<Experiment.default>> {
+    const request = await makeGetExperimentsByWorkspaceRequest({
+      workspaceName,
+      filters,
+      pagination,
+      sorting,
+    });
+    const response = await this.post<IServerExperimentsResponse>({
+      url: '/v1/modeldb/hydratedData/findHydratedExperiments',
+      data: request,
+    });
+
+    return convertServerPaginationResponse(
+      this.convertServerExperiment,
+      d => d.hydrated_experiments,
+      response.data
+    );
   }
 
   public async deleteExperiment(id: string): Promise<void> {
@@ -125,29 +176,40 @@ export default class ExperimentsDataService extends BaseDataService {
     return response.data.url;
   }
 
-  private convertServerExperiments(data: any): Experiment.default[] {
+  private convertServerExperiments(
+    data: IServerExperimentsResponse
+  ): Experiment.default[] {
     if (!data || !data.hydrated_experiments) {
       return [];
     }
 
-    return data.hydrated_experiments.map((serverHydratedExperiment: any) => {
-      const jsonConvert = new JsonConvert();
-      const experiment = jsonConvert.deserializeObject(
-        serverHydratedExperiment.experiment,
-        Experiment.default
-      );
+    return data.hydrated_experiments.map(this.convertServerExperiment);
+  }
 
-      const dates = convertServerEntityWithLoggedDates(
-        serverHydratedExperiment.experiment
-      );
-      experiment.dateUpdated = dates.dateUpdated;
-      experiment.dateCreated = dates.dateCreated;
+  private convertServerExperiment(
+    serverHydratedExperiment: any
+  ): Experiment.default {
+    const jsonConvert = new JsonConvert();
+    const experiment = jsonConvert.deserializeObject(
+      serverHydratedExperiment.experiment,
+      Experiment.default
+    );
 
-      experiment.codeVersion = convertServerCodeVersion(
-        serverHydratedExperiment.experiment.code_version_snapshot
-      );
+    const dates = convertServerEntityWithLoggedDates(
+      serverHydratedExperiment.experiment
+    );
+    experiment.dateUpdated = dates.dateUpdated;
+    experiment.dateCreated = dates.dateCreated;
 
-      return experiment;
-    });
+    experiment.codeVersion = convertServerCodeVersion(
+      serverHydratedExperiment.experiment.code_version_snapshot
+    );
+
+    return experiment;
   }
 }
+
+export type IServerExperimentsResponse = IServerPaginatedResponse<
+  'hydrated_experiments',
+  Record<string, any>
+>;

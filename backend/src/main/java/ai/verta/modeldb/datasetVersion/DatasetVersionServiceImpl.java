@@ -1,6 +1,7 @@
 package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddDatasetVersionAttributes;
 import ai.verta.modeldb.AddDatasetVersionTags;
 import ai.verta.modeldb.CreateDatasetVersion;
@@ -35,21 +36,14 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -70,61 +64,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     this.roleService = roleService;
     this.datasetDAO = datasetDAO;
     this.datasetVersionDAO = datasetVersionDAO;
-  }
-
-  /**
-   * For getting datasetVersions that user has access to (either as owner or a collaborator), fetch
-   * all datasetVersions of the requested datasetVersionIds then iterate that list and check if
-   * datasetVersion is accessible or not. The list of accessible datasetVersionIDs is built and
-   * returned by this method.
-   *
-   * @param requestedDatasetVersionIds : datasetVersion Ids
-   * @return List<String> : list of accessible DatasetVersion Id
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
-   */
-  public List<String> getAccessibleDatasetVersionIDs(
-      List<String> requestedDatasetVersionIds, ModelDBServiceActions modelDBServiceActions)
-      throws InvalidProtocolBufferException {
-    List<DatasetVersion> datasetVersionList =
-        datasetVersionDAO.getDatasetVersionsByBatchIds(requestedDatasetVersionIds);
-    if (datasetVersionList.size() == 0) {
-      Status statusMessage =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  ModelDBMessages.ACCESS_IS_DENIDE_DATASET_VERSION_ENTITIES_MSG
-                      + requestedDatasetVersionIds)
-              .build();
-      throw StatusProto.toStatusRuntimeException(statusMessage);
-    }
-    Map<String, String> datasetIdDatasetVersionIdMap = new HashMap<>();
-    for (DatasetVersion datasetVersion : datasetVersionList) {
-      datasetIdDatasetVersionIdMap.put(datasetVersion.getId(), datasetVersion.getDatasetId());
-    }
-    Set<String> datasetIdSet = new HashSet<>(datasetIdDatasetVersionIdMap.values());
-
-    List<String> accessibleDatasetVersionIds = new ArrayList<>();
-    List<String> allowedDatasetIds;
-    // Validate if current user has access to the entity or not
-    if (datasetIdSet.size() == 1) {
-      roleService.isSelfAllowed(
-          ModelDBServiceResourceTypes.DATASET,
-          modelDBServiceActions,
-          new ArrayList<>(datasetIdSet).get(0));
-      accessibleDatasetVersionIds.addAll(requestedDatasetVersionIds);
-    } else {
-      allowedDatasetIds =
-          roleService.getSelfAllowedResources(
-              ModelDBServiceResourceTypes.DATASET, modelDBServiceActions);
-      // Validate if current user has access to the entity or not
-      allowedDatasetIds.retainAll(datasetIdSet);
-      for (Map.Entry<String, String> entry : datasetIdDatasetVersionIdMap.entrySet()) {
-        if (allowedDatasetIds.contains(entry.getValue())) {
-          accessibleDatasetVersionIds.add(entry.getKey());
-        }
-      }
-    }
-    return accessibleDatasetVersionIds;
   }
 
   /**
@@ -204,6 +143,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       /*Get Data*/
       DatasetVersionDTO datasetVersionDTO =
           datasetVersionDAO.getDatasetVersions(
+              datasetDAO,
               request.getDatasetId(),
               request.getPageNumber(),
               request.getPageLimit(),
@@ -244,7 +184,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus = deleteDatasetVersions(Collections.singletonList(request.getId()));
+      boolean deleteStatus =
+          datasetVersionDAO.deleteDatasetVersions(Collections.singletonList(request.getId()));
 
       responseObserver.onNext(
           DeleteDatasetVersion.Response.newBuilder().setStatus(deleteStatus).build());
@@ -285,7 +226,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       /*Get Data*/
       DatasetVersionDTO datasetVersionDTO =
           datasetVersionDAO.getDatasetVersions(
-              request.getDatasetId(), 1, 1, request.getAscending(), sortKey, userInfo);
+              datasetDAO, request.getDatasetId(), 1, 1, request.getAscending(), sortKey, userInfo);
       if (datasetVersionDTO.getDatasetVersions().size() != 1) {
         logAndThrowError(
             "No datasetVersion found for dataset '" + request.getDatasetId(),
@@ -380,20 +321,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             ModelDBServiceActions.READ);
       }
 
-      if (!request.getDatasetVersionIdsList().isEmpty()) {
-        List<String> accessibleExperimentIds =
-            getAccessibleDatasetVersionIDs(
-                request.getDatasetVersionIdsList(), ModelDBServiceActions.READ);
-        request =
-            request
-                .toBuilder()
-                .clearDatasetVersionIds()
-                .addAllDatasetVersionIds(accessibleExperimentIds)
-                .build();
-      }
-
       DatasetVersionDTO datasetVersionPaginationDTO =
-          datasetVersionDAO.findDatasetVersions(request, userInfo);
+          datasetVersionDAO.findDatasetVersions(datasetDAO, request, userInfo);
       responseObserver.onNext(
           FindDatasetVersions.Response.newBuilder()
               .addAllDatasetVersions(datasetVersionPaginationDTO.getDatasetVersions())
@@ -427,7 +356,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -479,7 +408,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -520,7 +449,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -565,7 +494,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -617,7 +546,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -669,7 +598,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -720,7 +649,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -771,7 +700,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -812,7 +741,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.warn(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);
+        LOGGER.info(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -859,7 +788,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus = deleteDatasetVersions(request.getIdsList());
+      boolean deleteStatus = datasetVersionDAO.deleteDatasetVersions(request.getIdsList());
 
       responseObserver.onNext(
           DeleteDatasetVersions.Response.newBuilder().setStatus(deleteStatus).build());
@@ -869,21 +798,5 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteDatasetVersions.Response.getDefaultInstance());
     }
-  }
-
-  private boolean deleteDatasetVersions(List<String> datasetVersionIds)
-      throws InvalidProtocolBufferException {
-    List<String> accessibleDatasetVersionIds =
-        getAccessibleDatasetVersionIDs(datasetVersionIds, ModelDBServiceActions.UPDATE);
-    if (accessibleDatasetVersionIds.isEmpty()) {
-      Status statusMessage =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  ModelDBMessages.ACCESS_IS_DENIDE_DATASET_VERSION_ENTITIES_MSG + datasetVersionIds)
-              .build();
-      throw StatusProto.toStatusRuntimeException(statusMessage);
-    }
-    return datasetVersionDAO.deleteDatasetVersions(datasetVersionIds, true);
   }
 }

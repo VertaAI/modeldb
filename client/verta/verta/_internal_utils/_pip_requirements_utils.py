@@ -164,8 +164,6 @@ def process_requirements(requirements):
 
     add_verta_and_cloudpickle(requirements)
 
-    return requirements
-
 
 def strip_inexact_specifiers(requirements):
     """

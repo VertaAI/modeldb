@@ -20,53 +20,11 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb',
   syntax='proto3',
   serialized_options=b'P\001Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb',
-  serialized_pb=b'\n\x1bmodeldb/CommonService.proto\x12\x10\x61i.verta.modeldb\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1a\x63ommon/CommonService.proto\"s\n\x10\x41rtifactTypeEnum\"_\n\x0c\x41rtifactType\x12\t\n\x05IMAGE\x10\x00\x12\t\n\x05MODEL\x10\x01\x12\x0f\n\x0bTENSORBOARD\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\x08\n\x04\x42LOB\x10\x04\x12\n\n\x06STRING\x10\x05\x12\x08\n\x04\x43ODE\x10\x06\"\xb8\x01\n\x08\x41rtifact\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x11\n\tpath_only\x18\x03 \x01(\x08\x12\x46\n\rartifact_type\x18\x04 \x01(\x0e\x32/.ai.verta.modeldb.ArtifactTypeEnum.ArtifactType\x12\x1a\n\x12linked_artifact_id\x18\x05 \x01(\t\x12\x1a\n\x12\x66ilename_extension\x18\x06 \x01(\t\"\x17\n\x07\x46\x65\x61ture\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x7f\n\rGetAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x0f\n\x07get_all\x18\x03 \x01(\x08\x1a\x39\n\x08Response\x12-\n\nattributes\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"e\n\rAddAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tattribute\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"/\n\x07GetTags\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x18\n\x08Response\x12\x0c\n\x04tags\x18\x01 \x03(\t\"\x95\x01\n\x0b\x43odeVersion\x12\x35\n\x0cgit_snapshot\x18\x01 \x01(\x0b\x32\x1d.ai.verta.modeldb.GitSnapshotH\x00\x12\x32\n\x0c\x63ode_archive\x18\x02 \x01(\x0b\x32\x1a.ai.verta.modeldb.ArtifactH\x00\x12\x13\n\x0b\x64\x61te_logged\x18\x03 \x01(\x04\x42\x06\n\x04\x63ode\"t\n\x0bGitSnapshot\x12\x11\n\tfilepaths\x18\x01 \x03(\t\x12\x0c\n\x04repo\x18\x02 \x01(\t\x12\x0c\n\x04hash\x18\x03 \x01(\t\x12\x36\n\x08is_dirty\x18\x04 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\"\xbc\x01\n\rKeyValueQuery\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12\x39\n\x08operator\x18\x04 \x01(\x0e\x32\'.ai.verta.modeldb.OperatorEnum.Operator\"r\n\x0cOperatorEnum\"b\n\x08Operator\x12\x06\n\x02\x45Q\x10\x00\x12\x06\n\x02NE\x10\x01\x12\x06\n\x02GT\x10\x02\x12\x07\n\x03GTE\x10\x03\x12\x06\n\x02LT\x10\x04\x12\x07\n\x03LTE\x10\x05\x12\x0b\n\x07\x43ONTAIN\x10\x06\x12\x0f\n\x0bNOT_CONTAIN\x10\x07\x12\x06\n\x02IN\x10\x08\"\x97\x02\n\x11GetUrlForArtifact\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x0e\n\x06method\x18\x03 \x01(\t\x12\x46\n\rartifact_type\x18\x04 \x01(\x0e\x32/.ai.verta.modeldb.ArtifactTypeEnum.ArtifactType\x1a\x90\x01\n\x08Response\x12\x0b\n\x03url\x18\x01 \x01(\t\x12H\n\x06\x66ields\x18\x02 \x03(\x0b\x32\x38.ai.verta.modeldb.GetUrlForArtifact.Response.FieldsEntry\x1a-\n\x0b\x46ieldsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"b\n\x0cGetArtifacts\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x39\n\x08Response\x12-\n\tartifacts\x18\x01 \x03(\x0b\x32\x1a.ai.verta.modeldb.Artifact\"M\n\x11WorkspaceTypeEnum\"8\n\rWorkspaceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04USER\x10\x02\x42\x42P\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
+  serialized_pb=b'\n\x1bmodeldb/CommonService.proto\x12\x10\x61i.verta.modeldb\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1a\x63ommon/CommonService.proto\"1\n\x0c\x41rtifactPart\x12\x13\n\x0bpart_number\x18\x01 \x01(\x04\x12\x0c\n\x04\x65tag\x18\x02 \x01(\t\"\x17\n\x07\x46\x65\x61ture\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x7f\n\rGetAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x0f\n\x07get_all\x18\x03 \x01(\x08\x1a\x39\n\x08Response\x12-\n\nattributes\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"e\n\rAddAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tattribute\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"/\n\x07GetTags\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x18\n\x08Response\x12\x0c\n\x04tags\x18\x01 \x03(\t\"\x94\x01\n\x0b\x43odeVersion\x12\x35\n\x0cgit_snapshot\x18\x01 \x01(\x0b\x32\x1d.ai.verta.modeldb.GitSnapshotH\x00\x12\x31\n\x0c\x63ode_archive\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.ArtifactH\x00\x12\x13\n\x0b\x64\x61te_logged\x18\x03 \x01(\x04\x42\x06\n\x04\x63ode\"t\n\x0bGitSnapshot\x12\x11\n\tfilepaths\x18\x01 \x03(\t\x12\x0c\n\x04repo\x18\x02 \x01(\t\x12\x0c\n\x04hash\x18\x03 \x01(\t\x12\x36\n\x08is_dirty\x18\x04 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\"\xbc\x01\n\rKeyValueQuery\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12\x39\n\x08operator\x18\x04 \x01(\x0e\x32\'.ai.verta.modeldb.OperatorEnum.Operator\"r\n\x0cOperatorEnum\"b\n\x08Operator\x12\x06\n\x02\x45Q\x10\x00\x12\x06\n\x02NE\x10\x01\x12\x06\n\x02GT\x10\x02\x12\x07\n\x03GTE\x10\x03\x12\x06\n\x02LT\x10\x04\x12\x07\n\x03LTE\x10\x05\x12\x0b\n\x07\x43ONTAIN\x10\x06\x12\x0f\n\x0bNOT_CONTAIN\x10\x07\x12\x06\n\x02IN\x10\x08\"\xc8\x02\n\x11GetUrlForArtifact\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x0e\n\x06method\x18\x03 \x01(\t\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x13\n\x0bpart_number\x18\x05 \x01(\x04\x1a\xad\x01\n\x08Response\x12\x0b\n\x03url\x18\x01 \x01(\t\x12H\n\x06\x66ields\x18\x02 \x03(\x0b\x32\x38.ai.verta.modeldb.GetUrlForArtifact.Response.FieldsEntry\x12\x1b\n\x13multipart_upload_ok\x18\x03 \x01(\x08\x1a-\n\x0b\x46ieldsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"p\n\x12\x43ommitArtifactPart\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x35\n\rartifact_part\x18\x03 \x01(\x0b\x32\x1e.ai.verta.modeldb.ArtifactPart\x1a\n\n\x08Response\"x\n\x19GetCommittedArtifactParts\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x42\n\x08Response\x12\x36\n\x0e\x61rtifact_parts\x18\x01 \x03(\x0b\x32\x1e.ai.verta.modeldb.ArtifactPart\">\n\x17\x43ommitMultipartArtifact\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response\"a\n\x0cGetArtifacts\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x38\n\x08Response\x12,\n\tartifacts\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.ArtifactBBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
 
-
-_ARTIFACTTYPEENUM_ARTIFACTTYPE = _descriptor.EnumDescriptor(
-  name='ArtifactType',
-  full_name='ai.verta.modeldb.ArtifactTypeEnum.ArtifactType',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='IMAGE', index=0, number=0,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='MODEL', index=1, number=1,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='TENSORBOARD', index=2, number=2,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='DATA', index=3, number=3,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='BLOB', index=4, number=4,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='STRING', index=5, number=5,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='CODE', index=6, number=6,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=127,
-  serialized_end=222,
-)
-_sym_db.RegisterEnumDescriptor(_ARTIFACTTYPEENUM_ARTIFACTTYPE)
 
 _OPERATORENUM_OPERATOR = _descriptor.EnumDescriptor(
   name='Operator',
@@ -113,51 +71,38 @@ _OPERATORENUM_OPERATOR = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1194,
-  serialized_end=1292,
+  serialized_start=940,
+  serialized_end=1038,
 )
 _sym_db.RegisterEnumDescriptor(_OPERATORENUM_OPERATOR)
 
-_WORKSPACETYPEENUM_WORKSPACETYPE = _descriptor.EnumDescriptor(
-  name='WorkspaceType',
-  full_name='ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='UNKNOWN', index=0, number=0,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='ORGANIZATION', index=1, number=1,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='USER', index=2, number=2,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=1697,
-  serialized_end=1753,
-)
-_sym_db.RegisterEnumDescriptor(_WORKSPACETYPEENUM_WORKSPACETYPE)
 
-
-_ARTIFACTTYPEENUM = _descriptor.Descriptor(
-  name='ArtifactTypeEnum',
-  full_name='ai.verta.modeldb.ArtifactTypeEnum',
+_ARTIFACTPART = _descriptor.Descriptor(
+  name='ArtifactPart',
+  full_name='ai.verta.modeldb.ArtifactPart',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
+    _descriptor.FieldDescriptor(
+      name='part_number', full_name='ai.verta.modeldb.ArtifactPart.part_number', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='etag', full_name='ai.verta.modeldb.ArtifactPart.etag', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
-    _ARTIFACTTYPEENUM_ARTIFACTTYPE,
   ],
   serialized_options=None,
   is_extendable=False,
@@ -166,73 +111,7 @@ _ARTIFACTTYPEENUM = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=107,
-  serialized_end=222,
-)
-
-
-_ARTIFACT = _descriptor.Descriptor(
-  name='Artifact',
-  full_name='ai.verta.modeldb.Artifact',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='key', full_name='ai.verta.modeldb.Artifact.key', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='path', full_name='ai.verta.modeldb.Artifact.path', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='path_only', full_name='ai.verta.modeldb.Artifact.path_only', index=2,
-      number=3, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='artifact_type', full_name='ai.verta.modeldb.Artifact.artifact_type', index=3,
-      number=4, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='linked_artifact_id', full_name='ai.verta.modeldb.Artifact.linked_artifact_id', index=4,
-      number=5, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='filename_extension', full_name='ai.verta.modeldb.Artifact.filename_extension', index=5,
-      number=6, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=225,
-  serialized_end=409,
+  serialized_end=156,
 )
 
 
@@ -262,8 +141,8 @@ _FEATURE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=411,
-  serialized_end=434,
+  serialized_start=158,
+  serialized_end=181,
 )
 
 
@@ -293,8 +172,8 @@ _GETATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=506,
-  serialized_end=563,
+  serialized_start=253,
+  serialized_end=310,
 )
 
 _GETATTRIBUTES = _descriptor.Descriptor(
@@ -337,8 +216,8 @@ _GETATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=436,
-  serialized_end=563,
+  serialized_start=183,
+  serialized_end=310,
 )
 
 
@@ -368,8 +247,8 @@ _ADDATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=640,
-  serialized_end=666,
+  serialized_start=387,
+  serialized_end=413,
 )
 
 _ADDATTRIBUTES = _descriptor.Descriptor(
@@ -405,8 +284,8 @@ _ADDATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=565,
-  serialized_end=666,
+  serialized_start=312,
+  serialized_end=413,
 )
 
 
@@ -436,8 +315,8 @@ _GETTAGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=691,
-  serialized_end=715,
+  serialized_start=438,
+  serialized_end=462,
 )
 
 _GETTAGS = _descriptor.Descriptor(
@@ -466,8 +345,8 @@ _GETTAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=668,
-  serialized_end=715,
+  serialized_start=415,
+  serialized_end=462,
 )
 
 
@@ -514,8 +393,8 @@ _CODEVERSION = _descriptor.Descriptor(
       name='code', full_name='ai.verta.modeldb.CodeVersion.code',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=718,
-  serialized_end=867,
+  serialized_start=465,
+  serialized_end=613,
 )
 
 
@@ -566,8 +445,8 @@ _GITSNAPSHOT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=869,
-  serialized_end=985,
+  serialized_start=615,
+  serialized_end=731,
 )
 
 
@@ -618,8 +497,8 @@ _KEYVALUEQUERY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=988,
-  serialized_end=1176,
+  serialized_start=734,
+  serialized_end=922,
 )
 
 
@@ -643,8 +522,8 @@ _OPERATORENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1178,
-  serialized_end=1292,
+  serialized_start=924,
+  serialized_end=1038,
 )
 
 
@@ -681,8 +560,8 @@ _GETURLFORARTIFACT_RESPONSE_FIELDSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1529,
-  serialized_end=1574,
+  serialized_start=1324,
+  serialized_end=1369,
 )
 
 _GETURLFORARTIFACT_RESPONSE = _descriptor.Descriptor(
@@ -706,6 +585,13 @@ _GETURLFORARTIFACT_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='multipart_upload_ok', full_name='ai.verta.modeldb.GetUrlForArtifact.Response.multipart_upload_ok', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -718,8 +604,8 @@ _GETURLFORARTIFACT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1430,
-  serialized_end=1574,
+  serialized_start=1196,
+  serialized_end=1369,
 )
 
 _GETURLFORARTIFACT = _descriptor.Descriptor(
@@ -757,6 +643,13 @@ _GETURLFORARTIFACT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='part_number', full_name='ai.verta.modeldb.GetUrlForArtifact.part_number', index=4,
+      number=5, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -769,8 +662,205 @@ _GETURLFORARTIFACT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1295,
-  serialized_end=1574,
+  serialized_start=1041,
+  serialized_end=1369,
+)
+
+
+_COMMITARTIFACTPART_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.modeldb.CommitArtifactPart.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=253,
+  serialized_end=263,
+)
+
+_COMMITARTIFACTPART = _descriptor.Descriptor(
+  name='CommitArtifactPart',
+  full_name='ai.verta.modeldb.CommitArtifactPart',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.modeldb.CommitArtifactPart.id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.modeldb.CommitArtifactPart.key', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='artifact_part', full_name='ai.verta.modeldb.CommitArtifactPart.artifact_part', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_COMMITARTIFACTPART_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1371,
+  serialized_end=1483,
+)
+
+
+_GETCOMMITTEDARTIFACTPARTS_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.modeldb.GetCommittedArtifactParts.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='artifact_parts', full_name='ai.verta.modeldb.GetCommittedArtifactParts.Response.artifact_parts', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1539,
+  serialized_end=1605,
+)
+
+_GETCOMMITTEDARTIFACTPARTS = _descriptor.Descriptor(
+  name='GetCommittedArtifactParts',
+  full_name='ai.verta.modeldb.GetCommittedArtifactParts',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.modeldb.GetCommittedArtifactParts.id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.modeldb.GetCommittedArtifactParts.key', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_GETCOMMITTEDARTIFACTPARTS_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1485,
+  serialized_end=1605,
+)
+
+
+_COMMITMULTIPARTARTIFACT_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.modeldb.CommitMultipartArtifact.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=253,
+  serialized_end=263,
+)
+
+_COMMITMULTIPARTARTIFACT = _descriptor.Descriptor(
+  name='CommitMultipartArtifact',
+  full_name='ai.verta.modeldb.CommitMultipartArtifact',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.modeldb.CommitMultipartArtifact.id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.modeldb.CommitMultipartArtifact.key', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_COMMITMULTIPARTARTIFACT_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1607,
+  serialized_end=1669,
 )
 
 
@@ -800,8 +890,8 @@ _GETARTIFACTS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1617,
-  serialized_end=1674,
+  serialized_start=1712,
+  serialized_end=1768,
 )
 
 _GETARTIFACTS = _descriptor.Descriptor(
@@ -837,44 +927,17 @@ _GETARTIFACTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1576,
-  serialized_end=1674,
+  serialized_start=1671,
+  serialized_end=1768,
 )
 
-
-_WORKSPACETYPEENUM = _descriptor.Descriptor(
-  name='WorkspaceTypeEnum',
-  full_name='ai.verta.modeldb.WorkspaceTypeEnum',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-    _WORKSPACETYPEENUM_WORKSPACETYPE,
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1676,
-  serialized_end=1753,
-)
-
-_ARTIFACTTYPEENUM_ARTIFACTTYPE.containing_type = _ARTIFACTTYPEENUM
-_ARTIFACT.fields_by_name['artifact_type'].enum_type = _ARTIFACTTYPEENUM_ARTIFACTTYPE
 _GETATTRIBUTES_RESPONSE.fields_by_name['attributes'].message_type = common_dot_CommonService__pb2._KEYVALUE
 _GETATTRIBUTES_RESPONSE.containing_type = _GETATTRIBUTES
 _ADDATTRIBUTES_RESPONSE.containing_type = _ADDATTRIBUTES
 _ADDATTRIBUTES.fields_by_name['attribute'].message_type = common_dot_CommonService__pb2._KEYVALUE
 _GETTAGS_RESPONSE.containing_type = _GETTAGS
 _CODEVERSION.fields_by_name['git_snapshot'].message_type = _GITSNAPSHOT
-_CODEVERSION.fields_by_name['code_archive'].message_type = _ARTIFACT
+_CODEVERSION.fields_by_name['code_archive'].message_type = common_dot_CommonService__pb2._ARTIFACT
 _CODEVERSION.oneofs_by_name['code'].fields.append(
   _CODEVERSION.fields_by_name['git_snapshot'])
 _CODEVERSION.fields_by_name['git_snapshot'].containing_oneof = _CODEVERSION.oneofs_by_name['code']
@@ -889,12 +952,15 @@ _OPERATORENUM_OPERATOR.containing_type = _OPERATORENUM
 _GETURLFORARTIFACT_RESPONSE_FIELDSENTRY.containing_type = _GETURLFORARTIFACT_RESPONSE
 _GETURLFORARTIFACT_RESPONSE.fields_by_name['fields'].message_type = _GETURLFORARTIFACT_RESPONSE_FIELDSENTRY
 _GETURLFORARTIFACT_RESPONSE.containing_type = _GETURLFORARTIFACT
-_GETURLFORARTIFACT.fields_by_name['artifact_type'].enum_type = _ARTIFACTTYPEENUM_ARTIFACTTYPE
-_GETARTIFACTS_RESPONSE.fields_by_name['artifacts'].message_type = _ARTIFACT
+_GETURLFORARTIFACT.fields_by_name['artifact_type'].enum_type = common_dot_CommonService__pb2._ARTIFACTTYPEENUM_ARTIFACTTYPE
+_COMMITARTIFACTPART_RESPONSE.containing_type = _COMMITARTIFACTPART
+_COMMITARTIFACTPART.fields_by_name['artifact_part'].message_type = _ARTIFACTPART
+_GETCOMMITTEDARTIFACTPARTS_RESPONSE.fields_by_name['artifact_parts'].message_type = _ARTIFACTPART
+_GETCOMMITTEDARTIFACTPARTS_RESPONSE.containing_type = _GETCOMMITTEDARTIFACTPARTS
+_COMMITMULTIPARTARTIFACT_RESPONSE.containing_type = _COMMITMULTIPARTARTIFACT
+_GETARTIFACTS_RESPONSE.fields_by_name['artifacts'].message_type = common_dot_CommonService__pb2._ARTIFACT
 _GETARTIFACTS_RESPONSE.containing_type = _GETARTIFACTS
-_WORKSPACETYPEENUM_WORKSPACETYPE.containing_type = _WORKSPACETYPEENUM
-DESCRIPTOR.message_types_by_name['ArtifactTypeEnum'] = _ARTIFACTTYPEENUM
-DESCRIPTOR.message_types_by_name['Artifact'] = _ARTIFACT
+DESCRIPTOR.message_types_by_name['ArtifactPart'] = _ARTIFACTPART
 DESCRIPTOR.message_types_by_name['Feature'] = _FEATURE
 DESCRIPTOR.message_types_by_name['GetAttributes'] = _GETATTRIBUTES
 DESCRIPTOR.message_types_by_name['AddAttributes'] = _ADDATTRIBUTES
@@ -904,23 +970,18 @@ DESCRIPTOR.message_types_by_name['GitSnapshot'] = _GITSNAPSHOT
 DESCRIPTOR.message_types_by_name['KeyValueQuery'] = _KEYVALUEQUERY
 DESCRIPTOR.message_types_by_name['OperatorEnum'] = _OPERATORENUM
 DESCRIPTOR.message_types_by_name['GetUrlForArtifact'] = _GETURLFORARTIFACT
+DESCRIPTOR.message_types_by_name['CommitArtifactPart'] = _COMMITARTIFACTPART
+DESCRIPTOR.message_types_by_name['GetCommittedArtifactParts'] = _GETCOMMITTEDARTIFACTPARTS
+DESCRIPTOR.message_types_by_name['CommitMultipartArtifact'] = _COMMITMULTIPARTARTIFACT
 DESCRIPTOR.message_types_by_name['GetArtifacts'] = _GETARTIFACTS
-DESCRIPTOR.message_types_by_name['WorkspaceTypeEnum'] = _WORKSPACETYPEENUM
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-ArtifactTypeEnum = _reflection.GeneratedProtocolMessageType('ArtifactTypeEnum', (_message.Message,), {
-  'DESCRIPTOR' : _ARTIFACTTYPEENUM,
+ArtifactPart = _reflection.GeneratedProtocolMessageType('ArtifactPart', (_message.Message,), {
+  'DESCRIPTOR' : _ARTIFACTPART,
   '__module__' : 'modeldb.CommonService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.ArtifactTypeEnum)
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.ArtifactPart)
   })
-_sym_db.RegisterMessage(ArtifactTypeEnum)
-
-Artifact = _reflection.GeneratedProtocolMessageType('Artifact', (_message.Message,), {
-  'DESCRIPTOR' : _ARTIFACT,
-  '__module__' : 'modeldb.CommonService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.Artifact)
-  })
-_sym_db.RegisterMessage(Artifact)
+_sym_db.RegisterMessage(ArtifactPart)
 
 Feature = _reflection.GeneratedProtocolMessageType('Feature', (_message.Message,), {
   'DESCRIPTOR' : _FEATURE,
@@ -1025,6 +1086,51 @@ _sym_db.RegisterMessage(GetUrlForArtifact)
 _sym_db.RegisterMessage(GetUrlForArtifact.Response)
 _sym_db.RegisterMessage(GetUrlForArtifact.Response.FieldsEntry)
 
+CommitArtifactPart = _reflection.GeneratedProtocolMessageType('CommitArtifactPart', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _COMMITARTIFACTPART_RESPONSE,
+    '__module__' : 'modeldb.CommonService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.modeldb.CommitArtifactPart.Response)
+    })
+  ,
+  'DESCRIPTOR' : _COMMITARTIFACTPART,
+  '__module__' : 'modeldb.CommonService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.CommitArtifactPart)
+  })
+_sym_db.RegisterMessage(CommitArtifactPart)
+_sym_db.RegisterMessage(CommitArtifactPart.Response)
+
+GetCommittedArtifactParts = _reflection.GeneratedProtocolMessageType('GetCommittedArtifactParts', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _GETCOMMITTEDARTIFACTPARTS_RESPONSE,
+    '__module__' : 'modeldb.CommonService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.modeldb.GetCommittedArtifactParts.Response)
+    })
+  ,
+  'DESCRIPTOR' : _GETCOMMITTEDARTIFACTPARTS,
+  '__module__' : 'modeldb.CommonService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.GetCommittedArtifactParts)
+  })
+_sym_db.RegisterMessage(GetCommittedArtifactParts)
+_sym_db.RegisterMessage(GetCommittedArtifactParts.Response)
+
+CommitMultipartArtifact = _reflection.GeneratedProtocolMessageType('CommitMultipartArtifact', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _COMMITMULTIPARTARTIFACT_RESPONSE,
+    '__module__' : 'modeldb.CommonService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.modeldb.CommitMultipartArtifact.Response)
+    })
+  ,
+  'DESCRIPTOR' : _COMMITMULTIPARTARTIFACT,
+  '__module__' : 'modeldb.CommonService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.CommitMultipartArtifact)
+  })
+_sym_db.RegisterMessage(CommitMultipartArtifact)
+_sym_db.RegisterMessage(CommitMultipartArtifact.Response)
+
 GetArtifacts = _reflection.GeneratedProtocolMessageType('GetArtifacts', (_message.Message,), {
 
   'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
@@ -1039,13 +1145,6 @@ GetArtifacts = _reflection.GeneratedProtocolMessageType('GetArtifacts', (_messag
   })
 _sym_db.RegisterMessage(GetArtifacts)
 _sym_db.RegisterMessage(GetArtifacts.Response)
-
-WorkspaceTypeEnum = _reflection.GeneratedProtocolMessageType('WorkspaceTypeEnum', (_message.Message,), {
-  'DESCRIPTOR' : _WORKSPACETYPEENUM,
-  '__module__' : 'modeldb.CommonService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.WorkspaceTypeEnum)
-  })
-_sym_db.RegisterMessage(WorkspaceTypeEnum)
 
 
 DESCRIPTOR._options = None

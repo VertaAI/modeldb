@@ -5,22 +5,22 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import DatasetEntityDescriptionManager from 'components/DescriptionManager/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
-import Attributes from 'components/ModelRecordProps/Attributes/Attributes/Attributes';
-import SummaryInfo from 'components/SummaryViewComponents/SummaryInfo/SummaryInfo';
-import DatasetEntityTagsManager from 'components/TagsManager/DatasetEntityTagsManager/DatasetEntityTagsManager';
-import { initialCommunication } from 'core/shared/utils/redux/communication';
-import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import routes, { GetRouteParams } from 'routes';
+import { initialCommunication } from 'shared/utils/redux/communication';
+import DeleteFAI from 'shared/view/elements/DeleteFAI/DeleteFAI';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import routes, { GetRouteParams } from 'shared/routes';
 import {
   selectCommunications,
   selectDataset,
   deleteDataset,
   selectLoadingDataset,
-} from 'store/datasets';
-import { IApplicationState } from 'store/store';
+} from 'features/datasets/store';
+import { IApplicationState } from 'setup/store/store';
+import DatasetEntityTagsManager from 'features/tagsManager/view/DatasetEntityTagsManager/DatasetEntityTagsManager';
+import Attributes from 'shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
+import DatasetEntityDescriptionManager from 'features/descriptionManager/view/DatasetEntityDescriptionManager/DatasetEntityDescriptionManager';
+import SummaryInfo from 'shared/view/elements/SummaryViewComponents/SummaryInfo/SummaryInfo';
 
 import DatasetDetailsLayout from '../shared/DatasetDetailsLayout/DatasetDetailsLayout';
 import styles from './DatasetSummaryPage.module.css';

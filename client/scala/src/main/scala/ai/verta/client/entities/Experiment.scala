@@ -16,7 +16,7 @@ class Experiment(val clientSet: ClientSet, val proj: Project, val expt: ModeldbE
 
     GetOrCreateEntity.getOrCreate[ExperimentRun](
       get = () => {
-        clientSet.experimentRunService.getExperimentRunByName(internalName, expt.id.get)
+        clientSet.experimentRunService.getExperimentRunByName(Some(internalName), expt.id)
           .map(r => if (r.experiment_run.isEmpty) null else new ExperimentRun(clientSet, this, r.experiment_run.get))
       },
       create = () => {
@@ -33,7 +33,7 @@ class Experiment(val clientSet: ClientSet, val proj: Project, val expt: ModeldbE
   def tags()(implicit ec: ExecutionContext) = new Tags(clientSet, ec, this)
 
   override def getTags()(implicit ec: ExecutionContext): Try[List[String]] = {
-    clientSet.experimentService.getExperimentTags(expt.id.get)
+    clientSet.experimentService.getExperimentTags(expt.id)
       .map(r => r.tags.getOrElse(Nil))
   }
 

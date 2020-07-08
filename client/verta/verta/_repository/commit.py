@@ -5,6 +5,9 @@ from __future__ import print_function
 import collections
 from datetime import datetime
 import heapq
+import time
+
+import requests
 
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
@@ -113,7 +116,7 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.GetCommitRequest.Response)
         commit_msg = response_msg.commit
         return cls(conn, repo, commit_msg, **kwargs)
@@ -122,6 +125,154 @@ class Commit(object):
     def _raise_lookup_error(path):
         e = LookupError("Commit does not contain path \"{}\"".format(path))
         six.raise_from(e, None)
+
+    # TODO: consolidate this with similar method in `_ModelDBEntity`
+    def _get_url_for_artifact(self, blob_path, dataset_component_path, method, part_num=0):
+        """
+        Obtains a URL to use for accessing stored artifacts.
+
+        Parameters
+        ----------
+        blob_path : str
+            Path to blob within repo.
+        dataset_component_path : str
+            Filepath in dataset component blob.
+        method : {'GET', 'PUT'}
+            HTTP method to request for the generated URL.
+        part_num : int, optional
+            If using Multipart Upload, number of part to be uploaded.
+
+        Returns
+        -------
+        response_msg : `_VersioningService.GetUrlForBlobVersioned.Response`
+            Backend response.
+
+        """
+        if method.upper() not in ("GET", "PUT"):
+            raise ValueError("`method` must be one of {'GET', 'PUT'}")
+
+        Message = _VersioningService.GetUrlForBlobVersioned
+        msg = Message(
+            location=path_to_location(blob_path),
+            path_dataset_component_blob_path=dataset_component_path,
+            method=method,
+            part_number=part_num,
+        )
+        data = _utils.proto_to_json(msg)
+        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/getUrlForBlobVersioned".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._repo.id,
+            self.id,
+        )
+        response = _utils.make_request("POST", endpoint, self._conn, json=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+
+        url = response_msg.url
+        # accommodate port-forwarded NFS store
+        if 'https://localhost' in url[:20]:
+            url = 'http' + url[5:]
+        if 'localhost%3a' in url[:20]:
+            url = url.replace('localhost%3a', 'localhost:')
+        if 'localhost%3A' in url[:20]:
+            url = url.replace('localhost%3A', 'localhost:')
+        response_msg.url = url
+
+        return response_msg
+
+    # TODO: consolidate this with similar method in `ExperimentRun`
+    def _upload_artifact(self, blob_path, dataset_component_path, file_handle, part_size=64*(10**6)):
+        """
+        Uploads `file_handle` to ModelDB artifact store.
+
+        Parameters
+        ----------
+        blob_path : str
+            Path to blob within repo.
+        dataset_component_path : str
+            Filepath in dataset component blob.
+        file_handle : file-like
+            Artifact to be uploaded.
+        part_size : int, default 64 MB
+            If using multipart upload, number of bytes to upload per part.
+
+        """
+        file_handle.seek(0)
+
+        # check if multipart upload ok
+        url_for_artifact = self._get_url_for_artifact(blob_path, dataset_component_path, "PUT", part_num=1)
+
+        print("uploading {} to ModelDB".format(dataset_component_path))
+        if url_for_artifact.multipart_upload_ok:
+            # TODO: parallelize this
+            file_parts = iter(lambda: file_handle.read(part_size), b'')
+            for part_num, file_part in enumerate(file_parts, start=1):
+                print("uploading part {}".format(part_num), end='\r')
+
+                # get presigned URL
+                url = self._get_url_for_artifact(blob_path, dataset_component_path, "PUT", part_num=part_num).url
+
+                # wrap file part into bytestream to avoid OverflowError
+                #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
+                #     ``requests`` will overwhelm CPython's SSL lib when it tries to sign the
+                #     payload. But passing a buffered bytestream instead of the raw bytestring
+                #     indicates to ``requests`` that it should perform a streaming upload via
+                #     HTTP/1.1 chunked transfer encoding and avoid this issue.
+                #     https://github.com/psf/requests/issues/2717
+                part_stream = six.BytesIO(file_part)
+
+                # upload part
+                #     Retry connection errors, to make large multipart uploads more robust.
+                for _ in range(3):
+                    try:
+                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+                    except requests.ConnectionError:  # e.g. broken pipe
+                        time.sleep(1)
+                        continue  # try again
+                    else:
+                        break
+                _utils.raise_for_http_error(response)
+
+                # commit part
+                url = "{}://{}/api/v1/modeldb/versioning/commitVersionedBlobArtifactPart".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                )
+                msg = _VersioningService.CommitVersionedBlobArtifactPart(
+                    commit_sha=self.id,
+                    location=path_to_location(blob_path),
+                    path_dataset_component_blob_path=dataset_component_path,
+                )
+                msg.repository_id.repo_id = self._repo.id
+                msg.artifact_part.part_number = part_num
+                msg.artifact_part.etag = response.headers['ETag']
+                data = _utils.proto_to_json(msg)
+                response = _utils.make_request("POST", url, self._conn, json=data)
+                _utils.raise_for_http_error(response)
+            print()
+
+            # complete upload
+            url = "{}://{}/api/v1/modeldb/versioning/commitMultipartVersionedBlobArtifact".format(
+                self._conn.scheme,
+                self._conn.socket,
+            )
+            msg = _VersioningService.CommitMultipartVersionedBlobArtifact(
+                commit_sha=self.id,
+                location=path_to_location(blob_path),
+                path_dataset_component_blob_path=dataset_component_path,
+            )
+            msg.repository_id.repo_id = self._repo.id
+            data = _utils.proto_to_json(msg)
+            response = _utils.make_request("POST", url, self._conn, json=data)
+            _utils.raise_for_http_error(response)
+        else:
+            # upload full artifact
+            response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=file_handle)
+            _utils.raise_for_http_error(response)
+
+        print("upload complete")
 
     def _update_blobs_from_commit(self, id_):
         """Fetches commit `id_`'s blobs and stores them as objects in `self._blobs`."""
@@ -134,7 +285,7 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.ListCommitBlobsRequest.Response)
         self._blobs.update({
             '/'.join(blob_msg.location): blob_msg_to_object(blob_msg.blob)
@@ -178,18 +329,7 @@ class Commit(object):
         for path, blob in six.viewitems(self._blobs):
             blob_msg = _VersioningService.BlobExpanded()
             blob_msg.location.extend(path_to_location(path))  # pylint: disable=no-member
-            # TODO: move typecheck & CopyFrom to root blob base class
-            if isinstance(blob, code._Code):
-                blob_msg.blob.code.CopyFrom(blob._msg)  # pylint: disable=no-member
-            elif isinstance(blob, configuration._Configuration):
-                blob_msg.blob.config.CopyFrom(blob._msg)  # pylint: disable=no-member
-            elif isinstance(blob, dataset._Dataset):
-                blob_msg.blob.dataset.CopyFrom(blob._msg)  # pylint: disable=no-member
-            elif isinstance(blob, environment._Environment):
-                blob_msg.blob.environment.CopyFrom(blob._msg)  # pylint: disable=no-member
-            else:
-                raise RuntimeError("Commit contains an unexpected item {};"
-                                   " please notify the Verta development team".format(type(blob)))
+            blob_msg.blob.CopyFrom(blob._as_proto())
             msg.blobs.append(blob_msg)  # pylint: disable=no-member
 
         return msg
@@ -235,7 +375,7 @@ class Commit(object):
             response = _utils.make_request("GET", endpoint, self._conn, params=data)
             _utils.raise_for_http_error(response)
 
-            response_msg = _utils.json_to_proto(response.json(), msg.Response)
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
             folder_msg = response_msg.folder
 
             folder_path = '/'.join(location)
@@ -296,9 +436,15 @@ class Commit(object):
         self._lazy_load_blobs()
 
         try:
-            return self._blobs[path]
+            blob = self._blobs[path]
         except KeyError:
             self._raise_lookup_error(path)
+
+        if isinstance(blob, dataset._Dataset):
+            # for _Dataset.download()
+            blob._set_commit_and_blob_path(self, path)
+
+        return blob
 
     def remove(self, path):
         """
@@ -329,14 +475,35 @@ class Commit(object):
         """
         Saves this commit to ModelDB.
 
+        .. note::
+
+            If this commit contains new S3 datasets to be versioned by ModelDB, a very large
+            temporary download may occur before uploading them to ModelDB.
+
         Parameters
         ----------
         message : str
             Description of this Commit.
 
         """
+        # prepare ModelDB-versioned blobs, and track for upload after commit save
+        mdb_versioned_blobs = dict()
+        for blob_path, blob in self._blobs.items():
+            if isinstance(blob, dataset._Dataset) and blob._mdb_versioned:
+                blob._prepare_components_to_upload()
+                mdb_versioned_blobs[blob_path] = blob
+
         msg = self._to_create_msg(commit_message=message)
         self._save(msg)
+
+        # upload ModelDB-versioned blobs
+        for blob_path, blob in mdb_versioned_blobs.items():
+            for component in blob._components_map.values():
+                if component._internal_versioned_path:
+                    with open(component._local_path, 'rb') as f:
+                        self._upload_artifact(blob_path, component.path, f)
+
+            blob._clean_up_uploaded_components()
 
     def _save(self, proto_message):
         data = _utils.proto_to_json(proto_message)
@@ -347,7 +514,7 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-        response_msg = _utils.json_to_proto(response.json(), proto_message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), proto_message.Response)
 
         self._become_saved_child(response_msg.commit.commit_sha)
 
@@ -392,21 +559,27 @@ class Commit(object):
             Ancestor commit.
 
         """
+        if self.id is None:  # unsaved commit
+            # use parent
+            commit_id = self._parent_ids[0]
+        else:
+            commit_id = self.id
+
         endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/log".format(
             self._conn.scheme,
             self._conn.socket,
             self._repo.id,
-            self.id,
+            commit_id,
         )
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.ListCommitsLogRequest.Response)
         commits = response_msg.commits
 
         for c in commits:
-            yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == self.id else None)
+            yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == commit_id else None)
 
     def new_branch(self, branch):
         """
@@ -487,7 +660,7 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.ComputeRepositoryDiffRequest.Response)
         return diff_module.Diff(response_msg.diffs)
 
@@ -528,14 +701,14 @@ class Commit(object):
 
     def revert(self, other=None, message=None):
         """
-        Reverts all the Commits beginning with `other` up through this Commit.
+        Reverts `other`.
 
         This method creates a new Commit in ModelDB, and assigns a new ID to this object.
 
         Parameters
         ----------
         other : :class:`Commit`, optional
-            Base for the revert. If not provided, this Commit will be reverted.
+            Commit to be reverted. If not provided, this Commit will be reverted.
         message : str, optional
             Description of the revert. If not provided, a default message will be used.
 
@@ -571,7 +744,7 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
 
         self._become_saved_child(response_msg.commit.commit_sha)
 
@@ -674,7 +847,7 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
 
         # raise for conflict
         if response_msg.conflicts:
@@ -692,29 +865,29 @@ def blob_msg_to_object(blob_msg):
     # TODO: make this more concise
     content_type = blob_msg.WhichOneof('content')
     content_subtype = None
-    obj = None
+    blob_cls = None
     if content_type == 'code':
         content_subtype = blob_msg.code.WhichOneof('content')
         if content_subtype == 'git':
-            obj = code.Git(_autocapture=False)
+            blob_cls = code.Git
         elif content_subtype == 'notebook':
-            obj = code.Notebook(_autocapture=False)
+            blob_cls = code.Notebook
     elif content_type == 'config':
-        obj = configuration.Hyperparameters()
+        blob_cls = configuration.Hyperparameters
     elif content_type == 'dataset':
         content_subtype = blob_msg.dataset.WhichOneof('content')
         if content_subtype == 's3':
-            obj = dataset.S3(paths=[])
+            blob_cls = dataset.S3
         elif content_subtype == 'path':
-            obj = dataset.Path(paths=[])
+            blob_cls = dataset.Path
     elif content_type == 'environment':
         content_subtype = blob_msg.environment.WhichOneof('content')
         if content_subtype == 'python':
-            obj = environment.Python(_autocapture=False)
+            blob_cls = environment.Python
         elif content_subtype == 'docker':
             raise NotImplementedError
 
-    if obj is None:
+    if blob_cls is None:
         if content_subtype is None:
             raise NotImplementedError("found unexpected content type {};"
                                       " please notify the Verta development team".format(content_type))
@@ -722,8 +895,7 @@ def blob_msg_to_object(blob_msg):
             raise NotImplementedError("found unexpected {} type {};"
                                       " please notify the Verta development team".format(content_type, content_subtype))
 
-    obj._msg.CopyFrom(getattr(blob_msg, content_type))
-    return obj
+    return blob_cls._from_proto(blob_msg)
 
 
 def path_to_location(path):

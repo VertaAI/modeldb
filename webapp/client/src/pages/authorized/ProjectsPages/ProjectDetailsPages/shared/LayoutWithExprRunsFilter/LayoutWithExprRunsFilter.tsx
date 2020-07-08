@@ -2,18 +2,18 @@ import React from 'react';
 import { Omit, connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
 
-import { IFilterContext } from 'core/features/filter';
-import { defaultQuickFilters } from 'features/filter/Model';
-import ModelRecord from 'models/ModelRecord';
-import routes, { GetRouteParams } from 'routes';
+import { IFilterContext } from 'features/filter';
+import { defaultQuickFilters } from 'shared/models/Filters';
+import ModelRecord from 'shared/models/ModelRecord';
+import routes, { GetRouteParams } from 'shared/routes';
 import {
   loadExperimentRuns,
   resetPagination,
   getExperimentRunsOptions,
   lazyLoadChartData,
   selectSequentialChartData,
-} from 'store/experimentRuns';
-import { IConnectedReduxProps, IApplicationState } from 'store/store';
+} from 'features/experimentRuns/store';
+import { IApplicationState, IConnectedReduxProps } from 'setup/store/store';
 
 import ProjectsPagesLayout from '../../../shared/ProjectsPagesLayout/ProjectsPagesLayout';
 import makeExprRunsFilterContextName from '../makeExprRunsFilterContextName';
@@ -67,13 +67,7 @@ class ProjectDetailsPage extends React.Component<AllProps, ILocalState> {
         }
 
         if (isChartsPage) {
-          if (this.props.sequentialChartData) {
-            if (this.props.sequentialChartData.length === 0) {
-              dispatch(lazyLoadChartData(projectId, filters));
-            }
-          } else {
-            dispatch(lazyLoadChartData(projectId, filters));
-          }
+          dispatch(lazyLoadChartData(projectId, filters));
         } else {
           dispatch(loadExperimentRuns(projectId, filters));
         }
@@ -90,9 +84,8 @@ class ProjectDetailsPage extends React.Component<AllProps, ILocalState> {
     return (
       <ProjectsPagesLayout
         filterBarSettings={{
-          placeholderText: 'Drag and drop parameters and tags here',
           context: this.filterContext,
-          withFilterIdsSection: true,
+          title: 'Filter Runs',
         }}
       >
         <div className={styles.root}>

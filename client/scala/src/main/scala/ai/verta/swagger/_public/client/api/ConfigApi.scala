@@ -1,6 +1,7 @@
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT
 package ai.verta.swagger._public.client.api
 
+import scala.collection.mutable
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 import scala.util.Try

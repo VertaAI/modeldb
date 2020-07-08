@@ -13,6 +13,8 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
@@ -67,6 +69,7 @@ public class DatasetVersionTest {
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
   private static App app;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -103,10 +106,14 @@ public class DatasetVersionTest {
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -242,18 +249,6 @@ public class DatasetVersionTest {
         "DatasetVersion version not match with expected DatasetVersion version",
         ++version,
         datasetVersion2.getVersion());
-
-    GetDatasetById getDatasetById = GetDatasetById.newBuilder().setId(dataset.getId()).build();
-    GetDatasetById.Response getDatasetByIdResponse =
-        datasetServiceStub.getDatasetById(getDatasetById);
-    assertEquals(
-        "Dataset Id not match with expected dataset ID",
-        dataset.getId(),
-        getDatasetByIdResponse.getDataset().getId());
-    assertNotEquals(
-        "Dataset updated time not match with expected dataset updated time",
-        dataset.getTimeUpdated(),
-        getDatasetByIdResponse.getDataset().getTimeUpdated());
 
     DeleteDatasetVersion deleteDatasetVersionRequest =
         DeleteDatasetVersion.newBuilder().setId(datasetVersion1.getId()).build();
@@ -711,18 +706,6 @@ public class DatasetVersionTest {
         datasetVersion.getTimeUpdated(),
         response.getDatasetVersion().getTimeUpdated());
 
-    GetDatasetById getDatasetById = GetDatasetById.newBuilder().setId(dataset.getId()).build();
-    GetDatasetById.Response getDatasetByIdResponse =
-        datasetServiceStub.getDatasetById(getDatasetById);
-    assertEquals(
-        "Dataset Id not match with expected dataset ID",
-        dataset.getId(),
-        getDatasetByIdResponse.getDataset().getId());
-    assertNotEquals(
-        "Dataset updated time not match with expected dataset updated time",
-        dataset.getTimeUpdated(),
-        getDatasetByIdResponse.getDataset().getTimeUpdated());
-
     DeleteDatasetVersion deleteDatasetVersion =
         DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =
@@ -891,18 +874,6 @@ public class DatasetVersionTest {
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
-
-    GetDatasetById getDatasetById = GetDatasetById.newBuilder().setId(dataset.getId()).build();
-    GetDatasetById.Response getDatasetByIdResponse =
-        datasetServiceStub.getDatasetById(getDatasetById);
-    assertEquals(
-        "Dataset Id not match with expected dataset ID",
-        dataset.getId(),
-        getDatasetByIdResponse.getDataset().getId());
-    assertNotEquals(
-        "Dataset updated time not match with expected dataset updated time",
-        dataset.getTimeUpdated(),
-        getDatasetByIdResponse.getDataset().getTimeUpdated());
 
     DeleteDatasetVersion deleteDatasetVersion =
         DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
@@ -1532,18 +1503,6 @@ public class DatasetVersionTest {
         datasetVersion.getTimeUpdated(),
         response.getDatasetVersion().getTimeUpdated());
 
-    GetDatasetById getDatasetById = GetDatasetById.newBuilder().setId(dataset.getId()).build();
-    GetDatasetById.Response getDatasetByIdResponse =
-        datasetServiceStub.getDatasetById(getDatasetById);
-    assertEquals(
-        "Dataset Id not match with expected dataset ID",
-        dataset.getId(),
-        getDatasetByIdResponse.getDataset().getId());
-    assertNotEquals(
-        "Dataset updated time not match with expected dataset updated time",
-        dataset.getTimeUpdated(),
-        getDatasetByIdResponse.getDataset().getTimeUpdated());
-
     DeleteDatasetVersion deleteDatasetVersion =
         DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =
@@ -1868,18 +1827,6 @@ public class DatasetVersionTest {
           response.getDatasetVersion().getTimeUpdated());
     }
 
-    GetDatasetById getDatasetById = GetDatasetById.newBuilder().setId(dataset.getId()).build();
-    GetDatasetById.Response getDatasetByIdResponse =
-        datasetServiceStub.getDatasetById(getDatasetById);
-    assertEquals(
-        "Dataset Id not match with expected dataset ID",
-        dataset.getId(),
-        getDatasetByIdResponse.getDataset().getId());
-    assertNotEquals(
-        "Dataset updated time not match with expected dataset updated time",
-        dataset.getTimeUpdated(),
-        getDatasetByIdResponse.getDataset().getTimeUpdated());
-
     // Delete all data related to datasetVersion
     DeleteDatasetVersion deleteDatasetVersion =
         DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
@@ -2115,19 +2062,6 @@ public class DatasetVersionTest {
         ++version,
         datasetVersion2.getVersion());
 
-    GetDatasetById getDatasetById = GetDatasetById.newBuilder().setId(dataset.getId()).build();
-    GetDatasetById.Response getDatasetByIdResponse =
-        datasetServiceStub.getDatasetById(getDatasetById);
-    assertEquals(
-        "Dataset Id not match with expected dataset ID",
-        dataset.getId(),
-        getDatasetByIdResponse.getDataset().getId());
-    assertNotEquals(
-        "Dataset updated time not match with expected dataset updated time",
-        dataset.getTimeUpdated(),
-        getDatasetByIdResponse.getDataset().getTimeUpdated());
-    dataset = getDatasetByIdResponse.getDataset();
-
     List<String> datasetVersionIds = new ArrayList<>();
     datasetVersionIds.add(datasetVersion1.getId());
     datasetVersionIds.add(datasetVersion2.getId());
@@ -2139,17 +2073,6 @@ public class DatasetVersionTest {
     LOGGER.info("DeleteDatasetVersion deleted successfully");
     LOGGER.info(deleteDatasetVersionsResponse.toString());
     assertTrue(deleteDatasetVersionsResponse.getStatus());
-
-    getDatasetById = GetDatasetById.newBuilder().setId(dataset.getId()).build();
-    getDatasetByIdResponse = datasetServiceStub.getDatasetById(getDatasetById);
-    assertEquals(
-        "Dataset Id not match with expected dataset ID",
-        dataset.getId(),
-        getDatasetByIdResponse.getDataset().getId());
-    assertNotEquals(
-        "Dataset updated time not match with expected dataset updated time",
-        dataset.getTimeUpdated(),
-        getDatasetByIdResponse.getDataset().getTimeUpdated());
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
@@ -2246,11 +2169,14 @@ public class DatasetVersionTest {
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
-      DeleteDatasetVersions.Response deleteDatasetVersionsResponse =
-          datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
-      LOGGER.info("DeleteDatasetVersion deleted successfully");
-      LOGGER.info(deleteDatasetVersionsResponse.toString());
-      assertTrue(deleteDatasetVersionsResponse.getStatus());
+      try {
+        datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn(
+            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+      }
     } else {
       DeleteDatasetVersions.Response deleteDatasetVersionsResponse =
           datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersionsRequest);

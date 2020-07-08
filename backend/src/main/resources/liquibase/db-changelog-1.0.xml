@@ -16,6 +16,11 @@
     </changeSet>
 
     <changeSet author="raviS" id="2-createSequence">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="hibernate_sequence"/>
+            </not>
+        </preConditions>
         <createSequence incrementBy="1"
                         sequenceName="hibernate_sequence" startValue="1"/>
     </changeSet>
@@ -25,6 +30,11 @@
     </changeSet>
 
     <changeSet id="tables-3" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="user_comment" columnName="owner"/>
+            </not>
+        </preConditions>
         <addColumn tableName="user_comment">
             <column name="owner" type="varchar(255)"/>
         </addColumn>
@@ -35,6 +45,11 @@
     </changeSet>
 
     <changeSet id="tables-4" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="artifact" columnName="store_type_path"/>
+            </not>
+        </preConditions>
         <addColumn tableName="artifact">
             <column name="store_type_path" type="text"/>
         </addColumn>
@@ -44,7 +59,7 @@
         <tagDatabase tag="tables-1.3"/>
     </changeSet>
 
-    <changeSet id="5-indexes-on-attribute" author="anandJ">
+    <changeSet id="5-indexes-on-attribute" author="anandJ" failOnError="false">
         <createIndex indexName="attr_id"
                      tableName="attribute" unique="false">
             <column name="id" type="int8"/>
@@ -55,11 +70,47 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="5.1-indexes-on-attribute" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="attribute" indexName="attr_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="attr_id"
+                     tableName="attribute" unique="false">
+            <column name="id" type="int8"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="5.2-indexes-on-attribute" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="attribute" indexName="attr_field_type"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="attr_field_type"
+                     tableName="attribute" unique="false">
+            <column name="field_type" type="varchar(50)"/>
+        </createIndex>
+    </changeSet>
+
     <changeSet id="tables-tag-1.4" author="anandJ">
         <tagDatabase tag="tables-1.4"/>
     </changeSet>
 
-    <changeSet id="6-indexes-on-keyValue" author="raviS">
+    <changeSet id="6-indexes-on-keyValue" author="raviS" failOnError="false">
+        <createIndex indexName="kv_field_type"
+                     tableName="keyvalue" unique="false">
+            <column name="field_type" type="varchar(50)"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="6.1-indexes-on-keyValue" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="keyvalue" indexName="kv_field_type"/>
+            </not>
+        </preConditions>
         <createIndex indexName="kv_field_type"
                      tableName="keyvalue" unique="false">
             <column name="field_type" type="varchar(50)"/>
@@ -70,7 +121,20 @@
         <tagDatabase tag="tables-1.5"/>
     </changeSet>
 
-    <changeSet id="7-indexes-on-project-name-owner" author="anandJ">
+    <changeSet id="7-indexes-on-project-name-owner" author="anandJ" failOnError="false">
+        <createIndex indexName="p_name_owner"
+                     tableName="project" unique="false">
+            <column name="name" type="varchar(255)"/>
+            <column name="owner" type="varchar(255)"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="7.1-indexes-on-project-name-owner" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="project" indexName="p_name_owner"/>
+            </not>
+        </preConditions>
         <createIndex indexName="p_name_owner"
                      tableName="project" unique="false">
             <column name="name" type="varchar(255)"/>
@@ -81,7 +145,8 @@
     <changeSet id="tables-tag-1.6" author="anandJ">
         <tagDatabase tag="tables-1.6"/>
     </changeSet>
-    <changeSet id="8-workspaces-project" author="raviS">
+
+    <changeSet id="8-workspaces-project" author="raviS" failOnError="false">
         <dropIndex indexName="p_name_owner"
                    tableName="project"/>
         <addColumn tableName="project">
@@ -91,7 +156,38 @@
             <column name="workspace_type" type="int"/>
         </addColumn>
     </changeSet>
-    <changeSet id="9-workspaces-dataset" author="raviS">
+
+    <changeSet id="8.1-drop-index-p_name_owner" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <indexExists tableName="project" indexName="p_name_owner"/>
+        </preConditions>
+        <dropIndex indexName="p_name_owner"
+                   tableName="project"/>
+    </changeSet>
+
+    <changeSet id="8.2-add-workspaces-project" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="workspace"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="workspace" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="8.3-add-workspaces-type-project" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="workspace_type"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="workspace_type" type="int"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="9-workspaces-dataset" author="raviS" failOnError="false">
         <addColumn tableName="dataset">
             <column name="workspace" type="varchar(255)"/>
         </addColumn>
@@ -99,13 +195,37 @@
             <column name="workspace_type" type="int"/>
         </addColumn>
     </changeSet>
+
+    <changeSet id="9.1-add-workspaces-dataset" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="dataset" columnName="workspace"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="dataset">
+            <column name="workspace" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="9.2-add-workspaces-type-dataset" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="dataset" columnName="workspace_type"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="dataset">
+            <column name="workspace_type" type="int"/>
+        </addColumn>
+    </changeSet>
+
     <changeSet id="10-workspaces-assign-workspace" author="raviS">
         <sql>UPDATE project SET workspace = owner where owner is not null</sql>
         <sql>UPDATE project SET workspace_type = 2 where owner is not null</sql>
         <sql>UPDATE dataset SET workspace = owner where owner is not null</sql>
         <sql>UPDATE dataset SET workspace_type = 2 where owner is not null</sql>
     </changeSet>
-    <changeSet id="11-index-projectname-workspace-workspacetype" author="raviS">
+
+    <changeSet id="11-index-projectname-workspace-workspacetype" author="raviS" failOnError="false">
         <createIndex indexName="p_name_wspace_wspace_type"
                      tableName="project" unique="true">
             <column name="name" type="varchar(255)"/>
@@ -120,12 +240,66 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="12-create-indexes-lineage" author="lezhevg">
+    <changeSet id="11.1-index-projectname-workspace-workspacetype" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="p_name_wspace_wspace_type"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="p_name_wspace_wspace_type"
+                     tableName="project" unique="true">
+            <column name="name" type="varchar(255)"/>
+            <column name="workspace" type="varchar(255)"/>
+            <column name="workspace_type" type="int"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="11.2-index-datasetname-workspace-workspacetype" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="d_name_wspace_wspace_type"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="d_name_wspace_wspace_type"
+                     tableName="dataset" unique="true">
+            <column name="name" type="varchar(255)"/>
+            <column name="workspace" type="varchar(255)"/>
+            <column name="workspace_type" type="int"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="12-create-indexes-lineage" author="lezhevg" failOnError="false">
         <createIndex indexName="p_input_lineage"
                      tableName="lineage">
             <column name="input_external_id" type="varchar(256)"/>
             <column name="input_type" type="int4"/>
         </createIndex>
+        <createIndex indexName="p_output_lineage"
+                     tableName="lineage">
+            <column name="output_external_id" type="varchar(256)"/>
+            <column name="output_type" type="int4"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="12.1-create-indexes-lineage" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="p_input_lineage"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="p_input_lineage"
+                     tableName="lineage">
+            <column name="input_external_id" type="varchar(256)"/>
+            <column name="input_type" type="int4"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="12.2-create-indexes-lineage" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="p_output_lineage"/>
+            </not>
+        </preConditions>
         <createIndex indexName="p_output_lineage"
                      tableName="lineage">
             <column name="output_external_id" type="varchar(256)"/>
@@ -179,7 +353,7 @@
             <column name="blob_hash" type="varchar(255)"/>
         </addColumn>
     </changeSet>
-    
+
 	<changeSet id="SetNullS3VersionEmpty" author="ravi">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -231,6 +405,242 @@
         </createTable>
     </changeSet>
 
-    <!-- take a below line to the end of this file -->
+    <changeSet id="artifact_table_update_upload_id" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="artifact" columnName="upload_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="artifact">
+            <column name="upload_id" type="varchar(255)" defaultValue="null" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="artifact_table_update_upload_completed" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="artifact" columnName="upload_completed"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="artifact">
+            <column name="upload_completed" type="boolean" defaultValue="true" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="artifact_part_table_create" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artifact_part"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artifact_part">
+            <column name="artifact_id" type="int8">
+                <constraints primaryKey="true" nullable="false"
+                  foreignKeyName="artifact_id" referencedTableName="artifact"
+                  referencedColumnNames="id"/>
+            </column>
+            <column name="part_number" type="int8">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="etag" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="createTempTableWithNewKeysOfArtifact_part" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artifact_part_temp"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artifact_part_temp">
+            <column name="artifact_id" type="int8">
+                <constraints primaryKey="true" nullable="false"
+                             foreignKeyName="artifact_id" referencedTableName="artifact"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="part_number" type="int8">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="etag" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="copyDataToATempTableArtifact_part_temp" author="anandJ">
+        <sql>
+            INSERT INTO artifact_part_temp SELECT artifact_id, part_number, etag  FROM artifact_part;
+        </sql>
+    </changeSet>
+
+    <changeSet id="dropOldArtifactPartTable" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="artifact_part"/>
+        </preConditions>
+        <dropTable tableName="artifact_part"/>
+    </changeSet>
+
+    <changeSet id="createNewArtifactPartTable" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artifact_part"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artifact_part">
+            <column name="artifact_id" type="varchar(64)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="part_number" type="int8">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="etag" type="varchar(255)"/>
+            <column name="artifact_type" type="int4" defaultValue="0"><!-- defaultValue="0" = EXP_RUN_ARTIFACT-->
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="copy_temp_to_new_artifact_part_table" author="anandJ">
+        <sql>
+            INSERT INTO artifact_part SELECT CAST(artifact_id AS CHAR) artifact_id, part_number, etag, '0'  FROM artifact_part_temp;
+        </sql>
+    </changeSet>
+
+    <changeSet id="drop_temp_artifact_part_table" author="anandJ">
+        <dropTable tableName="artifact_part_temp"/>
+    </changeSet>
+
+    <changeSet id="add-project-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-experiment-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-experiment-run-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment_run" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment_run">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-dataset-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="dataset" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="dataset">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-dataset-version-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="dataset_version" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="dataset_version">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-repository-version-deleted-column" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="repository" columnName="deleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="repository">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="SetNullS3VersionEmpty-2" author="ravi">
+        <update tableName="s3_dataset_component_blob">
+            <column name="s3_version_id" value="" />
+            <where>s3_version_id is null</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="add-internal_path-pdcb" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="path_dataset_component_blob" columnName="internal_versioned_path"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="path_dataset_component_blob">
+            <column name="internal_versioned_path" type="text"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-internal_path-s3dcb" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="s3_dataset_component_blob" columnName="internal_versioned_path"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="s3_dataset_component_blob">
+            <column name="internal_versioned_path" type="text"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="upload_status_table_create" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="upload_status"/>
+            </not>
+        </preConditions>
+        <createTable tableName="upload_status">
+            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="dataset_component_blob_id" type="varchar(64)"/>
+            <column name="component_blob_type" type="int4"/>
+            <column name="upload_id" type="varchar(255)" defaultValue="null" />
+            <column name="upload_completed" type="boolean" defaultValue="true" />
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add-epoch_number" author="raviS" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="observation" columnName="epoch_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="observation">
+            <column name="epoch_number" type="int8" value="0"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-epoch_number-without-default" author="raviS" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="observation" columnName="epoch_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="observation">
+            <column name="epoch_number" type="int8"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- keep the line below at the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 </databaseChangeLog>

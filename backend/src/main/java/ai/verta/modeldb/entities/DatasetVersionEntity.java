@@ -127,6 +127,9 @@ public class DatasetVersionEntity {
   @JoinColumn(name = "query_dataset_version_info_id")
   private QueryDatasetVersionInfoEntity query_dataset_version_info;
 
+  @Column(name = "deleted")
+  private Boolean deleted = false;
+
   public String getId() {
     return id;
   }
@@ -249,6 +252,14 @@ public class DatasetVersionEntity {
       this.attributeMapping = new ArrayList<>();
     }
     this.attributeMapping.addAll(attributeMapping);
+  }
+
+  public Boolean getDeleted() {
+    return deleted;
+  }
+
+  public void setDeleted(Boolean deleted) {
+    this.deleted = deleted;
   }
 
   public DatasetVersion getProtoObject() throws InvalidProtocolBufferException {

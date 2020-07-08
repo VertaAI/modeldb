@@ -5,8 +5,8 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.uac.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.uac.model.ProtobufNullValue._
+import ai.verta.swagger._public.uac.model.ValueTypeEnumValueType._
 import ai.verta.swagger.client.objects._
 
 case class UacCollectTelemetry (

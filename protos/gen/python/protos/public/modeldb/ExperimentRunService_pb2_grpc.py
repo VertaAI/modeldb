@@ -200,6 +200,21 @@ class ExperimentRunServiceStub(object):
         request_serializer=modeldb_dot_CommonService__pb2.GetUrlForArtifact.SerializeToString,
         response_deserializer=modeldb_dot_CommonService__pb2.GetUrlForArtifact.Response.FromString,
         )
+    self.commitArtifactPart = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/commitArtifactPart',
+        request_serializer=modeldb_dot_CommonService__pb2.CommitArtifactPart.SerializeToString,
+        response_deserializer=modeldb_dot_CommonService__pb2.CommitArtifactPart.Response.FromString,
+        )
+    self.getCommittedArtifactParts = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/getCommittedArtifactParts',
+        request_serializer=modeldb_dot_CommonService__pb2.GetCommittedArtifactParts.SerializeToString,
+        response_deserializer=modeldb_dot_CommonService__pb2.GetCommittedArtifactParts.Response.FromString,
+        )
+    self.commitMultipartArtifact = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/commitMultipartArtifact',
+        request_serializer=modeldb_dot_CommonService__pb2.CommitMultipartArtifact.SerializeToString,
+        response_deserializer=modeldb_dot_CommonService__pb2.CommitMultipartArtifact.Response.FromString,
+        )
     self.findExperimentRuns = channel.unary_unary(
         '/ai.verta.modeldb.ExperimentRunService/findExperimentRuns',
         request_serializer=modeldb_dot_ExperimentRunService__pb2.FindExperimentRuns.SerializeToString,
@@ -520,6 +535,27 @@ class ExperimentRunServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def commitArtifactPart(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getCommittedArtifactParts(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def commitMultipartArtifact(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def findExperimentRuns(self, request, context):
     """queries
     """
@@ -784,6 +820,21 @@ def add_ExperimentRunServiceServicer_to_server(servicer, server):
           servicer.getUrlForArtifact,
           request_deserializer=modeldb_dot_CommonService__pb2.GetUrlForArtifact.FromString,
           response_serializer=modeldb_dot_CommonService__pb2.GetUrlForArtifact.Response.SerializeToString,
+      ),
+      'commitArtifactPart': grpc.unary_unary_rpc_method_handler(
+          servicer.commitArtifactPart,
+          request_deserializer=modeldb_dot_CommonService__pb2.CommitArtifactPart.FromString,
+          response_serializer=modeldb_dot_CommonService__pb2.CommitArtifactPart.Response.SerializeToString,
+      ),
+      'getCommittedArtifactParts': grpc.unary_unary_rpc_method_handler(
+          servicer.getCommittedArtifactParts,
+          request_deserializer=modeldb_dot_CommonService__pb2.GetCommittedArtifactParts.FromString,
+          response_serializer=modeldb_dot_CommonService__pb2.GetCommittedArtifactParts.Response.SerializeToString,
+      ),
+      'commitMultipartArtifact': grpc.unary_unary_rpc_method_handler(
+          servicer.commitMultipartArtifact,
+          request_deserializer=modeldb_dot_CommonService__pb2.CommitMultipartArtifact.FromString,
+          response_serializer=modeldb_dot_CommonService__pb2.CommitMultipartArtifact.Response.SerializeToString,
       ),
       'findExperimentRuns': grpc.unary_unary_rpc_method_handler(
           servicer.findExperimentRuns,

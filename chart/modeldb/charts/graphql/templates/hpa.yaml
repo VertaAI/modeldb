@@ -1,0 +1,13 @@
+{{ if .Values.hpa.enabled }}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: "{{ .Release.Name }}-graphql"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: "{{ .Release.Name }}-graphql"
+  minReplicas: 2
+  maxReplicas: 2
+{{ end }}

@@ -2,6 +2,8 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
@@ -13,6 +15,9 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
@@ -80,6 +85,7 @@ public class DatasetTest {
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
   private static App app;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -116,10 +122,14 @@ public class DatasetTest {
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -166,7 +176,10 @@ public class DatasetTest {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+      assertTrue(
+          Status.PERMISSION_DENIED.getCode() == status.getCode()
+              || Status.NOT_FOUND.getCode()
+                  == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
@@ -1727,7 +1740,7 @@ public class DatasetTest {
   }
 
   @Test
-  public void getLastExperimentByDataset() {
+  public void getLastExperimentByDataset() throws InterruptedException {
     LOGGER.info("Get last experiment by dataset test start................................");
 
     ProjectTest projectTest = new ProjectTest();
@@ -1855,15 +1868,19 @@ public class DatasetTest {
         Artifact.newBuilder()
             .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion2.getId())
             .build();
 
     LogDataset logDatasetRequest =
         LogDataset.newBuilder().setId(experimentRun2.getId()).setDataset(artifact).build();
 
-    LogDataset.Response response = experimentRunServiceStub.logDataset(logDatasetRequest);
+    experimentRunServiceStub.logDataset(logDatasetRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun2.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
     assertTrue(
         "Experiment dataset not match with expected dataset",
@@ -1878,15 +1895,17 @@ public class DatasetTest {
         Artifact.newBuilder()
             .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion1.getId())
             .build();
 
     logDatasetRequest =
         LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
 
-    response = experimentRunServiceStub.logDataset(logDatasetRequest);
+    experimentRunServiceStub.logDataset(logDatasetRequest);
 
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
     assertTrue(
         "Experiment dataset not match with expected dataset",
@@ -1896,6 +1915,9 @@ public class DatasetTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
+
+    ParentTimestampUpdateCron parentTimestampUpdateCron = new ParentTimestampUpdateCron(100);
+    parentTimestampUpdateCron.run();
 
     LastExperimentByDatasetId lastExperimentByDatasetId =
         LastExperimentByDatasetId.newBuilder().setDatasetId(dataset.getId()).build();
@@ -2069,15 +2091,19 @@ public class DatasetTest {
         Artifact.newBuilder()
             .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion2.getId())
             .build();
 
     LogDataset logDatasetRequest =
         LogDataset.newBuilder().setId(experimentRun2.getId()).setDataset(artifact).build();
 
-    LogDataset.Response response = experimentRunServiceStub.logDataset(logDatasetRequest);
+    experimentRunServiceStub.logDataset(logDatasetRequest);
 
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun2.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
     assertTrue(
         "Experiment dataset not match with expected dataset",
@@ -2092,15 +2118,17 @@ public class DatasetTest {
         Artifact.newBuilder()
             .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion1.getId())
             .build();
 
     logDatasetRequest =
         LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
 
-    response = experimentRunServiceStub.logDataset(logDatasetRequest);
+    experimentRunServiceStub.logDataset(logDatasetRequest);
 
+    getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
     assertTrue(
         "Experiment dataset not match with expected dataset",

@@ -1,10 +1,15 @@
 #ModelDB Properties
 grpcServer:
   port: 8085
+  requestTimeout: 30 #time in second
 
 springServer:
   port: 8086
   shutdownTimeout: 30 #time in second
+
+mdb_service_user:
+  email:
+  devKey:
 
 artifactStoreConfig:
   artifactStoreType: NFS #S3, GCP, NFS
@@ -12,6 +17,7 @@ artifactStoreConfig:
     cloudAccessKey: #for s3 aws account access-key
     cloudSecretKey: #for s3 aws account secret-key
     cloudBucketName: # if nfs then root dir. Note: bucket needs to exist alrady
+    aws_region: us-east-1
   NFS:
     nfsServerHost: localhost
     nfsUrlProtocol: https
@@ -65,3 +71,13 @@ migration:
 
 feature-flag:
   disabled-authz: true
+  public_sharing_enabled: false
+
+cron_job:
+  update_parent_timestamp:
+    initial_delay: 300 #delay timestamp in second, default 300second = 5min
+    frequency: 60 #frequency to update parent timestamp in second, default 60
+    record_update_limit: 100
+  delete_entities:
+    initial_delay: 300 #delay timestamp in second, default 300second = 5min
+    frequency: 60 #frequency to delete entities in second, default 60

@@ -8,6 +8,7 @@ import sys
 
 from ..external import six
 
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
 
 from .._internal_utils import _pip_requirements_utils
@@ -102,6 +103,19 @@ class Python(_environment._Environment):
 
         return "\n    ".join(lines)
 
+    @classmethod
+    def _from_proto(cls, blob_msg):
+        obj = cls(_autocapture=False)
+        obj._msg.CopyFrom(blob_msg.environment)
+
+        return obj
+
+    def _as_proto(self):
+        blob_msg = _VersioningService.Blob()
+        blob_msg.environment.CopyFrom(self._msg)
+
+        return blob_msg
+
     @staticmethod
     def _req_spec_to_msg(req_spec):
         """
@@ -167,8 +181,7 @@ class Python(_environment._Environment):
         elif (isinstance(requirements, list)
               and all(isinstance(req, six.string_types) for req in requirements)):
             req_specs = copy.copy(requirements)
-            _pip_requirements_utils.strip_inexact_specifiers(req_specs)
-            _pip_requirements_utils.set_version_pins(req_specs)
+            _pip_requirements_utils.process_requirements(req_specs)
         else:
             raise TypeError("`requirements` must be list of str,"
                             " not {}".format(type(requirements)))

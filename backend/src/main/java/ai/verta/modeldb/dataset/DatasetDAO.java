@@ -64,15 +64,6 @@ public interface DatasetDAO {
   Boolean deleteDatasets(List<String> datasetIds) throws InvalidProtocolBufferException;
 
   /**
-   * Set the update time of the datasets with the matching ids
-   *
-   * @param datasetIds : list of dataset Id
-   * @param timestamp : timestamp
-   * @return {@link Boolean} : status
-   */
-  Boolean setUpdateTime(List<String> datasetIds, long timestamp);
-
-  /**
    * Get dataset with the matching ID.
    *
    * @param datasetId : id of the dataset to get
@@ -241,4 +232,15 @@ public interface DatasetDAO {
    */
   Dataset setDatasetWorkspace(String datasetId, WorkspaceDTO workspaceDTO)
       throws InvalidProtocolBufferException;
+
+  List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo)
+      throws InvalidProtocolBufferException;
+
+  /**
+   * Checks if dataset with the id exists with delete flag false
+   *
+   * @param datasetId
+   * @return
+   */
+  boolean datasetExistsInDB(String datasetId);
 }

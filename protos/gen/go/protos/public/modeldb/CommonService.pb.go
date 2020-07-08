@@ -22,46 +22,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type ArtifactTypeEnum_ArtifactType int32
-
-const (
-	ArtifactTypeEnum_IMAGE       ArtifactTypeEnum_ArtifactType = 0
-	ArtifactTypeEnum_MODEL       ArtifactTypeEnum_ArtifactType = 1
-	ArtifactTypeEnum_TENSORBOARD ArtifactTypeEnum_ArtifactType = 2
-	ArtifactTypeEnum_DATA        ArtifactTypeEnum_ArtifactType = 3
-	ArtifactTypeEnum_BLOB        ArtifactTypeEnum_ArtifactType = 4
-	ArtifactTypeEnum_STRING      ArtifactTypeEnum_ArtifactType = 5
-	ArtifactTypeEnum_CODE        ArtifactTypeEnum_ArtifactType = 6
-)
-
-var ArtifactTypeEnum_ArtifactType_name = map[int32]string{
-	0: "IMAGE",
-	1: "MODEL",
-	2: "TENSORBOARD",
-	3: "DATA",
-	4: "BLOB",
-	5: "STRING",
-	6: "CODE",
-}
-
-var ArtifactTypeEnum_ArtifactType_value = map[string]int32{
-	"IMAGE":       0,
-	"MODEL":       1,
-	"TENSORBOARD": 2,
-	"DATA":        3,
-	"BLOB":        4,
-	"STRING":      5,
-	"CODE":        6,
-}
-
-func (x ArtifactTypeEnum_ArtifactType) String() string {
-	return proto.EnumName(ArtifactTypeEnum_ArtifactType_name, int32(x))
-}
-
-func (ArtifactTypeEnum_ArtifactType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{0, 0}
-}
-
 type OperatorEnum_Operator int32
 
 const (
@@ -105,143 +65,52 @@ func (x OperatorEnum_Operator) String() string {
 }
 
 func (OperatorEnum_Operator) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{9, 0}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{8, 0}
 }
 
-type WorkspaceTypeEnum_WorkspaceType int32
-
-const (
-	WorkspaceTypeEnum_UNKNOWN      WorkspaceTypeEnum_WorkspaceType = 0
-	WorkspaceTypeEnum_ORGANIZATION WorkspaceTypeEnum_WorkspaceType = 1
-	WorkspaceTypeEnum_USER         WorkspaceTypeEnum_WorkspaceType = 2
-)
-
-var WorkspaceTypeEnum_WorkspaceType_name = map[int32]string{
-	0: "UNKNOWN",
-	1: "ORGANIZATION",
-	2: "USER",
-}
-
-var WorkspaceTypeEnum_WorkspaceType_value = map[string]int32{
-	"UNKNOWN":      0,
-	"ORGANIZATION": 1,
-	"USER":         2,
-}
-
-func (x WorkspaceTypeEnum_WorkspaceType) String() string {
-	return proto.EnumName(WorkspaceTypeEnum_WorkspaceType_name, int32(x))
-}
-
-func (WorkspaceTypeEnum_WorkspaceType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{12, 0}
-}
-
-type ArtifactTypeEnum struct {
+type ArtifactPart struct {
+	PartNumber           uint64   `protobuf:"varint,1,opt,name=part_number,json=partNumber,proto3" json:"part_number,omitempty"`
+	Etag                 string   `protobuf:"bytes,2,opt,name=etag,proto3" json:"etag,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ArtifactTypeEnum) Reset()         { *m = ArtifactTypeEnum{} }
-func (m *ArtifactTypeEnum) String() string { return proto.CompactTextString(m) }
-func (*ArtifactTypeEnum) ProtoMessage()    {}
-func (*ArtifactTypeEnum) Descriptor() ([]byte, []int) {
+func (m *ArtifactPart) Reset()         { *m = ArtifactPart{} }
+func (m *ArtifactPart) String() string { return proto.CompactTextString(m) }
+func (*ArtifactPart) ProtoMessage()    {}
+func (*ArtifactPart) Descriptor() ([]byte, []int) {
 	return fileDescriptor_03ac4c36a5d89ec4, []int{0}
 }
 
-func (m *ArtifactTypeEnum) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ArtifactTypeEnum.Unmarshal(m, b)
+func (m *ArtifactPart) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ArtifactPart.Unmarshal(m, b)
 }
-func (m *ArtifactTypeEnum) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ArtifactTypeEnum.Marshal(b, m, deterministic)
+func (m *ArtifactPart) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ArtifactPart.Marshal(b, m, deterministic)
 }
-func (m *ArtifactTypeEnum) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ArtifactTypeEnum.Merge(m, src)
+func (m *ArtifactPart) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ArtifactPart.Merge(m, src)
 }
-func (m *ArtifactTypeEnum) XXX_Size() int {
-	return xxx_messageInfo_ArtifactTypeEnum.Size(m)
+func (m *ArtifactPart) XXX_Size() int {
+	return xxx_messageInfo_ArtifactPart.Size(m)
 }
-func (m *ArtifactTypeEnum) XXX_DiscardUnknown() {
-	xxx_messageInfo_ArtifactTypeEnum.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ArtifactTypeEnum proto.InternalMessageInfo
-
-type Artifact struct {
-	Key                  string                        `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	Path                 string                        `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-	PathOnly             bool                          `protobuf:"varint,3,opt,name=path_only,json=pathOnly,proto3" json:"path_only,omitempty"`
-	ArtifactType         ArtifactTypeEnum_ArtifactType `protobuf:"varint,4,opt,name=artifact_type,json=artifactType,proto3,enum=ai.verta.modeldb.ArtifactTypeEnum_ArtifactType" json:"artifact_type,omitempty"`
-	LinkedArtifactId     string                        `protobuf:"bytes,5,opt,name=linked_artifact_id,json=linkedArtifactId,proto3" json:"linked_artifact_id,omitempty"`
-	FilenameExtension    string                        `protobuf:"bytes,6,opt,name=filename_extension,json=filenameExtension,proto3" json:"filename_extension,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
-	XXX_unrecognized     []byte                        `json:"-"`
-	XXX_sizecache        int32                         `json:"-"`
+func (m *ArtifactPart) XXX_DiscardUnknown() {
+	xxx_messageInfo_ArtifactPart.DiscardUnknown(m)
 }
 
-func (m *Artifact) Reset()         { *m = Artifact{} }
-func (m *Artifact) String() string { return proto.CompactTextString(m) }
-func (*Artifact) ProtoMessage()    {}
-func (*Artifact) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{1}
-}
+var xxx_messageInfo_ArtifactPart proto.InternalMessageInfo
 
-func (m *Artifact) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Artifact.Unmarshal(m, b)
-}
-func (m *Artifact) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Artifact.Marshal(b, m, deterministic)
-}
-func (m *Artifact) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Artifact.Merge(m, src)
-}
-func (m *Artifact) XXX_Size() int {
-	return xxx_messageInfo_Artifact.Size(m)
-}
-func (m *Artifact) XXX_DiscardUnknown() {
-	xxx_messageInfo_Artifact.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Artifact proto.InternalMessageInfo
-
-func (m *Artifact) GetKey() string {
+func (m *ArtifactPart) GetPartNumber() uint64 {
 	if m != nil {
-		return m.Key
+		return m.PartNumber
 	}
-	return ""
+	return 0
 }
 
-func (m *Artifact) GetPath() string {
+func (m *ArtifactPart) GetEtag() string {
 	if m != nil {
-		return m.Path
-	}
-	return ""
-}
-
-func (m *Artifact) GetPathOnly() bool {
-	if m != nil {
-		return m.PathOnly
-	}
-	return false
-}
-
-func (m *Artifact) GetArtifactType() ArtifactTypeEnum_ArtifactType {
-	if m != nil {
-		return m.ArtifactType
-	}
-	return ArtifactTypeEnum_IMAGE
-}
-
-func (m *Artifact) GetLinkedArtifactId() string {
-	if m != nil {
-		return m.LinkedArtifactId
-	}
-	return ""
-}
-
-func (m *Artifact) GetFilenameExtension() string {
-	if m != nil {
-		return m.FilenameExtension
+		return m.Etag
 	}
 	return ""
 }
@@ -257,7 +126,7 @@ func (m *Feature) Reset()         { *m = Feature{} }
 func (m *Feature) String() string { return proto.CompactTextString(m) }
 func (*Feature) ProtoMessage()    {}
 func (*Feature) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{2}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{1}
 }
 
 func (m *Feature) XXX_Unmarshal(b []byte) error {
@@ -299,7 +168,7 @@ func (m *GetAttributes) Reset()         { *m = GetAttributes{} }
 func (m *GetAttributes) String() string { return proto.CompactTextString(m) }
 func (*GetAttributes) ProtoMessage()    {}
 func (*GetAttributes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{3}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{2}
 }
 
 func (m *GetAttributes) XXX_Unmarshal(b []byte) error {
@@ -352,7 +221,7 @@ func (m *GetAttributes_Response) Reset()         { *m = GetAttributes_Response{}
 func (m *GetAttributes_Response) String() string { return proto.CompactTextString(m) }
 func (*GetAttributes_Response) ProtoMessage()    {}
 func (*GetAttributes_Response) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{3, 0}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{2, 0}
 }
 
 func (m *GetAttributes_Response) XXX_Unmarshal(b []byte) error {
@@ -393,7 +262,7 @@ func (m *AddAttributes) Reset()         { *m = AddAttributes{} }
 func (m *AddAttributes) String() string { return proto.CompactTextString(m) }
 func (*AddAttributes) ProtoMessage()    {}
 func (*AddAttributes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{4}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{3}
 }
 
 func (m *AddAttributes) XXX_Unmarshal(b []byte) error {
@@ -439,7 +308,7 @@ func (m *AddAttributes_Response) Reset()         { *m = AddAttributes_Response{}
 func (m *AddAttributes_Response) String() string { return proto.CompactTextString(m) }
 func (*AddAttributes_Response) ProtoMessage()    {}
 func (*AddAttributes_Response) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{4, 0}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{3, 0}
 }
 
 func (m *AddAttributes_Response) XXX_Unmarshal(b []byte) error {
@@ -478,7 +347,7 @@ func (m *GetTags) Reset()         { *m = GetTags{} }
 func (m *GetTags) String() string { return proto.CompactTextString(m) }
 func (*GetTags) ProtoMessage()    {}
 func (*GetTags) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{5}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{4}
 }
 
 func (m *GetTags) XXX_Unmarshal(b []byte) error {
@@ -517,7 +386,7 @@ func (m *GetTags_Response) Reset()         { *m = GetTags_Response{} }
 func (m *GetTags_Response) String() string { return proto.CompactTextString(m) }
 func (*GetTags_Response) ProtoMessage()    {}
 func (*GetTags_Response) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{5, 0}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{4, 0}
 }
 
 func (m *GetTags_Response) XXX_Unmarshal(b []byte) error {
@@ -561,7 +430,7 @@ func (m *CodeVersion) Reset()         { *m = CodeVersion{} }
 func (m *CodeVersion) String() string { return proto.CompactTextString(m) }
 func (*CodeVersion) ProtoMessage()    {}
 func (*CodeVersion) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{6}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{5}
 }
 
 func (m *CodeVersion) XXX_Unmarshal(b []byte) error {
@@ -591,7 +460,7 @@ type CodeVersion_GitSnapshot struct {
 }
 
 type CodeVersion_CodeArchive struct {
-	CodeArchive *Artifact `protobuf:"bytes,2,opt,name=code_archive,json=codeArchive,proto3,oneof"`
+	CodeArchive *common.Artifact `protobuf:"bytes,2,opt,name=code_archive,json=codeArchive,proto3,oneof"`
 }
 
 func (*CodeVersion_GitSnapshot) isCodeVersion_Code() {}
@@ -612,7 +481,7 @@ func (m *CodeVersion) GetGitSnapshot() *GitSnapshot {
 	return nil
 }
 
-func (m *CodeVersion) GetCodeArchive() *Artifact {
+func (m *CodeVersion) GetCodeArchive() *common.Artifact {
 	if x, ok := m.GetCode().(*CodeVersion_CodeArchive); ok {
 		return x.CodeArchive
 	}
@@ -648,7 +517,7 @@ func (m *GitSnapshot) Reset()         { *m = GitSnapshot{} }
 func (m *GitSnapshot) String() string { return proto.CompactTextString(m) }
 func (*GitSnapshot) ProtoMessage()    {}
 func (*GitSnapshot) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{7}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{6}
 }
 
 func (m *GitSnapshot) XXX_Unmarshal(b []byte) error {
@@ -711,7 +580,7 @@ func (m *KeyValueQuery) Reset()         { *m = KeyValueQuery{} }
 func (m *KeyValueQuery) String() string { return proto.CompactTextString(m) }
 func (*KeyValueQuery) ProtoMessage()    {}
 func (*KeyValueQuery) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{8}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{7}
 }
 
 func (m *KeyValueQuery) XXX_Unmarshal(b []byte) error {
@@ -770,7 +639,7 @@ func (m *OperatorEnum) Reset()         { *m = OperatorEnum{} }
 func (m *OperatorEnum) String() string { return proto.CompactTextString(m) }
 func (*OperatorEnum) ProtoMessage()    {}
 func (*OperatorEnum) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{9}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{8}
 }
 
 func (m *OperatorEnum) XXX_Unmarshal(b []byte) error {
@@ -792,20 +661,21 @@ func (m *OperatorEnum) XXX_DiscardUnknown() {
 var xxx_messageInfo_OperatorEnum proto.InternalMessageInfo
 
 type GetUrlForArtifact struct {
-	Id                   string                        `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Key                  string                        `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
-	Method               string                        `protobuf:"bytes,3,opt,name=method,proto3" json:"method,omitempty"`
-	ArtifactType         ArtifactTypeEnum_ArtifactType `protobuf:"varint,4,opt,name=artifact_type,json=artifactType,proto3,enum=ai.verta.modeldb.ArtifactTypeEnum_ArtifactType" json:"artifact_type,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
-	XXX_unrecognized     []byte                        `json:"-"`
-	XXX_sizecache        int32                         `json:"-"`
+	Id                   string                               `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Key                  string                               `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	Method               string                               `protobuf:"bytes,3,opt,name=method,proto3" json:"method,omitempty"`
+	ArtifactType         common.ArtifactTypeEnum_ArtifactType `protobuf:"varint,4,opt,name=artifact_type,json=artifactType,proto3,enum=ai.verta.common.ArtifactTypeEnum_ArtifactType" json:"artifact_type,omitempty"`
+	PartNumber           uint64                               `protobuf:"varint,5,opt,name=part_number,json=partNumber,proto3" json:"part_number,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                             `json:"-"`
+	XXX_unrecognized     []byte                               `json:"-"`
+	XXX_sizecache        int32                                `json:"-"`
 }
 
 func (m *GetUrlForArtifact) Reset()         { *m = GetUrlForArtifact{} }
 func (m *GetUrlForArtifact) String() string { return proto.CompactTextString(m) }
 func (*GetUrlForArtifact) ProtoMessage()    {}
 func (*GetUrlForArtifact) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{10}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{9}
 }
 
 func (m *GetUrlForArtifact) XXX_Unmarshal(b []byte) error {
@@ -847,16 +717,24 @@ func (m *GetUrlForArtifact) GetMethod() string {
 	return ""
 }
 
-func (m *GetUrlForArtifact) GetArtifactType() ArtifactTypeEnum_ArtifactType {
+func (m *GetUrlForArtifact) GetArtifactType() common.ArtifactTypeEnum_ArtifactType {
 	if m != nil {
 		return m.ArtifactType
 	}
-	return ArtifactTypeEnum_IMAGE
+	return common.ArtifactTypeEnum_IMAGE
+}
+
+func (m *GetUrlForArtifact) GetPartNumber() uint64 {
+	if m != nil {
+		return m.PartNumber
+	}
+	return 0
 }
 
 type GetUrlForArtifact_Response struct {
 	Url                  string            `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
 	Fields               map[string]string `protobuf:"bytes,2,rep,name=fields,proto3" json:"fields,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	MultipartUploadOk    bool              `protobuf:"varint,3,opt,name=multipart_upload_ok,json=multipartUploadOk,proto3" json:"multipart_upload_ok,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
 	XXX_unrecognized     []byte            `json:"-"`
 	XXX_sizecache        int32             `json:"-"`
@@ -866,7 +744,7 @@ func (m *GetUrlForArtifact_Response) Reset()         { *m = GetUrlForArtifact_Re
 func (m *GetUrlForArtifact_Response) String() string { return proto.CompactTextString(m) }
 func (*GetUrlForArtifact_Response) ProtoMessage()    {}
 func (*GetUrlForArtifact_Response) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{10, 0}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{9, 0}
 }
 
 func (m *GetUrlForArtifact_Response) XXX_Unmarshal(b []byte) error {
@@ -901,6 +779,263 @@ func (m *GetUrlForArtifact_Response) GetFields() map[string]string {
 	return nil
 }
 
+func (m *GetUrlForArtifact_Response) GetMultipartUploadOk() bool {
+	if m != nil {
+		return m.MultipartUploadOk
+	}
+	return false
+}
+
+type CommitArtifactPart struct {
+	Id                   string        `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Key                  string        `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	ArtifactPart         *ArtifactPart `protobuf:"bytes,3,opt,name=artifact_part,json=artifactPart,proto3" json:"artifact_part,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
+	XXX_unrecognized     []byte        `json:"-"`
+	XXX_sizecache        int32         `json:"-"`
+}
+
+func (m *CommitArtifactPart) Reset()         { *m = CommitArtifactPart{} }
+func (m *CommitArtifactPart) String() string { return proto.CompactTextString(m) }
+func (*CommitArtifactPart) ProtoMessage()    {}
+func (*CommitArtifactPart) Descriptor() ([]byte, []int) {
+	return fileDescriptor_03ac4c36a5d89ec4, []int{10}
+}
+
+func (m *CommitArtifactPart) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CommitArtifactPart.Unmarshal(m, b)
+}
+func (m *CommitArtifactPart) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CommitArtifactPart.Marshal(b, m, deterministic)
+}
+func (m *CommitArtifactPart) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CommitArtifactPart.Merge(m, src)
+}
+func (m *CommitArtifactPart) XXX_Size() int {
+	return xxx_messageInfo_CommitArtifactPart.Size(m)
+}
+func (m *CommitArtifactPart) XXX_DiscardUnknown() {
+	xxx_messageInfo_CommitArtifactPart.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CommitArtifactPart proto.InternalMessageInfo
+
+func (m *CommitArtifactPart) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *CommitArtifactPart) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *CommitArtifactPart) GetArtifactPart() *ArtifactPart {
+	if m != nil {
+		return m.ArtifactPart
+	}
+	return nil
+}
+
+type CommitArtifactPart_Response struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CommitArtifactPart_Response) Reset()         { *m = CommitArtifactPart_Response{} }
+func (m *CommitArtifactPart_Response) String() string { return proto.CompactTextString(m) }
+func (*CommitArtifactPart_Response) ProtoMessage()    {}
+func (*CommitArtifactPart_Response) Descriptor() ([]byte, []int) {
+	return fileDescriptor_03ac4c36a5d89ec4, []int{10, 0}
+}
+
+func (m *CommitArtifactPart_Response) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CommitArtifactPart_Response.Unmarshal(m, b)
+}
+func (m *CommitArtifactPart_Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CommitArtifactPart_Response.Marshal(b, m, deterministic)
+}
+func (m *CommitArtifactPart_Response) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CommitArtifactPart_Response.Merge(m, src)
+}
+func (m *CommitArtifactPart_Response) XXX_Size() int {
+	return xxx_messageInfo_CommitArtifactPart_Response.Size(m)
+}
+func (m *CommitArtifactPart_Response) XXX_DiscardUnknown() {
+	xxx_messageInfo_CommitArtifactPart_Response.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CommitArtifactPart_Response proto.InternalMessageInfo
+
+type GetCommittedArtifactParts struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Key                  string   `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetCommittedArtifactParts) Reset()         { *m = GetCommittedArtifactParts{} }
+func (m *GetCommittedArtifactParts) String() string { return proto.CompactTextString(m) }
+func (*GetCommittedArtifactParts) ProtoMessage()    {}
+func (*GetCommittedArtifactParts) Descriptor() ([]byte, []int) {
+	return fileDescriptor_03ac4c36a5d89ec4, []int{11}
+}
+
+func (m *GetCommittedArtifactParts) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetCommittedArtifactParts.Unmarshal(m, b)
+}
+func (m *GetCommittedArtifactParts) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetCommittedArtifactParts.Marshal(b, m, deterministic)
+}
+func (m *GetCommittedArtifactParts) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetCommittedArtifactParts.Merge(m, src)
+}
+func (m *GetCommittedArtifactParts) XXX_Size() int {
+	return xxx_messageInfo_GetCommittedArtifactParts.Size(m)
+}
+func (m *GetCommittedArtifactParts) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetCommittedArtifactParts.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetCommittedArtifactParts proto.InternalMessageInfo
+
+func (m *GetCommittedArtifactParts) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *GetCommittedArtifactParts) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+type GetCommittedArtifactParts_Response struct {
+	ArtifactParts        []*ArtifactPart `protobuf:"bytes,1,rep,name=artifact_parts,json=artifactParts,proto3" json:"artifact_parts,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *GetCommittedArtifactParts_Response) Reset()         { *m = GetCommittedArtifactParts_Response{} }
+func (m *GetCommittedArtifactParts_Response) String() string { return proto.CompactTextString(m) }
+func (*GetCommittedArtifactParts_Response) ProtoMessage()    {}
+func (*GetCommittedArtifactParts_Response) Descriptor() ([]byte, []int) {
+	return fileDescriptor_03ac4c36a5d89ec4, []int{11, 0}
+}
+
+func (m *GetCommittedArtifactParts_Response) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetCommittedArtifactParts_Response.Unmarshal(m, b)
+}
+func (m *GetCommittedArtifactParts_Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetCommittedArtifactParts_Response.Marshal(b, m, deterministic)
+}
+func (m *GetCommittedArtifactParts_Response) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetCommittedArtifactParts_Response.Merge(m, src)
+}
+func (m *GetCommittedArtifactParts_Response) XXX_Size() int {
+	return xxx_messageInfo_GetCommittedArtifactParts_Response.Size(m)
+}
+func (m *GetCommittedArtifactParts_Response) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetCommittedArtifactParts_Response.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetCommittedArtifactParts_Response proto.InternalMessageInfo
+
+func (m *GetCommittedArtifactParts_Response) GetArtifactParts() []*ArtifactPart {
+	if m != nil {
+		return m.ArtifactParts
+	}
+	return nil
+}
+
+type CommitMultipartArtifact struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Key                  string   `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CommitMultipartArtifact) Reset()         { *m = CommitMultipartArtifact{} }
+func (m *CommitMultipartArtifact) String() string { return proto.CompactTextString(m) }
+func (*CommitMultipartArtifact) ProtoMessage()    {}
+func (*CommitMultipartArtifact) Descriptor() ([]byte, []int) {
+	return fileDescriptor_03ac4c36a5d89ec4, []int{12}
+}
+
+func (m *CommitMultipartArtifact) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CommitMultipartArtifact.Unmarshal(m, b)
+}
+func (m *CommitMultipartArtifact) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CommitMultipartArtifact.Marshal(b, m, deterministic)
+}
+func (m *CommitMultipartArtifact) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CommitMultipartArtifact.Merge(m, src)
+}
+func (m *CommitMultipartArtifact) XXX_Size() int {
+	return xxx_messageInfo_CommitMultipartArtifact.Size(m)
+}
+func (m *CommitMultipartArtifact) XXX_DiscardUnknown() {
+	xxx_messageInfo_CommitMultipartArtifact.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CommitMultipartArtifact proto.InternalMessageInfo
+
+func (m *CommitMultipartArtifact) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *CommitMultipartArtifact) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+type CommitMultipartArtifact_Response struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CommitMultipartArtifact_Response) Reset()         { *m = CommitMultipartArtifact_Response{} }
+func (m *CommitMultipartArtifact_Response) String() string { return proto.CompactTextString(m) }
+func (*CommitMultipartArtifact_Response) ProtoMessage()    {}
+func (*CommitMultipartArtifact_Response) Descriptor() ([]byte, []int) {
+	return fileDescriptor_03ac4c36a5d89ec4, []int{12, 0}
+}
+
+func (m *CommitMultipartArtifact_Response) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CommitMultipartArtifact_Response.Unmarshal(m, b)
+}
+func (m *CommitMultipartArtifact_Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CommitMultipartArtifact_Response.Marshal(b, m, deterministic)
+}
+func (m *CommitMultipartArtifact_Response) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CommitMultipartArtifact_Response.Merge(m, src)
+}
+func (m *CommitMultipartArtifact_Response) XXX_Size() int {
+	return xxx_messageInfo_CommitMultipartArtifact_Response.Size(m)
+}
+func (m *CommitMultipartArtifact_Response) XXX_DiscardUnknown() {
+	xxx_messageInfo_CommitMultipartArtifact_Response.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CommitMultipartArtifact_Response proto.InternalMessageInfo
+
 // TODO: add bulk and get_all
 type GetArtifacts struct {
 	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -914,7 +1049,7 @@ func (m *GetArtifacts) Reset()         { *m = GetArtifacts{} }
 func (m *GetArtifacts) String() string { return proto.CompactTextString(m) }
 func (*GetArtifacts) ProtoMessage()    {}
 func (*GetArtifacts) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{11}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{13}
 }
 
 func (m *GetArtifacts) XXX_Unmarshal(b []byte) error {
@@ -950,17 +1085,17 @@ func (m *GetArtifacts) GetKey() string {
 }
 
 type GetArtifacts_Response struct {
-	Artifacts            []*Artifact `protobuf:"bytes,1,rep,name=artifacts,proto3" json:"artifacts,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
+	Artifacts            []*common.Artifact `protobuf:"bytes,1,rep,name=artifacts,proto3" json:"artifacts,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
 }
 
 func (m *GetArtifacts_Response) Reset()         { *m = GetArtifacts_Response{} }
 func (m *GetArtifacts_Response) String() string { return proto.CompactTextString(m) }
 func (*GetArtifacts_Response) ProtoMessage()    {}
 func (*GetArtifacts_Response) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{11, 0}
+	return fileDescriptor_03ac4c36a5d89ec4, []int{13, 0}
 }
 
 func (m *GetArtifacts_Response) XXX_Unmarshal(b []byte) error {
@@ -981,50 +1116,16 @@ func (m *GetArtifacts_Response) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetArtifacts_Response proto.InternalMessageInfo
 
-func (m *GetArtifacts_Response) GetArtifacts() []*Artifact {
+func (m *GetArtifacts_Response) GetArtifacts() []*common.Artifact {
 	if m != nil {
 		return m.Artifacts
 	}
 	return nil
 }
 
-type WorkspaceTypeEnum struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *WorkspaceTypeEnum) Reset()         { *m = WorkspaceTypeEnum{} }
-func (m *WorkspaceTypeEnum) String() string { return proto.CompactTextString(m) }
-func (*WorkspaceTypeEnum) ProtoMessage()    {}
-func (*WorkspaceTypeEnum) Descriptor() ([]byte, []int) {
-	return fileDescriptor_03ac4c36a5d89ec4, []int{12}
-}
-
-func (m *WorkspaceTypeEnum) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WorkspaceTypeEnum.Unmarshal(m, b)
-}
-func (m *WorkspaceTypeEnum) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WorkspaceTypeEnum.Marshal(b, m, deterministic)
-}
-func (m *WorkspaceTypeEnum) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WorkspaceTypeEnum.Merge(m, src)
-}
-func (m *WorkspaceTypeEnum) XXX_Size() int {
-	return xxx_messageInfo_WorkspaceTypeEnum.Size(m)
-}
-func (m *WorkspaceTypeEnum) XXX_DiscardUnknown() {
-	xxx_messageInfo_WorkspaceTypeEnum.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_WorkspaceTypeEnum proto.InternalMessageInfo
-
 func init() {
-	proto.RegisterEnum("ai.verta.modeldb.ArtifactTypeEnum_ArtifactType", ArtifactTypeEnum_ArtifactType_name, ArtifactTypeEnum_ArtifactType_value)
 	proto.RegisterEnum("ai.verta.modeldb.OperatorEnum_Operator", OperatorEnum_Operator_name, OperatorEnum_Operator_value)
-	proto.RegisterEnum("ai.verta.modeldb.WorkspaceTypeEnum_WorkspaceType", WorkspaceTypeEnum_WorkspaceType_name, WorkspaceTypeEnum_WorkspaceType_value)
-	proto.RegisterType((*ArtifactTypeEnum)(nil), "ai.verta.modeldb.ArtifactTypeEnum")
-	proto.RegisterType((*Artifact)(nil), "ai.verta.modeldb.Artifact")
+	proto.RegisterType((*ArtifactPart)(nil), "ai.verta.modeldb.ArtifactPart")
 	proto.RegisterType((*Feature)(nil), "ai.verta.modeldb.Feature")
 	proto.RegisterType((*GetAttributes)(nil), "ai.verta.modeldb.GetAttributes")
 	proto.RegisterType((*GetAttributes_Response)(nil), "ai.verta.modeldb.GetAttributes.Response")
@@ -1039,9 +1140,14 @@ func init() {
 	proto.RegisterType((*GetUrlForArtifact)(nil), "ai.verta.modeldb.GetUrlForArtifact")
 	proto.RegisterType((*GetUrlForArtifact_Response)(nil), "ai.verta.modeldb.GetUrlForArtifact.Response")
 	proto.RegisterMapType((map[string]string)(nil), "ai.verta.modeldb.GetUrlForArtifact.Response.FieldsEntry")
+	proto.RegisterType((*CommitArtifactPart)(nil), "ai.verta.modeldb.CommitArtifactPart")
+	proto.RegisterType((*CommitArtifactPart_Response)(nil), "ai.verta.modeldb.CommitArtifactPart.Response")
+	proto.RegisterType((*GetCommittedArtifactParts)(nil), "ai.verta.modeldb.GetCommittedArtifactParts")
+	proto.RegisterType((*GetCommittedArtifactParts_Response)(nil), "ai.verta.modeldb.GetCommittedArtifactParts.Response")
+	proto.RegisterType((*CommitMultipartArtifact)(nil), "ai.verta.modeldb.CommitMultipartArtifact")
+	proto.RegisterType((*CommitMultipartArtifact_Response)(nil), "ai.verta.modeldb.CommitMultipartArtifact.Response")
 	proto.RegisterType((*GetArtifacts)(nil), "ai.verta.modeldb.GetArtifacts")
 	proto.RegisterType((*GetArtifacts_Response)(nil), "ai.verta.modeldb.GetArtifacts.Response")
-	proto.RegisterType((*WorkspaceTypeEnum)(nil), "ai.verta.modeldb.WorkspaceTypeEnum")
 }
 
 func init() {
@@ -1049,70 +1155,67 @@ func init() {
 }
 
 var fileDescriptor_03ac4c36a5d89ec4 = []byte{
-	// 1039 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xdd, 0x6e, 0xe3, 0x44,
-	0x14, 0xae, 0x9d, 0x34, 0x89, 0x4f, 0x92, 0x65, 0x76, 0x84, 0x4a, 0xc8, 0xee, 0x42, 0x65, 0x81,
-	0xc8, 0xc5, 0xe2, 0x48, 0xe5, 0x82, 0x96, 0x0b, 0x56, 0x4e, 0xe3, 0x86, 0xa8, 0xad, 0xbd, 0xeb,
-	0xba, 0x5d, 0x69, 0x6f, 0x2c, 0x27, 0x9e, 0x3a, 0x56, 0x1d, 0x3b, 0x1a, 0x8f, 0x23, 0x2c, 0x71,
-	0xc1, 0x43, 0xf0, 0x0c, 0x48, 0x3c, 0x03, 0x0f, 0xc1, 0x13, 0xf0, 0x2e, 0x68, 0x26, 0x76, 0xe2,
-	0x6d, 0x4b, 0xb9, 0xe2, 0xca, 0x67, 0xbe, 0xf9, 0xce, 0x99, 0xf3, 0x9f, 0xc0, 0x8b, 0x65, 0xe2,
-	0x93, 0xc8, 0x9f, 0x0d, 0x4f, 0x93, 0xe5, 0x32, 0x89, 0xaf, 0x08, 0x5d, 0x87, 0x73, 0xa2, 0xad,
-	0x68, 0xc2, 0x12, 0x8c, 0xbc, 0x50, 0x5b, 0x13, 0xca, 0x3c, 0xad, 0x60, 0xf5, 0x5f, 0x06, 0x49,
-	0x12, 0x44, 0x64, 0x28, 0xee, 0x67, 0xd9, 0xed, 0x30, 0x65, 0x34, 0x9b, 0xb3, 0x0d, 0xbf, 0xdf,
-	0x9f, 0x0b, 0x23, 0x8f, 0xd9, 0x52, 0x53, 0x40, 0x3a, 0x65, 0xe1, 0xad, 0x37, 0x67, 0x4e, 0xbe,
-	0x22, 0x46, 0x9c, 0x2d, 0x55, 0x17, 0x3a, 0x55, 0x0c, 0x2b, 0xb0, 0x3f, 0xbd, 0xd4, 0x27, 0x06,
-	0xda, 0xe3, 0xe2, 0xa5, 0x35, 0x36, 0x2e, 0x90, 0x84, 0x3f, 0x81, 0xb6, 0x63, 0x98, 0x57, 0x96,
-	0x3d, 0xb2, 0x74, 0x7b, 0x8c, 0x64, 0xdc, 0x82, 0xfa, 0x58, 0x77, 0x74, 0x54, 0xe3, 0xd2, 0xe8,
-	0xc2, 0x1a, 0xa1, 0x3a, 0x06, 0x68, 0x5c, 0x39, 0xf6, 0xd4, 0x9c, 0xa0, 0x7d, 0x8e, 0x9e, 0x5a,
-	0x63, 0x03, 0x35, 0xd4, 0x5f, 0x65, 0x68, 0x95, 0x2f, 0x60, 0x04, 0xb5, 0x3b, 0x92, 0xf7, 0xa4,
-	0x43, 0x69, 0xa0, 0xd8, 0x5c, 0xc4, 0x18, 0xea, 0x2b, 0x8f, 0x2d, 0x7a, 0xb2, 0x80, 0x84, 0x8c,
-	0x5f, 0x80, 0xc2, 0xbf, 0x6e, 0x12, 0x47, 0x79, 0xaf, 0x76, 0x28, 0x0d, 0x5a, 0x76, 0x8b, 0x03,
-	0x56, 0x1c, 0xe5, 0xd8, 0x81, 0xae, 0x57, 0x98, 0x73, 0x59, 0xbe, 0x22, 0xbd, 0xfa, 0xa1, 0x34,
-	0x78, 0x76, 0x34, 0xd4, 0xee, 0x27, 0x4a, 0xbb, 0x1f, 0xeb, 0x47, 0x80, 0xdd, 0xf1, 0xaa, 0x61,
-	0xbf, 0x06, 0x1c, 0x85, 0xf1, 0x1d, 0xf1, 0xdd, 0xad, 0xf1, 0xd0, 0xef, 0xed, 0x0b, 0xa7, 0xd0,
-	0xe6, 0xa6, 0xd4, 0x9e, 0xfa, 0xf8, 0x5b, 0xc0, 0xb7, 0x61, 0x44, 0x62, 0x6f, 0x49, 0x5c, 0xf2,
-	0x33, 0x23, 0x71, 0x1a, 0x26, 0x71, 0xaf, 0x21, 0xd8, 0xcf, 0xcb, 0x1b, 0xa3, 0xbc, 0x50, 0x5f,
-	0x41, 0xf3, 0x8c, 0x78, 0x2c, 0xa3, 0x84, 0x87, 0xcb, 0xef, 0x8a, 0x0c, 0x08, 0x59, 0xfd, 0x5d,
-	0x82, 0xee, 0x84, 0x30, 0x9d, 0x31, 0x1a, 0xce, 0x32, 0x46, 0x52, 0xfc, 0x0c, 0xe4, 0xd0, 0x2f,
-	0x38, 0x72, 0xe8, 0xe3, 0xaf, 0xe1, 0x99, 0x57, 0xde, 0xba, 0x77, 0x24, 0x4f, 0x7b, 0xf2, 0x61,
-	0x6d, 0xa0, 0xd8, 0xdd, 0x2d, 0x7a, 0x4e, 0xf2, 0x14, 0x7f, 0x06, 0xcd, 0x80, 0x30, 0xd7, 0x8b,
-	0xa2, 0x22, 0x6b, 0x8d, 0x80, 0x30, 0x3d, 0x8a, 0xfa, 0x06, 0xb4, 0x6c, 0x92, 0xae, 0x92, 0x38,
-	0x25, 0xf8, 0x04, 0x60, 0xab, 0x95, 0xf6, 0xa4, 0xc3, 0xda, 0xa0, 0x7d, 0xf4, 0xf9, 0x2e, 0x79,
-	0x9b, 0xf6, 0xd1, 0xce, 0x49, 0x7e, 0xe3, 0x45, 0x19, 0xb1, 0x2b, 0x64, 0xf5, 0x17, 0xe8, 0xea,
-	0xbe, 0xff, 0x84, 0x9f, 0xdf, 0x83, 0xb2, 0xa5, 0x8b, 0x8a, 0x3e, 0x69, 0x7a, 0xc7, 0xed, 0xab,
-	0x15, 0x07, 0x0f, 0xa0, 0x91, 0x32, 0x8f, 0x65, 0xa9, 0x30, 0xdc, 0xb2, 0x8b, 0x93, 0x7a, 0x02,
-	0xcd, 0x09, 0x61, 0x8e, 0x17, 0x3c, 0x78, 0xb7, 0xff, 0x45, 0x45, 0x1d, 0x43, 0x9d, 0x79, 0xc1,
-	0x26, 0x32, 0xc5, 0x16, 0xb2, 0xfa, 0xa7, 0x04, 0xed, 0xd3, 0xc4, 0x27, 0x37, 0x84, 0xf2, 0x82,
-	0xe0, 0x11, 0x74, 0x82, 0x90, 0xb9, 0x69, 0xec, 0xad, 0xd2, 0x45, 0xc2, 0x84, 0xa5, 0xf6, 0xd1,
-	0xab, 0x87, 0x2d, 0x34, 0x09, 0xd9, 0x55, 0x41, 0xfa, 0x69, 0xcf, 0x6e, 0x07, 0xbb, 0x23, 0x7e,
-	0x03, 0x9d, 0x79, 0xe2, 0x13, 0xd7, 0xa3, 0xf3, 0x45, 0xb8, 0x2e, 0xc3, 0xed, 0xff, 0x7b, 0x1b,
-	0x72, 0x03, 0x5c, 0x43, 0xdf, 0x28, 0xe0, 0x2f, 0xa1, 0xed, 0x7b, 0x8c, 0xb8, 0x51, 0x12, 0x04,
-	0xc4, 0x17, 0x15, 0xab, 0xdb, 0xc0, 0xa1, 0x0b, 0x81, 0x8c, 0x1a, 0x50, 0xe7, 0x7c, 0xf5, 0x37,
-	0x09, 0xda, 0x15, 0x47, 0xf0, 0x4b, 0x50, 0x78, 0x8f, 0xf1, 0x89, 0x28, 0xc3, 0xdc, 0x01, 0x3c,
-	0x7e, 0x4a, 0x56, 0x49, 0x39, 0x50, 0x5c, 0xe6, 0xd8, 0xc2, 0x4b, 0x17, 0xe2, 0x0d, 0xc5, 0x16,
-	0x32, 0x7e, 0x03, 0xad, 0x30, 0x75, 0xfd, 0x90, 0xb2, 0xbc, 0x18, 0xa1, 0xaf, 0x1e, 0x94, 0xca,
-	0x21, 0x34, 0xf6, 0x68, 0x2e, 0x86, 0xa7, 0x90, 0xed, 0x66, 0x98, 0x8e, 0xb9, 0x92, 0xfa, 0xb7,
-	0x04, 0xdd, 0xb2, 0x96, 0xef, 0x32, 0x42, 0xf3, 0x47, 0xa6, 0xfb, 0x35, 0xec, 0xaf, 0xf9, 0x7d,
-	0x91, 0x9d, 0x03, 0x6d, 0xb3, 0xbb, 0xb4, 0x72, 0x77, 0x69, 0x9b, 0x4e, 0xd8, 0x90, 0xf0, 0x04,
-	0x40, 0x08, 0x9b, 0xb9, 0xae, 0x09, 0xa7, 0x06, 0x0f, 0x9c, 0x12, 0x2a, 0xdb, 0x99, 0xde, 0x9e,
-	0x6c, 0x65, 0x5d, 0x8a, 0xf8, 0x14, 0x5a, 0xc9, 0x8a, 0x50, 0x8f, 0x25, 0xb4, 0x88, 0xed, 0x9b,
-	0x87, 0x75, 0xb1, 0x0a, 0x86, 0x30, 0x53, 0x1e, 0xec, 0xad, 0xa2, 0x4a, 0xa1, 0x53, 0xa5, 0xa8,
-	0x33, 0x68, 0x95, 0x67, 0xdc, 0x00, 0xd9, 0x78, 0x87, 0xf6, 0xf8, 0xd7, 0x34, 0x90, 0xc4, 0xbf,
-	0x13, 0x07, 0xc9, 0xb8, 0x09, 0xb5, 0x89, 0x63, 0xa0, 0x1a, 0x07, 0x2e, 0x1c, 0x54, 0xe7, 0xc0,
-	0x85, 0x63, 0xa0, 0x7d, 0xdc, 0x86, 0xe6, 0xa9, 0x65, 0x3a, 0xfa, 0xd4, 0x44, 0x0d, 0xbe, 0x4e,
-	0x4d, 0xcb, 0x71, 0x4b, 0xa0, 0xc9, 0xe9, 0x53, 0x13, 0xb5, 0xd4, 0xbf, 0x64, 0x78, 0x3e, 0x21,
-	0xec, 0x9a, 0x46, 0x67, 0x09, 0xdd, 0x6e, 0xcd, 0xfb, 0x63, 0x56, 0xe4, 0x59, 0xde, 0xe5, 0xf9,
-	0x00, 0x1a, 0x4b, 0xc2, 0x16, 0x89, 0x5f, 0x94, 0xb8, 0x38, 0xfd, 0x3f, 0xcb, 0xb2, 0xff, 0x87,
-	0x54, 0x99, 0x37, 0x04, 0xb5, 0x8c, 0x46, 0x65, 0xd1, 0x33, 0x1a, 0xe1, 0xb7, 0xd0, 0xb8, 0x0d,
-	0x49, 0xe4, 0x6f, 0xb6, 0x54, 0xfb, 0xe8, 0xf8, 0x91, 0xb9, 0xba, 0x1f, 0xa3, 0x56, 0xda, 0xd3,
-	0xce, 0x84, 0xaa, 0x11, 0x33, 0x9a, 0xdb, 0x85, 0x9d, 0xfe, 0x09, 0xb4, 0x2b, 0xf0, 0x23, 0x7d,
-	0xf6, 0x69, 0xb5, 0xcf, 0x94, 0xa2, 0x9f, 0x7e, 0x90, 0x8f, 0x25, 0x75, 0x0d, 0x1d, 0xbe, 0x5b,
-	0x8b, 0x67, 0xd2, 0xff, 0xce, 0x65, 0x7f, 0x5c, 0x09, 0xee, 0x18, 0x94, 0x32, 0xf2, 0x72, 0x57,
-	0x3e, 0x31, 0xe1, 0xf6, 0x8e, 0xac, 0x5e, 0xc2, 0xf3, 0xf7, 0x09, 0xbd, 0x4b, 0x57, 0xde, 0x7c,
-	0xdb, 0xac, 0xea, 0x31, 0x74, 0x3f, 0x02, 0x79, 0x57, 0x5c, 0x9b, 0xe7, 0xa6, 0xf5, 0xde, 0x44,
-	0x7b, 0x18, 0x41, 0xc7, 0xb2, 0x27, 0xba, 0x39, 0xfd, 0xa0, 0x3b, 0x53, 0xcb, 0x44, 0x12, 0xff,
-	0x15, 0xbd, 0xbe, 0x32, 0x6c, 0x24, 0x8f, 0x46, 0x6f, 0xa5, 0x0f, 0x3f, 0x06, 0x21, 0x5b, 0x64,
-	0x33, 0x3e, 0x07, 0xc3, 0x1b, 0xee, 0x80, 0x3e, 0x1d, 0x96, 0x7f, 0x1d, 0xc4, 0x40, 0xa5, 0xc3,
-	0x80, 0xc4, 0xc3, 0x20, 0x29, 0x4f, 0xab, 0x6c, 0x16, 0x85, 0xf3, 0x92, 0x33, 0x6b, 0x08, 0xf8,
-	0xbb, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0xbb, 0xa2, 0xe3, 0xe1, 0x70, 0x08, 0x00, 0x00,
+	// 985 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x56, 0x4d, 0x73, 0xe2, 0x46,
+	0x13, 0x5e, 0x01, 0xe6, 0xa3, 0x05, 0x7e, 0xb5, 0xf3, 0xa6, 0xbc, 0x2c, 0xd9, 0xdd, 0x50, 0xaa,
+	0xa4, 0xc2, 0x21, 0x25, 0xaa, 0xc8, 0x21, 0xeb, 0x1c, 0x36, 0x85, 0x09, 0x26, 0xae, 0x75, 0xb0,
+	0x2d, 0xb3, 0x3e, 0xe4, 0x42, 0x0d, 0xa8, 0x2d, 0x54, 0x16, 0x8c, 0x6a, 0x34, 0x72, 0x15, 0x55,
+	0xb9, 0xe7, 0x9a, 0x43, 0xee, 0xb9, 0xe5, 0x47, 0xe4, 0x9f, 0xe4, 0x90, 0xff, 0x92, 0x9a, 0x91,
+	0x06, 0x64, 0x63, 0xaf, 0xf7, 0x44, 0x77, 0xcf, 0xd3, 0xad, 0xa7, 0x3f, 0x66, 0x1a, 0xf8, 0x7c,
+	0xc9, 0x3c, 0x0c, 0xbd, 0x59, 0x77, 0xc0, 0x96, 0x4b, 0xb6, 0xba, 0x44, 0x7e, 0x1b, 0xcc, 0xd1,
+	0x89, 0x38, 0x13, 0x8c, 0x58, 0x34, 0x70, 0x6e, 0x91, 0x0b, 0xea, 0x64, 0xa8, 0xd6, 0x2b, 0x9f,
+	0x31, 0x3f, 0xc4, 0xae, 0x3a, 0x9f, 0x25, 0xd7, 0xdd, 0x58, 0xf0, 0x64, 0x2e, 0x52, 0x7c, 0xab,
+	0x35, 0x57, 0x41, 0x1e, 0x8a, 0x65, 0x0f, 0xa0, 0xde, 0xe7, 0x22, 0xb8, 0xa6, 0x73, 0x71, 0x4e,
+	0xb9, 0x20, 0x5f, 0x80, 0x19, 0x51, 0x2e, 0xa6, 0xab, 0x64, 0x39, 0x43, 0xde, 0x34, 0xda, 0x46,
+	0xa7, 0xe4, 0x82, 0x34, 0x8d, 0x95, 0x85, 0x10, 0x28, 0xa1, 0xa0, 0x7e, 0xb3, 0xd0, 0x36, 0x3a,
+	0x35, 0x57, 0xc9, 0xf6, 0x6b, 0xa8, 0x1c, 0x23, 0x15, 0x09, 0x47, 0x79, 0xbc, 0xa2, 0x4b, 0x54,
+	0x8e, 0x35, 0x57, 0xc9, 0xf6, 0x5f, 0x06, 0x34, 0x46, 0x28, 0xfa, 0x42, 0xf0, 0x60, 0x96, 0x08,
+	0x8c, 0xc9, 0x3e, 0x14, 0x02, 0x2f, 0xc3, 0x14, 0x02, 0x8f, 0x7c, 0x05, 0xfb, 0x54, 0x9f, 0x4e,
+	0x6f, 0x70, 0x1d, 0x37, 0x0b, 0xed, 0x62, 0xa7, 0xe6, 0x36, 0x36, 0xd6, 0xf7, 0xb8, 0x8e, 0xc9,
+	0x0b, 0xa8, 0xf8, 0x28, 0xa6, 0x34, 0x0c, 0x9b, 0xc5, 0xb6, 0xd1, 0xa9, 0xba, 0x65, 0x1f, 0x45,
+	0x3f, 0x0c, 0x5b, 0x43, 0xa8, 0xba, 0x18, 0x47, 0x6c, 0x15, 0x23, 0x39, 0x04, 0xd8, 0x78, 0xc5,
+	0x4d, 0xa3, 0x5d, 0xec, 0x98, 0xbd, 0x97, 0xce, 0xa6, 0x64, 0x69, 0x2d, 0x9c, 0xf7, 0xb8, 0xbe,
+	0xa2, 0x61, 0x82, 0x6e, 0x0e, 0x6c, 0xff, 0x0a, 0x8d, 0xbe, 0xe7, 0x7d, 0x84, 0xe7, 0x77, 0x50,
+	0xdb, 0xc0, 0x55, 0x05, 0x3e, 0x1a, 0x7a, 0x8b, 0x6d, 0xd9, 0x39, 0x82, 0x07, 0x50, 0x8e, 0x05,
+	0x15, 0x49, 0xac, 0x02, 0x57, 0xdd, 0x4c, 0xb3, 0x0f, 0xa1, 0x32, 0x42, 0x31, 0xa1, 0xfe, 0xce,
+	0x77, 0x5b, 0x6f, 0x72, 0xee, 0x04, 0x4a, 0x82, 0xfa, 0x69, 0x66, 0x35, 0x57, 0xc9, 0xf6, 0xdf,
+	0x06, 0x98, 0x03, 0xe6, 0xe1, 0x15, 0xf2, 0x38, 0x60, 0x2b, 0x72, 0x04, 0x75, 0x3f, 0x10, 0xd3,
+	0x78, 0x45, 0xa3, 0x78, 0xc1, 0x84, 0x8a, 0x64, 0xf6, 0x5e, 0x3b, 0xf7, 0x07, 0xc7, 0x19, 0x05,
+	0xe2, 0x32, 0x03, 0xfd, 0xf4, 0xcc, 0x35, 0xfd, 0xad, 0x4a, 0xde, 0x41, 0x7d, 0xce, 0x3c, 0x9c,
+	0x52, 0x3e, 0x5f, 0x04, 0xb7, 0x8f, 0xa7, 0xab, 0xc7, 0x47, 0xfa, 0x4b, 0x87, 0x7e, 0x8a, 0x97,
+	0x93, 0xe4, 0x51, 0x81, 0xd3, 0x90, 0xf9, 0x3e, 0x7a, 0xaa, 0x61, 0x25, 0x17, 0xa4, 0xe9, 0x54,
+	0x59, 0x8e, 0xca, 0x50, 0x92, 0x78, 0xfb, 0x0f, 0x03, 0xcc, 0x1c, 0x0f, 0xf2, 0x0a, 0x6a, 0xd7,
+	0x41, 0x88, 0x11, 0x15, 0x0b, 0x9d, 0xe5, 0xd6, 0x20, 0xd3, 0xe7, 0x18, 0x31, 0x3d, 0x7f, 0x52,
+	0x96, 0xb6, 0x05, 0x8d, 0x17, 0xea, 0x1b, 0x35, 0x57, 0xc9, 0xe4, 0x07, 0xa8, 0x06, 0xf1, 0xd4,
+	0x0b, 0xb8, 0x58, 0x37, 0x4b, 0x6d, 0xa3, 0xb3, 0xdf, 0xfb, 0x72, 0x87, 0xfa, 0x04, 0xf9, 0x8a,
+	0xf2, 0xf5, 0x70, 0x95, 0x2c, 0xb5, 0xec, 0x56, 0x82, 0xf8, 0x47, 0xe9, 0x64, 0xff, 0x6b, 0x40,
+	0x43, 0xb7, 0xf2, 0x22, 0x41, 0xbe, 0x26, 0x16, 0x14, 0x6f, 0x70, 0x9d, 0xb5, 0x45, 0x8a, 0xe4,
+	0x1b, 0xd8, 0xbb, 0x95, 0xe7, 0x59, 0x71, 0x0e, 0x9c, 0xf4, 0x1e, 0x3a, 0xfa, 0x1e, 0x3a, 0xe9,
+	0x20, 0xa4, 0x20, 0x32, 0x02, 0x50, 0xc2, 0x54, 0xac, 0x23, 0x54, 0x64, 0xf7, 0x7b, 0x9d, 0x1d,
+	0x52, 0xca, 0x65, 0xb2, 0x8e, 0x50, 0xd1, 0xda, 0x68, 0x6e, 0xed, 0x56, 0x8b, 0x64, 0x00, 0x55,
+	0x16, 0x21, 0xa7, 0x82, 0xf1, 0x2c, 0xb7, 0xaf, 0x77, 0x5b, 0x7b, 0x96, 0x21, 0x54, 0x18, 0xad,
+	0xb8, 0x1b, 0x47, 0x9b, 0x43, 0x3d, 0x0f, 0xb1, 0x67, 0x50, 0xd5, 0x3a, 0x29, 0x43, 0x61, 0x78,
+	0x61, 0x3d, 0x93, 0xbf, 0xe3, 0xa1, 0x65, 0xc8, 0xdf, 0xd1, 0xc4, 0x2a, 0x90, 0x0a, 0x14, 0x47,
+	0x93, 0xa1, 0x55, 0x94, 0x86, 0xd3, 0x89, 0x55, 0x92, 0x86, 0xd3, 0xc9, 0xd0, 0xda, 0x23, 0x26,
+	0x54, 0x06, 0x67, 0xe3, 0x49, 0xff, 0x64, 0x6c, 0x95, 0xc9, 0xff, 0xc0, 0x1c, 0x9f, 0x4d, 0xa6,
+	0xda, 0x50, 0x91, 0xf0, 0x93, 0xb1, 0x55, 0xb5, 0xff, 0x2c, 0xc2, 0xf3, 0x11, 0x8a, 0x0f, 0x3c,
+	0x3c, 0x66, 0x5c, 0x0f, 0xce, 0xce, 0x2d, 0xcb, 0xea, 0x5c, 0xd8, 0xd6, 0xf9, 0x00, 0xca, 0x4b,
+	0x14, 0x0b, 0xe6, 0x65, 0x2d, 0xce, 0x34, 0x72, 0x09, 0x0d, 0x9a, 0x45, 0x49, 0x8b, 0x9a, 0x56,
+	0xc3, 0x79, 0x74, 0x48, 0x37, 0x75, 0xcd, 0x1b, 0xdc, 0x3a, 0xcd, 0x69, 0xf7, 0x9f, 0xc0, 0xbd,
+	0xfb, 0x4f, 0x60, 0xeb, 0x1f, 0x23, 0x77, 0x1d, 0x2d, 0x28, 0x26, 0x3c, 0xd4, 0x43, 0x91, 0xf0,
+	0x90, 0x9c, 0x43, 0xf9, 0x3a, 0xc0, 0xd0, 0x4b, 0x1f, 0x31, 0xb3, 0xf7, 0xf6, 0x81, 0x6b, 0x77,
+	0xbf, 0x06, 0x8e, 0x8e, 0xe7, 0x1c, 0x2b, 0xd7, 0xe1, 0x4a, 0xf0, 0xb5, 0x9b, 0xc5, 0x21, 0x0e,
+	0xfc, 0x7f, 0x99, 0x84, 0x22, 0x50, 0xb4, 0x92, 0x28, 0x64, 0xd4, 0x9b, 0xb2, 0x9b, 0xec, 0x0d,
+	0x7c, 0xbe, 0x39, 0xfa, 0xa0, 0x4e, 0xce, 0x6e, 0x5a, 0x87, 0x60, 0xe6, 0xc2, 0x3c, 0x30, 0xb7,
+	0x9f, 0xe5, 0xe7, 0xb6, 0x96, 0xcd, 0xe7, 0xf7, 0x85, 0xb7, 0x86, 0xfd, 0x9b, 0x01, 0x44, 0xee,
+	0x89, 0x40, 0xdc, 0x59, 0x0b, 0x4f, 0xb7, 0x68, 0x90, 0x6b, 0x85, 0x24, 0xa3, 0xd8, 0x99, 0xbd,
+	0x37, 0xbb, 0xc9, 0xe7, 0x03, 0x6f, 0x4b, 0x2f, 0xb5, 0x16, 0x6c, 0x0b, 0x6b, 0xff, 0x6e, 0xc0,
+	0xcb, 0x11, 0x8a, 0x94, 0x8c, 0x40, 0x2f, 0xef, 0x16, 0x3f, 0x4d, 0xa8, 0x75, 0x91, 0x6b, 0xd2,
+	0x10, 0xf6, 0xef, 0x90, 0xd3, 0x7b, 0xe1, 0x29, 0x76, 0x8d, 0x3c, 0xbb, 0xd8, 0x1e, 0xc1, 0x8b,
+	0x94, 0xce, 0xcf, 0xba, 0xe4, 0x9f, 0x3e, 0xc3, 0x77, 0x72, 0x4b, 0xa0, 0x2e, 0x17, 0x62, 0xe6,
+	0xfc, 0x29, 0xd9, 0x0c, 0x72, 0xd9, 0xc8, 0x2d, 0xa4, 0x5d, 0x1f, 0x5d, 0x70, 0x3a, 0xb8, 0xbb,
+	0xc5, 0x1e, 0x1d, 0x9d, 0x1b, 0xbf, 0xbc, 0xf3, 0x03, 0xb1, 0x48, 0x66, 0x12, 0xd6, 0xbd, 0x92,
+	0x0e, 0xfd, 0x93, 0xae, 0xfe, 0xb3, 0xa1, 0x9e, 0xad, 0xb8, 0xeb, 0xe3, 0xaa, 0xeb, 0x33, 0xad,
+	0x45, 0xc9, 0x2c, 0x0c, 0xe6, 0x1a, 0x33, 0x2b, 0x2b, 0xf3, 0xb7, 0xff, 0x05, 0x00, 0x00, 0xff,
+	0xff, 0xb8, 0x63, 0x66, 0x84, 0xa2, 0x08, 0x00, 0x00,
 }

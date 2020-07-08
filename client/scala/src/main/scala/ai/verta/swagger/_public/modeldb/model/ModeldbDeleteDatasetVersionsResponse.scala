@@ -9,8 +9,8 @@ import ai.verta.swagger._public.modeldb.model.DatasetTypeEnumDatasetType._
 import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibility._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.model.PathLocationTypeEnumPathLocationType._
-import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
+import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbDeleteDatasetVersionsResponse (

@@ -13,6 +13,7 @@ import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.QueryDatasetVersionInfo;
 import ai.verta.modeldb.RawDatasetVersionInfo;
 import ai.verta.modeldb.authservice.AuthService;
+import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.UserInfo;
@@ -59,6 +60,7 @@ public interface DatasetVersionDAO {
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   DatasetVersionDTO getDatasetVersions(
+      DatasetDAO datasetDAO,
       String datasetId,
       int pageNumber,
       int pageLimit,
@@ -73,16 +75,16 @@ public interface DatasetVersionDAO {
    * @param datasetVersionIds : list of datasetVersion.id
    * @return {@link Boolean} : status
    */
-  Boolean deleteDatasetVersions(List<String> datasetVersionIds, Boolean parentExists);
+  Boolean deleteDatasetVersions(List<String> datasetVersionIds)
+      throws InvalidProtocolBufferException;
 
   /**
    * Delete all datasetVersions with dataset ids matching the ids in request.
    *
    * @param datasetIds : list of dataset.id
-   * @param parentExists : If datasetVersion of parent dataset exist then set true
    * @return {@link Boolean} : status
    */
-  Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds, Boolean parentExists);
+  Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds);
 
   /**
    * Fetch the datasetVersion with id matching the id in request
@@ -113,13 +115,15 @@ public interface DatasetVersionDAO {
   /**
    * Return list of datasetVersions based on FindDatasetVersions queryParameters
    *
+   * @param datasetDAO : dataset entity dao
    * @param queryParameters : queryParameters --> query parameters for filtering datasetVersions
    * @param userInfo : userInfo
    * @return {@link DatasetVersionDTO} : datasetVersionDTO contains the list of datasetVersions
    *     based on filter queryParameters & total_pages count
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  DatasetVersionDTO findDatasetVersions(FindDatasetVersions queryParameters, UserInfo userInfo)
+  DatasetVersionDTO findDatasetVersions(
+      DatasetDAO datasetDAO, FindDatasetVersions queryParameters, UserInfo userInfo)
       throws InvalidProtocolBufferException;
 
   /**
@@ -316,7 +320,7 @@ public interface DatasetVersionDAO {
           break;
         case UNRECOGNIZED:
         default:
-          LOGGER.warn(ModelDBMessages.INVALID_DATSET_TYPE);
+          LOGGER.info(ModelDBMessages.INVALID_DATSET_TYPE);
           Status status =
               Status.newBuilder()
                   .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -368,7 +372,7 @@ public interface DatasetVersionDAO {
         break;
       case UNRECOGNIZED:
       default:
-        LOGGER.warn(ModelDBMessages.INVALID_DATSET_TYPE);
+        LOGGER.info(ModelDBMessages.INVALID_DATSET_TYPE);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)

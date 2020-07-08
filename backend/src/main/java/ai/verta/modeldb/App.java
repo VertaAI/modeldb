@@ -16,6 +16,7 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -30,9 +31,6 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunServiceImpl;
 import ai.verta.modeldb.health.HealthServiceImpl;
 import ai.verta.modeldb.health.HealthStatusManager;
-import ai.verta.modeldb.job.JobDAO;
-import ai.verta.modeldb.job.JobDAORdbImpl;
-import ai.verta.modeldb.job.JobServiceImpl;
 import ai.verta.modeldb.lineage.LineageDAO;
 import ai.verta.modeldb.lineage.LineageDAORdbImpl;
 import ai.verta.modeldb.lineage.LineageServiceImpl;
@@ -53,9 +51,15 @@ import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
+import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
+import io.jaegertracing.Configuration;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.grpc.TracingServerInterceptor;
+import io.opentracing.contrib.jdbc.TracingDriver;
+import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
@@ -112,9 +116,15 @@ public class App implements ApplicationContextAware {
   private String authServerHost = null;
   private Integer authServerPort = null;
 
+  // Service Account details
+  private String serviceUserEmail = null;
+  private String serviceUserDevKey = null;
+
   // S3 Artifact store
   private String cloudAccessKey = null;
   private String cloudSecretKey = null;
+  private String minioEndpoint = null;
+  private String awsRegion = null;
 
   // NFS Artifact store
   private Boolean pickNFSHostFromConfig = null;
@@ -132,7 +142,12 @@ public class App implements ApplicationContextAware {
 
   // Feature flags
   private Boolean disabledAuthz = false;
+  private Boolean publicSharingEnabled = false;
   private Boolean storeClientCreationTimestamp = false;
+  private Integer requestTimeout = 30;
+
+  private Boolean traceEnabled = false;
+  private static TracingServerInterceptor tracingInterceptor;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -176,105 +191,124 @@ public class App implements ApplicationContextAware {
     return app;
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
+    try {
+      LOGGER.info("Backend server starting.");
+      final java.util.logging.Logger logger =
+          java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
+      logger.setLevel(Level.WARNING);
+      // --------------- Start reading properties --------------------------
+      Map<String, Object> propertiesMap =
+          ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
+      // --------------- End reading properties --------------------------
 
-    LOGGER.info("Backend server starting.");
-    final java.util.logging.Logger logger =
-        java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
-    logger.setLevel(Level.WARNING);
-    // --------------- Start reading properties --------------------------
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    // --------------- End reading properties --------------------------
+      // --------------- Start Initialize modelDB gRPC server --------------------------
+      Map<String, Object> grpcServerMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.GRPC_SERVER);
+      if (grpcServerMap == null) {
+        throw new ModelDBException("grpcServer configuration not found in properties.");
+      }
 
-    // --------------- Start Initialize modelDB gRPC server --------------------------
-    Map<String, Object> grpcServerMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.GRPC_SERVER);
-    if (grpcServerMap == null) {
-      throw new ModelDBException("grpcServer configuration not found in properties.");
-    }
+      Integer grpcServerPort = (Integer) grpcServerMap.get(ModelDBConstants.PORT);
+      LOGGER.trace("grpc server port number found");
+      ServerBuilder<?> serverBuilder = ServerBuilder.forPort(grpcServerPort);
 
-    Integer grpcServerPort = (Integer) grpcServerMap.get(ModelDBConstants.PORT);
-    LOGGER.trace("grpc server port number found");
-    ServerBuilder<?> serverBuilder = ServerBuilder.forPort(grpcServerPort);
+      App app = App.getInstance();
+      app.requestTimeout =
+          (Integer) grpcServerMap.getOrDefault(ModelDBConstants.REQUEST_TIMEOUT, 30);
 
-    Map<String, Object> featureFlagMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
-    App app = App.getInstance();
-    if (featureFlagMap != null) {
-      app.setDisabledAuthz(
-          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
-      app.storeClientCreationTimestamp =
-          (Boolean)
-              featureFlagMap.getOrDefault(ModelDBConstants.STORE_CLIENT_CREATION_TIMESTAMP, false);
-    }
+      Map<String, Object> featureFlagMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
+      if (featureFlagMap != null) {
+        app.setDisabledAuthz(
+            (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
+        app.storeClientCreationTimestamp =
+            (Boolean)
+                featureFlagMap.getOrDefault(
+                    ModelDBConstants.STORE_CLIENT_CREATION_TIMESTAMP, false);
+      }
 
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
+      if (propertiesMap.containsKey("enableTrace") && (Boolean) propertiesMap.get("enableTrace")) {
+        app.traceEnabled = true;
+        Tracer tracer = Configuration.fromEnv().getTracer();
+        app.tracingInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
+        GlobalTracer.register(tracer);
+        io.opentracing.contrib.jdbc.TracingDriver.load();
+        io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
+        TracingDriver.setInterceptorProperty(true);
+      }
+      AuthService authService = new PublicAuthServiceUtils();
+      RoleService roleService = new PublicRoleServiceUtils(authService);
 
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
+      Map<String, Object> authServicePropMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
+      if (authServicePropMap != null) {
+        String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
+        Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
+        app.setAuthServerHost(authServiceHost);
+        app.setAuthServerPort(authServicePort);
 
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
+        authService = new AuthServiceUtils();
+        roleService = new RoleServiceUtils(authService);
+      }
 
-    Map<String, Object> databasePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
+      Map<String, Object> databasePropMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
 
-    HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
-    serverBuilder.addService(healthStatusManager.getHealthService());
-    healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
+      HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
+      serverBuilder.addService(healthStatusManager.getHealthService());
+      healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
-    // ----------------- Start Initialize database & modelDB services with DAO ---------
-    initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
-    // ----------------- Finish Initialize database & modelDB services with DAO --------
+      // ----------------- Start Initialize database & modelDB services with DAO ---------
+      initializeServicesBaseOnDataBase(
+          serverBuilder, databasePropMap, propertiesMap, authService, roleService);
+      // ----------------- Finish Initialize database & modelDB services with DAO --------
 
-    serverBuilder.intercept(new ModelDBAuthInterceptor());
+      serverBuilder.intercept(new ModelDBAuthInterceptor());
 
-    Server server = serverBuilder.build();
-    // --------------- Finish Initialize modelDB gRPC server --------------------------
+      Server server = serverBuilder.build();
+      // --------------- Finish Initialize modelDB gRPC server --------------------------
 
-    // --------------- Start modelDB gRPC server --------------------------
-    server.start();
-    up.inc();
-    LOGGER.info("Backend server started listening on {}", grpcServerPort);
+      // --------------- Start modelDB gRPC server --------------------------
+      server.start();
+      up.inc();
+      LOGGER.info("Backend server started listening on {}", grpcServerPort);
 
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  int activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
-                  while (activeRequestCount > 0) {
-                    activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
-                    System.err.println("Active Request Count in while: " + activeRequestCount);
+      Runtime.getRuntime()
+          .addShutdownHook(
+              new Thread(
+                  () -> {
+                    int activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
+                    while (activeRequestCount > 0) {
+                      activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
+                      System.err.println("Active Request Count in while: " + activeRequestCount);
+                      try {
+                        Thread.sleep(1000); // wait for 1s
+                      } catch (InterruptedException e) {
+                        e.printStackTrace();
+                      }
+                    }
+                    // Use stderr here since the logger may have been reset by its JVM shutdown
+                    // hook.
+                    System.err.println(
+                        "*** Shutting down gRPC server since JVM is shutting down ***");
+                    server.shutdown();
                     try {
-                      Thread.sleep(1000); // wait for 1s
+                      server.awaitTermination();
                     } catch (InterruptedException e) {
                       e.printStackTrace();
                     }
-                  }
-                  // Use stderr here since the logger may have been reset by its JVM shutdown hook.
-                  System.err.println(
-                      "*** Shutting down gRPC server since JVM is shutting down ***");
-                  server.shutdown();
-                  try {
-                    server.awaitTermination();
-                  } catch (InterruptedException e) {
-                    e.printStackTrace();
-                  }
-                  System.err.println("*** Server Shutdown ***");
-                }));
+                    System.err.println("*** Server Shutdown ***");
+                  }));
 
-    // ----------- Don't exit the main thread. Wait until server is terminated -----------
-    server.awaitTermination();
-    up.dec();
+      // ----------- Don't exit the main thread. Wait until server is terminated -----------
+      server.awaitTermination();
+      up.dec();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      initiateShutdown(0);
+      System.exit(0);
+    }
   }
 
   public static void initializeServicesBaseOnDataBase(
@@ -286,11 +320,26 @@ public class App implements ApplicationContextAware {
       throws ModelDBException {
 
     App app = App.getInstance();
+    Map<String, Object> serviceUserDetailMap =
+        (Map<String, Object>) propertiesMap.get(ModelDBConstants.MDB_SERVICE_USER);
+    if (serviceUserDetailMap != null) {
+      if (serviceUserDetailMap.containsKey(ModelDBConstants.EMAIL)) {
+        app.serviceUserEmail = (String) serviceUserDetailMap.get(ModelDBConstants.EMAIL);
+        LOGGER.trace("service user email found");
+      }
+      if (serviceUserDetailMap.containsKey(ModelDBConstants.DEV_KEY)) {
+        app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
+        LOGGER.trace("service user devKey found");
+      }
+    }
+
     Map<String, Object> featureFlagMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
     if (featureFlagMap != null) {
       app.setDisabledAuthz(
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
+      app.setPublicSharingEnabled(
+          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
     }
 
     Map<String, Object> starterProjectDetail =
@@ -316,7 +365,7 @@ public class App implements ApplicationContextAware {
         // ---------------
         app.databasePropMap = databasePropMap;
         app.propertiesMap = propertiesMap;
-        ModelDBHibernateUtil.getSessionFactory();
+        ModelDBHibernateUtil.createOrGetSessionFactory();
 
         LOGGER.trace("RDBMS configured with server");
         // --------------- Finish Initialize relational Database base on configuration
@@ -335,6 +384,9 @@ public class App implements ApplicationContextAware {
     // --------------- Finish Initialize Database base on configuration --------------------------
 
     initializeTelemetryBasedOnConfig(propertiesMap);
+
+    // Initialize cron jobs
+    CronJobUtils.initializeBasedOnConfig(propertiesMap, authService, roleService);
   }
 
   private static void initializeRelationalDBServices(
@@ -354,7 +406,6 @@ public class App implements ApplicationContextAware {
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
     ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
-    JobDAO jobDAO = new JobDAORdbImpl(authService);
     CommentDAO commentDAO = new CommentDAORdbImpl(authService);
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
     LineageDAO lineageDAO = new LineageDAORdbImpl();
@@ -370,7 +421,6 @@ public class App implements ApplicationContextAware {
         datasetDAO,
         datasetVersionDAO,
         artifactStoreDAO,
-        jobDAO,
         commentDAO,
         lineageDAO,
         metadataDAO,
@@ -389,7 +439,6 @@ public class App implements ApplicationContextAware {
       DatasetDAO datasetDAO,
       DatasetVersionDAO datasetVersionDAO,
       ArtifactStoreDAO artifactStoreDAO,
-      JobDAO jobDAO,
       CommentDAO commentDAO,
       LineageDAO lineageDAO,
       MetadataDAO metadataDAO,
@@ -399,15 +448,18 @@ public class App implements ApplicationContextAware {
       AuthService authService,
       RoleService roleService) {
     App app = App.getInstance();
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new ProjectServiceImpl(
             authService, roleService, projectDAO, experimentRunDAO, artifactStoreDAO));
     LOGGER.trace("Project serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new ExperimentServiceImpl(
             authService, roleService, experimentDAO, projectDAO, artifactStoreDAO));
     LOGGER.trace("Experiment serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new ExperimentRunServiceImpl(
             authService,
             roleService,
@@ -417,11 +469,12 @@ public class App implements ApplicationContextAware {
             artifactStoreDAO,
             datasetVersionDAO));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
-    serverBuilder.addService(new JobServiceImpl(authService, jobDAO));
-    LOGGER.trace("Job serviceImpl initialized");
-    serverBuilder.addService(new CommentServiceImpl(authService, commentDAO));
+    wrapService(
+        serverBuilder,
+        new CommentServiceImpl(authService, commentDAO, experimentRunDAO, roleService));
     LOGGER.trace("Comment serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new DatasetServiceImpl(
             authService,
             roleService,
@@ -431,10 +484,12 @@ public class App implements ApplicationContextAware {
             experimentDAO,
             experimentRunDAO));
     LOGGER.trace("Dataset serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new DatasetVersionServiceImpl(authService, roleService, datasetDAO, datasetVersionDAO));
     LOGGER.trace("Dataset Version serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new AdvancedServiceImpl(
             authService,
             roleService,
@@ -446,11 +501,12 @@ public class App implements ApplicationContextAware {
             datasetDAO,
             datasetVersionDAO));
     LOGGER.trace("Hydrated serviceImpl initialized");
-    serverBuilder.addService(
-        new LineageServiceImpl(lineageDAO, experimentRunDAO, datasetVersionDAO));
+    wrapService(
+        serverBuilder, new LineageServiceImpl(lineageDAO, experimentRunDAO, datasetVersionDAO));
     LOGGER.trace("Lineage serviceImpl initialized");
 
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new VersioningServiceImpl(
             authService,
             roleService,
@@ -461,11 +517,19 @@ public class App implements ApplicationContextAware {
             experimentDAO,
             experimentRunDAO,
             new ModelDBAuthInterceptor(),
-            new FileHasher()));
+            new FileHasher(),
+            artifactStoreDAO));
     LOGGER.trace("Versioning serviceImpl initialized");
-    serverBuilder.addService(new MetadataServiceImpl(metadataDAO));
+    wrapService(serverBuilder, new MetadataServiceImpl(metadataDAO));
     LOGGER.trace("Metadata serviceImpl initialized");
     LOGGER.info("All services initialized and resolved dependency before server start");
+  }
+
+  private static void wrapService(ServerBuilder<?> serverBuilder, BindableService bindableService) {
+    App app = App.getInstance();
+    if (app.traceEnabled)
+      serverBuilder.addService(app.tracingInterceptor.intercept(bindableService));
+    else serverBuilder.addService(bindableService);
   }
 
   private static ArtifactStoreService initializeServicesBaseOnArtifactStoreType(
@@ -504,6 +568,9 @@ public class App implements ApplicationContextAware {
             (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.S3);
         app.cloudAccessKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_ACCESS_KEY);
         app.cloudSecretKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_SECRET_KEY);
+        app.minioEndpoint = (String) s3ConfigMap.get(ModelDBConstants.MINIO_ENDPOINT);
+        app.awsRegion = (String) s3ConfigMap
+            .getOrDefault(ModelDBConstants.AWS_REGION, ModelDBConstants.DEFAULT_AWS_REGION);
         String cloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
         artifactStoreService = new S3Service(cloudBucketName);
         app.storeTypePathPrefix = "s3://" + cloudBucketName + ModelDBConstants.PATH_DELIMITER;
@@ -576,7 +643,7 @@ public class App implements ApplicationContextAware {
     if (optIn) {
       // creating an instance of task to be scheduled
       TimerTask task = new TelemetryCron(consumer);
-      ModelDBUtils.scheduleTask(task, frequency, TimeUnit.HOURS);
+      ModelDBUtils.scheduleTask(task, frequency, frequency, TimeUnit.HOURS);
       LOGGER.info("Telemetry scheduled successfully");
     } else {
       LOGGER.info("Telemetry opt out by user");
@@ -643,6 +710,14 @@ public class App implements ApplicationContextAware {
     this.disabledAuthz = disabledAuthz;
   }
 
+  public Boolean getPublicSharingEnabled() {
+    return publicSharingEnabled;
+  }
+
+  public void setPublicSharingEnabled(Boolean publicSharingEnabled) {
+    this.publicSharingEnabled = publicSharingEnabled;
+  }
+
   public String getCloudAccessKey() {
     return cloudAccessKey;
   }
@@ -651,7 +726,31 @@ public class App implements ApplicationContextAware {
     return cloudSecretKey;
   }
 
+  public String getMinioEndpoint() {
+    return minioEndpoint;
+  }
+
+  public String getAwsRegion() {
+    return awsRegion;
+  }
+
   public Boolean getStoreClientCreationTimestamp() {
     return storeClientCreationTimestamp;
+  }
+
+  public String getServiceUserEmail() {
+    return serviceUserEmail;
+  }
+
+  public String getServiceUserDevKey() {
+    return serviceUserDevKey;
+  }
+
+  public Boolean getTraceEnabled() {
+    return traceEnabled;
+  }
+
+  public Integer getRequestTimeout() {
+    return requestTimeout;
   }
 }

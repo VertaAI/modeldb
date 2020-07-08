@@ -1,11 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { RepositoriesList } from 'core/features/versioning/repositories/view';
-import Button from 'core/shared/view/elements/Button/Button';
-import routes from 'routes';
-import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspace } from 'store/workspaces';
+import { RepositoriesList } from 'features/versioning/repositories/view';
+import Button from 'shared/view/elements/Button/Button';
+import routes from 'shared/routes';
+import { IApplicationState } from 'setup/store/store';
+import { selectCurrentWorkspace } from 'features/workspaces/store';
 
 import RepositoriesPagesLayout from '../shared/RepositoriesPagesLayout/RepositoriesPagesLayout';
 import styles from './RepositoriesPage.module.css';

@@ -1,10 +1,9 @@
+import { ApolloClient } from 'apollo-boost';
 import axios, { AxiosError } from 'axios';
 
-import { MetaDataService } from 'core/services/versioning/metaData';
-import RepositoryDataService from 'core/services/versioning/repositoryData/RepositoryDataService';
-import CompareCommitsService from 'core/services/versioning/compareCommits/CompareCommitsService';
+import HighLevelSearchService from 'services/highLevelSearch/HighLevelSearchService';
 
-import { RepositoriesDataService } from '../core/services/versioning/repositories';
+import { CommentsService } from './comments';
 import { DatasetsDataService } from './datasets';
 import { DatasetVersionsDataService } from './datasetVersions';
 import { DescActionDataService } from './descriptionActions';
@@ -12,6 +11,7 @@ import { ExperimentRunsDataService } from './experimentRuns';
 import { ExperimentsDataService } from './experiments';
 import { ProjectDataService } from './projects';
 import { TagActionDataService } from './tagActions';
+import { RepositoriesDataService } from './versioning/repositories';
 
 export default class ServiceFactory {
   public static addReponseErrorInterceptor(
@@ -57,15 +57,11 @@ export default class ServiceFactory {
     return new RepositoriesDataService();
   }
 
-  public static getRepositoryDataService() {
-    return new RepositoryDataService();
+  public static getCommentsService() {
+    return new CommentsService();
   }
 
-  public static getMetaDataService() {
-    return new MetaDataService();
-  }
-
-  public static getCompareCommitsService() {
-    return new CompareCommitsService();
+  public static getHighLevelSearchService(apolloClient: ApolloClient<any>) {
+    return new HighLevelSearchService(apolloClient);
   }
 }

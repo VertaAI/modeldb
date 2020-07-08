@@ -10,6 +10,7 @@ object JsonConverter {
 
   def fromJsonInteger(x: JValue) = x match {
     case JInt(v) => v
+    case JString(s) => BigInt(s)
     case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")
   }
 

@@ -1,0 +1,37 @@
+.root {
+}
+
+.button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 5px;
+  background: white;
+  border: 1px solid #aaaaaa;
+  border-radius: 100%;
+  outline: none;
+  cursor: pointer;
+}
+.button:disabled {
+  cursor: default;
+}
+.button:last-child {
+  margin-right: 0;
+}
+
+.button__icon {
+  color: #888888;
+  font-size: 18px;
+}
+.button:first-child .button__icon {
+  margin-right: 2px;
+}
+.button:last-child .button__icon {
+  margin-left: 2px;
+}
+.button:disabled .button__icon {
+  color: #cccccc;
+  font-size: 18px;
+}

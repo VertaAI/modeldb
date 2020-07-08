@@ -157,6 +157,7 @@ message FindDatasetVersions {
     int32 page_limit = 6;
     bool ascending = 7;
     string sort_key = 8;
+    string workspace_name = 9;
 
     message Response {
         repeated DatasetVersion dataset_versions = 1;

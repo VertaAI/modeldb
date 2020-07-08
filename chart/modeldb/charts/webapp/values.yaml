@@ -1,0 +1,19 @@
+image: vertaaiofficial/modeldb-frontend
+imageTag: latest
+tolerations: []
+resources:
+  limits:
+    cpu: 250m
+    memory: 256Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+env: {}
+service:
+  annotations: {}
+affinity: {}
+hpa:
+  enabled: false
+pdb:
+  enabled: false
+labels: {}

@@ -1,12 +1,13 @@
 package ai.verta.modeldb.advancedService;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AdvancedQueryDatasetVersionsResponse;
 import ai.verta.modeldb.AdvancedQueryDatasetsResponse;
 import ai.verta.modeldb.AdvancedQueryExperimentRunsResponse;
 import ai.verta.modeldb.AdvancedQueryExperimentsResponse;
 import ai.verta.modeldb.AdvancedQueryProjectsResponse;
-import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.Comment;
 import ai.verta.modeldb.Dataset;
@@ -58,7 +59,6 @@ import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
-import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
@@ -75,7 +75,6 @@ import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -205,7 +204,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               selfAllowedActions.get(project.getId()).getActionsList());
         }
       } else {
-        LOGGER.error(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, project.getOwner());
+        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, project.getOwner());
       }
       hydratedProjects.add(hydratedProjectBuilder.build());
     }
@@ -301,7 +300,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetHydratedProjectById request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -336,7 +335,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getProjectId().isEmpty()) {
         String errorMessage = "Project ID not found in GetHydratedExperimentsByProjectId request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -389,7 +388,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       if (request.getProjectId().isEmpty()) {
         String errorMessage =
             "Project ID not found in GetHydratedExperimentRunsByProjectId request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -519,7 +518,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         // Add user specific actions
         hydratedExperimentRunBuilder.addAllAllowedActions(actionList);
       } else {
-        LOGGER.error(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experimentRun.getOwner());
+        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experimentRun.getOwner());
       }
       // Prepare experiment for hydratedExperimentRun
       Experiment hydratedExperiment =
@@ -547,7 +546,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetHydratedExperimentRunById request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -673,7 +672,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -798,7 +797,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         }
         hydratedExperimentBuilder.addAllAllowedActions(actionList);
       } else {
-        LOGGER.error(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experiment.getOwner());
+        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experiment.getOwner());
       }
       hydratedExperiments.add(hydratedExperimentBuilder.build());
     }
@@ -948,7 +947,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       if (dataset.getOwner() != null && userInfoMap.get(dataset.getOwner()) != null) {
         hydratedDatasetBuilder.setOwnerUserInfo(userInfoMap.get(dataset.getOwner()));
       } else {
-        LOGGER.error(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, dataset.getOwner());
+        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, dataset.getOwner());
       }
       if (selfAllowedActions != null
           && selfAllowedActions.size() > 0
@@ -1100,22 +1099,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             ModelDBServiceActions.READ);
       }
 
-      if (!request.getDatasetVersionIdsList().isEmpty()) {
-        DatasetVersionServiceImpl datasetVersionService =
-            new DatasetVersionServiceImpl(authService, roleService, datasetDAO, datasetVersionDAO);
-        List<String> accessibleDatasetVersionIDs =
-            datasetVersionService.getAccessibleDatasetVersionIDs(
-                request.getDatasetVersionIdsList(), ModelDBServiceActions.READ);
-        request =
-            request
-                .toBuilder()
-                .clearDatasetVersionIds()
-                .addAllDatasetVersionIds(accessibleDatasetVersionIDs)
-                .build();
-      }
-
       DatasetVersionDTO datasetVersionPaginationDTO =
-          datasetVersionDAO.findDatasetVersions(request, userInfo);
+          datasetVersionDAO.findDatasetVersions(datasetDAO, request, userInfo);
       LOGGER.debug(
           "DatasetVersionPaginationDTO record count : "
               + datasetVersionPaginationDTO.getTotalRecords());
@@ -1154,7 +1139,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getName().isEmpty()) {
         String errorMessage = "Dataset Name not found in GetHydratedDatasetByName request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1314,7 +1299,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1352,7 +1337,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1397,7 +1382,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1452,7 +1437,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getProjectId().isEmpty()) {
         String errorMessage = "Project ID not found in GetHydratedDatasetsByProjectId request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)

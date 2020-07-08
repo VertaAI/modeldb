@@ -109,6 +109,70 @@
         ]
       }
     },
+    "/experiment-run/commitArtifactPart": {
+      "post": {
+        "operationId": "commitArtifactPart",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitArtifactPartResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitArtifactPart"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/experiment-run/commitMultipartArtifact": {
+      "post": {
+        "operationId": "commitMultipartArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitMultipartArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitMultipartArtifact"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
     "/experiment-run/createExperimentRun": {
       "post": {
         "operationId": "createExperimentRun",
@@ -496,6 +560,42 @@
           },
           {
             "name": "sort_key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/experiment-run/getCommittedArtifactParts": {
+      "get": {
+        "operationId": "getCommittedArtifactParts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetCommittedArtifactPartsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1754,7 +1854,8 @@
         "DATA",
         "BLOB",
         "STRING",
-        "CODE"
+        "CODE",
+        "CONTAINER"
       ],
       "default": "IMAGE"
     },
@@ -1792,6 +1893,30 @@
       ],
       "default": "STRING"
     },
+    "commonArtifact": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "path_only": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "linked_artifact_id": {
+          "type": "string"
+        },
+        "filename_extension": {
+          "type": "string"
+        }
+      }
+    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -1823,12 +1948,7 @@
       "title": "attributes"
     },
     "modeldbAddExperimentRunAttributesResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbAddExperimentRunTag": {
       "type": "object",
@@ -1873,26 +1993,14 @@
         }
       }
     },
-    "modeldbArtifact": {
+    "modeldbArtifactPart": {
       "type": "object",
       "properties": {
-        "key": {
-          "type": "string"
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
         },
-        "path": {
-          "type": "string"
-        },
-        "path_only": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
-        },
-        "linked_artifact_id": {
-          "type": "string"
-        },
-        "filename_extension": {
+        "etag": {
           "type": "string"
         }
       }
@@ -1904,7 +2012,7 @@
           "$ref": "#/definitions/modeldbGitSnapshot"
         },
         "code_archive": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         },
         "date_logged": {
           "type": "string",
@@ -1912,6 +2020,37 @@
         }
       },
       "title": "code version"
+    },
+    "modeldbCommitArtifactPart": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "artifact_part": {
+          "$ref": "#/definitions/modeldbArtifactPart"
+        }
+      }
+    },
+    "modeldbCommitArtifactPartResponse": {
+      "type": "object"
+    },
+    "modeldbCommitMultipartArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbCommitMultipartArtifactResponse": {
+      "type": "object"
     },
     "modeldbCreateExperimentRun": {
       "type": "object",
@@ -1977,13 +2116,13 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "datasets": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "metrics": {
@@ -2029,12 +2168,7 @@
       }
     },
     "modeldbDeleteArtifactResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbDeleteExperimentRun": {
       "type": "object",
@@ -2063,12 +2197,7 @@
       }
     },
     "modeldbDeleteExperimentRunAttributesResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbDeleteExperimentRunResponse": {
       "type": "object",
@@ -2208,13 +2337,13 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "datasets": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "metrics": {
@@ -2328,7 +2457,7 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       }
@@ -2359,13 +2488,24 @@
         }
       }
     },
+    "modeldbGetCommittedArtifactPartsResponse": {
+      "type": "object",
+      "properties": {
+        "artifact_parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbArtifactPart"
+          }
+        }
+      }
+    },
     "modeldbGetDatasetsResponse": {
       "type": "object",
       "properties": {
         "datasets": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       }
@@ -2505,6 +2645,10 @@
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
@@ -2519,6 +2663,10 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -2574,18 +2722,13 @@
           "type": "string"
         },
         "artifact": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         }
       },
       "title": "artifact"
     },
     "modeldbLogArtifactResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogArtifacts": {
       "type": "object",
@@ -2596,19 +2739,14 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       },
       "title": "artifacts"
     },
     "modeldbLogArtifactsResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogAttribute": {
       "type": "object",
@@ -2623,12 +2761,7 @@
       "title": "attribute"
     },
     "modeldbLogAttributeResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogAttributes": {
       "type": "object",
@@ -2646,12 +2779,7 @@
       "title": "attributes"
     },
     "modeldbLogAttributesResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogDataset": {
       "type": "object",
@@ -2660,7 +2788,7 @@
           "type": "string"
         },
         "dataset": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         },
         "overwrite": {
           "type": "boolean",
@@ -2670,12 +2798,7 @@
       "title": "dataset"
     },
     "modeldbLogDatasetResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogDatasets": {
       "type": "object",
@@ -2686,7 +2809,7 @@
         "datasets": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "overwrite": {
@@ -2697,12 +2820,7 @@
       "title": "datasets"
     },
     "modeldbLogDatasetsResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogExperimentRunCodeVersion": {
       "type": "object",
@@ -2721,12 +2839,7 @@
       "title": "code version"
     },
     "modeldbLogExperimentRunCodeVersionResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogHyperparameter": {
       "type": "object",
@@ -2741,12 +2854,7 @@
       "title": "hyperparameter"
     },
     "modeldbLogHyperparameterResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogHyperparameters": {
       "type": "object",
@@ -2764,20 +2872,10 @@
       "title": "hyperparameters"
     },
     "modeldbLogHyperparametersResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogJobIdResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogMetric": {
       "type": "object",
@@ -2792,12 +2890,7 @@
       "title": "metric"
     },
     "modeldbLogMetricResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogMetrics": {
       "type": "object",
@@ -2815,12 +2908,7 @@
       "title": "metrics"
     },
     "modeldbLogMetricsResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogObservation": {
       "type": "object",
@@ -2835,12 +2923,7 @@
       "title": "observation"
     },
     "modeldbLogObservationResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogObservations": {
       "type": "object",
@@ -2858,12 +2941,7 @@
       "title": "observations"
     },
     "modeldbLogObservationsResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbLogVersionedInput": {
       "type": "object",
@@ -2877,12 +2955,7 @@
       }
     },
     "modeldbLogVersionedInputResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbObservation": {
       "type": "object",
@@ -2891,11 +2964,14 @@
           "$ref": "#/definitions/commonKeyValue"
         },
         "artifact": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         },
         "timestamp": {
           "type": "string",
           "format": "int64"
+        },
+        "epoch_number": {
+          "type": "object"
         }
       },
       "title": "observations with the same key are not overwritten, the are appended to a list"
@@ -2912,12 +2988,7 @@
       }
     },
     "modeldbSetParentExperimentRunIdResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbSortExperimentRunsResponse": {
       "type": "object",
@@ -2976,12 +3047,7 @@
       }
     },
     "modeldbUpdateExperimentRunNameResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbVersioningEntry": {
       "type": "object",

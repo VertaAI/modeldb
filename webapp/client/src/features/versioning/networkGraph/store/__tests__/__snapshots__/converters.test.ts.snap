@@ -1,0 +1,166 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`(networkGraph feature) (networkGraph converters "convertNetworkHistory" should convert data correctly 1`] = `
+Object {
+  "connections": Array [
+    Object {
+      "color": 0,
+      "fromCoordinate": Object {
+        "x": 20,
+        "y": 20,
+      },
+      "toCoordinate": Object {
+        "x": 40,
+        "y": 20,
+      },
+      "type": "DEFAULT",
+    },
+    Object {
+      "color": 1,
+      "fromCoordinate": Object {
+        "x": 40,
+        "y": 20,
+      },
+      "toCoordinate": Object {
+        "x": 60,
+        "y": 40,
+      },
+      "type": "BRANCH",
+    },
+    Object {
+      "color": 1,
+      "fromCoordinate": Object {
+        "x": 60,
+        "y": 40,
+      },
+      "toCoordinate": Object {
+        "x": 80,
+        "y": 20,
+      },
+      "type": "MERGE",
+    },
+    Object {
+      "color": 2,
+      "fromCoordinate": Object {
+        "x": 60,
+        "y": 40,
+      },
+      "toCoordinate": Object {
+        "x": 100,
+        "y": 60,
+      },
+      "type": "BRANCH",
+    },
+    Object {
+      "color": 2,
+      "fromCoordinate": Object {
+        "x": 100,
+        "y": 60,
+      },
+      "toCoordinate": Object {
+        "x": 120,
+        "y": 20,
+      },
+      "type": "MERGE",
+    },
+    Object {
+      "color": 0,
+      "fromCoordinate": Object {
+        "x": 40,
+        "y": 20,
+      },
+      "toCoordinate": Object {
+        "x": 80,
+        "y": 20,
+      },
+      "type": "DEFAULT",
+    },
+    Object {
+      "color": 0,
+      "fromCoordinate": Object {
+        "x": 80,
+        "y": 20,
+      },
+      "toCoordinate": Object {
+        "x": 120,
+        "y": 20,
+      },
+      "type": "DEFAULT",
+    },
+  ],
+  "points": Array [
+    Object {
+      "authorPicture": null,
+      "branch": "b1",
+      "color": 0,
+      "commitSha": "ee4ce00cfc5406da3934a347df9c045bd75371e8eb1bd5fb68ee3fa30303bd76",
+      "coordinate": Object {
+        "x": 20,
+        "y": 20,
+      },
+      "isLastCommitInBranch": false,
+      "message": "Test message",
+    },
+    Object {
+      "authorPicture": null,
+      "branch": "b1",
+      "color": 0,
+      "commitSha": "c44b83ff69b1eb794cb1eedae59d9d74dc4db8afac8a45abc9f93bda324d45e9",
+      "coordinate": Object {
+        "x": 40,
+        "y": 20,
+      },
+      "isLastCommitInBranch": false,
+      "message": "Test message",
+    },
+    Object {
+      "authorPicture": null,
+      "branch": "b2",
+      "color": 1,
+      "commitSha": "eeca7178617b8f8c7d8f6584745dbdc965dfa0141228e03c5f442b98dedd0150",
+      "coordinate": Object {
+        "x": 60,
+        "y": 40,
+      },
+      "isLastCommitInBranch": true,
+      "message": "Test message",
+    },
+    Object {
+      "authorPicture": null,
+      "branch": "b1",
+      "color": 0,
+      "commitSha": "846ecb717649ce258b37370b529e51a8616263dc0e8356fa62c59b83bb35e9ad",
+      "coordinate": Object {
+        "x": 80,
+        "y": 20,
+      },
+      "isLastCommitInBranch": false,
+      "message": "Test message",
+    },
+    Object {
+      "authorPicture": null,
+      "branch": "b3",
+      "color": 2,
+      "commitSha": "b3516e6fe3451684abb4b3b8cf488e74673de09ef7ebd7a9fe512e7d6badf15e",
+      "coordinate": Object {
+        "x": 100,
+        "y": 60,
+      },
+      "isLastCommitInBranch": true,
+      "message": "Test message",
+    },
+    Object {
+      "authorPicture": null,
+      "branch": "b1",
+      "color": 0,
+      "commitSha": "b3516e6fe3451684abb4b3b8cf488e74673de09ef7ebd7a9fe512e7d6badf15e",
+      "coordinate": Object {
+        "x": 120,
+        "y": 20,
+      },
+      "isLastCommitInBranch": true,
+      "message": "Test message",
+    },
+  ],
+}
+`;

@@ -1,0 +1,20 @@
+.blobBox {
+  margin-top: 32px;
+}
+.blobBox:first-child {
+  margin-top: 0;
+}
+
+.title {
+  padding: 0 10px;
+}
+
+.dataBox {
+}
+.dataBox.withPadding {
+  padding: 6px 4px;
+}
+
+.boxes [data-type='page-header-title'] {
+  font-weight: normal !important;
+}

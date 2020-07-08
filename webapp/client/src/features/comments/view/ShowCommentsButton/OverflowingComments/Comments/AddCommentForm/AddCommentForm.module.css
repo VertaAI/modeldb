@@ -1,0 +1,30 @@
+.root {
+  position: relative;
+  padding: 16px var(--common-padding) 16px;
+}
+.root:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--common-padding);
+  right: var(--common-padding);
+  height: 1px;
+  background-color: #cccccc;
+}
+
+.preloader {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.input {
+  width: 100%;
+  text-align: center;
+}
+
+.addButton {
+  margin-top: 16px;
+}

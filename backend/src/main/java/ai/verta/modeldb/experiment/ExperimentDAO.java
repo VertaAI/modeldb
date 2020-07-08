@@ -1,7 +1,7 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
-import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
@@ -150,17 +150,6 @@ public interface ExperimentDAO {
   Experiment deleteExperimentAttributes(
       String experimentId, List<String> attributeKeyList, Boolean deleteAll)
       throws InvalidProtocolBufferException;
-
-  /**
-   * Delete the Experiment from database using experimentId.
-   *
-   * <p>TODO : Add logic of Deleting ExperimentRun associated with Experiment.
-   *
-   * @param String experimentId
-   * @return Boolean updated status
-   * @throws InvalidProtocolBufferException
-   */
-  Boolean deleteExperiment(String experimentId) throws InvalidProtocolBufferException;
 
   /**
    * Delete the Experiments from database using experimentIds list.

@@ -5,11 +5,12 @@ from __future__ import print_function
 import ast
 import copy
 import glob
-import hashlib
 import importlib
 import os
+import pathlib2
 import pprint
 import re
+import shutil
 import sys
 import tarfile
 import tempfile
@@ -25,6 +26,11 @@ try:
 except ImportError:  # Pillow not installed
     PIL = None
 
+try:
+    import torch
+except ImportError:  # PyTorch not installed
+    torch = None
+
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
 from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService
@@ -35,12 +41,15 @@ from .external import six
 from .external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
 from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
-from ._internal_utils import _artifact_utils
-from ._internal_utils import _config_utils
-from ._internal_utils import _git_utils
-from ._internal_utils import _histogram_utils
-from ._internal_utils import _pip_requirements_utils
-from ._internal_utils import _utils
+from ._internal_utils import (
+    _artifact_utils,
+    _config_utils,
+    _git_utils,
+    _histogram_utils,
+    _pip_requirements_utils,
+    _request_utils,
+    _utils,
+)
 
 from . import _dataset
 from . import _repository
@@ -135,18 +144,18 @@ class Client(object):
 
         if host is None:
             raise ValueError("`host` must be provided")
-        scheme = auth = None
+        auth = {_utils._GRPC_PREFIX+'source': "PythonClient"}
         if email is None and dev_key is None:
             if debug:
                 print("[DEBUG] email and developer key not found; auth disabled")
-            auth = None
         elif email is not None and dev_key is not None:
             if debug:
                 print("[DEBUG] using email: {}".format(email))
                 print("[DEBUG] using developer key: {}".format(dev_key[:8] + re.sub(r"[^-]", '*', dev_key[8:])))
-            auth = {_utils._GRPC_PREFIX+'email': email,
-                    _utils._GRPC_PREFIX+'developer_key': dev_key,
-                    _utils._GRPC_PREFIX+'source': "PythonClient"}
+            auth.update({
+                _utils._GRPC_PREFIX+'email': email,
+                _utils._GRPC_PREFIX+'developer_key': dev_key,
+            })
             # save credentials to env for other Verta Client features
             os.environ['VERTA_EMAIL'] = email
             os.environ['VERTA_DEV_KEY'] = dev_key
@@ -161,8 +170,7 @@ class Client(object):
                           category=FutureWarning)
             socket = "{}:{}".format(socket, port)
         scheme = back_end_url.scheme or ("https" if ".verta.ai" in socket else "http")
-        if auth is not None:
-            auth[_utils._GRPC_PREFIX+'scheme'] = scheme
+        auth[_utils._GRPC_PREFIX+'scheme'] = scheme
 
         # verify connection
         conn = _utils.Connection(scheme, socket, auth, max_retries, ignore_conn_err)
@@ -235,16 +243,17 @@ class Client(object):
             return self.expt.expt_runs
 
     def _get_personal_workspace(self):
-        if self._conn.auth is not None:
+        email = self._conn.auth.get('Grpc-Metadata-email')
+        if email is not None:
             response = _utils.make_request(
                 "GET",
                 "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
-                self._conn, params={'email': self._conn.auth['Grpc-Metadata-email']},
+                self._conn, params={'email': email},
             )
 
             if response.ok:
                 try:
-                    response_json = response.json()
+                    response_json = _utils.body_to_json(response)
                 except ValueError:  # not JSON response
                     pass
                 else:
@@ -612,9 +621,10 @@ class Client(object):
     def find_datasets(self,
                       dataset_ids=None, name=None,
                       tags=None,
-                      sort_key=None, ascending=False):
+                      sort_key=None, ascending=False,
+                      workspace=None):
         """
-        Gets the Datasets that match the given query parameters. If no parameters
+        Gets the Datasets in `workspace` that match the given query parameters. If no parameters
         are specified, we return all datasets.
 
         Parameters
@@ -622,13 +632,16 @@ class Client(object):
         dataset_ids : list of str, optional
             IDs of datasets that we wish to retrieve
         name: str, optional
-            Name of dataset we wish to retrieve. Fuzzy matches supported
+            Name of dataset we wish to retrieve. Fuzzy matches supported.
         tags: list of str, optional
-            List of tags by which we'd like to query datasets
+            List of tags by which we'd like to query datasets.
         sort_key: string, optional
-            Key by which the resulting list of datasets should be sorted
+            Key by which the resulting list of datasets should be sorted.
         ascending: bool, default: False
-            Whether to sort returned datasets in ascending or descending order
+            Whether to sort returned datasets in ascending or descending order.
+        workspace : str, optional
+            Workspace in which to look for datasets. If not provided, the current user's personal
+            workspace will be used.
 
         Returns
         -------
@@ -637,19 +650,23 @@ class Client(object):
         """
         predicates = []
         if tags is not None:
+            tags = _utils.as_list_of_str(tags)
             for tag in tags:
                 predicates.append(
                     _CommonService.KeyValueQuery(key="tags",
                                                  value=_utils.python_to_val_proto(tag),
                                                  operator=_CommonService.OperatorEnum.EQ))
         if name is not None:
+            if not isinstance(name, six.string_types):
+                raise TypeError("`name` must be str, not {}".format(type(name)))
             predicates.append(
                 _CommonService.KeyValueQuery(key="name",
                                              value=_utils.python_to_val_proto(name),
-                                             operator=_CommonService.OperatorEnum.EQ))
+                                             operator=_CommonService.OperatorEnum.CONTAIN))
         Message = _dataset._DatasetService.FindDatasets
         msg = Message(dataset_ids=dataset_ids, predicates=predicates,
-                      ascending=ascending, sort_key=sort_key)
+                      ascending=ascending, sort_key=sort_key,
+                      workspace_name=workspace)
         endpoint = "{}://{}/api/v1/modeldb/dataset/findDatasets"
         return _dataset.DatasetLazyList(self._conn, self._conf, msg, endpoint, "POST")
 
@@ -733,7 +750,7 @@ class _ModelDBEntity(object):
 
         self.__dict__.update(state)
 
-    def _get_url_for_artifact(self, key, method, artifact_type=0):
+    def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         """
         Obtains a URL to use for accessing stored artifacts.
 
@@ -744,28 +761,46 @@ class _ModelDBEntity(object):
         method : {'GET', 'PUT'}
             HTTP method to request for the generated URL.
         artifact_type : int, optional
-            Variant of `_CommonService.ArtifactTypeEnum`. This informs the backend what slot to check
+            Variant of `_CommonCommonService.ArtifactTypeEnum`. This informs the backend what slot to check
             for the artifact, if necessary.
+        part_num : int, optional
+            If using Multipart Upload, number of part to be uploaded.
 
         Returns
         -------
-        str
-            Generated URL.
+        response_msg : `_CommonService.GetUrlForArtifact.Response`
+            Backend response.
 
         """
         if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
         Message = _CommonService.GetUrlForArtifact
-        msg = Message(id=self.id, key=key, method=method.upper(), artifact_type=artifact_type)
+        msg = Message(
+            id=self.id, key=key,
+            method=method.upper(),
+            artifact_type=artifact_type,
+            part_number=part_num,
+        )
         data = _utils.proto_to_json(msg)
         response = _utils.make_request("POST",
                                        self._request_url.format("getUrlForArtifact"),
                                        self._conn, json=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
-        return response_msg.url
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+
+        url = response_msg.url
+        # accommodate port-forwarded NFS store
+        if 'https://localhost' in url[:20]:
+            url = 'http' + url[5:]
+        if 'localhost%3a' in url[:20]:
+            url = url.replace('localhost%3a', 'localhost:')
+        if 'localhost%3A' in url[:20]:
+            url = url.replace('localhost%3A', 'localhost:')
+        response_msg.url = url
+
+        return response_msg
 
     def _cache(self, filename, contents):
         """
@@ -1026,14 +1061,14 @@ class _ModelDBEntity(object):
             key = 'code'
             extension = 'zip'
 
-            artifact_hash = hashlib.sha256(zipstream.read()).hexdigest()
+            artifact_hash = _artifact_utils.calc_sha256(zipstream)
             zipstream.seek(0)
             basename = key + os.extsep + extension
             artifact_path = os.path.join(artifact_hash, basename)
 
             msg.code_version.code_archive.path = artifact_path
             msg.code_version.code_archive.path_only = False
-            msg.code_version.code_archive.artifact_type = _CommonService.ArtifactTypeEnum.CODE
+            msg.code_version.code_archive.artifact_type = _CommonCommonService.ArtifactTypeEnum.CODE
             msg.code_version.code_archive.filename_extension = extension
         # TODO: check if we actually have any loggable information
         msg.code_version.date_logged = _utils.now()
@@ -1050,15 +1085,7 @@ class _ModelDBEntity(object):
 
         if msg.code_version.WhichOneof("code") == 'code_archive':
             # upload artifact to artifact store
-            url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type)
-
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
+            url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type).url
 
             response = _utils.make_request("PUT", url, self._conn, data=zipstream)
             _utils.raise_for_http_error(response)
@@ -1096,7 +1123,7 @@ class _ModelDBEntity(object):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         code_ver_msg = response_msg.code_version
         which_code = code_ver_msg.WhichOneof('code')
         if which_code == 'git_snapshot':
@@ -1113,15 +1140,7 @@ class _ModelDBEntity(object):
             return git_snapshot
         elif which_code == 'code_archive':
             # download artifact from artifact store
-            url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type)
-
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
+            url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type).url
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
@@ -1191,7 +1210,11 @@ class Project(_ModelDBEntity):
                             " cannot set `desc`, `tags`, `attrs`, or `public_within_org`".format(proj_name)
                         )
                     proj = Project._get(conn, proj_name, workspace)
-                    print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
+                    if proj is not None:
+                        print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
+                    else:
+                        raise RuntimeError("unable to retrieve Project {};"
+                                           " please notify the Verta development team".format(proj_name))
                 else:
                     raise e
             else:
@@ -1212,7 +1235,7 @@ class Project(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.project.name
 
     @property
@@ -1237,11 +1260,11 @@ class Project(_ModelDBEntity):
                                            conn, params=data)
 
             if response.ok:
-                response_msg = _utils.json_to_proto(response.json(), Message.Response)
+                response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
                 return response_msg.project
             else:
-                if ((response.status_code == 403 and response.json()['code'] == 7)
-                        or (response.status_code == 404 and response.json()['code'] == 5)):
+                if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                        or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
                     return None
                 else:
                     _utils.raise_for_http_error(response)
@@ -1254,16 +1277,22 @@ class Project(_ModelDBEntity):
                                            conn, params=data)
 
             if response.ok:
-                response_json = response.json()
+                response_json = _utils.body_to_json(response)
                 response_msg = _utils.json_to_proto(response_json, Message.Response)
                 if workspace is None or response_json.get('project_by_user'):
                     # user's personal workspace
-                    return response_msg.project_by_user
+                    proj = response_msg.project_by_user
                 else:
-                    return response_msg.shared_projects[0]
+                    proj = response_msg.shared_projects[0]
+
+                if not proj.id:  # 200, but empty message
+                    raise RuntimeError("unable to retrieve Project {};"
+                                       " please notify the Verta development team".format(proj_name))
+
+                return proj
             else:
-                if ((response.status_code == 403 and response.json()['code'] == 7)
-                        or (response.status_code == 404 and response.json()['code'] == 5)):
+                if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                        or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
                     return None
                 else:
                     _utils.raise_for_http_error(response)
@@ -1272,6 +1301,8 @@ class Project(_ModelDBEntity):
 
     @staticmethod
     def _create(conn, proj_name, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -1294,7 +1325,7 @@ class Project(_ModelDBEntity):
                                        conn, json=data)
 
         if response.ok:
-            response_msg = _utils.json_to_proto(response.json(), Message.Response)
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
             return response_msg.project
         else:
             _utils.raise_for_http_error(response)
@@ -1344,7 +1375,11 @@ class Experiment(_ModelDBEntity):
                         warnings.warn("Experiment with name {} already exists;"
                                       " cannot initialize `desc`, `tags`, or `attrs`".format(expt_name))
                     expt = Experiment._get(conn, proj_id, expt_name)
-                    print("set existing Experiment: {}".format(expt.name))
+                    if expt is not None:
+                        print("set existing Experiment: {}".format(expt.name))
+                    else:
+                        raise RuntimeError("unable to retrieve Experiment {};"
+                                           " please notify the Verta development team".format(expt_name))
                 else:
                     raise e
             else:
@@ -1367,7 +1402,7 @@ class Experiment(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.experiment.name
 
     @property
@@ -1401,17 +1436,25 @@ class Experiment(_ModelDBEntity):
             raise ValueError("insufficient arguments")
 
         if response.ok:
-            response_msg = _utils.json_to_proto(response.json(), Message.Response)
-            return response_msg.experiment
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+            expt = response_msg.experiment
+
+            if not expt.id:  # 200, but empty message
+                raise RuntimeError("unable to retrieve Experiment {};"
+                                   " please notify the Verta development team".format(expt_name))
+
+            return expt
         else:
-            if ((response.status_code == 403 and response.json()['code'] == 7)
-                    or (response.status_code == 404 and response.json()['code'] == 5)):
+            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
                 return None
             else:
                 _utils.raise_for_http_error(response)
 
     @staticmethod
     def _create(conn, proj_id, expt_name, desc=None, tags=None, attrs=None):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -1425,7 +1468,7 @@ class Experiment(_ModelDBEntity):
                                        conn, json=data)
 
         if response.ok:
-            response_msg = _utils.json_to_proto(response.json(), Message.Response)
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
             return response_msg.experiment
         else:
             _utils.raise_for_http_error(response)
@@ -1776,7 +1819,7 @@ class ExperimentRun(_ModelDBEntity):
         if _expt_run_id is not None:
             expt_run = ExperimentRun._get(conn, _expt_run_id=_expt_run_id)
             if expt_run is not None:
-                pass
+                print("set existing ExperimentRun: {}".format(expt_run.name))
             else:
                 raise ValueError("ExperimentRun with ID {} not found".format(_expt_run_id))
         elif None not in (proj_id, expt_id):
@@ -1790,7 +1833,11 @@ class ExperimentRun(_ModelDBEntity):
                         warnings.warn("ExperimentRun with name {} already exists;"
                                       " cannot initialize `desc`, `tags`, or `attrs`".format(expt_run_name))
                     expt_run = ExperimentRun._get(conn, expt_id, expt_run_name)
-                    print("set existing ExperimentRun: {}".format(expt_run.name))
+                    if expt_run is not None:
+                        print("set existing ExperimentRun: {}".format(expt_run.name))
+                    else:
+                        raise RuntimeError("unable to retrieve ExperimentRun {};"
+                                           " please notify the Verta development team".format(expt_run_name))
                 else:
                     raise e
             else:
@@ -1801,19 +1848,12 @@ class ExperimentRun(_ModelDBEntity):
         super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", expt_run.id)
 
     def __repr__(self):
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
-        run_msg = response_msg.experiment_run
+        run_msg = self._get_self_as_msg()
         return '\n'.join((
             "name: {}".format(run_msg.name),
             "url: {}://{}/{}/projects/{}/exp-runs/{}".format(self._conn.scheme, self._conn.socket, self.workspace, run_msg.project_id, self.id),
+            "date created: {}".format(_utils.timestamp_to_str(int(run_msg.date_created))),
+            "date updated: {}".format(_utils.timestamp_to_str(int(run_msg.date_updated))),
             "description: {}".format(run_msg.description),
             "tags: {}".format(run_msg.tags),
             "attributes: {}".format(_utils.unravel_key_values(run_msg.attributes)),
@@ -1828,14 +1868,7 @@ class ExperimentRun(_ModelDBEntity):
 
     @property
     def workspace(self):
-        response = _utils.make_request(
-            "GET",
-            "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-            self._conn, params={'id': self.id},
-        )
-        _utils.raise_for_http_error(response)
-
-        proj_id = response.json()['experiment_run']['project_id']
+        proj_id = self._get_self_as_msg().project_id
         response = _utils.make_request(
             "GET",
             "{}://{}/api/v1/modeldb/project/getProjectById".format(self._conn.scheme, self._conn.socket),
@@ -1843,7 +1876,7 @@ class ExperimentRun(_ModelDBEntity):
         )
         _utils.raise_for_http_error(response)
 
-        project_json = response.json()['project']
+        project_json = _utils.body_to_json(response)['project']
         if 'workspace_id' not in project_json:
             # workspace is OSS default
             return _OSS_DEFAULT_WORKSPACE
@@ -1867,23 +1900,14 @@ class ExperimentRun(_ModelDBEntity):
             _utils.raise_for_http_error(response)
 
             # workspace is user
-            return response.json()['verta_info']['username']
+            return _utils.body_to_json(response)['verta_info']['username']
         else:
             # workspace is organization
-            return response.json()['organization']['name']
+            return _utils.body_to_json(response)['organization']['name']
 
     @property
     def name(self):
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
-        return response_msg.experiment_run.name
+        return self._get_self_as_msg().name
 
     @staticmethod
     def _generate_default_name():
@@ -1909,17 +1933,25 @@ class ExperimentRun(_ModelDBEntity):
             raise ValueError("insufficient arguments")
 
         if response.ok:
-            response_msg = _utils.json_to_proto(response.json(), Message.Response)
-            return response_msg.experiment_run
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+            expt_run = response_msg.experiment_run
+
+            if not expt_run.id:  # 200, but empty message
+                raise RuntimeError("unable to retrieve ExperimentRun {};"
+                                   " please notify the Verta development team".format(expt_run_name))
+
+            return expt_run
         else:
-            if ((response.status_code == 403 and response.json()['code'] == 7)
-                    or (response.status_code == 404 and response.json()['code'] == 5)):
+            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
                 return None
             else:
                 _utils.raise_for_http_error(response)
 
     @staticmethod
     def _create(conn, proj_id, expt_id, expt_run_name, desc=None, tags=None, attrs=None, date_created=None):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
@@ -1934,10 +1966,34 @@ class ExperimentRun(_ModelDBEntity):
                                        conn, json=data)
 
         if response.ok:
-            response_msg = _utils.json_to_proto(response.json(), Message.Response)
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
             return response_msg.experiment_run
         else:
             _utils.raise_for_http_error(response)
+
+    # TODO: use this throughout `ExperimentRun`
+    def _get_self_as_msg(self):
+        """
+        Gets the full protobuf message representation of this Experiment Run.
+
+        Returns
+        -------
+        run_msg : ExperimentRun protobuf message
+
+        """
+        Message = _ExperimentRunService.GetExperimentRunById
+        msg = Message(id=self.id)
+        data = _utils.proto_to_json(msg)
+        url = "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        response = _utils.make_request("GET", url, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        return response_msg.experiment_run
 
     def _log_artifact(self, key, artifact, artifact_type, extension=None, method=None, overwrite=False):
         """
@@ -1954,7 +2010,7 @@ class ExperimentRun(_ModelDBEntity):
                 - If file-like, then the contents will be read as bytes and uploaded as an artifact.
                 - Otherwise, the object will be serialized and uploaded as an artifact.
         artifact_type : int
-            Variant of `_CommonService.ArtifactTypeEnum`.
+            Variant of `_CommonCommonService.ArtifactTypeEnum`.
         extension : str, optional
             Filename extension associated with the artifact.
         method : str, optional
@@ -1976,7 +2032,7 @@ class ExperimentRun(_ModelDBEntity):
             extension = _artifact_utils.ext_from_method(method)
 
         # calculate checksum
-        artifact_hash = hashlib.sha256(artifact_stream.read()).hexdigest()
+        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
         artifact_stream.seek(0)
 
         # determine basename
@@ -1992,11 +2048,20 @@ class ExperimentRun(_ModelDBEntity):
         # build upload path from checksum and basename
         artifact_path = os.path.join(artifact_hash, basename)
 
+        # TODO: incorporate into config
+        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR', "")
+        VERTA_ARTIFACT_DIR = os.path.expanduser(VERTA_ARTIFACT_DIR)
+        if VERTA_ARTIFACT_DIR:
+            print("set artifact directory from environment:")
+            print("    " + VERTA_ARTIFACT_DIR)
+            artifact_path = os.path.join(VERTA_ARTIFACT_DIR, artifact_path)
+            pathlib2.Path(artifact_path).parent.mkdir(parents=True, exist_ok=True)
+
         # log key to ModelDB
         Message = _ExperimentRunService.LogArtifact
-        artifact_msg = _CommonService.Artifact(key=key,
+        artifact_msg = _CommonCommonService.Artifact(key=key,
                                                path=artifact_path,
-                                               path_only=False,
+                                               path_only=True if VERTA_ARTIFACT_DIR else False,
                                                artifact_type=artifact_type,
                                                filename_extension=extension)
         msg = Message(id=self.id, artifact=artifact_msg)
@@ -2016,24 +2081,102 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-        # upload artifact to artifact store
-        url = self._get_url_for_artifact(key, "PUT")
-        artifact_stream.seek(0)  # reuse stream that was created for checksum
+        if VERTA_ARTIFACT_DIR:
+            print("logging artifact")
+            with open(artifact_path, 'wb') as f:
+                shutil.copyfileobj(artifact_stream, f)
+            print("log complete; file written to {}".format(artifact_path))
+        else:
+            self._upload_artifact(key, artifact_stream)
+
+    def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
+        """
+        Uploads `artifact_stream` to ModelDB artifact store.
+
+        Parameters
+        ----------
+        key : str
+        artifact_stream : file-like
+        part_size : int, default 64 MB
+            If using multipart upload, number of bytes to upload per part.
+
+        """
+        # TODO: add to Client config
+        env_part_size = os.environ.get('VERTA_ARTIFACT_PART_SIZE', "")
+        try:
+            part_size = int(float(env_part_size))
+        except ValueError:  # not an int
+            pass
+        else:
+            print("set artifact part size {} from environment".format(part_size))
+
+        artifact_stream.seek(0)
         if self._conf.debug:
-            print("[DEBUG] uploading {} bytes ({})".format(len(artifact_stream.read()), basename))
+            print("[DEBUG] uploading {} bytes ({})".format(_artifact_utils.get_stream_length(artifact_stream), key))
             artifact_stream.seek(0)
 
-        # accommodate port-forwarded NFS store
-        if 'https://localhost' in url[:20]:
-            url = 'http' + url[5:]
-        if 'localhost%3a' in url[:20]:
-            url = url.replace('localhost%3a', 'localhost:')
-        if 'localhost%3A' in url[:20]:
-            url = url.replace('localhost%3A', 'localhost:')
+        # check if multipart upload ok
+        url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
 
-        response = _utils.make_request("PUT", url, self._conn, data=artifact_stream)
-        _utils.raise_for_http_error(response)
-        print("upload complete ({})".format(basename))
+        if url_for_artifact.multipart_upload_ok:
+            # TODO: parallelize this
+            file_parts = iter(lambda: artifact_stream.read(part_size), b'')
+            for part_num, file_part in enumerate(file_parts, start=1):
+                print("uploading part {}".format(part_num), end='\r')
+
+                # get presigned URL
+                url = self._get_url_for_artifact(key, "PUT", part_num=part_num).url
+
+                # wrap file part into bytestream to avoid OverflowError
+                #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
+                #     ``requests`` will overwhelm CPython's SSL lib when it tries to sign the
+                #     payload. But passing a buffered bytestream instead of the raw bytestring
+                #     indicates to ``requests`` that it should perform a streaming upload via
+                #     HTTP/1.1 chunked transfer encoding and avoid this issue.
+                #     https://github.com/psf/requests/issues/2717
+                part_stream = six.BytesIO(file_part)
+
+                # upload part
+                #     Retry connection errors, to make large multipart uploads more robust.
+                for _ in range(3):
+                    try:
+                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
+                    except requests.ConnectionError:  # e.g. broken pipe
+                        time.sleep(1)
+                        continue  # try again
+                    else:
+                        break
+                _utils.raise_for_http_error(response)
+
+                # commit part
+                url = "{}://{}/api/v1/modeldb/experiment-run/commitArtifactPart".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                )
+                msg = _CommonService.CommitArtifactPart(id=self.id, key=key)
+                msg.artifact_part.part_number = part_num
+                msg.artifact_part.etag = response.headers['ETag']
+                data = _utils.proto_to_json(msg)
+                # TODO: increase retries
+                response = _utils.make_request("POST", url, self._conn, json=data)
+                _utils.raise_for_http_error(response)
+            print()
+
+            # complete upload
+            url = "{}://{}/api/v1/modeldb/experiment-run/commitMultipartArtifact".format(
+                self._conn.scheme,
+                self._conn.socket,
+            )
+            msg = _CommonService.CommitMultipartArtifact(id=self.id, key=key)
+            data = _utils.proto_to_json(msg)
+            response = _utils.make_request("POST", url, self._conn, json=data)
+            _utils.raise_for_http_error(response)
+        else:
+            # upload full artifact
+            response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
+            _utils.raise_for_http_error(response)
+
+        print("upload complete ({})".format(key))
 
     def _log_artifact_path(self, key, artifact_path, artifact_type):
         """
@@ -2046,11 +2189,11 @@ class ExperimentRun(_ModelDBEntity):
         artifact_path : str
             Filesystem path of the artifact.
         artifact_type : int
-            Variant of `_CommonService.ArtifactTypeEnum`.
+            Variant of `_CommonCommonService.ArtifactTypeEnum`.
         """
         # log key-path to ModelDB
         Message = _ExperimentRunService.LogArtifact
-        artifact_msg = _CommonService.Artifact(key=key,
+        artifact_msg = _CommonCommonService.Artifact(key=key,
                                                path=artifact_path,
                                                path_only=True,
                                                artifact_type=artifact_type)
@@ -2095,7 +2238,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         artifact = {artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
         if artifact is None:
             raise KeyError("no artifact found with key {}".format(key))
@@ -2103,15 +2246,7 @@ class ExperimentRun(_ModelDBEntity):
             return artifact.path, artifact.path_only
         else:
             # download artifact from artifact store
-            url = self._get_url_for_artifact(key, "GET")
-
-            # accommodate port-forwarded NFS store
-            if 'https://localhost' in url[:20]:
-                url = 'http' + url[5:]
-            if 'localhost%3a' in url[:20]:
-                url = url.replace('localhost%3a', 'localhost:')
-            if 'localhost%3A' in url[:20]:
-                url = url.replace('localhost%3A', 'localhost:')
+            url = self._get_url_for_artifact(key, "GET").url
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
@@ -2149,7 +2284,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         dataset = {dataset.key: dataset for dataset in response_msg.datasets}.get(key)
         if dataset is None:
             # may be old artifact-based dataset
@@ -2229,12 +2364,38 @@ class ExperimentRun(_ModelDBEntity):
                                            self._conn.scheme, self._conn.socket), self._conn, json=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         new_run_msg = response_msg.experiment_run
         print("created new ExperimentRun: {}".format(new_run_msg.name))
         new_run = ExperimentRun(self._conn, self._conf, _expt_run_id=new_run_msg.id)
 
         return new_run
+
+    def get_date_created(self):
+        """
+        Gets a timestamp representing the time (in UTC) this Experiment Run was created.
+
+        Returns
+        -------
+        timestamp : int
+            Unix timestamp in milliseconds.
+
+        """
+        run_msg = self._get_self_as_msg()
+        return int(run_msg.date_created)
+
+    def get_date_updated(self):
+        """
+        Gets a timestamp representing the time (in UTC) this Experiment Run was updated.
+
+        Returns
+        -------
+        timestamp : int
+            Unix timestamp in milliseconds.
+
+        """
+        run_msg = self._get_self_as_msg()
+        return int(run_msg.date_updated)
 
     def log_tag(self, tag):
         """
@@ -2267,11 +2428,7 @@ class ExperimentRun(_ModelDBEntity):
             Tags.
 
         """
-        if isinstance(tags, six.string_types):
-            raise TypeError("`tags` must be an iterable of strings")
-        for tag in tags:
-            if not isinstance(tag, six.string_types):
-                raise TypeError("`tags` must be an iterable of strings")
+        tags = _utils.as_list_of_str(tags)
 
         Message = _ExperimentRunService.AddExperimentRunTags
         msg = Message(id=self.id, tags=tags)
@@ -2299,7 +2456,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.tags
 
     def log_attribute(self, key, value):
@@ -2385,7 +2542,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         attributes = _utils.unravel_key_values(response_msg.attributes)
         try:
             return attributes[key]
@@ -2410,7 +2567,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return _utils.unravel_key_values(response_msg.attributes)
 
     def log_metric(self, key, value):
@@ -2498,7 +2655,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         metrics = _utils.unravel_key_values(response_msg.metrics)
         try:
             return metrics[key]
@@ -2523,7 +2680,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return _utils.unravel_key_values(response_msg.metrics)
 
     def log_hyperparameter(self, key, value):
@@ -2609,7 +2766,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         hyperparameters = _utils.unravel_key_values(response_msg.hyperparameters)
         try:
             return hyperparameters[key]
@@ -2634,44 +2791,31 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return _utils.unravel_key_values(response_msg.hyperparameters)
 
     def log_dataset(self, key, dataset, overwrite=False):
         """
-        Logs a dataset artifact to this Experiment Run.
+        Alias for :meth:`~ExperimentRun.log_dataset_version`.
 
-        Parameters
-        ----------
-        key : str
-            Name of the dataset.
-        dataset : str or file-like or object
-            Dataset or some representation thereof.
-                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
-                  and uploaded as an artifact.
-                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
-                - If type is Dataset, then it will log a dataset version
-                - Otherwise, the object will be serialized and uploaded as an artifact.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing dataset with key `key`.
+        .. deprecated:: 0.14.12
+            ``log_dataset()`` can no longer be used to log artifacts.
+            :meth:`~ExperimentRun.log_artifact` should be used instead.
 
         """
-        _utils.validate_flat_key(key)
-
         if isinstance(dataset, _dataset.Dataset):
-            raise ValueError("directly logging a Dataset is not supported;"
-                             " consider using run.log_dataset_version() instead")
+            raise TypeError(
+                "directly logging a Dataset is not supported;"
+                " please create a DatasetVersion for logging"
+            )
 
-        if isinstance(dataset, _dataset.DatasetVersion):
-            # TODO: maybe raise a warning pointing to log_dataset_version()
-            self.log_dataset_version(key, dataset, overwrite=overwrite)
+        if not isinstance(dataset, _dataset.DatasetVersion):
+            raise TypeError(
+                "`dataset` must be of type DatasetVersion;"
+                " to log an artifact, consider using run.log_artifact() instead"
+            )
 
-        # log `dataset` as artifact
-        try:
-            extension = _artifact_utils.get_file_ext(dataset)
-        except (TypeError, ValueError):
-            extension = None
-        self._log_artifact(key, dataset, _CommonService.ArtifactTypeEnum.DATA, extension, overwrite=overwrite)
+        self.log_dataset_version(key=key, dataset_version=dataset, overwrite=overwrite)
 
     def log_dataset_version(self, key, dataset_version, overwrite=False):
         """
@@ -2686,17 +2830,17 @@ class ExperimentRun(_ModelDBEntity):
 
         """
         if not isinstance(dataset_version, _dataset.DatasetVersion):
-            raise ValueError("`dataset_version` must be of type DatasetVersion")
+            raise TypeError("`dataset_version` must be of type DatasetVersion")
 
         # TODO: hack because path_only artifact needs a placeholder path
         dataset_path = "See attached dataset version"
 
         # log key-path to ModelDB
         Message = _ExperimentRunService.LogDataset
-        artifact_msg = _CommonService.Artifact(key=key,
+        artifact_msg = _CommonCommonService.Artifact(key=key,
                                                path=dataset_path,
                                                path_only=True,
-                                               artifact_type=_CommonService.ArtifactTypeEnum.DATA,
+                                               artifact_type=_CommonCommonService.ArtifactTypeEnum.DATA,
                                                linked_artifact_id=dataset_version.id)
         msg = Message(id=self.id, dataset=artifact_msg, overwrite=overwrite)
         data = _utils.proto_to_json(msg)
@@ -2903,10 +3047,10 @@ class ExperimentRun(_ModelDBEntity):
         else:
             train_data = None
 
-        self._log_artifact("model.pkl", model, _CommonService.ArtifactTypeEnum.MODEL, model_extension, method)
-        self._log_artifact("model_api.json", model_api, _CommonService.ArtifactTypeEnum.BLOB, 'json')
+        self._log_artifact("model.pkl", model, _CommonCommonService.ArtifactTypeEnum.MODEL, model_extension, method)
+        self._log_artifact("model_api.json", model_api, _CommonCommonService.ArtifactTypeEnum.BLOB, 'json')
         if train_data is not None:
-            self._log_artifact("train_data", train_data, _CommonService.ArtifactTypeEnum.DATA, 'csv')
+            self._log_artifact("train_data", train_data, _CommonCommonService.ArtifactTypeEnum.DATA, 'csv')
 
     def log_tf_saved_model(self, export_dir):
         with tempfile.TemporaryFile() as tempf:
@@ -2917,7 +3061,7 @@ class ExperimentRun(_ModelDBEntity):
                         zipf.write(filepath, os.path.relpath(filepath, export_dir))
             tempf.seek(0)
             # TODO: change _log_artifact() to not read file into memory
-            self._log_artifact("tf_saved_model", tempf, _CommonService.ArtifactTypeEnum.BLOB, 'zip')
+            self._log_artifact("tf_saved_model", tempf, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
 
     def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
         """
@@ -2951,11 +3095,8 @@ class ExperimentRun(_ModelDBEntity):
 
         # validate that `artifacts` are actually logged
         if artifacts:
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                           self._conn, params={'id': self.id})
-            _utils.raise_for_http_error(response)
-            existing_artifact_keys = {artifact['key'] for artifact in response.json()['experiment_run'].get('artifacts', [])}
+            run_msg = self._get_self_as_msg()
+            existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
             unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
             if unlogged_artifact_keys:
                 raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
@@ -3001,8 +3142,8 @@ class ExperimentRun(_ModelDBEntity):
             self.log_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts)
 
         self._log_modules(custom_modules, overwrite=overwrite)
-        self._log_artifact("model.pkl", serialized_model, _CommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
-        self._log_artifact("model_api.json", model_api, _CommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
+        self._log_artifact("model.pkl", serialized_model, _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
+        self._log_artifact("model_api.json", model_api, _CommonCommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
 
     def get_model(self):
         """
@@ -3038,6 +3179,7 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing image with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         # convert pyplot, Figure or Image to bytestream
@@ -3062,7 +3204,7 @@ class ExperimentRun(_ModelDBEntity):
             bytestream.seek(0)
             image = bytestream
 
-        self._log_artifact(key, image, _CommonService.ArtifactTypeEnum.IMAGE, extension, overwrite=overwrite)
+        self._log_artifact(key, image, _CommonCommonService.ArtifactTypeEnum.IMAGE, extension, overwrite=overwrite)
 
     def log_image_path(self, key, image_path):
         """
@@ -3079,9 +3221,10 @@ class ExperimentRun(_ModelDBEntity):
             Filesystem path of the image.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
-        self._log_artifact_path(key, image_path, _CommonService.ArtifactTypeEnum.IMAGE)
+        self._log_artifact_path(key, image_path, _CommonCommonService.ArtifactTypeEnum.IMAGE)
 
     def get_image(self, key):
         """
@@ -3117,6 +3260,9 @@ class ExperimentRun(_ModelDBEntity):
         """
         Logs an artifact to this Experiment Run.
 
+        The ``VERTA_ARTIFACT_DIR`` environment variable can be used to specify a locally-accessible
+        directory to store artifacts.
+
         Parameters
         ----------
         key : str
@@ -3131,6 +3277,7 @@ class ExperimentRun(_ModelDBEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
         try:
@@ -3152,7 +3299,7 @@ class ExperimentRun(_ModelDBEntity):
             artifact = tempf
             extension = 'zip'
 
-        self._log_artifact(key, artifact, _CommonService.ArtifactTypeEnum.BLOB, extension, overwrite=overwrite)
+        self._log_artifact(key, artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, extension, overwrite=overwrite)
 
     def log_artifact_path(self, key, artifact_path):
         """
@@ -3169,9 +3316,10 @@ class ExperimentRun(_ModelDBEntity):
             Filesystem path of the artifact.
 
         """
+        _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
-        self._log_artifact_path(key, artifact_path, _CommonService.ArtifactTypeEnum.BLOB)
+        self._log_artifact_path(key, artifact_path, _CommonCommonService.ArtifactTypeEnum.BLOB)
 
     def get_artifact(self, key):
         """
@@ -3195,14 +3343,119 @@ class ExperimentRun(_ModelDBEntity):
         """
         artifact, path_only = self._get_artifact(key)
         if path_only:
-            return artifact
+            if not os.path.exists(artifact):
+                # path-only artifact; `artifact` is its path
+                return artifact
+            else:
+                # clientside storage; `artifact` is its path
+                # NOTE: can cause problem if accidentally picks up unrelated file w/ same name
+                artifact_stream = open(artifact, 'rb')
         else:
-            try:
-                return pickle.loads(artifact)
-            except:
-                return six.BytesIO(artifact)
+            # uploaded artifact; `artifact` is its bytes
+            artifact_stream = six.BytesIO(artifact)
 
-    def log_observation(self, key, value, timestamp=None):
+        if torch is not None:
+            try:
+                obj = torch.load(artifact_stream)
+            except:  # not something torch can deserialize
+                artifact_stream.seek(0)
+            else:
+                artifact_stream.close()
+                return obj
+
+        try:
+            obj = pickle.load(artifact_stream)
+        except:  # not something pickle can deserialize
+            artifact_stream.seek(0)
+        else:
+            artifact_stream.close()
+            return obj
+
+        return artifact_stream
+
+    def download_artifact(self, key, download_to_path):
+        """
+        Downloads the artifact with name `key` to path `download_to_path`.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+        download_to_path : str
+            Path to download to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where artifact was downloaded to. Matches `download_to_path`.
+
+        """
+        download_to_path = os.path.abspath(download_to_path)
+
+        # get key-path from ModelDB
+        # TODO: consolidate the following ~12 lines with ExperimentRun._get_artifact()
+        Message = _CommonService.GetArtifacts
+        msg = Message(id=self.id, key=key)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        artifact = {artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
+        if artifact is None:
+            raise KeyError("no artifact found with key {}".format(key))
+
+        # TODO: unpack dirs logged as artifacts
+        #     But we can't distinguish if a ZIP artifact is a directory we've compressed, or if it
+        #     was a ZIP file the user already had.
+
+        # create parent dirs
+        pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+        # TODO: clean up empty parent dirs if something later fails
+
+        # get a stream of the file bytes, without loading into memory, and write to file
+        # TODO: consolidate this with _get_artifact() and get_artifact()
+        print("downloading {} from ModelDB".format(key))
+        if artifact.path_only:
+            if os.path.exists(artifact.path):
+                # copy from clientside storage
+                shutil.copyfile(artifact.path, download_to_path)
+            else:
+                raise ValueError(
+                    "artifact {} appears to have been logged as path-only,"
+                    " and cannot be downloaded".format(key)
+                )
+            print("download complete; file written to {}".format(download_to_path))
+        else:
+            # download artifact from artifact store
+            url = self._get_url_for_artifact(key, "GET").url
+            with _utils.make_request("GET", url, self._conn, stream=True) as response:
+                _utils.raise_for_http_error(response)
+
+                # user-specified filepath, so overwrite
+                _request_utils.download(response, download_to_path, overwrite_ok=True)
+
+        return download_to_path
+
+    def get_artifact_parts(self, key):
+        endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+        data = {'id': self.id, 'key': key}
+        response = _utils.make_request("GET", endpoint, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        committed_parts = _utils.body_to_json(response).get('artifact_parts', [])
+        committed_parts = list(sorted(
+            committed_parts,
+            key=lambda part: int(part['part_number']),
+        ))
+        return committed_parts
+
+    def log_observation(self, key, value, timestamp=None, epoch_num=None):
         """
         Logs an observation to this Experiment Run.
 
@@ -3212,9 +3465,12 @@ class ExperimentRun(_ModelDBEntity):
             Name of the observation.
         value : one of {None, bool, float, int, str}
             Value of the observation.
-        timestamp: str or float or int, optional
+        timestamp : str or float or int, optional
             String representation of a datetime or numerical Unix timestamp. If not provided, the
             current time will be used.
+        epoch_num : non-negative int, optional
+            Epoch number associated with this observation. If not provided, it will automatically
+            be incremented from prior observations for the same `key`.
 
         Warnings
         --------
@@ -3229,8 +3485,18 @@ class ExperimentRun(_ModelDBEntity):
         else:
             timestamp = _utils.ensure_timestamp(timestamp)
 
+        if epoch_num is not None:
+            if (not isinstance(epoch_num, six.integer_types)
+                    and not (isinstance(epoch_num, float) and epoch_num.is_integer())):
+                raise TypeError("`epoch_num` must be int, not {}".format(type(epoch_num)))
+            if epoch_num < 0:
+                raise ValueError("`epoch_num` must be non-negative")
+
         attribute = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         observation = _ExperimentRunService.Observation(attribute=attribute, timestamp=timestamp)  # TODO: support Artifacts
+        if epoch_num is not None:
+            observation.epoch_number.number_value = epoch_num  # pylint: disable=no-member
+
         msg = _ExperimentRunService.LogObservation(id=self.id, observation=observation)
         data = _utils.proto_to_json(msg)
         response = _utils.make_request("POST",
@@ -3263,7 +3529,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         if len(response_msg.observations) == 0:
             raise KeyError("no observation found with key {}".format(key))
         else:
@@ -3280,16 +3546,8 @@ class ExperimentRun(_ModelDBEntity):
             Names and values of all observation series.
 
         """
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(response.json(), Message.Response)
-        return _utils.unravel_observations(response_msg.experiment_run.observations)
+        run_msg = self._get_self_as_msg()
+        return _utils.unravel_observations(run_msg.observations)
 
     def log_requirements(self, requirements, overwrite=False):
         """
@@ -3349,14 +3607,14 @@ class ExperimentRun(_ModelDBEntity):
         else:
             raise TypeError("`requirements` must be either str or list of str, not {}".format(type(requirements)))
 
-        requirements = _pip_requirements_utils.process_requirements(requirements)
+        _pip_requirements_utils.process_requirements(requirements)
 
         if self._conf.debug:
             print("[DEBUG] requirements are:")
             print(requirements)
 
         requirements = six.BytesIO(six.ensure_binary('\n'.join(requirements)))  # as file-like
-        self._log_artifact("requirements.txt", requirements, _CommonService.ArtifactTypeEnum.BLOB, 'txt', overwrite=overwrite)
+        self._log_artifact("requirements.txt", requirements, _CommonCommonService.ArtifactTypeEnum.BLOB, 'txt', overwrite=overwrite)
 
     def log_modules(self, paths, search_path=None):
         """
@@ -3488,7 +3746,7 @@ class ExperimentRun(_ModelDBEntity):
                 zipf.printdir()
         bytestream.seek(0)
 
-        self._log_artifact("custom_modules", bytestream, _CommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
+        self._log_artifact("custom_modules", bytestream, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
     def log_setup_script(self, script, overwrite=False):
         """
@@ -3528,7 +3786,7 @@ class ExperimentRun(_ModelDBEntity):
         # convert to file-like for `_log_artifact()`
         script = six.BytesIO(script)
 
-        self._log_artifact("setup_script", script, _CommonService.ArtifactTypeEnum.BLOB, 'py', overwrite=overwrite)
+        self._log_artifact("setup_script", script, _CommonCommonService.ArtifactTypeEnum.BLOB, 'py', overwrite=overwrite)
 
     def log_training_data(self, train_features, train_targets, overwrite=False):
         """
@@ -3614,11 +3872,8 @@ class ExperimentRun(_ModelDBEntity):
             raise TypeError("`keys` must be list of str, not {}".format(type(keys)))
 
         # validate that `keys` are actually logged
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params={'id': self.id})
-        _utils.raise_for_http_error(response)
-        existing_artifact_keys = {artifact['key'] for artifact in response.json()['experiment_run'].get('artifacts', [])}
+        run_msg = self._get_self_as_msg()
+        existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
         unlogged_artifact_keys = set(keys) - existing_artifact_keys
         if unlogged_artifact_keys:
             raise ValueError("`keys` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
@@ -3629,7 +3884,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, params={'id': self.id})
         _utils.raise_for_http_error(response)
         paths = {artifact['key']: artifact['path']
-                 for artifact in response.json()['artifacts']}
+                 for artifact in _utils.body_to_json(response)['artifacts']}
 
         artifacts = dict()
         for key in keys:
@@ -3670,7 +3925,7 @@ class ExperimentRun(_ModelDBEntity):
         )
         _utils.raise_for_http_error(response)
 
-        status = response.json()
+        status = _utils.body_to_json(response)
         if 'api' in status:
             status.update({'url': "{}://{}{}".format(self._conn.scheme, self._conn.socket, status.pop('api'))})
             status.update({'token': status.pop('token', None)})
@@ -3723,13 +3978,8 @@ class ExperimentRun(_ModelDBEntity):
         data = {}
         if path is not None:
             # get project ID for URL path
-            response = _utils.make_request(
-                "GET",
-                "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                self._conn, params={'id': self.id})
-            _utils.raise_for_http_error(response)
-
-            data.update({'url_path': "{}/{}".format(response.json()['experiment_run']['project_id'], path)})
+            run_msg = self._get_self_as_msg()
+            data.update({'url_path': "{}/{}".format(run_msg.project_id, path)})
         if no_token:
             data.update({'token': ""})
         elif token is not None:
@@ -3753,8 +4003,10 @@ class ExperimentRun(_ModelDBEntity):
 
         if wait:
             print("waiting for deployment...", end='')
+            sys.stdout.flush()
             while self.get_deployment_status()['status'] not in ("deployed", "error"):
                 print(".", end='')
+                sys.stdout.flush()
                 time.sleep(5)
             print()
             if self.get_deployment_status()['status'] == "error":
@@ -3798,8 +4050,10 @@ class ExperimentRun(_ModelDBEntity):
 
             if wait:
                 print("waiting for undeployment...", end='')
+                sys.stdout.flush()
                 while self.get_deployment_status()['status'] != "not deployed":
                     print(".", end='')
+                    sys.stdout.flush()
                     time.sleep(5)
                 print()
 
@@ -3821,11 +4075,101 @@ class ExperimentRun(_ModelDBEntity):
             If the model is not currently deployed.
 
         """
-        if self.get_deployment_status()['status'] != "deployed":
-            raise RuntimeError("model is not currently deployed")
+        status = self.get_deployment_status().get('status', "<no status>")
+        if status != "deployed":
+            raise RuntimeError("model is not currently deployed (status: {})".format(status))
 
         status = self.get_deployment_status()
         return deployment.DeployedModel.from_url(status['url'], status['token'])
+
+    def download_deployment_yaml(self, download_to_path, path=None, token=None, no_token=False):
+        """
+        Downloads this Experiment Run's model deployment CRD YAML.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download deployment YAML to.
+        path : str, optional
+            Suffix for the prediction endpoint URL. If not provided, one will be generated
+            automatically.
+        token : str, optional
+            Token to use to authorize predictions requests. If not provided and `no_token` is
+            ``False``, one will be generated automatically.
+        no_token : bool, default False
+            Whether to not require a token for predictions.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where deployment YAML was downloaded to. Matches `download_to_path`.
+
+        """
+        # NOTE: this param-handling block was copied verbatim from deploy()
+        data = {}
+        if path is not None:
+            # get project ID for URL path
+            run_msg = self._get_self_as_msg()
+            data.update({'url_path': "{}/{}".format(run_msg.project_id, path)})
+        if no_token:
+            data.update({'token': ""})
+        elif token is not None:
+            data.update({'token': token})
+
+        endpoint = "{}://{}/api/v1/deployment/models/{}/crd".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+        )
+        with _utils.make_request("POST", endpoint, self._conn, json=data, stream=True) as response:
+            try:
+                _utils.raise_for_http_error(response)
+            except requests.HTTPError as e:
+                # propagate error caused by missing artifact
+                error_text = e.response.text.strip()
+                if error_text.startswith("missing artifact"):
+                    new_e = RuntimeError("unable to obtain deployment CRD due to " + error_text)
+                    six.raise_from(new_e, None)
+                else:
+                    raise e
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
+
+    def download_docker_context(self, download_to_path):
+        """
+        Downloads this Experiment Run's Docker context ``tgz``.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download Docker context to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where Docker context was downloaded to. Matches `download_to_path`.
+
+        """
+        endpoint = "{}://{}/api/v1/deployment/models/{}/dockercontext".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+        )
+        with _utils.make_request("GET", endpoint, self._conn, stream=True) as response:
+            try:
+                _utils.raise_for_http_error(response)
+            except requests.HTTPError as e:
+                # propagate error caused by missing artifact
+                error_text = e.response.text.strip()
+                if error_text.startswith("missing artifact"):
+                    new_e = RuntimeError("unable to obtain Docker context due to " + error_text)
+                    six.raise_from(new_e, None)
+                else:
+                    raise e
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
 
     def log_commit(self, commit, key_paths=None):
         """
@@ -3843,6 +4187,9 @@ class ExperimentRun(_ModelDBEntity):
             used for this Experiment Run.
 
         """
+        if commit.id is None:
+            raise RuntimeError("Commit must be saved before it can be logged to an Experiment Run")
+
         msg = _ExperimentRunService.LogVersionedInput()
         msg.id = self.id
         msg.versioned_inputs.repository_id = commit._repo.id
@@ -3885,7 +4232,7 @@ class ExperimentRun(_ModelDBEntity):
         response = _utils.make_request("GET", endpoint, self._conn, params=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
         repo = _repository.Repository(self._conn, response_msg.versioned_inputs.repository_id)
         commit_id = response_msg.versioned_inputs.commit
         commit = commit_module.Commit._from_id(self._conn, repo, commit_id)
