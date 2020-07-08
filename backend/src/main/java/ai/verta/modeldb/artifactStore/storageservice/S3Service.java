@@ -39,13 +39,13 @@ public class S3Service implements ArtifactStoreService {
     String cloudAccessKey = app.getCloudAccessKey();
     String cloudSecretKey = app.getCloudSecretKey();
     String minioEndpoint = app.getMinioEndpoint();
-    final Regions region = Regions.fromName(app.getRegion());
+    final Regions awsRegion = Regions.fromName(app.getAwsRegion());
     if (cloudAccessKey != null && cloudSecretKey != null) {
       if (minioEndpoint == null) {
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
         this.s3Client =
             AmazonS3ClientBuilder.standard()
-                .withRegion(region)
+                .withRegion(awsRegion)
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .build();
       } else {
@@ -58,7 +58,7 @@ public class S3Service implements ArtifactStoreService {
             AmazonS3ClientBuilder.standard()
                 .withEndpointConfiguration(
                     new AwsClientBuilder.EndpointConfiguration(
-                        minioEndpoint, app.getRegion()))
+                        minioEndpoint, app.getAwsRegion()))
                 .withPathStyleAccessEnabled(true)
                 .withClientConfiguration(clientConfiguration)
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
@@ -66,7 +66,7 @@ public class S3Service implements ArtifactStoreService {
       }
     } else {
       // reads credential from OS Environment
-      s3Client = AmazonS3ClientBuilder.standard().withRegion(region).build();
+      s3Client = AmazonS3ClientBuilder.standard().withRegion(awsRegion).build();
     }
 
     this.bucketName = cloudBucketName;

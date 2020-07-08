@@ -124,7 +124,7 @@ public class App implements ApplicationContextAware {
   private String cloudAccessKey = null;
   private String cloudSecretKey = null;
   private String minioEndpoint = null;
-  private String region = null;
+  private String awsRegion = null;
 
   // NFS Artifact store
   private Boolean pickNFSHostFromConfig = null;
@@ -569,8 +569,8 @@ public class App implements ApplicationContextAware {
         app.cloudAccessKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_ACCESS_KEY);
         app.cloudSecretKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_SECRET_KEY);
         app.minioEndpoint = (String) s3ConfigMap.get(ModelDBConstants.MINIO_ENDPOINT);
-        app.region = (String) s3ConfigMap
-            .getOrDefault(ModelDBConstants.REGION, ModelDBConstants.DEFAULT_REGION);
+        app.awsRegion = (String) s3ConfigMap
+            .getOrDefault(ModelDBConstants.AWS_REGION, ModelDBConstants.DEFAULT_AWS_REGION);
         String cloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
         artifactStoreService = new S3Service(cloudBucketName);
         app.storeTypePathPrefix = "s3://" + cloudBucketName + ModelDBConstants.PATH_DELIMITER;
@@ -730,8 +730,8 @@ public class App implements ApplicationContextAware {
     return minioEndpoint;
   }
 
-  public String getRegion() {
-    return region;
+  public String getAwsRegion() {
+    return awsRegion;
   }
 
   public Boolean getStoreClientCreationTimestamp() {
