@@ -58,9 +58,11 @@ class _Dataset(blob.Blob):
         if not isinstance(other, type(self)):
             return NotImplemented
 
-        path_overlap = _utils.overlapping_keys(self._components_map, other._components_map)
-        if path_overlap:
-            raise ValueError("dataset already contains paths: {}".format(path_overlap))
+        self_keys = set(self._components_map.keys())
+        other_keys = set(other._components_map.keys())
+        intersection = self_keys & other_keys
+        if intersection:
+            raise ValueError("dataset already contains paths: {}".format(intersection))
 
         if self._mdb_versioned != other._mdb_versioned:
             raise ValueError("datasets must have same value for `enable_mdb_versioning`")
