@@ -228,7 +228,7 @@ def merge(accum, other):
             node = accum.setdefault(key, {})
             merge(node, value)
         elif isinstance(value, list):
-            node = accum.set_default(key, [])
+            node = accum.setdefault(key, [])
             node.extend(value)
         else:
             accum[key] = value
