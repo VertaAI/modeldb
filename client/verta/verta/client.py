@@ -629,23 +629,6 @@ class Client(object):
                                public_within_org=public_within_org,
                                _dataset_id=id)
 
-    def get_dataset(self, name=None, id=None):
-        """
-        Retrieve an already created Dataset. Only one of name or id can be provided.
-
-        Parameters
-        ----------
-        name : str, optional
-            Name of the Dataset.
-        id : str, optional
-            ID of the Dataset. This parameter cannot be provided alongside `name`.
-
-        Returns
-        -------
-        :class:`Dataset`
-        """
-        return _dataset.Dataset(self._conn, self._conf, name=name, _dataset_id=id)
-
     def find_datasets(self,
                       dataset_ids=None, name=None,
                       tags=None,
@@ -713,7 +696,37 @@ class Client(object):
         """
         return _dataset.DatasetVersion(self._conn, self._conf, _dataset_version_id=id)
 
-    # set aliases for get-or-create functions for API compatibility
+    # get entities
+    def get_project(self, *args, **kwargs):
+        raise ValueError
+
+    def get_experiment(self, *args, **kwargs):
+        raise ValueError
+
+    def get_experiment_run(self, *args, **kwargs):
+        raise ValueError
+
+    def get_dataset(self, name=None, id=None):
+        """
+        Retrieve an already created Dataset. Only one of name or id can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Dataset.
+        id : str, optional
+            ID of the Dataset. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`Dataset`
+        """
+        return _dataset.Dataset(self._conn, self._conf, name=name, _dataset_id=id)
+
+    def get_repository(self, *args, **kwargs):
+        raise ValueError
+
+    # aliases for get-or-create functions for API compatibility
     def get_or_create_project(self, *args, **kwargs):
         """
         Alias for :meth:`Client.set_project()`.

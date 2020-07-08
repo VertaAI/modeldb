@@ -7,6 +7,13 @@ import verta.environment
 
 
 class TestRepository:
+    def test_get(self, client, repository):
+        with pytest.raises(ValueError):
+            client.get_repository(repository.name + "foo")
+
+        assert repository.id == client.get_repository(repository.name).id
+        assert repository.id == client.get_repository(id=repository.id).id
+
     def test_get_by_name(self, client, repository):
         retrieved_repo = client.get_or_create_repository(repository.name)
         assert repository.id == retrieved_repo.id
