@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 import yaml
 
@@ -171,3 +172,44 @@ class TestWrite:
             with open(config_filepath, 'r') as f:
                 config = yaml.safe_load(f)
                 assert new_key not in config
+
+    def test_does_not_update_home(self, in_tempdir):
+        home_verta_dir = _config_utils.HOME_VERTA_DIR
+        config_filename = _config_utils.CONFIG_YAML_FILENAME
+
+        # backup home config
+        backup_dir = tempfile.mkdtemp(dir=".")
+        if os.path.exists(os.path.join(home_verta_dir, config_filename)):
+            os.rename(
+                os.path.join(home_verta_dir, config_filename),
+                os.path.join(backup_dir, config_filename),
+            )
+
+        try:
+            # create config in home dir
+            home_config_filepath = _config_utils.create_empty_config_file(home_verta_dir)
+
+            # nearest config is home
+            assert _config_utils.find_closest_config_file() == home_config_filepath
+
+            # do the thing we're actually testing
+            with _config_utils.write_local_config() as config:
+                config['host'] = "app.verta.ai"
+
+            # config file created and written in cwd
+            config = _config_utils.load(config_filename)
+            assert config['host'] == "app.verta.ai"
+
+            # home config unchanged
+            config = _config_utils.load(home_config_filepath)
+            assert 'host' not in config
+        finally:
+            # delete created home config
+            os.remove(home_config_filepath)
+
+            # restore home config
+            if os.path.exists(os.path.join(backup_dir, config_filename)):
+                os.rename(
+                    os.path.join(backup_dir, config_filename),
+                    os.path.join(home_verta_dir, config_filename),
+                )

@@ -49,6 +49,9 @@ def write_local_config():
     """
     Updates the nearest config file.
 
+    If no config file is found, or if the nearest one is in ``HOME_VERTA_DIR``, a new config file
+    in the current directory will be created and used.
+
     Yields
     ------
     config : dict
@@ -56,6 +59,9 @@ def write_local_config():
 
     """
     config_filepath = find_closest_config_file()
+    if (config_filepath is None
+            or config_filepath.startswith(HOME_VERTA_DIR)):
+        config_filepath = create_empty_config_file(".")
 
     config = load(config_filepath)
 
