@@ -271,7 +271,7 @@ class Commit(
     ).map(_ => ())
   }
 
-  /** Merges a branch headed by other into this commit
+  /** Merges a branch headed by other into this commit.
    *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
    *  @param other Commit to be merged
    *  @param message Description of the merge. If not provided, a default message will be used
@@ -302,7 +302,7 @@ class Commit(
     )
   }
 
-  /** Helper function to convert the versioning commit instance to commit instance
+  /** Helper function to convert the versioning commit instance to commit instance.
    *  If the current instance has a branch associated with it, the new commit will become the head of the branch.
    *  Useful for createCommit, merge, and revert
    *  @param versioningCommit the versioning commit instance
@@ -341,7 +341,7 @@ class Commit(
   }
 
   /** Reverts other.
-   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
+   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object.
    *  Currently reverting a merge commit is not supported. Unexpected behavior might occur.
    *  @param other Base for the revert. If not provided, this commit will be reverted
    *  @param message Description of the revert. If not provided, a default message will be used
