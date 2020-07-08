@@ -37,8 +37,9 @@ class Python(_environment._Environment):
     .. code-block:: python
 
         from verta.environment import Python
-        env1 = Python(requirements=Python.read_pip_file("../requirements.txt"))
-        env2 = Python(
+        env1 = Python(requirements=Python.read_pip_environment())
+        env2 = Python(requirements=Python.read_pip_file("../requirements.txt"))
+        env3 = Python(
             requirements=["tensorflow"],
             env_vars=["CUDA_VISIBLE_DEVICES"],
         )
