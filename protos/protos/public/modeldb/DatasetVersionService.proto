@@ -245,6 +245,7 @@ message GetUrlForDatasetBlobVersioned {
     string path_dataset_component_blob_path = 3;
     string method = 4; //This is either GET or PUT
     uint64 part_number = 5; // if 0, don’t do multipart
+    string workspace_name = 6;
 
     message Response {
         string url = 1;

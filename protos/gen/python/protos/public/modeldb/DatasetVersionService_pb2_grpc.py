@@ -84,6 +84,26 @@ class DatasetVersionServiceStub(object):
         request_serializer=modeldb_dot_DatasetVersionService__pb2.SetDatasetVersionVisibilty.SerializeToString,
         response_deserializer=modeldb_dot_DatasetVersionService__pb2.SetDatasetVersionVisibilty.Response.FromString,
         )
+    self.getUrlForDatasetBlobVersioned = channel.unary_unary(
+        '/ai.verta.modeldb.DatasetVersionService/getUrlForDatasetBlobVersioned',
+        request_serializer=modeldb_dot_DatasetVersionService__pb2.GetUrlForDatasetBlobVersioned.SerializeToString,
+        response_deserializer=modeldb_dot_DatasetVersionService__pb2.GetUrlForDatasetBlobVersioned.Response.FromString,
+        )
+    self.commitVersionedDatasetBlobArtifactPart = channel.unary_unary(
+        '/ai.verta.modeldb.DatasetVersionService/commitVersionedDatasetBlobArtifactPart',
+        request_serializer=modeldb_dot_DatasetVersionService__pb2.CommitVersionedDatasetBlobArtifactPart.SerializeToString,
+        response_deserializer=modeldb_dot_DatasetVersionService__pb2.CommitVersionedDatasetBlobArtifactPart.Response.FromString,
+        )
+    self.getCommittedVersionedDatasetBlobArtifactParts = channel.unary_unary(
+        '/ai.verta.modeldb.DatasetVersionService/getCommittedVersionedDatasetBlobArtifactParts',
+        request_serializer=modeldb_dot_DatasetVersionService__pb2.GetCommittedVersionedDatasetBlobArtifactParts.SerializeToString,
+        response_deserializer=modeldb_dot_DatasetVersionService__pb2.GetCommittedVersionedDatasetBlobArtifactParts.Response.FromString,
+        )
+    self.commitMultipartVersionedDatasetBlobArtifact = channel.unary_unary(
+        '/ai.verta.modeldb.DatasetVersionService/commitMultipartVersionedDatasetBlobArtifact',
+        request_serializer=modeldb_dot_DatasetVersionService__pb2.CommitMultipartVersionedDatasetBlobArtifact.SerializeToString,
+        response_deserializer=modeldb_dot_DatasetVersionService__pb2.CommitMultipartVersionedDatasetBlobArtifact.Response.FromString,
+        )
 
 
 class DatasetVersionServiceServicer(object):
@@ -188,6 +208,34 @@ class DatasetVersionServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def getUrlForDatasetBlobVersioned(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def commitVersionedDatasetBlobArtifactPart(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getCommittedVersionedDatasetBlobArtifactParts(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def commitMultipartVersionedDatasetBlobArtifact(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_DatasetVersionServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -260,6 +308,26 @@ def add_DatasetVersionServiceServicer_to_server(servicer, server):
           servicer.setDatasetVersionVisibility,
           request_deserializer=modeldb_dot_DatasetVersionService__pb2.SetDatasetVersionVisibilty.FromString,
           response_serializer=modeldb_dot_DatasetVersionService__pb2.SetDatasetVersionVisibilty.Response.SerializeToString,
+      ),
+      'getUrlForDatasetBlobVersioned': grpc.unary_unary_rpc_method_handler(
+          servicer.getUrlForDatasetBlobVersioned,
+          request_deserializer=modeldb_dot_DatasetVersionService__pb2.GetUrlForDatasetBlobVersioned.FromString,
+          response_serializer=modeldb_dot_DatasetVersionService__pb2.GetUrlForDatasetBlobVersioned.Response.SerializeToString,
+      ),
+      'commitVersionedDatasetBlobArtifactPart': grpc.unary_unary_rpc_method_handler(
+          servicer.commitVersionedDatasetBlobArtifactPart,
+          request_deserializer=modeldb_dot_DatasetVersionService__pb2.CommitVersionedDatasetBlobArtifactPart.FromString,
+          response_serializer=modeldb_dot_DatasetVersionService__pb2.CommitVersionedDatasetBlobArtifactPart.Response.SerializeToString,
+      ),
+      'getCommittedVersionedDatasetBlobArtifactParts': grpc.unary_unary_rpc_method_handler(
+          servicer.getCommittedVersionedDatasetBlobArtifactParts,
+          request_deserializer=modeldb_dot_DatasetVersionService__pb2.GetCommittedVersionedDatasetBlobArtifactParts.FromString,
+          response_serializer=modeldb_dot_DatasetVersionService__pb2.GetCommittedVersionedDatasetBlobArtifactParts.Response.SerializeToString,
+      ),
+      'commitMultipartVersionedDatasetBlobArtifact': grpc.unary_unary_rpc_method_handler(
+          servicer.commitMultipartVersionedDatasetBlobArtifact,
+          request_deserializer=modeldb_dot_DatasetVersionService__pb2.CommitMultipartVersionedDatasetBlobArtifact.FromString,
+          response_serializer=modeldb_dot_DatasetVersionService__pb2.CommitMultipartVersionedDatasetBlobArtifact.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

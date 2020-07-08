@@ -263,9 +263,9 @@ class ExperimentRunServiceApi(client: HttpClient, val basePath: String = "/v1") 
 
   def getExperimentRunTags(id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetTagsResponse] = Await.result(getExperimentRunTagsAsync(id), Duration.Inf)
 
-  def getExperimentRunsByDatasetVersionIdAsync(ascending: Option[Boolean]=None, datset_version_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetExperimentRunsByDatasetVersionIdResponse]] = {
+  def getExperimentRunsByDatasetVersionIdAsync(ascending: Option[Boolean]=None, dataset_version_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetExperimentRunsByDatasetVersionIdResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
-    if (datset_version_id.isDefined) __query.update("datset_version_id", client.toQuery(datset_version_id.get))
+    if (dataset_version_id.isDefined) __query.update("dataset_version_id", client.toQuery(dataset_version_id.get))
     if (page_number.isDefined) __query.update("page_number", client.toQuery(page_number.get))
     if (page_limit.isDefined) __query.update("page_limit", client.toQuery(page_limit.get))
     if (ascending.isDefined) __query.update("ascending", client.toQuery(ascending.get))
@@ -274,7 +274,7 @@ class ExperimentRunServiceApi(client: HttpClient, val basePath: String = "/v1") 
     return client.request[String, ModeldbGetExperimentRunsByDatasetVersionIdResponse]("GET", basePath + s"/experiment-run/getExperimentRunsByDatasetVersionId", __query.toMap, body, ModeldbGetExperimentRunsByDatasetVersionIdResponse.fromJson)
   }
 
-  def getExperimentRunsByDatasetVersionId(ascending: Option[Boolean]=None, datset_version_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetExperimentRunsByDatasetVersionIdResponse] = Await.result(getExperimentRunsByDatasetVersionIdAsync(ascending, datset_version_id, page_limit, page_number, sort_key), Duration.Inf)
+  def getExperimentRunsByDatasetVersionId(ascending: Option[Boolean]=None, dataset_version_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetExperimentRunsByDatasetVersionIdResponse] = Await.result(getExperimentRunsByDatasetVersionIdAsync(ascending, dataset_version_id, page_limit, page_number, sort_key), Duration.Inf)
 
   def getExperimentRunsInExperimentAsync(ascending: Option[Boolean]=None, experiment_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetExperimentRunsInExperimentResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]

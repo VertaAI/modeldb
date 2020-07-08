@@ -75,6 +75,70 @@
         ]
       }
     },
+    "/dataset-version/commitMultipartVersionedDatasetBlobArtifact": {
+      "post": {
+        "operationId": "commitMultipartVersionedDatasetBlobArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitMultipartVersionedDatasetBlobArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitMultipartVersionedDatasetBlobArtifact"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/commitVersionedDatasetBlobArtifactPart": {
+      "post": {
+        "operationId": "commitVersionedDatasetBlobArtifactPart",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitVersionedDatasetBlobArtifactPartResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbCommitVersionedDatasetBlobArtifactPart"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
     "/dataset-version/createDatasetVersion": {
       "post": {
         "operationId": "createDatasetVersion",
@@ -99,6 +163,50 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/modeldbCreateDatasetVersion"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/dataset/{dataset_id}/datasetVersion/{dataset_version_id}/getUrlForDatasetBlobVersioned": {
+      "post": {
+        "operationId": "getUrlForDatasetBlobVersioned2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetUrlForDatasetBlobVersionedResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "dataset_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbGetUrlForDatasetBlobVersioned"
             }
           }
         ],
@@ -326,6 +434,48 @@
         ]
       }
     },
+    "/dataset-version/getCommittedVersionedDatasetBlobArtifactParts": {
+      "get": {
+        "operationId": "getCommittedVersionedDatasetBlobArtifactParts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetCommittedVersionedDatasetBlobArtifactPartsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "dataset_version_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "path_dataset_component_blob_path",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
     "/dataset-version/getDatasetVersionAttributes": {
       "get": {
         "operationId": "getDatasetVersionAttributes",
@@ -517,6 +667,56 @@
           "DatasetVersionService"
         ]
       }
+    },
+    "/dataset-version/workspaces/{workspace_name}/dataset/{dataset_id}/datasetVersion/{dataset_version_id}/getUrlForDatasetBlobVersioned": {
+      "post": {
+        "operationId": "getUrlForDatasetBlobVersioned",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetUrlForDatasetBlobVersionedResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "dataset_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbGetUrlForDatasetBlobVersioned"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -563,6 +763,18 @@
         "BLOB"
       ],
       "default": "STRING"
+    },
+    "commonArtifactPart": {
+      "type": "object",
+      "properties": {
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "etag": {
+          "type": "string"
+        }
+      }
     },
     "commonKeyValue": {
       "type": "object",
@@ -645,6 +857,43 @@
           "$ref": "#/definitions/modeldbDatasetVersion"
         }
       }
+    },
+    "modeldbCommitMultipartVersionedDatasetBlobArtifact": {
+      "type": "object",
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "dataset_version_id": {
+          "type": "string"
+        },
+        "path_dataset_component_blob_path": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbCommitMultipartVersionedDatasetBlobArtifactResponse": {
+      "type": "object"
+    },
+    "modeldbCommitVersionedDatasetBlobArtifactPart": {
+      "type": "object",
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "dataset_version_id": {
+          "type": "string"
+        },
+        "path_dataset_component_blob_path": {
+          "type": "string"
+        },
+        "artifact_part": {
+          "$ref": "#/definitions/commonArtifactPart"
+        }
+      }
+    },
+    "modeldbCommitVersionedDatasetBlobArtifactPartResponse": {
+      "type": "object"
     },
     "modeldbCreateDatasetVersion": {
       "type": "object",
@@ -943,6 +1192,17 @@
         }
       }
     },
+    "modeldbGetCommittedVersionedDatasetBlobArtifactPartsResponse": {
+      "type": "object",
+      "properties": {
+        "artifact_parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifactPart"
+          }
+        }
+      }
+    },
     "modeldbGetDatasetVersionAttributesResponse": {
       "type": "object",
       "properties": {
@@ -959,6 +1219,42 @@
       "properties": {
         "dataset_version": {
           "$ref": "#/definitions/modeldbDatasetVersion"
+        }
+      }
+    },
+    "modeldbGetUrlForDatasetBlobVersioned": {
+      "type": "object",
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "dataset_version_id": {
+          "type": "string"
+        },
+        "path_dataset_component_blob_path": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbGetUrlForDatasetBlobVersionedResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
