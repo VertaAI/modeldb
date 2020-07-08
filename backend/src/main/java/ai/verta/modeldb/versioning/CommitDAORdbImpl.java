@@ -29,8 +29,8 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
+import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolStringList;
 import com.google.protobuf.Value;
@@ -790,18 +790,6 @@ public class CommitDAORdbImpl implements CommitDAO {
         }
       }
 
-      WorkspaceDTO workspaceDTO =
-          roleService.getWorkspaceDTOByWorkspaceName(
-              currentLoginUserInfo, request.getWorkspaceName());
-
-      List<String> accessibleResourceIds =
-          roleService.getAccessibleResourceIds(
-              null,
-              new CollaboratorUser(authService, currentLoginUserInfo),
-              RepositoryVisibilityEnum.RepositoryVisibility.PRIVATE,
-              ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
-              request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
-
       Set<String> commitHashList = new HashSet<>(request.getCommitsList());
 
       Map<String, Object> parametersMap = new HashMap<>();
@@ -825,6 +813,71 @@ public class CommitDAORdbImpl implements CommitDAO {
       joinClause.append("folderElm.folder_hash = ").append(alias).append(".rootSha ");
 
       List<String> whereClauseList = new ArrayList<>();
+
+      List<String> accessibleResourceIds =
+          roleService.getAccessibleResourceIds(
+              null,
+              new CollaboratorUser(authService, currentLoginUserInfo),
+              RepositoryVisibilityEnum.RepositoryVisibility.PRIVATE,
+              ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
+              request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
+
+      String workspaceName = request.getWorkspaceName();
+      if (workspaceName != null
+          && !workspaceName.isEmpty()
+          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        accessibleResourceIds =
+            roleService.getSelfDirectlyAllowedResources(
+                ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
+                ModelDBActionEnum.ModelDBServiceActions.READ);
+        if (request.getRepoIdsList() != null && !request.getRepoIdsList().isEmpty()) {
+          accessibleResourceIds.retainAll(
+              request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
+        }
+        // user is in his workspace and has no repositories, return empty
+        if (accessibleResourceIds.isEmpty()) {
+          CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
+          commitPaginationDTO.setCommitEntities(Collections.emptyList());
+          commitPaginationDTO.setTotalRecords(0L);
+          return commitPaginationDTO;
+        }
+      } else {
+        WorkspaceDTO workspaceDTO =
+            roleService.getWorkspaceDTOByWorkspaceName(
+                currentLoginUserInfo, request.getWorkspaceName());
+        if (workspaceDTO != null
+            && workspaceDTO.getWorkspaceId() != null
+            && !workspaceDTO.getWorkspaceId().isEmpty()) {
+          whereClauseList.add(
+              repoAlias
+                  + "."
+                  + ModelDBConstants.WORKSPACE_ID
+                  + " = :"
+                  + ModelDBConstants.WORKSPACE_ID);
+          parametersMap.put(ModelDBConstants.WORKSPACE_ID, workspaceDTO.getWorkspaceId());
+          whereClauseList.add(
+              repoAlias
+                  + "."
+                  + ModelDBConstants.WORKSPACE_TYPE
+                  + " = :"
+                  + ModelDBConstants.WORKSPACE_TYPE);
+          parametersMap.put(
+              ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
+        }
+      }
+
+      if (!accessibleResourceIds.isEmpty()) {
+        whereClauseList.add(repoAlias + ".id IN (:repoIds) ");
+        parametersMap.put(
+            "repoIds",
+            accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+      } else if (roleService.IsImplemented()) {
+        CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
+        commitPaginationDTO.setCommitEntities(Collections.emptyList());
+        commitPaginationDTO.setTotalRecords(0L);
+        return commitPaginationDTO;
+      }
+
       if (!predicates.isEmpty()) {
         for (int index = 0; index < predicates.size(); index++) {
           KeyValueQuery predicate = predicates.get(index);
@@ -989,41 +1042,6 @@ public class CommitDAORdbImpl implements CommitDAO {
                   "Invalid predicate found : " + predicate, Code.INVALID_ARGUMENT);
           }
         }
-      }
-
-      if (workspaceDTO != null
-          && workspaceDTO.getWorkspaceId() != null
-          && !workspaceDTO.getWorkspaceId().isEmpty()) {
-        whereClauseList.add(
-            repoAlias
-                + "."
-                + ModelDBConstants.WORKSPACE_ID
-                + " = :"
-                + ModelDBConstants.WORKSPACE_ID);
-        parametersMap.put(ModelDBConstants.WORKSPACE_ID, workspaceDTO.getWorkspaceId());
-        whereClauseList.add(
-            repoAlias
-                + "."
-                + ModelDBConstants.WORKSPACE_TYPE
-                + " = :"
-                + ModelDBConstants.WORKSPACE_TYPE);
-        parametersMap.put(
-            ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
-      }
-
-      if (!accessibleResourceIds.isEmpty()) {
-        whereClauseList.add(repoAlias + ".id IN (:repoIds) ");
-        parametersMap.put(
-            "repoIds",
-            accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()));
-      } else if (roleService.IsImplemented()) {
-        String errorMessage =
-            "Access is denied. User is unauthorized for given resource IDs : "
-                + accessibleResourceIds;
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            com.google.rpc.Code.PERMISSION_DENIED_VALUE,
-            Any.pack(FindRepositoriesBlobs.getDefaultInstance()));
       }
 
       if (!commitHashList.isEmpty()) {
