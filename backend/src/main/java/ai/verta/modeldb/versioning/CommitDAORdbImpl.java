@@ -28,6 +28,7 @@ import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -855,8 +856,35 @@ public class CommitDAORdbImpl implements CommitDAO {
                     alias + ".commit_hash IN (" + subQueryBuilder.toString() + ") ");
               } else if (names[1].toLowerCase().equals("author")) {
                 StringBuilder authorBuilder = new StringBuilder(alias + "." + names[1]);
-                VersioningUtils.setQueryParameters(index, authorBuilder, predicate, parametersMap);
-                whereClauseList.add(authorBuilder.toString());
+                OperatorEnum.Operator operator = predicate.getOperator();
+                if ((operator.equals(OperatorEnum.Operator.CONTAIN)
+                    || operator.equals(OperatorEnum.Operator.NOT_CONTAIN))) {
+                  List<UserInfo> userInfoList =
+                      RdbmsUtils.getFuzzyUserInfos(authService, predicate);
+                  if (userInfoList != null && !userInfoList.isEmpty()) {
+                    List<String> vertaIds =
+                        userInfoList.stream()
+                            .map(authService::getVertaIdFromUserInfo)
+                            .collect(Collectors.toList());
+                    String key = "fuzzy_owners_" + index;
+                    if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+                      authorBuilder.append(" NOT IN (:").append(key).append(") ");
+                    } else {
+                      authorBuilder.append(" IN (:").append(key).append(") ");
+                    }
+                    parametersMap.put(key, vertaIds);
+                    whereClauseList.add(authorBuilder.toString());
+                  } else {
+                    CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
+                    commitPaginationDTO.setCommitEntities(Collections.emptyList());
+                    commitPaginationDTO.setTotalRecords(0L);
+                    return commitPaginationDTO;
+                  }
+                } else {
+                  VersioningUtils.setQueryParameters(
+                      index, authorBuilder, predicate, parametersMap);
+                  whereClauseList.add(authorBuilder.toString());
+                }
               } else {
                 throw new ModelDBException(
                     "Given predicate not supported yet : " + predicate, Code.UNIMPLEMENTED);
