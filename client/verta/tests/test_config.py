@@ -13,7 +13,7 @@ from . import utils
 @pytest.fixture
 def expected_config(in_tempdir):
     """
-    Creates config files and ``cd``s into a nested directory.
+    Creates config files in several nested directories, and ``cd``s into one of them.
 
     Yields
     ------
