@@ -10662,7 +10662,7 @@ public class ExperimentRunTest {
 
       GetExperimentRunsByDatasetVersionId getExperimentRunsByDatasetVersionId =
           GetExperimentRunsByDatasetVersionId.newBuilder()
-              .setDatsetVersionId(datasetVersion1.getId())
+              .setDatasetVersionId(datasetVersion1.getId())
               .build();
 
       GetExperimentRunsByDatasetVersionId.Response response =
