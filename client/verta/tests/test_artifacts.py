@@ -315,7 +315,6 @@ class TestModels:
             assert torch.allclose(weight, retrieved_net.state_dict()[key])
 
     def test_torch_state_dict(self, experiment_run, in_tempdir):
-        np = pytest.importorskip("numpy")
         torch = pytest.importorskip("torch")
         import torch.nn as nn
         import torch.nn.functional as F
