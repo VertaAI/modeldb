@@ -2126,8 +2126,11 @@ class ExperimentRun(_ModelDBEntity):
         """
         # TODO: add to Client config
         env_part_size = os.environ.get('VERTA_ARTIFACT_PART_SIZE', "")
-        if env_part_size.isnumeric():
+        try:
             part_size = int(float(env_part_size))
+        except ValueError:  # not an int
+            pass
+        else:
             print("set artifact part size {} from environment".format(part_size))
 
         artifact_stream.seek(0)
