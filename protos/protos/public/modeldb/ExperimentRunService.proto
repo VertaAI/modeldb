@@ -487,7 +487,7 @@ message SetParentExperimentRunId {
 }
 
 message GetExperimentRunsByDatasetVersionId {
-    string datset_version_id = 1;
+    string dataset_version_id = 1;
     int32 page_number = 2;
     int32 page_limit = 3;
     bool ascending = 4;
