@@ -145,8 +145,14 @@ class TestCommit:
         master.merge(branch)
         commit_ids.append(master.id)
 
-        for commit in master.log():
-            assert commit.id == commit_ids.pop()
+        for log_commit, expected_id in zip(master.log(), reversed(commit_ids)):
+            assert log_commit.id == expected_id
+
+        # use parent of updated-but-unsaved commit
+        master.update("c", verta.environment.Python(["c==3"]))
+        assert master.id is None  # unsaved
+        for log_commit, expected_id in zip(master.log(), reversed(commit_ids)):
+            assert log_commit.id == expected_id
 
     def test_merge_conflict(self, repository):
         branch_a = repository.get_commit(branch="master").new_branch("a")
