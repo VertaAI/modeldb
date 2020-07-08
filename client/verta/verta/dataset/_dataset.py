@@ -60,7 +60,7 @@ class _Dataset(blob.Blob):
 
         self_keys = set(self._components_map.keys())
         other_keys = set(other._components_map.keys())
-        intersection = self_keys & other_keys
+        intersection = list(self_keys & other_keys)
         if intersection:
             raise ValueError("dataset already contains paths: {}".format(intersection))
 
