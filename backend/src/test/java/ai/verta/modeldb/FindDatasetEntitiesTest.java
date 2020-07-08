@@ -21,9 +21,13 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
+import ai.verta.uac.GetUser;
+import ai.verta.uac.UACServiceGrpc;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -55,9 +59,11 @@ public class FindDatasetEntitiesTest {
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder channelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
+  private static AuthClientInterceptor authClientInterceptor;
   private static App app;
 
   // all service stubs
+  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
   private static DatasetServiceBlockingStub datasetServiceStub;
   private static DatasetVersionServiceBlockingStub datasetVersionServiceStub;
   private static VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub;
@@ -108,12 +114,20 @@ public class FindDatasetEntitiesTest {
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(testPropMap);
+      authClientInterceptor = new AuthClientInterceptor(testPropMap);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
     }
 
     serverBuilder.build().start();
     ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      ManagedChannel authServiceChannel =
+          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+              .usePlaintext()
+              .intercept(authClientInterceptor.getClient1AuthInterceptor())
+              .build();
+      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
+    }
     deleteEntitiesCron =
         new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
 
@@ -1773,5 +1787,118 @@ public class FindDatasetEntitiesTest {
     Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("FindDatasets test stop................................");
+  }
+
+  @Test
+  public void findDatasetVersionsByFuzzyOwnerTest() {
+    LOGGER.info(
+        "FindDatasetVersions by owner fuzzy search test start................................");
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      assertTrue(true);
+      return;
+    }
+    GetUser getUserRequest =
+        GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+    // Get the user info by vertaId form the AuthService
+    UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
+    String testUser1UserName = testUser1.getVertaInfo().getUsername();
+
+    // get datasetVersion with value of attributes.attribute_1 <= 0.6543210
+    Value stringValue =
+        Value.newBuilder().setStringValue(testUser1UserName.substring(0, 2)).build();
+    KeyValueQuery keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("commit.author")
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.CONTAIN)
+            .build();
+
+    FindDatasetVersions findDatasetVersions =
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    FindDatasetVersions.Response response =
+        datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsList());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        4,
+        response.getDatasetVersionsList().size());
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        4,
+        response.getTotalRecords());
+
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("commit.author")
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.NOT_CONTAIN)
+            .build();
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    assertEquals(
+        "Total records count not matched with expected records count",
+        0,
+        response.getTotalRecords());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        0,
+        response.getDatasetVersionsCount());
+
+    stringValue = Value.newBuilder().setStringValue("asdasdasd").build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("commit.author")
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.CONTAIN)
+            .build();
+
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsList());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        0,
+        response.getDatasetVersionsList().size());
+
+    stringValue = Value.newBuilder().setStringValue(dataset1.getOwner()).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("commit.author")
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.EQ)
+            .build();
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    assertEquals(
+        "Total records count not matched with expected records count",
+        4,
+        response.getTotalRecords());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        4,
+        response.getDatasetVersionsCount());
+
+    LOGGER.info(
+        "FindDatasetVersions by owner fuzzy search test stop ................................");
   }
 }

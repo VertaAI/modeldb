@@ -1834,9 +1834,7 @@ public class RdbmsUtils {
       KeyValueQuery requestedPredicate) {
     if (requestedPredicate.getValue().getKindCase().equals(Value.KindCase.STRING_VALUE)) {
       Operator operator = requestedPredicate.getOperator();
-      UserInfoPaginationDTO userInfoPaginationDTO =
-          authService.getFuzzyUserInfoList(requestedPredicate.getValue().getStringValue());
-      List<UserInfo> userInfoList = userInfoPaginationDTO.getUserInfoList();
+      List<UserInfo> userInfoList = getFuzzyUserInfos(authService, requestedPredicate);
       if (userInfoList != null && !userInfoList.isEmpty()) {
         Expression<String> exp = entityRootPath.get(requestedPredicate.getKey());
         List<String> vertaIds =
@@ -1858,6 +1856,13 @@ public class RdbmsUtils {
       throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
     }
     return null;
+  }
+
+  public static List<UserInfo> getFuzzyUserInfos(
+      AuthService authService, KeyValueQuery requestedPredicate) {
+    UserInfoPaginationDTO userInfoPaginationDTO =
+        authService.getFuzzyUserInfoList(requestedPredicate.getValue().getStringValue());
+    return userInfoPaginationDTO.getUserInfoList();
   }
 
   private static Predicate getVersionedInputHyperparameterPredicate(
