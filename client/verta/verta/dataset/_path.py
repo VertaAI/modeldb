@@ -46,6 +46,14 @@ class Path(_dataset._Dataset):
             "../datasets",
         ])
 
+    .. describe:: dataset += other
+
+        Updates the dataset, adding paths from ``other``.
+
+    .. describe:: dataset + other + ...
+
+        Returns a new dataset with paths from the dataset and all others.
+
     """
     def __init__(self, paths, base_path=None, enable_mdb_versioning=False):
         if isinstance(paths, six.string_types):

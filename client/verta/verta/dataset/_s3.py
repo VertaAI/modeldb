@@ -49,6 +49,14 @@ class S3(_dataset._Dataset):
                         version_id="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
         ])
 
+    .. describe:: dataset += other
+
+        Updates the dataset, adding paths from ``other``.
+
+    .. describe:: dataset + other + ...
+
+        Returns a new dataset with paths from the dataset and all others.
+
     """
     _S3_PATH = "s3://{}/{}"
 
