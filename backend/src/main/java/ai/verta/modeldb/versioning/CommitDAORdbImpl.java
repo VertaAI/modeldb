@@ -900,7 +900,10 @@ public class CommitDAORdbImpl implements CommitDAO {
 
               Query attrQuery = session.createQuery(attrQueryBuilder.toString());
               attrQueryParametersMap.forEach(attrQuery::setParameter);
+              LOGGER.debug(
+                  "Find attributes in datasetVersion final query : {}", attrQuery.getQueryString());
               List<String> attrEntityHashes = attrQuery.list();
+              LOGGER.debug("Attributes in datasetVersion count: {}", attrEntityHashes.size());
               Set<String> attrCommitHashes = new HashSet<>();
               attrEntityHashes.forEach(
                   blobHash -> {
@@ -911,6 +914,11 @@ public class CommitDAORdbImpl implements CommitDAO {
               if (!attrCommitHashes.isEmpty()) {
                 whereClauseList.add(alias + ".commit_hash IN (:attr_" + index + "_CommitHashes)");
                 parametersMap.put("attr_" + index + "_CommitHashes", attrCommitHashes);
+              } else {
+                CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
+                commitPaginationDTO.setCommitEntities(Collections.emptyList());
+                commitPaginationDTO.setTotalRecords(0L);
+                return commitPaginationDTO;
               }
               break;
             case ModelDBConstants.TAGS:
@@ -920,20 +928,45 @@ public class CommitDAORdbImpl implements CommitDAO {
                   new StringBuilder("SELECT lb.id.entity_hash FROM ")
                       .append(LabelsMappingEntity.class.getSimpleName())
                       .append(" lb WHERE ")
-                      .append(" lb.id.entity_type = :entityType")
-                      .append(" AND lb.id.label ");
+                      .append(" lb.id.entity_type = :entityType");
+
               Map<String, Object> innerQueryParametersMap = new HashMap<>();
-              VersioningUtils.setValueWithOperatorInQuery(
-                  index,
-                  subQueryBuilder,
-                  predicate.getOperator(),
-                  predicate.getValue().getStringValue(),
-                  innerQueryParametersMap);
+              if (predicate.getOperator().equals(OperatorEnum.Operator.NE)
+                  || predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+                subQueryBuilder.append(" AND lb.id.entity_hash NOT IN (");
+                subQueryBuilder
+                    .append(" SELECT lm.id.entity_hash FROM ")
+                    .append(LabelsMappingEntity.class.getSimpleName());
+                subQueryBuilder.append(" lm WHERE lm.id.entity_type = :entityType");
+                subQueryBuilder.append(" AND lower(lm.id.label) ");
+                VersioningUtils.setValueWithOperatorInQuery(
+                    index,
+                    subQueryBuilder,
+                    predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+                        ? OperatorEnum.Operator.CONTAIN
+                        : OperatorEnum.Operator.EQ,
+                    predicate.getValue().getStringValue().toLowerCase(),
+                    innerQueryParametersMap);
+                subQueryBuilder.append(") ");
+              } else {
+                subQueryBuilder.append(" AND lb.id.label ");
+                VersioningUtils.setValueWithOperatorInQuery(
+                    index,
+                    subQueryBuilder,
+                    predicate.getOperator(),
+                    predicate.getValue().getStringValue(),
+                    innerQueryParametersMap);
+              }
+              subQueryBuilder.append(" GROUP BY lb.id.entity_hash");
               Query labelQuery = session.createQuery(subQueryBuilder.toString());
               labelQuery.setParameter(
                   "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_VALUE);
               innerQueryParametersMap.forEach(labelQuery::setParameter);
+              LOGGER.debug(
+                  "Find tags OR blob in datasetVersion final query : {}",
+                  labelQuery.getQueryString());
               List<String> blobHashes = labelQuery.list();
+              LOGGER.debug("tags OR blob in datasetVersion count : {}", blobHashes.size());
               Set<String> commitHashes = new HashSet<>();
               blobHashes.forEach(
                   blobHash -> {
@@ -944,6 +977,11 @@ public class CommitDAORdbImpl implements CommitDAO {
               if (!commitHashes.isEmpty()) {
                 whereClauseList.add(alias + ".commit_hash IN (:label_" + index + "_CommitHashes)");
                 parametersMap.put("label_" + index + "_CommitHashes", commitHashes);
+              } else {
+                CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
+                commitPaginationDTO.setCommitEntities(Collections.emptyList());
+                commitPaginationDTO.setTotalRecords(0L);
+                return commitPaginationDTO;
               }
               break;
             default:
@@ -1034,7 +1072,6 @@ public class CommitDAORdbImpl implements CommitDAO {
         countQueryBuilder.append(" WHERE ").append(whereClause);
       }
 
-      LOGGER.debug("Find Repository blob final query : {}", finalQueryBuilder.toString());
       Query query = session.createQuery(finalQueryBuilder.toString());
       LOGGER.debug("Find Repository blob final query : {}", query.getQueryString());
       Query countQuery = session.createQuery(countQueryBuilder.toString());

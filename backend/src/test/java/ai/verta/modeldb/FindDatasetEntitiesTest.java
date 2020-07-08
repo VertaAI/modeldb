@@ -1140,6 +1140,32 @@ public class FindDatasetEntitiesTest {
         3,
         response.getTotalRecords());
 
+    numValue = Value.newBuilder().setStringValue("0.6543210").build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("attributes.attribute_1")
+            .setValue(numValue)
+            .setOperator(OperatorEnum.Operator.NE)
+            .build();
+
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsList());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        3,
+        response.getDatasetVersionsList().size());
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        3,
+        response.getTotalRecords());
+
     LOGGER.info("FindDatasetVersions by attribute test stop................................");
   }
 
@@ -1428,6 +1454,84 @@ public class FindDatasetEntitiesTest {
     assertEquals(
         "Total records count not matched with expected records count",
         1,
+        response.getTotalRecords());
+
+    stringValue1 = Value.newBuilder().setStringValue("A11111").build();
+    keyValueQueryTag1 =
+        KeyValueQuery.newBuilder()
+            .setKey("tags")
+            .setValue(stringValue1)
+            .setOperator(OperatorEnum.Operator.EQ)
+            .build();
+
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addAllDatasetVersionIds(datasetVersionMap.keySet())
+            .addPredicates(keyValueQueryTag1)
+            .build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        0,
+        response.getDatasetVersionsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        0,
+        response.getTotalRecords());
+
+    stringValue1 = Value.newBuilder().setStringValue("A2").build();
+    keyValueQueryTag1 =
+        KeyValueQuery.newBuilder()
+            .setKey("tags")
+            .setValue(stringValue1)
+            .setOperator(OperatorEnum.Operator.NE)
+            .build();
+
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addAllDatasetVersionIds(datasetVersionMap.keySet())
+            .addPredicates(keyValueQueryTag1)
+            .build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        3,
+        response.getDatasetVersionsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        3,
+        response.getTotalRecords());
+
+    stringValue1 = Value.newBuilder().setStringValue("A2").build();
+    keyValueQueryTag1 =
+        KeyValueQuery.newBuilder()
+            .setKey("tags")
+            .setValue(stringValue1)
+            .setOperator(OperatorEnum.Operator.NOT_CONTAIN)
+            .build();
+
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addAllDatasetVersionIds(datasetVersionMap.keySet())
+            .addPredicates(keyValueQueryTag1)
+            .build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        3,
+        response.getDatasetVersionsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        3,
         response.getTotalRecords());
 
     LOGGER.info("FindDatasetVersions by tags test stop................................");
