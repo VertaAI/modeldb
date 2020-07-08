@@ -223,15 +223,6 @@ def output_path():
 
 
 @pytest.fixture
-def tempdir():
-    dirpath = tempfile.mkdtemp()
-
-    yield dirpath
-
-    shutil.rmtree(dirpath)
-
-
-@pytest.fixture
 def dir_and_files(strs, tmp_path):
     """
     Creates nested directory of empty files.

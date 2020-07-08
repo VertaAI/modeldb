@@ -11,7 +11,7 @@ from . import utils
 
 
 @pytest.fixture
-def expected_config(tempdir):
+def expected_config(in_tempdir):
     """
     Creates config files and ``cd``s into a nested directory.
 
@@ -33,18 +33,22 @@ def expected_config(tempdir):
     ]
     config_iter = iter(config_items)
 
-    # home verta dir
-    if not os.path.isdir(_config_utils.HOME_VERTA_DIR):
-        # TODO: delete this dir in teardown, avoiding race conditions w/ potential parallel tests
-        os.mkdir(_config_utils.HOME_VERTA_DIR)
+    # backup existing home config
     home_config_filepath = os.path.join(_config_utils.HOME_VERTA_DIR, config_filename)
-    with open(home_config_filepath, 'w') as f:
-        key, value = next(config_iter)
-        yaml.safe_dump({key: value}, f)
+    backup_dir = tempfile.mkdtemp(dir=".")
+    if not os.path.isdir(_config_utils.HOME_VERTA_DIR):
+        os.mkdir(_config_utils.HOME_VERTA_DIR)
+    else:
+        if os.path.exists(home_config_filepath):
+            os.rename(home_config_filepath, os.path.join(backup_dir, config_filename))
+    try:
+        # create home config
+        with open(home_config_filepath, 'w') as f:
+            key, value = next(config_iter)
+            yaml.safe_dump({key: value}, f)
 
-    try:  # delete home config during teardown
-        # 5 parent dirs
-        curr_dir = tempdir
+        # create config in 5 parent dirs
+        curr_dir = "."
         for i in reversed(range(5)):
             curr_dir = os.path.join(curr_dir, "parent{}".format(i+1))
             os.mkdir(curr_dir)
@@ -52,7 +56,7 @@ def expected_config(tempdir):
                 key, value = next(config_iter)
                 yaml.safe_dump({key: value}, f)
 
-        # cwd-to-be
+        # create config in the dir we're going to cd to
         curr_dir = os.path.join(curr_dir, "current")
         os.mkdir(curr_dir)
         with open(os.path.join(curr_dir, config_filename), 'w') as f:
@@ -86,7 +90,12 @@ def expected_config(tempdir):
         with utils.chdir(curr_dir):
             yield dict(config_items)
     finally:
+        # delete created home config
         os.remove(home_config_filepath)
+
+        # restore home config
+        if os.path.exists(os.path.join(backup_dir, config_filename)):
+            os.rename(os.path.join(backup_dir, config_filename), home_config_filepath)
 
 
 class TestRead:
