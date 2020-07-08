@@ -176,4 +176,4 @@ class Path(_dataset._Dataset):
             enable_mdb_versioning=self._mdb_versioned,
         )
 
-        self._add_dataset_blob(other)
+        self += other
