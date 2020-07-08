@@ -57,7 +57,7 @@ class Commit(
       }
     )
 
-  /** Adds blob to this commit at path
+  /** Adds blob to this commit at path.
    *  If path is already in this Commit, it will be updated to the new blob
    *  @param path Location to add blob to
    *  @param blob Instance of Blob subclass.
