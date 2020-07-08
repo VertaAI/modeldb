@@ -2124,6 +2124,12 @@ class ExperimentRun(_ModelDBEntity):
             If using multipart upload, number of bytes to upload per part.
 
         """
+        # TODO: add to Client config
+        env_part_size = os.environ.get('VERTA_ARTIFACT_PART_SIZE', "")
+        if env_part_size.isnumeric():
+            part_size = int(float(env_part_size))
+            print("set artifact part size {} from environment".format(part_size))
+
         artifact_stream.seek(0)
         if self._conf.debug:
             print("[DEBUG] uploading {} bytes ({})".format(_artifact_utils.get_stream_length(artifact_stream), key))
@@ -3439,6 +3445,22 @@ class ExperimentRun(_ModelDBEntity):
                 _request_utils.download(response, download_to_path, overwrite_ok=True)
 
         return download_to_path
+
+    def get_artifact_parts(self, key):
+        endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+        data = {'id': self.id, 'key': key}
+        response = _utils.make_request("GET", endpoint, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        committed_parts = _utils.body_to_json(response).get('artifact_parts', [])
+        committed_parts = list(sorted(
+            committed_parts,
+            key=lambda part: int(part['part_number']),
+        ))
+        return committed_parts
 
     def log_observation(self, key, value, timestamp=None, epoch_num=None):
         """
