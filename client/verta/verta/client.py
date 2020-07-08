@@ -2237,7 +2237,6 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-    # TODO: refactor second half of this fn into separate _download_artifact()
     def _get_artifact(self, key):
         """
         Gets the artifact with name `key` from this Experiment Run.
