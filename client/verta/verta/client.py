@@ -26,6 +26,11 @@ try:
 except ImportError:  # Pillow not installed
     PIL = None
 
+try:
+    import torch
+except ImportError:  # PyTorch not installed
+    torch = None
+
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
 from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService
@@ -3366,22 +3371,35 @@ class ExperimentRun(_ModelDBEntity):
         """
         artifact, path_only = self._get_artifact(key)
         if path_only:
-            # might be clientside storage
-            # NOTE: can cause problem if accidentally picks up unrelated file w/ same name
-            if os.path.exists(artifact):
-                try:
-                    with open(artifact, 'rb') as f:
-                        return pickle.load(f)
-                except:
-                    # return bytestream b/c that's what this fn does with MDB artifacts
-                    return open(artifact, 'rb')
-
-            return artifact
+            if not os.path.exists(artifact):
+                # path-only artifact; `artifact` is its path
+                return artifact
+            else:
+                # clientside storage; `artifact` is its path
+                # NOTE: can cause problem if accidentally picks up unrelated file w/ same name
+                artifact_stream = open(artifact, 'rb')
         else:
+            # uploaded artifact; `artifact` is its bytes
+            artifact_stream = six.BytesIO(artifact)
+
+        if torch is not None:
             try:
-                return pickle.loads(artifact)
-            except:
-                return six.BytesIO(artifact)
+                obj = torch.load(artifact_stream)
+            except:  # not something torch can deserialize
+                artifact_stream.seek(0)
+            else:
+                artifact_stream.close()
+                return obj
+
+        try:
+            obj = pickle.load(artifact_stream)
+        except:  # not something pickle can deserialize
+            artifact_stream.seek(0)
+        else:
+            artifact_stream.close()
+            return obj
+
+        return artifact_stream
 
     def download_artifact(self, key, download_to_path):
         """
