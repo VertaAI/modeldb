@@ -9,6 +9,8 @@ import shutil
 import tempfile
 import zipfile
 
+import requests
+
 from verta._internal_utils import _artifact_utils
 from verta._internal_utils import _utils
 
@@ -90,6 +92,44 @@ class TestArtifacts:
 
         with zipfile.ZipFile(experiment_run.get_artifact(key), 'r') as zipf:
             assert filepaths == set(zipf.namelist())
+
+    @pytest.mark.not_oss
+    def test_upload_multipart(self, experiment_run, in_tempdir):
+        key = "large"
+
+        # create artifact
+        with tempfile.NamedTemporaryFile(suffix='.bin', dir=".", delete=False) as tempf:
+            # write 6 MB file in 1 MB chunks
+            for _ in range(6):
+                tempf.write(os.urandom(1*(10**6)))
+
+        # log artifact
+        # TODO: set part size in config file when supported
+        PART_SIZE = int(5.4*(10**6))  # 5.4 MB; S3 parts must be > 5 MB
+        os.environ['VERTA_ARTIFACT_PART_SIZE'] = str(PART_SIZE)
+        try:
+            experiment_run.log_artifact(key, tempf.name)
+        finally:
+            del os.environ['VERTA_ARTIFACT_PART_SIZE']
+
+        # get artifact parts
+        committed_parts = experiment_run.get_artifact_parts(key)
+        assert committed_parts
+
+        # part checksums match actual file contents
+        with open(tempf.name, 'rb') as f:
+            file_parts = iter(lambda: f.read(PART_SIZE), b'')
+            for file_part, committed_part in zip(file_parts, committed_parts):
+                part_hash = hashlib.md5(file_part).hexdigest()
+                assert part_hash == committed_part['etag'].strip('"')
+
+        # retrieved artifact matches original file
+        filepath = experiment_run.download_artifact(key, download_to_path=key)
+        with open(filepath, 'rb') as f:
+            file_parts = iter(lambda: f.read(PART_SIZE), b'')
+            for file_part, committed_part in zip(file_parts, committed_parts):
+                part_hash = hashlib.md5(file_part).hexdigest()
+                assert part_hash == committed_part['etag'].strip('"')
 
     def test_empty(self, experiment_run, strs):
         """uploading empty data, e.g. an empty file, raises an error"""
