@@ -117,7 +117,7 @@ class TestRead:
         #     don't pick the key that's already in cwd config
         with open(cwd_config_filepath, 'r') as f:
             nearest_config = yaml.safe_load(f)
-            config_keys -= nearest_config.keys()
+            config_keys -= set(nearest_config.keys())
         key = config_keys.pop()
 
         # arbitrary new value
