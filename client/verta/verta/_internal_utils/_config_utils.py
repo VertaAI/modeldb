@@ -23,12 +23,13 @@ HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
 
 
 @contextlib.contextmanager
-def read_config():
+def read_merged_config():
     """
     Yields the merged contents of all accessible config files.
 
     Even though this context does nothing on exit, it's still useful for scopes where
-    :func:`write_config` is also used, to visually clarify which contents are being manipulated.
+    :func:`write_local_config` is also used, to visually clarify which contents are being
+    manipulated.
 
     Yields
     ------
@@ -44,7 +45,7 @@ def read_config():
 
 
 @contextlib.contextmanager
-def write_config():
+def write_local_config():
     """
     Updates the nearest config file.
 

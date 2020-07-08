@@ -257,7 +257,7 @@ class Client(object):
         return _OSS_DEFAULT_WORKSPACE
 
     def _load_config(self):
-        with _config_utils.read_config() as config:
+        with _config_utils.read_merged_config() as config:
             self._config = config
 
     def _set_from_config_if_none(self, var, resource_name):

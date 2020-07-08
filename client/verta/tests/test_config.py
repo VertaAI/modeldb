@@ -106,7 +106,7 @@ class TestRead:
         assert _config_utils.find_config_files() == expected_config_filepaths
 
     def test_merge(self, expected_config):
-        with _config_utils.read_config() as config:
+        with _config_utils.read_merged_config() as config:
             assert config == expected_config
 
     def test_merge_and_overwrite(self, expected_config):
@@ -130,7 +130,7 @@ class TestRead:
 
         # merged config has new value, not old value
         expected_config[key] = value
-        with _config_utils.read_config() as config:
+        with _config_utils.read_merged_config() as config:
             assert config == expected_config
 
 
@@ -154,7 +154,7 @@ class TestWrite:
             nearest_config = yaml.safe_load(f)
             assert new_key not in nearest_config
 
-        with _config_utils.write_config() as config:
+        with _config_utils.write_local_config() as config:
             config[new_key] = new_value
 
         # config in cwd updated with new item
