@@ -2501,7 +2501,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request)
       throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      CommitEntity commitEntity = session.get(CommitEntity.class, request.getDatsetVersionId());
+      CommitEntity commitEntity = session.get(CommitEntity.class, request.getDatasetVersionId());
       if (commitEntity == null) {
         throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
       }

@@ -2485,7 +2485,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      if (request.getDatsetVersionId().isEmpty()) {
+      if (request.getDatasetVersionId().isEmpty()) {
         throw new ModelDBException("DatasetVersion Id should not be empty", Code.INVALID_ARGUMENT);
       }
 
