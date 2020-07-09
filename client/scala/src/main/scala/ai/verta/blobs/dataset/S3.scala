@@ -15,7 +15,7 @@ import scala.annotation.tailrec
 
 import java.io.{File, FileOutputStream}
 
-/** Captures metadata about S3 objects
+/** Captures metadata about S3 objects.
  *  Please set up AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION environment variables before use.
  *  To create a new instance, use the constructor taking a list of S3 Locations or a single location
  *  {{{
