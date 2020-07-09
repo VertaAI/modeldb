@@ -171,6 +171,8 @@ public class DatasetToRepositoryMigration {
       migrateDatasetCollaborators(datasetId, repository);
     } catch (Exception e) {
       if (e instanceof StatusRuntimeException) {
+        LOGGER.error("Getting error while migrating {} dataset", datasetId);
+        LOGGER.error(e.getMessage());
         Status status = Status.fromThrowable(e);
         if (status.getCode().equals(Status.Code.ALREADY_EXISTS)) {
           repository =
@@ -182,7 +184,6 @@ public class DatasetToRepositoryMigration {
         throw e;
       }
     }
-    LOGGER.debug("Migration done for dataset to repository - Repo ID : {}", repository.getId());
     migrateDatasetVersionToCommitsBlobsMigration(session, datasetId, repository.getId());
   }
 
@@ -274,6 +275,8 @@ public class DatasetToRepositoryMigration {
               if (newDatasetVersion.hasPathDatasetVersionInfo()) {
                 String commitHash =
                     createCommitAndBlobsFromDatsetVersion(session1, newDatasetVersion, repoId);
+                LOGGER.debug(
+                    "{} datasetversion mapped to {} commit", newDatasetVersion.getId(), commitHash);
 
                 String updateDatasetsLinkedArtifactId =
                     "UPDATE ArtifactEntity ar SET ar.linked_artifact_id = :commitHash WHERE ar.linked_artifact_id = :datasetVersionId";
