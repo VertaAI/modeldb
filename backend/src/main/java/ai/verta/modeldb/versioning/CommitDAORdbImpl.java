@@ -824,9 +824,11 @@ public class CommitDAORdbImpl implements CommitDAO {
               request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
 
       String workspaceName = request.getWorkspaceName();
+      LOGGER.debug("Workspace {}", workspaceName);
       if (workspaceName != null
           && !workspaceName.isEmpty()
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        LOGGER.debug("Workspace match with username of the login user");
         accessibleResourceIds =
             roleService.getSelfDirectlyAllowedResources(
                 ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
@@ -1044,10 +1046,10 @@ public class CommitDAORdbImpl implements CommitDAO {
                   "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_VALUE);
               innerQueryParametersMap.forEach(labelQuery::setParameter);
               LOGGER.debug(
-                  "Find tags OR blob in datasetVersion final query : {}",
+                  "Find tags OR blob final query : {}",
                   labelQuery.getQueryString());
               List<String> blobHashes = labelQuery.list();
-              LOGGER.debug("tags OR blob in datasetVersion count : {}", blobHashes.size());
+              LOGGER.debug("tags OR blob count : {}", blobHashes.size());
               Set<String> commitHashes = new HashSet<>();
               blobHashes.forEach(
                   blobHash -> {
@@ -1055,6 +1057,7 @@ public class CommitDAORdbImpl implements CommitDAO {
                         VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
                     commitHashes.add(compositeIdArr[1]);
                   });
+              LOGGER.debug("tags OR blob in commit count : {}, commitHashes : {}", commitHashes.size(), commitHashes);
               if (!commitHashes.isEmpty()) {
                 whereClauseList.add(alias + ".commit_hash IN (:label_" + index + "_CommitHashes)");
                 parametersMap.put("label_" + index + "_CommitHashes", commitHashes);
@@ -1119,7 +1122,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
 
       Query query = session.createQuery(finalQueryBuilder.toString());
-      LOGGER.debug("Find Repository blob final query : {}", query.getQueryString());
+      LOGGER.debug("Find commits final query : {}", query.getQueryString());
       Query countQuery = session.createQuery(countQueryBuilder.toString());
       if (!parametersMap.isEmpty()) {
         parametersMap.forEach(
@@ -1135,7 +1138,6 @@ public class CommitDAORdbImpl implements CommitDAO {
             });
       }
 
-      LOGGER.debug("Final find commit root_sha query : {}", query.getQueryString());
       if (request.getPageNumber() != 0 && request.getPageLimit() != 0) {
         // Calculate number of documents to skip
         int skips = request.getPageLimit() * (request.getPageNumber() - 1);
@@ -1162,10 +1164,13 @@ public class CommitDAORdbImpl implements CommitDAO {
       } else {
         commitEntities = query.list();
       }
+      LOGGER.debug("Final find commit count: {}", commitEntities.size());
 
+      Long totalCount = (Long) countQuery.uniqueResult();
+      LOGGER.debug("Find commit totalCount: {}", totalCount);
       CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
       commitPaginationDTO.setCommitEntities(commitEntities);
-      commitPaginationDTO.setTotalRecords((Long) countQuery.uniqueResult());
+      commitPaginationDTO.setTotalRecords(totalCount);
       return commitPaginationDTO;
     } catch (InvalidProtocolBufferException e) {
       throw new ModelDBException(e);
