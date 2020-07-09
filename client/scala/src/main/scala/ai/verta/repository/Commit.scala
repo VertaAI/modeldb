@@ -542,7 +542,6 @@ class Commit(
     file: File,
     partSize: Int = 1024 * 1024 * 64 // 64 MB
   )(implicit ec: ExecutionContext): Try[Unit] = {
-    /** TODO: implement multi-part upload */
     getURLForArtifact(blobPath, datasetComponentPath, "PUT", 1).flatMap(resp => {
       if (resp.multipart_upload_ok.isDefined && resp.multipart_upload_ok.get) {
         var buffer = new Array[Byte](partSize)
