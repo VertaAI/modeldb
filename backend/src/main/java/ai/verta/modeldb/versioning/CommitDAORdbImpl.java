@@ -1012,16 +1012,11 @@ public class CommitDAORdbImpl implements CommitDAO {
                       .append(LabelsMappingEntity.class.getSimpleName())
                       .append(" lb WHERE ")
                       .append(" lb.id.entity_type = :entityType");
+              subQueryBuilder.append(" AND lower(lb.id.label) ");
 
               Map<String, Object> innerQueryParametersMap = new HashMap<>();
               if (predicate.getOperator().equals(OperatorEnum.Operator.NE)
                   || predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-                subQueryBuilder.append(" AND lb.id.entity_hash NOT IN (");
-                subQueryBuilder
-                    .append(" SELECT lm.id.entity_hash FROM ")
-                    .append(LabelsMappingEntity.class.getSimpleName());
-                subQueryBuilder.append(" lm WHERE lm.id.entity_type = :entityType");
-                subQueryBuilder.append(" AND lower(lm.id.label) ");
                 VersioningUtils.setValueWithOperatorInQuery(
                     index,
                     subQueryBuilder,
@@ -1030,14 +1025,12 @@ public class CommitDAORdbImpl implements CommitDAO {
                         : OperatorEnum.Operator.EQ,
                     predicate.getValue().getStringValue().toLowerCase(),
                     innerQueryParametersMap);
-                subQueryBuilder.append(") ");
               } else {
-                subQueryBuilder.append(" AND lb.id.label ");
                 VersioningUtils.setValueWithOperatorInQuery(
                     index,
                     subQueryBuilder,
                     predicate.getOperator(),
-                    predicate.getValue().getStringValue(),
+                    predicate.getValue().getStringValue().toLowerCase(),
                     innerQueryParametersMap);
               }
               subQueryBuilder.append(" GROUP BY lb.id.entity_hash");
@@ -1045,9 +1038,7 @@ public class CommitDAORdbImpl implements CommitDAO {
               labelQuery.setParameter(
                   "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_VALUE);
               innerQueryParametersMap.forEach(labelQuery::setParameter);
-              LOGGER.debug(
-                  "Find tags OR blob final query : {}",
-                  labelQuery.getQueryString());
+              LOGGER.debug("Find tags OR blob final query : {}", labelQuery.getQueryString());
               List<String> blobHashes = labelQuery.list();
               LOGGER.debug("tags OR blob count : {}", blobHashes.size());
               Set<String> commitHashes = new HashSet<>();
@@ -1057,9 +1048,19 @@ public class CommitDAORdbImpl implements CommitDAO {
                         VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
                     commitHashes.add(compositeIdArr[1]);
                   });
-              LOGGER.debug("tags OR blob in commit count : {}, commitHashes : {}", commitHashes.size(), commitHashes);
+              LOGGER.debug(
+                  "tags OR blob in commit count : {}, commitHashes : {}",
+                  commitHashes.size(),
+                  commitHashes);
               if (!commitHashes.isEmpty()) {
-                whereClauseList.add(alias + ".commit_hash IN (:label_" + index + "_CommitHashes)");
+                if (predicate.getOperator().equals(OperatorEnum.Operator.NE)
+                    || predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+                  whereClauseList.add(
+                      alias + ".commit_hash NOT IN (:label_" + index + "_CommitHashes)");
+                } else {
+                  whereClauseList.add(
+                      alias + ".commit_hash IN (:label_" + index + "_CommitHashes)");
+                }
                 parametersMap.put("label_" + index + "_CommitHashes", commitHashes);
               } else {
                 CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
