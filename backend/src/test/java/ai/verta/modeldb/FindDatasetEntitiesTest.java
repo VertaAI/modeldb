@@ -232,9 +232,6 @@ public class FindDatasetEntitiesTest {
             .toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
-            .addTags("A1")
-            .addTags("A5")
-            .addTags("A6")
             .build();
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
     dataset3 = createDatasetResponse.getDataset();
@@ -821,7 +818,7 @@ public class FindDatasetEntitiesTest {
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
     // get datasetRun with value of tags == test_tag_456
-    Value stringValue2 = Value.newBuilder().setStringValue("A5").build();
+    Value stringValue2 = Value.newBuilder().setStringValue("A4").build();
     KeyValueQuery keyValueQueryTag2 =
         KeyValueQuery.newBuilder()
             .setKey("tags")
@@ -842,7 +839,7 @@ public class FindDatasetEntitiesTest {
         "Dataset count not match with expected dataset count", 1, response.getDatasetsCount());
     assertEquals(
         "Dataset not match with expected dataset",
-        dataset3.getId(),
+        dataset2.getId(),
         response.getDatasetsList().get(0).getId());
     assertEquals(
         "Total records count not matched with expected records count",
