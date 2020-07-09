@@ -129,7 +129,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       )).map(_ => {})
   }
 
-  /** Logs a metric to this Experiment Run
+  /** Logs a metric to this Experiment Run.
    *  If the metadatum of interest might recur, logObservation() should be used instead
    *  @param key Name of the metric
    *  @param value Value of the metric
