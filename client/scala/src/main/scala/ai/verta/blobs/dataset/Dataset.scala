@@ -5,7 +5,7 @@ import ai.verta.blobs._
 
 import java.security.{MessageDigest, DigestInputStream}
 import java.io.{File, FileInputStream}
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths, Files, StandardCopyOption}
 
 import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
@@ -24,17 +24,16 @@ trait Dataset extends Blob {
   private[verta] var blobPath: Option[String] = None // path to the blob in the commit
 
   /** Downloads componentPath from this dataset if ModelDB-managed versioning was enabled.
-   *  Currently, only support downloading to a specific path
-   *  @param componentPath Original path of the file or directory in this dataset to download
-   *  @param downloadToPath Path to download to
-   *  @return Whether the download attempts succeed.
+   *  @param componentPath Original path of the file or directory in this dataset to download.
+   *  If not provided, all files will be downloaded
+   *  @param downloadToPath Path to download to. If not provided, the file(s) will be downloaded into a new path in
+   *  the current directory. If provided and the path already exists, it will be overwritten
+   *  @return If succeeds, absolute path where file(s) were downloaded to. Matches downloadToPath if provided.
    */
   def download(
     componentPath: Option[String] = None,
-    downloadToPath: String
-  )(implicit ec: ExecutionContext): Try[Unit] = {
-    /** TODO: Make downloadToPath optional */
-
+    downloadToPath: Option[String] = None
+  )(implicit ec: ExecutionContext): Try[String] = {
     if (!enableMDBVersioning)
       Failure(new IllegalStateException("This blob did not allow for versioning"))
     else if (downloadFunction.isEmpty || blobPath.isEmpty)
@@ -44,14 +43,17 @@ trait Dataset extends Blob {
     else {
       val componentToLocalPath = determineComponentAndLocalPaths(componentPath, downloadToPath)
 
-      if (componentToLocalPath.isEmpty)
+      if (componentToLocalPath.componentToLocalPathMap.isEmpty)
         Failure(new NoSuchElementException("Components not found."))
-      else
-        Try {
-          componentToLocalPath
-            .map(pair => downloadComponent(pair._1, pair._2))
-            .map(_.get)
+      else {
+        val downloadAttempts =
+          componentToLocalPath.componentToLocalPathMap.map(pair => pair._2 -> downloadComponent(pair._1, pair._2))
+
+        Try(downloadAttempts.mapValues(_.get)) match {
+          case Success(downloadAttempts) => Success(componentToLocalPath.absoluteLocalPath)
+          case Failure(e) => Failure(e)
         }
+      }
     }
   }
 
@@ -75,30 +77,100 @@ trait Dataset extends Blob {
 
   /** Identify components to be downloaded, along with their local destination paths.
    *  @param componentPath (Optional) path to directory or file within blob.
-   *  @param downloadToPath Local path to download to
-   *  @return Map of component paths to local destination paths
+   *  @param downloadToPath (Optional) Local path to download to
+   *  @return Map of component paths to local destination paths,
+   *  along with absolute local path to the downloaded file(s)
    */
   private def determineComponentAndLocalPaths(
     componentPath: Option[String] = None,
-    downloadToPath: String
-  ): Map[String, String] = {
-    if (componentPath.isEmpty) {
-      // download entire blob
-      val downloadToPaths =
-        listPaths.map(comp => joinPaths(downloadToPath, removePrefixDir(comp, "s3:")))
+    downloadToPath: Option[String] = None
+  ): ComponentToLocalPath = {
+    val safeDownloadToPath = determineDownloadToPath(componentPath, downloadToPath)
 
-      listPaths.zip(downloadToPaths).toMap
-    }
-    else if (contents.contains(componentPath.get)) // download a component
-      Map(componentPath.get -> downloadToPath)
-    else {
-      // download a directory
-      val componentPaths = getComponentPathInside(componentPath.get)
-      val downloadToPaths =
-        componentPaths.map(comp => joinPaths(downloadToPath, removePrefixDir(comp, componentPath.get)))
+    val componentToLocalPath =
+      if (componentPath.isEmpty) {
+        // download entire blob
+        val downloadToPaths =
+          listPaths.map(comp => joinPaths(safeDownloadToPath, removePrefixDir(comp, "s3:")))
 
-      componentPaths.zip(downloadToPaths).toMap
+        listPaths.zip(downloadToPaths).toMap
+      }
+      else if (contents.contains(componentPath.get)) // download a component
+        Map(componentPath.get -> safeDownloadToPath)
+      else {
+        // download a directory
+        val componentPaths = getComponentPathInside(componentPath.get)
+        val downloadToPaths =
+          componentPaths.map(comp => joinPaths(safeDownloadToPath, removePrefixDir(comp, componentPath.get)))
+
+        componentPaths.zip(downloadToPaths).toMap
+      }
+
+    ComponentToLocalPath(componentToLocalPath, getAbsolutePath(safeDownloadToPath))
+  }
+
+  /** Determine a safe local path to download to.
+   *  If the user explicitly passes a downloadToPath, it will be used
+   *  Otherwise, it will be determined as follows:
+   *
+   *  1. If componentPath is defined and does not refer to current directory, use it
+   *
+   *  2. Else, use the default path, which is "mdb-data-download"
+   *
+   *  If the download-to-path has to be inferred, then it is incremented until collision is avoided
+   *  (i.e no such file/directory exists in that path)
+   */
+  private def determineDownloadToPath(
+    componentPath: Option[String] = None,
+    downloadToPath: Option[String] = None
+  ): String = downloadToPath.getOrElse({
+    val originalPath =
+      if (componentPath.isEmpty)
+        Dataset.DefaultDownloadDir
+      else {
+        val componentPathName = (new File(componentPath.get)).getName
+
+        if (Set(".", "..", "/", "s3:").contains(componentPathName))
+          Dataset.DefaultDownloadDir // rather than dump everything into current directory
+        else
+          componentPathName
+      }
+
+    avoidCollision(originalPath)
+  })
+
+  /** Increments the original path until collision is avoided
+   *  @param path original path
+   *  @return the first incremented path which does not exist in local file system
+   */
+  private def avoidCollision(path: String): String = {
+    val components = separateExtension(path)
+    val base = components(0)
+    val extension = components(1)
+
+    var file: Path = Paths.get(path)
+    var inc = 1
+
+    while (Files.exists(file)) {
+      file = Paths.get(f"${base} ${inc}${extension}")
+      inc += 1
     }
+
+    file.toString()
+  }
+
+  /** Separate the extension from the base of path
+   *  @param path path
+   *  @return an array, where first entry is base, and second entry is extension
+   */
+  private def separateExtension(path: String) = {
+    val components = new Array[String](2)
+    val delimiterIndex = path.lastIndexOf(".")
+
+    components(0) = if (delimiterIndex == -1) path else path.substring(0, delimiterIndex)
+    components(1) = if (delimiterIndex == -1) "" else path.substring(delimiterIndex)
+
+    components
   }
 
   /** Return the list of component paths inside a directory path
@@ -174,6 +246,10 @@ trait Dataset extends Blob {
   private def joinPaths(prefix: String, suffix: String): String =
     Paths.get(prefix, suffix).toString
 
+  /** Return the absolute path of path */
+  private def getAbsolutePath(path: String): String =
+    (new File(path)).getAbsolutePath()
+
   /** Returns the paths of all components in this dataset
    *  @return Paths of all components
    */
@@ -181,6 +257,9 @@ trait Dataset extends Blob {
 }
 
 object Dataset {
+  /** Default download directory */
+  val DefaultDownloadDir: String = "mdb-data-download"
+
   /** Helper to convert VersioningPathDatasetComponentBlob to FileMetadata
    */
    private[dataset] def toMetadata(
