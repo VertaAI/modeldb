@@ -243,7 +243,7 @@ class Commit(
   }
 
 
-  /** Creates a branch at this Commit and returns the checked-out branch
+  /** Creates a branch at this Commit and returns the checked-out branch.
    *  If the branch already exists, it will be moved to this commit.
    *  @param branch branch name
    *  @return if not saved, a failure; otherwise, this commit as the head of `branch`
