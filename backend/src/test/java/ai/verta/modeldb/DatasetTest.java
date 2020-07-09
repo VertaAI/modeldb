@@ -817,6 +817,19 @@ public class DatasetTest {
         dataset.getTimeUpdated(),
         response.getDataset().getTimeUpdated());
 
+    updateDescriptionRequest = UpdateDatasetDescription.newBuilder().setId(dataset.getId()).build();
+
+    response = datasetServiceStub.updateDatasetDescription(updateDescriptionRequest);
+    LOGGER.info("UpdateDatasetDescription Response : " + response.getDataset());
+    assertEquals(
+        "Dataset description not match with expected dataset description",
+        updateDescriptionRequest.getDescription(),
+        response.getDataset().getDescription());
+    assertNotEquals(
+        "Dataset date_updated field not update on database",
+        dataset.getTimeUpdated(),
+        response.getDataset().getTimeUpdated());
+
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
     LOGGER.info("Dataset deleted successfully");

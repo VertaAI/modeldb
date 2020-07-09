@@ -11,6 +11,7 @@ import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.ExecutionContext
 
+/** Base class for dataset versioning */
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
   val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
@@ -22,7 +23,7 @@ trait Dataset extends Blob {
   private[verta] var downloadFunction: Option[(String, String, File) => Try[Unit]] = None
   private[verta] var blobPath: Option[String] = None // path to the blob in the commit
 
-  /** Downloads componentPath from this dataset if ModelDB-managed versioning was enabled
+  /** Downloads componentPath from this dataset if ModelDB-managed versioning was enabled.
    *  @param componentPath Original path of the file or directory in this dataset to download.
    *  If not provided, all files will be downloaded
    *  @param downloadToPath Path to download to. If not provided, the file(s) will be downloaded into a new path in

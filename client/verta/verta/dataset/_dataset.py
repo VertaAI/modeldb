@@ -25,7 +25,7 @@ class _Dataset(blob.Blob):
     Base class for dataset versioning. Not for human consumption.
 
     """
-    def __init__(self, enable_mdb_versioning=False):
+    def __init__(self, paths=None, enable_mdb_versioning=False):
         super(_Dataset, self).__init__()
 
         self._components_map = dict()  # paths to Component objects
@@ -45,6 +45,25 @@ class _Dataset(blob.Blob):
             lines.extend(repr(component).splitlines())
 
         return "\n    ".join(lines)
+
+    def __add__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        self_keys = set(self._components_map.keys())
+        other_keys = set(other._components_map.keys())
+        intersection = list(self_keys & other_keys)
+        if intersection:
+            raise ValueError("datasets contain overlapping paths: {}".format(intersection))
+
+        if self._mdb_versioned != other._mdb_versioned:
+            raise ValueError("datasets must have same value for `enable_mdb_versioning`")
+
+        new = self.__class__(paths=[], enable_mdb_versioning=self._mdb_versioned)
+        new._components_map.update(self._components_map)
+        new._components_map.update(other._components_map)
+
+        return new
 
     @abc.abstractmethod
     def _prepare_components_to_upload(self):
