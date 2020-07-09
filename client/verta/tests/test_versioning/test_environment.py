@@ -95,7 +95,7 @@ class TestUtils:
 
 class TestPython:
     def test_py_ver(self):
-        env = verta.environment.Python()
+        env = verta.environment.Python(requirements=[])
 
         assert env._msg.python.version.major == sys.version_info.major
         assert env._msg.python.version.minor == sys.version_info.minor
@@ -103,19 +103,20 @@ class TestPython:
 
     def test_env_vars(self):
         env_vars = os.environ.keys()
-        env = verta.environment.Python(env_vars=env_vars)
+        env = verta.environment.Python(requirements=[], env_vars=env_vars)
 
         assert env._msg.environment_variables
 
     def test_commit(self, commit):
-        env = verta.environment.Python()
+        env = verta.environment.Python(requirements=[])
 
         commit.update('env', env)
         commit.save(message="banana")
         assert commit.get('env')
 
     def test_reqs_from_env(self):
-        env = verta.environment.Python()
+        reqs = verta.environment.Python.read_pip_environment()
+        env = verta.environment.Python(requirements=reqs)
         assert env._msg.python.requirements
 
     def test_reqs(self, requirements_file):
@@ -130,13 +131,13 @@ class TestPython:
 
     def test_constraints_from_file(self, requirements_file):
         reqs = verta.environment.Python.read_pip_file(requirements_file.name)
-        env = verta.environment.Python(constraints=reqs)
+        env = verta.environment.Python(requirements=[], constraints=reqs)
         assert env._msg.python.constraints
 
     def test_constraints_from_file_no_versions_error(self, requirements_file_without_versions):
         reqs = verta.environment.Python.read_pip_file(requirements_file_without_versions.name)
         with pytest.raises(ValueError):
-            verta.environment.Python(constraints=reqs)
+            verta.environment.Python(requirements=[], constraints=reqs)
 
     def test_inject_verta_cloudpickle(self):
         env = verta.environment.Python(requirements=[])
@@ -154,7 +155,7 @@ class TestPython:
         assert requirements == {"verta", "cloudpickle"}
 
     def test_no_autocapture(self):
-        env_ver = verta.environment.Python(_autocapture=False)
+        env_ver = verta.environment.Python(requirements=[], _autocapture=False)
 
         # protobuf message is empty
         assert not json_format.MessageToDict(
