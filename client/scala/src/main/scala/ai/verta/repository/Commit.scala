@@ -14,7 +14,7 @@ import scala.concurrent.duration.Duration
 import java.io.{File, FileInputStream, FileOutputStream, ByteArrayInputStream}
 import java.nio.file.{Files, StandardCopyOption}
 
-/** Commit within a ModelDB Repository
+/** Commit within a ModelDB Repository.
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
  */
 class Commit(
@@ -57,7 +57,7 @@ class Commit(
       }
     )
 
-  /** Adds blob to this commit at path
+  /** Adds blob to this commit at path.
    *  If path is already in this Commit, it will be updated to the new blob
    *  @param path Location to add blob to
    *  @param blob Instance of Blob subclass.
@@ -243,7 +243,7 @@ class Commit(
   }
 
 
-  /** Creates a branch at this Commit and returns the checked-out branch
+  /** Creates a branch at this Commit and returns the checked-out branch.
    *  If the branch already exists, it will be moved to this commit.
    *  @param branch branch name
    *  @return if not saved, a failure; otherwise, this commit as the head of `branch`
@@ -271,7 +271,7 @@ class Commit(
     ).map(_ => ())
   }
 
-  /** Merges a branch headed by other into this commit
+  /** Merges a branch headed by other into this commit.
    *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
    *  @param other Commit to be merged
    *  @param message Description of the merge. If not provided, a default message will be used
@@ -302,7 +302,7 @@ class Commit(
     )
   }
 
-  /** Helper function to convert the versioning commit instance to commit instance
+  /** Helper function to convert the versioning commit instance to commit instance.
    *  If the current instance has a branch associated with it, the new commit will become the head of the branch.
    *  Useful for createCommit, merge, and revert
    *  @param versioningCommit the versioning commit instance
@@ -341,7 +341,7 @@ class Commit(
   }
 
   /** Reverts other.
-   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
+   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object.
    *  Currently reverting a merge commit is not supported. Unexpected behavior might occur.
    *  @param other Base for the revert. If not provided, this commit will be reverted
    *  @param message Description of the revert. If not provided, a default message will be used
@@ -401,7 +401,7 @@ class Commit(
    *  @param message error message if this commit is not saved
    *  @return Failure if the commit is not saved. Success otherwise
    */
-  def checkSaved(message: String): Try[Unit] = {
+  private[verta] def checkSaved(message: String): Try[Unit] = {
     if (!saved)
       Failure(new IllegalCommitSavedStateException(message))
     else
