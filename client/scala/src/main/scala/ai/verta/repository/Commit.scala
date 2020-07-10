@@ -581,7 +581,7 @@ class Commit(
    *  @param datasetComponentPath path to the component in the blob
    *  @param inputStream the stream of input to uploaded
    *  @param partNum the index of the current part
-   *  @return whether the upload attempt succeeds
+   *  @return The number of parts uploaded, if succeeds
    */
   private def uploadPart(
     blobPath: String,

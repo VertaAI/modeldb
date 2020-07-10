@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import abc
+import copy
 import os
 import pathlib2
 
@@ -50,20 +51,24 @@ class _Dataset(blob.Blob):
         if not isinstance(other, type(self)):
             return NotImplemented
 
+        new = copy.deepcopy(self)
+        return new.__iadd__(other)
+
+    def __iadd__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
         self_keys = set(self._components_map.keys())
         other_keys = set(other._components_map.keys())
         intersection = list(self_keys & other_keys)
         if intersection:
-            raise ValueError("datasets contain overlapping paths: {}".format(intersection))
+            raise ValueError("dataset already contains paths: {}".format(intersection))
 
         if self._mdb_versioned != other._mdb_versioned:
             raise ValueError("datasets must have same value for `enable_mdb_versioning`")
 
-        new = self.__class__(paths=[], enable_mdb_versioning=self._mdb_versioned)
-        new._components_map.update(self._components_map)
-        new._components_map.update(other._components_map)
-
-        return new
+        self._components_map.update(other._components_map)
+        return self
 
     @abc.abstractmethod
     def _prepare_components_to_upload(self):
@@ -187,6 +192,10 @@ class _Dataset(blob.Blob):
             raise KeyError("no components found for path {}".format(component_path))
 
         return (components_to_download, os.path.abspath(downloaded_to_path))
+
+    @abc.abstractmethod
+    def add(self, paths):
+        pass
 
     def download(self, component_path=None, download_to_path=None):
         """
@@ -329,6 +338,12 @@ class Component(object):
             lines.append("MD5 checksum: {}".format(self.md5))
 
         return "\n    ".join(lines)
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self.__dict__ == other.__dict__
 
     @classmethod
     def _from_proto(cls, component_msg):
