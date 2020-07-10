@@ -52,15 +52,14 @@ trait Dataset extends Blob {
         Try(downloadAttempts.mapValues(_.get)) match {
           case Success(downloadAttempts) => {
             // move the temporary files to correct locations:
-            downloadAttempts.foreach(pair =>
+            Try(downloadAttempts.foreach(pair =>
               Files.move(
                 pair._2.toPath, // temporary file
                 Paths.get(pair._1), // correct location
                 StandardCopyOption.REPLACE_EXISTING
               )
-            )
-
-            Success(componentToLocalPath.absoluteLocalPath)
+            )) // moving files might fail
+              .flatMap(_ => Success(componentToLocalPath.absoluteLocalPath))
           }
           case Failure(e) => {
             // remove downloaded files:
