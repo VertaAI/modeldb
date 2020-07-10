@@ -71,6 +71,14 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
     })
   }
 
+  /** Make a (raw) request, returning the body of the response
+   *  @param method method of the request
+   *  @param url url of the request
+   *  @param query query parameters
+   *  @param localHeaders local headers
+   *  @param body body of the request
+   *  @return body of the response
+   */
   def requestRaw(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
     makeRawRequest(method, url, query, localHeaders, body).map(response => {
       response.body match {
@@ -82,7 +90,8 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
     })
   }
 
-  def makeRawRequest(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
+  /** Helper function to make the (raw) request */
+  private def makeRawRequest(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
     val request = (if (body != null) basicRequest.body(body) else basicRequest).response(asByteArray)
     val uriPath = Uri(new URI(url))
     val request2 = method match {
@@ -96,6 +105,14 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
     (if (localHeaders != null && localHeaders.nonEmpty) request2.headers(localHeaders) else request2).send()
   }
 
+  /** Make a (raw) request, returning the header of the response
+   *  @param method method of the request
+   *  @param url url of the request
+   *  @param query query parameters
+   *  @param localHeaders local headers
+   *  @param body body of the request
+   *  @return header of the response
+   */
   def getRawRequestHeader(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
     makeRawRequest(method, url, query, localHeaders, body).map(response => Success(response.header(_)))
   }
