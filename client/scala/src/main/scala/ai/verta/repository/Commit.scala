@@ -625,15 +625,15 @@ class Commit(
 
   /** Helper function to retry failable function.
    *  @param f function to (re)try
-   *  @param attempt number of attempts left (including current attempt)
+   *  @param attemptsLeft number of attempts left (including current attempt)
    *  @param errorMessage error message if out of attempts
    *  @return the result of f, if succeeds
    */
-  private def retry[T](f: => Try[T], attempt: Int, errorMessage: String): Try[T] = {
-    if (attempt <= 0)
+  private def retry[T](f: => Try[T], attemptsLeft: Int, errorMessage: String): Try[T] = {
+    if (attemptsLeft <= 0)
       Failure(new IllegalArgumentException(errorMessage))
     else
-      f.orElse(retry(f, attempt - 1, errorMessage))
+      f.orElse(retry(f, attemptsLeft - 1, errorMessage))
   }
 
   /** Helper method to download a component of a blob.
