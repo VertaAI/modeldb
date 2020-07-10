@@ -20,7 +20,7 @@ trait Dataset extends Blob {
   /** TODO: Figure out a way to remove this */
   // Function to downwload a component, given its path in the blob, the blob's path in the commit
   // and the file pointing to local path to download to:
-  private[verta] var downloadFunction: Option[(String, String, File) => Try[Unit]] = None
+  private[verta] var downloadFunction: Option[(String, String) => Try[File]] = None
   private[verta] var blobPath: Option[String] = None // path to the blob in the commit
 
   /** Downloads componentPath from this dataset if ModelDB-managed versioning was enabled.
@@ -50,8 +50,25 @@ trait Dataset extends Blob {
           componentToLocalPath.componentToLocalPathMap.map(pair => pair._2 -> downloadComponent(pair._1, pair._2))
 
         Try(downloadAttempts.mapValues(_.get)) match {
-          case Success(downloadAttempts) => Success(componentToLocalPath.absoluteLocalPath)
-          case Failure(e) => Failure(e)
+          case Success(downloadAttempts) => {
+            // move the temporary files to correct locations:
+            Try(downloadAttempts.foreach(pair =>
+              Files.move(
+                pair._2.toPath, // temporary file
+                Paths.get(pair._1), // correct location
+                StandardCopyOption.REPLACE_EXISTING
+              )
+            )) // moving files might fail
+              .map(_ => componentToLocalPath.absoluteLocalPath)
+          }
+          case Failure(e) => {
+            // remove downloaded files:
+            downloadAttempts.values
+              .filter(file => file.isSuccess)
+              .map(file => Try(file.get.delete()))
+
+            Failure(e)
+          }
         }
       }
     }
@@ -65,14 +82,14 @@ trait Dataset extends Blob {
   private def downloadComponent(
     componentPath: String,
     downloadToPath: String
-  )(implicit ec: ExecutionContext): Try[Unit] = {
+  )(implicit ec: ExecutionContext): Try[File] = {
     val file = new File(downloadToPath)
 
     Try ({
       Option(file.getParentFile()).map(_.mkdirs()) // create the ancestor directories, if necessary
       file.createNewFile() // create the new file, if necessary
     })
-      .flatMap(_ => downloadFunction.get(blobPath.get, componentPath, file))
+      .flatMap(_ => downloadFunction.get(blobPath.get, componentPath))
   }
 
   /** Identify components to be downloaded, along with their local destination paths.
