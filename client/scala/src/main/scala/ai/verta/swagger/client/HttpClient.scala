@@ -77,21 +77,9 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
    *  @param query query parameters
    *  @param localHeaders local headers
    *  @param body body of the request
-   *  @return body of the response
+   *  @return Response, if the request suceeds, wrap in a Future
    */
   def requestRaw(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
-    makeRawRequest(method, url, query, localHeaders, body).map(response => {
-      response.body match {
-        case Left(failureBody) => Failure(HttpException(response.code, failureBody))
-        case Right(successBody) => {
-          Success(successBody)
-        }
-      }
-    })
-  }
-
-  /** Helper function to make the (raw) request */
-  private def makeRawRequest(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
     val request = (if (body != null) basicRequest.body(body) else basicRequest).response(asByteArray)
     val uriPath = Uri(new URI(url))
     val request2 = method match {
@@ -103,18 +91,10 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
     }
 
     (if (localHeaders != null && localHeaders.nonEmpty) request2.headers(localHeaders) else request2).send()
-  }
-
-  /** Make a (raw) request, returning the header of the response
-   *  @param method method of the request
-   *  @param url url of the request
-   *  @param query query parameters
-   *  @param localHeaders local headers
-   *  @param body body of the request
-   *  @return header of the response
-   */
-  def getRawRequestHeader(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
-    makeRawRequest(method, url, query, localHeaders, body).map(response => Success(response.header(_)))
+      .map(response => response.body match {
+        case Left(failureBody) => Failure(HttpException(response.code, failureBody))
+        case Right(successBody) => Success(RawRequestResponse(body = successBody, headers = response.header(_)))
+      })
   }
 
   def toQuery[T](value: T): List[String] = value match {

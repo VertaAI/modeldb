@@ -599,11 +599,11 @@ class Commit(
         retry (
           Try(new ByteArrayInputStream(buffer)).flatMap(filepart => {
             try {
-              Await.result(clientSet.client.getRawRequestHeader("PUT", url, null, Map("Content-Length" -> readLen.toString), filepart), Duration.Inf)
-                .flatMap(headers => clientSet.versioningService.commitVersionedBlobArtifactPart(
+              Await.result(clientSet.client.requestRaw("PUT", url, null, Map("Content-Length" -> readLen.toString), filepart), Duration.Inf)
+                .flatMap(resp => clientSet.versioningService.commitVersionedBlobArtifactPart(
                   VersioningCommitVersionedBlobArtifactPart(
                     artifact_part = Some(ModeldbArtifactPart(
-                      etag = Some(headers("ETag").get),
+                      etag = Some(resp.headers("ETag").get),
                       part_number = Some(BigInt(partNum))
                     )),
                     commit_sha = id,
@@ -646,7 +646,7 @@ class Commit(
         Await.result(
           clientSet.client.requestRaw("GET", url, null, null, null)
             .map(resp => resp match {
-              case Success(response) => Try(new ByteArrayInputStream(response)).flatMap(inputStream => {
+              case Success(response) => Try(new ByteArrayInputStream(response.body)).flatMap(inputStream => {
                 try {
                   Try(Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
                     .map(_ => file)
