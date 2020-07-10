@@ -59,7 +59,7 @@ trait Dataset extends Blob {
                 StandardCopyOption.REPLACE_EXISTING
               )
             )) // moving files might fail
-              .flatMap(_ => Success(componentToLocalPath.absoluteLocalPath))
+              .map(_ => componentToLocalPath.absoluteLocalPath)
           }
           case Failure(e) => {
             // remove downloaded files:
