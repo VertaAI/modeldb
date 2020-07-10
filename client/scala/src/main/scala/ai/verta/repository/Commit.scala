@@ -624,6 +624,10 @@ class Commit(
   }
 
   /** Helper function to retry failable function.
+   *  @param f function to (re)try
+   *  @param attempt number of attempts left (including current attempt)
+   *  @param errorMessage error message if out of attempts
+   *  @return the result of f, if succeeds
    */
   private def retry[T](f: => Try[T], attempt: Int, errorMessage: String): Try[T] = {
     if (attempt <= 0)
