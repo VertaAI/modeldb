@@ -11,6 +11,64 @@ import ai.verta.swagger.client.objects._
 import ai.verta.swagger._public.modeldb.model._
 
 class ExperimentRunServiceApi(client: HttpClient, val basePath: String = "/v1") {
+  def ListBlobExperimentRunsAsync(commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, location: Option[List[String]]=None, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbListBlobExperimentRunsRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (repository_id_repo_id.isDefined) __query.update("repository_id.repo_id", client.toQuery(repository_id_repo_id.get))
+    if (pagination_page_number.isDefined) __query.update("pagination.page_number", client.toQuery(pagination_page_number.get))
+    if (pagination_page_limit.isDefined) __query.update("pagination.page_limit", client.toQuery(pagination_page_limit.get))
+    if (location.isDefined) __query.update("location", client.toQuery(location.get))
+    if (repository_id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_workspace_name\"")
+    if (repository_id_named_id_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_name\"")
+    if (commit_sha == null) throw new Exception("Missing required parameter \"commit_sha\"")
+    val body: String = null
+    return client.request[String, ModeldbListBlobExperimentRunsRequestResponse]("GET", basePath + s"/versioning/workspaces/$repository_id_named_id_workspace_name/repositories/$repository_id_named_id_name/commits/$commit_sha/path/runs", __query.toMap, body, ModeldbListBlobExperimentRunsRequestResponse.fromJson)
+  }
+
+  def ListBlobExperimentRuns(commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, location: Option[List[String]]=None, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Try[ModeldbListBlobExperimentRunsRequestResponse] = Await.result(ListBlobExperimentRunsAsync(commit_sha, repository_id_named_id_name, repository_id_named_id_workspace_name, location, pagination_page_limit, pagination_page_number, repository_id_repo_id), Duration.Inf)
+
+  def ListBlobExperimentRuns2Async(commit_sha: String, repository_id_repo_id: BigInt, location: Option[List[String]]=None, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbListBlobExperimentRunsRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (repository_id_named_id_name.isDefined) __query.update("repository_id.named_id.name", client.toQuery(repository_id_named_id_name.get))
+    if (repository_id_named_id_workspace_name.isDefined) __query.update("repository_id.named_id.workspace_name", client.toQuery(repository_id_named_id_workspace_name.get))
+    if (pagination_page_number.isDefined) __query.update("pagination.page_number", client.toQuery(pagination_page_number.get))
+    if (pagination_page_limit.isDefined) __query.update("pagination.page_limit", client.toQuery(pagination_page_limit.get))
+    if (location.isDefined) __query.update("location", client.toQuery(location.get))
+    if (repository_id_repo_id == null) throw new Exception("Missing required parameter \"repository_id_repo_id\"")
+    if (commit_sha == null) throw new Exception("Missing required parameter \"commit_sha\"")
+    val body: String = null
+    return client.request[String, ModeldbListBlobExperimentRunsRequestResponse]("GET", basePath + s"/versioning/repositories/$repository_id_repo_id/commits/$commit_sha/path/runs", __query.toMap, body, ModeldbListBlobExperimentRunsRequestResponse.fromJson)
+  }
+
+  def ListBlobExperimentRuns2(commit_sha: String, repository_id_repo_id: BigInt, location: Option[List[String]]=None, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbListBlobExperimentRunsRequestResponse] = Await.result(ListBlobExperimentRuns2Async(commit_sha, repository_id_repo_id, location, pagination_page_limit, pagination_page_number, repository_id_named_id_name, repository_id_named_id_workspace_name), Duration.Inf)
+
+  def ListCommitExperimentRunsAsync(commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbListCommitExperimentRunsRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (repository_id_repo_id.isDefined) __query.update("repository_id.repo_id", client.toQuery(repository_id_repo_id.get))
+    if (pagination_page_number.isDefined) __query.update("pagination.page_number", client.toQuery(pagination_page_number.get))
+    if (pagination_page_limit.isDefined) __query.update("pagination.page_limit", client.toQuery(pagination_page_limit.get))
+    if (repository_id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_workspace_name\"")
+    if (repository_id_named_id_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_name\"")
+    if (commit_sha == null) throw new Exception("Missing required parameter \"commit_sha\"")
+    val body: String = null
+    return client.request[String, ModeldbListCommitExperimentRunsRequestResponse]("GET", basePath + s"/versioning/workspaces/$repository_id_named_id_workspace_name/repositories/$repository_id_named_id_name/commits/$commit_sha/runs", __query.toMap, body, ModeldbListCommitExperimentRunsRequestResponse.fromJson)
+  }
+
+  def ListCommitExperimentRuns(commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Try[ModeldbListCommitExperimentRunsRequestResponse] = Await.result(ListCommitExperimentRunsAsync(commit_sha, repository_id_named_id_name, repository_id_named_id_workspace_name, pagination_page_limit, pagination_page_number, repository_id_repo_id), Duration.Inf)
+
+  def ListCommitExperimentRuns2Async(commit_sha: String, repository_id_repo_id: BigInt, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbListCommitExperimentRunsRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (repository_id_named_id_name.isDefined) __query.update("repository_id.named_id.name", client.toQuery(repository_id_named_id_name.get))
+    if (repository_id_named_id_workspace_name.isDefined) __query.update("repository_id.named_id.workspace_name", client.toQuery(repository_id_named_id_workspace_name.get))
+    if (pagination_page_number.isDefined) __query.update("pagination.page_number", client.toQuery(pagination_page_number.get))
+    if (pagination_page_limit.isDefined) __query.update("pagination.page_limit", client.toQuery(pagination_page_limit.get))
+    if (repository_id_repo_id == null) throw new Exception("Missing required parameter \"repository_id_repo_id\"")
+    if (commit_sha == null) throw new Exception("Missing required parameter \"commit_sha\"")
+    val body: String = null
+    return client.request[String, ModeldbListCommitExperimentRunsRequestResponse]("GET", basePath + s"/versioning/repositories/$repository_id_repo_id/commits/$commit_sha/runs", __query.toMap, body, ModeldbListCommitExperimentRunsRequestResponse.fromJson)
+  }
+
+  def ListCommitExperimentRuns2(commit_sha: String, repository_id_repo_id: BigInt, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbListCommitExperimentRunsRequestResponse] = Await.result(ListCommitExperimentRuns2Async(commit_sha, repository_id_repo_id, pagination_page_limit, pagination_page_number, repository_id_named_id_name, repository_id_named_id_workspace_name), Duration.Inf)
+
   def addExperimentRunAttributesAsync(body: ModeldbAddExperimentRunAttributes)(implicit ec: ExecutionContext): Future[Try[ModeldbAddExperimentRunAttributesResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
@@ -205,9 +263,9 @@ class ExperimentRunServiceApi(client: HttpClient, val basePath: String = "/v1") 
 
   def getExperimentRunTags(id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetTagsResponse] = Await.result(getExperimentRunTagsAsync(id), Duration.Inf)
 
-  def getExperimentRunsByDatasetVersionIdAsync(ascending: Option[Boolean]=None, datset_version_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetExperimentRunsByDatasetVersionIdResponse]] = {
+  def getExperimentRunsByDatasetVersionIdAsync(ascending: Option[Boolean]=None, dataset_version_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetExperimentRunsByDatasetVersionIdResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
-    if (datset_version_id.isDefined) __query.update("datset_version_id", client.toQuery(datset_version_id.get))
+    if (dataset_version_id.isDefined) __query.update("dataset_version_id", client.toQuery(dataset_version_id.get))
     if (page_number.isDefined) __query.update("page_number", client.toQuery(page_number.get))
     if (page_limit.isDefined) __query.update("page_limit", client.toQuery(page_limit.get))
     if (ascending.isDefined) __query.update("ascending", client.toQuery(ascending.get))
@@ -216,7 +274,7 @@ class ExperimentRunServiceApi(client: HttpClient, val basePath: String = "/v1") 
     return client.request[String, ModeldbGetExperimentRunsByDatasetVersionIdResponse]("GET", basePath + s"/experiment-run/getExperimentRunsByDatasetVersionId", __query.toMap, body, ModeldbGetExperimentRunsByDatasetVersionIdResponse.fromJson)
   }
 
-  def getExperimentRunsByDatasetVersionId(ascending: Option[Boolean]=None, datset_version_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetExperimentRunsByDatasetVersionIdResponse] = Await.result(getExperimentRunsByDatasetVersionIdAsync(ascending, datset_version_id, page_limit, page_number, sort_key), Duration.Inf)
+  def getExperimentRunsByDatasetVersionId(ascending: Option[Boolean]=None, dataset_version_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetExperimentRunsByDatasetVersionIdResponse] = Await.result(getExperimentRunsByDatasetVersionIdAsync(ascending, dataset_version_id, page_limit, page_number, sort_key), Duration.Inf)
 
   def getExperimentRunsInExperimentAsync(ascending: Option[Boolean]=None, experiment_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetExperimentRunsInExperimentResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
