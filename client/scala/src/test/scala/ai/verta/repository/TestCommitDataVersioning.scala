@@ -210,8 +210,15 @@ class TestCommitDataVersioning extends FunSuite {
       // check that the content is now different:
       assert(!Files.readAllBytes((new File("somefile")).toPath).sameElements(originalContent))
 
+      // upload another file to commit:
+      val updatedContent = generateRandomFile("somefile2").get
+      val pathBlob2 = PathBlob("somefile2", true).get
+      val newCommit = commit
+        .update("file2", pathBlob2)
+        .flatMap(_.save("some-msg-2")).get
+
       // recover the old versioned file:
-      val retrievedBlob: Dataset = commit.get("file").get match {
+      val retrievedBlob: Dataset = newCommit.get("file").get match {
         case path: PathBlob => path
       }
       retrievedBlob.download(Some("somefile"), Some("somefile"))
