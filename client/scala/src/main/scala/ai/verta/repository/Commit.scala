@@ -602,7 +602,7 @@ class Commit(
               Await.result(clientSet.client.requestRaw("PUT", url, null, Map("Content-Length" -> readLen.toString), filepart), Duration.Inf)
                 .flatMap(resp => clientSet.versioningService.commitVersionedBlobArtifactPart(
                   VersioningCommitVersionedBlobArtifactPart(
-                    artifact_part = Some(ModeldbArtifactPart(
+                    artifact_part = Some(CommonArtifactPart(
                       etag = Some(resp.headers("ETag").get),
                       part_number = Some(BigInt(partNum))
                     )),
