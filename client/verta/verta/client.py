@@ -403,9 +403,10 @@ class Client(object):
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
             # find Experiment by ID
-            expt_msg = Experiment._get(self._conn, _expt_id=id)
-            if expt_msg is None:
+            expt = Experiment._get(self._conn, self._conf, _expt_id=id)
+            if expt is None:
                 raise ValueError("no Experiment found with ID {}".format(id))
+            expt_msg = expt._get_self_as_msg()
             # set parent Project by ID
             try:
                 self.proj = Project._get_or_create(self._conn, self._conf, _proj_id=expt_msg.project_id)
@@ -413,8 +414,7 @@ class Client(object):
                 raise RuntimeError("unable to find parent Project of Experiment with ID {};"
                                    " this should only ever occur due to a back end error".format(id))
             # set Experiment
-            self.expt = Experiment(self._conn, self._conf,
-                                   _expt_id=id)
+            self.expt = expt
         else:
             # set Experiment by name under current Project
             if self.proj is None:
@@ -425,7 +425,7 @@ class Client(object):
                 else:
                     raise AttributeError("a Project must first be in progress")
 
-            self.expt = Experiment(self._conn, self._conf,
+            self.expt = Experiment._get_or_create(self._conn, self._conf,
                                    self.proj.id, name,
                                    desc, tags, attrs)
 
@@ -481,7 +481,7 @@ class Client(object):
                                    " this should only ever occur due to a back end error".format(id))
             # set parent Experiment by ID
             try:
-                self.expt = Experiment(self._conn, self._conf, _expt_id=expt_run_msg.experiment_id)
+                self.expt = Experiment._get_or_create(self._conn, self._conf, _expt_id=expt_run_msg.experiment_id)
             except ValueError:  # parent Experiment not found
                 raise RuntimeError("unable to find parent Experiment of ExperimentRun with ID {};"
                                    " this should only ever occur due to a back end error".format(id))
@@ -1387,7 +1387,15 @@ class Experiment(_ModelDBEntity):
         Experiment Runs under this Experiment.
 
     """
-    def __init__(self, conn, conf,
+    def __init__(self, conn, conf, id_):
+        super(Experiment, self).__init__(conn, conf, _ExperimentService, "experiment", id_)
+
+        self._conn = conn
+
+        self.id = id_
+
+    @staticmethod  # TODO: if PR approved, move this fn down with other static/class methods
+    def _get_or_create(conn, conf,
                  proj_id=None, expt_name=None,
                  desc=None, tags=None, attrs=None,
                  _expt_id=None):
@@ -1395,7 +1403,7 @@ class Experiment(_ModelDBEntity):
             raise ValueError("cannot specify both `expt_name` and `_expt_id`")
 
         if _expt_id is not None:
-            expt = Experiment._get(conn, _expt_id=_expt_id)
+            expt = Experiment._get(conn, conf, _expt_id=_expt_id)
             if expt is not None:
                 print("set existing Experiment: {}".format(expt.name))
             else:
@@ -1404,13 +1412,13 @@ class Experiment(_ModelDBEntity):
             if expt_name is None:
                 expt_name = Experiment._generate_default_name()
             try:
-                expt = Experiment._create(conn, proj_id, expt_name, desc, tags, attrs)
+                expt = Experiment._create(conn, conf, proj_id, expt_name, desc, tags, attrs)
             except requests.HTTPError as e:
                 if e.response.status_code == 409:  # already exists
                     if any(param is not None for param in (desc, tags, attrs)):
                         warnings.warn("Experiment with name {} already exists;"
                                       " cannot initialize `desc`, `tags`, or `attrs`".format(expt_name))
-                    expt = Experiment._get(conn, proj_id, expt_name)
+                    expt = Experiment._get(conn, conf, proj_id, expt_name)
                     if expt is not None:
                         print("set existing Experiment: {}".format(expt.name))
                     else:
@@ -1423,7 +1431,7 @@ class Experiment(_ModelDBEntity):
         else:
             raise ValueError("insufficient arguments")
 
-        super(Experiment, self).__init__(conn, conf, _ExperimentService, "experiment", expt.id)
+        return expt
 
     def __repr__(self):
         return "<Experiment \"{}\">".format(self.name)
@@ -1452,8 +1460,8 @@ class Experiment(_ModelDBEntity):
     def _generate_default_name():
         return "Expt {}".format(_utils.generate_default_name())
 
-    @staticmethod
-    def _get(conn, proj_id=None, expt_name=None, _expt_id=None):
+    @classmethod
+    def _get(cls, conn, conf, proj_id=None, expt_name=None, _expt_id=None):
         if _expt_id is not None:
             Message = _ExperimentService.GetExperimentById
             msg = Message(id=_expt_id)
@@ -1479,7 +1487,7 @@ class Experiment(_ModelDBEntity):
                 raise RuntimeError("unable to retrieve Experiment {};"
                                    " please notify the Verta development team".format(expt_name))
 
-            return expt
+            return cls(conn, conf, expt.id)
         else:
             if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
                     or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
@@ -1487,8 +1495,8 @@ class Experiment(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-    @staticmethod
-    def _create(conn, proj_id, expt_name, desc=None, tags=None, attrs=None):
+    @classmethod
+    def _create(cls, conn, conf, proj_id, expt_name, desc=None, tags=None, attrs=None):
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
         if attrs is not None:
@@ -1505,9 +1513,32 @@ class Experiment(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.experiment
+            return cls(conn, conf, response_msg.experiment.id)
         else:
             _utils.raise_for_http_error(response)
+
+    def _get_self_as_msg(self):
+        """
+        Gets the full protobuf message representation of this Experiment.
+
+        Returns
+        -------
+        expt_msg : Experiment protobuf message
+
+        """
+        Message = _ExperimentService.GetExperimentById
+        msg = Message(id=self.id)
+        data = _utils.proto_to_json(msg)
+        url = "{}://{}/api/v1/modeldb/experiment/getExperimentById".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        response = _utils.make_request("GET", url, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        return response_msg.experiment
 
 
 class ExperimentRuns(_utils.LazyList):
