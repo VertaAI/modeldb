@@ -352,7 +352,7 @@ class Client(object):
             name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        self.proj = Project(self._conn, self._conf,
+        self.proj = Project._get_or_create(self._conn, self._conf,
                             name,
                             desc, tags, attrs,
                             workspace,
@@ -408,7 +408,7 @@ class Client(object):
                 raise ValueError("no Experiment found with ID {}".format(id))
             # set parent Project by ID
             try:
-                self.proj = Project(self._conn, self._conf, _proj_id=expt_msg.project_id)
+                self.proj = Project._get_or_create(self._conn, self._conf, _proj_id=expt_msg.project_id)
             except ValueError:  # parent Project not found
                 raise RuntimeError("unable to find parent Project of Experiment with ID {};"
                                    " this should only ever occur due to a back end error".format(id))
@@ -475,7 +475,7 @@ class Client(object):
                 raise ValueError("no ExperimentRun found with ID {}".format(id))
             # set parent Project by ID
             try:
-                self.proj = Project(self._conn, self._conf, _proj_id=expt_run_msg.project_id)
+                self.proj = Project._get_or_create(self._conn, self._conf, _proj_id=expt_run_msg.project_id)
             except ValueError:  # parent Project not found
                 raise RuntimeError("unable to find parent Project of ExperimentRun with ID {};"
                                    " this should only ever occur due to a back end error".format(id))
@@ -1199,7 +1199,15 @@ class Project(_ModelDBEntity):
         Experiment Runs under this Project.
 
     """
-    def __init__(self, conn, conf,
+    def __init__(self, conn, conf, id_):
+        super(Project, self).__init__(conn, conf, _ProjectService, "project", id_)
+
+        self._conn = conn
+
+        self.id = id_
+
+    @staticmethod  # TODO: if PR approved, move this fn down with other static/class methods
+    def _get_or_create(conn, conf,
                  proj_name=None,
                  desc=None, tags=None, attrs=None,
                  workspace=None,
@@ -1214,7 +1222,7 @@ class Project(_ModelDBEntity):
             WORKSPACE_PRINT_MSG = "personal workspace"
 
         if _proj_id is not None:
-            proj = Project._get(conn, _proj_id=_proj_id)
+            proj = Project._get(conn, conf, _proj_id=_proj_id)
             if proj is not None:
                 print("set existing Project: {}".format(proj.name))
             else:
@@ -1223,10 +1231,10 @@ class Project(_ModelDBEntity):
             if proj_name is None:
                 proj_name = Project._generate_default_name()
             try:
-                proj = Project._create(conn, proj_name, desc, tags, attrs, workspace, public_within_org)
+                proj = Project._create(conn, conf, proj_name, desc, tags, attrs, workspace, public_within_org)
             except requests.HTTPError as e:
                 if e.response.status_code == 403:  # cannot create in other workspace
-                    proj = Project._get(conn, proj_name, workspace)
+                    proj = Project._get(conn, conf, proj_name, workspace)
                     if proj is not None:
                         print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
                     else:  # no accessible project in other workspace
@@ -1237,7 +1245,7 @@ class Project(_ModelDBEntity):
                             "Project with name {} already exists;"
                             " cannot set `desc`, `tags`, `attrs`, or `public_within_org`".format(proj_name)
                         )
-                    proj = Project._get(conn, proj_name, workspace)
+                    proj = Project._get(conn, conf, proj_name, workspace)
                     if proj is not None:
                         print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
                     else:
@@ -1248,7 +1256,7 @@ class Project(_ModelDBEntity):
             else:
                 print("created new Project: {} in {}".format(proj.name, WORKSPACE_PRINT_MSG))
 
-        super(Project, self).__init__(conn, conf, _ProjectService, "project", proj.id)
+        return proj
 
     def __repr__(self):
         return "<Project \"{}\">".format(self.name)
@@ -1277,8 +1285,8 @@ class Project(_ModelDBEntity):
     def _generate_default_name():
         return "Proj {}".format(_utils.generate_default_name())
 
-    @staticmethod
-    def _get(conn, proj_name=None, workspace=None, _proj_id=None):
+    @classmethod
+    def _get(cls, conn, conf, proj_name=None, workspace=None, _proj_id=None):
         if _proj_id is not None:
             Message = _ProjectService.GetProjectById
             msg = Message(id=_proj_id)
@@ -1289,7 +1297,7 @@ class Project(_ModelDBEntity):
 
             if response.ok:
                 response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-                return response_msg.project
+                return cls(conn, conf, response_msg.project.id)
             else:
                 if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
                         or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
@@ -1317,7 +1325,7 @@ class Project(_ModelDBEntity):
                     raise RuntimeError("unable to retrieve Project {};"
                                        " please notify the Verta development team".format(proj_name))
 
-                return proj
+                return cls(conn, conf, proj.id)
             else:
                 if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
                         or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
@@ -1327,8 +1335,8 @@ class Project(_ModelDBEntity):
         else:
             raise ValueError("insufficient arguments")
 
-    @staticmethod
-    def _create(conn, proj_name, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
+    @classmethod
+    def _create(cls, conn, conf, proj_name, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
         if attrs is not None:
@@ -1354,7 +1362,7 @@ class Project(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.project
+            return cls(conn, conf, response_msg.project.id)
         else:
             _utils.raise_for_http_error(response)
 
