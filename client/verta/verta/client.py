@@ -1195,7 +1195,34 @@ class Project(_ModelDBEntity):
 
         self.id = id_
 
-    @staticmethod  # TODO: if PR approved, move this fn down with other static/class methods
+    def __repr__(self):
+        return "<Project \"{}\">".format(self.name)
+
+    @property
+    def name(self):
+        Message = _ProjectService.GetProjectById
+        msg = Message(id=self.id)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                       "{}://{}/api/v1/modeldb/project/getProjectById".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        return response_msg.project.name
+
+    @property
+    def expt_runs(self):
+        # get runs in this Project
+        runs = ExperimentRuns(self._conn, self._conf)
+        runs._msg.project_id = self.id
+        return runs
+
+    @staticmethod
+    def _generate_default_name():
+        return "Proj {}".format(_utils.generate_default_name())
+
+    @staticmethod
     def _get_or_create(conn, conf,
                  proj_name=None,
                  desc=None, tags=None, attrs=None,
@@ -1246,33 +1273,6 @@ class Project(_ModelDBEntity):
                 print("created new Project: {} in {}".format(proj.name, WORKSPACE_PRINT_MSG))
 
         return proj
-
-    def __repr__(self):
-        return "<Project \"{}\">".format(self.name)
-
-    @property
-    def name(self):
-        Message = _ProjectService.GetProjectById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/project/getProjectById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return response_msg.project.name
-
-    @property
-    def expt_runs(self):
-        # get runs in this Project
-        runs = ExperimentRuns(self._conn, self._conf)
-        runs._msg.project_id = self.id
-        return runs
-
-    @staticmethod
-    def _generate_default_name():
-        return "Proj {}".format(_utils.generate_default_name())
 
     @classmethod
     def _get(cls, conn, conf, proj_name=None, workspace=None, _proj_id=None):
@@ -1406,7 +1406,34 @@ class Experiment(_ModelDBEntity):
 
         self.id = id_
 
-    @staticmethod  # TODO: if PR approved, move this fn down with other static/class methods
+    def __repr__(self):
+        return "<Experiment \"{}\">".format(self.name)
+
+    @property
+    def name(self):
+        Message = _ExperimentService.GetExperimentById
+        msg = Message(id=self.id)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                       "{}://{}/api/v1/modeldb/experiment/getExperimentById".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        return response_msg.experiment.name
+
+    @property
+    def expt_runs(self):
+        # get runs in this Experiment
+        runs = ExperimentRuns(self._conn, self._conf)
+        runs._msg.experiment_id = self.id
+        return runs
+
+    @staticmethod
+    def _generate_default_name():
+        return "Expt {}".format(_utils.generate_default_name())
+
+    @staticmethod
     def _get_or_create(conn, conf,
                  proj_id=None, expt_name=None,
                  desc=None, tags=None, attrs=None,
@@ -1444,33 +1471,6 @@ class Experiment(_ModelDBEntity):
             raise ValueError("insufficient arguments")
 
         return expt
-
-    def __repr__(self):
-        return "<Experiment \"{}\">".format(self.name)
-
-    @property
-    def name(self):
-        Message = _ExperimentService.GetExperimentById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment/getExperimentById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return response_msg.experiment.name
-
-    @property
-    def expt_runs(self):
-        # get runs in this Experiment
-        runs = ExperimentRuns(self._conn, self._conf)
-        runs._msg.experiment_id = self.id
-        return runs
-
-    @staticmethod
-    def _generate_default_name():
-        return "Expt {}".format(_utils.generate_default_name())
 
     @classmethod
     def _get(cls, conn, conf, proj_id=None, expt_name=None, _expt_id=None):
@@ -1894,46 +1894,6 @@ class ExperimentRun(_ModelDBEntity):
 
         self.id = id_
 
-    @staticmethod  # TODO: if PR approved, move this fn down with other static/class methods
-    def _get_or_create(conn, conf,
-                 proj_id=None, expt_id=None, expt_run_name=None,
-                 desc=None, tags=None, attrs=None,
-                 date_created=None,
-                 _expt_run_id=None):
-        if expt_run_name is not None and _expt_run_id is not None:
-            raise ValueError("cannot specify both `expt_run_name` and `_expt_run_id`")
-
-        if _expt_run_id is not None:
-            expt_run = ExperimentRun._get(conn, conf, _expt_run_id=_expt_run_id)
-            if expt_run is not None:
-                print("set existing ExperimentRun: {}".format(expt_run.name))
-            else:
-                raise ValueError("ExperimentRun with ID {} not found".format(_expt_run_id))
-        elif None not in (proj_id, expt_id):
-            if expt_run_name is None:
-                expt_run_name = ExperimentRun._generate_default_name()
-            try:
-                expt_run = ExperimentRun._create(conn, conf, proj_id, expt_id, expt_run_name, desc, tags, attrs, date_created=date_created)
-            except requests.HTTPError as e:
-                if e.response.status_code == 409:  # already exists
-                    if any(param is not None for param in (desc, tags, attrs)):
-                        warnings.warn("ExperimentRun with name {} already exists;"
-                                      " cannot initialize `desc`, `tags`, or `attrs`".format(expt_run_name))
-                    expt_run = ExperimentRun._get(conn, conf, expt_id, expt_run_name)
-                    if expt_run is not None:
-                        print("set existing ExperimentRun: {}".format(expt_run.name))
-                    else:
-                        raise RuntimeError("unable to retrieve ExperimentRun {};"
-                                           " please notify the Verta development team".format(expt_run_name))
-                else:
-                    raise e
-            else:
-                print("created new ExperimentRun: {}".format(expt_run.name))
-        else:
-            raise ValueError("insufficient arguments")
-
-        return expt_run
-
     def __repr__(self):
         run_msg = self._get_self_as_msg()
         return '\n'.join((
@@ -1999,6 +1959,46 @@ class ExperimentRun(_ModelDBEntity):
     @staticmethod
     def _generate_default_name():
         return "Run {}".format(_utils.generate_default_name())
+
+    @staticmethod
+    def _get_or_create(conn, conf,
+                 proj_id=None, expt_id=None, expt_run_name=None,
+                 desc=None, tags=None, attrs=None,
+                 date_created=None,
+                 _expt_run_id=None):
+        if expt_run_name is not None and _expt_run_id is not None:
+            raise ValueError("cannot specify both `expt_run_name` and `_expt_run_id`")
+
+        if _expt_run_id is not None:
+            expt_run = ExperimentRun._get(conn, conf, _expt_run_id=_expt_run_id)
+            if expt_run is not None:
+                print("set existing ExperimentRun: {}".format(expt_run.name))
+            else:
+                raise ValueError("ExperimentRun with ID {} not found".format(_expt_run_id))
+        elif None not in (proj_id, expt_id):
+            if expt_run_name is None:
+                expt_run_name = ExperimentRun._generate_default_name()
+            try:
+                expt_run = ExperimentRun._create(conn, conf, proj_id, expt_id, expt_run_name, desc, tags, attrs, date_created=date_created)
+            except requests.HTTPError as e:
+                if e.response.status_code == 409:  # already exists
+                    if any(param is not None for param in (desc, tags, attrs)):
+                        warnings.warn("ExperimentRun with name {} already exists;"
+                                      " cannot initialize `desc`, `tags`, or `attrs`".format(expt_run_name))
+                    expt_run = ExperimentRun._get(conn, conf, expt_id, expt_run_name)
+                    if expt_run is not None:
+                        print("set existing ExperimentRun: {}".format(expt_run.name))
+                    else:
+                        raise RuntimeError("unable to retrieve ExperimentRun {};"
+                                           " please notify the Verta development team".format(expt_run_name))
+                else:
+                    raise e
+            else:
+                print("created new ExperimentRun: {}".format(expt_run.name))
+        else:
+            raise ValueError("insufficient arguments")
+
+        return expt_run
 
     @classmethod
     def _get(cls, conn, conf, expt_id=None, expt_run_name=None, _expt_run_id=None):
