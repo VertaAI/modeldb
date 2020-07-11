@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb.metadata',
   syntax='proto3',
   serialized_options=b'P\001ZGgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadata',
-  serialized_pb=b'\n&modeldb/metadata/MetadataService.proto\x12\x19\x61i.verta.modeldb.metadata\x1a\x1cgoogle/api/annotations.proto\"U\n\nIDTypeEnum\"G\n\x06IDType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x19\n\x15VERSIONING_REPOSITORY\x10\x01\x12\x15\n\x11VERSIONING_COMMIT\x10\x02\"\x80\x01\n\x12IdentificationType\x12=\n\x07id_type\x18\x01 \x01(\x0e\x32,.ai.verta.modeldb.metadata.IDTypeEnum.IDType\x12\x10\n\x06int_id\x18\x02 \x01(\x04H\x00\x12\x13\n\tstring_id\x18\x03 \x01(\tH\x00\x42\x04\n\x02id\"i\n\x10GetLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x1a\x1a\n\x08Response\x12\x0e\n\x06labels\x18\x01 \x03(\t\"y\n\x10\x41\x64\x64LabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"|\n\x13\x44\x65leteLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\x32\xca\x03\n\x0fMetadataService\x12\x8b\x01\n\tGetLabels\x12+.ai.verta.modeldb.metadata.GetLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.GetLabelsRequest.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/metadata/labels\x12\x8e\x01\n\tAddLabels\x12+.ai.verta.modeldb.metadata.AddLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.AddLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x1a\x13/v1/metadata/labels:\x01*\x12\x97\x01\n\x0c\x44\x65leteLabels\x12..ai.verta.modeldb.metadata.DeleteLabelsRequest\x1a\x37.ai.verta.modeldb.metadata.DeleteLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18*\x13/v1/metadata/labels:\x01*BKP\x01ZGgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadatab\x06proto3'
+  serialized_pb=b'\n&modeldb/metadata/MetadataService.proto\x12\x19\x61i.verta.modeldb.metadata\x1a\x1cgoogle/api/annotations.proto\"\x93\x01\n\nIDTypeEnum\"\x84\x01\n\x06IDType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x19\n\x15VERSIONING_REPOSITORY\x10\x01\x12\x15\n\x11VERSIONING_COMMIT\x10\x02\x12\x1f\n\x1bVERSIONING_REPO_COMMIT_BLOB\x10\x03\x12\x1a\n\x16VERSIONING_REPO_COMMIT\x10\x04\"\x80\x01\n\x12IdentificationType\x12=\n\x07id_type\x18\x01 \x01(\x0e\x32,.ai.verta.modeldb.metadata.IDTypeEnum.IDType\x12\x10\n\x06int_id\x18\x02 \x01(\x04H\x00\x12\x13\n\tstring_id\x18\x03 \x01(\tH\x00\x42\x04\n\x02id\"i\n\x10GetLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x1a\x1a\n\x08Response\x12\x0e\n\x06labels\x18\x01 \x03(\t\"y\n\x10\x41\x64\x64LabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"|\n\x13\x44\x65leteLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"w\n\x12GetPropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x19\n\x08Response\x12\r\n\x05value\x18\x03 \x01(\t\"w\n\x12\x41\x64\x64PropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\t\x1a\n\n\x08Response\"k\n\x15\x44\x65letePropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response2\x9b\x07\n\x0fMetadataService\x12\x8b\x01\n\tGetLabels\x12+.ai.verta.modeldb.metadata.GetLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.GetLabelsRequest.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/metadata/labels\x12\x8e\x01\n\tAddLabels\x12+.ai.verta.modeldb.metadata.AddLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.AddLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x1a\x13/v1/metadata/labels:\x01*\x12\x97\x01\n\x0c\x44\x65leteLabels\x12..ai.verta.modeldb.metadata.DeleteLabelsRequest\x1a\x37.ai.verta.modeldb.metadata.DeleteLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18*\x13/v1/metadata/labels:\x01*\x12\x93\x01\n\x0bGetProperty\x12-.ai.verta.modeldb.metadata.GetPropertyRequest\x1a\x36.ai.verta.modeldb.metadata.GetPropertyRequest.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/metadata/property\x12\x96\x01\n\x0b\x41\x64\x64Property\x12-.ai.verta.modeldb.metadata.AddPropertyRequest\x1a\x36.ai.verta.modeldb.metadata.AddPropertyRequest.Response\" \x82\xd3\xe4\x93\x02\x1a\x1a\x15/v1/metadata/property:\x01*\x12\x9f\x01\n\x0e\x44\x65leteProperty\x12\x30.ai.verta.modeldb.metadata.DeletePropertyRequest\x1a\x39.ai.verta.modeldb.metadata.DeletePropertyRequest.Response\" \x82\xd3\xe4\x93\x02\x1a*\x15/v1/metadata/property:\x01*BKP\x01ZGgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadatab\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,])
 
@@ -43,11 +43,19 @@ _IDTYPEENUM_IDTYPE = _descriptor.EnumDescriptor(
       name='VERSIONING_COMMIT', index=2, number=2,
       serialized_options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='VERSIONING_REPO_COMMIT_BLOB', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='VERSIONING_REPO_COMMIT', index=4, number=4,
+      serialized_options=None,
+      type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=113,
-  serialized_end=184,
+  serialized_start=115,
+  serialized_end=247,
 )
 _sym_db.RegisterEnumDescriptor(_IDTYPEENUM_IDTYPE)
 
@@ -72,8 +80,8 @@ _IDTYPEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=99,
-  serialized_end=184,
+  serialized_start=100,
+  serialized_end=247,
 )
 
 
@@ -120,8 +128,8 @@ _IDENTIFICATIONTYPE = _descriptor.Descriptor(
       name='id', full_name='ai.verta.modeldb.metadata.IdentificationType.id',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=187,
-  serialized_end=315,
+  serialized_start=250,
+  serialized_end=378,
 )
 
 
@@ -151,8 +159,8 @@ _GETLABELSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=396,
-  serialized_end=422,
+  serialized_start=459,
+  serialized_end=485,
 )
 
 _GETLABELSREQUEST = _descriptor.Descriptor(
@@ -181,8 +189,8 @@ _GETLABELSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=317,
-  serialized_end=422,
+  serialized_start=380,
+  serialized_end=485,
 )
 
 
@@ -212,8 +220,8 @@ _ADDLABELSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=519,
-  serialized_end=545,
+  serialized_start=582,
+  serialized_end=608,
 )
 
 _ADDLABELSREQUEST = _descriptor.Descriptor(
@@ -249,8 +257,8 @@ _ADDLABELSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=424,
-  serialized_end=545,
+  serialized_start=487,
+  serialized_end=608,
 )
 
 
@@ -280,8 +288,8 @@ _DELETELABELSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=519,
-  serialized_end=545,
+  serialized_start=582,
+  serialized_end=608,
 )
 
 _DELETELABELSREQUEST = _descriptor.Descriptor(
@@ -317,8 +325,205 @@ _DELETELABELSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=547,
-  serialized_end=671,
+  serialized_start=610,
+  serialized_end=734,
+)
+
+
+_GETPROPERTYREQUEST_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.modeldb.metadata.GetPropertyRequest.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='value', full_name='ai.verta.modeldb.metadata.GetPropertyRequest.Response.value', index=0,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=830,
+  serialized_end=855,
+)
+
+_GETPROPERTYREQUEST = _descriptor.Descriptor(
+  name='GetPropertyRequest',
+  full_name='ai.verta.modeldb.metadata.GetPropertyRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.modeldb.metadata.GetPropertyRequest.id', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.modeldb.metadata.GetPropertyRequest.key', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_GETPROPERTYREQUEST_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=736,
+  serialized_end=855,
+)
+
+
+_ADDPROPERTYREQUEST_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.modeldb.metadata.AddPropertyRequest.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=459,
+  serialized_end=469,
+)
+
+_ADDPROPERTYREQUEST = _descriptor.Descriptor(
+  name='AddPropertyRequest',
+  full_name='ai.verta.modeldb.metadata.AddPropertyRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.modeldb.metadata.AddPropertyRequest.id', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.modeldb.metadata.AddPropertyRequest.key', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='ai.verta.modeldb.metadata.AddPropertyRequest.value', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_ADDPROPERTYREQUEST_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=857,
+  serialized_end=976,
+)
+
+
+_DELETEPROPERTYREQUEST_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.modeldb.metadata.DeletePropertyRequest.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=459,
+  serialized_end=469,
+)
+
+_DELETEPROPERTYREQUEST = _descriptor.Descriptor(
+  name='DeletePropertyRequest',
+  full_name='ai.verta.modeldb.metadata.DeletePropertyRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.modeldb.metadata.DeletePropertyRequest.id', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.modeldb.metadata.DeletePropertyRequest.key', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_DELETEPROPERTYREQUEST_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=978,
+  serialized_end=1085,
 )
 
 _IDTYPEENUM_IDTYPE.containing_type = _IDTYPEENUM
@@ -335,11 +540,20 @@ _ADDLABELSREQUEST_RESPONSE.containing_type = _ADDLABELSREQUEST
 _ADDLABELSREQUEST.fields_by_name['id'].message_type = _IDENTIFICATIONTYPE
 _DELETELABELSREQUEST_RESPONSE.containing_type = _DELETELABELSREQUEST
 _DELETELABELSREQUEST.fields_by_name['id'].message_type = _IDENTIFICATIONTYPE
+_GETPROPERTYREQUEST_RESPONSE.containing_type = _GETPROPERTYREQUEST
+_GETPROPERTYREQUEST.fields_by_name['id'].message_type = _IDENTIFICATIONTYPE
+_ADDPROPERTYREQUEST_RESPONSE.containing_type = _ADDPROPERTYREQUEST
+_ADDPROPERTYREQUEST.fields_by_name['id'].message_type = _IDENTIFICATIONTYPE
+_DELETEPROPERTYREQUEST_RESPONSE.containing_type = _DELETEPROPERTYREQUEST
+_DELETEPROPERTYREQUEST.fields_by_name['id'].message_type = _IDENTIFICATIONTYPE
 DESCRIPTOR.message_types_by_name['IDTypeEnum'] = _IDTYPEENUM
 DESCRIPTOR.message_types_by_name['IdentificationType'] = _IDENTIFICATIONTYPE
 DESCRIPTOR.message_types_by_name['GetLabelsRequest'] = _GETLABELSREQUEST
 DESCRIPTOR.message_types_by_name['AddLabelsRequest'] = _ADDLABELSREQUEST
 DESCRIPTOR.message_types_by_name['DeleteLabelsRequest'] = _DELETELABELSREQUEST
+DESCRIPTOR.message_types_by_name['GetPropertyRequest'] = _GETPROPERTYREQUEST
+DESCRIPTOR.message_types_by_name['AddPropertyRequest'] = _ADDPROPERTYREQUEST
+DESCRIPTOR.message_types_by_name['DeletePropertyRequest'] = _DELETEPROPERTYREQUEST
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 IDTypeEnum = _reflection.GeneratedProtocolMessageType('IDTypeEnum', (_message.Message,), {
@@ -401,6 +615,51 @@ DeleteLabelsRequest = _reflection.GeneratedProtocolMessageType('DeleteLabelsRequ
 _sym_db.RegisterMessage(DeleteLabelsRequest)
 _sym_db.RegisterMessage(DeleteLabelsRequest.Response)
 
+GetPropertyRequest = _reflection.GeneratedProtocolMessageType('GetPropertyRequest', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _GETPROPERTYREQUEST_RESPONSE,
+    '__module__' : 'modeldb.metadata.MetadataService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.modeldb.metadata.GetPropertyRequest.Response)
+    })
+  ,
+  'DESCRIPTOR' : _GETPROPERTYREQUEST,
+  '__module__' : 'modeldb.metadata.MetadataService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.metadata.GetPropertyRequest)
+  })
+_sym_db.RegisterMessage(GetPropertyRequest)
+_sym_db.RegisterMessage(GetPropertyRequest.Response)
+
+AddPropertyRequest = _reflection.GeneratedProtocolMessageType('AddPropertyRequest', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _ADDPROPERTYREQUEST_RESPONSE,
+    '__module__' : 'modeldb.metadata.MetadataService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.modeldb.metadata.AddPropertyRequest.Response)
+    })
+  ,
+  'DESCRIPTOR' : _ADDPROPERTYREQUEST,
+  '__module__' : 'modeldb.metadata.MetadataService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.metadata.AddPropertyRequest)
+  })
+_sym_db.RegisterMessage(AddPropertyRequest)
+_sym_db.RegisterMessage(AddPropertyRequest.Response)
+
+DeletePropertyRequest = _reflection.GeneratedProtocolMessageType('DeletePropertyRequest', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _DELETEPROPERTYREQUEST_RESPONSE,
+    '__module__' : 'modeldb.metadata.MetadataService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.modeldb.metadata.DeletePropertyRequest.Response)
+    })
+  ,
+  'DESCRIPTOR' : _DELETEPROPERTYREQUEST,
+  '__module__' : 'modeldb.metadata.MetadataService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.metadata.DeletePropertyRequest)
+  })
+_sym_db.RegisterMessage(DeletePropertyRequest)
+_sym_db.RegisterMessage(DeletePropertyRequest.Response)
+
 
 DESCRIPTOR._options = None
 
@@ -410,8 +669,8 @@ _METADATASERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=674,
-  serialized_end=1132,
+  serialized_start=1088,
+  serialized_end=2011,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetLabels',
@@ -439,6 +698,33 @@ _METADATASERVICE = _descriptor.ServiceDescriptor(
     input_type=_DELETELABELSREQUEST,
     output_type=_DELETELABELSREQUEST_RESPONSE,
     serialized_options=b'\202\323\344\223\002\030*\023/v1/metadata/labels:\001*',
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetProperty',
+    full_name='ai.verta.modeldb.metadata.MetadataService.GetProperty',
+    index=3,
+    containing_service=None,
+    input_type=_GETPROPERTYREQUEST,
+    output_type=_GETPROPERTYREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002\027\022\025/v1/metadata/property',
+  ),
+  _descriptor.MethodDescriptor(
+    name='AddProperty',
+    full_name='ai.verta.modeldb.metadata.MetadataService.AddProperty',
+    index=4,
+    containing_service=None,
+    input_type=_ADDPROPERTYREQUEST,
+    output_type=_ADDPROPERTYREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002\032\032\025/v1/metadata/property:\001*',
+  ),
+  _descriptor.MethodDescriptor(
+    name='DeleteProperty',
+    full_name='ai.verta.modeldb.metadata.MetadataService.DeleteProperty',
+    index=5,
+    containing_service=None,
+    input_type=_DELETEPROPERTYREQUEST,
+    output_type=_DELETEPROPERTYREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002\032*\025/v1/metadata/property:\001*',
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_METADATASERVICE)

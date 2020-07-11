@@ -12,6 +12,8 @@ message IDTypeEnum {
         UNKNOWN = 0; // Type 0 should always cause an error
         VERSIONING_REPOSITORY = 1;
         VERSIONING_COMMIT = 2;
+        VERSIONING_REPO_COMMIT_BLOB = 3;
+        VERSIONING_REPO_COMMIT = 4;
     }
 }
 
@@ -50,6 +52,33 @@ message DeleteLabelsRequest {
     }
 }
 
+message GetPropertyRequest {
+    // If only id_type is provided, gather from all of such sources
+    IdentificationType id = 1;
+    string key = 2;
+
+    message Response {
+        string value = 3;
+    }
+}
+
+message AddPropertyRequest {
+    IdentificationType id = 1;
+    string key = 2;
+    string value = 3;
+
+    message Response {
+    }
+}
+
+message DeletePropertyRequest {
+    IdentificationType id = 1;
+    string key = 2;
+
+    message Response {
+    }
+}
+
 service MetadataService {
     rpc GetLabels(GetLabelsRequest) returns (GetLabelsRequest.Response) {
         option (google.api.http) = {
@@ -67,6 +96,26 @@ service MetadataService {
     rpc DeleteLabels(DeleteLabelsRequest) returns (DeleteLabelsRequest.Response) {
         option (google.api.http) = {
             delete: "/v1/metadata/labels"
+            body: "*"
+        };
+    };
+
+    rpc GetProperty(GetPropertyRequest) returns (GetPropertyRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/property"
+        };
+    };
+
+    rpc AddProperty(AddPropertyRequest) returns (AddPropertyRequest.Response) {
+        option (google.api.http) = {
+            put: "/v1/metadata/property"
+            body: "*"
+        };
+    };
+
+    rpc DeleteProperty(DeletePropertyRequest) returns (DeletePropertyRequest.Response) {
+        option (google.api.http) = {
+            delete: "/v1/metadata/property"
             body: "*"
         };
     };
