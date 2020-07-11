@@ -71,6 +71,14 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
     })
   }
 
+  /** Make a (raw) request, returning the body of the response
+   *  @param method method of the request
+   *  @param url url of the request
+   *  @param query query parameters
+   *  @param localHeaders local headers
+   *  @param body body of the request
+   *  @return Response, if the request suceeds, wrap in a Future
+   */
   def requestRaw(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
     val request = (if (body != null) basicRequest.body(body) else basicRequest).response(asByteArray)
     val uriPath = Uri(new URI(url))
@@ -82,16 +90,11 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
       case _ => throw new IllegalArgumentException(s"unknown method $method")
     }
 
-    val futureResponse = (if (localHeaders != null && localHeaders.nonEmpty) request2.headers(localHeaders) else request2).send()
-
-    futureResponse.map(response => {
-      response.body match {
+    (if (localHeaders != null && localHeaders.nonEmpty) request2.headers(localHeaders) else request2).send()
+      .map(response => response.body match {
         case Left(failureBody) => Failure(HttpException(response.code, failureBody))
-        case Right(successBody) => {
-          Success(successBody)
-        }
-      }
-    })
+        case Right(successBody) => Success(RawRequestResponse(body = successBody, headers = response.header(_)))
+      })
   }
 
   def toQuery[T](value: T): List[String] = value match {

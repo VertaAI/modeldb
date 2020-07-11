@@ -240,6 +240,27 @@ class TestS3:
         with pytest.raises(TypeError):
             dataset1 + dataset2  # pylint: disable=pointless-statement
 
+    def test_add(self):
+        path1 = "s3://verta-starter/census-train.csv"
+        path2 = "s3://verta-starter/census-test.csv"
+
+        dataset = verta.dataset.S3(path1)
+        dataset.add(path2)
+
+        # as if we had added two separate blobs together
+        dataset1 = verta.dataset.S3(path1)
+        dataset2 = verta.dataset.S3(path2)
+        components = dataset1.list_components() + dataset2.list_components()
+        components = list(sorted(components, key=lambda component: component.path))
+
+        assert dataset.list_components() == components
+
+    def test_add_intersect_error(self):
+        dataset = verta.dataset.S3("s3://verta-starter/")
+
+        with pytest.raises(ValueError):
+            dataset.add("s3://verta-starter/census-test.csv")
+
 
 class TestPath:
     def test_dirpath(self):
@@ -398,6 +419,27 @@ class TestPath:
 
         with pytest.raises(ValueError):
             dataset1 + dataset2  # pylint: disable=pointless-statement
+
+    def test_add(self):
+        path1 = "test_versioning/test_code.py"
+        path2 = "test_versioning/test_dataset.py"
+
+        dataset = verta.dataset.Path(path1)
+        dataset.add(path2)
+
+        # as if we had added two separate blobs together
+        dataset1 = verta.dataset.Path(path1)
+        dataset2 = verta.dataset.Path(path2)
+        components = dataset1.list_components() + dataset2.list_components()
+        components = list(sorted(components, key=lambda component: component.path))
+
+        assert dataset.list_components() == components
+
+    def test_add_intersect_error(self):
+        dataset = verta.dataset.Path("test_versioning/")
+
+        with pytest.raises(ValueError):
+            dataset.add("test_versioning/test_dataset.py")
 
 
 @pytest.mark.usefixtures("with_boto3", "in_tempdir")

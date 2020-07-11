@@ -36,7 +36,6 @@ from ._protos.public.modeldb import CommonService_pb2 as _CommonService
 from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService
 from ._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
 from ._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
-from ._protos.public.client import Config_pb2 as _ConfigProtos
 
 from .external import six
 from .external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
@@ -267,35 +266,8 @@ class Client(object):
         return _OSS_DEFAULT_WORKSPACE
 
     def _load_config(self):
-        config_file = self._find_config_in_all_dirs()
-        if config_file is not None:
-            stream = open(config_file, 'r')
-            self._config = yaml.load(stream, Loader=yaml.FullLoader)
-            # validate config against proto spec
-            _utils.json_to_proto(
-                self._config,
-                _ConfigProtos.Config,
-                ignore_unknown_fields=False,
-            )
-        else:
-            self._config = {}
-
-    def _find_config_in_all_dirs(self):
-        res = self._find_config('./', True)
-        if res is None:
-            return self._find_config("{}/.verta/".format(os.path.expanduser("~")))
-        return res
-
-    def _find_config(self, prefix, recursive=False):
-        for ff in _config_utils.CONFIG_FILENAMES:
-            if os.path.isfile(prefix + ff):
-                return prefix + ff
-        if recursive:
-            for dir in [os.path.join(prefix, o) for o in os.listdir(prefix) if os.path.isdir(os.path.join(prefix, o))]:
-                config_file = self._find_config(dir + "/", True)
-                if config_file is not None:
-                    return config_file
-        return None
+        with _config_utils.read_merged_config() as config:
+            self._config = config
 
     def _set_from_config_if_none(self, var, resource_name):
         if var is None:
