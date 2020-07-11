@@ -211,7 +211,7 @@ class TestCommitDataVersioning extends FunSuite {
       assert(!Files.readAllBytes((new File("somefile")).toPath).sameElements(originalContent))
 
       // upload another file to commit:
-      val updatedContent = generateRandomFile("somefile2").get
+      generateRandomFile("somefile2").get
       val pathBlob2 = PathBlob("somefile2", true).get
       val newCommit = commit
         .update("file2", pathBlob2)
@@ -356,7 +356,7 @@ class TestCommitDataVersioning extends FunSuite {
       }
       val downloadAttempt3 = retrievedPathBlob2.download(downloadToPath = Some("some-path"))
       assert(downloadAttempt3.isFailure)
-      assert(downloadAttempt3 match {case Failure(e) => e.getMessage contains "This blob did not allow for versioning"})
+      assert(downloadAttempt3 match {case Failure(e) => e.getMessage contains "This dataset cannot be used for downloads"})
     } finally {
       cleanup(f)
     }
