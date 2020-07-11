@@ -408,12 +408,11 @@ class TestExperimentRun:
         new_run_art_code_data = expt_run.clone(copy_artifacts=True,
             copy_code_version=True, copy_datasets=True)
 
-        old_run_msg = expt_run._get(expt_run._conn, _expt_run_id=expt_run.id)
-        new_run_no_art_msg = new_run_no_art._get(new_run_no_art._conn, _expt_run_id=new_run_no_art.id)
-        new_run_art_only_msg = new_run_art_only._get(new_run_art_only._conn, _expt_run_id=new_run_art_only.id)
-        new_run_art_code_msg = new_run_art_code._get(new_run_art_code._conn, _expt_run_id=new_run_art_code.id)
-        new_run_art_code_data_msg = new_run_art_code_data._get(new_run_art_code_data._conn,
-            _expt_run_id=new_run_art_code_data.id)
+        old_run_msg = expt_run._get_self_as_msg()
+        new_run_no_art_msg = new_run_no_art._get_self_as_msg()
+        new_run_art_only_msg = new_run_art_only._get_self_as_msg()
+        new_run_art_code_msg = new_run_art_code._get_self_as_msg()
+        new_run_art_code_data_msg = new_run_art_code_data._get_self_as_msg()
 
         # ensure basic data is the same
         assert expt_run.id != new_run_no_art_msg.id
