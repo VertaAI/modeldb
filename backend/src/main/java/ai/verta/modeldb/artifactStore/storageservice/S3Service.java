@@ -57,8 +57,7 @@ public class S3Service implements ArtifactStoreService {
         this.s3Client =
             AmazonS3ClientBuilder.standard()
                 .withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(
-                        minioEndpoint, app.getAwsRegion()))
+                    new AwsClientBuilder.EndpointConfiguration(minioEndpoint, app.getAwsRegion()))
                 .withPathStyleAccessEnabled(true)
                 .withClientConfiguration(clientConfiguration)
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))

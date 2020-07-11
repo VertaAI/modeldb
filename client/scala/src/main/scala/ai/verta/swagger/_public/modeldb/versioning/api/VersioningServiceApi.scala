@@ -285,36 +285,6 @@ class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def GetTag2(repository_id_repo_id: BigInt, tag: String, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None)(implicit ec: ExecutionContext): Try[VersioningGetTagRequestResponse] = Await.result(GetTag2Async(repository_id_repo_id, tag, repository_id_named_id_name, repository_id_named_id_workspace_name), Duration.Inf)
 
-  def ListBlobExperimentRunsAsync(commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, location: Option[List[String]]=None, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Future[Try[VersioningListBlobExperimentRunsRequestResponse]] = {
-    var __query = new mutable.HashMap[String,List[String]]
-    if (repository_id_repo_id.isDefined) __query.update("repository_id.repo_id", client.toQuery(repository_id_repo_id.get))
-    if (pagination_page_number.isDefined) __query.update("pagination.page_number", client.toQuery(pagination_page_number.get))
-    if (pagination_page_limit.isDefined) __query.update("pagination.page_limit", client.toQuery(pagination_page_limit.get))
-    if (location.isDefined) __query.update("location", client.toQuery(location.get))
-    if (repository_id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_workspace_name\"")
-    if (repository_id_named_id_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_name\"")
-    if (commit_sha == null) throw new Exception("Missing required parameter \"commit_sha\"")
-    val body: String = null
-    return client.request[String, VersioningListBlobExperimentRunsRequestResponse]("GET", basePath + s"/versioning/workspaces/$repository_id_named_id_workspace_name/repositories/$repository_id_named_id_name/commits/$commit_sha/path/runs", __query.toMap, body, VersioningListBlobExperimentRunsRequestResponse.fromJson)
-  }
-
-  def ListBlobExperimentRuns(commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, location: Option[List[String]]=None, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Try[VersioningListBlobExperimentRunsRequestResponse] = Await.result(ListBlobExperimentRunsAsync(commit_sha, repository_id_named_id_name, repository_id_named_id_workspace_name, location, pagination_page_limit, pagination_page_number, repository_id_repo_id), Duration.Inf)
-
-  def ListBlobExperimentRuns2Async(commit_sha: String, repository_id_repo_id: BigInt, location: Option[List[String]]=None, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[VersioningListBlobExperimentRunsRequestResponse]] = {
-    var __query = new mutable.HashMap[String,List[String]]
-    if (repository_id_named_id_name.isDefined) __query.update("repository_id.named_id.name", client.toQuery(repository_id_named_id_name.get))
-    if (repository_id_named_id_workspace_name.isDefined) __query.update("repository_id.named_id.workspace_name", client.toQuery(repository_id_named_id_workspace_name.get))
-    if (pagination_page_number.isDefined) __query.update("pagination.page_number", client.toQuery(pagination_page_number.get))
-    if (pagination_page_limit.isDefined) __query.update("pagination.page_limit", client.toQuery(pagination_page_limit.get))
-    if (location.isDefined) __query.update("location", client.toQuery(location.get))
-    if (repository_id_repo_id == null) throw new Exception("Missing required parameter \"repository_id_repo_id\"")
-    if (commit_sha == null) throw new Exception("Missing required parameter \"commit_sha\"")
-    val body: String = null
-    return client.request[String, VersioningListBlobExperimentRunsRequestResponse]("GET", basePath + s"/versioning/repositories/$repository_id_repo_id/commits/$commit_sha/path/runs", __query.toMap, body, VersioningListBlobExperimentRunsRequestResponse.fromJson)
-  }
-
-  def ListBlobExperimentRuns2(commit_sha: String, repository_id_repo_id: BigInt, location: Option[List[String]]=None, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None)(implicit ec: ExecutionContext): Try[VersioningListBlobExperimentRunsRequestResponse] = Await.result(ListBlobExperimentRuns2Async(commit_sha, repository_id_repo_id, location, pagination_page_limit, pagination_page_number, repository_id_named_id_name, repository_id_named_id_workspace_name), Duration.Inf)
-
   def ListBranchesAsync(repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Future[Try[VersioningListBranchesRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (repository_id_repo_id.isDefined) __query.update("repository_id.repo_id", client.toQuery(repository_id_repo_id.get))
@@ -362,34 +332,6 @@ class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
   }
 
   def ListCommitBlobs2(commit_sha: String, repository_id_repo_id: BigInt, location_prefix: Option[List[String]]=None, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None)(implicit ec: ExecutionContext): Try[VersioningListCommitBlobsRequestResponse] = Await.result(ListCommitBlobs2Async(commit_sha, repository_id_repo_id, location_prefix, repository_id_named_id_name, repository_id_named_id_workspace_name), Duration.Inf)
-
-  def ListCommitExperimentRunsAsync(commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Future[Try[VersioningListCommitExperimentRunsRequestResponse]] = {
-    var __query = new mutable.HashMap[String,List[String]]
-    if (repository_id_repo_id.isDefined) __query.update("repository_id.repo_id", client.toQuery(repository_id_repo_id.get))
-    if (pagination_page_number.isDefined) __query.update("pagination.page_number", client.toQuery(pagination_page_number.get))
-    if (pagination_page_limit.isDefined) __query.update("pagination.page_limit", client.toQuery(pagination_page_limit.get))
-    if (repository_id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_workspace_name\"")
-    if (repository_id_named_id_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_name\"")
-    if (commit_sha == null) throw new Exception("Missing required parameter \"commit_sha\"")
-    val body: String = null
-    return client.request[String, VersioningListCommitExperimentRunsRequestResponse]("GET", basePath + s"/versioning/workspaces/$repository_id_named_id_workspace_name/repositories/$repository_id_named_id_name/commits/$commit_sha/runs", __query.toMap, body, VersioningListCommitExperimentRunsRequestResponse.fromJson)
-  }
-
-  def ListCommitExperimentRuns(commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Try[VersioningListCommitExperimentRunsRequestResponse] = Await.result(ListCommitExperimentRunsAsync(commit_sha, repository_id_named_id_name, repository_id_named_id_workspace_name, pagination_page_limit, pagination_page_number, repository_id_repo_id), Duration.Inf)
-
-  def ListCommitExperimentRuns2Async(commit_sha: String, repository_id_repo_id: BigInt, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[VersioningListCommitExperimentRunsRequestResponse]] = {
-    var __query = new mutable.HashMap[String,List[String]]
-    if (repository_id_named_id_name.isDefined) __query.update("repository_id.named_id.name", client.toQuery(repository_id_named_id_name.get))
-    if (repository_id_named_id_workspace_name.isDefined) __query.update("repository_id.named_id.workspace_name", client.toQuery(repository_id_named_id_workspace_name.get))
-    if (pagination_page_number.isDefined) __query.update("pagination.page_number", client.toQuery(pagination_page_number.get))
-    if (pagination_page_limit.isDefined) __query.update("pagination.page_limit", client.toQuery(pagination_page_limit.get))
-    if (repository_id_repo_id == null) throw new Exception("Missing required parameter \"repository_id_repo_id\"")
-    if (commit_sha == null) throw new Exception("Missing required parameter \"commit_sha\"")
-    val body: String = null
-    return client.request[String, VersioningListCommitExperimentRunsRequestResponse]("GET", basePath + s"/versioning/repositories/$repository_id_repo_id/commits/$commit_sha/runs", __query.toMap, body, VersioningListCommitExperimentRunsRequestResponse.fromJson)
-  }
-
-  def ListCommitExperimentRuns2(commit_sha: String, repository_id_repo_id: BigInt, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_named_id_name: Option[String]=None, repository_id_named_id_workspace_name: Option[String]=None)(implicit ec: ExecutionContext): Try[VersioningListCommitExperimentRunsRequestResponse] = Await.result(ListCommitExperimentRuns2Async(commit_sha, repository_id_repo_id, pagination_page_limit, pagination_page_number, repository_id_named_id_name, repository_id_named_id_workspace_name), Duration.Inf)
 
   def ListCommitsAsync(repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, commit_base: Option[String]=None, commit_head: Option[String]=None, pagination_page_limit: Option[BigInt]=None, pagination_page_number: Option[BigInt]=None, repository_id_repo_id: Option[BigInt]=None)(implicit ec: ExecutionContext): Future[Try[VersioningListCommitsRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
