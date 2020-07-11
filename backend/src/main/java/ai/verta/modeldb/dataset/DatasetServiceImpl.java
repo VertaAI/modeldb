@@ -2,8 +2,9 @@ package ai.verta.modeldb.dataset;
 
 import static io.grpc.Status.Code.INVALID_ARGUMENT;
 
-import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddDatasetAttributes;
 import ai.verta.modeldb.AddDatasetTags;
@@ -24,18 +25,15 @@ import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.GetAllDatasets;
-import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetDatasetById;
 import ai.verta.modeldb.GetDatasetByName;
 import ai.verta.modeldb.GetExperimentRunByDataset;
 import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.LastExperimentByDatasetId;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.SetDatasetVisibilty;
 import ai.verta.modeldb.SetDatasetWorkspace;
 import ai.verta.modeldb.SetDatasetWorkspace.Response;
@@ -159,8 +157,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
             .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
-            .setDatasetVisibility(request.getDatasetVisibility())
-            .setDatasetType(request.getDatasetType());
+            .setDatasetVisibility(request.getDatasetVisibility());
 
     if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
       datasetBuilder
@@ -665,51 +662,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, UpdateDatasetAttributes.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
-  public void getDatasetAttributes(
-      GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      // Request Parameter Validation
-      String errorMessage = null;
-      if (request.getId().isEmpty()
-          && request.getAttributeKeysList().isEmpty()
-          && !request.getGetAll()) {
-        errorMessage = "Dataset ID and Dataset attribute keys not found in GetAttributes request";
-      } else if (request.getId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
-      } else if (request.getAttributeKeysList().isEmpty() && !request.getGetAll()) {
-        errorMessage = "Dataset attribute keys not found in GetAttributes request";
-      }
-
-      if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.READ);
-
-      List<KeyValue> attributes =
-          datasetDAO.getDatasetAttributes(
-              request.getId(), request.getAttributeKeysList(), request.getGetAll());
-      responseObserver.onNext(
-          GetAttributes.Response.newBuilder().addAllAttributes(attributes).build());
-      responseObserver.onCompleted();
-
-    } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetAttributes.Response.getDefaultInstance());
     }
   }
 

@@ -4,6 +4,8 @@ import static ai.verta.modeldb.RepositoryTest.NAME;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
+import ai.verta.common.ArtifactPart;
+import ai.verta.common.Pagination;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -47,7 +49,6 @@ import ai.verta.modeldb.versioning.ListCommitBlobsRequest;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.MergeRepositoryCommitsRequest;
 import ai.verta.modeldb.versioning.NotebookCodeBlob;
-import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentDiff;

@@ -1,6 +1,6 @@
 package ai.verta.modeldb.versioning;
 
-import ai.verta.modeldb.ArtifactPart;
+import ai.verta.common.ArtifactPart;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import java.security.NoSuchAlgorithmException;
