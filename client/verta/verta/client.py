@@ -379,12 +379,8 @@ class Client(object):
             if expt is None:
                 raise ValueError("no Experiment found with ID {}".format(id))
             expt_msg = expt._get_self_as_msg()
-            # set parent Project by ID
-            try:
-                self.proj = Project._get_or_create(self._conn, self._conf, _proj_id=expt_msg.project_id)
-            except ValueError:  # parent Project not found
-                raise RuntimeError("unable to find parent Project of Experiment with ID {};"
-                                   " this should only ever occur due to a back end error".format(id))
+            # get parent Project by ID
+            self.get_project(id=expt_msg.project_id)
             # set Experiment
             self.expt = expt
         else:
@@ -446,18 +442,10 @@ class Client(object):
             if run is None:
                 raise ValueError("no ExperimentRun found with ID {}".format(id))
             expt_run_msg = run._get_self_as_msg()
-            # set parent Project by ID
-            try:
-                self.proj = Project._get_or_create(self._conn, self._conf, _proj_id=expt_run_msg.project_id)
-            except ValueError:  # parent Project not found
-                raise RuntimeError("unable to find parent Project of ExperimentRun with ID {};"
-                                   " this should only ever occur due to a back end error".format(id))
-            # set parent Experiment by ID
-            try:
-                self.expt = Experiment._get_or_create(self._conn, self._conf, _expt_id=expt_run_msg.experiment_id)
-            except ValueError:  # parent Experiment not found
-                raise RuntimeError("unable to find parent Experiment of ExperimentRun with ID {};"
-                                   " this should only ever occur due to a back end error".format(id))
+            # get parent Project by ID
+            self.get_project(id=expt_run_msg.project_id)
+            # get parent Experiment by ID
+            self.get_experiment(id=expt_run_msg.experiment_id)
         else:
             # set ExperimentRun by name under current Experiment
             if self.expt is None:
@@ -599,6 +587,24 @@ class Client(object):
                                public_within_org=public_within_org,
                                _dataset_id=id)
 
+    # TODO: fix this when dataset subclasses are overhauled b/c dataset integration
+    def get_dataset(self, name=None, id=None):
+        """
+        Retrieve an already created Dataset. Only one of name or id can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Dataset.
+        id : str, optional
+            ID of the Dataset. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`Dataset`
+        """
+        return _dataset.Dataset(self._conn, self._conf, name=name, _dataset_id=id)
+
     def find_datasets(self,
                       dataset_ids=None, name=None,
                       tags=None,
@@ -668,39 +674,113 @@ class Client(object):
 
     # get entities
     def get_project(self, name=None, workspace=None, id=None):
-        # TODO: check combination of params
+        if name is None and id is None:
+            name = self._set_from_config_if_none(name, "project")
 
-        if Project._get(self._conn) is None:
-            raise ValueError("Project not found")  # TODO: mention name+workspace/id
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+        elif id is not None:
+            proj = Project._get(self._conn, self._conf, _proj_id=id)
+            if proj is None:
+                raise ValueError("Project with ID {} not found".format(id))
+        elif name is not None:
+            proj = Project._get(self._conn, self._conf, proj_name=name)
+            if proj is None:
+                raise ValueError("Project with name {} not found".format(name))
+        else:
+            raise ValueError("must specify either `name` or `id`")
 
-        return Project(self._conn, self._conf, proj_name=name, workspace=workspace, _proj_id=id)
+
+        self.proj = proj
+        self.expt = None  # reset Experiment b/c different Project
+        return self.proj
 
     def get_experiment(self, name=None, id=None):
-        raise NotImplementedError
+        if name is None and id is None:
+            name = self._set_from_config_if_none(name, "experiment")
+
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+        elif id is not None:
+            expt = Experiment._get(self._conn, self._conf, _expt_id=id)
+            if expt is None:
+                raise ValueError("Experiment with ID {} not found".format(id))
+            expt_msg = expt._get_self_as_msg()
+            # set parent Project by ID
+            self.get_project(id=expt_msg.project_id)
+        elif name is not None:
+            # set under current Project
+            if self.proj is None:
+                # automatically set Project if in config
+                proj_name = self._set_from_config_if_none(None, "project")
+                if proj_name is not None:
+                    self.set_project(proj_name)
+                else:
+                    raise AttributeError("a Project must first be in progress")
+
+            expt = Experiment._get(
+                self._conn, self._conf,
+                proj_id=self.proj.id, expt_name=name,
+            )
+            if expt is None:
+                raise ValueError("Experiment with name {} not found".format(name))
+        else:
+            raise ValueError("must specify either `name` or `id`")
+
+        self.expt = expt
+        return self.expt
 
     def get_experiment_run(self, name=None, id=None):
-        raise NotImplementedError
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+        elif id is not None:
+            run = ExperimentRun._get(self._conn, self._conf, _expt_run_id=id)
+            if run is None:
+                raise ValueError("Experiment Run with ID {} not found".format(id))
+            expt_run_msg = run._get_self_as_msg()
+            # get parent Project by ID
+            self.proj = self.get_project(id=expt_run_msg.project_id)
+            # get parent Experiment by ID
+            self.expt = self.get_experiment(id=expt_run_msg.experiment_id)
+        elif name is not None:
+            # set under current Experiment
+            if self.expt is None:
+                # automatically set Experiment if in config
+                expt_name = self._set_from_config_if_none(None, "experiment")
+                if expt_name is not None:
+                    self.set_experiment(expt_name)
+                else:
+                    raise AttributeError("an Experiment must first be in progress")
 
-    def get_dataset(self, name=None, id=None):
-        """
-        Retrieve an existing Dataset. Only one of `name` or `id` can be provided.
+            run = ExperimentRun._get(
+                self._conn, self._conf,
+                expt_id=self.expt.id, expt_run_name=name,
+            )
+            if run is None:
+                raise ValueError("Experiment Run with name {} not found".format(name))
+        else:
+            raise ValueError("must specify either `name` or `id`")
 
-        Parameters
-        ----------
-        name : str, optional
-            Name of the Dataset.
-        id : str, optional
-            ID of the Dataset. This parameter cannot be provided alongside `name`.
-
-        Returns
-        -------
-        :class:`Dataset`
-
-        """
-        raise NotImplementedError
+        return run
 
     def get_repository(self, name=None, workspace=None, id=None):
-        raise NotImplementedError
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+        elif id is not None:
+            repo = _repository.Repository._get(self._conn, id_=id)
+            if repo is None:
+                raise ValueError("no Repository found with ID {}".format(id))
+        elif name is not None:
+            if workspace is None:
+                workspace = self._get_personal_workspace()
+
+            repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
+            if repo is None:
+                raise ValueError("no Repository found with name {}".format(name))
+        else:
+            raise ValueError("must specify either `name` or `id`")
+
+        return repo
 
     # aliases for get-or-create functions for API compatibility
     def get_or_create_project(self, *args, **kwargs):
