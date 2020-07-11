@@ -350,7 +350,7 @@ class TestExperimentRun:
         with pytest.raises(ValueError):
             client.get_experiment_run(name)
 
-        run = client.set_experiment(name)
+        run = client.set_experiment_run(name)
 
         assert run.id == client.get_experiment_run(run.name).id
         assert run.id == client.get_experiment_run(id=run.id).id
