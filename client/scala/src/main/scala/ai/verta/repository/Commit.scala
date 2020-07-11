@@ -11,7 +11,7 @@ import scala.collection.immutable.Map
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 
-import java.io.{File, FileInputStream, FileOutputStream, ByteArrayInputStream}
+import java.io.{File, InputStream, FileInputStream, FileOutputStream, ByteArrayInputStream}
 import java.nio.file.{Files, StandardCopyOption}
 
 /** Commit within a ModelDB Repository.
@@ -514,23 +514,24 @@ class Commit(
   private def getURLForArtifact(
     blobPath: String,
     datasetComponentPath: String,
-    method: String
-  )(implicit ec: ExecutionContext): Try[String] = {
+    method: String,
+    partNum: Int = 0
+  )(implicit ec: ExecutionContext): Try[VersioningGetUrlForBlobVersionedResponse] = {
     clientSet.versioningService.getUrlForBlobVersioned2(
       VersioningGetUrlForBlobVersioned(
         commit_sha = id,
         location = Some(pathToLocation(blobPath)),
         method = Some(method),
-        part_number = Some(BigInt(0)),
+        part_number = Some(BigInt(partNum)),
         path_dataset_component_blob_path = Some(datasetComponentPath),
         repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
       ),
       id.get,
       repoId
-    ).map(_.url.get)
+    )
   }
 
-  /** Helper method to upload the file to ModelDB. Currently not supporting multi-part upload
+  /** Helper method to upload the file to ModelDB.
    *  @param blobPath path to the blob in the commit
    *  @param datasetComponentPath path to the component in the blob
    *  @return whether the upload attempt succeeds
@@ -538,19 +539,101 @@ class Commit(
   private def uploadArtifact(
     blobPath: String,
     datasetComponentPath: String,
-    file: File
+    file: File,
+    partSize: Int = 1024 * 1024 * 64 // 64 MB
   )(implicit ec: ExecutionContext): Try[Unit] = {
-    /** TODO: implement multi-part upload */
-    getURLForArtifact(blobPath, datasetComponentPath, "PUT").flatMap(url =>
-      Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
-        try {
-          Await.result(clientSet.client.requestRaw("PUT", url, null, Map("Content-Length" -> file.length.toString), inputStream), Duration.Inf)
-            .map(_ => ())
-        } finally {
-          inputStream.close()
-        }
-      })
-    )
+    getURLForArtifact(blobPath, datasetComponentPath, "PUT", 1).flatMap(resp => {
+      if (resp.multipart_upload_ok.isDefined && resp.multipart_upload_ok.get) {
+        var buffer = new Array[Byte](partSize)
+
+        Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
+          try {
+            uploadPart(blobPath, datasetComponentPath, inputStream, buffer)
+              .flatMap(_ => clientSet.versioningService.commitMultipartVersionedBlobArtifact(
+                VersioningCommitMultipartVersionedBlobArtifact(
+                  commit_sha = id,
+                  location = Some(pathToLocation(blobPath)),
+                  path_dataset_component_blob_path = Some(datasetComponentPath),
+                  repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
+                )
+              ))
+              .map(_ => ())
+          } finally {
+            inputStream.close()
+          }
+        })
+      }
+      else {
+        Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
+          try {
+            Await.result(clientSet.client.requestRaw("PUT", resp.url.get, null, Map("Content-Length" -> file.length.toString), inputStream), Duration.Inf)
+              .map(_ => ())
+          } finally {
+            inputStream.close()
+          }
+        })
+      }
+    })
+  }
+
+  /** Upload a part of the input stream
+   *  @param blobPath path to the blob in the commit
+   *  @param datasetComponentPath path to the component in the blob
+   *  @param inputStream the stream of input to uploaded
+   *  @param partNum the index of the current part
+   *  @return The number of parts uploaded, if succeeds
+   */
+  private def uploadPart(
+    blobPath: String,
+    datasetComponentPath: String,
+    inputStream: InputStream,
+    buffer: Array[Byte],
+    partNum: Int = 1
+  )(implicit ec: ExecutionContext): Try[Int] = {
+    getURLForArtifact(blobPath, datasetComponentPath, "PUT", partNum).map(_.url.get).flatMap(url => {
+      var readLen = inputStream.read(buffer)
+
+      if (readLen < 0)
+        Success(partNum - 1)
+      else
+        retry (
+          Try(new ByteArrayInputStream(buffer)).flatMap(filepart => {
+            try {
+              Await.result(clientSet.client.requestRaw("PUT", url, null, Map("Content-Length" -> readLen.toString), filepart), Duration.Inf)
+                .flatMap(resp => clientSet.versioningService.commitVersionedBlobArtifactPart(
+                  VersioningCommitVersionedBlobArtifactPart(
+                    artifact_part = Some(ModeldbArtifactPart(
+                      etag = Some(resp.headers("ETag").get),
+                      part_number = Some(BigInt(partNum))
+                    )),
+                    commit_sha = id,
+                    location = Some(pathToLocation(blobPath)),
+                    path_dataset_component_blob_path = Some(datasetComponentPath),
+                    repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
+                  )
+                ))
+                .flatMap(_ => uploadPart(blobPath, datasetComponentPath, inputStream, buffer, partNum + 1))
+            } finally {
+              filepart.close()
+            }
+          }),
+          3, // number of upload attempts
+          f"Uploading part ${partNum} of component ${datasetComponentPath} of blob at ${blobPath} fails."
+        )
+    })
+  }
+
+  /** Helper function to retry failable function.
+   *  @param f function to (re)try
+   *  @param attemptsLeft number of attempts left (including current attempt)
+   *  @param errorMessage error message if out of attempts
+   *  @return the result of f, if succeeds
+   */
+  private def retry[T](f: => Try[T], attemptsLeft: Int, errorMessage: String): Try[T] = {
+    if (attemptsLeft <= 0)
+      Failure(new IllegalArgumentException(errorMessage))
+    else
+      f.orElse(retry(f, attemptsLeft - 1, errorMessage))
   }
 
   /** Helper method to download a component of a blob.
@@ -562,12 +645,12 @@ class Commit(
     blobPath: String,
     datasetComponentPath: String
   )(implicit ec: ExecutionContext): Try[File] = {
-    getURLForArtifact(blobPath, datasetComponentPath, "GET").flatMap(url =>
+    getURLForArtifact(blobPath, datasetComponentPath, "GET").map(_.url.get).flatMap(url =>
       Try(File.createTempFile(datasetComponentPath, null)).flatMap(file =>
         Await.result(
           clientSet.client.requestRaw("GET", url, null, null, null)
             .map(resp => resp match {
-              case Success(response) => Try(new ByteArrayInputStream(response)).flatMap(inputStream => {
+              case Success(response) => Try(new ByteArrayInputStream(response.body)).flatMap(inputStream => {
                 try {
                   Try(Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
                     .map(_ => file)

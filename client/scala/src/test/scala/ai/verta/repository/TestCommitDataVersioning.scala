@@ -354,4 +354,31 @@ class TestCommitDataVersioning extends FunSuite {
       cleanup(f)
     }
   }
+
+  // This test is comment out because it is big. Uncomment it with caution!
+  // test("multipart-upload should work") {
+  //   val f = fixture
+  //
+  //   try {
+  //     val originalContent = generateRandomFile("somefile", 128 * 1024 * 1024).get // 128 MB
+  //     val pathBlob = PathBlob("somefile", true).get
+  //     val commit = f.commit
+  //       .update("file", pathBlob)
+  //       .flatMap(_.save("some-msg")).get
+  //     generateRandomFile("somefile").get
+  //
+  //     // recover the old versioned file:
+  //     val retrievedBlob: Dataset = commit.get("file").get match {
+  //       case path: PathBlob => path
+  //     }
+  //     val downloadToPath = retrievedBlob.download().get
+  //
+  //     assert(downloadToPath equals (new File(f"${Dataset.DefaultDownloadDir}")).getAbsolutePath)
+  //     assert(
+  //       Files.readAllBytes((new File(f"${downloadToPath}/somefile")).toPath).sameElements(originalContent)
+  //     )
+  //   } finally {
+  //     cleanup(f)
+  //   }
+  // }
 }
