@@ -4,7 +4,7 @@ import java.net.{URL, URI}
 
 import scala.util.{Try, Success, Failure}
 
-/** A location in S3
+/** A location in S3.
  *  To initialize, pass in an S3 path and (optionally) a version ID:
  *  {{{
  *  val S3Location: Try[S3Location] = S3Location("some-path-1")
@@ -12,7 +12,7 @@ import scala.util.{Try, Success, Failure}
  */
 class S3Location(
   val bucketName: String,
-  val key: Option[String] = None, 
+  val key: Option[String] = None,
   val versionID: Option[String] = None
 ) {}
 
