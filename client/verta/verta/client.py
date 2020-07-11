@@ -470,9 +470,10 @@ class Client(object):
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
             # find ExperimentRun by ID
-            expt_run_msg = ExperimentRun._get(self._conn, _expt_run_id=id)
-            if expt_run_msg is None:
+            run = ExperimentRun._get(self._conn, self._conf, _expt_run_id=id)
+            if run is None:
                 raise ValueError("no ExperimentRun found with ID {}".format(id))
+            expt_run_msg = run._get_self_as_msg()
             # set parent Project by ID
             try:
                 self.proj = Project._get_or_create(self._conn, self._conf, _proj_id=expt_run_msg.project_id)
@@ -485,9 +486,6 @@ class Client(object):
             except ValueError:  # parent Experiment not found
                 raise RuntimeError("unable to find parent Experiment of ExperimentRun with ID {};"
                                    " this should only ever occur due to a back end error".format(id))
-            # set ExperimentRun
-            expt_run = ExperimentRun(self._conn, self._conf,
-                                     _expt_run_id=id)
         else:
             # set ExperimentRun by name under current Experiment
             if self.expt is None:
@@ -498,11 +496,11 @@ class Client(object):
                 else:
                     raise AttributeError("an Experiment must first be in progress")
 
-            expt_run = ExperimentRun(self._conn, self._conf,
+            run = ExperimentRun._get_or_create(self._conn, self._conf,
                                      self.proj.id, self.expt.id, name,
                                      desc, tags, attrs, date_created=date_created)
 
-        return expt_run
+        return run
 
     def get_or_create_repository(self, name=None, workspace=None, id=None):
         """
@@ -1598,7 +1596,7 @@ class ExperimentRuns(_utils.LazyList):
         return response_msg.experiment_runs
 
     def _create_element(self, id_):
-        return ExperimentRun(self._conn, self._conf, _expt_run_id=id_)
+        return ExperimentRun(self._conn, self._conf, id_)
 
     def find(self, where, ret_all_info=False):
         """
@@ -1875,7 +1873,15 @@ class ExperimentRun(_ModelDBEntity):
         Name of this Experiment Run.
 
     """
-    def __init__(self, conn, conf,
+    def __init__(self, conn, conf, id_):
+        super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", id_)
+
+        self._conn = conn
+
+        self.id = id_
+
+    @staticmethod  # TODO: if PR approved, move this fn down with other static/class methods
+    def _get_or_create(conn, conf,
                  proj_id=None, expt_id=None, expt_run_name=None,
                  desc=None, tags=None, attrs=None,
                  date_created=None,
@@ -1884,7 +1890,7 @@ class ExperimentRun(_ModelDBEntity):
             raise ValueError("cannot specify both `expt_run_name` and `_expt_run_id`")
 
         if _expt_run_id is not None:
-            expt_run = ExperimentRun._get(conn, _expt_run_id=_expt_run_id)
+            expt_run = ExperimentRun._get(conn, conf, _expt_run_id=_expt_run_id)
             if expt_run is not None:
                 print("set existing ExperimentRun: {}".format(expt_run.name))
             else:
@@ -1893,13 +1899,13 @@ class ExperimentRun(_ModelDBEntity):
             if expt_run_name is None:
                 expt_run_name = ExperimentRun._generate_default_name()
             try:
-                expt_run = ExperimentRun._create(conn, proj_id, expt_id, expt_run_name, desc, tags, attrs, date_created=date_created)
+                expt_run = ExperimentRun._create(conn, conf, proj_id, expt_id, expt_run_name, desc, tags, attrs, date_created=date_created)
             except requests.HTTPError as e:
                 if e.response.status_code == 409:  # already exists
                     if any(param is not None for param in (desc, tags, attrs)):
                         warnings.warn("ExperimentRun with name {} already exists;"
                                       " cannot initialize `desc`, `tags`, or `attrs`".format(expt_run_name))
-                    expt_run = ExperimentRun._get(conn, expt_id, expt_run_name)
+                    expt_run = ExperimentRun._get(conn, conf, expt_id, expt_run_name)
                     if expt_run is not None:
                         print("set existing ExperimentRun: {}".format(expt_run.name))
                     else:
@@ -1912,7 +1918,7 @@ class ExperimentRun(_ModelDBEntity):
         else:
             raise ValueError("insufficient arguments")
 
-        super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", expt_run.id)
+        return expt_run
 
     def __repr__(self):
         run_msg = self._get_self_as_msg()
@@ -1980,8 +1986,8 @@ class ExperimentRun(_ModelDBEntity):
     def _generate_default_name():
         return "Run {}".format(_utils.generate_default_name())
 
-    @staticmethod
-    def _get(conn, expt_id=None, expt_run_name=None, _expt_run_id=None):
+    @classmethod
+    def _get(cls, conn, conf, expt_id=None, expt_run_name=None, _expt_run_id=None):
         if _expt_run_id is not None:
             Message = _ExperimentRunService.GetExperimentRunById
             msg = Message(id=_expt_run_id)
@@ -2007,7 +2013,7 @@ class ExperimentRun(_ModelDBEntity):
                 raise RuntimeError("unable to retrieve ExperimentRun {};"
                                    " please notify the Verta development team".format(expt_run_name))
 
-            return expt_run
+            return cls(conn, conf, expt_run.id)
         else:
             if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
                     or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
@@ -2015,8 +2021,8 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-    @staticmethod
-    def _create(conn, proj_id, expt_id, expt_run_name, desc=None, tags=None, attrs=None, date_created=None):
+    @classmethod
+    def _create(cls, conn, conf, proj_id, expt_id, expt_run_name, desc=None, tags=None, attrs=None, date_created=None):
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
         if attrs is not None:
@@ -2034,7 +2040,7 @@ class ExperimentRun(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.experiment_run
+            return cls(conn, conf, response_msg.experiment_run.id)
         else:
             _utils.raise_for_http_error(response)
 
@@ -2384,7 +2390,7 @@ class ExperimentRun(_ModelDBEntity):
 
         """
         # get info for the current run
-        current_run = self._get(self._conn, _expt_run_id=self.id)
+        current_run = self._get_self_as_msg()
 
         # clone the current run
         Message = _ExperimentRunService.CreateExperimentRun
@@ -2434,7 +2440,7 @@ class ExperimentRun(_ModelDBEntity):
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         new_run_msg = response_msg.experiment_run
         print("created new ExperimentRun: {}".format(new_run_msg.name))
-        new_run = ExperimentRun(self._conn, self._conf, _expt_run_id=new_run_msg.id)
+        new_run = ExperimentRun(self._conn, self._conf, new_run_msg.id)
 
         return new_run
 
