@@ -5,7 +5,7 @@ import pytest
 import verta
 
 
-OPERATORS = six.viewkeys(verta.client.ExperimentRuns._OP_MAP)
+OPERATORS = six.viewkeys(verta._tracking.ExperimentRuns._OP_MAP)
 
 
 class TestFind:
@@ -14,11 +14,11 @@ class TestFind:
         all_keys = {
             attr
             for attr
-            in verta.client._ExperimentRunService.ExperimentRun.__dict__.keys()
+            in verta._tracking._ExperimentRunService.ExperimentRun.__dict__.keys()
             if not attr[0].isupper()
             and not attr.startswith('_')
         }
-        unsupported_keys = all_keys - verta.client.ExperimentRuns._VALID_QUERY_KEYS
+        unsupported_keys = all_keys - verta._tracking.ExperimentRuns._VALID_QUERY_KEYS
         proj = client.set_project()
         expt = client.set_experiment()
 

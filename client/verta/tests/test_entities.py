@@ -220,7 +220,6 @@ class TestProject:
         proj = client.set_project()
 
         client.set_project()  # in case get erroneously fetches latest
-        client.proj = None
 
         assert proj.id == client.set_project(id=proj.id).id
 
@@ -270,7 +269,6 @@ class TestExperiment:
         expt = client.set_experiment()
 
         client.set_experiment()  # in case get erroneously fetches latest
-        client.proj = client.expt = None
 
         assert expt.id == client.set_experiment(id=expt.id).id
         assert proj.id == client.proj.id
@@ -278,10 +276,6 @@ class TestExperiment:
     def test_get_nonexistent_id_error(self, client):
         with pytest.raises(ValueError):
             client.set_experiment(id="nonexistent_id")
-
-    def test_no_project_error(self, client):
-        with pytest.raises(AttributeError):
-            client.set_experiment()
 
     @pytest.mark.parametrize("tags", [TAG, [TAG]])
     def test_tags_is_list_of_str(self, client, tags):
@@ -328,7 +322,6 @@ class TestExperimentRun:
         expt_run = client.set_experiment_run()
 
         client.set_experiment_run()  # in case get erroneously fetches latest
-        client.proj = client.expt = None
 
         assert expt_run.id == client.set_experiment_run(id=expt_run.id).id
         assert proj.id == client.proj.id
@@ -373,12 +366,11 @@ class TestExperimentRun:
         new_run_art_code_data = expt_run.clone(copy_artifacts=True,
             copy_code_version=True, copy_datasets=True)
 
-        old_run_msg = expt_run._get(expt_run._conn, _expt_run_id=expt_run.id)
-        new_run_no_art_msg = new_run_no_art._get(new_run_no_art._conn, _expt_run_id=new_run_no_art.id)
-        new_run_art_only_msg = new_run_art_only._get(new_run_art_only._conn, _expt_run_id=new_run_art_only.id)
-        new_run_art_code_msg = new_run_art_code._get(new_run_art_code._conn, _expt_run_id=new_run_art_code.id)
-        new_run_art_code_data_msg = new_run_art_code_data._get(new_run_art_code_data._conn,
-            _expt_run_id=new_run_art_code_data.id)
+        old_run_msg = expt_run._get_proto_by_id(expt_run._conn, expt_run.id)
+        new_run_no_art_msg = new_run_no_art._get_proto_by_id(new_run_no_art._conn, new_run_no_art.id)
+        new_run_art_only_msg = new_run_art_only._get_proto_by_id(new_run_art_only._conn, new_run_art_only.id)
+        new_run_art_code_msg = new_run_art_code._get_proto_by_id(new_run_art_code._conn, new_run_art_code.id)
+        new_run_art_code_data_msg = new_run_art_code_data._get_proto_by_id(new_run_art_code_data._conn, new_run_art_code_data.id)
 
         # ensure basic data is the same
         assert expt_run.id != new_run_no_art_msg.id

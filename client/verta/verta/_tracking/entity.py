@@ -4,11 +4,8 @@ from __future__ import print_function
 
 import importlib
 import os
+import warnings
 import zipfile
-
-# from .project import Project
-# from .experiment import Experiment
-# from .experimentrun import ExperimentRun
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -60,7 +57,7 @@ class _ModelDBEntity(object):
         if msg:
             return cls(conn, conf, msg)
         else:
-            return None
+            raise ValueError("{} with ID {} not found".format(cls.__name__, id))
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
@@ -75,6 +72,9 @@ class _ModelDBEntity(object):
         obj = getter(name)
         if obj is None:
             obj = creator(name)
+        else:
+            warnings.warn("{} with name {} already exists;"
+                          " ignoring creation attributes".format(cls.__name__, name))
         return obj
 
     @classmethod
@@ -212,6 +212,10 @@ class _ModelDBEntity(object):
             if not os.path.isfile(exec_path):
                 raise ValueError("`exec_path` \"{}\" must be a valid filepath".format(exec_path))
 
+        # TODO: remove this circular dependency
+        from .project import Project
+        from .experiment import Experiment
+        from .experimentrun import ExperimentRun
         if isinstance(self, Project):  # TODO: not this
             Message = self._service.LogProjectCodeVersion
             endpoint = "logProjectCodeVersion"
@@ -330,6 +334,10 @@ class _ModelDBEntity(object):
                   containing Python source code files
 
         """
+        # TODO: remove this circular dependency
+        from .project import Project
+        from .experiment import Experiment
+        from .experimentrun import ExperimentRun
         if isinstance(self, Project):  # TODO: not this
             Message = self._service.GetProjectCodeVersion
             endpoint = "getProjectCodeVersion"

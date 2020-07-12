@@ -530,7 +530,7 @@ class ExperimentRun(_ModelDBEntity):
 
         """
         # get info for the current run
-        current_run = self._get(self._conn, _expt_run_id=self.id)
+        current_run = self._get_proto_by_id(self._conn, self.id)
 
         # clone the current run
         Message = _ExperimentRunService.CreateExperimentRun
@@ -580,7 +580,7 @@ class ExperimentRun(_ModelDBEntity):
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         new_run_msg = response_msg.experiment_run
         print("created new ExperimentRun: {}".format(new_run_msg.name))
-        new_run = ExperimentRun(self._conn, self._conf, _expt_run_id=new_run_msg.id)
+        new_run = ExperimentRun(self._conn, self._conf, new_run_msg)
 
         return new_run
 
