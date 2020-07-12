@@ -164,15 +164,6 @@ class ExperimentRun(_ModelDBEntity):
 
         return conn.maybe_proto_response(response, Message.Response).experiment_run
 
-    @staticmethod
-    def _get(conn, expt_id=None, expt_run_name=None, _expt_run_id=None):
-        if _expt_run_id is not None:
-            return ExperimentRun._get_by_id(conn, _expt_run_id)
-        elif None not in (expt_id, expt_run_name):
-            return ExperimentRun._get_by_name(conn, expt_run_name, expt_id)
-        else:
-            raise ValueError("insufficient arguments")
-
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
         Message = _ExperimentRunService.CreateExperimentRun

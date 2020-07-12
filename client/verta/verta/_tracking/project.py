@@ -92,15 +92,6 @@ class Project(_ModelDBEntity):
         else:
             return None
 
-    @staticmethod
-    def _get(conn, proj_name=None, workspace=None, _proj_id=None):
-        if _proj_id is not None:
-            return Project._get_by_id(conn, _proj_id)
-        elif proj_name is not None:
-            return Project._get_by_name(conn, proj_name, workspace)
-        else:
-            raise ValueError("insufficient arguments")
-
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
         Message = _ProjectService.CreateProject
