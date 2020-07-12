@@ -168,9 +168,10 @@ class TestClient:
 
 class TestEntities:
     def test_cache(self, client, strs):
+        client.set_project()
+        client.set_experiment()
+
         entities = (
-            # client.set_project(),
-            # client.set_experiment(),
             client.set_experiment_run(),
         )
 
