@@ -2511,3 +2511,141 @@ class ExperimentRun(_ModelDBEntity):
         }
 
         return commit, key_paths
+
+    def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
+        """
+        Obtains a URL to use for accessing stored artifacts.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+        method : {'GET', 'PUT'}
+            HTTP method to request for the generated URL.
+        artifact_type : int, optional
+            Variant of `_CommonCommonService.ArtifactTypeEnum`. This informs the backend what slot to check
+            for the artifact, if necessary.
+        part_num : int, optional
+            If using Multipart Upload, number of part to be uploaded.
+
+        Returns
+        -------
+        response_msg : `_CommonService.GetUrlForArtifact.Response`
+            Backend response.
+
+        """
+        if method.upper() not in ("GET", "PUT"):
+            raise ValueError("`method` must be one of {'GET', 'PUT'}")
+
+        Message = _CommonService.GetUrlForArtifact
+        msg = Message(
+            id=self.id, key=key,
+            method=method.upper(),
+            artifact_type=artifact_type,
+            part_number=part_num,
+        )
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("POST",
+                                       self._request_url.format("getUrlForArtifact"),
+                                       self._conn, json=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+
+        url = response_msg.url
+        # accommodate port-forwarded NFS store
+        if 'https://localhost' in url[:20]:
+            url = 'http' + url[5:]
+        if 'localhost%3a' in url[:20]:
+            url = url.replace('localhost%3a', 'localhost:')
+        if 'localhost%3A' in url[:20]:
+            url = url.replace('localhost%3A', 'localhost:')
+        response_msg.url = url
+
+        return response_msg
+
+    def _cache(self, filename, contents):
+        """
+        Caches `contents` to `filename` within ``_CACHE_DIR``.
+
+        If `contents` represents a ZIP file, then it will be unzipped, and the path to the target
+        directory will be returned.
+
+        Parameters
+        ----------
+        filename : str
+            Filename within ``_CACHE_DIR`` to write to.
+        contents : bytes
+            Contents to be cached.
+
+        Returns
+        -------
+        str
+            Full path to cached contents.
+
+        """
+        # write contents to temporary file
+        with tempfile.NamedTemporaryFile(delete=False) as tempf:
+            tempf.write(contents)
+            tempf.flush()  # flush object buffer
+            os.fsync(tempf.fileno())  # flush OS buffer
+
+        name, extension = os.path.splitext(filename)
+        if extension == '.zip':
+            temp_path = tempfile.mkdtemp()
+
+            with zipfile.ZipFile(tempf.name, 'r') as zipf:
+                zipf.extractall(temp_path)
+            os.remove(tempf.name)
+        elif extension == '.tgz':
+            temp_path = tempfile.mkdtemp()
+
+            with tarfile.open(tempf.name, 'r:gz') as tarf:
+                tarf.extractall(temp_path)
+            os.remove(tempf.name)
+        elif extension == '.tar':
+            temp_path = tempfile.mkdtemp()
+
+            with tarfile.open(tempf.name, 'r') as tarf:
+                tarf.extractall(temp_path)
+            os.remove(tempf.name)
+        elif extension == '.gz' and os.path.splitext(name)[1] == '.tar':
+            name = os.path.splitext(name)[0]
+
+            temp_path = tempfile.mkdtemp()
+
+            with tarfile.open(tempf.name, 'r:gz') as tarf:
+                tarf.extractall(temp_path)
+            os.remove(tempf.name)
+        else:
+            name = filename
+            temp_path = tempf.name
+
+        path = os.path.join(_CACHE_DIR, name)
+
+        # create intermediate dirs
+        try:
+            os.makedirs(os.path.dirname(path))
+        except OSError:  # already exists
+            pass
+
+        # move written contents to cache location
+        os.rename(temp_path, path)
+
+        return path
+
+    def _get_cached(self, filename):
+        name, extension = os.path.splitext(filename)
+        if extension == '.zip':
+            pass
+        elif extension == '.tgz':
+            pass
+        elif extension == '.tar':
+            pass
+        elif extension == '.gz' and os.path.splitext(name)[1] == '.tar':
+            name = os.path.splitext(name)[0]
+        else:
+            name = filename
+
+        path = os.path.join(_CACHE_DIR, name)
+        return path if os.path.exists(path) else None
