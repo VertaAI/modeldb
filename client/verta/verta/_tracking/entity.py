@@ -34,7 +34,7 @@ class _ModelDBEntity(object):
                                                       '{}')  # endpoint placeholder
 
         self.id = msg.id
-        self.msg = msg
+        # self.msg = msg
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -105,7 +105,7 @@ class _ModelDBEntity(object):
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
 
-        return cls._create_proto_internal(conn, ctx, name, desc, tags, attrs, date_created, **kwargs)
+        return cls._create_proto_internal(conn, ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created, **kwargs)
 
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
