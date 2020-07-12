@@ -31,7 +31,6 @@ _CACHE_DIR = os.path.join(
 
 
 class _ModelDBEntity(object):
-    # TODO: pass conf
     def __init__(self, conn, conf, service_module, service_url_component, msg):
         self._conn = conn
         self._conf = conf
@@ -64,10 +63,10 @@ class _ModelDBEntity(object):
         raise NotImplementedError
 
     @classmethod
-    def _get_by_id(cls, conn, id):
+    def _get_by_id(cls, conn, conf, id):
         msg = cls._get_proto_by_id(conn, id)
         if msg:
-            return cls(conn, msg)
+            return cls(conn, conf, msg)
         else:
             return None
 
@@ -87,10 +86,10 @@ class _ModelDBEntity(object):
         return obj
 
     @classmethod
-    def _get_by_name(cls, conn, name, parent):
+    def _get_by_name(cls, conn, conf, name, parent):
         msg = cls._get_proto_by_name(conn, name, parent)
         if msg:
-            return cls(conn, msg)
+            return cls(conn, conf, msg)
         else:
             return None
 
@@ -99,10 +98,10 @@ class _ModelDBEntity(object):
         raise NotImplementedError
 
     @classmethod
-    def _create(cls, conn, *args, **kwargs):
+    def _create(cls, conn, conf, *args, **kwargs):
         msg = cls._create_proto(conn, *args, **kwargs)
         if msg:
-            return cls(conn, msg)
+            return cls(conn, conf, msg)
         else:
             return None
 

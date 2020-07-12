@@ -75,8 +75,8 @@ class ExperimentRun(_ModelDBEntity):
         Name of this Experiment Run.
 
     """
-    def __init__(self, conn, msg):
-        super(ExperimentRun, self).__init__(conn, None, _ExperimentRunService, "experiment-run", msg)
+    def __init__(self, conn, conf, msg):
+        super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", msg)
 
     def __repr__(self):
         run_msg = self._get_self_as_msg()

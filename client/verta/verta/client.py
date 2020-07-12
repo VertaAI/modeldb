@@ -340,12 +340,12 @@ class Client(object):
         self.ctx.workspace_name = workspace
 
         if id is not None:
-            self.ctx.proj = Project._get_by_id(self._conn, id)
+            self.ctx.proj = Project._get_by_id(self._conn, self._conf, id)
             self.ctx.populate()
         else:
             self.ctx.proj = Project._get_or_create_by_name(self._conn, name,
-                                                        lambda name: Project._get_by_name(self._conn, name, self.ctx.workspace_name),
-                                                        lambda name: Project._create(self._conn, self.ctx, name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
+                                                        lambda name: Project._get_by_name(self._conn, self._conf, name, self.ctx.workspace_name),
+                                                        lambda name: Project._create(self._conn, self._conf, self.ctx, name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
 
         return self.ctx.proj
 
@@ -390,13 +390,13 @@ class Client(object):
         name = self._set_from_config_if_none(name, "experiment")
 
         if id is not None:
-            self.ctx.expt = Experiment._get_by_id(self._conn, id)
+            self.ctx.expt = Experiment._get_by_id(self._conn, self._conf, id)
             self.ctx.populate()
         else:
             # TODO: validate context
             self.ctx.expt = Experiment._get_or_create_by_name(self._conn, name,
-                                                            lambda name: Experiment._get_by_name(self._conn, name, self.ctx.proj.id),
-                                                            lambda name: Experiment._create(self._conn, self.ctx, name, desc=desc, tags=tags, attrs=attrs))
+                                                            lambda name: Experiment._get_by_name(self._conn, self._conf, name, self.ctx.proj.id),
+                                                            lambda name: Experiment._create(self._conn, self._conf, self.ctx, name, desc=desc, tags=tags, attrs=attrs))
 
         return self.ctx.expt
 
@@ -440,13 +440,13 @@ class Client(object):
             raise ValueError("cannot specify both `name` and `id`")
 
         if id is not None:
-            self.ctx.expt_run = ExperimentRun._get_by_id(self._conn, id)
+            self.ctx.expt_run = ExperimentRun._get_by_id(self._conn, self._conf, id)
             self.ctx.populate()
         else:
             # TODO: validate context
             self.ctx.expt_run = ExperimentRun._get_or_create_by_name(self._conn, name,
-                                                                    lambda name: ExperimentRun._get_by_name(self._conn, name, self.ctx.expt.id),
-                                                                    lambda name: ExperimentRun._create(self._conn, self.ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created))
+                                                                    lambda name: ExperimentRun._get_by_name(self._conn, self._conf, name, self.ctx.expt.id),
+                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self.ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created))
 
         return self.ctx.expt_run
 

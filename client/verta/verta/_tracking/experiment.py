@@ -38,8 +38,8 @@ class Experiment(_ModelDBEntity):
         Experiment Runs under this Experiment.
 
     """
-    def __init__(self, conn, msg):
-        super(Experiment, self).__init__(conn, None, _ExperimentService, "experiment", msg)
+    def __init__(self, conn, conf, msg):
+        super(Experiment, self).__init__(conn, conf, _ExperimentService, "experiment", msg)
 
     def __repr__(self):
         return "<Experiment \"{}\">".format(self.name)

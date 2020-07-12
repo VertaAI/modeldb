@@ -38,8 +38,8 @@ class Project(_ModelDBEntity):
         Experiment Runs under this Project.
 
     """
-    def __init__(self, conn, msg):
-        super(Project, self).__init__(conn, None, _ProjectService, "project", msg)
+    def __init__(self, conn, conf, msg):
+        super(Project, self).__init__(conn, conf, _ProjectService, "project", msg)
 
     def __repr__(self):
         return "<Project \"{}\">".format(self.name)
