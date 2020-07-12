@@ -5,7 +5,6 @@ from __future__ import print_function
 import requests
 import warnings
 
-from .context import _Context
 from .entity import _ModelDBEntity
 from .experimentruns import ExperimentRuns
 
@@ -106,4 +105,6 @@ class Experiment(_ModelDBEntity):
         response = conn.make_proto_request("POST",
                                            "/api/v1/modeldb/experiment/createExperiment",
                                            body=msg)
-        return conn.must_proto_response(response, Message.Response).experiment
+        expt = conn.must_proto_response(response, Message.Response).experiment
+        print("created new Experiment: {}".format(expt.name))
+        return expt

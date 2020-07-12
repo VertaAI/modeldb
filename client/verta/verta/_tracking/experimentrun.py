@@ -27,7 +27,6 @@ try:
 except ImportError:  # PyTorch not installed
     torch = None
 
-from .context import _Context
 from .entity import _ModelDBEntity
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -183,7 +182,9 @@ class ExperimentRun(_ModelDBEntity):
         response = conn.make_proto_request("POST",
                                            "/api/v1/modeldb/experiment-run/createExperimentRun",
                                            body=msg)
-        return conn.must_proto_response(response, Message.Response).experiment_run
+        expt_run = conn.must_proto_response(response, Message.Response).experiment_run
+        print("created new ExperimentRun: {}".format(expt_run.name))
+        return expt_run
 
     # TODO: use this throughout `ExperimentRun`
     def _get_self_as_msg(self):

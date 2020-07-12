@@ -5,7 +5,6 @@ from __future__ import print_function
 import requests
 import warnings
 
-from .context import _Context
 from .entity import _ModelDBEntity
 from .experimentruns import ExperimentRuns
 
@@ -120,4 +119,12 @@ class Project(_ModelDBEntity):
         response = conn.make_proto_request("POST",
                                            "/api/v1/modeldb/project/createProject",
                                            body=msg)
-        return conn.must_proto_response(response, Message.Response).project
+        proj = conn.must_proto_response(response, Message.Response).project
+
+        if ctx.workspace_name is not None:
+            WORKSPACE_PRINT_MSG = "workspace: {}".format(ctx.workspace_name)
+        else:
+            WORKSPACE_PRINT_MSG = "personal workspace"
+
+        print("created new Project: {} in {}".format(proj.name, WORKSPACE_PRINT_MSG))
+        return proj
