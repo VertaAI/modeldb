@@ -14,7 +14,7 @@ class TestFind:
         all_keys = {
             attr
             for attr
-            in verta._tracking._ExperimentRunService.ExperimentRun.__dict__.keys()
+            in verta.client._ExperimentRunService.ExperimentRun.__dict__.keys()
             if not attr[0].isupper()
             and not attr.startswith('_')
         }
