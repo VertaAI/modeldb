@@ -191,13 +191,7 @@ class ExperimentRun(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            expt_run = response_msg.experiment_run
-
-            if not expt_run.id:  # 200, but empty message
-                raise RuntimeError("unable to retrieve ExperimentRun {};"
-                                   " please notify the Verta development team".format(id))
-
-            return expt_run
+            return response_msg.experiment_run
         else:
             if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
                     or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
@@ -216,13 +210,7 @@ class ExperimentRun(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            expt_run = response_msg.experiment_run
-
-            if not expt_run.id:  # 200, but empty message
-                raise RuntimeError("unable to retrieve ExperimentRun {};"
-                                   " please notify the Verta development team".format(name))
-
-            return expt_run
+            return response_msg.experiment_run
         else:
             if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
                     or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
