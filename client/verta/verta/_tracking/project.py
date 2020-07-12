@@ -5,6 +5,7 @@ from __future__ import print_function
 import requests
 import warnings
 
+from .context import _Context
 from .entity import _ModelDBEntity
 from .experimentruns import ExperimentRuns
 
@@ -52,6 +53,9 @@ class Project(_ModelDBEntity):
         else:
             WORKSPACE_PRINT_MSG = "personal workspace"
 
+        ctx = _Context()
+        ctx.workspace_name = workspace
+
         if _proj_id is not None:
             proj = Project._get(conn, _proj_id=_proj_id)
             if proj is not None:
@@ -62,7 +66,7 @@ class Project(_ModelDBEntity):
             if proj_name is None:
                 proj_name = Project._generate_default_name()
             try:
-                proj = Project._create(conn, proj_name, desc, tags, attrs, workspace, public_within_org)
+                proj = Project._create(conn, ctx, proj_name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org)
             except requests.HTTPError as e:
                 if e.response.status_code == 403:  # cannot create in other workspace
                     proj = Project._get(conn, proj_name, workspace)
@@ -122,7 +126,7 @@ class Project(_ModelDBEntity):
         msg = Message(id=id)
         response = conn.make_proto_request("GET",
                                            "/api/v1/modeldb/project/getProjectById",
-                                           msg)
+                                           params=msg)
         return conn.maybe_proto_response(response, Message.Response).project
 
     @classmethod
@@ -131,7 +135,7 @@ class Project(_ModelDBEntity):
         msg = Message(name=name, workspace_name=workspace)
         response = conn.make_proto_request("GET",
                                            "/api/v1/modeldb/project/getProjectByName",
-                                           msg)
+                                           params=msg)
         response = conn.maybe_proto_response(response, Message.Response)
         if workspace is None or response.HasField("project_by_user"):
             return response.project_by_user
@@ -149,33 +153,22 @@ class Project(_ModelDBEntity):
         else:
             raise ValueError("insufficient arguments")
 
-    @staticmethod
-    def _create(conn, proj_name, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
-        if tags is not None:
-            tags = _utils.as_list_of_str(tags)
-        if attrs is not None:
-            attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
-                     for key, value in six.viewitems(attrs)]
-
+    @classmethod
+    def _create_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
         Message = _ProjectService.CreateProject
-        msg = Message(name=proj_name, description=desc, tags=tags, attributes=attrs, workspace_name=workspace)
+        msg = Message(name=name, description=desc, tags=tags, attributes=attrs, workspace_name=ctx.workspace_name)
         if public_within_org:
-            if workspace is None:
+            if ctx.workspace_name is None:
                 raise ValueError("cannot set `public_within_org` for personal workspace")
-            elif not _utils.is_org(workspace, conn):
+            elif not _utils.is_org(ctx.workspace_name, conn):
                 raise ValueError(
                     "cannot set `public_within_org`"
-                    " because workspace \"{}\" is not an organization".format(workspace)
+                    " because workspace \"{}\" is not an organization".format(ctx.workspace_name)
                 )
             else:
                 msg.project_visibility = _ProjectService.ORG_SCOPED_PUBLIC
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("POST",
-                                       "{}://{}/api/v1/modeldb/project/createProject".format(conn.scheme, conn.socket),
-                                       conn, json=data)
 
-        if response.ok:
-            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.project
-        else:
-            _utils.raise_for_http_error(response)
+        response = conn.make_proto_request("POST",
+                                           "/api/v1/modeldb/project/createProject",
+                                           body=msg)
+        return conn.must_proto_response(response, Message.Response).project

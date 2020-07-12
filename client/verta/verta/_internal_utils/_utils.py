@@ -110,11 +110,14 @@ class Connection:
                            raise_on_status=False)  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
 
-    def make_proto_request(self, method, path, msg):
-        data = proto_to_json(msg)
+    def make_proto_request(self, method, path, params=None, body=None):
+        if params is not None:
+            params = proto_to_json(params)
+        if body is not None:
+            body = proto_to_json(body)
         response = make_request(method,
                                 "{}://{}{}".format(self.scheme, self.socket, path),
-                                self, params=data)
+                                self, params=params, json=body)
 
         return response
 
@@ -129,6 +132,14 @@ class Connection:
                 return NoneProtoResponse()
             else:
                 raise_for_http_error(response)
+
+    @staticmethod
+    def must_proto_response(response, response_type):
+        if response.ok:
+            response_msg = json_to_proto(body_to_json(response), response_type)
+            return response_msg
+        else:
+            raise_for_http_error(response)
 
 
 class NoneProtoResponse(object):

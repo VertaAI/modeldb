@@ -5,6 +5,7 @@ from __future__ import print_function
 import requests
 import warnings
 
+from .context import _Context
 from .entity import _ModelDBEntity
 from .experimentruns import ExperimentRuns
 
@@ -45,6 +46,9 @@ class Experiment(_ModelDBEntity):
         if expt_name is not None and _expt_id is not None:
             raise ValueError("cannot specify both `expt_name` and `_expt_id`")
 
+        ctx = _Context()
+        ctx.proj_id = proj_id
+
         if _expt_id is not None:
             expt = Experiment._get(conn, _expt_id=_expt_id)
             if expt is not None:
@@ -55,7 +59,7 @@ class Experiment(_ModelDBEntity):
             if expt_name is None:
                 expt_name = Experiment._generate_default_name()
             try:
-                expt = Experiment._create(conn, proj_id, expt_name, desc, tags, attrs)
+                expt = Experiment._create(conn, ctx, expt_name, desc=desc, tags=tags, attrs=attrs)
             except requests.HTTPError as e:
                 if e.response.status_code == 409:  # already exists
                     if any(param is not None for param in (desc, tags, attrs)):
@@ -109,7 +113,7 @@ class Experiment(_ModelDBEntity):
         msg = Message(id=id)
         response = conn.make_proto_request("GET",
                                            "/api/v1/modeldb/experiment/getExperimentById",
-                                           msg)
+                                           params=msg)
 
         return conn.maybe_proto_response(response, Message.Response).experiment
 
@@ -119,7 +123,7 @@ class Experiment(_ModelDBEntity):
         msg = Message(project_id=proj_id, name=name)
         response = conn.make_proto_request("GET",
                                            "/api/v1/modeldb/experiment/getExperimentByName",
-                                           msg)
+                                           params=msg)
 
         return conn.maybe_proto_response(response, Message.Response).experiment
 
@@ -132,24 +136,12 @@ class Experiment(_ModelDBEntity):
         else:
             raise ValueError("insufficient arguments")
 
-    @staticmethod
-    def _create(conn, proj_id, expt_name, desc=None, tags=None, attrs=None):
-        if tags is not None:
-            tags = _utils.as_list_of_str(tags)
-        if attrs is not None:
-            attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
-                     for key, value in six.viewitems(attrs)]
-
+    @classmethod
+    def _create_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
         Message = _ExperimentService.CreateExperiment
-        msg = Message(project_id=proj_id, name=expt_name,
+        msg = Message(project_id=ctx.proj_id, name=name,
                       description=desc, tags=tags, attributes=attrs)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("POST",
-                                       "{}://{}/api/v1/modeldb/experiment/createExperiment".format(conn.scheme, conn.socket),
-                                       conn, json=data)
-
-        if response.ok:
-            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.experiment
-        else:
-            _utils.raise_for_http_error(response)
+        response = conn.make_proto_request("POST",
+                                           "/api/v1/modeldb/experiment/createExperiment",
+                                           body=msg)
+        return conn.must_proto_response(response, Message.Response).experiment

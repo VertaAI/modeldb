@@ -65,6 +65,20 @@ class _ModelDBEntity(object):
     def _get_by_name(cls, conn, name, parent):
         raise NotImplementedError
 
+    @classmethod
+    def _create(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
+        if attrs is not None:
+            attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
+                     for key, value in six.viewitems(attrs)]
+
+        return cls._create_internal(conn, ctx, name, desc, tags, attrs, date_created, **kwargs)
+
+    @classmethod
+    def _create_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
+        raise NotImplementedError
+
     def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False):
         """
         Logs the code version.

@@ -27,6 +27,7 @@ try:
 except ImportError:  # PyTorch not installed
     torch = None
 
+from .context import _Context
 from .entity import _ModelDBEntity
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -83,6 +84,10 @@ class ExperimentRun(_ModelDBEntity):
         if expt_run_name is not None and _expt_run_id is not None:
             raise ValueError("cannot specify both `expt_run_name` and `_expt_run_id`")
 
+        ctx = _Context()
+        ctx.proj_id = proj_id
+        ctx.expt_id = expt_id
+
         if _expt_run_id is not None:
             expt_run = ExperimentRun._get(conn, _expt_run_id=_expt_run_id)
             if expt_run is not None:
@@ -93,7 +98,7 @@ class ExperimentRun(_ModelDBEntity):
             if expt_run_name is None:
                 expt_run_name = ExperimentRun._generate_default_name()
             try:
-                expt_run = ExperimentRun._create(conn, proj_id, expt_id, expt_run_name, desc, tags, attrs, date_created=date_created)
+                expt_run = ExperimentRun._create(conn, ctx, expt_run_name, desc=desc, tags=tags, attrs=attrs, date_created=date_created)
             except requests.HTTPError as e:
                 if e.response.status_code == 409:  # already exists
                     if any(param is not None for param in (desc, tags, attrs)):
@@ -186,7 +191,7 @@ class ExperimentRun(_ModelDBEntity):
         msg = Message(id=id)
         response = conn.make_proto_request("GET",
                                            "/api/v1/modeldb/experiment-run/getExperimentRunById",
-                                           msg)
+                                           params=msg)
 
         return conn.maybe_proto_response(response, Message.Response).experiment_run
 
@@ -196,7 +201,7 @@ class ExperimentRun(_ModelDBEntity):
         msg = Message(experiment_id=expt_id, name=name)
         response = conn.make_proto_request("GET",
                                            "/api/v1/modeldb/experiment-run/getExperimentRunByName",
-                                           msg)
+                                           params=msg)
 
         return conn.maybe_proto_response(response, Message.Response).experiment_run
 
@@ -209,28 +214,16 @@ class ExperimentRun(_ModelDBEntity):
         else:
             raise ValueError("insufficient arguments")
 
-    @staticmethod
-    def _create(conn, proj_id, expt_id, expt_run_name, desc=None, tags=None, attrs=None, date_created=None):
-        if tags is not None:
-            tags = _utils.as_list_of_str(tags)
-        if attrs is not None:
-            attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
-                     for key, value in six.viewitems(attrs)]
-
+    @classmethod
+    def _create_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
         Message = _ExperimentRunService.CreateExperimentRun
-        msg = Message(project_id=proj_id, experiment_id=expt_id, name=expt_run_name,
+        msg = Message(project_id=ctx.proj_id, experiment_id=ctx.expt_id, name=name,
                       description=desc, tags=tags, attributes=attrs,
                       date_created=date_created, date_updated=date_created)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("POST",
-                                       "{}://{}/api/v1/modeldb/experiment-run/createExperimentRun".format(conn.scheme, conn.socket),
-                                       conn, json=data)
-
-        if response.ok:
-            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.experiment_run
-        else:
-            _utils.raise_for_http_error(response)
+        response = conn.make_proto_request("POST",
+                                           "/api/v1/modeldb/experiment-run/createExperimentRun",
+                                           body=msg)
+        return conn.must_proto_response(response, Message.Response).experiment_run
 
     # TODO: use this throughout `ExperimentRun`
     def _get_self_as_msg(self):
