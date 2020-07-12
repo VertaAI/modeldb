@@ -188,15 +188,7 @@ class ExperimentRun(_ModelDBEntity):
                                            "/api/v1/modeldb/experiment-run/getExperimentRunById",
                                            msg)
 
-        if response.ok:
-            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.experiment_run
-        else:
-            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
-                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
-                return None
-            else:
-                _utils.raise_for_http_error(response)
+        return conn.maybe_proto_response(response, Message.Response).experiment_run
 
     @classmethod
     def _get_by_name(cls, conn, name, expt_id):
@@ -206,15 +198,7 @@ class ExperimentRun(_ModelDBEntity):
                                            "/api/v1/modeldb/experiment-run/getExperimentRunByName",
                                            msg)
 
-        if response.ok:
-            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.experiment_run
-        else:
-            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
-                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
-                return None
-            else:
-                _utils.raise_for_http_error(response)
+        return conn.maybe_proto_response(response, Message.Response).experiment_run
 
     @staticmethod
     def _get(conn, expt_id=None, expt_run_name=None, _expt_run_id=None):

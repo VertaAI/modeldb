@@ -123,16 +123,7 @@ class Project(_ModelDBEntity):
         response = conn.make_proto_request("GET",
                                            "/api/v1/modeldb/project/getProjectById",
                                            msg)
-
-        if response.ok:
-            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.project
-        else:
-            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
-                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
-                return None
-            else:
-                _utils.raise_for_http_error(response)
+        return conn.maybe_proto_response(response, Message.Response).project
 
     @classmethod
     def _get_by_name(cls, conn, name, workspace):
@@ -141,27 +132,13 @@ class Project(_ModelDBEntity):
         response = conn.make_proto_request("GET",
                                            "/api/v1/modeldb/project/getProjectByName",
                                            msg)
-
-        if response.ok:
-            response_json = _utils.body_to_json(response)
-            response_msg = _utils.json_to_proto(response_json, Message.Response)
-            if workspace is None or response_json.get('project_by_user'):
-                # user's personal workspace
-                proj = response_msg.project_by_user
-            else:
-                proj = response_msg.shared_projects[0]
-
-            if not proj.id:  # 200, but empty message
-                raise RuntimeError("unable to retrieve Project {};"
-                                    " please notify the Verta development team".format(name))
-
-            return proj
+        response = conn.maybe_proto_response(response, Message.Response)
+        if workspace is None or response.HasField("project_by_user"):
+            return response.project_by_user
+        elif response.HasField("shared_projects"):
+            return response.shared_projects[0]
         else:
-            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
-                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
-                return None
-            else:
-                _utils.raise_for_http_error(response)
+            return None
 
     @staticmethod
     def _get(conn, proj_name=None, workspace=None, _proj_id=None):

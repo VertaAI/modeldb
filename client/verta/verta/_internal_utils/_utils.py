@@ -118,6 +118,27 @@ class Connection:
 
         return response
 
+    @staticmethod
+    def maybe_proto_response(response, response_type):
+        if response.ok:
+            response_msg = json_to_proto(body_to_json(response), response_type)
+            return response_msg
+        else:
+            if ((response.status_code == 403 and body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and     body_to_json(response)['code'] == 5)):
+                return NoneProtoResponse()
+            else:
+                raise_for_http_error(response)
+
+
+class NoneProtoResponse(object):
+    def __init__(self):
+        pass
+    def __getattr__(self, item):
+        return None
+    def HasField(self, name):
+        return False
+
 
 class Configuration:
     def __init__(self, use_git=True, debug=False):
