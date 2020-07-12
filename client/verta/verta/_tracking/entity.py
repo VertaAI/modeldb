@@ -31,7 +31,8 @@ _CACHE_DIR = os.path.join(
 
 
 class _ModelDBEntity(object):
-    def __init__(self, conn, conf, service_module, service_url_component, id):
+    # TODO: pass conf
+    def __init__(self, conn, conf, service_module, service_url_component, msg):
         self._conn = conn
         self._conf = conf
 
@@ -41,7 +42,8 @@ class _ModelDBEntity(object):
                                                       service_url_component,
                                                       '{}')  # endpoint placeholder
 
-        self.id = id
+        self.id = msg.id
+        self.msg = msg
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -58,25 +60,64 @@ class _ModelDBEntity(object):
         self.__dict__.update(state)
 
     @classmethod
-    def _get_by_id(cls, conn, id):
+    def _generate_default_name(cls):
         raise NotImplementedError
+
+    @classmethod
+    def _get_by_id(cls, conn, id):
+        msg = cls._get_proto_by_id(conn, id)
+        if msg:
+            return cls(conn, msg)
+        else:
+            return None
+
+    @classmethod
+    def _get_proto_by_id(cls, conn, id):
+        raise NotImplementedError
+
+    # TODO: add prints about status
+    @classmethod
+    def _get_or_create_by_name(cls, conn, name, getter, creator):
+        if name is None:
+            name = cls._generate_default_name()
+
+        obj = getter(name)
+        if obj is None:
+            obj = creator(name)
+        return obj
 
     @classmethod
     def _get_by_name(cls, conn, name, parent):
+        msg = cls._get_proto_by_name(conn, name, parent)
+        if msg:
+            return cls(conn, msg)
+        else:
+            return None
+
+    @classmethod
+    def _get_proto_by_name(cls, conn, name, parent):
         raise NotImplementedError
 
     @classmethod
-    def _create(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
+    def _create(cls, conn, *args, **kwargs):
+        msg = cls._create_proto(conn, *args, **kwargs)
+        if msg:
+            return cls(conn, msg)
+        else:
+            return None
+
+    @classmethod
+    def _create_proto(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
 
-        return cls._create_internal(conn, ctx, name, desc, tags, attrs, date_created, **kwargs)
+        return cls._create_proto_internal(conn, ctx, name, desc, tags, attrs, date_created, **kwargs)
 
     @classmethod
-    def _create_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
         raise NotImplementedError
 
     def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False):

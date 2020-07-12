@@ -39,59 +39,8 @@ class Project(_ModelDBEntity):
         Experiment Runs under this Project.
 
     """
-    def __init__(self, conn, conf,
-                 proj_name=None,
-                 desc=None, tags=None, attrs=None,
-                 workspace=None,
-                 public_within_org=None,
-                 _proj_id=None):
-        if proj_name is not None and _proj_id is not None:
-            raise ValueError("cannot specify both `proj_name` and `_proj_id`")
-
-        if workspace is not None:
-            WORKSPACE_PRINT_MSG = "workspace: {}".format(workspace)
-        else:
-            WORKSPACE_PRINT_MSG = "personal workspace"
-
-        ctx = _Context()
-        ctx.workspace_name = workspace
-
-        if _proj_id is not None:
-            proj = Project._get(conn, _proj_id=_proj_id)
-            if proj is not None:
-                print("set existing Project: {}".format(proj.name))
-            else:
-                raise ValueError("Project with ID {} not found".format(_proj_id))
-        else:
-            if proj_name is None:
-                proj_name = Project._generate_default_name()
-            try:
-                proj = Project._create(conn, ctx, proj_name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org)
-            except requests.HTTPError as e:
-                if e.response.status_code == 403:  # cannot create in other workspace
-                    proj = Project._get(conn, proj_name, workspace)
-                    if proj is not None:
-                        print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
-                    else:  # no accessible project in other workspace
-                        six.raise_from(e, None)
-                elif e.response.status_code == 409:  # already exists
-                    if any(param is not None for param in (desc, tags, attrs, public_within_org)):
-                        warnings.warn(
-                            "Project with name {} already exists;"
-                            " cannot set `desc`, `tags`, `attrs`, or `public_within_org`".format(proj_name)
-                        )
-                    proj = Project._get(conn, proj_name, workspace)
-                    if proj is not None:
-                        print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
-                    else:
-                        raise RuntimeError("unable to retrieve Project {};"
-                                           " please notify the Verta development team".format(proj_name))
-                else:
-                    raise e
-            else:
-                print("created new Project: {} in {}".format(proj.name, WORKSPACE_PRINT_MSG))
-
-        super(Project, self).__init__(conn, conf, _ProjectService, "project", proj.id)
+    def __init__(self, conn, msg):
+        super(Project, self).__init__(conn, None, _ProjectService, "project", msg)
 
     def __repr__(self):
         return "<Project \"{}\">".format(self.name)
@@ -116,12 +65,12 @@ class Project(_ModelDBEntity):
         runs._msg.project_id = self.id
         return runs
 
-    @staticmethod
-    def _generate_default_name():
+    @classmethod
+    def _generate_default_name(cls):
         return "Proj {}".format(_utils.generate_default_name())
 
     @classmethod
-    def _get_by_id(cls, conn, id):
+    def _get_proto_by_id(cls, conn, id):
         Message = _ProjectService.GetProjectById
         msg = Message(id=id)
         response = conn.make_proto_request("GET",
@@ -130,7 +79,7 @@ class Project(_ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).project
 
     @classmethod
-    def _get_by_name(cls, conn, name, workspace):
+    def _get_proto_by_name(cls, conn, name, workspace):
         Message = _ProjectService.GetProjectByName
         msg = Message(name=name, workspace_name=workspace)
         response = conn.make_proto_request("GET",
@@ -154,7 +103,7 @@ class Project(_ModelDBEntity):
             raise ValueError("insufficient arguments")
 
     @classmethod
-    def _create_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
         Message = _ProjectService.CreateProject
         msg = Message(name=name, description=desc, tags=tags, attributes=attrs, workspace_name=ctx.workspace_name)
         if public_within_org:

@@ -76,48 +76,8 @@ class ExperimentRun(_ModelDBEntity):
         Name of this Experiment Run.
 
     """
-    def __init__(self, conn, conf,
-                 proj_id=None, expt_id=None, expt_run_name=None,
-                 desc=None, tags=None, attrs=None,
-                 date_created=None,
-                 _expt_run_id=None):
-        if expt_run_name is not None and _expt_run_id is not None:
-            raise ValueError("cannot specify both `expt_run_name` and `_expt_run_id`")
-
-        ctx = _Context()
-        ctx.proj_id = proj_id
-        ctx.expt_id = expt_id
-
-        if _expt_run_id is not None:
-            expt_run = ExperimentRun._get(conn, _expt_run_id=_expt_run_id)
-            if expt_run is not None:
-                print("set existing ExperimentRun: {}".format(expt_run.name))
-            else:
-                raise ValueError("ExperimentRun with ID {} not found".format(_expt_run_id))
-        elif None not in (proj_id, expt_id):
-            if expt_run_name is None:
-                expt_run_name = ExperimentRun._generate_default_name()
-            try:
-                expt_run = ExperimentRun._create(conn, ctx, expt_run_name, desc=desc, tags=tags, attrs=attrs, date_created=date_created)
-            except requests.HTTPError as e:
-                if e.response.status_code == 409:  # already exists
-                    if any(param is not None for param in (desc, tags, attrs)):
-                        warnings.warn("ExperimentRun with name {} already exists;"
-                                      " cannot initialize `desc`, `tags`, or `attrs`".format(expt_run_name))
-                    expt_run = ExperimentRun._get(conn, expt_id, expt_run_name)
-                    if expt_run is not None:
-                        print("set existing ExperimentRun: {}".format(expt_run.name))
-                    else:
-                        raise RuntimeError("unable to retrieve ExperimentRun {};"
-                                           " please notify the Verta development team".format(expt_run_name))
-                else:
-                    raise e
-            else:
-                print("created new ExperimentRun: {}".format(expt_run.name))
-        else:
-            raise ValueError("insufficient arguments")
-
-        super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", expt_run.id)
+    def __init__(self, conn, msg):
+        super(ExperimentRun, self).__init__(conn, None, _ExperimentRunService, "experiment-run", msg)
 
     def __repr__(self):
         run_msg = self._get_self_as_msg()
@@ -181,12 +141,12 @@ class ExperimentRun(_ModelDBEntity):
     def name(self):
         return self._get_self_as_msg().name
 
-    @staticmethod
-    def _generate_default_name():
+    @classmethod
+    def _generate_default_name(cls):
         return "Run {}".format(_utils.generate_default_name())
 
     @classmethod
-    def _get_by_id(cls, conn, id):
+    def _get_proto_by_id(cls, conn, id):
         Message = _ExperimentRunService.GetExperimentRunById
         msg = Message(id=id)
         response = conn.make_proto_request("GET",
@@ -196,7 +156,7 @@ class ExperimentRun(_ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).experiment_run
 
     @classmethod
-    def _get_by_name(cls, conn, name, expt_id):
+    def _get_proto_by_name(cls, conn, name, expt_id):
         Message = _ExperimentRunService.GetExperimentRunByName
         msg = Message(experiment_id=expt_id, name=name)
         response = conn.make_proto_request("GET",
@@ -215,9 +175,9 @@ class ExperimentRun(_ModelDBEntity):
             raise ValueError("insufficient arguments")
 
     @classmethod
-    def _create_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
         Message = _ExperimentRunService.CreateExperimentRun
-        msg = Message(project_id=ctx.proj_id, experiment_id=ctx.expt_id, name=name,
+        msg = Message(project_id=ctx.proj.id, experiment_id=ctx.expt.id, name=name,
                       description=desc, tags=tags, attributes=attrs,
                       date_created=date_created, date_updated=date_created)
         response = conn.make_proto_request("POST",

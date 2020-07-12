@@ -58,6 +58,7 @@ from . import deployment
 from . import utils
 
 from ._tracking import (
+    _Context,
     Project,
     Experiment,
     ExperimentRun,
@@ -201,8 +202,15 @@ class Client(object):
         self._conn = conn
         self._conf = _utils.Configuration(use_git, debug)
 
-        self.proj = None
-        self.expt = None
+        self._ctx = _Context(self._conn)
+
+    @property
+    def proj(self):
+        return self._ctx.proj
+
+    @property
+    def expt(self):
+        return self._ctx.expt
 
     @property
     def max_retries(self):
@@ -322,22 +330,24 @@ class Client(object):
             If a Project with `name` already exists, but metadata parameters are passed in.
 
         """
-        # if proj already in progress, reset expt
-        if self.proj is not None:
-            self.expt = None
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
 
-        if name is None and id is None:
-            name = self._set_from_config_if_none(name, "project")
+        name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        self.proj = Project(self._conn, self._conf,
-                            name,
-                            desc, tags, attrs,
-                            workspace,
-                            public_within_org,
-                            id)
+        self.ctx = _Context(self._conn)
+        self.ctx.workspace_name = workspace
 
-        return self.proj
+        if id is not None:
+            self.ctx.proj = Project._get_by_id(self._conn, id)
+            self.ctx.populate()
+        else:
+            self.ctx.proj = Project._get_or_create_by_name(self._conn, name,
+                                                        lambda name: Project._get_by_name(self._conn, name, self.ctx.workspace_name),
+                                                        lambda name: Project._create(self._conn, self.ctx, name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
+
+        return self.ctx.proj
 
     def set_experiment(self, name=None, desc=None, tags=None, attrs=None, id=None):
         """
@@ -374,40 +384,22 @@ class Client(object):
             If a Project is not yet in progress.
 
         """
-        if name is None and id is None:
-            name = self._set_from_config_if_none(name, "experiment")
-
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
-        elif id is not None:
-            # find Experiment by ID
-            expt_msg = Experiment._get(self._conn, _expt_id=id)
-            if expt_msg is None:
-                raise ValueError("no Experiment found with ID {}".format(id))
-            # set parent Project by ID
-            try:
-                self.proj = Project(self._conn, self._conf, _proj_id=expt_msg.project_id)
-            except ValueError:  # parent Project not found
-                raise RuntimeError("unable to find parent Project of Experiment with ID {};"
-                                   " this should only ever occur due to a back end error".format(id))
-            # set Experiment
-            self.expt = Experiment(self._conn, self._conf,
-                                   _expt_id=id)
+
+        name = self._set_from_config_if_none(name, "experiment")
+
+        if id is not None:
+            self.ctx.expt = Experiment._get_by_id(self._conn, id)
+            self.ctx.populate()
         else:
-            # set Experiment by name under current Project
-            if self.proj is None:
-                # automatically set Project if in config
-                proj_name = self._set_from_config_if_none(None, "project")
-                if proj_name is not None:
-                    self.set_project(proj_name)
-                else:
-                    raise AttributeError("a Project must first be in progress")
+            # TODO: validate context
+            self.ctx.expt = Experiment._get_or_create_by_name(self._conn, name,
+                                                            lambda name: Experiment._get_by_name(self._conn, name, self.ctx.proj.id),
+                                                            lambda name: Experiment._create(self._conn, self.ctx, name, desc=desc, tags=tags, attrs=attrs))
 
-            self.expt = Experiment(self._conn, self._conf,
-                                   self.proj.id, name,
-                                   desc, tags, attrs)
+        return self.ctx.expt
 
-        return self.expt
 
     def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None):
         """
@@ -446,41 +438,17 @@ class Client(object):
         """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
-        elif id is not None:
-            # find ExperimentRun by ID
-            expt_run_msg = ExperimentRun._get(self._conn, _expt_run_id=id)
-            if expt_run_msg is None:
-                raise ValueError("no ExperimentRun found with ID {}".format(id))
-            # set parent Project by ID
-            try:
-                self.proj = Project(self._conn, self._conf, _proj_id=expt_run_msg.project_id)
-            except ValueError:  # parent Project not found
-                raise RuntimeError("unable to find parent Project of ExperimentRun with ID {};"
-                                   " this should only ever occur due to a back end error".format(id))
-            # set parent Experiment by ID
-            try:
-                self.expt = Experiment(self._conn, self._conf, _expt_id=expt_run_msg.experiment_id)
-            except ValueError:  # parent Experiment not found
-                raise RuntimeError("unable to find parent Experiment of ExperimentRun with ID {};"
-                                   " this should only ever occur due to a back end error".format(id))
-            # set ExperimentRun
-            expt_run = ExperimentRun(self._conn, self._conf,
-                                     _expt_run_id=id)
+
+        if id is not None:
+            self.ctx.expt_run = ExperimentRun._get_by_id(self._conn, id)
+            self.ctx.populate()
         else:
-            # set ExperimentRun by name under current Experiment
-            if self.expt is None:
-                # automatically set Experiment if in config
-                expt_name = self._set_from_config_if_none(None, "experiment")
-                if expt_name is not None:
-                    self.set_experiment(expt_name)
-                else:
-                    raise AttributeError("an Experiment must first be in progress")
+            # TODO: validate context
+            self.ctx.expt_run = ExperimentRun._get_or_create_by_name(self._conn, name,
+                                                                    lambda name: ExperimentRun._get_by_name(self._conn, name, self.ctx.expt.id),
+                                                                    lambda name: ExperimentRun._create(self._conn, self.ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created))
 
-            expt_run = ExperimentRun(self._conn, self._conf,
-                                     self.proj.id, self.expt.id, name,
-                                     desc, tags, attrs, date_created=date_created)
-
-        return expt_run
+        return self.ctx.expt_run
 
     def get_or_create_repository(self, name=None, workspace=None, id=None):
         """

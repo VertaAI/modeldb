@@ -39,46 +39,8 @@ class Experiment(_ModelDBEntity):
         Experiment Runs under this Experiment.
 
     """
-    def __init__(self, conn, conf,
-                 proj_id=None, expt_name=None,
-                 desc=None, tags=None, attrs=None,
-                 _expt_id=None):
-        if expt_name is not None and _expt_id is not None:
-            raise ValueError("cannot specify both `expt_name` and `_expt_id`")
-
-        ctx = _Context()
-        ctx.proj_id = proj_id
-
-        if _expt_id is not None:
-            expt = Experiment._get(conn, _expt_id=_expt_id)
-            if expt is not None:
-                print("set existing Experiment: {}".format(expt.name))
-            else:
-                raise ValueError("Experiment with ID {} not found".format(_expt_id))
-        elif proj_id is not None:
-            if expt_name is None:
-                expt_name = Experiment._generate_default_name()
-            try:
-                expt = Experiment._create(conn, ctx, expt_name, desc=desc, tags=tags, attrs=attrs)
-            except requests.HTTPError as e:
-                if e.response.status_code == 409:  # already exists
-                    if any(param is not None for param in (desc, tags, attrs)):
-                        warnings.warn("Experiment with name {} already exists;"
-                                      " cannot initialize `desc`, `tags`, or `attrs`".format(expt_name))
-                    expt = Experiment._get(conn, proj_id, expt_name)
-                    if expt is not None:
-                        print("set existing Experiment: {}".format(expt.name))
-                    else:
-                        raise RuntimeError("unable to retrieve Experiment {};"
-                                           " please notify the Verta development team".format(expt_name))
-                else:
-                    raise e
-            else:
-                print("created new Experiment: {}".format(expt.name))
-        else:
-            raise ValueError("insufficient arguments")
-
-        super(Experiment, self).__init__(conn, conf, _ExperimentService, "experiment", expt.id)
+    def __init__(self, conn, msg):
+        super(Experiment, self).__init__(conn, None, _ExperimentService, "experiment", msg)
 
     def __repr__(self):
         return "<Experiment \"{}\">".format(self.name)
@@ -103,12 +65,12 @@ class Experiment(_ModelDBEntity):
         runs._msg.experiment_id = self.id
         return runs
 
-    @staticmethod
-    def _generate_default_name():
+    @classmethod
+    def _generate_default_name(cls):
         return "Expt {}".format(_utils.generate_default_name())
 
     @classmethod
-    def _get_by_id(cls, conn, id):
+    def _get_proto_by_id(cls, conn, id):
         Message = _ExperimentService.GetExperimentById
         msg = Message(id=id)
         response = conn.make_proto_request("GET",
@@ -118,7 +80,7 @@ class Experiment(_ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).experiment
 
     @classmethod
-    def _get_by_name(cls, conn, name, proj_id):
+    def _get_proto_by_name(cls, conn, name, proj_id):
         Message = _ExperimentService.GetExperimentByName
         msg = Message(project_id=proj_id, name=name)
         response = conn.make_proto_request("GET",
@@ -137,9 +99,9 @@ class Experiment(_ModelDBEntity):
             raise ValueError("insufficient arguments")
 
     @classmethod
-    def _create_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
         Message = _ExperimentService.CreateExperiment
-        msg = Message(project_id=ctx.proj_id, name=name,
+        msg = Message(project_id=ctx.proj.id, name=name,
                       description=desc, tags=tags, attributes=attrs)
         response = conn.make_proto_request("POST",
                                            "/api/v1/modeldb/experiment/createExperiment",
