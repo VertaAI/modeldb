@@ -10,6 +10,7 @@ import pathlib2
 import pprint
 import shutil
 import sys
+import tarfile
 import tempfile
 import time
 import warnings
@@ -56,6 +57,12 @@ _OSS_DEFAULT_WORKSPACE = "personal"
 _CUSTOM_MODULES_DIR = "/app/custom_modules/"  # location in DeploymentService model container
 
 _MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
+
+_CACHE_DIR = os.path.join(
+    os.path.expanduser("~"),
+    ".verta",
+    "cache",
+)
 
 
 class ExperimentRun(_ModelDBEntity):

@@ -4,8 +4,6 @@ from __future__ import print_function
 
 import importlib
 import os
-import tarfile
-import tempfile
 import zipfile
 
 # from .project import Project
@@ -21,12 +19,6 @@ from .._internal_utils import (
     _artifact_utils,
     _git_utils,
     _utils,
-)
-
-_CACHE_DIR = os.path.join(
-    os.path.expanduser("~"),
-    ".verta",
-    "cache",
 )
 
 
