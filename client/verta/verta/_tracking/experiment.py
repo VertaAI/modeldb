@@ -103,24 +103,14 @@ class Experiment(_ModelDBEntity):
     def _generate_default_name():
         return "Expt {}".format(_utils.generate_default_name())
 
-    @staticmethod
-    def _get(conn, proj_id=None, expt_name=None, _expt_id=None):
-        if _expt_id is not None:
-            Message = _ExperimentService.GetExperimentById
-            msg = Message(id=_expt_id)
-            data = _utils.proto_to_json(msg)
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/experiment/getExperimentById".format(conn.scheme, conn.socket),
-                                           conn, params=data)
-        elif None not in (proj_id, expt_name):
-            Message = _ExperimentService.GetExperimentByName
-            msg = Message(project_id=proj_id, name=expt_name)
-            data = _utils.proto_to_json(msg)
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/experiment/getExperimentByName".format(conn.scheme, conn.socket),
-                                           conn, params=data)
-        else:
-            raise ValueError("insufficient arguments")
+    @classmethod
+    def _get_by_id(cls, conn, id):
+        Message = _ExperimentService.GetExperimentById
+        msg = Message(id=id)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                        "{}://{}/api/v1/modeldb/experiment/getExperimentById".format(conn.scheme, conn.socket),
+                                        conn, params=data)
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
@@ -128,7 +118,7 @@ class Experiment(_ModelDBEntity):
 
             if not expt.id:  # 200, but empty message
                 raise RuntimeError("unable to retrieve Experiment {};"
-                                   " please notify the Verta development team".format(expt_name))
+                                   " please notify the Verta development team".format(id))
 
             return expt
         else:
@@ -137,6 +127,40 @@ class Experiment(_ModelDBEntity):
                 return None
             else:
                 _utils.raise_for_http_error(response)
+
+    @classmethod
+    def _get_by_name(cls, conn, name, proj_id):
+        Message = _ExperimentService.GetExperimentByName
+        msg = Message(project_id=proj_id, name=name)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                        "{}://{}/api/v1/modeldb/experiment/getExperimentByName".format(conn.scheme, conn.socket),
+                                        conn, params=data)
+
+        if response.ok:
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+            expt = response_msg.experiment
+
+            if not expt.id:  # 200, but empty message
+                raise RuntimeError("unable to retrieve Experiment {};"
+                                   " please notify the Verta development team".format(name))
+
+            return expt
+        else:
+            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
+                return None
+            else:
+                _utils.raise_for_http_error(response)
+
+    @staticmethod
+    def _get(conn, proj_id=None, expt_name=None, _expt_id=None):
+        if _expt_id is not None:
+            return Experiment._get_by_id(conn, _expt_id)
+        elif None not in (proj_id, expt_name):
+            return Experiment._get_by_name(conn, expt_name, proj_id)
+        else:
+            raise ValueError("insufficient arguments")
 
     @staticmethod
     def _create(conn, proj_id, expt_name, desc=None, tags=None, attrs=None):

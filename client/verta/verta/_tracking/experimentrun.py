@@ -180,24 +180,14 @@ class ExperimentRun(_ModelDBEntity):
     def _generate_default_name():
         return "Run {}".format(_utils.generate_default_name())
 
-    @staticmethod
-    def _get(conn, expt_id=None, expt_run_name=None, _expt_run_id=None):
-        if _expt_run_id is not None:
-            Message = _ExperimentRunService.GetExperimentRunById
-            msg = Message(id=_expt_run_id)
-            data = _utils.proto_to_json(msg)
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(conn.scheme, conn.socket),
-                                           conn, params=data)
-        elif None not in (expt_id, expt_run_name):
-            Message = _ExperimentRunService.GetExperimentRunByName
-            msg = Message(experiment_id=expt_id, name=expt_run_name)
-            data = _utils.proto_to_json(msg)
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunByName".format(conn.scheme, conn.socket),
-                                           conn, params=data)
-        else:
-            raise ValueError("insufficient arguments")
+    @classmethod
+    def _get_by_id(cls, conn, id):
+        Message = _ExperimentRunService.GetExperimentRunById
+        msg = Message(id=id)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                        "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(conn.scheme, conn.socket),
+                                        conn, params=data)
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
@@ -205,7 +195,7 @@ class ExperimentRun(_ModelDBEntity):
 
             if not expt_run.id:  # 200, but empty message
                 raise RuntimeError("unable to retrieve ExperimentRun {};"
-                                   " please notify the Verta development team".format(expt_run_name))
+                                   " please notify the Verta development team".format(id))
 
             return expt_run
         else:
@@ -214,6 +204,40 @@ class ExperimentRun(_ModelDBEntity):
                 return None
             else:
                 _utils.raise_for_http_error(response)
+
+    @classmethod
+    def _get_by_name(cls, conn, name, expt_id):
+        Message = _ExperimentRunService.GetExperimentRunByName
+        msg = Message(experiment_id=expt_id, name=name)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                        "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunByName".format(conn.scheme, conn.socket),
+                                        conn, params=data)
+
+        if response.ok:
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+            expt_run = response_msg.experiment_run
+
+            if not expt_run.id:  # 200, but empty message
+                raise RuntimeError("unable to retrieve ExperimentRun {};"
+                                   " please notify the Verta development team".format(name))
+
+            return expt_run
+        else:
+            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
+                return None
+            else:
+                _utils.raise_for_http_error(response)
+
+    @staticmethod
+    def _get(conn, expt_id=None, expt_run_name=None, _expt_run_id=None):
+        if _expt_run_id is not None:
+            return ExperimentRun._get_by_id(conn, _expt_run_id)
+        elif None not in (expt_id, expt_run_name):
+            return ExperimentRun._get_by_name(conn, expt_run_name, expt_id)
+        else:
+            raise ValueError("insufficient arguments")
 
     @staticmethod
     def _create(conn, proj_id, expt_id, expt_run_name, desc=None, tags=None, attrs=None, date_created=None):

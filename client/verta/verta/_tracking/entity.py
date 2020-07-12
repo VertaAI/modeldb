@@ -57,6 +57,14 @@ class _ModelDBEntity(object):
 
         self.__dict__.update(state)
 
+    @classmethod
+    def _get_by_id(cls, conn, id):
+        raise NotImplementedError
+
+    @classmethod
+    def _get_by_name(cls, conn, name, parent):
+        raise NotImplementedError
+
     def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False):
         """
         Logs the code version.

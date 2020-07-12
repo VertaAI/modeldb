@@ -116,53 +116,61 @@ class Project(_ModelDBEntity):
     def _generate_default_name():
         return "Proj {}".format(_utils.generate_default_name())
 
+    @classmethod
+    def _get_by_id(cls, conn, id):
+        Message = _ProjectService.GetProjectById
+        msg = Message(id=id)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                        "{}://{}/api/v1/modeldb/project/getProjectById".format(conn.scheme, conn.socket),
+                                        conn, params=data)
+
+        if response.ok:
+            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+            return response_msg.project
+        else:
+            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
+                return None
+            else:
+                _utils.raise_for_http_error(response)
+
+    @classmethod
+    def _get_by_name(cls, conn, name, workspace):
+        Message = _ProjectService.GetProjectByName
+        msg = Message(name=name, workspace_name=workspace)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                        "{}://{}/api/v1/modeldb/project/getProjectByName".format(conn.scheme, conn.socket),
+                                        conn, params=data)
+
+        if response.ok:
+            response_json = _utils.body_to_json(response)
+            response_msg = _utils.json_to_proto(response_json, Message.Response)
+            if workspace is None or response_json.get('project_by_user'):
+                # user's personal workspace
+                proj = response_msg.project_by_user
+            else:
+                proj = response_msg.shared_projects[0]
+
+            if not proj.id:  # 200, but empty message
+                raise RuntimeError("unable to retrieve Project {};"
+                                    " please notify the Verta development team".format(name))
+
+            return proj
+        else:
+            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
+                return None
+            else:
+                _utils.raise_for_http_error(response)
+
     @staticmethod
     def _get(conn, proj_name=None, workspace=None, _proj_id=None):
         if _proj_id is not None:
-            Message = _ProjectService.GetProjectById
-            msg = Message(id=_proj_id)
-            data = _utils.proto_to_json(msg)
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/project/getProjectById".format(conn.scheme, conn.socket),
-                                           conn, params=data)
-
-            if response.ok:
-                response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-                return response_msg.project
-            else:
-                if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
-                        or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
-                    return None
-                else:
-                    _utils.raise_for_http_error(response)
+            return Project._get_by_id(conn, _proj_id)
         elif proj_name is not None:
-            Message = _ProjectService.GetProjectByName
-            msg = Message(name=proj_name, workspace_name=workspace)
-            data = _utils.proto_to_json(msg)
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/project/getProjectByName".format(conn.scheme, conn.socket),
-                                           conn, params=data)
-
-            if response.ok:
-                response_json = _utils.body_to_json(response)
-                response_msg = _utils.json_to_proto(response_json, Message.Response)
-                if workspace is None or response_json.get('project_by_user'):
-                    # user's personal workspace
-                    proj = response_msg.project_by_user
-                else:
-                    proj = response_msg.shared_projects[0]
-
-                if not proj.id:  # 200, but empty message
-                    raise RuntimeError("unable to retrieve Project {};"
-                                       " please notify the Verta development team".format(proj_name))
-
-                return proj
-            else:
-                if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
-                        or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
-                    return None
-                else:
-                    _utils.raise_for_http_error(response)
+            return Project._get_by_name(conn, proj_name, workspace)
         else:
             raise ValueError("insufficient arguments")
 
