@@ -61,6 +61,9 @@ class _ModelDBEntity(object):
 
         state['_service_module_name'] = state['_service'].__name__
         del state['_service']
+
+        # This is done because we can't pickle protobuf objects
+        # TODO: use json conversion instead to avoid the call
         del state['_msg']
 
         return state
