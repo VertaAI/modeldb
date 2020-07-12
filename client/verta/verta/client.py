@@ -336,18 +336,18 @@ class Client(object):
         name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        self.ctx = _Context(self._conn)
-        self.ctx.workspace_name = workspace
+        self._ctx = _Context(self._conn)
+        self._ctx.workspace_name = workspace
 
         if id is not None:
-            self.ctx.proj = Project._get_by_id(self._conn, self._conf, id)
-            self.ctx.populate()
+            self._ctx.proj = Project._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
         else:
-            self.ctx.proj = Project._get_or_create_by_name(self._conn, name,
-                                                        lambda name: Project._get_by_name(self._conn, self._conf, name, self.ctx.workspace_name),
-                                                        lambda name: Project._create(self._conn, self._conf, self.ctx, name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
+            self._ctx.proj = Project._get_or_create_by_name(self._conn, name,
+                                                        lambda name: Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
+                                                        lambda name: Project._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
 
-        return self.ctx.proj
+        return self._ctx.proj
 
     def set_experiment(self, name=None, desc=None, tags=None, attrs=None, id=None):
         """
@@ -390,15 +390,15 @@ class Client(object):
         name = self._set_from_config_if_none(name, "experiment")
 
         if id is not None:
-            self.ctx.expt = Experiment._get_by_id(self._conn, self._conf, id)
-            self.ctx.populate()
+            self._ctx.expt = Experiment._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
         else:
             # TODO: validate context
-            self.ctx.expt = Experiment._get_or_create_by_name(self._conn, name,
-                                                            lambda name: Experiment._get_by_name(self._conn, self._conf, name, self.ctx.proj.id),
-                                                            lambda name: Experiment._create(self._conn, self._conf, self.ctx, name, desc=desc, tags=tags, attrs=attrs))
+            self._ctx.expt = Experiment._get_or_create_by_name(self._conn, name,
+                                                            lambda name: Experiment._get_by_name(self._conn, self._conf, name, self._ctx.proj.id),
+                                                            lambda name: Experiment._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs))
 
-        return self.ctx.expt
+        return self._ctx.expt
 
 
     def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None):
@@ -440,15 +440,15 @@ class Client(object):
             raise ValueError("cannot specify both `name` and `id`")
 
         if id is not None:
-            self.ctx.expt_run = ExperimentRun._get_by_id(self._conn, self._conf, id)
-            self.ctx.populate()
+            self._ctx.expt_run = ExperimentRun._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
         else:
             # TODO: validate context
-            self.ctx.expt_run = ExperimentRun._get_or_create_by_name(self._conn, name,
-                                                                    lambda name: ExperimentRun._get_by_name(self._conn, self._conf, name, self.ctx.expt.id),
-                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self.ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created))
+            self._ctx.expt_run = ExperimentRun._get_or_create_by_name(self._conn, name,
+                                                                    lambda name: ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id),
+                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created))
 
-        return self.ctx.expt_run
+        return self._ctx.expt_run
 
     def get_or_create_repository(self, name=None, workspace=None, id=None):
         """
