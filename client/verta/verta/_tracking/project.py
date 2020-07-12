@@ -120,10 +120,9 @@ class Project(_ModelDBEntity):
     def _get_by_id(cls, conn, id):
         Message = _ProjectService.GetProjectById
         msg = Message(id=id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                        "{}://{}/api/v1/modeldb/project/getProjectById".format(conn.scheme, conn.socket),
-                                        conn, params=data)
+        response = conn.make_proto_request("GET",
+                                           "/api/v1/modeldb/project/getProjectById",
+                                           msg)
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
@@ -139,10 +138,9 @@ class Project(_ModelDBEntity):
     def _get_by_name(cls, conn, name, workspace):
         Message = _ProjectService.GetProjectByName
         msg = Message(name=name, workspace_name=workspace)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                        "{}://{}/api/v1/modeldb/project/getProjectByName".format(conn.scheme, conn.socket),
-                                        conn, params=data)
+        response = conn.make_proto_request("GET",
+                                           "/api/v1/modeldb/project/getProjectByName",
+                                           msg)
 
         if response.ok:
             response_json = _utils.body_to_json(response)

@@ -110,6 +110,14 @@ class Connection:
                            raise_on_status=False)  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
 
+    def make_proto_request(self, method, path, msg):
+        data = proto_to_json(msg)
+        response = make_request(method,
+                                "{}://{}{}".format(self.scheme, self.socket, path),
+                                self, params=data)
+
+        return response
+
 
 class Configuration:
     def __init__(self, use_git=True, debug=False):

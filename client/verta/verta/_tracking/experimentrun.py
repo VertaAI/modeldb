@@ -184,10 +184,9 @@ class ExperimentRun(_ModelDBEntity):
     def _get_by_id(cls, conn, id):
         Message = _ExperimentRunService.GetExperimentRunById
         msg = Message(id=id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                        "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(conn.scheme, conn.socket),
-                                        conn, params=data)
+        response = conn.make_proto_request("GET",
+                                           "/api/v1/modeldb/experiment-run/getExperimentRunById",
+                                           msg)
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
@@ -203,10 +202,9 @@ class ExperimentRun(_ModelDBEntity):
     def _get_by_name(cls, conn, name, expt_id):
         Message = _ExperimentRunService.GetExperimentRunByName
         msg = Message(experiment_id=expt_id, name=name)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                        "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunByName".format(conn.scheme, conn.socket),
-                                        conn, params=data)
+        response = conn.make_proto_request("GET",
+                                           "/api/v1/modeldb/experiment-run/getExperimentRunByName",
+                                           msg)
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
