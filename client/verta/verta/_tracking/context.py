@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from .experiment import Experiment
+from .project import Project
+
 class _Context(object):
     def __init__(self, conn):
         self._conn = conn
@@ -8,6 +11,8 @@ class _Context(object):
         self.expt = None
         self.expt_run = None
 
-    # TODO
     def populate(self):
-        pass
+        if self.expt is None and self.expt_run is not None:
+            self.expt = Experiment._get_by_id(self._conn, self.expt_run.msg.experiment_id)
+        if self.proj is None and self.expt is not None:
+            self.proj = Project._get_by_id(self._conn, self.expt.msg.project_id)
