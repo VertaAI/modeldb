@@ -104,6 +104,10 @@ class ExperimentRun(_ModelDBEntity):
             "artifact keys: {}".format(_utils.unravel_artifacts(run_msg.artifacts)),
         ))
 
+    def _update_cache(self):
+        self._hyperparameters = _utils.unravel_key_values(self._msg.hyperparameters)
+        self._metrics = _utils.unravel_key_values(self._msg.metrics)
+
     @property
     def workspace(self):
         proj_id = self._get_self_as_msg().project_id
@@ -812,6 +816,8 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
+        self._clear_cache()
+
     def log_metrics(self, metrics):
         """
         Logs potentially multiple metrics to this Experiment Run.
@@ -843,6 +849,8 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
+        self._clear_cache()
+
     def get_metric(self, key):
         """
         Gets the metric with name `key` from this Experiment Run.
@@ -858,21 +866,10 @@ class ExperimentRun(_ModelDBEntity):
             Value of the metric.
 
         """
-        _utils.validate_flat_key(key)
-
-        Message = _ExperimentRunService.GetMetrics
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getMetrics".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        metrics = _utils.unravel_key_values(response_msg.metrics)
-        try:
-            return metrics[key]
-        except KeyError:
+        self._refresh_cache()
+        if key in self._metrics:
+            return self._metrics[key]
+        else:
             six.raise_from(KeyError("no metric found with key {}".format(key)), None)
 
     def get_metrics(self):
@@ -885,16 +882,8 @@ class ExperimentRun(_ModelDBEntity):
             Names and values of all metrics.
 
         """
-        Message = _ExperimentRunService.GetMetrics
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getMetrics".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return _utils.unravel_key_values(response_msg.metrics)
+        self._refresh_cache()
+        return self._metrics
 
     def log_hyperparameter(self, key, value):
         """
@@ -922,6 +911,8 @@ class ExperimentRun(_ModelDBEntity):
                                  " consider using observations instead".format(key))
             else:
                 _utils.raise_for_http_error(response)
+
+        self._clear_cache()
 
     def log_hyperparameters(self, hyperparams):
         """
@@ -954,6 +945,8 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
+        self._clear_cache()
+
     def get_hyperparameter(self, key):
         """
         Gets the hyperparameter with name `key` from this Experiment Run.
@@ -969,21 +962,10 @@ class ExperimentRun(_ModelDBEntity):
             Value of the hyperparameter.
 
         """
-        _utils.validate_flat_key(key)
-
-        Message = _ExperimentRunService.GetHyperparameters
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getHyperparameters".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        hyperparameters = _utils.unravel_key_values(response_msg.hyperparameters)
-        try:
-            return hyperparameters[key]
-        except KeyError:
+        self._refresh_cache()
+        if key in self._hyperparameters:
+            return self._hyperparameters[key]
+        else:
             six.raise_from(KeyError("no hyperparameter found with key {}".format(key)), None)
 
     def get_hyperparameters(self):
@@ -996,16 +978,8 @@ class ExperimentRun(_ModelDBEntity):
             Names and values of all hyperparameters.
 
         """
-        Message = _ExperimentRunService.GetHyperparameters
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getHyperparameters".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return _utils.unravel_key_values(response_msg.hyperparameters)
+        self._refresh_cache()
+        return self._hyperparameters
 
     def log_dataset(self, key, dataset, overwrite=False):
         """
