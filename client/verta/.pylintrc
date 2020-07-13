@@ -134,7 +134,7 @@ disable=print-statement,
         deprecated-sys-function,
         exception-escape,
         comprehension-escape,
-        # everything below was added by @convoliution
+      # everything below was added by @convoliution
         invalid-name,
         missing-docstring,
         line-too-long,
@@ -273,7 +273,7 @@ ignore-on-opaque-inference=yes
 ignored-classes=optparse.Values,
                 thread._local,
                 _thread._local,
-                # everything below was added by @convoliution
+      # everything below was added by @convoliution
                 OperatorEnum,
                 TernaryEnum,
                 OperatorEnum,
