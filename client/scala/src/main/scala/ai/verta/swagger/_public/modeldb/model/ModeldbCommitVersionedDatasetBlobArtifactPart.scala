@@ -5,6 +5,7 @@ import scala.util.Try
 
 import net.liftweb.json._
 
+import ai.verta.swagger._public.modeldb.model.DatasetTypeEnumDatasetType._
 import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibility._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.model.PathLocationTypeEnumPathLocationType._

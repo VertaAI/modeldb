@@ -7,6 +7,7 @@ import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.model.CollaboratorTypeEnumCollaboratorType._
+import ai.verta.swagger._public.modeldb.model.DatasetTypeEnumDatasetType._
 import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibility._
 import ai.verta.swagger._public.modeldb.model.EntitiesEnumEntitiesTypes._
 import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProvider._
