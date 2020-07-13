@@ -4,7 +4,6 @@ from __future__ import print_function
 
 import importlib
 import os
-import warnings
 import zipfile
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -55,6 +54,7 @@ class _ModelDBEntity(object):
     def _get_by_id(cls, conn, conf, id):
         msg = cls._get_proto_by_id(conn, id)
         if msg:
+            print("got existing {}: {}".format(cls.__name__, msg.id))
             return cls(conn, conf, msg)
         else:
             raise ValueError("{} with ID {} not found".format(cls.__name__, id))
@@ -73,8 +73,7 @@ class _ModelDBEntity(object):
         if obj is None:
             obj = creator(name)
         else:
-            warnings.warn("{} with name {} already exists;"
-                          " ignoring creation attributes".format(cls.__name__, name))
+            print("got existing {}: {}".format(cls.__name__, name))
         return obj
 
     @classmethod
