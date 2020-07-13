@@ -65,7 +65,7 @@ class ExperimentRuns(_utils.LazyList):
         response = self._conn.make_proto_request("POST",
                                                 "/api/v1/modeldb/experiment-run/findExperimentRuns",
                                                 body=msg)
-        response = conn.must_proto_response(response, Message.Response)
+        response = self._conn.must_proto_response(response, msg.Response)
         return response.experiment_runs, response.total_records
 
     def _create_element(self, msg):
@@ -89,12 +89,12 @@ class ExperimentRuns(_utils.LazyList):
 
     def with_project(self, proj):
         new_list = copy.deepcopy(self)
-        new_list._msg.project_id = self.id
+        new_list._msg.project_id = proj.id
         return new_list
 
     def with_experiment(self, expt):
         new_list = copy.deepcopy(self)
-        new_list._msg.experiment_id = self.id
+        new_list._msg.experiment_id = expt.id
         return new_list
 
     def top_k(self, key, k, ret_all_info=False):
