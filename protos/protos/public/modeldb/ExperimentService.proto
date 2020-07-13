@@ -186,7 +186,7 @@ message GetExperimentCodeVersion {
 message FindExperiments {
     string project_id = 1;
     repeated string experiment_ids = 2;
-    repeated KeyValueQuery predicates = 4;
+    repeated common.KeyValueQuery predicates = 4;
     bool ids_only = 5; // whether to return full experiment runs or ids only
 
     //For pagination

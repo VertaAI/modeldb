@@ -28,21 +28,27 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 type IDTypeEnum_IDType int32
 
 const (
-	IDTypeEnum_UNKNOWN               IDTypeEnum_IDType = 0
-	IDTypeEnum_VERSIONING_REPOSITORY IDTypeEnum_IDType = 1
-	IDTypeEnum_VERSIONING_COMMIT     IDTypeEnum_IDType = 2
+	IDTypeEnum_UNKNOWN                     IDTypeEnum_IDType = 0
+	IDTypeEnum_VERSIONING_REPOSITORY       IDTypeEnum_IDType = 1
+	IDTypeEnum_VERSIONING_COMMIT           IDTypeEnum_IDType = 2
+	IDTypeEnum_VERSIONING_REPO_COMMIT_BLOB IDTypeEnum_IDType = 3
+	IDTypeEnum_VERSIONING_REPO_COMMIT      IDTypeEnum_IDType = 4
 )
 
 var IDTypeEnum_IDType_name = map[int32]string{
 	0: "UNKNOWN",
 	1: "VERSIONING_REPOSITORY",
 	2: "VERSIONING_COMMIT",
+	3: "VERSIONING_REPO_COMMIT_BLOB",
+	4: "VERSIONING_REPO_COMMIT",
 }
 
 var IDTypeEnum_IDType_value = map[string]int32{
-	"UNKNOWN":               0,
-	"VERSIONING_REPOSITORY": 1,
-	"VERSIONING_COMMIT":     2,
+	"UNKNOWN":                     0,
+	"VERSIONING_REPOSITORY":       1,
+	"VERSIONING_COMMIT":           2,
+	"VERSIONING_REPO_COMMIT_BLOB": 3,
+	"VERSIONING_REPO_COMMIT":      4,
 }
 
 func (x IDTypeEnum_IDType) String() string {
@@ -423,6 +429,257 @@ func (m *DeleteLabelsRequest_Response) GetStatus() bool {
 	return false
 }
 
+type GetPropertyRequest struct {
+	// If only id_type is provided, gather from all of such sources
+	Id                   *IdentificationType `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Key                  string              `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
+}
+
+func (m *GetPropertyRequest) Reset()         { *m = GetPropertyRequest{} }
+func (m *GetPropertyRequest) String() string { return proto.CompactTextString(m) }
+func (*GetPropertyRequest) ProtoMessage()    {}
+func (*GetPropertyRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_49323c2f3f8c7f90, []int{5}
+}
+
+func (m *GetPropertyRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPropertyRequest.Unmarshal(m, b)
+}
+func (m *GetPropertyRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPropertyRequest.Marshal(b, m, deterministic)
+}
+func (m *GetPropertyRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPropertyRequest.Merge(m, src)
+}
+func (m *GetPropertyRequest) XXX_Size() int {
+	return xxx_messageInfo_GetPropertyRequest.Size(m)
+}
+func (m *GetPropertyRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPropertyRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetPropertyRequest proto.InternalMessageInfo
+
+func (m *GetPropertyRequest) GetId() *IdentificationType {
+	if m != nil {
+		return m.Id
+	}
+	return nil
+}
+
+func (m *GetPropertyRequest) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+type GetPropertyRequest_Response struct {
+	Value                string   `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetPropertyRequest_Response) Reset()         { *m = GetPropertyRequest_Response{} }
+func (m *GetPropertyRequest_Response) String() string { return proto.CompactTextString(m) }
+func (*GetPropertyRequest_Response) ProtoMessage()    {}
+func (*GetPropertyRequest_Response) Descriptor() ([]byte, []int) {
+	return fileDescriptor_49323c2f3f8c7f90, []int{5, 0}
+}
+
+func (m *GetPropertyRequest_Response) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPropertyRequest_Response.Unmarshal(m, b)
+}
+func (m *GetPropertyRequest_Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPropertyRequest_Response.Marshal(b, m, deterministic)
+}
+func (m *GetPropertyRequest_Response) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPropertyRequest_Response.Merge(m, src)
+}
+func (m *GetPropertyRequest_Response) XXX_Size() int {
+	return xxx_messageInfo_GetPropertyRequest_Response.Size(m)
+}
+func (m *GetPropertyRequest_Response) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPropertyRequest_Response.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetPropertyRequest_Response proto.InternalMessageInfo
+
+func (m *GetPropertyRequest_Response) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
+type AddPropertyRequest struct {
+	Id                   *IdentificationType `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Key                  string              `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	Value                string              `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
+}
+
+func (m *AddPropertyRequest) Reset()         { *m = AddPropertyRequest{} }
+func (m *AddPropertyRequest) String() string { return proto.CompactTextString(m) }
+func (*AddPropertyRequest) ProtoMessage()    {}
+func (*AddPropertyRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_49323c2f3f8c7f90, []int{6}
+}
+
+func (m *AddPropertyRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AddPropertyRequest.Unmarshal(m, b)
+}
+func (m *AddPropertyRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AddPropertyRequest.Marshal(b, m, deterministic)
+}
+func (m *AddPropertyRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddPropertyRequest.Merge(m, src)
+}
+func (m *AddPropertyRequest) XXX_Size() int {
+	return xxx_messageInfo_AddPropertyRequest.Size(m)
+}
+func (m *AddPropertyRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddPropertyRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AddPropertyRequest proto.InternalMessageInfo
+
+func (m *AddPropertyRequest) GetId() *IdentificationType {
+	if m != nil {
+		return m.Id
+	}
+	return nil
+}
+
+func (m *AddPropertyRequest) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *AddPropertyRequest) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
+type AddPropertyRequest_Response struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *AddPropertyRequest_Response) Reset()         { *m = AddPropertyRequest_Response{} }
+func (m *AddPropertyRequest_Response) String() string { return proto.CompactTextString(m) }
+func (*AddPropertyRequest_Response) ProtoMessage()    {}
+func (*AddPropertyRequest_Response) Descriptor() ([]byte, []int) {
+	return fileDescriptor_49323c2f3f8c7f90, []int{6, 0}
+}
+
+func (m *AddPropertyRequest_Response) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AddPropertyRequest_Response.Unmarshal(m, b)
+}
+func (m *AddPropertyRequest_Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AddPropertyRequest_Response.Marshal(b, m, deterministic)
+}
+func (m *AddPropertyRequest_Response) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddPropertyRequest_Response.Merge(m, src)
+}
+func (m *AddPropertyRequest_Response) XXX_Size() int {
+	return xxx_messageInfo_AddPropertyRequest_Response.Size(m)
+}
+func (m *AddPropertyRequest_Response) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddPropertyRequest_Response.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AddPropertyRequest_Response proto.InternalMessageInfo
+
+type DeletePropertyRequest struct {
+	Id                   *IdentificationType `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Key                  string              `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
+}
+
+func (m *DeletePropertyRequest) Reset()         { *m = DeletePropertyRequest{} }
+func (m *DeletePropertyRequest) String() string { return proto.CompactTextString(m) }
+func (*DeletePropertyRequest) ProtoMessage()    {}
+func (*DeletePropertyRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_49323c2f3f8c7f90, []int{7}
+}
+
+func (m *DeletePropertyRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DeletePropertyRequest.Unmarshal(m, b)
+}
+func (m *DeletePropertyRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DeletePropertyRequest.Marshal(b, m, deterministic)
+}
+func (m *DeletePropertyRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeletePropertyRequest.Merge(m, src)
+}
+func (m *DeletePropertyRequest) XXX_Size() int {
+	return xxx_messageInfo_DeletePropertyRequest.Size(m)
+}
+func (m *DeletePropertyRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeletePropertyRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DeletePropertyRequest proto.InternalMessageInfo
+
+func (m *DeletePropertyRequest) GetId() *IdentificationType {
+	if m != nil {
+		return m.Id
+	}
+	return nil
+}
+
+func (m *DeletePropertyRequest) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+type DeletePropertyRequest_Response struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *DeletePropertyRequest_Response) Reset()         { *m = DeletePropertyRequest_Response{} }
+func (m *DeletePropertyRequest_Response) String() string { return proto.CompactTextString(m) }
+func (*DeletePropertyRequest_Response) ProtoMessage()    {}
+func (*DeletePropertyRequest_Response) Descriptor() ([]byte, []int) {
+	return fileDescriptor_49323c2f3f8c7f90, []int{7, 0}
+}
+
+func (m *DeletePropertyRequest_Response) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DeletePropertyRequest_Response.Unmarshal(m, b)
+}
+func (m *DeletePropertyRequest_Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DeletePropertyRequest_Response.Marshal(b, m, deterministic)
+}
+func (m *DeletePropertyRequest_Response) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeletePropertyRequest_Response.Merge(m, src)
+}
+func (m *DeletePropertyRequest_Response) XXX_Size() int {
+	return xxx_messageInfo_DeletePropertyRequest_Response.Size(m)
+}
+func (m *DeletePropertyRequest_Response) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeletePropertyRequest_Response.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DeletePropertyRequest_Response proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterEnum("ai.verta.modeldb.metadata.IDTypeEnum_IDType", IDTypeEnum_IDType_name, IDTypeEnum_IDType_value)
 	proto.RegisterType((*IDTypeEnum)(nil), "ai.verta.modeldb.metadata.IDTypeEnum")
@@ -433,6 +690,12 @@ func init() {
 	proto.RegisterType((*AddLabelsRequest_Response)(nil), "ai.verta.modeldb.metadata.AddLabelsRequest.Response")
 	proto.RegisterType((*DeleteLabelsRequest)(nil), "ai.verta.modeldb.metadata.DeleteLabelsRequest")
 	proto.RegisterType((*DeleteLabelsRequest_Response)(nil), "ai.verta.modeldb.metadata.DeleteLabelsRequest.Response")
+	proto.RegisterType((*GetPropertyRequest)(nil), "ai.verta.modeldb.metadata.GetPropertyRequest")
+	proto.RegisterType((*GetPropertyRequest_Response)(nil), "ai.verta.modeldb.metadata.GetPropertyRequest.Response")
+	proto.RegisterType((*AddPropertyRequest)(nil), "ai.verta.modeldb.metadata.AddPropertyRequest")
+	proto.RegisterType((*AddPropertyRequest_Response)(nil), "ai.verta.modeldb.metadata.AddPropertyRequest.Response")
+	proto.RegisterType((*DeletePropertyRequest)(nil), "ai.verta.modeldb.metadata.DeletePropertyRequest")
+	proto.RegisterType((*DeletePropertyRequest_Response)(nil), "ai.verta.modeldb.metadata.DeletePropertyRequest.Response")
 }
 
 func init() {
@@ -440,40 +703,51 @@ func init() {
 }
 
 var fileDescriptor_49323c2f3f8c7f90 = []byte{
-	// 525 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x94, 0x4d, 0x6b, 0x13, 0x41,
-	0x18, 0xc7, 0x33, 0x9b, 0x9a, 0x26, 0x4f, 0x45, 0xe3, 0x94, 0x68, 0x1a, 0x5f, 0x08, 0x7b, 0x90,
-	0x50, 0x75, 0x07, 0xa3, 0x20, 0x08, 0x1e, 0x5a, 0x1b, 0xd2, 0xa5, 0x26, 0x29, 0x93, 0xb4, 0xa2,
-	0x97, 0x30, 0xc9, 0x8c, 0xeb, 0xc0, 0x66, 0x66, 0xcd, 0xce, 0x06, 0x7a, 0xf5, 0x2a, 0x8a, 0xe0,
-	0x41, 0xfc, 0x4a, 0x5e, 0xfd, 0x0a, 0x7e, 0x10, 0xc9, 0x26, 0x69, 0xc2, 0xb6, 0x5d, 0x28, 0x78,
-	0xe8, 0x6d, 0x9e, 0x7d, 0x5e, 0xfe, 0xbf, 0xe1, 0xbf, 0xf3, 0xc0, 0xc3, 0x91, 0xe6, 0xc2, 0xe7,
-	0x03, 0x32, 0x12, 0x86, 0x71, 0x66, 0x18, 0x69, 0xcd, 0x0f, 0x5d, 0x31, 0x9e, 0xc8, 0xa1, 0x70,
-	0x82, 0xb1, 0x36, 0x1a, 0x6f, 0x31, 0xe9, 0x4c, 0xc4, 0xd8, 0x30, 0x67, 0xde, 0xe0, 0x2c, 0x1a,
-	0x2a, 0xf7, 0x3c, 0xad, 0x3d, 0x5f, 0x10, 0x16, 0x48, 0xc2, 0x94, 0xd2, 0x86, 0x19, 0xa9, 0x55,
-	0x38, 0x6b, 0xb4, 0x8f, 0x00, 0xdc, 0xbd, 0xde, 0x49, 0x20, 0x1a, 0x2a, 0x1a, 0xd9, 0x4d, 0xc8,
-	0xcd, 0x22, 0xbc, 0x01, 0xeb, 0x47, 0xed, 0x83, 0x76, 0xe7, 0x6d, 0xbb, 0x98, 0xc1, 0x5b, 0x50,
-	0x3a, 0x6e, 0xd0, 0xae, 0xdb, 0x69, 0xbb, 0xed, 0x66, 0x9f, 0x36, 0x0e, 0x3b, 0x5d, 0xb7, 0xd7,
-	0xa1, 0xef, 0x8a, 0x08, 0x97, 0xe0, 0xd6, 0x4a, 0xea, 0x75, 0xa7, 0xd5, 0x72, 0x7b, 0x45, 0xcb,
-	0xfe, 0x85, 0x00, 0xbb, 0x5c, 0x28, 0x23, 0x3f, 0xc8, 0x61, 0x2c, 0x18, 0x4f, 0x6d, 0xc0, 0xba,
-	0xe4, 0x7d, 0x73, 0x12, 0x88, 0x32, 0xaa, 0xa2, 0xda, 0x8d, 0xfa, 0x63, 0xe7, 0x42, 0x70, 0x67,
-	0xc9, 0x35, 0x3f, 0xd2, 0x9c, 0xe4, 0xf1, 0x98, 0x3b, 0x90, 0x93, 0xca, 0xf4, 0x25, 0x2f, 0x5b,
-	0x55, 0x54, 0x5b, 0xdb, 0xcf, 0xd0, 0x6b, 0x52, 0x19, 0x97, 0xe3, 0xfb, 0x50, 0x08, 0xcd, 0x58,
-	0x2a, 0x6f, 0x9a, 0xcb, 0x56, 0x51, 0xad, 0xb0, 0x9f, 0xa1, 0xf9, 0xd9, 0x27, 0x97, 0xef, 0xae,
-	0x81, 0x25, 0xb9, 0x1d, 0x41, 0xb1, 0x29, 0xcc, 0x1b, 0x36, 0x10, 0x7e, 0x48, 0xc5, 0xa7, 0x48,
-	0x84, 0x06, 0xbf, 0x9a, 0x66, 0x62, 0xa6, 0x8d, 0xfa, 0x93, 0x34, 0xa6, 0x33, 0x77, 0xa2, 0x96,
-	0xe4, 0x15, 0x1b, 0xf2, 0x54, 0x84, 0x81, 0x56, 0xa1, 0xc0, 0xb7, 0x21, 0xe7, 0xc7, 0xb3, 0xcb,
-	0xa8, 0x9a, 0xad, 0x15, 0xe8, 0x3c, 0xb2, 0xbf, 0x22, 0x28, 0xee, 0x70, 0xfe, 0x3f, 0x75, 0x57,
-	0xb4, 0xac, 0x55, 0xad, 0x24, 0x4f, 0x68, 0x98, 0x89, 0xc2, 0x58, 0x26, 0x4f, 0xe7, 0x91, 0xfd,
-	0x1d, 0xc1, 0xe6, 0x9e, 0xf0, 0x85, 0x11, 0x57, 0x05, 0xa9, 0xfe, 0x3b, 0x0b, 0x37, 0x13, 0xff,
-	0x37, 0xfe, 0x82, 0xa0, 0x70, 0x6a, 0x17, 0x7e, 0x94, 0x02, 0x94, 0x34, 0xb5, 0xf2, 0xfc, 0x12,
-	0xc5, 0xce, 0x02, 0xce, 0xbe, 0xfb, 0xf9, 0xcf, 0xdf, 0x1f, 0x56, 0x09, 0x6f, 0x92, 0xc9, 0xd3,
-	0xe5, 0xb3, 0x9b, 0xdd, 0x02, 0x7f, 0x43, 0x50, 0x38, 0x35, 0x31, 0x95, 0x26, 0x69, 0x75, 0x2a,
-	0x4d, 0xb2, 0x78, 0x49, 0xf3, 0x20, 0xa6, 0x29, 0x57, 0xce, 0xa3, 0x79, 0x89, 0xb6, 0xf1, 0x4f,
-	0x04, 0xd7, 0x57, 0x5d, 0xc4, 0x4e, 0x8a, 0xcc, 0x39, 0x76, 0x57, 0x5e, 0x5c, 0xae, 0xfe, 0x0c,
-	0xd9, 0xf6, 0x05, 0x64, 0xbb, 0x07, 0x87, 0xe8, 0x7d, 0xd3, 0x93, 0xe6, 0x63, 0x34, 0x70, 0x86,
-	0x7a, 0x44, 0x8e, 0xa7, 0x1a, 0x3b, 0x2e, 0x59, 0x6c, 0xb4, 0x78, 0xff, 0x84, 0xc4, 0x13, 0x8a,
-	0x78, 0x7a, 0x11, 0x05, 0xd1, 0xc0, 0x97, 0x43, 0x92, 0xdc, 0x7a, 0x83, 0x5c, 0x9c, 0x7f, 0xf6,
-	0x2f, 0x00, 0x00, 0xff, 0xff, 0x45, 0x34, 0xcc, 0x1b, 0x10, 0x05, 0x00, 0x00,
+	// 692 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x96, 0xd1, 0x6b, 0xd3, 0x5e,
+	0x14, 0xc7, 0x77, 0xdb, 0xad, 0x5b, 0x4f, 0x7f, 0xec, 0x17, 0xef, 0xec, 0xd6, 0x65, 0x4e, 0x4b,
+	0x1e, 0xa4, 0x4c, 0x97, 0xe8, 0x14, 0x45, 0xc1, 0x87, 0xd5, 0x95, 0x2e, 0x6c, 0x6b, 0x47, 0x36,
+	0x27, 0xfa, 0x52, 0xd2, 0xde, 0x6b, 0xbd, 0x98, 0x26, 0xb1, 0xb9, 0x29, 0xf4, 0x55, 0x04, 0x1f,
+	0x44, 0x11, 0x06, 0x8a, 0xf8, 0xe0, 0x1f, 0xe5, 0xbf, 0xe0, 0x1f, 0x22, 0xbd, 0x69, 0xd7, 0x2c,
+	0x6d, 0x23, 0x85, 0x0d, 0x7c, 0xbb, 0x27, 0xe7, 0x9c, 0x7c, 0x3f, 0x37, 0xf7, 0x7c, 0xc3, 0x85,
+	0x9b, 0x2d, 0x87, 0x50, 0x8b, 0xd4, 0xb5, 0x16, 0xe5, 0x26, 0x31, 0xb9, 0xa9, 0x1d, 0xf4, 0x17,
+	0x47, 0xb4, 0xdd, 0x61, 0x0d, 0xaa, 0xba, 0x6d, 0x87, 0x3b, 0x78, 0xd5, 0x64, 0x6a, 0x87, 0xb6,
+	0xb9, 0xa9, 0xf6, 0x1b, 0xd4, 0x41, 0x83, 0x7c, 0xad, 0xe9, 0x38, 0x4d, 0x8b, 0x6a, 0xa6, 0xcb,
+	0x34, 0xd3, 0xb6, 0x1d, 0x6e, 0x72, 0xe6, 0xd8, 0x5e, 0xd0, 0xa8, 0x9c, 0x22, 0x00, 0x7d, 0xe7,
+	0xb8, 0xeb, 0xd2, 0x92, 0xed, 0xb7, 0x94, 0xf7, 0x08, 0x52, 0x41, 0x88, 0x33, 0x30, 0xff, 0xac,
+	0xb2, 0x57, 0xa9, 0x3e, 0xaf, 0x48, 0x33, 0x78, 0x15, 0xb2, 0x27, 0x25, 0xe3, 0x48, 0xaf, 0x56,
+	0xf4, 0x4a, 0xb9, 0x66, 0x94, 0x0e, 0xab, 0x47, 0xfa, 0x71, 0xd5, 0x78, 0x21, 0x21, 0x9c, 0x85,
+	0x2b, 0xa1, 0xd4, 0xd3, 0xea, 0xc1, 0x81, 0x7e, 0x2c, 0x25, 0xf0, 0x0d, 0x58, 0x8b, 0x74, 0xf4,
+	0x73, 0xb5, 0xe2, 0x7e, 0xb5, 0x28, 0x25, 0xb1, 0x0c, 0xcb, 0xe3, 0x0b, 0xa4, 0x59, 0xe5, 0x3b,
+	0x02, 0xac, 0x13, 0x6a, 0x73, 0xf6, 0x8a, 0x35, 0x04, 0xaf, 0x40, 0x2a, 0xc1, 0x3c, 0x23, 0x35,
+	0xde, 0x75, 0x69, 0x0e, 0xe5, 0x51, 0x61, 0x71, 0xeb, 0xb6, 0x3a, 0x71, 0xdf, 0xea, 0x70, 0x57,
+	0xfd, 0xa5, 0x91, 0x62, 0x44, 0xbc, 0x66, 0x05, 0x52, 0xcc, 0xe6, 0x35, 0x46, 0x72, 0x89, 0x3c,
+	0x2a, 0xcc, 0xee, 0xce, 0x18, 0x73, 0xcc, 0xe6, 0x3a, 0xc1, 0xeb, 0x90, 0xf6, 0x78, 0x9b, 0xd9,
+	0xcd, 0x5e, 0x2e, 0x99, 0x47, 0x85, 0xf4, 0xee, 0x8c, 0xb1, 0x10, 0x3c, 0xd2, 0x49, 0x71, 0x16,
+	0x12, 0x8c, 0x28, 0x3e, 0x48, 0x65, 0xca, 0xf7, 0xcd, 0x3a, 0xb5, 0x3c, 0x83, 0xbe, 0xf5, 0xa9,
+	0xc7, 0xf1, 0x93, 0x5e, 0x46, 0x30, 0x65, 0xb6, 0x36, 0xe3, 0x98, 0x46, 0xf6, 0x64, 0x24, 0x18,
+	0x91, 0x15, 0x58, 0x30, 0xa8, 0xe7, 0x3a, 0xb6, 0x47, 0xf1, 0x32, 0xa4, 0x2c, 0xf1, 0xee, 0x1c,
+	0xca, 0x27, 0x0b, 0x69, 0xa3, 0x1f, 0x29, 0x9f, 0x10, 0x48, 0xdb, 0x84, 0x5c, 0xa4, 0x6e, 0x48,
+	0x2b, 0x11, 0xd6, 0x8a, 0xf2, 0x78, 0xdc, 0xe4, 0xbe, 0x27, 0x64, 0x16, 0x8c, 0x7e, 0xa4, 0x7c,
+	0x41, 0xb0, 0xb4, 0x43, 0x2d, 0xca, 0xe9, 0x3f, 0x83, 0xf4, 0x01, 0x01, 0x2e, 0x53, 0x7e, 0xd8,
+	0x76, 0x5c, 0xda, 0xe6, 0xdd, 0x0b, 0x22, 0x92, 0x20, 0xf9, 0x86, 0x76, 0xc5, 0xa8, 0xa4, 0x8d,
+	0xde, 0x52, 0xce, 0x87, 0x58, 0xae, 0xc2, 0x5c, 0xc7, 0xb4, 0x7c, 0x1a, 0x8c, 0x8b, 0x11, 0x04,
+	0x82, 0x64, 0x9b, 0x90, 0xcb, 0x26, 0x19, 0xaf, 0x2e, 0xc3, 0x90, 0x4f, 0xe1, 0x90, 0x0d, 0x4e,
+	0xe9, 0xd2, 0xbf, 0x4a, 0x48, 0x75, 0xeb, 0xc7, 0x3c, 0xfc, 0x1f, 0xf9, 0x51, 0xe1, 0x8f, 0x08,
+	0xd2, 0x67, 0xc6, 0xc1, 0xb7, 0x62, 0x24, 0xa3, 0xf6, 0x92, 0xef, 0x4f, 0x51, 0xac, 0x9e, 0x6d,
+	0x7d, 0xed, 0xdd, 0xaf, 0xdf, 0xa7, 0x89, 0x2c, 0x5e, 0xd2, 0x3a, 0x77, 0x87, 0xff, 0xcf, 0x60,
+	0x9e, 0xf0, 0x67, 0x04, 0xe9, 0x33, 0x3b, 0xc5, 0xd2, 0x44, 0x4d, 0x17, 0x4b, 0x13, 0x2d, 0x1e,
+	0xd2, 0x5c, 0x17, 0x34, 0x39, 0x79, 0x1c, 0xcd, 0x63, 0xb4, 0x81, 0xbf, 0x21, 0xf8, 0x2f, 0xec,
+	0x27, 0xac, 0xc6, 0xc8, 0x8c, 0x31, 0x9e, 0xfc, 0x70, 0xba, 0xfa, 0x11, 0xb2, 0x8d, 0x49, 0x64,
+	0xa7, 0x08, 0x32, 0x21, 0x5b, 0xe1, 0xcd, 0xf8, 0xd3, 0x88, 0x0c, 0x9a, 0xfc, 0x60, 0xaa, 0xf2,
+	0x21, 0xd6, 0xba, 0xc0, 0x5a, 0xc1, 0xd9, 0x73, 0x58, 0xee, 0x80, 0xe2, 0x2b, 0x82, 0x4c, 0xc8,
+	0x62, 0xb1, 0x54, 0xa3, 0x56, 0x8c, 0xa5, 0x1a, 0x2d, 0x1f, 0x52, 0xe5, 0x05, 0x95, 0x2c, 0x8f,
+	0xa7, 0xea, 0x7d, 0xae, 0x9f, 0x08, 0x16, 0xcf, 0x5b, 0x0e, 0xdf, 0xf9, 0xeb, 0xd1, 0x44, 0xf1,
+	0x1e, 0x4d, 0xdb, 0x31, 0x42, 0xb8, 0x31, 0x91, 0xb0, 0xb8, 0x77, 0x88, 0x5e, 0x96, 0x9b, 0x8c,
+	0xbf, 0xf6, 0xeb, 0x6a, 0xc3, 0x69, 0x69, 0x27, 0x3d, 0x9d, 0x6d, 0x5d, 0x1b, 0xdc, 0x35, 0xc4,
+	0xcd, 0xc0, 0xd3, 0x9a, 0xd4, 0xd6, 0x9a, 0xce, 0x20, 0x72, 0xfd, 0xba, 0xc5, 0x1a, 0x5a, 0xf4,
+	0x3e, 0x52, 0x4f, 0x89, 0xfc, 0xbd, 0x3f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xf0, 0x14, 0x83, 0xd3,
+	0xaa, 0x08, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -491,6 +765,9 @@ type MetadataServiceClient interface {
 	GetLabels(ctx context.Context, in *GetLabelsRequest, opts ...grpc.CallOption) (*GetLabelsRequest_Response, error)
 	AddLabels(ctx context.Context, in *AddLabelsRequest, opts ...grpc.CallOption) (*AddLabelsRequest_Response, error)
 	DeleteLabels(ctx context.Context, in *DeleteLabelsRequest, opts ...grpc.CallOption) (*DeleteLabelsRequest_Response, error)
+	GetProperty(ctx context.Context, in *GetPropertyRequest, opts ...grpc.CallOption) (*GetPropertyRequest_Response, error)
+	AddProperty(ctx context.Context, in *AddPropertyRequest, opts ...grpc.CallOption) (*AddPropertyRequest_Response, error)
+	DeleteProperty(ctx context.Context, in *DeletePropertyRequest, opts ...grpc.CallOption) (*DeletePropertyRequest_Response, error)
 }
 
 type metadataServiceClient struct {
@@ -528,11 +805,41 @@ func (c *metadataServiceClient) DeleteLabels(ctx context.Context, in *DeleteLabe
 	return out, nil
 }
 
+func (c *metadataServiceClient) GetProperty(ctx context.Context, in *GetPropertyRequest, opts ...grpc.CallOption) (*GetPropertyRequest_Response, error) {
+	out := new(GetPropertyRequest_Response)
+	err := c.cc.Invoke(ctx, "/ai.verta.modeldb.metadata.MetadataService/GetProperty", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *metadataServiceClient) AddProperty(ctx context.Context, in *AddPropertyRequest, opts ...grpc.CallOption) (*AddPropertyRequest_Response, error) {
+	out := new(AddPropertyRequest_Response)
+	err := c.cc.Invoke(ctx, "/ai.verta.modeldb.metadata.MetadataService/AddProperty", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *metadataServiceClient) DeleteProperty(ctx context.Context, in *DeletePropertyRequest, opts ...grpc.CallOption) (*DeletePropertyRequest_Response, error) {
+	out := new(DeletePropertyRequest_Response)
+	err := c.cc.Invoke(ctx, "/ai.verta.modeldb.metadata.MetadataService/DeleteProperty", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MetadataServiceServer is the server API for MetadataService service.
 type MetadataServiceServer interface {
 	GetLabels(context.Context, *GetLabelsRequest) (*GetLabelsRequest_Response, error)
 	AddLabels(context.Context, *AddLabelsRequest) (*AddLabelsRequest_Response, error)
 	DeleteLabels(context.Context, *DeleteLabelsRequest) (*DeleteLabelsRequest_Response, error)
+	GetProperty(context.Context, *GetPropertyRequest) (*GetPropertyRequest_Response, error)
+	AddProperty(context.Context, *AddPropertyRequest) (*AddPropertyRequest_Response, error)
+	DeleteProperty(context.Context, *DeletePropertyRequest) (*DeletePropertyRequest_Response, error)
 }
 
 // UnimplementedMetadataServiceServer can be embedded to have forward compatible implementations.
@@ -547,6 +854,15 @@ func (*UnimplementedMetadataServiceServer) AddLabels(ctx context.Context, req *A
 }
 func (*UnimplementedMetadataServiceServer) DeleteLabels(ctx context.Context, req *DeleteLabelsRequest) (*DeleteLabelsRequest_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteLabels not implemented")
+}
+func (*UnimplementedMetadataServiceServer) GetProperty(ctx context.Context, req *GetPropertyRequest) (*GetPropertyRequest_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProperty not implemented")
+}
+func (*UnimplementedMetadataServiceServer) AddProperty(ctx context.Context, req *AddPropertyRequest) (*AddPropertyRequest_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddProperty not implemented")
+}
+func (*UnimplementedMetadataServiceServer) DeleteProperty(ctx context.Context, req *DeletePropertyRequest) (*DeletePropertyRequest_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteProperty not implemented")
 }
 
 func RegisterMetadataServiceServer(s *grpc.Server, srv MetadataServiceServer) {
@@ -607,6 +923,60 @@ func _MetadataService_DeleteLabels_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MetadataService_GetProperty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPropertyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MetadataServiceServer).GetProperty(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ai.verta.modeldb.metadata.MetadataService/GetProperty",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MetadataServiceServer).GetProperty(ctx, req.(*GetPropertyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MetadataService_AddProperty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddPropertyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MetadataServiceServer).AddProperty(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ai.verta.modeldb.metadata.MetadataService/AddProperty",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MetadataServiceServer).AddProperty(ctx, req.(*AddPropertyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MetadataService_DeleteProperty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePropertyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MetadataServiceServer).DeleteProperty(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ai.verta.modeldb.metadata.MetadataService/DeleteProperty",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MetadataServiceServer).DeleteProperty(ctx, req.(*DeletePropertyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _MetadataService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ai.verta.modeldb.metadata.MetadataService",
 	HandlerType: (*MetadataServiceServer)(nil),
@@ -622,6 +992,18 @@ var _MetadataService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteLabels",
 			Handler:    _MetadataService_DeleteLabels_Handler,
+		},
+		{
+			MethodName: "GetProperty",
+			Handler:    _MetadataService_GetProperty_Handler,
+		},
+		{
+			MethodName: "AddProperty",
+			Handler:    _MetadataService_AddProperty_Handler,
+		},
+		{
+			MethodName: "DeleteProperty",
+			Handler:    _MetadataService_DeleteProperty_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
