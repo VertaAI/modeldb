@@ -70,6 +70,24 @@ export const getServerFilterOperator = (
           return exhaustiveCheck(metricFilter.operator, '');
       }
     },
+    DATE: metricFilter => {
+      switch (metricFilter.operator) {
+        case OperatorType.EQUALS:
+          return ServerFilterOperator.EQ;
+        case OperatorType.MORE:
+          return ServerFilterOperator.GT;
+        case OperatorType.GREATER_OR_EQUALS:
+          return ServerFilterOperator.GTE;
+        case OperatorType.LESS:
+          return ServerFilterOperator.LT;
+        case OperatorType.LESS_OR_EQUALS:
+          return ServerFilterOperator.LTE;
+        case OperatorType.NOT_EQUALS:
+          return ServerFilterOperator.NE;
+        default:
+          return exhaustiveCheck(metricFilter.operator, '');
+      }
+    },
   });
 };
 
@@ -87,6 +105,7 @@ export const getServerFilterValueType = (
     case PropertyType.STRING:
     case PropertyType.EXPERIMENT_NAME:
       return ServerFilterValueType.STRING;
+    case PropertyType.DATE:
     case PropertyType.METRIC:
       return ServerFilterValueType.NUMBER;
     default:

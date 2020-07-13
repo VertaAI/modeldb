@@ -2,23 +2,24 @@ import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { OperatorType, IMetricFilterData } from 'shared/models/Filters';
-import { withScientificNotationOrRounded } from 'shared/utils/formatters/number';
-import TextInput from 'shared/view/elements/TextInput/TextInput';
+import {
+  OperatorType,
+  IDateFilterData,
+  NumberFilterOperator,
+} from 'shared/models/Filters';
+import DatePicker from 'shared/view/elements/DatePicker/DatePicker';
 
-import styles from './MetricFilterEditor.module.css';
+import styles from './DateFilterEditor.module.css';
 import FilterSelect from '../FilterSelect/FilterSelect';
 
 interface ILocalProps {
-  data: IMetricFilterData;
-  onChange: (newData: IMetricFilterData) => void;
+  data: IDateFilterData;
+  onChange: (newData: IDateFilterData) => void;
   isReadonly?: boolean;
 }
 
 const operatorOptions = (() => {
-  const map: {
-    [T in IMetricFilterData['operator']]: { value: T; label: string };
-  } = {
+  const map: { [T in NumberFilterOperator]: { value: T; label: string } } = {
     [OperatorType.MORE]: {
       value: OperatorType.MORE,
       label: '>',
@@ -47,24 +48,16 @@ const operatorOptions = (() => {
   return Object.values(map);
 })();
 
-export default class MetricFilterEditor extends React.Component<ILocalProps> {
+export default class DateFilterEditor extends React.Component<
+  ILocalProps,
+  { value: number | undefined }
+> {
+  public state: { value: number | undefined } = {
+    value: this.props.data.value,
+  };
+
   public render() {
     const { data, isReadonly } = this.props;
-
-    const defaultValue = withScientificNotationOrRounded(
-      this.props.data.value
-    ).toString();
-
-    const canculateInputWidthByText = ({
-      paddingInPx,
-      string,
-    }: {
-      string: string;
-      paddingInPx: number;
-    }) => {
-      const width = string.length > 9 ? string.length * 8 : 80;
-      return `${width + paddingInPx}px`;
-    };
 
     return (
       <div
@@ -81,23 +74,16 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
           />
         </div>
 
-        <div
-          className={styles.input}
-          style={{
-            width: canculateInputWidthByText({
-              string: defaultValue,
-              paddingInPx: 24,
-            }),
-          }}
-        >
-          <TextInput
-            size="small"
-            defaultValue={defaultValue}
-            dataTest="filter-item-value"
+        <div className={styles.input}>
+          <DatePicker
+            value={this.state.value ? new Date(this.state.value) : undefined}
+            onChange={value => {
+              this.setState({
+                value: +value,
+              });
+            }}
             onBlur={this.onBlur}
-            onKeyUp={this.onSubmit}
-            isDisabled={isReadonly}
-            fullWidth={true}
+            onKeyDown={this.onSubmit}
           />
         </div>
       </div>
@@ -105,14 +91,14 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
   }
 
   @bind
-  private onSave(data: IMetricFilterData) {
+  private onSave(data: IDateFilterData) {
     if (this.props.onChange) {
       this.props.onChange(data);
     }
   }
 
   @bind
-  private onComparisonChanged(operator: IMetricFilterData['operator']) {
+  private onComparisonChanged(operator: NumberFilterOperator) {
     this.onSave({
       ...this.props.data,
       operator,
@@ -121,16 +107,18 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
 
   @bind
   private onSubmit(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key === 'Enter') {
+    if (this.state.value && event.key === 'Enter') {
       this.onSave({
         ...this.props.data,
-        value: Number(event.currentTarget.value),
+        value: +this.state.value,
       });
     }
   }
 
   @bind
-  private onBlur(event: React.ChangeEvent<HTMLInputElement>) {
-    this.onSave({ ...this.props.data, value: Number(event.target.value) });
+  private onBlur() {
+    if (this.state.value) {
+      this.onSave({ ...this.props.data, value: +this.state.value });
+    }
   }
 }

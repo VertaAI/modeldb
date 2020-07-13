@@ -13,5 +13,5 @@ export const useLabelDirection = ({
       return null;
     }
 
-    return sortInfo.isReversed ? 'asc' : 'desc';
+    return sortInfo.isAscDirection ? 'asc' : 'desc';
   }, [sortInfo]);

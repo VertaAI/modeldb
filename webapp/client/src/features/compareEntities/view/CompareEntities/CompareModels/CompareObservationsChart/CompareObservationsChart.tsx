@@ -4,7 +4,7 @@ import * as R from 'ramda';
 
 import { IObservation, groupObservationsByAttributeKey, IGroupedObservationsByAttributeKey } from 'shared/models/Observation';
 import { PageCard, PageHeader } from 'shared/view/elements/PageComponents';
-import { getObservationLineData, IObservationLineData } from 'shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/ObservationsModelPage/observationsChartHelpers';
+import { getObservationLineData } from 'shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/ObservationsModelPage/observationsChartHelpers';
 import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 import ObservationButton from 'shared/view/domain/ModelRecord/ModelRecordProps/Observations/ObservationButton/ObservationButton';
 import { Icon } from 'shared/view/elements/Icon/Icon';
@@ -142,7 +142,7 @@ function getInitialSelectionByModel({ modelsObservations }: { modelsObservations
     const getInitialSelection = (observations: IObservation[]) => {
         const observationAttrs = Object.keys(groupObservationsByAttributeKey(observations));
         const initialSelectedObservationAttrs = observationAttrs.slice(0, 3);
-    
+
         return Object.fromEntries(observationAttrs.map((attr) => [attr, initialSelectedObservationAttrs.includes(attr)] as const));
     };
 

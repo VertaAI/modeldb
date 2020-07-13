@@ -34,7 +34,7 @@ export interface IColumnDefinitionWithoutSort<T>
 export interface IColumnDefinitionWithSort<T>
   extends ICommonColumnDefinition<T> {
   withSort: true;
-  getValue: (row: T) => string | number;
+  getValue?: (row: T) => string | number;
   customSortLabel?: CustomSortLabel;
 }
 
