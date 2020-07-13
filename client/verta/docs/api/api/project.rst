@@ -2,6 +2,6 @@ Project
 =======
 
 
-.. autoclass:: verta.client.Project
+.. autoclass:: verta._tracking.Project
     :members:
     :inherited-members:
