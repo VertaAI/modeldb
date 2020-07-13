@@ -7,6 +7,17 @@ From the root directory of the repository, run these commands:
 1. `source venv/bin/activate` to activate the virtual environment
 1. `python -m pip install -r requirements.txt` to install packages for development, testing, and documentation
    - if you see `error: [Errno 13] Permission denied: 'verta.egg-info/requires.txt'`, delete the `verta.egg-info/` directory and try again
+   
+## Linting
+Python doesn't have complete static nor compile-time checking, so linting is important for catching potential bugs.
+
+ModelDB uses [`pylint`](https://pylint.org/), which was installed during **Developer Installation**. Many Python IDEs can be configured to run `pylint` on file save (see instructions/plugins for [VS Code](https://code.visualstudio.com/docs/python/linting) and [PyCharm](https://plugins.jetbrains.com/plugin/11084-pylint)).
+
+Alternatively, `pylint` can be run manually through the Terminal using
+```bash
+pylint --disable=R,C,W verta
+```
+from inside `client/verta/`
 
 ## Example and Demo Writing
 
