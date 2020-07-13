@@ -86,8 +86,8 @@ class ExperimentRuns(_utils.LazyList):
         for run in self:
             run_data = {'id': run.id}
 
-            run_data.update({'hpp.'+k: v for k, v in run.get_metrics().items()})
-            columns = columns.union(set(['hpp.'+k for k in run.get_metrics().keys()]))
+            run_data.update({'hpp.'+k: v for k, v in run.get_hyperparameters().items()})
+            columns = columns.union(set(['hpp.'+k for k in run.get_hyperparameters().keys()]))
 
             run_data.update({'metric.'+k: v for k, v in run.get_metrics().items()})
             columns = columns.union(set(['metric.'+k for k in run.get_metrics().keys()]))
