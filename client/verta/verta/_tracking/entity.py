@@ -83,6 +83,8 @@ class _ModelDBEntity(object):
         msg = cls._get_proto_by_id(conn, id)
         if msg:
             print("got existing {}: {}".format(cls.__name__, msg.id))
+            # pylint: disable=no-value-for-parameter
+            # this is only called on subclasses, so 3 params to cls() is correct
             return cls(conn, conf, msg)
         else:
             raise ValueError("{} with ID {} not found".format(cls.__name__, id))
@@ -108,6 +110,8 @@ class _ModelDBEntity(object):
     def _get_by_name(cls, conn, conf, name, parent):
         msg = cls._get_proto_by_name(conn, name, parent)
         if msg:
+            # pylint: disable=no-value-for-parameter
+            # this is only called on subclasses, so 3 params to cls() is correct
             return cls(conn, conf, msg)
         else:
             return None
@@ -120,6 +124,8 @@ class _ModelDBEntity(object):
     def _create(cls, conn, conf, *args, **kwargs):
         msg = cls._create_proto(conn, *args, **kwargs)
         if msg:
+            # pylint: disable=no-value-for-parameter
+            # this is only called on subclasses, so 3 params to cls() is correct
             return cls(conn, conf, msg)
         else:
             return None
