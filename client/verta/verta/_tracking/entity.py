@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import importlib
 import os
+import time
 import zipfile
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -30,13 +31,40 @@ class _ModelDBEntity(object):
                                                       '{}')  # endpoint placeholder
 
         self.id = msg.id
-        # self.msg = msg
+        self._msg = msg
+        self._cache_time = time.time()
+        self._update_cache()
+
+    def _clear_cache(self):
+        self._msg = None
+        self._cache_time = None
+
+    def _refresh_cache(self):
+        now = time.time()
+        if self._cache_time is None:
+            self._msg = None
+
+        # Cache for 5 seconds
+        if self._cache_time is not None and now - self._cache_time > 5:
+            self._msg = None
+
+        if self._msg is None:
+            self._msg = self._get_proto_by_id(self._conn, self.id)
+            self._cache_time = now
+            self._update_cache()
+
+    def _update_cache(self):
+        pass
 
     def __getstate__(self):
         state = self.__dict__.copy()
 
         state['_service_module_name'] = state['_service'].__name__
         del state['_service']
+
+        # This is done because we can't pickle protobuf objects
+        # TODO: use json conversion instead to avoid the call
+        del state['_msg']
 
         return state
 
