@@ -60,9 +60,7 @@ class Experiment(_ModelDBEntity):
     @property
     def expt_runs(self):
         # get runs in this Experiment
-        runs = ExperimentRuns(self._conn, self._conf)
-        runs._msg.experiment_id = self.id
-        return runs
+        return ExperimentRuns(self._conn, self._conf).with_experiment(self)
 
     @classmethod
     def _generate_default_name(cls):

@@ -60,9 +60,7 @@ class Project(_ModelDBEntity):
     @property
     def expt_runs(self):
         # get runs in this Project
-        runs = ExperimentRuns(self._conn, self._conf)
-        runs._msg.project_id = self.id
-        return runs
+        return ExperimentRuns(self._conn, self._conf).with_project(self)
 
     @classmethod
     def _generate_default_name(cls):
