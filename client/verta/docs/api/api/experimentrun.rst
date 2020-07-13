@@ -1,4 +1,4 @@
-.. currentmodule:: verta.client
+.. currentmodule:: verta._tracking
 
 ExperimentRun
 =============

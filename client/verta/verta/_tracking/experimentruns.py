@@ -37,9 +37,6 @@ class ExperimentRuns(_utils.LazyList):
         runs = expt.find("hyperparameters.hidden_size == 256")
         len(runs)
         # 12
-        runs += expt.find("hyperparameters.hidden_size == 512")
-        len(runs)
-        # 24
         runs = runs.find("metrics.accuracy >= .8")
         len(runs)
         # 5

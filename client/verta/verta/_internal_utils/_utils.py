@@ -170,12 +170,12 @@ class LazyList(object):
     # number of items to fetch per back end call in __iter__()
     _ITER_PAGE_LIMIT = 100
 
-    _OP_MAP = {'==': _CommonService.OperatorEnum.EQ,
-               '!=': _CommonService.OperatorEnum.NE,
-               '>':  _CommonService.OperatorEnum.GT,
-               '>=': _CommonService.OperatorEnum.GTE,
-               '<':  _CommonService.OperatorEnum.LT,
-               '<=': _CommonService.OperatorEnum.LTE}
+    _OP_MAP = {'==': _CommonCommonService.OperatorEnum.EQ,
+               '!=': _CommonCommonService.OperatorEnum.NE,
+               '>':  _CommonCommonService.OperatorEnum.GT,
+               '>=': _CommonCommonService.OperatorEnum.GTE,
+               '<':  _CommonCommonService.OperatorEnum.LT,
+               '<=': _CommonCommonService.OperatorEnum.LTE}
     _OP_PATTERN = re.compile(r"({})".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
 
     def __init__(self, conn, conf, msg):
