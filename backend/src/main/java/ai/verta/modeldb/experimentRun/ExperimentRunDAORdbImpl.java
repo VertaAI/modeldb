@@ -99,6 +99,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Order;
@@ -114,6 +115,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private static final Logger LOGGER =
       LogManager.getLogger(ExperimentRunDAORdbImpl.class.getName());
+  private static final boolean OVERWRITE_VERSION_MAP = false;
   private final AuthService authService;
   private final RoleService roleService;
   private final RepositoryDAO repositoryDAO;
@@ -2093,27 +2095,56 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (existingMappings.isEmpty()) {
         existingMappings.addAll(versioningModeldbEntityMappings);
       } else {
-        List<VersioningModeldbEntityMapping> finalVersionList = new ArrayList<>();
-        for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
-            versioningModeldbEntityMappings) {
-          boolean addNew = true;
-          for (VersioningModeldbEntityMapping existsVerMapping : existingMappings) {
-            if (versioningModeldbEntityMapping.equals(existsVerMapping)) {
-              addNew = false;
-              break;
+        if (!versioningModeldbEntityMappings.isEmpty()) {
+          VersioningModeldbEntityMapping existingFirstEntityMapping = existingMappings.get(0);
+          VersioningModeldbEntityMapping versioningModeldbFirstEntityMapping =
+              versioningModeldbEntityMappings.get(0);
+          if (!existingFirstEntityMapping
+                  .getRepository_id()
+                  .equals(versioningModeldbFirstEntityMapping.getRepository_id())
+              || !existingFirstEntityMapping
+                  .getCommit()
+                  .equals(versioningModeldbFirstEntityMapping.getCommit())) {
+            if (!OVERWRITE_VERSION_MAP) {
+              throw new ModelDBException(
+                  ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE,
+                  io.grpc.Status.Code.ALREADY_EXISTS);
             }
-          }
-          if (addNew) {
-            finalVersionList.add(versioningModeldbEntityMapping);
-          }
-        }
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaDelete<VersioningModeldbEntityMapping> delete =
+                cb.createCriteriaDelete(VersioningModeldbEntityMapping.class);
+            Root<VersioningModeldbEntityMapping> e =
+                delete.from(VersioningModeldbEntityMapping.class);
+            delete.where(cb.in(e.get("experimentRunEntity")).value(runEntity));
+            Transaction transaction = session.beginTransaction();
+            session.createQuery(delete).executeUpdate();
+            transaction.commit();
+            existingMappings.addAll(versioningModeldbEntityMappings);
+          } else {
+            List<VersioningModeldbEntityMapping> finalVersionList = new ArrayList<>();
+            for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
+                versioningModeldbEntityMappings) {
+              boolean addNew = true;
+              for (VersioningModeldbEntityMapping existsVerMapping : existingMappings) {
+                if (versioningModeldbEntityMapping.equals(existsVerMapping)) {
+                  addNew = false;
+                  break;
+                }
+              }
+              if (addNew) {
+                finalVersionList.add(versioningModeldbEntityMapping);
+              }
+            }
 
-        if (finalVersionList.isEmpty()) {
+            if (finalVersionList.isEmpty()) {
+              return;
+            }
+            existingMappings.addAll(finalVersionList);
+          }
+        } else {
           return;
         }
-        existingMappings.addAll(finalVersionList);
       }
-      runEntity.setVersioned_inputs(existingMappings);
 
       Set<HyperparameterElementMappingEntity> hyrParamMappings =
           prepareHyperparameterElemMappings(runEntity, versioningModeldbEntityMappings);

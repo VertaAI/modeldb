@@ -1,6 +1,7 @@
 package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
+import ai.verta.repository.Commit
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3._
@@ -14,7 +15,7 @@ import scala.annotation.tailrec
 
 import java.io.{File, FileOutputStream}
 
-/** Captures metadata about S3 objects
+/** Captures metadata about S3 objects.
  *  Please set up AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION environment variables before use.
  *  To create a new instance, use the constructor taking a list of S3 Locations or a single location
  *  {{{
@@ -24,7 +25,8 @@ import java.io.{File, FileOutputStream}
  */
 case class S3(
   protected val contents: HashMap[String, FileMetadata],
-  private[verta] val enableMDBVersioning: Boolean = false
+  val enableMDBVersioning: Boolean = false,
+  val downloadable: Boolean = false
 ) extends Dataset {
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"
@@ -161,7 +163,9 @@ object S3 {
       comp => comp.path.get.path.get -> Dataset.toMetadata(comp.path.get, comp.s3_version_id)
     )
 
-    new S3(HashMap(metadataList: _*))
+    // if internal versioned path of a component is defined, then the blob is downloadble
+    val downloadable = componentList.head.path.get.internal_versioned_path.isDefined
+    new S3(HashMap(metadataList: _*), downloadable = downloadable)
   }
 
   /** Combine two S3 instances

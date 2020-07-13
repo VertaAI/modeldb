@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.modeldb.versioning.Commit;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -130,6 +131,9 @@ public class CommitEntity {
   }
 
   private List<String> getParentCommitIds() {
+    if (parent_commits == null || parent_commits.isEmpty()) {
+      return Collections.emptyList();
+    }
     return parent_commits.values().stream()
         .map(CommitEntity::getCommit_hash)
         .collect(Collectors.toList());

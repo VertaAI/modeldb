@@ -19,14 +19,14 @@ def add(ctx, name, url):
     """Add a remote repository."""
     # TODO: validate `url`
 
-    with _config_utils.read_config() as config:
+    with _config_utils.read_merged_config() as config:
         remotes = config.get('remotes', {})
         if name in remotes:
             raise click.BadParameter("remote '{}' already exists".format(name))
 
         num_other_remotes = len(remotes)
 
-    with _config_utils.write_config() as config:
+    with _config_utils.write_local_config() as config:
         config.setdefault('remotes', {})[name] = {
             'url': url,
             'branch': "master",
@@ -40,9 +40,9 @@ def add(ctx, name, url):
 @click.argument('name')
 def use(name):
     """Set a remote repository as the active one."""
-    with _config_utils.read_config() as config:
+    with _config_utils.read_merged_config() as config:
         if name not in config.get('remotes', {}):
             raise click.BadParameter("no such remote: '{}'".format(name))
 
-    with _config_utils.write_config() as config:
+    with _config_utils.write_local_config() as config:
         config['current-remote'] = name

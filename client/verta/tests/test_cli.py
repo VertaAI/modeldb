@@ -33,7 +33,7 @@ class TestRemote:
 
             result = runner.invoke(cli, ['remote', 'add', name, url])
             assert not result.exception
-            with _config_utils.read_config() as config:
+            with _config_utils.read_merged_config() as config:
                 remotes = config['remotes']
                 remote = remotes[name]
                 assert remote['url'] == url
@@ -51,11 +51,11 @@ class TestRemote:
             runner.invoke(cli, ['init'])
 
             runner.invoke(cli, ['remote', 'add', name1, url1])
-            with _config_utils.read_config() as config:
+            with _config_utils.read_merged_config() as config:
                 assert config['current-remote'] == name1
 
             runner.invoke(cli, ['remote', 'add', name2, url2])
-            with _config_utils.read_config() as config:
+            with _config_utils.read_merged_config() as config:
                 # unchanged; still name1
                 assert config['current-remote'] == name1
 
@@ -88,7 +88,7 @@ class TestRemote:
 
             result = runner.invoke(cli, ['remote', 'use', name2])
             assert not result.exception
-            with _config_utils.read_config() as config:
+            with _config_utils.read_merged_config() as config:
                 assert config['current-remote'] == name2
 
     def test_use_nonexisting_error(self):

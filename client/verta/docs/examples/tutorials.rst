@@ -11,7 +11,7 @@ ModelDB (Versioning and Metadata)
   tracking for the components of models
 * `Versioning a Model and Logging Metadata <tutorials/workflow.html>`_
 * `Versioning Data <tutorials/dataset.html>`_
-* `Querying Metadata Querying <tutorials/querying.html>`_
+* `Metadata Querying <tutorials/querying.html>`_
 * `Handling Merge Conflicts <tutorials/merge.html>`_
 
 Deployment and Release
