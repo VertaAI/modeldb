@@ -11,6 +11,7 @@ import pandas as pd
 
 from .experimentrun import ExperimentRun
 
+from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 from .._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
 
@@ -47,12 +48,12 @@ class ExperimentRuns(_utils.LazyList):
         # 0.8921755939794525
 
     """
-    _OP_MAP = {'==': _CommonService.OperatorEnum.EQ,
-               '!=': _CommonService.OperatorEnum.NE,
-               '>':  _CommonService.OperatorEnum.GT,
-               '>=': _CommonService.OperatorEnum.GTE,
-               '<':  _CommonService.OperatorEnum.LT,
-               '<=': _CommonService.OperatorEnum.LTE}
+    _OP_MAP = {'==': _CommonCommonService.OperatorEnum.EQ,
+               '!=': _CommonCommonService.OperatorEnum.NE,
+               '>':  _CommonCommonService.OperatorEnum.GT,
+               '>=': _CommonCommonService.OperatorEnum.GTE,
+               '<':  _CommonCommonService.OperatorEnum.LT,
+               '<=': _CommonCommonService.OperatorEnum.LTE}
     _OP_PATTERN = re.compile(r"({})".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
 
     # keys that yield predictable, sensible results
@@ -175,8 +176,8 @@ class ExperimentRuns(_utils.LazyList):
                     e = ValueError("value `{}` must be a number or string literal".format(value))
                     six.raise_from(e, None)
 
-            new_runs._msg.predicates.append(  # pylint: disable=no-member
-                _CommonService.KeyValueQuery(
+            new_runs._msg.predicates.append(
+                _CommonCommonService.KeyValueQuery(
                     key=key, value=_utils.python_to_val_proto(value),
                     operator=operator,
                 )

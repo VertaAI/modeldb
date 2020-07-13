@@ -671,16 +671,16 @@ class Client(object):
             tags = _utils.as_list_of_str(tags)
             for tag in tags:
                 predicates.append(
-                    _CommonService.KeyValueQuery(key="tags",
+                    _CommonCommonService.KeyValueQuery(key="tags",
                                                  value=_utils.python_to_val_proto(tag),
-                                                 operator=_CommonService.OperatorEnum.EQ))
+                                                 operator=_CommonCommonService.OperatorEnum.EQ))
         if name is not None:
             if not isinstance(name, six.string_types):
                 raise TypeError("`name` must be str, not {}".format(type(name)))
             predicates.append(
-                _CommonService.KeyValueQuery(key="name",
+                _CommonCommonService.KeyValueQuery(key="name",
                                              value=_utils.python_to_val_proto(name),
-                                             operator=_CommonService.OperatorEnum.CONTAIN))
+                                             operator=_CommonCommonService.OperatorEnum.CONTAIN))
         Message = _dataset._DatasetService.FindDatasets
         msg = Message(dataset_ids=dataset_ids, predicates=predicates,
                       ascending=ascending, sort_key=sort_key,
