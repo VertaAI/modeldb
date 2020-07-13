@@ -345,6 +345,8 @@ class _ModelDBEntity(object):
 
         if msg.code_version.WhichOneof("code") == 'code_archive':
             # upload artifact to artifact store
+            # pylint: disable=no-member
+            # this method should only be called on ExperimentRun, which does have _get_url_for_artifact()
             url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type).url
 
             response = _utils.make_request("PUT", url, self._conn, data=zipstream)
@@ -404,6 +406,8 @@ class _ModelDBEntity(object):
             return git_snapshot
         elif which_code == 'code_archive':
             # download artifact from artifact store
+            # pylint: disable=no-member
+            # this method should only be called on ExperimentRun, which does have _get_url_for_artifact()
             url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type).url
 
             response = _utils.make_request("GET", url, self._conn)
