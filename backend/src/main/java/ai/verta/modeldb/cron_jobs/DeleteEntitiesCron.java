@@ -691,20 +691,23 @@ public class DeleteEntitiesCron extends TimerTask {
                 if (commitEntity.getRepository().contains(repository)) {
                   commitEntity.getRepository().remove(repository);
                   if (commitEntity.getRepository().isEmpty()) {
-                    String compositeId =
-                        VersioningUtils.getVersioningCompositeId(
-                            repository.getId(),
-                            commitEntity.getCommit_hash(),
-                            Collections.singletonList(
-                                ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
-                    deleteLabels(
-                        session,
-                        commitEntity.getCommit_hash(),
-                        IDTypeEnum.IDType.VERSIONING_COMMIT);
+                    if (repository.isDataset()) {
+                      String compositeId =
+                          VersioningUtils.getVersioningCompositeId(
+                              repository.getId(),
+                              commitEntity.getCommit_hash(),
+                              Collections.singletonList(
+                                  ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
+                      deleteLabels(
+                          session, compositeId, IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB);
+                      deleteAttribute(session, compositeId);
+                    } else {
+                      deleteLabels(
+                          session,
+                          commitEntity.getCommit_hash(),
+                          IDTypeEnum.IDType.VERSIONING_COMMIT);
+                    }
                     deleteTagEntities(session, repository.getId(), commitEntity.getCommit_hash());
-                    deleteLabels(
-                        session, compositeId, IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB);
-                    deleteAttribute(session, compositeId);
                     session.delete(commitEntity);
                   } else {
                     session.update(commitEntity);
