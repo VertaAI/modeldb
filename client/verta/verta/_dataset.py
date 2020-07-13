@@ -9,16 +9,6 @@ import warnings
 
 import requests
 
-try:
-    from google.cloud import bigquery
-except ImportError:  # BigQuery not installed
-    bigquery = None
-
-try:
-    import boto3
-except ImportError:  # Boto 3 not installed
-    boto3 = None
-
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from ._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
@@ -26,6 +16,7 @@ from ._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersion
 from .external import six
 
 from ._internal_utils import _utils
+from ._internal_utils.importer import maybe_dependency
 
 
 class Dataset(object):
@@ -781,10 +772,10 @@ class S3DatasetVersionInfo(PathDatasetVersionInfo):
         self.compute_dataset_size()
 
     def get_dataset_part_infos(self):
-        if boto3 is None:  # Boto 3 not installed
+        if maybe_dependency("boto3") is None:  # Boto 3 not installed
             six.raise_from(ImportError("Boto 3 is not installed; try `pip install boto3`"), None)
 
-        conn = boto3.client('s3')
+        conn = maybe_dependency("boto3").client('s3')
         dataset_part_infos = []
         if self.key is not None:
             # look up object by key
@@ -929,12 +920,12 @@ class BigQueryDatasetVersionInfo(QueryDatasetVersionInfo):
 
     @staticmethod
     def get_bq_job(job_id, location):
-        if bigquery is None:  # BigQuery not installed
+        if maybe_dependency("bigquery") is None:  # BigQuery not installed
             six.raise_from(ImportError("BigQuery is not installed;"
                                        " try `pip install google-cloud-bigquery`"),
                            None)
 
-        client = bigquery.Client()
+        client = maybe_dependency("bigquery").Client()
         return client.get_job(job_id, location=location)
 
 class RDBMSDatasetVersionInfo(QueryDatasetVersionInfo):

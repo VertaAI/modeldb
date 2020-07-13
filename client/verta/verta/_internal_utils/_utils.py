@@ -27,16 +27,6 @@ from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 try:
-    import pandas as pd
-except ImportError:  # pandas not installed
-    pd = None
-
-try:
-    import tensorflow as tf
-except ImportError:  # TensorFlow not installed
-    tf = None
-
-try:
     import ipykernel
 except ImportError:  # Jupyter not installed
     pass
@@ -659,7 +649,7 @@ def to_builtin(obj):
         return obj.values.tolist()
     if obj_class == "Tensor" and obj_module == "torch":
         return obj.detach().numpy().tolist()
-    if tf is not None and isinstance(obj, tf.Tensor):  # if TensorFlow
+    if maybe_dependency("tensorflow") is not None and isinstance(obj, maybe_dependency("tensorflow").Tensor):  # if TensorFlow
         try:
             return obj.numpy().tolist()
         except:  # TF 1.X or not-eager execution
@@ -957,13 +947,14 @@ def ensure_timestamp(timestamp):
 
     """
     if isinstance(timestamp, six.string_types):
-        try:  # attempt with pandas, which can parse many time string formats
-            return timestamp_to_ms(pd.Timestamp(timestamp).timestamp())
-        except NameError:  # pandas not installed
+        if maybe_dependency("pandas"):
+            try:  # attempt with pandas, which can parse many time string formats
+                return timestamp_to_ms(maybe_dependency("pandas").Timestamp(timestamp).timestamp())
+            except ValueError:  # can't be handled by pandas
+                six.raise_from(ValueError("unable to parse datetime string \"{}\"".format(timestamp)),
+                            None)
+        else:
             six.raise_from(ValueError("pandas must be installed to parse datetime strings"),
-                           None)
-        except ValueError:  # can't be handled by pandas
-            six.raise_from(ValueError("unable to parse datetime string \"{}\"".format(timestamp)),
                            None)
     elif isinstance(timestamp, numbers.Real):
         return timestamp_to_ms(timestamp)

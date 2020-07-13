@@ -18,16 +18,6 @@ import zipfile
 
 import requests
 
-try:
-    import PIL
-except ImportError:  # Pillow not installed
-    PIL = None
-
-try:
-    import torch
-except ImportError:  # PyTorch not installed
-    torch = None
-
 from .entity import _ModelDBEntity
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -44,6 +34,7 @@ from .._internal_utils import (
     _request_utils,
     _utils,
 )
+from .._internal_utils.importer import maybe_dependency
 
 from .. import _dataset
 from .. import _repository
@@ -1437,10 +1428,10 @@ class ExperimentRun(_ModelDBEntity):
         if path_only:
             return image
         else:
-            if PIL is None:  # Pillow not installed
+            if maybe_dependency("PIL") is None:  # Pillow not installed
                 return six.BytesIO(image)
             try:
-                return PIL.Image.open(six.BytesIO(image))
+                return maybe_dependency("PIL").Image.open(six.BytesIO(image))
             except IOError:  # can't be handled by Pillow
                 return six.BytesIO(image)
 
@@ -1542,9 +1533,9 @@ class ExperimentRun(_ModelDBEntity):
             # uploaded artifact; `artifact` is its bytes
             artifact_stream = six.BytesIO(artifact)
 
-        if torch is not None:
+        if maybe_dependency("torch") is not None:
             try:
-                obj = torch.load(artifact_stream)
+                obj = maybe_dependency("torch").load(artifact_stream)
             except:  # not something torch can deserialize
                 artifact_stream.seek(0)
             else:
