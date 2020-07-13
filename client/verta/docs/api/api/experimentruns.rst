@@ -2,7 +2,7 @@ ExperimentRuns
 ==============
 
 
-.. autoclass:: verta.client.ExperimentRuns
+.. autoclass:: verta._tracking.ExperimentRuns
     :members:
 
     .. describe:: len(runs)
