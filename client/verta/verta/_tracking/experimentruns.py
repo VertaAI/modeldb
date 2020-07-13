@@ -87,14 +87,20 @@ class ExperimentRuns(_utils.LazyList):
 
         return pd.DataFrame(data, columns=['id'] + sorted(list(columns)))
 
-    def with_project(self, proj):
+    def with_project(self, proj=None):
         new_list = copy.deepcopy(self)
-        new_list._msg.project_id = proj.id
+        if proj:
+            new_list._msg.project_id = proj.id
+        else:
+            new_list._msg.project_id = None
         return new_list
 
-    def with_experiment(self, expt):
+    def with_experiment(self, expt=None):
         new_list = copy.deepcopy(self)
-        new_list._msg.experiment_id = expt.id
+        if expt:
+            new_list._msg.experiment_id = expt.id
+        else:
+            new_list._msg.experiment_id = None
         return new_list
 
     def top_k(self, key, k, ret_all_info=False):

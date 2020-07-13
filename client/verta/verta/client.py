@@ -60,7 +60,9 @@ from . import utils
 from ._tracking import (
     _Context,
     Project,
+    Projects,
     Experiment,
+    Experiments,
     ExperimentRun,
     ExperimentRuns,
 )
@@ -245,6 +247,14 @@ class Client(object):
     @debug.setter
     def debug(self, value):
         self._conf.debug = value
+
+    @property
+    def projects(self):
+        return Projects(self._conn, self._conf)
+
+    @property
+    def experiments(self):
+        return Experiments(self._conn, self._conf)
 
     @property
     def expt_runs(self):

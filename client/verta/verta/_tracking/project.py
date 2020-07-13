@@ -7,6 +7,7 @@ import warnings
 
 from .entity import _ModelDBEntity
 from .experimentruns import ExperimentRuns
+from .experiments import Experiments
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import ProjectService_pb2 as _ProjectService
@@ -56,6 +57,10 @@ class Project(_ModelDBEntity):
 
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.project.name
+
+    @property
+    def experiments(self):
+        return Experiments(self._conn, self._conf).with_project(self)
 
     @property
     def expt_runs(self):
