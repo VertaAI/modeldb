@@ -149,7 +149,8 @@ class ExperimentRun(_ModelDBEntity):
 
     @property
     def name(self):
-        return self._get_self_as_msg().name
+        self._refresh_cache()
+        return self._msg.name
 
     @classmethod
     def _generate_default_name(cls):

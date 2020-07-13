@@ -47,16 +47,8 @@ class Project(_ModelDBEntity):
 
     @property
     def name(self):
-        Message = _ProjectService.GetProjectById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/project/getProjectById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return response_msg.project.name
+        self._refresh_cache()
+        return self._msg.name
 
     @property
     def experiments(self):
