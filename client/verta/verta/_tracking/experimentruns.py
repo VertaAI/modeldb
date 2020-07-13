@@ -7,6 +7,8 @@ import copy
 import re
 import warnings
 
+import pandas as pd
+
 from .experimentrun import ExperimentRun
 
 from .._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -77,6 +79,23 @@ class ExperimentRuns(_utils.LazyList):
 
     def _create_element(self, msg):
         return ExperimentRun(self._conn, self._conf, msg)
+
+    def as_dataframe(self):
+        data = []
+        columns = set()
+        for run in self:
+            run_data = {'id': run.id}
+
+            run_data.update({'hpp.'+k: v for k, v in run.get_metrics().items()})
+            columns = columns.union(set(['hpp.'+k for k in run.get_metrics().keys()]))
+
+            run_data.update({'metric.'+k: v for k, v in run.get_metrics().items()})
+            columns = columns.union(set(['metric.'+k for k in run.get_metrics().keys()]))
+
+            data.append(run_data)
+
+        return pd.DataFrame(data, columns=['id'] + sorted(list(columns)))
+
 
     def find(self, where, ret_all_info=False):
         """
