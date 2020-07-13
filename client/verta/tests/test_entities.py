@@ -209,6 +209,17 @@ class TestProject:
 
         assert client.proj is not None
 
+    def test_get(self, client):
+        name = verta._internal_utils._utils.generate_default_name()
+
+        with pytest.raises(ValueError):
+            client.get_project(name)
+
+        proj = client.set_project(name)
+
+        assert proj.id == client.get_project(proj.name).id
+        assert proj.id == client.get_project(id=proj.id).id
+
     def test_get_by_name(self, client):
         proj = client.set_project()
 
@@ -255,6 +266,24 @@ class TestExperiment:
         assert client.set_experiment()
 
         assert client.expt is not None
+
+    def test_get(self, client):
+        proj = client.set_project()
+        name = verta._internal_utils._utils.generate_default_name()
+
+        with pytest.raises(ValueError):
+            client.get_experiment(name)
+
+        expt = client.set_experiment(name)
+
+        assert expt.id == client.get_experiment(expt.name).id
+        assert expt.id == client.get_experiment(id=expt.id).id
+
+        # clear client state to test setting parent
+        client.proj = client.expt = None
+        client.get_experiment(id=expt.id)
+        assert client.proj.id == proj.id
+        assert client.expt.id == expt.id
 
     def test_get_by_name(self, client):
         client.set_project()
@@ -307,6 +336,25 @@ class TestExperimentRun:
         client.set_experiment()
 
         assert client.set_experiment_run()
+
+    def test_get(self, client):
+        proj = client.set_project()
+        expt = client.set_experiment()
+        name = verta._internal_utils._utils.generate_default_name()
+
+        with pytest.raises(ValueError):
+            client.get_experiment_run(name)
+
+        run = client.set_experiment_run(name)
+
+        assert run.id == client.get_experiment_run(run.name).id
+        assert run.id == client.get_experiment_run(id=run.id).id
+
+        # clear client state to test setting parent
+        client.proj = client.expt = None
+        client.get_experiment_run(id=run.id)
+        assert client.proj.id == proj.id
+        assert client.expt.id == expt.id
 
     def test_get_by_name(self, client):
         client.set_project()
