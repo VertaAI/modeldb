@@ -6,9 +6,7 @@ From the root directory of the repository, run these commands:
    - if you wish to work in Python 3 (which is necessary for building docs locally), instead run `python3 -m venv venv`
 1. `source venv/bin/activate` to activate the virtual environment
 1. `python -m pip install -r requirements.txt` to install packages for development, testing, and documentation
-   - If you see `EnvironmentError: [Errno 13]` regarding permissions, consider these potential solutions:
-      - append `--user` to the command: `python -m pip install -r requirements.txt --user`
-      - use a Python3 virtual environment instead
+   - if you see `error: [Errno 13] Permission denied: 'verta.egg-info/requires.txt'`, delete the `verta.egg-info/` directory and try again
 
 ## Example and Demo Writing
 
