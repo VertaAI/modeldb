@@ -202,7 +202,7 @@ class Client(object):
         self._conn = conn
         self._conf = _utils.Configuration(use_git, debug)
 
-        self._ctx = _Context(self._conn)
+        self._ctx = _Context(self._conn, self._conf)
 
     @property
     def proj(self):
@@ -294,7 +294,7 @@ class Client(object):
         name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        self._ctx = _Context(self._conn)
+        self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
 
         if id is not None:
@@ -351,7 +351,7 @@ class Client(object):
         name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        self._ctx = _Context(self._conn)
+        self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
 
         if id is not None:
