@@ -64,7 +64,7 @@ class ExperimentRuns(_utils.LazyList):
     def __init__(self, conn, conf):
         super(ExperimentRuns, self).__init__(
             conn, conf,
-            _ExperimentRunService.FindExperimentRuns(ids_only=True),
+            _ExperimentRunService.FindExperimentRuns(),
             "{}://{}/api/v1/modeldb/experiment-run/findExperimentRuns",
             "POST",
         )
@@ -75,8 +75,8 @@ class ExperimentRuns(_utils.LazyList):
     def _get_records(self, response_msg):
         return response_msg.experiment_runs
 
-    def _create_element(self, id_):
-        return ExperimentRun(self._conn, self._conf, _expt_run_id=id_)
+    def _create_element(self, msg):
+        return ExperimentRun(self._conn, self._conf, msg)
 
     def find(self, where, ret_all_info=False):
         """

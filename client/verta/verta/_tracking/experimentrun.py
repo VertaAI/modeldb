@@ -10,6 +10,7 @@ import pathlib2
 import pprint
 import shutil
 import sys
+import tarfile
 import tempfile
 import time
 import warnings
@@ -57,6 +58,12 @@ _CUSTOM_MODULES_DIR = "/app/custom_modules/"  # location in DeploymentService mo
 
 _MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
 
+_CACHE_DIR = os.path.join(
+    os.path.expanduser("~"),
+    ".verta",
+    "cache",
+)
+
 
 class ExperimentRun(_ModelDBEntity):
     """
@@ -75,44 +82,8 @@ class ExperimentRun(_ModelDBEntity):
         Name of this Experiment Run.
 
     """
-    def __init__(self, conn, conf,
-                 proj_id=None, expt_id=None, expt_run_name=None,
-                 desc=None, tags=None, attrs=None,
-                 date_created=None,
-                 _expt_run_id=None):
-        if expt_run_name is not None and _expt_run_id is not None:
-            raise ValueError("cannot specify both `expt_run_name` and `_expt_run_id`")
-
-        if _expt_run_id is not None:
-            expt_run = ExperimentRun._get(conn, _expt_run_id=_expt_run_id)
-            if expt_run is not None:
-                print("set existing ExperimentRun: {}".format(expt_run.name))
-            else:
-                raise ValueError("ExperimentRun with ID {} not found".format(_expt_run_id))
-        elif None not in (proj_id, expt_id):
-            if expt_run_name is None:
-                expt_run_name = ExperimentRun._generate_default_name()
-            try:
-                expt_run = ExperimentRun._create(conn, proj_id, expt_id, expt_run_name, desc, tags, attrs, date_created=date_created)
-            except requests.HTTPError as e:
-                if e.response.status_code == 409:  # already exists
-                    if any(param is not None for param in (desc, tags, attrs)):
-                        warnings.warn("ExperimentRun with name {} already exists;"
-                                      " cannot initialize `desc`, `tags`, or `attrs`".format(expt_run_name))
-                    expt_run = ExperimentRun._get(conn, expt_id, expt_run_name)
-                    if expt_run is not None:
-                        print("set existing ExperimentRun: {}".format(expt_run.name))
-                    else:
-                        raise RuntimeError("unable to retrieve ExperimentRun {};"
-                                           " please notify the Verta development team".format(expt_run_name))
-                else:
-                    raise e
-            else:
-                print("created new ExperimentRun: {}".format(expt_run.name))
-        else:
-            raise ValueError("insufficient arguments")
-
-        super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", expt_run.id)
+    def __init__(self, conn, conf, msg):
+        super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", msg)
 
     def __repr__(self):
         run_msg = self._get_self_as_msg()
@@ -176,67 +147,42 @@ class ExperimentRun(_ModelDBEntity):
     def name(self):
         return self._get_self_as_msg().name
 
-    @staticmethod
-    def _generate_default_name():
+    @classmethod
+    def _generate_default_name(cls):
         return "Run {}".format(_utils.generate_default_name())
 
-    @staticmethod
-    def _get(conn, expt_id=None, expt_run_name=None, _expt_run_id=None):
-        if _expt_run_id is not None:
-            Message = _ExperimentRunService.GetExperimentRunById
-            msg = Message(id=_expt_run_id)
-            data = _utils.proto_to_json(msg)
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(conn.scheme, conn.socket),
-                                           conn, params=data)
-        elif None not in (expt_id, expt_run_name):
-            Message = _ExperimentRunService.GetExperimentRunByName
-            msg = Message(experiment_id=expt_id, name=expt_run_name)
-            data = _utils.proto_to_json(msg)
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunByName".format(conn.scheme, conn.socket),
-                                           conn, params=data)
-        else:
-            raise ValueError("insufficient arguments")
+    @classmethod
+    def _get_proto_by_id(cls, conn, id):
+        Message = _ExperimentRunService.GetExperimentRunById
+        msg = Message(id=id)
+        response = conn.make_proto_request("GET",
+                                           "/api/v1/modeldb/experiment-run/getExperimentRunById",
+                                           params=msg)
 
-        if response.ok:
-            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            expt_run = response_msg.experiment_run
+        return conn.maybe_proto_response(response, Message.Response).experiment_run
 
-            if not expt_run.id:  # 200, but empty message
-                raise RuntimeError("unable to retrieve ExperimentRun {};"
-                                   " please notify the Verta development team".format(expt_run_name))
+    @classmethod
+    def _get_proto_by_name(cls, conn, name, expt_id):
+        Message = _ExperimentRunService.GetExperimentRunByName
+        msg = Message(experiment_id=expt_id, name=name)
+        response = conn.make_proto_request("GET",
+                                           "/api/v1/modeldb/experiment-run/getExperimentRunByName",
+                                           params=msg)
 
-            return expt_run
-        else:
-            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
-                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
-                return None
-            else:
-                _utils.raise_for_http_error(response)
+        return conn.maybe_proto_response(response, Message.Response).experiment_run
 
-    @staticmethod
-    def _create(conn, proj_id, expt_id, expt_run_name, desc=None, tags=None, attrs=None, date_created=None):
-        if tags is not None:
-            tags = _utils.as_list_of_str(tags)
-        if attrs is not None:
-            attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
-                     for key, value in six.viewitems(attrs)]
-
+    @classmethod
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
         Message = _ExperimentRunService.CreateExperimentRun
-        msg = Message(project_id=proj_id, experiment_id=expt_id, name=expt_run_name,
+        msg = Message(project_id=ctx.proj.id, experiment_id=ctx.expt.id, name=name,
                       description=desc, tags=tags, attributes=attrs,
                       date_created=date_created, date_updated=date_created)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("POST",
-                                       "{}://{}/api/v1/modeldb/experiment-run/createExperimentRun".format(conn.scheme, conn.socket),
-                                       conn, json=data)
-
-        if response.ok:
-            response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.experiment_run
-        else:
-            _utils.raise_for_http_error(response)
+        response = conn.make_proto_request("POST",
+                                           "/api/v1/modeldb/experiment-run/createExperimentRun",
+                                           body=msg)
+        expt_run = conn.must_proto_response(response, Message.Response).experiment_run
+        print("created new ExperimentRun: {}".format(expt_run.name))
+        return expt_run
 
     # TODO: use this throughout `ExperimentRun`
     def _get_self_as_msg(self):
@@ -584,7 +530,7 @@ class ExperimentRun(_ModelDBEntity):
 
         """
         # get info for the current run
-        current_run = self._get(self._conn, _expt_run_id=self.id)
+        current_run = self._get_proto_by_id(self._conn, self.id)
 
         # clone the current run
         Message = _ExperimentRunService.CreateExperimentRun
@@ -634,7 +580,7 @@ class ExperimentRun(_ModelDBEntity):
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         new_run_msg = response_msg.experiment_run
         print("created new ExperimentRun: {}".format(new_run_msg.name))
-        new_run = ExperimentRun(self._conn, self._conf, _expt_run_id=new_run_msg.id)
+        new_run = ExperimentRun(self._conn, self._conf, new_run_msg)
 
         return new_run
 

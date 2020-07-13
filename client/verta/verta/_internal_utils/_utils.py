@@ -110,6 +110,46 @@ class Connection:
                            raise_on_status=False)  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
 
+    def make_proto_request(self, method, path, params=None, body=None):
+        if params is not None:
+            params = proto_to_json(params)
+        if body is not None:
+            body = proto_to_json(body)
+        response = make_request(method,
+                                "{}://{}{}".format(self.scheme, self.socket, path),
+                                self, params=params, json=body)
+
+        return response
+
+    @staticmethod
+    def maybe_proto_response(response, response_type):
+        if response.ok:
+            response_msg = json_to_proto(body_to_json(response), response_type)
+            return response_msg
+        else:
+            if ((response.status_code == 403 and body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and     body_to_json(response)['code'] == 5)):
+                return NoneProtoResponse()
+            else:
+                raise_for_http_error(response)
+
+    @staticmethod
+    def must_proto_response(response, response_type):
+        if response.ok:
+            response_msg = json_to_proto(body_to_json(response), response_type)
+            return response_msg
+        else:
+            raise_for_http_error(response)
+
+
+class NoneProtoResponse(object):
+    def __init__(self):
+        pass
+    def __getattr__(self, item):
+        return None
+    def HasField(self, name):
+        return False
+
 
 class Configuration:
     def __init__(self, use_git=True, debug=False):
@@ -157,9 +197,8 @@ class LazyList(object):
             if (not records
                     and msg.page_number > response_msg.total_records):  # pylint: disable=no-member
                 raise IndexError("index out of range")
-            id_ = records[0].id
 
-            return self._create_element(id_)
+            return self._create_element(records[0])
         else:
             raise TypeError("index must be integer, not {}".format(type(index)))
 
@@ -179,15 +218,15 @@ class LazyList(object):
 
             total_records = response_msg.total_records
 
-            ids = self._get_ids(response_msg)
-            for id_ in ids:
+            records = self._get_records(response_msg)
+            for rec in records:
                 # skip if we've seen the ID before
-                if id_ in seen_ids:
+                if rec.id in seen_ids:
                     continue
                 else:
-                    seen_ids.add(id_)
+                    seen_ids.add(rec.id)
 
-                yield self._create_element(id_)
+                yield self._create_element(rec)
 
     def __len__(self):
         # copy msg to avoid mutating `self`'s state
@@ -219,14 +258,11 @@ class LazyList(object):
         response_msg = json_to_proto(body_to_json(response), msg.Response)
         return response_msg
 
-    def _get_ids(self, response_msg):
-        return (record.id for record in self._get_records(response_msg))
-
     def _get_records(self, response_msg):
         """Get the attribute of `response_msg` that is not `total_records`."""
         raise NotImplementedError
 
-    def _create_element(self, id_):
+    def _create_element(self, msg):
         """Instantiate element to return to user."""
         raise NotImplementedError
 
