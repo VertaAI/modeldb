@@ -15,6 +15,7 @@ import scala.concurrent.ExecutionContext
 trait Dataset extends Blob {
   protected val contents: HashMap[String, FileMetadata] // for deduplication and comparing
   val enableMDBVersioning: Boolean // whether to version the blob with ModelDB
+  val downloadable: Boolean // whether the Dataset blob is downloadble
 
   // mutable state, populated when getting blob from commit
   /** TODO: Figure out a way to remove this */
@@ -34,8 +35,8 @@ trait Dataset extends Blob {
     componentPath: Option[String] = None,
     downloadToPath: Option[String] = None
   )(implicit ec: ExecutionContext): Try[String] = {
-    if (!enableMDBVersioning)
-      Failure(new IllegalStateException("This blob did not allow for versioning"))
+    if (!downloadable)
+      Failure(new IllegalStateException("This dataset cannot be used for downloads."))
     else if (downloadFunction.isEmpty || blobPath.isEmpty)
       Failure(new IllegalStateException(
         "This dataset cannot be used for downloads. Consider using `commit.get()` to obtain a download-capable dataset"
@@ -287,7 +288,8 @@ object Dataset {
      component.md5.getOrElse(""),
      component.path.getOrElse(""),
      component.size.getOrElse(0),
-     versionId
+     versionId,
+     component.internal_versioned_path
    )
 
    /** Analogous to Python's os.path.expanduser

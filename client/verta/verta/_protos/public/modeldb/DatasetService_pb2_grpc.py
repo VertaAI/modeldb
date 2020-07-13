@@ -85,11 +85,6 @@ class DatasetServiceStub(object):
         request_serializer=modeldb_dot_DatasetService__pb2.UpdateDatasetAttributes.SerializeToString,
         response_deserializer=modeldb_dot_DatasetService__pb2.UpdateDatasetAttributes.Response.FromString,
         )
-    self.getDatasetAttributes = channel.unary_unary(
-        '/ai.verta.modeldb.DatasetService/getDatasetAttributes',
-        request_serializer=modeldb_dot_CommonService__pb2.GetAttributes.SerializeToString,
-        response_deserializer=modeldb_dot_CommonService__pb2.GetAttributes.Response.FromString,
-        )
     self.deleteDatasetAttributes = channel.unary_unary(
         '/ai.verta.modeldb.DatasetService/deleteDatasetAttributes',
         request_serializer=modeldb_dot_DatasetService__pb2.DeleteDatasetAttributes.SerializeToString,
@@ -219,13 +214,6 @@ class DatasetServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getDatasetAttributes(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def deleteDatasetAttributes(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -333,11 +321,6 @@ def add_DatasetServiceServicer_to_server(servicer, server):
           servicer.updateDatasetAttributes,
           request_deserializer=modeldb_dot_DatasetService__pb2.UpdateDatasetAttributes.FromString,
           response_serializer=modeldb_dot_DatasetService__pb2.UpdateDatasetAttributes.Response.SerializeToString,
-      ),
-      'getDatasetAttributes': grpc.unary_unary_rpc_method_handler(
-          servicer.getDatasetAttributes,
-          request_deserializer=modeldb_dot_CommonService__pb2.GetAttributes.FromString,
-          response_serializer=modeldb_dot_CommonService__pb2.GetAttributes.Response.SerializeToString,
       ),
       'deleteDatasetAttributes': grpc.unary_unary_rpc_method_handler(
           servicer.deleteDatasetAttributes,

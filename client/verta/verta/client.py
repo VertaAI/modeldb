@@ -330,7 +330,7 @@ class Client(object):
             name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        self.proj = Project(self._conn, self._conf,
+        self.proj = Project._get_or_create(self._conn, self._conf,
                             name,
                             desc, tags, attrs,
                             workspace,
@@ -381,18 +381,18 @@ class Client(object):
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
             # find Experiment by ID
-            expt_msg = Experiment._get(self._conn, _expt_id=id)
-            if expt_msg is None:
+            expt = Experiment._get(self._conn, self._conf, _expt_id=id)
+            if expt is None:
                 raise ValueError("no Experiment found with ID {}".format(id))
+            expt_msg = expt._get_self_as_msg()
             # set parent Project by ID
             try:
-                self.proj = Project(self._conn, self._conf, _proj_id=expt_msg.project_id)
+                self.proj = Project._get_or_create(self._conn, self._conf, _proj_id=expt_msg.project_id)
             except ValueError:  # parent Project not found
                 raise RuntimeError("unable to find parent Project of Experiment with ID {};"
                                    " this should only ever occur due to a back end error".format(id))
             # set Experiment
-            self.expt = Experiment(self._conn, self._conf,
-                                   _expt_id=id)
+            self.expt = expt
         else:
             # set Experiment by name under current Project
             if self.proj is None:
@@ -403,7 +403,7 @@ class Client(object):
                 else:
                     raise AttributeError("a Project must first be in progress")
 
-            self.expt = Experiment(self._conn, self._conf,
+            self.expt = Experiment._get_or_create(self._conn, self._conf,
                                    self.proj.id, name,
                                    desc, tags, attrs)
 
@@ -448,24 +448,22 @@ class Client(object):
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
             # find ExperimentRun by ID
-            expt_run_msg = ExperimentRun._get(self._conn, _expt_run_id=id)
-            if expt_run_msg is None:
+            run = ExperimentRun._get(self._conn, self._conf, _expt_run_id=id)
+            if run is None:
                 raise ValueError("no ExperimentRun found with ID {}".format(id))
+            expt_run_msg = run._get_self_as_msg()
             # set parent Project by ID
             try:
-                self.proj = Project(self._conn, self._conf, _proj_id=expt_run_msg.project_id)
+                self.proj = Project._get_or_create(self._conn, self._conf, _proj_id=expt_run_msg.project_id)
             except ValueError:  # parent Project not found
                 raise RuntimeError("unable to find parent Project of ExperimentRun with ID {};"
                                    " this should only ever occur due to a back end error".format(id))
             # set parent Experiment by ID
             try:
-                self.expt = Experiment(self._conn, self._conf, _expt_id=expt_run_msg.experiment_id)
+                self.expt = Experiment._get_or_create(self._conn, self._conf, _expt_id=expt_run_msg.experiment_id)
             except ValueError:  # parent Experiment not found
                 raise RuntimeError("unable to find parent Experiment of ExperimentRun with ID {};"
                                    " this should only ever occur due to a back end error".format(id))
-            # set ExperimentRun
-            expt_run = ExperimentRun(self._conn, self._conf,
-                                     _expt_run_id=id)
         else:
             # set ExperimentRun by name under current Experiment
             if self.expt is None:
@@ -476,11 +474,11 @@ class Client(object):
                 else:
                     raise AttributeError("an Experiment must first be in progress")
 
-            expt_run = ExperimentRun(self._conn, self._conf,
+            run = ExperimentRun._get_or_create(self._conn, self._conf,
                                      self.proj.id, self.expt.id, name,
                                      desc, tags, attrs, date_created=date_created)
 
-        return expt_run
+        return run
 
     def get_or_create_repository(self, name=None, workspace=None, id=None):
         """

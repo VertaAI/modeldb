@@ -500,8 +500,8 @@ class Commit(
    *  @return Some dataset, if the blob is a dataset; otherwise None
    */
   private def toMDBVersioningDataset(blob: Blob): Option[Dataset] = blob match {
-    case PathBlob(contents, enableMDBVersioning) => Some(PathBlob(contents, enableMDBVersioning))
-    case S3(contents, enableMDBVersioning) => Some(S3(contents, enableMDBVersioning))
+    case path: PathBlob => Some(path)
+    case s3: S3 => Some(s3)
     case _ => None
   }
 
@@ -602,7 +602,7 @@ class Commit(
               Await.result(clientSet.client.requestRaw("PUT", url, null, Map("Content-Length" -> readLen.toString), filepart), Duration.Inf)
                 .flatMap(resp => clientSet.versioningService.commitVersionedBlobArtifactPart(
                   VersioningCommitVersionedBlobArtifactPart(
-                    artifact_part = Some(ModeldbArtifactPart(
+                    artifact_part = Some(CommonArtifactPart(
                       etag = Some(resp.headers("ETag").get),
                       part_number = Some(BigInt(partNum))
                     )),
