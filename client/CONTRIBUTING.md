@@ -1,24 +1,23 @@
 ## Developer Installation
+From the root directory of the repository, run this command:
+1. `cd client/verta/`
 
 ### Create a Virtual Environment
 This is necessary to isolate the packages used for ModelDB development and prevent conflicts.
 
-From the root directory of the repository, run these commands:
-1. `cd client/verta/`
+Run these commands:
 1. `python2 -m pip install virtualenv && virtualenv venv` to create a Python 2 virtual environment
    - developing in Python 2 is recommended to help ensure compatibility
    - if you wish to work in Python 3 (which is necessary for building docs locally), instead run `python3 -m venv venv`
 1. `source venv/bin/activate` to activate the virtual environment
 
-From the root directory of the repository, run these commands:
-1. `cd client/verta/`
+### Install Requirements
+
+Run this command:
 1. `python -m pip install -r requirements.txt` to install packages for development, testing, and documentation
-
-### Troubleshooting
-
-If you see `EnvironmentError: [Errno 13]` regarding permissions while installing packages, consider these potential solutions:
-- append `--user` to the command: `python -m pip install -r requirements.txt --user`
-- use a Python3 virtual environment instead
+   - If you see `EnvironmentError: [Errno 13]` regarding permissions, consider these potential solutions:
+      - append `--user` to the command: `python -m pip install -r requirements.txt --user`
+      - use a Python3 virtual environment instead
 
 ## Example and Demo Writing
 
