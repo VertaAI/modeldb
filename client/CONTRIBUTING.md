@@ -1,18 +1,14 @@
 ## Developer Installation
-
 From the root directory of the repository, run these commands:
 1. `cd client/verta/`
-1. `pip install -e .`
-   1. This installs Verta from the local source in "editable" mode, allowing the Client code to be
-      changed and re-imported without needing to reinstall the package.
-1. (optional) `pip install -r requirements.txt`
-   1. This installs packages relating to PyPI publication, unit testing, and documentation.
-
-### Troubleshooting
-
-If you receive an `EnvironmentError: [Errno 13]` regarding permissions during `pip install -e .`, consider these potential solutions:
-- Append `--user` to the command: `pip install -e . --user`
-- Use Python3 by using the command: `pip3 install -e .`
+1. `python2 -m pip install virtualenv && virtualenv venv` to create a Python 2 virtual environment
+   - developing in Python 2 is recommended to help ensure compatibility
+   - if you wish to work in Python 3 (which is necessary for building docs locally), instead run `python3 -m venv venv`
+1. `source venv/bin/activate` to activate the virtual environment
+1. `python -m pip install -r requirements.txt` to install packages for development, testing, and documentation
+   - If you see `EnvironmentError: [Errno 13]` regarding permissions, consider these potential solutions:
+      - append `--user` to the command: `python -m pip install -r requirements.txt --user`
+      - use a Python3 virtual environment instead
 
 ## Example and Demo Writing
 
