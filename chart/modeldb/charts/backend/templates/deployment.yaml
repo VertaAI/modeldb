@@ -9,7 +9,6 @@ metadata:
 {{toYaml .Values.labels | indent 4 -}}
 {{- end}}
   name: {{ .Release.Name }}
-  namespace: {{ .Release.Namespace | quote }}
 spec:
   selector:
     matchLabels:
@@ -27,6 +26,15 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         verta.ai/disable_anti_affinity: "true"
     spec:
+{{- if .Values.securityContext.enabled }}
+      securityContext:
+        {{- if .Values.securityContext.runAsUser }}
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+        {{- end}}
+        {{- if .Values.securityContext.fsGroup }}
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+        {{- end}}
+{{- end}}
       containers:
         - image: {{ .Values.image }}:{{ .Values.imageTag }}
           env:
