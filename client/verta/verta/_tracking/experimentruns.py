@@ -2,16 +2,13 @@
 
 from __future__ import print_function
 
-import ast
 import copy
-import re
 import warnings
 
 import pandas as pd
 
 from .experimentrun import ExperimentRun
 
-from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 from .._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
 
 from ..external import six
