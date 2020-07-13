@@ -290,6 +290,21 @@ class Client(object):
                 print("setting {} from config file".format(resource_name))
         return var or None
 
+    def get_project(self, name=None, workspace=None, id=None):
+        name = self._set_from_config_if_none(name, "project")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+
+        self._ctx = _Context(self._conn)
+        self._ctx.workspace_name = workspace
+
+        if id is not None:
+            self._ctx.proj = Project._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
+        else:
+            self._ctx.proj = Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+
+        return self._ctx.proj
+
     def set_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
         """
         Attaches a Project to this Client.
@@ -349,6 +364,20 @@ class Client(object):
 
         return self._ctx.proj
 
+    def get_experiment(self, name=None, id=None):
+        name = self._set_from_config_if_none(name, "experiment")
+
+        if id is not None:
+            self._ctx.expt = Experiment._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
+        else:
+            if self._ctx.proj is None:
+                self.set_project()
+
+            self._ctx.expt = Experiment._get_by_name(self._conn, self._conf, name, self._ctx.proj.id)
+
+        return self._ctx.expt
+
     def set_experiment(self, name=None, desc=None, tags=None, attrs=None, id=None):
         """
         Attaches an Experiment under the currently active Project to this Client.
@@ -402,6 +431,17 @@ class Client(object):
 
         return self._ctx.expt
 
+    def get_experiment_run(self, name=None, id=None):
+        if id is not None:
+            self._ctx.expt_run = ExperimentRun._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
+        else:
+            if self._ctx.expt is None:
+                self.set_experiment()
+
+            self._ctx.expt_run = ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id)
+
+        return self._ctx.expt_run
 
     def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None):
         """
