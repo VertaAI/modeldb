@@ -104,8 +104,8 @@ class ExperimentRuns(_utils.LazyList):
         r"""
         Gets the Experiment Runs from this collection with the `k` highest `key`\ s.
 
-        .. deprecated:: 0.13.3
-           The `ret_all_info` parameter will removed in v0.15.0.
+        .. versionchanged:: 0.14.12
+           The `ret_all_info` parameter was removed.
 
         A `key` is a string containing a dot-delimited Experiment Run property such as
         ``metrics.accuracy``.
@@ -165,8 +165,8 @@ class ExperimentRuns(_utils.LazyList):
         r"""
         Gets the Experiment Runs from this collection with the `k` lowest `key`\ s.
 
-        .. deprecated:: 0.13.3
-           The `ret_all_info` parameter will removed in v0.15.0.
+        .. versionchanged:: 0.14.12
+           The `ret_all_info` parameter was removed.
 
         A `key` is a string containing a dot-delimited Experiment Run property such as ``metrics.accuracy``.
 
