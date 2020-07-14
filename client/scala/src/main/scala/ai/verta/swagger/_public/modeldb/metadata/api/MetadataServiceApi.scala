@@ -66,4 +66,12 @@ class MetadataServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def GetProperty(id_id_type: Option[String]=None, id_int_id: Option[BigInt]=None, id_string_id: Option[String]=None, key: Option[String]=None)(implicit ec: ExecutionContext): Try[MetadataGetPropertyRequestResponse] = Await.result(GetPropertyAsync(id_id_type, id_int_id, id_string_id, key), Duration.Inf)
 
+  def UpdateLabelsAsync(body: MetadataAddLabelsRequest)(implicit ec: ExecutionContext): Future[Try[MetadataAddLabelsRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[MetadataAddLabelsRequest, MetadataAddLabelsRequestResponse]("POST", basePath + s"/metadata/labels", __query.toMap, body, MetadataAddLabelsRequestResponse.fromJson)
+  }
+
+  def UpdateLabels(body: MetadataAddLabelsRequest)(implicit ec: ExecutionContext): Try[MetadataAddLabelsRequestResponse] = Await.result(UpdateLabelsAsync(body), Duration.Inf)
+
 }
