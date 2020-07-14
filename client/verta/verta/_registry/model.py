@@ -17,10 +17,10 @@ class RegisteredModel(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.name
 
-    def get_or_create_version(name=None, desc=None, tags=None, attrs=None, id=None):
+    def get_or_create_version(self, name=None, desc=None, tags=None, attrs=None, id=None):
         raise NotImplementedError
 
-    def get_version(name=None, id=None):
+    def get_version(self, name=None, id=None):
         raise NotImplementedError
 
     @property
