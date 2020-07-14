@@ -5,8 +5,6 @@ from __future__ import print_function
 import copy
 import warnings
 
-import pandas as pd
-
 from .experimentrun import ExperimentRun
 
 from .._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
@@ -15,6 +13,7 @@ from ..external import six
 
 from .._internal_utils import (
     _utils,
+    importer,
 )
 
 
@@ -69,6 +68,11 @@ class ExperimentRuns(_utils.LazyList):
         return ExperimentRun(self._conn, self._conf, msg)
 
     def as_dataframe(self):
+        pd = importer.maybe_dependency("pandas")
+        if pd is None:
+            e = ImportError("pandas is not installed; try `pip install pandas`")
+            six.raise_from(e, None)
+
         data = []
         columns = set()
         for run in self:
