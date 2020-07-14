@@ -26,7 +26,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         raise NotImplementedError
 
     @classmethod
-    def _get_proto_by_name(cls, conn, name, workspace):
+    def _get_proto_by_name(cls, conn, name, model_id):
         raise NotImplementedError
 
     @classmethod
