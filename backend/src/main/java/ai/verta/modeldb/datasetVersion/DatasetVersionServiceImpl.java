@@ -123,10 +123,15 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       datasetVersionBuilder.setOwner(authService.getVertaIdFromUserInfo(userInfo));
     }
 
-    if (!request.hasPathDatasetVersionInfo()) {
+    if (!request.hasPathDatasetVersionInfo() && !request.hasDatasetBlob()) {
+      LOGGER.info("Request {}", request);
       throw new ModelDBException("Not supported", io.grpc.Status.Code.UNIMPLEMENTED);
     }
     datasetVersionBuilder.setPathDatasetVersionInfo(request.getPathDatasetVersionInfo());
+
+    if (request.hasDatasetBlob()) {
+      datasetVersionBuilder.setDatasetBlob(request.getDatasetBlob());
+    }
 
     return datasetVersionBuilder.build();
   }
