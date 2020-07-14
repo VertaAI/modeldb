@@ -60,7 +60,7 @@ class ModelVersion(_ModelDBEntity):
         return response.model_versions[0] # should only have 1 entry here, as name/version is unique
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
         ModelVersionMessage = _ModelVersionService.ModelVersion
         SetModelVersionMessage = _ModelVersionService.SetModelVersion
         registered_model_id = ctx.registered_model.id
