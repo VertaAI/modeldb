@@ -1,6 +1,7 @@
 package ai.verta.modeldb.metadata;
 
 import ai.verta.modeldb.ModelDBAuthInterceptor;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
@@ -83,6 +84,27 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, AddLabelsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getLabelIds(
+      GetLabelIdsRequest request, StreamObserver<GetLabelIdsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+
+      if (request.getLabelsList().isEmpty()) {
+        throw new ModelDBException(
+            "Labels not found in GetLabelIdsRequest", io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      List<IdentificationType> labelIds = metadataDAO.getLabelIds(request.getLabelsList());
+      responseObserver.onNext(GetLabelIdsRequest.Response.newBuilder().addAllIds(labelIds).build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetLabelIdsRequest.Response.getDefaultInstance());
     }
   }
 
