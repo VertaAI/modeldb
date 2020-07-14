@@ -65,8 +65,9 @@ class ModelVersion(_ModelDBEntity):
         SetModelVersionMessage = _ModelVersionService.SetModelVersion
         registered_model_id = ctx.registered_model.id
 
-        msg = ModelVersionMessage(version=name, description=desc, registered_model_id=registered_model_id,
-                                            time_created=date_created, time_updated=date_created)
+        model_version_msg = ModelVersionMessage(version=name, description=desc, registered_model_id=registered_model_id,
+                                                time_created=date_created, time_updated=date_created)
+        msg = SetModelVersionMessage(model_version=model_version_msg)
 
         response = conn.make_proto_request("POST",
                                            "/api/v1/registry/{}/versions".format(registered_model_id),
