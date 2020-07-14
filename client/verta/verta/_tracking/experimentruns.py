@@ -2,17 +2,13 @@
 
 from __future__ import print_function
 
-import ast
 import copy
-import re
 import warnings
 
 import pandas as pd
 
 from .experimentrun import ExperimentRun
 
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 from .._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
 
 from ..external import six
@@ -45,14 +41,6 @@ class ExperimentRuns(_utils.LazyList):
         # 0.8921755939794525
 
     """
-    _OP_MAP = {'==': _CommonCommonService.OperatorEnum.EQ,
-               '!=': _CommonCommonService.OperatorEnum.NE,
-               '>':  _CommonCommonService.OperatorEnum.GT,
-               '>=': _CommonCommonService.OperatorEnum.GTE,
-               '<':  _CommonCommonService.OperatorEnum.LT,
-               '<=': _CommonCommonService.OperatorEnum.LTE}
-    _OP_PATTERN = re.compile(r"({})".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
-
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
         'id', 'project_id', 'experiment_id',
@@ -65,15 +53,17 @@ class ExperimentRuns(_utils.LazyList):
         super(ExperimentRuns, self).__init__(
             conn, conf,
             _ExperimentRunService.FindExperimentRuns(),
-            "{}://{}/api/v1/modeldb/experiment-run/findExperimentRuns",
-            "POST",
         )
 
     def __repr__(self):
         return "<ExperimentRuns containing {} runs>".format(self.__len__())
 
-    def _get_records(self, response_msg):
-        return response_msg.experiment_runs
+    def _call_back_end(self, msg):
+        response = self._conn.make_proto_request("POST",
+                                                "/api/v1/modeldb/experiment-run/findExperimentRuns",
+                                                body=msg)
+        response = self._conn.must_proto_response(response, msg.Response)
+        return response.experiment_runs, response.total_records
 
     def _create_element(self, msg):
         return ExperimentRun(self._conn, self._conf, msg)
@@ -94,142 +84,21 @@ class ExperimentRuns(_utils.LazyList):
 
         return pd.DataFrame(data, columns=['id'] + sorted(list(columns)))
 
+    def with_project(self, proj=None):
+        new_list = copy.deepcopy(self)
+        if proj:
+            new_list._msg.project_id = proj.id
+        else:
+            new_list._msg.project_id = None
+        return new_list
 
-    def find(self, where, ret_all_info=False):
-        """
-        Gets the Experiment Runs from this collection that match predicates `where`.
-
-        .. deprecated:: 0.13.3
-           The `ret_all_info` parameter will removed in v0.15.0.
-
-        A predicate in `where` is a string containing a simple boolean expression consisting of:
-
-            - a dot-delimited Experiment Run property such as ``metrics.accuracy``
-            - a Python boolean operator such as ``>=``
-            - a literal value such as ``.8``
-
-        Parameters
-        ----------
-        where : str or list of str
-            Predicates specifying Experiment Runs to get.
-
-        Returns
-        -------
-        :class:`ExperimentRuns`
-
-        Warnings
-        --------
-        This feature is still in active development. It is completely safe to use, but may exhibit
-        unintuitive behavior. Please report any oddities to the Verta team!
-
-        Examples
-        --------
-        .. code-block:: python
-
-            runs.find(["hyperparameters.hidden_size == 256",
-                       "metrics.accuracy >= .8"])
-            # <ExperimentRuns containing 3 runs>
-
-        """
-        if ret_all_info:
-            warnings.warn("`ret_all_info` is deprecated and will removed in a later version",
-                          category=FutureWarning)
-
-        new_runs = copy.deepcopy(self)
-
-        if isinstance(where, six.string_types):
-            where = [where]
-        for predicate in where:
-            # split predicate
-            try:
-                key, operator, value = map(lambda token: token.strip(), self._OP_PATTERN.split(predicate, maxsplit=1))
-            except ValueError:
-                six.raise_from(ValueError("predicate `{}` must be a two-operand comparison".format(predicate)),
-                               None)
-
-            if key.split('.')[0] not in self._VALID_QUERY_KEYS:
-                raise ValueError("key `{}` is not a valid key for querying;"
-                                 " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
-
-            # cast operator into protobuf enum variant
-            operator = self._OP_MAP[operator]
-
-            try:
-                value = float(value)
-            except ValueError:  # not a number
-                # parse value
-                try:
-                    expr_node = ast.parse(value, mode='eval')
-                except SyntaxError:
-                    e = ValueError("value `{}` must be a number or string literal".format(value))
-                    six.raise_from(e, None)
-                value_node = expr_node.body
-                if type(value_node) is ast.Str:
-                    value = value_node.s
-                elif type(value_node) is ast.Compare:
-                    e = ValueError("predicate `{}` must be a two-operand comparison".format(predicate))
-                    six.raise_from(e, None)
-                else:
-                    e = ValueError("value `{}` must be a number or string literal".format(value))
-                    six.raise_from(e, None)
-
-            new_runs._msg.predicates.append(
-                _CommonCommonService.KeyValueQuery(
-                    key=key, value=_utils.python_to_val_proto(value),
-                    operator=operator,
-                )
-            )
-
-        return new_runs
-
-    def sort(self, key, descending=False, ret_all_info=False):
-        """
-        Sorts the Experiment Runs from this collection by `key`.
-
-        .. deprecated:: 0.13.3
-           The `ret_all_info` parameter will removed in v0.15.0.
-
-        A `key` is a string containing a dot-delimited Experiment Run property such as
-        ``metrics.accuracy``.
-
-        Parameters
-        ----------
-        key : str
-            Dot-delimited Experiment Run property.
-        descending : bool, default False
-            Order in which to return sorted Experiment Runs.
-
-        Returns
-        -------
-        :class:`ExperimentRuns`
-
-        Warnings
-        --------
-        This feature is still in active development. It is completely safe to use, but may exhibit
-        unintuitive behavior. Please report any oddities to the Verta team!
-
-        Examples
-        --------
-        .. code-block:: python
-
-            runs.sort("metrics.accuracy")
-            # <ExperimentRuns containing 3 runs>
-
-        """
-        if ret_all_info:
-            warnings.warn("`ret_all_info` is deprecated and will removed in a later version",
-                          category=FutureWarning)
-
-        if key.split('.')[0] not in self._VALID_QUERY_KEYS:
-            raise ValueError("key `{}` is not a valid key for querying;"
-                             " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
-
-        new_runs = copy.deepcopy(self)
-
-        new_runs._msg.sort_key = key
-        new_runs._msg.ascending = not descending
-
-        return new_runs
+    def with_experiment(self, expt=None):
+        new_list = copy.deepcopy(self)
+        if expt:
+            new_list._msg.experiment_id = expt.id
+        else:
+            new_list._msg.experiment_id = None
+        return new_list
 
     def top_k(self, key, k, ret_all_info=False):
         r"""

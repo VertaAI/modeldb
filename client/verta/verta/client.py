@@ -60,8 +60,11 @@ from . import utils
 from ._tracking import (
     _Context,
     Project,
+    Projects,
     Experiment,
+    Experiments,
     ExperimentRun,
+    ExperimentRuns,
 )
 
 
@@ -246,15 +249,16 @@ class Client(object):
         self._conf.debug = value
 
     @property
-    def expt_runs(self):
-        warnings.warn("`client.expt_runs` is deprecated and will removed in a later version;"
-                      " consider using `proj.expt_runs` and `expt.expt_runs` instead",
-                      category=FutureWarning)
+    def projects(self):
+        return Projects(self._conn, self._conf)
 
-        if self.expt is None:
-            return None
-        else:
-            return self.expt.expt_runs
+    @property
+    def experiments(self):
+        return Experiments(self._conn, self._conf)
+
+    @property
+    def expt_runs(self):
+        return ExperimentRuns(self._conn, self._conf)
 
     def _get_personal_workspace(self):
         email = self._conn.auth.get('Grpc-Metadata-email')

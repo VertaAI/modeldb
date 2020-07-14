@@ -170,12 +170,18 @@ class LazyList(object):
     # number of items to fetch per back end call in __iter__()
     _ITER_PAGE_LIMIT = 100
 
-    def __init__(self, conn, conf, msg, endpoint, rest_method):
+    _OP_MAP = {'==': _CommonCommonService.OperatorEnum.EQ,
+               '!=': _CommonCommonService.OperatorEnum.NE,
+               '>':  _CommonCommonService.OperatorEnum.GT,
+               '>=': _CommonCommonService.OperatorEnum.GTE,
+               '<':  _CommonCommonService.OperatorEnum.LT,
+               '<=': _CommonCommonService.OperatorEnum.LTE}
+    _OP_PATTERN = re.compile(r"({})".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
+
+    def __init__(self, conn, conf, msg):
         self._conn = conn
         self._conf = conf
         self._msg = msg  # protobuf msg used to make back end calls
-        self._endpoint = endpoint
-        self._rest_method = rest_method
 
     def __getitem__(self, index):
         if isinstance(index, int):
@@ -191,9 +197,7 @@ class LazyList(object):
                 msg.ascending = not msg.ascending  # pylint: disable=no-member
                 msg.page_number = abs(index)
 
-            response_msg = self._call_back_end(msg)
-
-            records = self._get_records(response_msg)
+            records, total_records = self._call_back_end(msg)
             if (not records
                     and msg.page_number > response_msg.total_records):  # pylint: disable=no-member
                 raise IndexError("index out of range")
@@ -214,11 +218,7 @@ class LazyList(object):
         while msg.page_limit*msg.page_number < total_records:  # pylint: disable=no-member
             msg.page_number += 1  # pylint: disable=no-member
 
-            response_msg = self._call_back_end(msg)
-
-            total_records = response_msg.total_records
-
-            records = self._get_records(response_msg)
+            records, total_records = self._call_back_end(msg)
             for rec in records:
                 # skip if we've seen the ID before
                 if rec.id in seen_ids:
@@ -234,32 +234,128 @@ class LazyList(object):
         msg.CopyFrom(self._msg)
         msg.page_limit = msg.page_number = 1  # minimal request just to get total_records
 
-        response_msg = self._call_back_end(msg)
+        _, total_records = self._call_back_end(msg)
 
-        return response_msg.total_records
+        return total_records
+
+    def find(self, where):
+        """
+        Gets the results from this collection that match predicates `where`.
+
+        A predicate in `where` is a string containing a simple boolean expression consisting of:
+
+            - a dot-delimited property such as ``metrics.accuracy``
+            - a Python boolean operator such as ``>=``
+            - a literal value such as ``.8``
+
+        Parameters
+        ----------
+        where : str or list of str
+            Predicates specifying results to get.
+
+        Returns
+        -------
+        The same type of object given in the input.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            runs.find(["hyperparameters.hidden_size == 256",
+                       "metrics.accuracy >= .8"])
+            # <ExperimentRuns containing 3 runs>
+
+        """
+        new_list = copy.deepcopy(self)
+
+        if isinstance(where, six.string_types):
+            where = [where]
+        for predicate in where:
+            # split predicate
+            try:
+                key, operator, value = map(lambda token: token.strip(), self._OP_PATTERN.split(predicate, maxsplit=1))
+            except ValueError:
+                six.raise_from(ValueError("predicate `{}` must be a two-operand comparison".format(predicate)),
+                               None)
+
+            if key.split('.')[0] not in self._VALID_QUERY_KEYS:
+                raise ValueError("key `{}` is not a valid key for querying;"
+                                 " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
+
+            # cast operator into protobuf enum variant
+            operator = self._OP_MAP[operator]
+
+            try:
+                value = float(value)
+            except ValueError:  # not a number
+                # parse value
+                try:
+                    expr_node = ast.parse(value, mode='eval')
+                except SyntaxError:
+                    e = ValueError("value `{}` must be a number or string literal".format(value))
+                    six.raise_from(e, None)
+                value_node = expr_node.body
+                if type(value_node) is ast.Str:
+                    value = value_node.s
+                elif type(value_node) is ast.Compare:
+                    e = ValueError("predicate `{}` must be a two-operand comparison".format(predicate))
+                    six.raise_from(e, None)
+                else:
+                    e = ValueError("value `{}` must be a number or string literal".format(value))
+                    six.raise_from(e, None)
+
+            new_list._msg.predicates.append(  # pylint: disable=no-member
+                _CommonService.KeyValueQuery(
+                    key=key, value=_utils.python_to_val_proto(value),
+                    operator=operator,
+                )
+            )
+
+        return new_list
+
+    def sort(self, key, descending=False):
+        """
+        Sorts the results from this collection by `key`.
+
+        A `key` is a string containing a dot-delimited property such as
+        ``metrics.accuracy``.
+
+        Parameters
+        ----------
+        key : str
+            Dot-delimited property.
+        descending : bool, default False
+            Order in which to return sorted results.
+
+        Returns
+        -------
+        The same type of object given in the input.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            runs.sort("metrics.accuracy")
+            # <ExperimentRuns containing 3 runs>
+
+        """
+        if ret_all_info:
+            warnings.warn("`ret_all_info` is deprecated and will removed in a later version",
+                          category=FutureWarning)
+
+        if key.split('.')[0] not in self._VALID_QUERY_KEYS:
+            raise ValueError("key `{}` is not a valid key for querying;"
+                             " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
+
+        new_list = copy.deepcopy(self)
+
+        new_list._msg.sort_key = key
+        new_list._msg.ascending = not descending
+
+        return new_list
 
     def _call_back_end(self, msg):
-        data = proto_to_json(msg)
-
-        if self._rest_method == "GET":
-            response = make_request(
-                self._rest_method,
-                self._endpoint.format(self._conn.scheme, self._conn.socket),
-                self._conn, params=data,
-            )
-        elif self._rest_method == "POST":
-            response = make_request(
-                self._rest_method,
-                self._endpoint.format(self._conn.scheme, self._conn.socket),
-                self._conn, json=data,
-            )
-        raise_for_http_error(response)
-
-        response_msg = json_to_proto(body_to_json(response), msg.Response)
-        return response_msg
-
-    def _get_records(self, response_msg):
-        """Get the attribute of `response_msg` that is not `total_records`."""
+        """Find the request in the backend and returns (elements, total count)."""
         raise NotImplementedError
 
     def _create_element(self, msg):
