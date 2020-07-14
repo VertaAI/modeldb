@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-from .entity import _ModelDBEntity
+from .._tracking.entity import _ModelDBEntity
 
 from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
