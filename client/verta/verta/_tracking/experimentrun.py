@@ -319,81 +319,8 @@ class ExperimentRun(_ModelDBEntity):
             If using multipart upload, number of bytes to upload per part.
 
         """
-        # TODO: add to Client config
-        env_part_size = os.environ.get('VERTA_ARTIFACT_PART_SIZE', "")
-        try:
-            part_size = int(float(env_part_size))
-        except ValueError:  # not an int
-            pass
-        else:
-            print("set artifact part size {} from environment".format(part_size))
-
-        artifact_stream.seek(0)
-        if self._conf.debug:
-            print("[DEBUG] uploading {} bytes ({})".format(_artifact_utils.get_stream_length(artifact_stream), key))
-            artifact_stream.seek(0)
-
-        # check if multipart upload ok
-        url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
-
-        if url_for_artifact.multipart_upload_ok:
-            # TODO: parallelize this
-            file_parts = iter(lambda: artifact_stream.read(part_size), b'')
-            for part_num, file_part in enumerate(file_parts, start=1):
-                print("uploading part {}".format(part_num), end='\r')
-
-                # get presigned URL
-                url = self._get_url_for_artifact(key, "PUT", part_num=part_num).url
-
-                # wrap file part into bytestream to avoid OverflowError
-                #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
-                #     ``requests`` will overwhelm CPython's SSL lib when it tries to sign the
-                #     payload. But passing a buffered bytestream instead of the raw bytestring
-                #     indicates to ``requests`` that it should perform a streaming upload via
-                #     HTTP/1.1 chunked transfer encoding and avoid this issue.
-                #     https://github.com/psf/requests/issues/2717
-                part_stream = six.BytesIO(file_part)
-
-                # upload part
-                #     Retry connection errors, to make large multipart uploads more robust.
-                for _ in range(3):
-                    try:
-                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-                    except requests.ConnectionError:  # e.g. broken pipe
-                        time.sleep(1)
-                        continue  # try again
-                    else:
-                        break
-                _utils.raise_for_http_error(response)
-
-                # commit part
-                url = "{}://{}/api/v1/modeldb/experiment-run/commitArtifactPart".format(
-                    self._conn.scheme,
-                    self._conn.socket,
-                )
-                msg = _CommonService.CommitArtifactPart(id=self.id, key=key)
-                msg.artifact_part.part_number = part_num
-                msg.artifact_part.etag = response.headers['ETag']
-                data = _utils.proto_to_json(msg)
-                # TODO: increase retries
-                response = _utils.make_request("POST", url, self._conn, json=data)
-                _utils.raise_for_http_error(response)
-            print()
-
-            # complete upload
-            url = "{}://{}/api/v1/modeldb/experiment-run/commitMultipartArtifact".format(
-                self._conn.scheme,
-                self._conn.socket,
-            )
-            msg = _CommonService.CommitMultipartArtifact(id=self.id, key=key)
-            data = _utils.proto_to_json(msg)
-            response = _utils.make_request("POST", url, self._conn, json=data)
-            _utils.raise_for_http_error(response)
-        else:
-            # upload full artifact
-            response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
-            _utils.raise_for_http_error(response)
-
+        manager = self._get_artifact_manager(key)
+        manager.upload_stream(artifact_stream, part_size=part_size)
         print("upload complete ({})".format(key))
 
     def _log_artifact_path(self, key, artifact_path, artifact_type):
@@ -463,13 +390,9 @@ class ExperimentRun(_ModelDBEntity):
         if artifact.path_only:
             return artifact.path, artifact.path_only
         else:
-            # download artifact from artifact store
-            url = self._get_url_for_artifact(key, "GET").url
+            manager = self._get_artifact_manager(key)
 
-            response = _utils.make_request("GET", url, self._conn)
-            _utils.raise_for_http_error(response)
-
-            return response.content, artifact.path_only
+            return manager.download_stream(), artifact.path_only
 
     # TODO: Fix up get dataset to handle the Dataset class when logging dataset
     # version
@@ -1618,12 +1541,8 @@ class ExperimentRun(_ModelDBEntity):
             print("download complete; file written to {}".format(download_to_path))
         else:
             # download artifact from artifact store
-            url = self._get_url_for_artifact(key, "GET").url
-            with _utils.make_request("GET", url, self._conn, stream=True) as response:
-                _utils.raise_for_http_error(response)
-
-                # user-specified filepath, so overwrite
-                _request_utils.download(response, download_to_path, overwrite_ok=True)
+            manager = self._get_artifact_manager(key)
+            manager.download_to_file(download_to_path)
 
         return download_to_path
 
@@ -2433,58 +2352,6 @@ class ExperimentRun(_ModelDBEntity):
 
         return commit, key_paths
 
-    def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
-        """
-        Obtains a URL to use for accessing stored artifacts.
-
-        Parameters
-        ----------
-        key : str
-            Name of the artifact.
-        method : {'GET', 'PUT'}
-            HTTP method to request for the generated URL.
-        artifact_type : int, optional
-            Variant of `_CommonCommonService.ArtifactTypeEnum`. This informs the backend what slot to check
-            for the artifact, if necessary.
-        part_num : int, optional
-            If using Multipart Upload, number of part to be uploaded.
-
-        Returns
-        -------
-        response_msg : `_CommonService.GetUrlForArtifact.Response`
-            Backend response.
-
-        """
-        if method.upper() not in ("GET", "PUT"):
-            raise ValueError("`method` must be one of {'GET', 'PUT'}")
-
-        Message = _CommonService.GetUrlForArtifact
-        msg = Message(
-            id=self.id, key=key,
-            method=method.upper(),
-            artifact_type=artifact_type,
-            part_number=part_num,
-        )
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("POST",
-                                       self._request_url.format("getUrlForArtifact"),
-                                       self._conn, json=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-
-        url = response_msg.url
-        # accommodate port-forwarded NFS store
-        if 'https://localhost' in url[:20]:
-            url = 'http' + url[5:]
-        if 'localhost%3a' in url[:20]:
-            url = url.replace('localhost%3a', 'localhost:')
-        if 'localhost%3A' in url[:20]:
-            url = url.replace('localhost%3A', 'localhost:')
-        response_msg.url = url
-
-        return response_msg
-
     def _cache(self, filename, contents):
         """
         Caches `contents` to `filename` within ``_CACHE_DIR``.
@@ -2570,3 +2437,96 @@ class ExperimentRun(_ModelDBEntity):
 
         path = os.path.join(_CACHE_DIR, name)
         return path if os.path.exists(path) else None
+
+    def _get_artifact_manager(self, key):
+        resolver = ExperimentRunArtifactResolver(self._conn, key, self.id)
+        manager = ArtifactManager(self._conn, self._conf, resolver)
+        return manager
+
+class ExperimentRunArtifactResolver(object):
+    def __init__(self, conn, key, id):
+        self._conn = conn
+        self._key = key
+        self._id = id
+
+    def get_download_url(self):
+        return self._get_url_for_artifact("GET")
+
+    def get_upload_url(self, part_num):
+        return self._get_url_for_artifact("PUT", part_num=1)
+
+    def commit_part(self, part_num, tag):
+        url = "{}://{}/api/v1/modeldb/experiment-run/commitArtifactPart".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+        msg = _CommonService.CommitArtifactPart(id=self.id, key=key)
+        msg.artifact_part.part_number = part_num
+        msg.artifact_part.etag = tag
+        data = _utils.proto_to_json(msg)
+        # TODO: increase retries
+        response = _utils.make_request("POST", url, self._conn, json=data)
+        _utils.raise_for_http_error(response)
+
+    def commit_done(self):
+        url = "{}://{}/api/v1/modeldb/experiment-run/commitMultipartArtifact".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+        msg = _CommonService.CommitMultipartArtifact(id=self.id, key=key)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("POST", url, self._conn, json=data)
+        _utils.raise_for_http_error(response)
+
+    def _get_url_for_artifact(self, method, artifact_type=0, part_num=0):
+        """
+        Obtains a URL to use for accessing stored artifacts.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+        method : {'GET', 'PUT'}
+            HTTP method to request for the generated URL.
+        artifact_type : int, optional
+            Variant of `_CommonCommonService.ArtifactTypeEnum`. This informs the backend what slot to check
+            for the artifact, if necessary.
+        part_num : int, optional
+            If using Multipart Upload, number of part to be uploaded.
+
+        Returns
+        -------
+        response_msg : `_CommonService.GetUrlForArtifact.Response`
+            Backend response.
+
+        """
+        if method.upper() not in ("GET", "PUT"):
+            raise ValueError("`method` must be one of {'GET', 'PUT'}")
+
+        Message = _CommonService.GetUrlForArtifact
+        msg = Message(
+            id=self._id, key=self._key,
+            method=method.upper(),
+            artifact_type=artifact_type,
+            part_number=part_num,
+        )
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("POST",
+                                       "/api/v1/modeldb/experiment-run/getUrlForArtifact",
+                                       self._conn, json=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+
+        url = response_msg.url
+        # accommodate port-forwarded NFS store
+        # TODO: move this to the ArtifactManager
+        if 'https://localhost' in url[:20]:
+            url = 'http' + url[5:]
+        if 'localhost%3a' in url[:20]:
+            url = url.replace('localhost%3a', 'localhost:')
+        if 'localhost%3A' in url[:20]:
+            url = url.replace('localhost%3A', 'localhost:')
+        response_msg.url = url
+
+        return response_msg
