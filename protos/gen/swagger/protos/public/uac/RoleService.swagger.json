@@ -53,7 +53,8 @@
               "DATASET",
               "DATASET_VERSION",
               "DASHBOARD",
-              "REPOSITORY"
+              "REPOSITORY",
+              "REGISTERED_MODEL"
             ],
             "default": "UNKNOWN"
           }
@@ -472,7 +473,8 @@
         "DATASET",
         "DATASET_VERSION",
         "DASHBOARD",
-        "REPOSITORY"
+        "REPOSITORY",
+        "REGISTERED_MODEL"
       ],
       "default": "UNKNOWN"
     },
@@ -765,6 +767,9 @@
           "title": "We optionally allow a more specialized list of resources that the original one allowed by the roles"
         },
         "role_id": {
+          "type": "string"
+        },
+        "role_name": {
           "type": "string"
         },
         "public": {
