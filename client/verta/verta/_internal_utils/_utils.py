@@ -181,7 +181,8 @@ class LazyList(object):
     _OP_PATTERN = re.compile(r"({})".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
 
     # keys that yield predictable, sensible results
-    _VALID_QUERY_KEYS = set()  # NOTE: must be overridden by subclasses
+    # TODO: make LazyList an abstract base class; make this attr an abstract property
+    _VALID_QUERY_KEYS = None  # NOTE: must be overridden by subclasses
 
     def __init__(self, conn, conf, msg):
         self._conn = conn
