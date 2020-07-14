@@ -310,3 +310,14 @@ def created_datasets(client):
 
     if created_datasets:
         utils.delete_datasets(list(set(dataset.id for dataset in created_datasets)), client._conn)
+
+
+@pytest.fixture
+def model_version(client):
+    registered_model = client.set_registered_model()
+    model_version = client.set_model_version()
+
+    yield model_version
+
+    if registered_model:
+        utils.delete_registered_model(registered_model.id, client._conn)
