@@ -66,7 +66,6 @@ from ._tracking import (
     ExperimentRun,
     ExperimentRuns,
     RegisteredModel,
-    ModelVersion,
 )
 
 
