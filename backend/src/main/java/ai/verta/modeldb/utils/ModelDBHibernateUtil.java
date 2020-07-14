@@ -7,6 +7,7 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.entities.ArtifactEntity;
@@ -631,8 +632,8 @@ public class ModelDBHibernateUtil {
   @SuppressWarnings("unchecked")
   private static void runMigration() {
     App app = App.getInstance();
-    Map<String, Boolean> migrationTypeMap =
-        (Map<String, Boolean>) app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
+    Map<String, Map<String, Object>> migrationTypeMap =
+        (Map<String, Map<String, Object>>) app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
     if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
       new Thread(
               () -> {
@@ -642,8 +643,8 @@ public class ModelDBHibernateUtil {
                   CompletableFuture<Boolean>[] completableFutures =
                       new CompletableFuture[migrationTypeMap.size()];
                   for (String migrationName : migrationTypeMap.keySet()) {
-                    Boolean migration = migrationTypeMap.get(migrationName);
-                    if (migration) {
+                    Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
+                    if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
                       if (migrationName.equals(
                           ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION)) {
                         // Manually migration for populate RoleBinding of experiment, experimentRun
@@ -669,7 +670,23 @@ public class ModelDBHibernateUtil {
                                 });
                         completableFutures[index] = futureTask;
                         index = index + 1;
-                      } // add else if here for the new migration type
+                      }
+                      if (migrationName.equals(ModelDBConstants.DATASET_VERSIONING_MIGRATION)) {
+                        // Manual migration for populate RoleBinding of repository
+                        CompletableFuture<Boolean> futureTask =
+                            CompletableFuture.supplyAsync(
+                                () -> {
+                                  int recordUpdateLimit =
+                                      (int)
+                                          migrationDetailMap.getOrDefault(
+                                              ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+                                  DatasetToRepositoryMigration.execute(recordUpdateLimit);
+                                  return true;
+                                });
+                        completableFutures[index] = futureTask;
+                        index = index + 1;
+                      }
+                      // add if here for the new migration type
                     }
                   }
                   if (index > 0) {

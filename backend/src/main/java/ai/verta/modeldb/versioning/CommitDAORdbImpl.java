@@ -101,10 +101,27 @@ public class CommitDAORdbImpl implements CommitDAO {
   @Override
   public CreateCommitRequest.Response setCommitFromDatasetVersion(
       DatasetVersion datasetVersion,
+      RepositoryDAO repositoryDAO,
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException {
+    RepositoryIdentification repositoryIdentification =
+        RepositoryIdentification.newBuilder().setRepoId(repositoryEntity.getId()).build();
+    // Set parent datasetVersion
+    GetBranchRequest.Response getBranchResponse =
+        repositoryDAO.getBranch(
+            GetBranchRequest.newBuilder()
+                .setRepositoryId(repositoryIdentification)
+                .setBranch(ModelDBConstants.MASTER_BRANCH)
+                .build(),
+            false);
+    datasetVersion =
+        datasetVersion
+            .toBuilder()
+            .setParentId(getBranchResponse.getCommit().getCommitSha())
+            .build();
+
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Blob.Builder blobBuilder = Blob.newBuilder();
       if (datasetVersion.hasDatasetBlob()) {
@@ -189,12 +206,23 @@ public class CommitDAORdbImpl implements CommitDAO {
               .build(),
           datasetVersion.getTagsList());
       session.getTransaction().commit();
+
+      repositoryDAO.setBranch(
+          SetBranchRequest.newBuilder()
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repositoryEntity.getId()).build())
+              .setBranch(ModelDBConstants.MASTER_BRANCH)
+              .setCommitSha(commitEntity.getCommit_hash())
+              .build(),
+          false);
+
       return CreateCommitRequest.Response.newBuilder()
           .setCommit(commitEntity.toCommitProto())
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return setCommitFromDatasetVersion(datasetVersion, blobDAO, metadataDAO, repositoryEntity);
+        return setCommitFromDatasetVersion(
+            datasetVersion, repositoryDAO, blobDAO, metadataDAO, repositoryEntity);
       } else {
         throw ex;
       }

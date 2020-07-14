@@ -176,11 +176,13 @@ public interface ModelDBConstants {
 
   // Migration Constants
   String MIGRATION = "migration";
+  String ENABLE = "enable";
   String SUB_ENTITIES_OWNERS_RBAC_MIGRATION = "SUB_ENTITIES_OWNERS_RBAC_MIGRATION";
   String ROLE_REPOSITORY_READ_WRITE = "REPOSITORY_READ_WRITE";
   String ROLE_REPOSITORY_READ_ONLY = "REPOSITORY_READ_ONLY";
   String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
+  String DATASET_VERSIONING_MIGRATION = "DATASET_VERSIONING_MIGRATION";
   String POSTGRES_DB_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
   String DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE =
       "Can't add new versioning entry, because an existing one has different repository or commit";

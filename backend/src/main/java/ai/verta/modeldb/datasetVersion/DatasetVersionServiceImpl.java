@@ -46,11 +46,9 @@ import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
-import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
-import ai.verta.modeldb.versioning.SetBranchRequest;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -169,32 +167,11 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .setRepoId(Long.parseLong(request.getDatasetId()))
               .build();
 
-      // Set parent datasetVersion
-      GetBranchRequest.Response getBranchResponse =
-          repositoryDAO.getBranch(
-              GetBranchRequest.newBuilder()
-                  .setRepositoryId(repositoryIdentification)
-                  .setBranch(ModelDBConstants.MASTER_BRANCH)
-                  .build(),
-              false);
-      datasetVersion =
-          datasetVersion
-              .toBuilder()
-              .setParentId(getBranchResponse.getCommit().getCommitSha())
-              .build();
-
       RepositoryEntity repositoryEntity =
           repositoryDAO.getProtectedRepositoryById(repositoryIdentification, true);
       CreateCommitRequest.Response createCommitResponse =
           commitDAO.setCommitFromDatasetVersion(
-              datasetVersion, blobDAO, metadataDAO, repositoryEntity);
-      repositoryDAO.setBranch(
-          SetBranchRequest.newBuilder()
-              .setRepositoryId(repositoryIdentification)
-              .setBranch(ModelDBConstants.MASTER_BRANCH)
-              .setCommitSha(createCommitResponse.getCommit().getCommitSha())
-              .build(),
-          false);
+              datasetVersion, repositoryDAO, blobDAO, metadataDAO, repositoryEntity);
       datasetVersion =
           blobDAO.convertToDatasetVersion(
               metadataDAO, repositoryEntity, createCommitResponse.getCommit().getCommitSha());
