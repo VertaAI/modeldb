@@ -40,7 +40,7 @@ def lst_model(name, filter, output, workspace):
 @click.option("--filter", multiple=True, help="Filters to be applied when listing. See the documentation for a complete list.")
 @click.option("--output", "-o", type=click.Choice(['json'], case_sensitive=False), help="Print the output in the given format instead of regular text.")
 @click.option("--workspace", "-w", help="Workspace to use")
-def lst_model(name, filter, output, workspace):
+def lst_model_version(name, filter, output, workspace):
     """List all models available.
     """
     if name is None:
