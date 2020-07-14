@@ -3,14 +3,19 @@
 from .experiment import Experiment
 from .project import Project
 
+
 class _Context(object):
     def __init__(self, conn, conf):
         self._conn = conn
         self._conf = conf
+
         self.workspace_name = None
+
         self.proj = None
         self.expt = None
         self.expt_run = None
+
+        self.registered_model = None
 
     def populate(self):
         if self.expt is None and self.expt_run is not None:
