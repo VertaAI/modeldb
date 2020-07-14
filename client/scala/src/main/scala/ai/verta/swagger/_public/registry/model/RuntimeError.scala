@@ -1,10 +1,16 @@
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT
-package ai.verta.swagger._public.uac.model
+package ai.verta.swagger._public.registry.model
 
 import scala.util.Try
 
 import net.liftweb.json._
 
+import ai.verta.swagger._public.registry.model.ArtifactTypeEnumArtifactType._
+import ai.verta.swagger._public.registry.model.OperatorEnumOperator._
+import ai.verta.swagger._public.registry.model.ProtobufNullValue._
+import ai.verta.swagger._public.registry.model.TernaryEnumTernary._
+import ai.verta.swagger._public.registry.model.ValueTypeEnumValueType._
+import ai.verta.swagger._public.registry.model.VisibilityEnumVisibility._
 import ai.verta.swagger.client.objects._
 
 case class RuntimeError (
