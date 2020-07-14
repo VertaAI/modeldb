@@ -46,6 +46,7 @@ message AddLabelsRequest {
 message DeleteLabelsRequest {
     IdentificationType id = 1;
     repeated string labels = 2;
+    bool delete_all = 3;
 
     message Response {
         bool status = 1;
@@ -89,6 +90,13 @@ service MetadataService {
     rpc AddLabels(AddLabelsRequest) returns (AddLabelsRequest.Response) {
         option (google.api.http) = {
             put: "/v1/metadata/labels"
+            body: "*"
+        };
+    };
+
+    rpc UpdateLabels(AddLabelsRequest) returns (AddLabelsRequest.Response) {
+        option (google.api.http) = {
+            post: "/v1/metadata/labels"
             body: "*"
         };
     };
