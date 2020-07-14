@@ -725,7 +725,7 @@ class Client(object):
         desc : str, optional
             Description of the registered_model.
         labels : list of str, optional
-            Tags of the registered_model.
+            Labels of the registered_model.
         attrs : dict of str to {None, bool, float, int, str}, optional
             Attributes of the registered_model.
         workspace : str, optional
