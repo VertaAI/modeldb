@@ -33,8 +33,8 @@ from .._internal_utils import (
     _pip_requirements_utils,
     _request_utils,
     _utils,
+    importer,
 )
-from .._internal_utils.importer import maybe_dependency
 
 from .. import _dataset
 from .. import _repository
@@ -1428,10 +1428,11 @@ class ExperimentRun(_ModelDBEntity):
         if path_only:
             return image
         else:
-            if maybe_dependency("PIL") is None:  # Pillow not installed
+            PIL = importer.maybe_dependency("PIL")
+            if PIL is None:  # Pillow not installed
                 return six.BytesIO(image)
             try:
-                return maybe_dependency("PIL").Image.open(six.BytesIO(image))
+                return PIL.Image.open(six.BytesIO(image))
             except IOError:  # can't be handled by Pillow
                 return six.BytesIO(image)
 
@@ -1533,9 +1534,10 @@ class ExperimentRun(_ModelDBEntity):
             # uploaded artifact; `artifact` is its bytes
             artifact_stream = six.BytesIO(artifact)
 
-        if maybe_dependency("torch") is not None:
+        torch = importer.maybe_dependency("torch")
+        if torch is not None:
             try:
-                obj = maybe_dependency("torch").load(artifact_stream)
+                obj = torch.load(artifact_stream)
             except:  # not something torch can deserialize
                 artifact_stream.seek(0)
             else:

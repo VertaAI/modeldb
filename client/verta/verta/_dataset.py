@@ -15,8 +15,10 @@ from ._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersion
 
 from .external import six
 
-from ._internal_utils import _utils
-from ._internal_utils.importer import maybe_dependency
+from ._internal_utils import (
+    _utils,
+    importer,
+)
 
 
 class Dataset(object):
@@ -772,10 +774,11 @@ class S3DatasetVersionInfo(PathDatasetVersionInfo):
         self.compute_dataset_size()
 
     def get_dataset_part_infos(self):
-        if maybe_dependency("boto3") is None:  # Boto 3 not installed
+        boto3 = importer.maybe_dependency("boto3")
+        if boto3 is None:  # Boto 3 not installed
             six.raise_from(ImportError("Boto 3 is not installed; try `pip install boto3`"), None)
 
-        conn = maybe_dependency("boto3").client('s3')
+        conn = boto3.client('s3')
         dataset_part_infos = []
         if self.key is not None:
             # look up object by key
@@ -920,12 +923,13 @@ class BigQueryDatasetVersionInfo(QueryDatasetVersionInfo):
 
     @staticmethod
     def get_bq_job(job_id, location):
-        if maybe_dependency("bigquery") is None:  # BigQuery not installed
+        bigquery = importer.maybe_dependency("bigquery")
+        if bigquery is None:  # BigQuery not installed
             six.raise_from(ImportError("BigQuery is not installed;"
                                        " try `pip install google-cloud-bigquery`"),
                            None)
 
-        client = maybe_dependency("bigquery").Client()
+        client = bigquery.Client()
         return client.get_job(job_id, location=location)
 
 class RDBMSDatasetVersionInfo(QueryDatasetVersionInfo):

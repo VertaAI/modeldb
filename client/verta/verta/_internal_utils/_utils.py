@@ -26,6 +26,8 @@ from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
+from . import importer
+
 try:
     import ipykernel
 except ImportError:  # Jupyter not installed
@@ -627,6 +629,8 @@ def to_builtin(obj):
         A built-in equivalent of `obj`, or `obj` unchanged if it could not be handled by this function.
 
     """
+    tf = importer.maybe_dependency("tensorflow")
+
     # jump through ludicrous hoops to avoid having hard dependencies in the Client
     cls_ = obj.__class__
     obj_class = getattr(cls_, '__name__', None)
@@ -649,7 +653,7 @@ def to_builtin(obj):
         return obj.values.tolist()
     if obj_class == "Tensor" and obj_module == "torch":
         return obj.detach().numpy().tolist()
-    if maybe_dependency("tensorflow") is not None and isinstance(obj, maybe_dependency("tensorflow").Tensor):  # if TensorFlow
+    if tf is not None and isinstance(obj, tf.Tensor):  # if TensorFlow
         try:
             return obj.numpy().tolist()
         except:  # TF 1.X or not-eager execution
@@ -947,9 +951,10 @@ def ensure_timestamp(timestamp):
 
     """
     if isinstance(timestamp, six.string_types):
-        if maybe_dependency("pandas"):
+        pd = maybe_dependency("pandas")
+        if pd is not None:
             try:  # attempt with pandas, which can parse many time string formats
-                return timestamp_to_ms(maybe_dependency("pandas").Timestamp(timestamp).timestamp())
+                return timestamp_to_ms(pd.Timestamp(timestamp).timestamp())
             except ValueError:  # can't be handled by pandas
                 six.raise_from(ValueError("unable to parse datetime string \"{}\"".format(timestamp)),
                             None)
