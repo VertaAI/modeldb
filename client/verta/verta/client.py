@@ -312,6 +312,8 @@ class Client(object):
         else:
             self._ctx.proj = Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
 
+        if self._ctx.proj is None:
+            raise ValueError("Project not found")
         return self._ctx.proj
 
     def set_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
@@ -390,6 +392,8 @@ class Client(object):
 
             self._ctx.expt = Experiment._get_by_name(self._conn, self._conf, name, self._ctx.proj.id)
 
+        if self._ctx.expt is None:
+            raise ValueError("Experment not found")
         return self._ctx.expt
 
     def set_experiment(self, name=None, desc=None, tags=None, attrs=None, id=None):
@@ -461,6 +465,8 @@ class Client(object):
 
             self._ctx.expt_run = ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id)
 
+        if self._ctx.expt_run is None:
+            raise ValueError("ExperimentRun not Found")
         return self._ctx.expt_run
 
     def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None):
