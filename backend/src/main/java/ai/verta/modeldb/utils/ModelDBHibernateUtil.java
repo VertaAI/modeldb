@@ -718,10 +718,10 @@ public class ModelDBHibernateUtil {
       throws SQLException, DatabaseException {
     // Get database connection
     String connectionString =
-            rDBUrl
-                    + "/"
-                    + databaseName
-                    + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
+        rDBUrl
+            + "/"
+            + databaseName
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
 
     try {
       Class.forName(rDBDriver);
@@ -730,13 +730,14 @@ public class ModelDBHibernateUtil {
       return false;
     }
     try (Connection con =
-                 DriverManager.getConnection(connectionString, configUsername, configPassword)) {
+        DriverManager.getConnection(connectionString, configUsername, configPassword)) {
 
       JdbcConnection jdbcCon = new JdbcConnection(con);
 
       Statement stmt = jdbcCon.createStatement();
 
-      String sql = "SELECT * FROM migration_status ms WHERE ms.migration_name = '" + migrationName + "'";
+      String sql =
+          "SELECT * FROM migration_status ms WHERE ms.migration_name = '" + migrationName + "'";
       ResultSet rs = stmt.executeQuery(sql);
 
       boolean locked = false;
@@ -764,10 +765,10 @@ public class ModelDBHibernateUtil {
   private static void lockedMigration(String migrationName) throws SQLException, DatabaseException {
     // Get database connection
     String connectionString =
-            rDBUrl
-                    + "/"
-                    + databaseName
-                    + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
+        rDBUrl
+            + "/"
+            + databaseName
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
 
     try {
       Class.forName(rDBDriver);
@@ -776,16 +777,13 @@ public class ModelDBHibernateUtil {
       return;
     }
     try (Connection con =
-                 DriverManager.getConnection(connectionString, configUsername, configPassword)) {
+        DriverManager.getConnection(connectionString, configUsername, configPassword)) {
 
       JdbcConnection jdbcCon = new JdbcConnection(con);
 
       Statement stmt = jdbcCon.createStatement();
 
-      String sql =
-          "INSERT INTO migration_status VALUES (1,'"
-              + migrationName
-              + "', 1);";
+      String sql = "INSERT INTO migration_status VALUES (1,'" + migrationName + "', 1);";
       stmt.executeUpdate(sql);
       stmt.close();
       LOGGER.debug("migration {} locked: {}", migrationName, true);
