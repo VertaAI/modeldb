@@ -4,11 +4,13 @@ from __future__ import print_function
 
 import importlib
 
+
 def maybe_dependency(module):
     try:
         return importlib.import_module(module)
     except ImportError:
         return None
+
 
 def get_tensorflow_major_version():
     if maybe_dependency("tensorflow"):
