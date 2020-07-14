@@ -132,3 +132,14 @@ message OperatorEnum {
         IN = 8; // This is not fully supported by backend.
     }
 }
+
+message VisibilityEnum {
+    enum Visibility {
+        //Default to private
+        PRIVATE = 0;
+        //Not supported
+        PUBLIC = 1;
+        //Uses access setup by organization
+        ORG_SCOPED_PUBLIC = 2;
+    }
+}
