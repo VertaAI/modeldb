@@ -671,7 +671,7 @@ public class ModelDBHibernateUtil {
                         completableFutures[index] = futureTask;
                         index = index + 1;
                       }
-                      if (migrationName.equals(ModelDBConstants.DATASET_VERSIONIG_MIGRATION)) {
+                      if (migrationName.equals(ModelDBConstants.DATASET_VERSIONING_MIGRATION)) {
                         // Manual migration for populate RoleBinding of repository
                         CompletableFuture<Boolean> futureTask =
                             CompletableFuture.supplyAsync(
