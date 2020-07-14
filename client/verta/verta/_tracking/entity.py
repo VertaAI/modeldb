@@ -83,6 +83,8 @@ class _ModelDBEntity(object):
         msg = cls._get_proto_by_id(conn, id)
         if msg:
             print("got existing {}: {}".format(cls.__name__, msg.id))
+            # pylint: disable=no-value-for-parameter
+            # this is only called on subclasses, so 3 params to cls() is correct
             return cls(conn, conf, msg)
         else:
             raise ValueError("{} with ID {} not found".format(cls.__name__, id))
@@ -108,6 +110,8 @@ class _ModelDBEntity(object):
     def _get_by_name(cls, conn, conf, name, parent):
         msg = cls._get_proto_by_name(conn, name, parent)
         if msg:
+            # pylint: disable=no-value-for-parameter
+            # this is only called on subclasses, so 3 params to cls() is correct
             return cls(conn, conf, msg)
         else:
             return None
@@ -120,6 +124,8 @@ class _ModelDBEntity(object):
     def _create(cls, conn, conf, *args, **kwargs):
         msg = cls._create_proto(conn, *args, **kwargs)
         if msg:
+            # pylint: disable=no-value-for-parameter
+            # this is only called on subclasses, so 3 params to cls() is correct
             return cls(conn, conf, msg)
         else:
             return None
@@ -339,6 +345,8 @@ class _ModelDBEntity(object):
 
         if msg.code_version.WhichOneof("code") == 'code_archive':
             # upload artifact to artifact store
+            # pylint: disable=no-member
+            # this method should only be called on ExperimentRun, which does have _get_url_for_artifact()
             url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type).url
 
             response = _utils.make_request("PUT", url, self._conn, data=zipstream)
@@ -398,6 +406,8 @@ class _ModelDBEntity(object):
             return git_snapshot
         elif which_code == 'code_archive':
             # download artifact from artifact store
+            # pylint: disable=no-member
+            # this method should only be called on ExperimentRun, which does have _get_url_for_artifact()
             url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type).url
 
             response = _utils.make_request("GET", url, self._conn)

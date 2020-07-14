@@ -196,14 +196,6 @@ class TestEntities:
 
 
 class TestProject:
-    def test_set_project_warning(self, client):
-        """setting Project by name with desc, tags, and/or attrs raises warning"""
-        proj = client.set_project()
-
-        for kwargs in KWARGS_COMBOS:
-            with pytest.warns(UserWarning):
-                client.set_project(proj.name, **kwargs)
-
     def test_create(self, client):
         assert client.set_project()
 
@@ -252,15 +244,6 @@ class TestProject:
 
 
 class TestExperiment:
-    def test_set_experiment_warning(self, client):
-        """setting Experiment by name with desc, tags, and/or attrs raises warning"""
-        client.set_project()
-        expt = client.set_experiment()
-
-        for kwargs in KWARGS_COMBOS:
-            with pytest.warns(UserWarning):
-                client.set_experiment(expt.name, **kwargs)
-
     def test_create(self, client):
         client.set_project()
         assert client.set_experiment()
@@ -321,16 +304,6 @@ class TestExperiment:
 
 
 class TestExperimentRun:
-    def test_set_experiment_run_warning(self, client):
-        """setting ExperimentRun by name with desc, tags, and/or attrs raises warning"""
-        client.set_project()
-        client.set_experiment()
-        expt_run = client.set_experiment_run()
-
-        for kwargs in KWARGS_COMBOS:
-            with pytest.warns(UserWarning):
-                client.set_experiment_run(expt_run.name, **kwargs)
-
     def test_create(self, client):
         client.set_project()
         client.set_experiment()
