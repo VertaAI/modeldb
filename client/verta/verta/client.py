@@ -783,7 +783,7 @@ class Client(object):
                 self.set_registered_model()
 
             self._ctx.model_version = ModelVersion._get_or_create_by_name(self._conn, name,
-                                                                    lambda name: ModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.expt.id),
+                                                                    lambda name: ModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.registered_model),
                                                                     lambda name: ModelVersion._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=None, attrs=None, date_created=time_created))
         return self._ctx.model_version
 
@@ -857,3 +857,10 @@ class Client(object):
 
         """
         return self.set_registered_model(*args, **kwargs)
+
+    def get_or_create_model_version(self, *args, **kwargs):
+        """
+        Alias for :meth:`Client.set_model_version()`.
+
+        """
+        return self.set_model_version(*args, **kwargs)
