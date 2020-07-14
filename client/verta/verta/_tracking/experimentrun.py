@@ -108,6 +108,7 @@ class ExperimentRun(_ModelDBEntity):
         self._attributes = _utils.unravel_key_values(self._msg.attributes)
         self._hyperparameters = _utils.unravel_key_values(self._msg.hyperparameters)
         self._metrics = _utils.unravel_key_values(self._msg.metrics)
+        self._observations = _utils.unravel_observations(self._msg.observations)
 
     @property
     def workspace(self):
@@ -1671,6 +1672,7 @@ class ExperimentRun(_ModelDBEntity):
                                        "{}://{}/api/v1/modeldb/experiment-run/logObservation".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
         _utils.raise_for_http_error(response)
+        self._clear_cache()
 
     def get_observation(self, key):
         """
@@ -1687,22 +1689,11 @@ class ExperimentRun(_ModelDBEntity):
             Values of observation series.
 
         """
-        _utils.validate_flat_key(key)
-
-        Message = _ExperimentRunService.GetObservations
-        msg = Message(id=self.id, observation_key=key)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getObservations".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        if len(response_msg.observations) == 0:
-            raise KeyError("no observation found with key {}".format(key))
+        self._refresh_cache()
+        if key in self._observations:
+            return self._metrics[key]
         else:
-            return [_utils.unravel_observation(observation)[1:]  # drop key from tuple
-                    for observation in response_msg.observations]  # TODO: support Artifacts
+            six.raise_from(KeyError("no metric found with key {}".format(key)), None)
 
     def get_observations(self):
         """
@@ -1714,8 +1705,8 @@ class ExperimentRun(_ModelDBEntity):
             Names and values of all observation series.
 
         """
-        run_msg = self._get_self_as_msg()
-        return _utils.unravel_observations(run_msg.observations)
+        self._refresh_cache()
+        return self._observations
 
     def log_requirements(self, requirements, overwrite=False):
         """
