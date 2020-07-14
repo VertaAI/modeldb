@@ -732,3 +732,20 @@ class Client(object):
 
         """
         return self.get_or_create_repository(*args, **kwargs)
+
+    def get_or_create_registered_model(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
+        raise NotImplementedError
+
+    def get_registered_model(self, name=None, workspace=None, id=None):
+        raise NotImplementedError
+
+    def get_registered_model_version(self, id=None):
+        raise NotImplementedError
+
+    @property
+    def registered_models(self):
+        return RegisteredModels(self._conn, self._conf)
+
+    @property
+    def registered_model_versions(self):
+        return RegisteredModelVersions(self._conn, self._conf)
