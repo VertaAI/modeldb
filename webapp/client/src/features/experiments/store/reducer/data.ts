@@ -2,8 +2,8 @@ import * as R from 'ramda';
 import { Reducer } from 'redux';
 import { ActionType, getType } from 'typesafe-actions';
 
-import { substractPaginationTotalCount } from 'core/shared/models/Pagination';
-import { updateById } from 'core/shared/utils/collection';
+import { substractPaginationTotalCount } from 'shared/models/Pagination';
+import { updateById } from 'shared/utils/collection';
 
 import * as actions from '../actions';
 import {

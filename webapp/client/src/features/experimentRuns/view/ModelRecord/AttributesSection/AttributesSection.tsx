@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-import { IAttribute } from 'core/shared/models/Attribute';
-import ClientSuggestion from 'core/shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
-import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
+import { IAttribute } from 'shared/models/Attribute';
+import ClientSuggestion from 'shared/view/domain/ModelRecord/ModelRecordProps/shared/ClientSuggestion/ClientSuggestion';
+import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 
 import Section from '../shared/Section/Section';
-import vertaDocLinks from 'core/shared/utils/globalConstants/vertaDocLinks';
-import PileWithActions from 'core/shared/view/elements/PileWithActions/PileWithActions';
+import vertaDocLinks from 'shared/utils/globalConstants/vertaDocLinks';
+import PileWithActions from 'shared/view/elements/PileWithActions/PileWithActions';
 import { useInfoAction } from './InfoAction/InfoAction';
 
 import styles from './AttributesSection.module.css';

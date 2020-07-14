@@ -1,14 +1,15 @@
 package ai.verta.modeldb.versioning;
 
-import ai.verta.modeldb.KeyValueQuery;
+import ai.verta.common.KeyValueQuery;
+import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.uac.UserInfo;
 import java.util.ArrayList;
@@ -222,6 +223,10 @@ public class FindRepositoriesQuery {
         parametersMap.put("repoIds", this.repoIds);
       }
       whereClauseList.add(alias + "." + ModelDBConstants.DELETED + " = false ");
+      whereClauseList.add(
+          alias
+              + ".repositoryAccessModifier = "
+              + RepositoryEnums.RepositoryModifierEnum.REGULAR.ordinal());
 
       StringBuilder whereClause = new StringBuilder();
       whereClause.append(

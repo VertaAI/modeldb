@@ -1,7 +1,7 @@
 import { makeSelectDeletingEntity } from 'features/shared/deletion';
 
-import { initialCommunication } from 'core/shared/utils/redux/communication';
-import { IApplicationState } from '../../../store/store';
+import { initialCommunication } from 'shared/utils/redux/communication';
+import { IApplicationState } from '../../../setup/store/store';
 import { IDatasetsState } from './types';
 
 const selectState = (state: IApplicationState): IDatasetsState =>

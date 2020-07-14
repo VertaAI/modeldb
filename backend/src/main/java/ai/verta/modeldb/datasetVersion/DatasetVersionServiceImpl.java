@@ -2,9 +2,12 @@ package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.Pagination;
 import ai.verta.modeldb.AddDatasetVersionAttributes;
 import ai.verta.modeldb.AddDatasetVersionTags;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.CommitMultipartVersionedDatasetBlobArtifact;
+import ai.verta.modeldb.CommitVersionedDatasetBlobArtifactPart;
 import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.CreateDatasetVersion.Response;
 import ai.verta.modeldb.DatasetVersion;
@@ -16,8 +19,10 @@ import ai.verta.modeldb.DeleteDatasetVersions;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.GetAllDatasetVersionsByDatasetId;
 import ai.verta.modeldb.GetAttributes;
+import ai.verta.modeldb.GetCommittedVersionedDatasetBlobArtifactParts;
 import ai.verta.modeldb.GetDatasetVersionAttributes;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
+import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -26,9 +31,9 @@ import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.SetDatasetVersionVisibilty;
 import ai.verta.modeldb.UpdateDatasetVersionAttributes;
 import ai.verta.modeldb.UpdateDatasetVersionDescription;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -42,7 +47,6 @@ import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
-import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -71,16 +75,16 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
   private final MetadataDAO metadataDAO;
+  private final ArtifactStoreDAO artifactStoreDAO;
 
   public DatasetVersionServiceImpl(
       AuthService authService,
       RoleService roleService,
-      DatasetDAO datasetDAO,
-      DatasetVersionDAO datasetVersionDAO,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       BlobDAO blobDAO,
-      MetadataDAO metadataDAO) {
+      MetadataDAO metadataDAO,
+      ArtifactStoreDAO artifactStoreDAO) {
     this.authService = authService;
     this.roleService = roleService;
     // this.datasetDAO = datasetDAO;
@@ -89,6 +93,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
     this.metadataDAO = metadataDAO;
+    this.artifactStoreDAO = artifactStoreDAO;
   }
 
   private DatasetVersion getDatasetVersionFromRequest(
@@ -158,7 +163,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build();
 
       RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(repositoryIdentification, true);
+          repositoryDAO.getProtectedRepositoryById(repositoryIdentification, true);
       CreateCommitRequest.Response createCommitResponse =
           commitDAO.setCommitFromDatasetVersion(
               datasetVersion, repositoryDAO, blobDAO, metadataDAO, repositoryEntity);
@@ -227,7 +232,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     ListCommitsRequest.Response listCommitsResponse =
         commitDAO.listCommits(
             listCommitsRequest.build(),
-            (session -> repositoryDAO.getRepositoryById(session, repositoryIdentification)));
+            (session ->
+                repositoryDAO.getRepositoryById(session, repositoryIdentification, false, false)));
 
     long totalRecords = listCommitsResponse.getTotalRecords();
     totalRecords = totalRecords > 0 ? totalRecords - 1 : totalRecords;
@@ -248,7 +254,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       throws ModelDBException {
     List<DatasetVersion> datasetVersions = new ArrayList<>();
     RepositoryEntity repositoryEntity =
-        repositoryDAO.getRepositoryById(repositoryIdentification, false);
+        repositoryDAO.getProtectedRepositoryById(repositoryIdentification, false);
     for (Commit commit : commitList) {
       if (commit.getParentShasList().isEmpty()) {
         continue;
@@ -277,24 +283,18 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST,
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()));
-      } else if (request.getDatasetId().isEmpty()) {
-        logAndThrowError(
-            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus =
-          commitDAO.deleteCommits(
-              RepositoryIdentification.newBuilder()
+      commitDAO.deleteDatasetVersions(
+          request.getDatasetId().isEmpty()
+              ? null
+              : RepositoryIdentification.newBuilder()
                   .setRepoId(Long.parseLong(request.getDatasetId()))
                   .build(),
-              Collections.singletonList(request.getId()),
-              repositoryDAO,
-              true);
+          Collections.singletonList(request.getId()),
+          repositoryDAO);
 
-      responseObserver.onNext(
-          DeleteDatasetVersion.Response.newBuilder().setStatus(deleteStatus).build());
+      responseObserver.onNext(DeleteDatasetVersion.Response.getDefaultInstance());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -429,44 +429,23 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void updateDatasetVersionDescription(
       UpdateDatasetVersionDescription request,
       StreamObserver<UpdateDatasetVersionDescription.Response> responseObserver) {
-    LOGGER.info("updateDatasetVersionDescription not supported");
-    super.updateDatasetVersionDescription(request, responseObserver);
-    /*QPSCountResource.inc();
+    QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
-      String errorMessage = null;
-      if (request.getId().isEmpty() && request.getDescription().isEmpty()) {
-        errorMessage =
-            "DatasetVersion ID and DatasetVersion description not found in UpdateDatasetVersionDescription request";
-      } else if (request.getId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST;
-      } else if (request.getDescription().isEmpty()) {
-        errorMessage =
-            "DatasetVersion description not found in UpdateDatasetVersionDescription request";
+      if (request.getId().isEmpty()) {
+        throw new ModelDBException(
+            ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST, Code.INVALID_ARGUMENT);
       }
 
-      if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateDatasetVersionDescription.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      DatasetVersion datasetVersion = datasetVersionDAO.getDatasetVersion(request.getId());
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET,
-          datasetVersion.getDatasetId(),
-          ModelDBServiceActions.UPDATE);
-
-      datasetVersion =
-          datasetVersionDAO.updateDatasetVersionDescription(
-              request.getId(), request.getDescription());
+      DatasetVersion datasetVersion =
+          commitDAO.updateDatasetVersionDescription(
+              repositoryDAO,
+              blobDAO,
+              metadataDAO,
+              request.getDatasetId(),
+              request.getId(),
+              request.getDescription());
 
       responseObserver.onNext(
           UpdateDatasetVersionDescription.Response.newBuilder()
@@ -477,7 +456,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, UpdateDatasetVersionDescription.Response.getDefaultInstance());
-    }*/
+    }
   }
 
   @Override
@@ -489,17 +468,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       String errorMessage = null;
-      if (request.getId().isEmpty()
-          && request.getTagsList().isEmpty()
-          && request.getDatasetId().isEmpty()) {
+      if (request.getId().isEmpty() && request.getTagsList().isEmpty()) {
         errorMessage =
-            "DatasetVersion ID and DatasetVersion tags and DatasetId not found in AddDatasetVersionTags request";
+            "DatasetVersion ID and DatasetVersion tags not found in AddDatasetVersionTags request";
       } else if (request.getId().isEmpty()) {
         errorMessage = ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST;
       } else if (request.getTagsList().isEmpty()) {
         errorMessage = "DatasetVersion tags not found in AddDatasetVersionTags request";
-      } else if (request.getDatasetId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
       }
 
       if (errorMessage != null) {
@@ -513,17 +488,16 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      RepositoryIdentification repositoryIdentification =
-          RepositoryIdentification.newBuilder()
-              .setRepoId(Long.parseLong(request.getDatasetId()))
-              .build();
-      RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(repositoryIdentification, true);
-      commitDAO.addDeleteDatasetVersionTags(
-          metadataDAO, true, repositoryEntity, request.getId(), request.getTagsList(), false);
-
       DatasetVersion datasetVersion =
-          blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, request.getId());
+          commitDAO.addDeleteDatasetVersionTags(
+              repositoryDAO,
+              blobDAO,
+              metadataDAO,
+              true,
+              request.getDatasetId(),
+              request.getId(),
+              request.getTagsList(),
+              false);
 
       responseObserver.onNext(
           AddDatasetVersionTags.Response.newBuilder().setDatasetVersion(datasetVersion).build());
@@ -544,18 +518,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       String errorMessage = null;
-      if (request.getId().isEmpty()
-          && request.getTagsList().isEmpty()
-          && !request.getDeleteAll()
-          && request.getDatasetId().isEmpty()) {
+      if (request.getId().isEmpty() && request.getTagsList().isEmpty() && !request.getDeleteAll()) {
         errorMessage =
-            "DatasetVersion ID and DatasetVersion tags and DatasetId not found in DeleteDatasetVersionTags request";
+            "DatasetVersion ID and DatasetVersion tags not found in DeleteDatasetVersionTags request";
       } else if (request.getId().isEmpty()) {
         errorMessage = ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST;
       } else if (request.getTagsList().isEmpty() && !request.getDeleteAll()) {
         errorMessage = "DatasetVersion tags not found in DeleteDatasetVersionTags request";
-      } else if (request.getDatasetId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
       }
 
       if (errorMessage != null) {
@@ -569,21 +538,16 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      RepositoryIdentification repositoryIdentification =
-          RepositoryIdentification.newBuilder()
-              .setRepoId(Long.parseLong(request.getDatasetId()))
-              .build();
-      RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(repositoryIdentification, true);
-      commitDAO.addDeleteDatasetVersionTags(
-          metadataDAO,
-          false,
-          repositoryEntity,
-          request.getId(),
-          request.getTagsList(),
-          request.getDeleteAll());
       DatasetVersion datasetVersion =
-          blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, request.getId());
+          commitDAO.addDeleteDatasetVersionTags(
+              repositoryDAO,
+              blobDAO,
+              metadataDAO,
+              false,
+              request.getDatasetId(),
+              request.getId(),
+              request.getTagsList(),
+              request.getDeleteAll());
 
       responseObserver.onNext(
           DeleteDatasetVersionTags.Response.newBuilder().setDatasetVersion(datasetVersion).build());
@@ -604,17 +568,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       String errorMessage = null;
-      if (request.getId().isEmpty()
-          && request.getAttributesList().isEmpty()
-          && request.getDatasetId().isEmpty()) {
+      if (request.getId().isEmpty() && request.getAttributesList().isEmpty()) {
         errorMessage =
-            "DatasetVersion ID and Attribute list and Dataset Id not found in AddDatasetVersionAttributes request";
+            "DatasetVersion ID and Attribute list not found in AddDatasetVersionAttributes request";
       } else if (request.getId().isEmpty()) {
         errorMessage = ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST;
       } else if (request.getAttributesList().isEmpty()) {
         errorMessage = "Attribute list not found in AddDatasetVersionAttributes request";
-      } else if (request.getDatasetId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
       }
 
       if (errorMessage != null) {
@@ -628,22 +588,16 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      RepositoryIdentification repositoryIdentification =
-          RepositoryIdentification.newBuilder()
-              .setRepoId(Long.parseLong(request.getDatasetId()))
-              .build();
-      RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(repositoryIdentification, true);
-
-      blobDAO.addUpdateBlobAttributes(
-          repositoryEntity,
-          (session, repositoryFunction) ->
-              commitDAO.getCommitEntity(session, request.getId(), (session1 -> repositoryEntity)),
-          request.getAttributesList(),
-          true);
-
       DatasetVersion updatedDatasetVersion =
-          blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, request.getId());
+          blobDAO.addUpdateDatasetVersionAttributes(
+              repositoryDAO,
+              commitDAO,
+              metadataDAO,
+              request.getDatasetId().isEmpty() ? null : Long.parseLong(request.getDatasetId()),
+              request.getId(),
+              request.getAttributesList(),
+              true);
+
       responseObserver.onNext(
           AddDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
@@ -666,17 +620,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
       String errorMessage = null;
-      if (request.getId().isEmpty()
-          && request.getAttribute().getKey().isEmpty()
-          && request.getDatasetId().isEmpty()) {
+      if (request.getId().isEmpty() && request.getAttribute().getKey().isEmpty()) {
         errorMessage =
-            "DatasetVersion ID and attribute key and datasetId not found in UpdateDatasetVersionAttributes request";
+            "DatasetVersion ID and attribute key not found in UpdateDatasetVersionAttributes request";
       } else if (request.getId().isEmpty()) {
         errorMessage = ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST;
       } else if (request.getAttribute().getKey().isEmpty()) {
         errorMessage = "Attribute key not found in UpdateDatasetVersionAttributes request";
-      } else if (request.getDatasetId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
       }
 
       if (errorMessage != null) {
@@ -690,22 +640,15 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      RepositoryIdentification repositoryIdentification =
-          RepositoryIdentification.newBuilder()
-              .setRepoId(Long.parseLong(request.getDatasetId()))
-              .build();
-      RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(repositoryIdentification, true);
-
-      blobDAO.addUpdateBlobAttributes(
-          repositoryEntity,
-          (session, repositoryFunction) ->
-              commitDAO.getCommitEntity(session, request.getId(), (session1 -> repositoryEntity)),
-          Collections.singletonList(request.getAttribute()),
-          false);
-
       DatasetVersion updatedDatasetVersion =
-          blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, request.getId());
+          blobDAO.addUpdateDatasetVersionAttributes(
+              repositoryDAO,
+              commitDAO,
+              metadataDAO,
+              request.getDatasetId().isEmpty() ? null : Long.parseLong(request.getDatasetId()),
+              request.getId(),
+              Collections.singletonList(request.getAttribute()),
+              false);
       responseObserver.onNext(
           UpdateDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
@@ -729,16 +672,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       String errorMessage = null;
       if (request.getId().isEmpty()
           && request.getAttributeKeysList().isEmpty()
-          && !request.getGetAll()
-          && request.getDatasetId().isEmpty()) {
+          && !request.getGetAll()) {
         errorMessage =
-            "DatasetVersion ID and DatasetVersion attribute keys and datasetId not found in GetAttributes request";
+            "DatasetVersion ID and DatasetVersion attribute keys not found in GetAttributes request";
       } else if (request.getId().isEmpty()) {
         errorMessage = ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST;
       } else if (request.getAttributeKeysList().isEmpty() && !request.getGetAll()) {
         errorMessage = "DatasetVersion attribute keys not found in GetAttributes request";
-      } else if (request.getDatasetId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
       }
 
       if (errorMessage != null) {
@@ -752,18 +692,12 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      RepositoryIdentification repositoryIdentification =
-          RepositoryIdentification.newBuilder()
-              .setRepoId(Long.parseLong(request.getDatasetId()))
-              .build();
-      RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(repositoryIdentification, true);
-      Commit commit = commitDAO.getCommit(request.getId(), (session) -> repositoryEntity);
-
       List<KeyValue> attributes =
-          blobDAO.getBlobAttributes(
-              repositoryEntity.getId(),
-              commit.getCommitSha(),
+          blobDAO.getDatasetVersionAttributes(
+              repositoryDAO,
+              commitDAO,
+              request.getDatasetId().isEmpty() ? null : Long.parseLong(request.getDatasetId()),
+              request.getId(),
               Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION),
               request.getAttributeKeysList());
 
@@ -788,17 +722,14 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       String errorMessage = null;
       if (request.getId().isEmpty()
           && request.getAttributeKeysList().isEmpty()
-          && !request.getDeleteAll()
-          && request.getDatasetId().isEmpty()) {
+          && !request.getDeleteAll()) {
         errorMessage =
-            "DatasetVersion ID and DatasetVersion attribute keys and datasetId not found in DeleteDatasetVersionAttributes request";
+            "DatasetVersion ID and DatasetVersion attribute keys not found in DeleteDatasetVersionAttributes request";
       } else if (request.getId().isEmpty()) {
         errorMessage = ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST;
       } else if (request.getAttributeKeysList().isEmpty() && !request.getDeleteAll()) {
         errorMessage =
             "DatasetVersion attribute keys not found in DeleteDatasetVersionAttributes request";
-      } else if (request.getDatasetId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
       }
 
       if (errorMessage != null) {
@@ -812,23 +743,16 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      RepositoryIdentification repositoryIdentification =
-          RepositoryIdentification.newBuilder()
-              .setRepoId(Long.parseLong(request.getDatasetId()))
-              .build();
-      RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(repositoryIdentification, true);
-
-      blobDAO.deleteBlobAttributes(
-          repositoryEntity,
-          (session, repositoryFunction) ->
-              commitDAO.getCommitEntity(session, request.getId(), (session1 -> repositoryEntity)),
-          request.getAttributeKeysList(),
-          Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION),
-          request.getDeleteAll());
-
       DatasetVersion updatedDatasetVersion =
-          blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, request.getId());
+          blobDAO.deleteDatasetVersionAttributes(
+              repositoryDAO,
+              commitDAO,
+              metadataDAO,
+              request.getDatasetId().isEmpty() ? null : Long.parseLong(request.getDatasetId()),
+              request.getId(),
+              request.getAttributeKeysList(),
+              Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION),
+              request.getDeleteAll());
       responseObserver.onNext(
           DeleteDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
@@ -897,29 +821,157 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST,
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(DeleteDatasetVersions.Response.getDefaultInstance()));
-      } else if (request.getDatasetId().isEmpty()) {
-        logAndThrowError(
-            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(DeleteDatasetVersions.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus =
-          commitDAO.deleteCommits(
-              RepositoryIdentification.newBuilder()
+      commitDAO.deleteDatasetVersions(
+          request.getDatasetId().isEmpty()
+              ? null
+              : RepositoryIdentification.newBuilder()
                   .setRepoId(Long.parseLong(request.getDatasetId()))
                   .build(),
-              request.getIdsList(),
-              repositoryDAO,
-              true);
+          request.getIdsList(),
+          repositoryDAO);
 
-      responseObserver.onNext(
-          DeleteDatasetVersions.Response.newBuilder().setStatus(deleteStatus).build());
+      responseObserver.onNext(DeleteDatasetVersions.Response.getDefaultInstance());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteDatasetVersions.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getUrlForDatasetBlobVersioned(
+      GetUrlForDatasetBlobVersioned request,
+      StreamObserver<GetUrlForDatasetBlobVersioned.Response> responseObserver) {
+    QPSCountResource.inc();
+    try {
+      try (RequestLatencyResource latencyResource =
+          new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+
+        // Validate request parameters
+        validateGetUrlForVersionedDatasetBlobRequest(request);
+
+        GetUrlForDatasetBlobVersioned.Response response =
+            blobDAO.getUrlForVersionedDatasetBlob(
+                artifactStoreDAO,
+                repositoryDAO,
+                request.getDatasetId(),
+                (session, repository) ->
+                    commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
+                request);
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+      }
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetUrlForDatasetBlobVersioned.Response.getDefaultInstance());
+    }
+  }
+
+  private void validateGetUrlForVersionedDatasetBlobRequest(GetUrlForDatasetBlobVersioned request)
+      throws ModelDBException {
+    String errorMessage = null;
+    if (request.getMethod().isEmpty() && request.getPathDatasetComponentBlobPath().isEmpty()) {
+      errorMessage =
+          "Method type AND DatasetBlob path not found in GetUrlForDatasetBlobVersioned request";
+    } else if (request.getPathDatasetComponentBlobPath().isEmpty()) {
+      errorMessage = "DatasetBlob path not found in GetUrlForDatasetBlobVersioned request";
+    } else if (request.getMethod().isEmpty()) {
+      errorMessage = "Method is not found in GetUrlForDatasetBlobVersioned request";
+    }
+    if (errorMessage != null) {
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+    }
+  }
+
+  @Override
+  public void commitVersionedDatasetBlobArtifactPart(
+      CommitVersionedDatasetBlobArtifactPart request,
+      StreamObserver<CommitVersionedDatasetBlobArtifactPart.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (!request.hasArtifactPart()) {
+        errorMessage = "Artifact Part not found in CommitVersionedDatasetBlobArtifactPart request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.warn(errorMessage);
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      blobDAO.commitVersionedDatasetBlobArtifactPart(
+          repositoryDAO,
+          request.getDatasetId(),
+          (session, repository) ->
+              commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
+          request);
+      responseObserver.onNext(CommitVersionedDatasetBlobArtifactPart.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver,
+          e,
+          CommitVersionedDatasetBlobArtifactPart.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getCommittedVersionedDatasetBlobArtifactParts(
+      GetCommittedVersionedDatasetBlobArtifactParts request,
+      StreamObserver<GetCommittedVersionedDatasetBlobArtifactParts.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      GetCommittedVersionedDatasetBlobArtifactParts.Response response =
+          blobDAO.getCommittedVersionedDatasetBlobArtifactParts(
+              repositoryDAO,
+              request.getDatasetId(),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
+              request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver,
+          e,
+          GetCommittedVersionedDatasetBlobArtifactParts.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void commitMultipartVersionedDatasetBlobArtifact(
+      CommitMultipartVersionedDatasetBlobArtifact request,
+      StreamObserver<CommitMultipartVersionedDatasetBlobArtifact.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getPathDatasetComponentBlobPath().isEmpty()) {
+        String errorMessage =
+            "Path not found in CommitMultipartVersionedDatasetBlobArtifact request";
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      }
+
+      blobDAO.commitMultipartVersionedDatasetBlobArtifact(
+          repositoryDAO,
+          request.getDatasetId(),
+          (session, repository) ->
+              commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
+          request,
+          artifactStoreDAO::commitMultipart);
+      responseObserver.onNext(
+          CommitMultipartVersionedDatasetBlobArtifact.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver,
+          e,
+          CommitMultipartVersionedDatasetBlobArtifact.Response.getDefaultInstance());
     }
   }
 }

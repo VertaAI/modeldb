@@ -1,14 +1,15 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
-import ai.verta.modeldb.ArtifactPart;
-import ai.verta.modeldb.KeyValueQuery;
+import ai.verta.common.KeyValueQuery;
+import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -17,6 +18,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -328,5 +330,36 @@ public class VersioningUtils {
       getQuery.setParameterList("keys", attributeKeys);
     }
     return getQuery.list();
+  }
+
+  public static RepositoryEntity getDatasetRepositoryEntity(
+      Session session, RepositoryDAO repositoryDAO, String datasetId, String datasetVersionId)
+      throws ModelDBException {
+    RepositoryEntity repositoryEntity;
+
+    RepositoryIdentification.Builder repositoryIdentification =
+        RepositoryIdentification.newBuilder();
+    if (datasetId == null || datasetId.isEmpty()) {
+      CommitEntity commitEntity = session.get(CommitEntity.class, datasetVersionId);
+
+      if (commitEntity == null) {
+        throw new ModelDBException("DatasetVersion not found", io.grpc.Status.Code.NOT_FOUND);
+      }
+
+      if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
+        throw new ModelDBException(
+            "DatasetVersion '"
+                + commitEntity.getCommit_hash()
+                + "' associated with multiple datasets",
+            io.grpc.Status.Code.INTERNAL);
+      }
+      Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
+      repositoryIdentification.setRepoId(newRepoId);
+    } else {
+      repositoryIdentification.setRepoId(Long.parseLong(datasetId));
+    }
+    repositoryEntity =
+        repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
+    return repositoryEntity;
   }
 }

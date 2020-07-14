@@ -7,13 +7,18 @@ package ai.verta.blobs.dataset
  *  @param size size of the file
  *  @param versionId: (optional) versionId of the file. Only exists for S3 files
  */
-class FileMetadata(
+case class FileMetadata(
   val lastModified: BigInt,
   val md5: String,
   val path: String,
   val size: BigInt,
-  val versionId: Option[String] = None
+  val versionId: Option[String] = None,
+  private[verta] var internalVersionedPath: Option[String] = None // MDB internal versioned path
 ) {
+  // mutable fields, which are updated when preparing for uploading:
+  /** TODO: remove these mutable fields to make FileMetadata immutable again */
+  private[verta] var localPath: Option[String] = None // path to file in local system
+
   override def equals(other: Any) = other match {
     case other: FileMetadata => lastModified == other.lastModified &&
       md5 == other.md5 && path == other.path && size == other.size &&

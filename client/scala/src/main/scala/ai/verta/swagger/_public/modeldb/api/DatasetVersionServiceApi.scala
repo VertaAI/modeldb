@@ -27,6 +27,22 @@ class DatasetVersionServiceApi(client: HttpClient, val basePath: String = "/v1")
 
   def addDatasetVersionTags(body: ModeldbAddDatasetVersionTags)(implicit ec: ExecutionContext): Try[ModeldbAddDatasetVersionTagsResponse] = Await.result(addDatasetVersionTagsAsync(body), Duration.Inf)
 
+  def commitMultipartVersionedDatasetBlobArtifactAsync(body: ModeldbCommitMultipartVersionedDatasetBlobArtifact)(implicit ec: ExecutionContext): Future[Try[ModeldbCommitMultipartVersionedDatasetBlobArtifactResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbCommitMultipartVersionedDatasetBlobArtifact, ModeldbCommitMultipartVersionedDatasetBlobArtifactResponse]("POST", basePath + s"/dataset-version/commitMultipartVersionedDatasetBlobArtifact", __query.toMap, body, ModeldbCommitMultipartVersionedDatasetBlobArtifactResponse.fromJson)
+  }
+
+  def commitMultipartVersionedDatasetBlobArtifact(body: ModeldbCommitMultipartVersionedDatasetBlobArtifact)(implicit ec: ExecutionContext): Try[ModeldbCommitMultipartVersionedDatasetBlobArtifactResponse] = Await.result(commitMultipartVersionedDatasetBlobArtifactAsync(body), Duration.Inf)
+
+  def commitVersionedDatasetBlobArtifactPartAsync(body: ModeldbCommitVersionedDatasetBlobArtifactPart)(implicit ec: ExecutionContext): Future[Try[ModeldbCommitVersionedDatasetBlobArtifactPartResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbCommitVersionedDatasetBlobArtifactPart, ModeldbCommitVersionedDatasetBlobArtifactPartResponse]("POST", basePath + s"/dataset-version/commitVersionedDatasetBlobArtifactPart", __query.toMap, body, ModeldbCommitVersionedDatasetBlobArtifactPartResponse.fromJson)
+  }
+
+  def commitVersionedDatasetBlobArtifactPart(body: ModeldbCommitVersionedDatasetBlobArtifactPart)(implicit ec: ExecutionContext): Try[ModeldbCommitVersionedDatasetBlobArtifactPartResponse] = Await.result(commitVersionedDatasetBlobArtifactPartAsync(body), Duration.Inf)
+
   def createDatasetVersionAsync(body: ModeldbCreateDatasetVersion)(implicit ec: ExecutionContext): Future[Try[ModeldbCreateDatasetVersionResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
@@ -88,34 +104,28 @@ class DatasetVersionServiceApi(client: HttpClient, val basePath: String = "/v1")
 
   def getAllDatasetVersionsByDatasetId(ascending: Option[Boolean]=None, dataset_id: Option[String]=None, page_limit: Option[BigInt]=None, page_number: Option[BigInt]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetAllDatasetVersionsByDatasetIdResponse] = Await.result(getAllDatasetVersionsByDatasetIdAsync(ascending, dataset_id, page_limit, page_number, sort_key), Duration.Inf)
 
-  def getDatasetVersionAttributesAsync(attribute_keys: Option[List[String]]=None, get_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetAttributesResponse]] = {
+  def getCommittedVersionedDatasetBlobArtifactPartsAsync(dataset_id: Option[String]=None, dataset_version_id: Option[String]=None, path_dataset_component_blob_path: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetCommittedVersionedDatasetBlobArtifactPartsResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (dataset_id.isDefined) __query.update("dataset_id", client.toQuery(dataset_id.get))
+    if (dataset_version_id.isDefined) __query.update("dataset_version_id", client.toQuery(dataset_version_id.get))
+    if (path_dataset_component_blob_path.isDefined) __query.update("path_dataset_component_blob_path", client.toQuery(path_dataset_component_blob_path.get))
+    val body: String = null
+    return client.request[String, ModeldbGetCommittedVersionedDatasetBlobArtifactPartsResponse]("GET", basePath + s"/dataset-version/getCommittedVersionedDatasetBlobArtifactParts", __query.toMap, body, ModeldbGetCommittedVersionedDatasetBlobArtifactPartsResponse.fromJson)
+  }
+
+  def getCommittedVersionedDatasetBlobArtifactParts(dataset_id: Option[String]=None, dataset_version_id: Option[String]=None, path_dataset_component_blob_path: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetCommittedVersionedDatasetBlobArtifactPartsResponse] = Await.result(getCommittedVersionedDatasetBlobArtifactPartsAsync(dataset_id, dataset_version_id, path_dataset_component_blob_path), Duration.Inf)
+
+  def getDatasetVersionAttributesAsync(attribute_keys: Option[List[String]]=None, dataset_id: Option[String]=None, get_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetDatasetVersionAttributesResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (id.isDefined) __query.update("id", client.toQuery(id.get))
     if (attribute_keys.isDefined) __query.update("attribute_keys", client.toQuery(attribute_keys.get))
     if (get_all.isDefined) __query.update("get_all", client.toQuery(get_all.get))
+    if (dataset_id.isDefined) __query.update("dataset_id", client.toQuery(dataset_id.get))
     val body: String = null
-    return client.request[String, ModeldbGetAttributesResponse]("GET", basePath + s"/dataset-version/getDatasetVersionAttributes", __query.toMap, body, ModeldbGetAttributesResponse.fromJson)
+    return client.request[String, ModeldbGetDatasetVersionAttributesResponse]("GET", basePath + s"/dataset-version/getDatasetVersionAttributes", __query.toMap, body, ModeldbGetDatasetVersionAttributesResponse.fromJson)
   }
 
-  def getDatasetVersionAttributes(attribute_keys: Option[List[String]]=None, get_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetAttributesResponse] = Await.result(getDatasetVersionAttributesAsync(attribute_keys, get_all, id), Duration.Inf)
-
-  def getDatasetVersionByIdAsync(id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetDatasetVersionByIdResponse]] = {
-    var __query = new mutable.HashMap[String,List[String]]
-    if (id.isDefined) __query.update("id", client.toQuery(id.get))
-    val body: String = null
-    return client.request[String, ModeldbGetDatasetVersionByIdResponse]("GET", basePath + s"/dataset-version/getDatasetVersionById", __query.toMap, body, ModeldbGetDatasetVersionByIdResponse.fromJson)
-  }
-
-  def getDatasetVersionById(id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetDatasetVersionByIdResponse] = Await.result(getDatasetVersionByIdAsync(id), Duration.Inf)
-
-  def getDatasetVersionTagsAsync(id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetTagsResponse]] = {
-    var __query = new mutable.HashMap[String,List[String]]
-    if (id.isDefined) __query.update("id", client.toQuery(id.get))
-    val body: String = null
-    return client.request[String, ModeldbGetTagsResponse]("GET", basePath + s"/dataset-version/getDatasetVersionTags", __query.toMap, body, ModeldbGetTagsResponse.fromJson)
-  }
-
-  def getDatasetVersionTags(id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetTagsResponse] = Await.result(getDatasetVersionTagsAsync(id), Duration.Inf)
+  def getDatasetVersionAttributes(attribute_keys: Option[List[String]]=None, dataset_id: Option[String]=None, get_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetDatasetVersionAttributesResponse] = Await.result(getDatasetVersionAttributesAsync(attribute_keys, dataset_id, get_all, id), Duration.Inf)
 
   def getLatestDatasetVersionByDatasetIdAsync(ascending: Option[Boolean]=None, dataset_id: Option[String]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetLatestDatasetVersionByDatasetIdResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
@@ -127,6 +137,27 @@ class DatasetVersionServiceApi(client: HttpClient, val basePath: String = "/v1")
   }
 
   def getLatestDatasetVersionByDatasetId(ascending: Option[Boolean]=None, dataset_id: Option[String]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetLatestDatasetVersionByDatasetIdResponse] = Await.result(getLatestDatasetVersionByDatasetIdAsync(ascending, dataset_id, sort_key), Duration.Inf)
+
+  def getUrlForDatasetBlobVersionedAsync(body: ModeldbGetUrlForDatasetBlobVersioned, dataset_id: String, dataset_version_id: String, workspace_name: String)(implicit ec: ExecutionContext): Future[Try[ModeldbGetUrlForDatasetBlobVersionedResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (workspace_name == null) throw new Exception("Missing required parameter \"workspace_name\"")
+    if (dataset_id == null) throw new Exception("Missing required parameter \"dataset_id\"")
+    if (dataset_version_id == null) throw new Exception("Missing required parameter \"dataset_version_id\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbGetUrlForDatasetBlobVersioned, ModeldbGetUrlForDatasetBlobVersionedResponse]("POST", basePath + s"/dataset-version/workspaces/$workspace_name/dataset/$dataset_id/datasetVersion/$dataset_version_id/getUrlForDatasetBlobVersioned", __query.toMap, body, ModeldbGetUrlForDatasetBlobVersionedResponse.fromJson)
+  }
+
+  def getUrlForDatasetBlobVersioned(body: ModeldbGetUrlForDatasetBlobVersioned, dataset_id: String, dataset_version_id: String, workspace_name: String)(implicit ec: ExecutionContext): Try[ModeldbGetUrlForDatasetBlobVersionedResponse] = Await.result(getUrlForDatasetBlobVersionedAsync(body, dataset_id, dataset_version_id, workspace_name), Duration.Inf)
+
+  def getUrlForDatasetBlobVersioned2Async(body: ModeldbGetUrlForDatasetBlobVersioned, dataset_id: String, dataset_version_id: String)(implicit ec: ExecutionContext): Future[Try[ModeldbGetUrlForDatasetBlobVersionedResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (dataset_id == null) throw new Exception("Missing required parameter \"dataset_id\"")
+    if (dataset_version_id == null) throw new Exception("Missing required parameter \"dataset_version_id\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbGetUrlForDatasetBlobVersioned, ModeldbGetUrlForDatasetBlobVersionedResponse]("POST", basePath + s"/dataset-version/dataset/$dataset_id/datasetVersion/$dataset_version_id/getUrlForDatasetBlobVersioned", __query.toMap, body, ModeldbGetUrlForDatasetBlobVersionedResponse.fromJson)
+  }
+
+  def getUrlForDatasetBlobVersioned2(body: ModeldbGetUrlForDatasetBlobVersioned, dataset_id: String, dataset_version_id: String)(implicit ec: ExecutionContext): Try[ModeldbGetUrlForDatasetBlobVersionedResponse] = Await.result(getUrlForDatasetBlobVersioned2Async(body, dataset_id, dataset_version_id), Duration.Inf)
 
   def setDatasetVersionVisibilityAsync(body: ModeldbSetDatasetVersionVisibilty)(implicit ec: ExecutionContext): Future[Try[ModeldbSetDatasetVersionVisibiltyResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]

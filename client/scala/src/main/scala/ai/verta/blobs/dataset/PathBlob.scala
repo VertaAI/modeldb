@@ -1,15 +1,15 @@
 package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
+import ai.verta.repository.Commit
 
-import java.security.{MessageDigest, DigestInputStream}
 import java.io.{File, FileInputStream}
 
 import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 import scala.annotation.tailrec
 
-/** Captures metadata about files
+/** Captures metadata about files.
  *  To create a new instance, use the constructor taking a list of paths (each is a string) or a single path:
  *  {{{
  *  val pathList = List("some-path1", "some-path2")
@@ -18,7 +18,30 @@ import scala.annotation.tailrec
  *  }}}
  *  If an invalid path is passed to the constructor, it will return a failure.
  */
-case class PathBlob(protected val contents: HashMap[String, FileMetadata]) extends Dataset {
+case class PathBlob(
+  protected val contents: HashMap[String, FileMetadata],
+  val enableMDBVersioning: Boolean = false,
+  val downloadable: Boolean = false
+) extends Dataset {
+  /** Prepare the PathBlob for uploading
+   *  @return whether the attempt succeeds
+   */
+  override def prepareForUpload() =
+    if (enableMDBVersioning)
+      Try(contents.values.map(updateMetadata).map(_.get))
+    else
+      Success(())
+
+  /** Update metadata for uploading
+   *  @param metadata metadata of the file
+   *  @return whether the attempt succeeds
+   */
+  private def updateMetadata(metadata: FileMetadata) = Try {
+    val file = (new File(metadata.path)).getAbsoluteFile()
+    metadata.internalVersionedPath = Some(f"${Dataset.hash(file, "SHA-256").get}/${file.getName}")
+    metadata.localPath = Some(file.getPath)
+  }
+
   override def equals(other: Any) = other match {
     case other: PathBlob => contents.equals(other.contents)
     case _ => false
@@ -27,20 +50,33 @@ case class PathBlob(protected val contents: HashMap[String, FileMetadata]) exten
 
 /** Companion object to initialize instances and handle interaction with versioning blob */
 object PathBlob {
-  private val BufferSize = 8192
-
   /** Constructor taking only one path
+   *  @param path a single path
+   *  @param enableMDBVersioning whether to version the data in the blob
+   *  @return if the path is invalid, a failure along with exception message. Otherwise, the pathblob (wrapped in success)
+   */
+  def apply(path: String, enableMDBVersioning: Boolean): Try[PathBlob] = apply(List(path), enableMDBVersioning)
+
+  /** Constructor taking only one path. Does not version the data in the blob with ModelDB
    *  @param path a single path
    *  @return if the path is invalid, a failure along with exception message. Otherwise, the pathblob (wrapped in success)
    */
   def apply(path: String): Try[PathBlob] = apply(List(path))
 
-  /** The constructor that user should use to create a new instance of PathBlob.
+  /** Constructor taking a list of paths. Does not version the data in the blob with ModelDB.
+   *  @param paths list of paths
    *  @return if any path is invalid, a failure along with exception message. Otherwise, the pathblob (wrapped in success)
    */
-  def apply(paths: List[String]): Try[PathBlob] = {
+  def apply(paths: List[String]): Try[PathBlob] = apply(paths, false)
+
+  /** Constructor taking a list of paths.
+   *  @param paths list of paths
+   *  @param enableMDBVersioning whether to version the data in the blob
+   *  @return if any path is invalid, a failure along with exception message. Otherwise, the pathblob (wrapped in success)
+   */
+  def apply(paths: List[String], enableMDBVersioning: Boolean): Try[PathBlob] = {
     val metadataLists = Try(
-      paths.map(expanduser)
+      paths.map(Dataset.expanduser)
            .map((path: String) => processPath(new File(path)))
            .map(_.get)
     )
@@ -48,7 +84,8 @@ object PathBlob {
     metadataLists match {
       case Failure(e) => Failure(e)
       case Success(list) => Success(new PathBlob(
-        HashMap(list.flatten.map(metadata => metadata.path -> metadata): _*)
+        HashMap(list.flatten.map(metadata => metadata.path -> metadata): _*),
+        enableMDBVersioning
       ))
     }
   }
@@ -59,8 +96,10 @@ object PathBlob {
    *  @return failure if the two blobs have conflicting entries; the combined blob otherwise.
    */
   def reduce(firstBlob: PathBlob, secondBlob: PathBlob): Try[PathBlob] = {
-    if (firstBlob.notConflicts(secondBlob))
-      Success(new PathBlob(firstBlob.contents ++ secondBlob.contents))
+    if (firstBlob.enableMDBVersioning ^ secondBlob.enableMDBVersioning)
+      Failure(new IllegalArgumentException("Cannot combine a blob that enables versioning with a blob that does not"))
+    else if (firstBlob.notConflicts(secondBlob))
+      Success(new PathBlob(firstBlob.contents ++ secondBlob.contents, firstBlob.enableMDBVersioning))
     else
       Failure(new IllegalArgumentException("The two blobs have conflicting entries"))
   }
@@ -73,7 +112,10 @@ object PathBlob {
     val metadataList = pathVersioningBlob.components.get.map(
       comp => comp.path.get -> Dataset.toMetadata(comp)
     )
-    new PathBlob(HashMap(metadataList: _*))
+
+    // if internal versioned path of a component is defined, then the blob is downloadable
+    val downloadable = pathVersioningBlob.components.get.head.internal_versioned_path.isDefined
+    new PathBlob(HashMap(metadataList: _*), downloadable = downloadable)
   }
 
   /** Convert a PathBlob instance to a VersioningBlob
@@ -85,30 +127,6 @@ object PathBlob {
       path = Some(VersioningPathDatasetBlob(Some(blob.components)))
     ))
   )
-
-
-  /** Hash the file's content
-   *  From https://stackoverflow.com/questions/41642595/scala-file-hashing
-   *  @param path filepath
-   */
-  private def hash(file: File) = Try {
-    val buffer = new Array[Byte](BufferSize)
-    val messageDigest = MessageDigest.getInstance("MD5")
-
-    val dis = new DigestInputStream(
-      new FileInputStream(file),
-      messageDigest
-    )
-
-    try {
-      while (dis.read(buffer) != -1) {}
-    } finally {
-      dis.close()
-    }
-
-    // Convert to hexadecimal
-    messageDigest.digest.map("%02x".format(_)).mkString
-  }
 
   /** Get the metadata of path.
    *  @param file a file object, representing the path
@@ -141,7 +159,7 @@ object PathBlob {
    *  @param file file
    *  @return the metadata of the file, wrapped in a FileMetadata object (if success)
    */
-  private def processFile(file: File) = hash(file) match {
+  private def processFile(file: File) = Dataset.hash(file, "MD5") match {
     case Failure(e) => Failure(e)
     case Success(fileHash) => Try(new FileMetadata (
       BigInt(file.lastModified()),
@@ -150,11 +168,4 @@ object PathBlob {
       BigInt(file.length)
     ))
   }
-
-  /** Analogous to Python's os.path.expanduser
-   *  From https://stackoverflow.com/questions/6803913/java-analogous-to-python-os-path-expanduser-os-path-expandvars
-   *  @param path path
-   *  @return path, but with (first occurence of) ~ replace with user's home directory
-   */
-  private def expanduser(path: String) = path.replaceFirst("~", System.getProperty("user.home"))
 }

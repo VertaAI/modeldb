@@ -2,12 +2,12 @@ import Paper from '@material-ui/core/Paper';
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
-import { formatBytes } from 'core/shared/utils/mapperConverters';
-import removeQuotes from 'core/shared/utils/removeQuotes';
-import Table from 'core/shared/view/elements/Table/Table';
-import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';
-import IdView from 'core/shared/view/elements/IdView/IdView';
+import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
+import { formatBytes } from 'shared/utils/mapperConverters';
+import removeQuotes from 'shared/utils/removeQuotes';
+import Table from 'shared/view/elements/Table/Table';
+import CopyButton from 'shared/view/elements/CopyButton/CopyButton';
+import IdView from 'shared/view/elements/IdView/IdView';
 
 import styles from './DatasetPathInfoTable.module.css';
 

@@ -7,7 +7,6 @@ import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.model.CollaboratorTypeEnumCollaboratorType._
-import ai.verta.swagger._public.modeldb.model.DatasetTypeEnumDatasetType._
 import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibility._
 import ai.verta.swagger._public.modeldb.model.EntitiesEnumEntitiesTypes._
 import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProvider._
@@ -26,6 +25,7 @@ import ai.verta.swagger.client.objects._
 case class ModeldbObservation (
   artifact: Option[CommonArtifact] = None,
   attribute: Option[CommonKeyValue] = None,
+  epoch_number: Option[GenericObject] = None,
   timestamp: Option[BigInt] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbObservation.toJson(this)
@@ -37,6 +37,7 @@ object ModeldbObservation {
       List[Option[JField]](
         obj.artifact.map(x => JField("artifact", ((x: CommonArtifact) => CommonArtifact.toJson(x))(x))),
         obj.attribute.map(x => JField("attribute", ((x: CommonKeyValue) => CommonKeyValue.toJson(x))(x))),
+        obj.epoch_number.map(x => JField("epoch_number", ((x: GenericObject) => x.toJson())(x))),
         obj.timestamp.map(x => JField("timestamp", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -53,6 +54,7 @@ object ModeldbObservation {
           // TODO: handle required
           artifact = fieldsMap.get("artifact").map(CommonArtifact.fromJson),
           attribute = fieldsMap.get("attribute").map(CommonKeyValue.fromJson),
+          epoch_number = fieldsMap.get("epoch_number").map(GenericObject.fromJson),
           timestamp = fieldsMap.get("timestamp").map(JsonConverter.fromJsonInteger)
         )
       }

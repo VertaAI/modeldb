@@ -17,7 +17,7 @@
   border: 1px solid var(--bg-color3);
   user-select: none;
   grid-template-areas:
-    'title_block . . owner_block'
+    'title_block . . .'
     'title_block . . type'
     'tags . . dates'
     'actions actions actions actions';
@@ -63,25 +63,6 @@
   justify-self: end;
   text-align: end;
   padding-bottom: 8px;
-}
-
-.owner_block {
-  display: grid;
-  grid-template-columns: auto 12px 36px;
-  grid-template-areas: 'owner_username . owner_avatar';
-  align-items: center;
-  margin-top: 4px;
-  text-align: right;
-  color: var(--fr-color3);
-  grid-area: owner_block;
-  grid-template-rows: 36px auto;
-}
-
-.owner_username {
-  grid-area: owner_username;
-  max-width: 132px;
-  word-break: break-all;
-  word-wrap: break-word;
 }
 
 .actions {

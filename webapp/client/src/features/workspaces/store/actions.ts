@@ -1,4 +1,4 @@
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 import { action } from 'typesafe-actions';
 
 export const loadWorkspaces = (): ActionResult<void, any> => async (

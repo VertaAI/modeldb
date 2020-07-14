@@ -11,6 +11,9 @@ public interface ModelDBConstants {
   String CLOUD_ACCESS_KEY = "cloudAccessKey";
   String CLOUD_SECRET_KEY = "cloudSecretKey";
   String CLOUD_BUCKET_NAME = "cloudBucketName";
+  String MINIO_ENDPOINT = "minioEndpoint";
+  String AWS_REGION = "aws_region";
+  String DEFAULT_AWS_REGION = "us-east-1";
   String DATABASE = "database";
   String DB_TYPE = "DBType";
   String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";
@@ -40,6 +43,7 @@ public interface ModelDBConstants {
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
   String STORE_CLIENT_CREATION_TIMESTAMP = "store-client-creation-timestamp";
+  String PUBLIC_SHARING_ENABLED = "public_sharing_enabled";
 
   // Threshold Constant
   Long DEFAULT_SHUTDOWN_TIMEOUT = 30L; // timeout in second
@@ -180,6 +184,8 @@ public interface ModelDBConstants {
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
   String DATASET_VERSIONIG_MIGRATION = "DATASET_VERSIONIG_MIGRATION";
   String POSTGRES_DB_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
+  String DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE =
+      "Can't add new versioning entry, because an existing one has different repository or commit";
   String REPOSITORY_ENTITY = "repositoryEntity";
 
   enum UserIdentifier {
@@ -240,6 +246,7 @@ public interface ModelDBConstants {
   String VERSIONING_REPO_COMMIT_BLOB = "versioning_repo_commit_blob";
   String VERSIONING_REPO_COMMIT = "versioning_repo_commit";
   String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
+  String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second

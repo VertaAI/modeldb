@@ -2,16 +2,16 @@ package ai.verta.modeldb.utils;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
+import ai.verta.common.KeyValueQuery;
+import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.GetHydratedProjects;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.UpdateProjectName;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -448,7 +448,7 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else if (e instanceof ModelDBException) {
-        LOGGER.warn("Exception occurred: {}", e.getMessage());
+        LOGGER.warn("Exception occurred:{} {}", e.getClass(), e.getMessage());
         ModelDBException ModelDBException = (ModelDBException) e;
         status =
             Status.newBuilder()
@@ -465,7 +465,8 @@ public class ModelDBUtils {
                 .build();
       }
       StackTraceElement[] stack = e.getStackTrace();
-      LOGGER.error("Stacktrace with {} elements for {}", stack.length, e.getMessage());
+      LOGGER.error(
+          "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());
       int n = 0;
       boolean isLongStack = stack.length > STACKTRACE_LENGTH;
       if (isLongStack) {
@@ -553,9 +554,10 @@ public class ModelDBUtils {
 
   public static Object retryOrThrowException(
       StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
-    String errorMessage = "UAC Service unavailable : " + ex.getMessage();
-    LOGGER.warn(errorMessage, ex);
+    String errorMessage = ex.getMessage();
+    LOGGER.warn(errorMessage);
     if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
+      errorMessage = "UAC Service unavailable : " + errorMessage;
       if (retry && retryCallInterface != null) {
         try {
           App app = App.getInstance();

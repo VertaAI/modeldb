@@ -2,10 +2,10 @@ import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { Markdown } from 'core/shared/utils/types';
-import Confirm from 'core/shared/view/elements/Confirm/Confirm';
-import Fab from 'core/shared/view/elements/Fab/Fab';
-import { IconType } from 'core/shared/view/elements/Icon/Icon';
+import { Markdown } from 'shared/utils/types';
+import Confirm from 'shared/view/elements/Confirm/Confirm';
+import Fab from 'shared/view/elements/Fab/Fab';
+import { IconType } from 'shared/view/elements/Icon/Icon';
 
 import MarkdownIcon from '../shared/Icon/Icon';
 import Layout from '../shared/Layout/Layout';

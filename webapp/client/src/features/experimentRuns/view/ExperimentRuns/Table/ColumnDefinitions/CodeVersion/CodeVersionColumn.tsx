@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { IRow } from '../types';
-import CodeVersions from 'core/shared/view/domain/ModelRecord/ModelRecordProps/CodeVersions/CodeVersions';
+import CodeVersions from 'shared/view/domain/ModelRecord/ModelRecordProps/CodeVersions/CodeVersions';
 
 interface ILocalProps {
   row: IRow;

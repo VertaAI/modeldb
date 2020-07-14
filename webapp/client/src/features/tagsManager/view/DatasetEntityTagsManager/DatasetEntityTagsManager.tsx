@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
-import * as Common from 'core/shared/models/Common';
+import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import * as Common from 'shared/models/Common';
 
 import ConnectedTagsManager from '../ConnectedTagsManager/ConnectedTagsManager';
 

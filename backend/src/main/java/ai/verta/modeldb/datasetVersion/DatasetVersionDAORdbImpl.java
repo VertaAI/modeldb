@@ -1,20 +1,21 @@
 package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasetVersions;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
+import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -305,7 +306,15 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       Root<DatasetVersionEntity> datasetVersionRoot =
           criteriaQuery.from(DatasetVersionEntity.class);
       datasetVersionRoot.alias("ds");
+
+      Root<DatasetEntity> datasetEntityRoot = criteriaQuery.from(DatasetEntity.class);
+      datasetEntityRoot.alias("dt");
+
       List<Predicate> finalPredicatesList = new ArrayList<>();
+      finalPredicatesList.add(
+          builder.equal(
+              datasetVersionRoot.get(ModelDBConstants.DATASET_ID),
+              datasetEntityRoot.get(ModelDBConstants.ID)));
 
       List<String> datasetIds = new ArrayList<>();
       if (!queryParameters.getDatasetId().isEmpty()) {
@@ -369,6 +378,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       finalPredicatesList.add(
           builder.equal(datasetVersionRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(datasetEntityRoot.get(ModelDBConstants.DELETED), false));
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {

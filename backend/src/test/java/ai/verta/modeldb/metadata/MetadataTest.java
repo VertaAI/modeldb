@@ -137,16 +137,11 @@ public class MetadataTest {
     AddLabelsRequest.Response addLabelsResponse2 = serviceBlockingStub.addLabels(addLabelsRequest2);
     assertTrue("Labels not persist successfully", addLabelsResponse2.getStatus());
 
-    try {
-      serviceBlockingStub.addLabels(addLabelsRequest1);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      ex.printStackTrace();
-      assertEquals(
-          "Data already exists but the backend not return an expected response",
-          Status.ALREADY_EXISTS.getCode(),
-          ex.getStatus().getCode());
-    }
+    serviceBlockingStub.addLabels(addLabelsRequest1);
+    GetLabelsRequest getLabelsRequest = GetLabelsRequest.newBuilder().setId(id1).build();
+    GetLabelsRequest.Response getLabelsResponse = serviceBlockingStub.getLabels(getLabelsRequest);
+    assertEquals(
+        "Expected labels size not in response list", 2, getLabelsResponse.getLabelsCount());
 
     DeleteLabelsRequest deleteLabelsRequest =
         DeleteLabelsRequest.newBuilder()

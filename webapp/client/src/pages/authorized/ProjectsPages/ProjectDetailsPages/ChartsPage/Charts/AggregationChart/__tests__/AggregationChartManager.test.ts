@@ -1,7 +1,7 @@
 import {
   makeShallowRenderer,
   findByDataTestAttribute,
-} from 'core/shared/utils/tests/react/helpers';
+} from 'shared/utils/tests/react/helpers';
 import {
   flatData_allMetricHyp,
   flatData_someMetricMissing,

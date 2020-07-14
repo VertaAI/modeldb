@@ -341,53 +341,6 @@
         ]
       }
     },
-    "/dataset/getDatasetAttributes": {
-      "get": {
-        "operationId": "getDatasetAttributes",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetAttributesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "attribute_keys",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "name": "get_all",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          }
-        ],
-        "tags": [
-          "DatasetService"
-        ]
-      }
-    },
     "/dataset/getDatasetById": {
       "get": {
         "operationId": "getDatasetById",
@@ -722,15 +675,6 @@
       ],
       "default": "IMAGE"
     },
-    "DatasetTypeEnumDatasetType": {
-      "type": "string",
-      "enum": [
-        "RAW",
-        "PATH",
-        "QUERY"
-      ],
-      "default": "RAW"
-    },
     "DatasetVisibilityEnumDatasetVisibility": {
       "type": "string",
       "enum": [
@@ -822,6 +766,23 @@
         }
       }
     },
+    "commonKeyValueQuery": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
+        }
+      }
+    },
     "modeldbAddDatasetAttributes": {
       "type": "object",
       "properties": {
@@ -906,9 +867,6 @@
         "dataset_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
-        "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
-        },
         "workspace_name": {
           "type": "string"
         },
@@ -949,9 +907,6 @@
         },
         "dataset_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
-        },
-        "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
         },
         "attributes": {
           "type": "array",
@@ -1224,7 +1179,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "ids_only": {
@@ -1279,17 +1234,6 @@
         "total_records": {
           "type": "string",
           "format": "uint64"
-        }
-      }
-    },
-    "modeldbGetAttributesResponse": {
-      "type": "object",
-      "properties": {
-        "attributes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonKeyValue"
-          }
         }
       }
     },
@@ -1365,23 +1309,6 @@
         }
       }
     },
-    "modeldbKeyValueQuery": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
-        },
-        "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
-        }
-      }
-    },
     "modeldbLastExperimentByDatasetIdResponse": {
       "type": "object",
       "properties": {
@@ -1402,6 +1329,9 @@
         "timestamp": {
           "type": "string",
           "format": "int64"
+        },
+        "epoch_number": {
+          "type": "object"
         }
       },
       "title": "observations with the same key are not overwritten, the are appended to a list"

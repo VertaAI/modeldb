@@ -3,10 +3,10 @@ import * as d3 from 'd3';
 import _ from 'lodash';
 
 import { errorMessage } from 'pages/authorized/ProjectsPages/ProjectDetailsPages/ChartsPage/Charts/shared/errorMessages';
-import { getFormattedDateTime } from 'core/shared/utils/formatters/dateTime';
-import { withScientificNotationOrRounded } from 'core/shared/utils/formatters/number';
-import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
-import { cssTheme } from 'core/shared/styles/theme';
+import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
+import { withScientificNotationOrRounded } from 'shared/utils/formatters/number';
+import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
+import { cssTheme } from 'shared/styles/theme';
 
 import ModelRecordCard from '../../ModelRecordCard/ModelRecordCard';
 import styles from '../SummaryChartManager.module.css';

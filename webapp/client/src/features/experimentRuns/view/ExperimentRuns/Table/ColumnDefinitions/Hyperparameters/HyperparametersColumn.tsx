@@ -1,4 +1,4 @@
-import withProps from 'core/shared/utils/react/withProps';
+import withProps from 'shared/utils/react/withProps';
 
 import SimpleKeyValuesColumn from '../shared/SimpleKeyValuesColumn/SimpleKeyValuesColumn';
 

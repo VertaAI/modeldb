@@ -8,6 +8,7 @@ import sys
 
 from ..external import six
 
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
 
 from .._internal_utils import _pip_requirements_utils
@@ -21,9 +22,8 @@ class Python(_environment._Environment):
 
     Parameters
     ----------
-    requirements : list of str, optional
-        List of PyPI package names. If not provided, all packages currently installed through
-        pip will be captured.
+    requirements : list of str
+        List of PyPI package names.
     constraints : list of str, optional
         List of PyPI package names with version specifiers. If not provided, nothing will be
         captured.
@@ -37,21 +37,22 @@ class Python(_environment._Environment):
     .. code-block:: python
 
         from verta.environment import Python
-        env1 = Python(requirements=Python.read_pip_file("../requirements.txt"))
-        env2 = Python(
+        env1 = Python(requirements=Python.read_pip_environment())
+        env2 = Python(requirements=Python.read_pip_file("../requirements.txt"))
+        env3 = Python(
             requirements=["tensorflow"],
             env_vars=["CUDA_VISIBLE_DEVICES"],
         )
 
     """
-    def __init__(self, requirements=None, constraints=None, env_vars=None, _autocapture=True):
+    def __init__(self, requirements, constraints=None, env_vars=None, _autocapture=True):
         super(Python, self).__init__(env_vars, _autocapture)
 
         if _autocapture:
             self._capture_python_version()
-        if requirements is not None or _autocapture:
+        if requirements or _autocapture:
             self._capture_requirements(requirements)
-        if constraints is not None:
+        if constraints:
             self._capture_constraints(constraints)
 
     def __repr__(self):
@@ -101,6 +102,19 @@ class Python(_environment._Environment):
             )
 
         return "\n    ".join(lines)
+
+    @classmethod
+    def _from_proto(cls, blob_msg):
+        obj = cls(requirements=[], _autocapture=False)
+        obj._msg.CopyFrom(blob_msg.environment)
+
+        return obj
+
+    def _as_proto(self):
+        blob_msg = _VersioningService.Blob()
+        blob_msg.environment.CopyFrom(self._msg)
+
+        return blob_msg
 
     @staticmethod
     def _req_spec_to_msg(req_spec):
@@ -161,11 +175,8 @@ class Python(_environment._Environment):
         self._msg.python.version.patch = sys.version_info.micro
 
     def _capture_requirements(self, requirements):
-        if requirements is None:
-            # TODO: support conda
-            req_specs = self.read_pip_environment()
-        elif (isinstance(requirements, list)
-              and all(isinstance(req, six.string_types) for req in requirements)):
+        if (isinstance(requirements, list)
+                and all(isinstance(req, six.string_types) for req in requirements)):
             req_specs = copy.copy(requirements)
             _pip_requirements_utils.process_requirements(req_specs)
         else:

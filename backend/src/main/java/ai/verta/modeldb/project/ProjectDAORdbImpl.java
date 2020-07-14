@@ -2,7 +2,9 @@ package ai.verta.modeldb.project;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
@@ -10,11 +12,9 @@ import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindProjects;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.AuthService;
@@ -234,6 +234,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         new CollaboratorUser(authService, userInfo),
         project.getId(),
         ModelDBServiceResourceTypes.PROJECT);
+
     if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
       roleService.createPublicRoleBinding(project.getId(), ModelDBServiceResourceTypes.PROJECT);
     }
@@ -1373,6 +1374,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               ProjectVisibility.PRIVATE,
               ModelDBServiceResourceTypes.PROJECT,
               Collections.EMPTY_LIST);
+      LOGGER.debug(
+          "accessible Project Ids in function getWorkspaceProjectIDs : {}", accessibleProjectIds);
 
       // resolve workspace
       WorkspaceDTO workspaceDTO =
@@ -1389,15 +1392,23 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         resultProjects = query.list();
 
         // in personal workspace show projects directly shared
-        if (workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        if (workspaceDTO
+            .getWorkspaceName()
+            .equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          LOGGER.debug("Workspace and current login user match");
           List<String> directlySharedProjects =
               roleService.getSelfDirectlyAllowedResources(
                   ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
           query = session.createQuery(NON_DELETED_PROJECT_IDS_BY_IDS);
           query.setParameterList(ModelDBConstants.PROJECT_IDS, directlySharedProjects);
           resultProjects.addAll(query.list());
+          LOGGER.debug(
+              "accessible directlySharedProjects Ids in function getWorkspaceProjectIDs : {}",
+              directlySharedProjects);
         }
       }
+      LOGGER.debug(
+          "Total accessible project Ids in function getWorkspaceProjectIDs : {}", resultProjects);
       return resultProjects;
     }
   }

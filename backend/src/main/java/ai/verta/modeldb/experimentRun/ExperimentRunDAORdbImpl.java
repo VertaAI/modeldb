@@ -4,7 +4,9 @@ import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
@@ -14,16 +16,17 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.GetCommittedArtifactParts;
+import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
 import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.GitSnapshot;
-import ai.verta.modeldb.KeyValueQuery;
+import ai.verta.modeldb.ListBlobExperimentRunsRequest;
+import ai.verta.modeldb.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Observation;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
@@ -32,13 +35,16 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
+import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
+import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
+import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
@@ -61,8 +67,6 @@ import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
-import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
-import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
@@ -95,6 +99,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Order;
@@ -110,6 +115,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private static final Logger LOGGER =
       LogManager.getLogger(ExperimentRunDAORdbImpl.class.getName());
+  private static final boolean OVERWRITE_VERSION_MAP = false;
   private final AuthService authService;
   private final RoleService roleService;
   private final RepositoryDAO repositoryDAO;
@@ -180,12 +186,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append("From ExperimentRunEntity ere where ere.")
           .append(ModelDBConstants.PROJECT_ID)
           .append(" IN (:projectIds) ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String GET_EXPERIMENT_RUN_BY_EXPERIMENT_ID_HQL =
       new StringBuilder()
           .append("From ExperimentRunEntity ere where ere.")
           .append(ModelDBConstants.EXPERIMENT_ID)
           .append(" IN (:experimentIds) ")
+          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING =
       new StringBuilder("UPDATE ")
@@ -311,9 +319,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
+    checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      checkIfEntityAlreadyExists(experimentRun, true);
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
         Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
@@ -747,13 +755,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+
+      Transaction transaction = session.beginTransaction();
       List<ObservationEntity> newObservationList =
           RdbmsUtils.convertObservationsFromObservationEntityList(
-              experimentRunEntityObj, ModelDBConstants.OBSERVATIONS, observations);
+              session,
+              experimentRunEntityObj,
+              ModelDBConstants.OBSERVATIONS,
+              observations,
+              ExperimentRunEntity.class.getSimpleName(),
+              experimentRunEntityObj.getId());
       experimentRunEntityObj.setObservationMapping(newObservationList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
-      Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
     } catch (Exception ex) {
@@ -1353,7 +1367,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           builder.createQuery(ExperimentRunEntity.class);
       Root<ExperimentRunEntity> experimentRunRoot = criteriaQuery.from(ExperimentRunEntity.class);
       experimentRunRoot.alias("exp");
+
+      Root<ProjectEntity> projectEntityRoot = criteriaQuery.from(ProjectEntity.class);
+      projectEntityRoot.alias("pr");
+
+      Root<ExperimentEntity> experimentEntityRoot = criteriaQuery.from(ExperimentEntity.class);
+      projectEntityRoot.alias("ex");
+
       List<Predicate> finalPredicatesList = new ArrayList<>();
+      finalPredicatesList.add(
+          builder.equal(
+              experimentRunRoot.get(ModelDBConstants.PROJECT_ID),
+              projectEntityRoot.get(ModelDBConstants.ID)));
+      finalPredicatesList.add(
+          builder.equal(
+              experimentRunRoot.get(ModelDBConstants.EXPERIMENT_ID),
+              experimentEntityRoot.get(ModelDBConstants.ID)));
 
       List<String> projectIds = new ArrayList<>();
       if (!queryParameters.getProjectId().isEmpty()) {
@@ -1427,6 +1456,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       finalPredicatesList.add(
           builder.equal(experimentRunRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(projectEntityRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(experimentEntityRoot.get(ModelDBConstants.DELETED), false));
 
       Order[] orderBy =
           RdbmsUtils.getOrderArrBasedOnSortKey(
@@ -2062,27 +2095,56 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (existingMappings.isEmpty()) {
         existingMappings.addAll(versioningModeldbEntityMappings);
       } else {
-        List<VersioningModeldbEntityMapping> finalVersionList = new ArrayList<>();
-        for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
-            versioningModeldbEntityMappings) {
-          boolean addNew = true;
-          for (VersioningModeldbEntityMapping existsVerMapping : existingMappings) {
-            if (versioningModeldbEntityMapping.equals(existsVerMapping)) {
-              addNew = false;
-              break;
+        if (!versioningModeldbEntityMappings.isEmpty()) {
+          VersioningModeldbEntityMapping existingFirstEntityMapping = existingMappings.get(0);
+          VersioningModeldbEntityMapping versioningModeldbFirstEntityMapping =
+              versioningModeldbEntityMappings.get(0);
+          if (!existingFirstEntityMapping
+                  .getRepository_id()
+                  .equals(versioningModeldbFirstEntityMapping.getRepository_id())
+              || !existingFirstEntityMapping
+                  .getCommit()
+                  .equals(versioningModeldbFirstEntityMapping.getCommit())) {
+            if (!OVERWRITE_VERSION_MAP) {
+              throw new ModelDBException(
+                  ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE,
+                  io.grpc.Status.Code.ALREADY_EXISTS);
             }
-          }
-          if (addNew) {
-            finalVersionList.add(versioningModeldbEntityMapping);
-          }
-        }
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaDelete<VersioningModeldbEntityMapping> delete =
+                cb.createCriteriaDelete(VersioningModeldbEntityMapping.class);
+            Root<VersioningModeldbEntityMapping> e =
+                delete.from(VersioningModeldbEntityMapping.class);
+            delete.where(cb.in(e.get("experimentRunEntity")).value(runEntity));
+            Transaction transaction = session.beginTransaction();
+            session.createQuery(delete).executeUpdate();
+            transaction.commit();
+            existingMappings.addAll(versioningModeldbEntityMappings);
+          } else {
+            List<VersioningModeldbEntityMapping> finalVersionList = new ArrayList<>();
+            for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
+                versioningModeldbEntityMappings) {
+              boolean addNew = true;
+              for (VersioningModeldbEntityMapping existsVerMapping : existingMappings) {
+                if (versioningModeldbEntityMapping.equals(existsVerMapping)) {
+                  addNew = false;
+                  break;
+                }
+              }
+              if (addNew) {
+                finalVersionList.add(versioningModeldbEntityMapping);
+              }
+            }
 
-        if (finalVersionList.isEmpty()) {
+            if (finalVersionList.isEmpty()) {
+              return;
+            }
+            existingMappings.addAll(finalVersionList);
+          }
+        } else {
           return;
         }
-        existingMappings.addAll(finalVersionList);
       }
-      runEntity.setVersioned_inputs(existingMappings);
 
       Set<HyperparameterElementMappingEntity> hyrParamMappings =
           prepareHyperparameterElemMappings(runEntity, versioningModeldbEntityMappings);
@@ -2196,17 +2258,30 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setValueType(ValueTypeEnum.ValueType.STRING)
               .build();
 
-      FindExperimentRuns findExperimentRuns =
+      FindExperimentRuns.Builder findExperimentRuns =
           FindExperimentRuns.newBuilder()
               .setPageNumber(request.getPagination().getPageNumber())
               .setPageLimit(request.getPagination().getPageLimit())
               .setAscending(true)
               .setSortKey(ModelDBConstants.DATE_UPDATED)
               .addPredicates(repositoryIdPredicate)
-              .addPredicates(commitHashPredicate)
-              .build();
+              .addPredicates(commitHashPredicate);
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      if (request.getRepositoryId().hasNamedId()) {
+        findExperimentRuns.setWorkspaceName(
+            request.getRepositoryId().getNamedId().getWorkspaceName());
+      } else {
+        WorkspaceDTO workspaceDTO =
+            roleService.getWorkspaceDTOByWorkspaceId(
+                currentLoginUserInfo,
+                repositoryEntity.getWorkspace_id(),
+                repositoryEntity.getWorkspace_type());
+        if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
+          findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());
+        }
+      }
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns);
+          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
       return ListCommitExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
@@ -2258,7 +2333,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setValueType(ValueTypeEnum.ValueType.STRING)
               .build();
 
-      FindExperimentRuns findExperimentRuns =
+      FindExperimentRuns.Builder findExperimentRuns =
           FindExperimentRuns.newBuilder()
               .setPageNumber(request.getPagination().getPageNumber())
               .setPageLimit(request.getPagination().getPageLimit())
@@ -2266,10 +2341,25 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setSortKey(ModelDBConstants.DATE_UPDATED)
               .addPredicates(repositoryIdPredicate)
               .addPredicates(commitHashPredicate)
-              .addPredicates(locationPredicate)
-              .build();
+              .addPredicates(locationPredicate);
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      if (request.getRepositoryId().hasNamedId()) {
+        findExperimentRuns.setWorkspaceName(
+            request.getRepositoryId().getNamedId().getWorkspaceName());
+      } else {
+        WorkspaceDTO workspaceDTO =
+            roleService.getWorkspaceDTOByWorkspaceId(
+                currentLoginUserInfo,
+                repositoryEntity.getWorkspace_id(),
+                repositoryEntity.getWorkspace_type());
+        if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
+          findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());
+        }
+      }
+
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns);
+          findExperimentRuns(
+              projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns.build());
 
       return ListBlobExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
@@ -2337,7 +2427,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       uploadId = artifactEntity.getUploadId();
       try {
         String message = null;
-        if (uploadId == null) {
+        if (uploadId == null || artifactEntity.isUploadCompleted()) {
           if (initializeMultipart == null) {
             message = "Multipart wasn't initialized";
           } else {
@@ -2360,6 +2450,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (!Objects.equals(uploadId, artifactEntity.getUploadId())
           || artifactEntity.isUploadCompleted()) {
         session.beginTransaction();
+        VersioningUtils.getArtifactPartEntities(
+                session,
+                String.valueOf(artifactEntity.getId()),
+                ArtifactPartEntity.EXP_RUN_ARTIFACT)
+            .forEach(session::delete);
         artifactEntity.setUploadId(uploadId);
         artifactEntity.setUploadCompleted(false);
         session.getTransaction().commit();
@@ -2427,10 +2522,59 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           artifactEntity.getPath(), artifactEntity.getUploadId(), partETags);
       session.beginTransaction();
       artifactEntity.setUploadCompleted(true);
-      artifactPartEntities.forEach(session::delete);
-      artifactPartEntities.clear();
       session.getTransaction().commit();
     }
     return CommitMultipartArtifact.Response.newBuilder().build();
+  }
+
+  @Override
+  public ExperimentRunPaginationDTO getExperimentRunsByDatasetVersionId(
+      ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request)
+      throws ModelDBException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      CommitEntity commitEntity = session.get(CommitEntity.class, request.getDatasetVersionId());
+      if (commitEntity == null) {
+        throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
+      }
+
+      List<RepositoryEntity> datasets = new ArrayList<>(commitEntity.getRepository());
+      if (datasets.size() == 0) {
+        throw new ModelDBException("DatasetVersion not attached with the dataset", Code.INTERNAL);
+      } else if (datasets.size() > 1) {
+        throw new ModelDBException(
+            "DatasetVersion '"
+                + commitEntity.getCommit_hash()
+                + "' associated with multiple datasets",
+            Code.INTERNAL);
+      } else if (!datasets.get(0).isDataset()) {
+        throw new ModelDBException("DatasetVersion not attached with the dataset", Code.NOT_FOUND);
+      }
+
+      KeyValueQuery entityKeyValuePredicate =
+          KeyValueQuery.newBuilder()
+              .setKey(ModelDBConstants.DATASETS + "." + ModelDBConstants.LINKED_ARTIFACT_ID)
+              .setValue(Value.newBuilder().setStringValue(commitEntity.getCommit_hash()).build())
+              .setOperator(OperatorEnum.Operator.EQ)
+              .setValueType(ValueTypeEnum.ValueType.STRING)
+              .build();
+
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setPageNumber(request.getPageNumber())
+              .setPageLimit(request.getPageLimit())
+              .setAscending(request.getAscending())
+              .setSortKey(request.getSortKey())
+              .addPredicates(entityKeyValuePredicate)
+              .build();
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
+      LOGGER.debug(
+          "Final return ExperimentRun count : {}",
+          experimentRunPaginationDTO.getExperimentRuns().size());
+      LOGGER.debug(
+          "Final return total record count : {}", experimentRunPaginationDTO.getTotalRecords());
+      return experimentRunPaginationDTO;
+    }
   }
 }

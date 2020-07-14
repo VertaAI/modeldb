@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import groupArray from 'group-array';
 import _ from 'lodash';
-import { numberRounded } from 'core/shared/utils/formatters/number';
+import { numberRounded } from 'shared/utils/formatters/number';
 
 let aggregatedObject = [];
 function getUniqueKey(obj, configArray) {

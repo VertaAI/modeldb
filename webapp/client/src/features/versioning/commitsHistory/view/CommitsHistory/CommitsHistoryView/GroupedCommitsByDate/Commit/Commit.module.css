@@ -1,0 +1,79 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 13px;
+  border-bottom: 1px solid #eaecef;
+}
+.root:last-child {
+  border-bottom: none;
+}
+.root:hover {
+  background-color: #f6f8fa;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.message {
+  margin-bottom: 9px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #444d56;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.date {
+  color: var(--main-text-color3);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.commitShaWithCopy {
+  display: grid;
+  grid-template-columns: 70% 30%;
+  height: 29px;
+  width: 117px;
+  border: 1px solid #aaaaaa;
+  border-radius: 2px;
+  background-color: #ffffff;
+}
+
+.commitShaWithCopy__item {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.commitShaWithCopy__item:first-child {
+  border-right: 1px solid #ebebeb;
+}
+
+.commitSha {
+  font-size: 14px;
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.icon {
+  font-size: 20px;
+  color: #514eb5;
+}
+
+.viewCommitComponents {
+  display: inline-block;
+  margin-left: 15px;
+}

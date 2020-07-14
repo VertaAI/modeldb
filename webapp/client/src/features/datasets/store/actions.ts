@@ -1,17 +1,17 @@
 import { History } from 'history';
 import { action } from 'typesafe-actions';
 
-import { selectCurrentContextFilters } from 'core/features/filter';
-import { IFilterData } from 'core/features/filter/Model';
-import { AppError } from 'core/shared/models/Error';
-import normalizeError from 'core/shared/utils/normalizeError';
-import * as Dataset from 'models/Dataset';
-import { IWorkspace } from 'models/Workspace';
-import routes from 'routes';
+import { selectCurrentContextFilters } from 'features/filter';
+import { IFilterData } from 'shared/models/Filters';
+import { AppError } from 'shared/models/Error';
+import normalizeError from 'shared/utils/normalizeError';
+import * as Dataset from 'shared/models/Dataset';
+import { IWorkspace } from 'shared/models/Workspace';
+import routes from 'shared/routes';
 import { handleDeleteEntities } from 'features/shared/deletion';
-import { ActionResult } from 'store/store';
+import { ActionResult } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
-import { makeThunkApiRequest } from 'utils/redux/actions';
+import { makeThunkApiRequest } from 'shared/utils/redux/actions';
 
 import { selectDatasetsPagination } from './selectors';
 import {

@@ -1,6 +1,10 @@
 package ai.verta.modeldb.dataset;
 
+import static io.grpc.Status.Code.INVALID_ARGUMENT;
+
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddDatasetAttributes;
 import ai.verta.modeldb.AddDatasetTags;
@@ -23,13 +27,11 @@ import ai.verta.modeldb.GetDatasetById;
 import ai.verta.modeldb.GetDatasetByName;
 import ai.verta.modeldb.GetExperimentRunByDataset;
 import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.LastExperimentByDatasetId;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.SetDatasetVisibilty;
 import ai.verta.modeldb.SetDatasetWorkspace;
 import ai.verta.modeldb.SetDatasetWorkspace.Response;
@@ -141,6 +143,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       Dataset dataset = getDatasetFromRequest(request, userInfo);
       ModelDBUtils.checkPersonalWorkspace(
           userInfo, dataset.getWorkspaceType(), dataset.getWorkspaceId(), "repository");
+      if (App.getInstance().getPublicSharingEnabled()) {
+        dataset = dataset.toBuilder().setDatasetVisibility(DatasetVisibility.PUBLIC).build();
+      }
       Repository repository =
           repositoryDAO.createRepository(commitDAO, metadataDAO, dataset, true, userInfo);
       Dataset createdDataset =
@@ -463,25 +468,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
-      String errorMessage = null;
-      if (request.getId().isEmpty() && request.getDescription().isEmpty()) {
-        errorMessage =
-            "Dataset ID and Dataset description not found in UpdateDatasetDescription request";
-      } else if (request.getId().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
-      } else if (request.getDescription().isEmpty()) {
-        errorMessage = "Dataset description not found in UpdateDatasetDescription request";
-      }
-
-      if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateDatasetDescription.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+      if (request.getId().isEmpty()) {
+        throw new ModelDBException(
+            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST, INVALID_ARGUMENT);
       }
 
       // Validate if current user has access to the entity or not
@@ -755,7 +744,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
       repositoryDAO.deleteRepositoryAttributes(
-          Long.parseLong(request.getId()), request.getAttributeKeysList(), request.getDeleteAll());
+          Long.parseLong(request.getId()),
+          request.getAttributeKeysList(),
+          request.getDeleteAll(),
+          false);
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       responseObserver.onNext(
@@ -848,7 +840,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                   RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(datasetId)))
               .build(),
           commitDAO,
-          experimentRunDAO);
+          experimentRunDAO,
+          false);
     }
   }
 
@@ -884,7 +877,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       ListCommitsRequest.Response listCommitsResponse =
           commitDAO.listCommits(
               listCommitsRequest.build(),
-              (session -> repositoryDAO.getRepositoryById(session, repositoryIdentification)));
+              (session ->
+                  repositoryDAO.getRepositoryById(
+                      session, repositoryIdentification, false, false)));
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
       List<Commit> commitList = listCommitsResponse.getCommitsList();
@@ -982,7 +977,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       ListCommitsRequest.Response listCommitsResponse =
           commitDAO.listCommits(
               listCommitsRequest.build(),
-              (session -> repositoryDAO.getRepositoryById(session, repositoryIdentification)));
+              (session ->
+                  repositoryDAO.getRepositoryById(
+                      session, repositoryIdentification, false, false)));
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
       List<Commit> commitList = listCommitsResponse.getCommitsList();

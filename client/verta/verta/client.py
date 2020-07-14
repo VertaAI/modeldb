@@ -7,8 +7,10 @@ import copy
 import glob
 import importlib
 import os
+import pathlib2
 import pprint
 import re
+import shutil
 import sys
 import tarfile
 import tempfile
@@ -24,23 +26,30 @@ try:
 except ImportError:  # Pillow not installed
     PIL = None
 
+try:
+    import torch
+except ImportError:  # PyTorch not installed
+    torch = None
+
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
 from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService
 from ._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
 from ._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
-from ._protos.public.client import Config_pb2 as _ConfigProtos
 
 from .external import six
 from .external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
 from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
-from ._internal_utils import _artifact_utils
-from ._internal_utils import _config_utils
-from ._internal_utils import _git_utils
-from ._internal_utils import _histogram_utils
-from ._internal_utils import _pip_requirements_utils
-from ._internal_utils import _utils
+from ._internal_utils import (
+    _artifact_utils,
+    _config_utils,
+    _git_utils,
+    _histogram_utils,
+    _pip_requirements_utils,
+    _request_utils,
+    _utils,
+)
 
 from . import _dataset
 from . import _repository
@@ -257,35 +266,8 @@ class Client(object):
         return _OSS_DEFAULT_WORKSPACE
 
     def _load_config(self):
-        config_file = self._find_config_in_all_dirs()
-        if config_file is not None:
-            stream = open(config_file, 'r')
-            self._config = yaml.load(stream, Loader=yaml.FullLoader)
-            # validate config against proto spec
-            _utils.json_to_proto(
-                self._config,
-                _ConfigProtos.Config,
-                ignore_unknown_fields=False,
-            )
-        else:
-            self._config = {}
-
-    def _find_config_in_all_dirs(self):
-        res = self._find_config('./', True)
-        if res is None:
-            return self._find_config("{}/.verta/".format(os.path.expanduser("~")))
-        return res
-
-    def _find_config(self, prefix, recursive=False):
-        for ff in _config_utils.CONFIG_FILENAMES:
-            if os.path.isfile(prefix + ff):
-                return prefix + ff
-        if recursive:
-            for dir in [os.path.join(prefix, o) for o in os.listdir(prefix) if os.path.isdir(os.path.join(prefix, o))]:
-                config_file = self._find_config(dir + "/", True)
-                if config_file is not None:
-                    return config_file
-        return None
+        with _config_utils.read_merged_config() as config:
+            self._config = config
 
     def _set_from_config_if_none(self, var, resource_name):
         if var is None:
@@ -342,7 +324,7 @@ class Client(object):
             name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        self.proj = Project(self._conn, self._conf,
+        self.proj = Project._get_or_create(self._conn, self._conf,
                             name,
                             desc, tags, attrs,
                             workspace,
@@ -393,18 +375,18 @@ class Client(object):
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
             # find Experiment by ID
-            expt_msg = Experiment._get(self._conn, _expt_id=id)
-            if expt_msg is None:
+            expt = Experiment._get(self._conn, self._conf, _expt_id=id)
+            if expt is None:
                 raise ValueError("no Experiment found with ID {}".format(id))
+            expt_msg = expt._get_self_as_msg()
             # set parent Project by ID
             try:
-                self.proj = Project(self._conn, self._conf, _proj_id=expt_msg.project_id)
+                self.proj = Project._get_or_create(self._conn, self._conf, _proj_id=expt_msg.project_id)
             except ValueError:  # parent Project not found
                 raise RuntimeError("unable to find parent Project of Experiment with ID {};"
                                    " this should only ever occur due to a back end error".format(id))
             # set Experiment
-            self.expt = Experiment(self._conn, self._conf,
-                                   _expt_id=id)
+            self.expt = expt
         else:
             # set Experiment by name under current Project
             if self.proj is None:
@@ -415,7 +397,7 @@ class Client(object):
                 else:
                     raise AttributeError("a Project must first be in progress")
 
-            self.expt = Experiment(self._conn, self._conf,
+            self.expt = Experiment._get_or_create(self._conn, self._conf,
                                    self.proj.id, name,
                                    desc, tags, attrs)
 
@@ -460,24 +442,22 @@ class Client(object):
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
             # find ExperimentRun by ID
-            expt_run_msg = ExperimentRun._get(self._conn, _expt_run_id=id)
-            if expt_run_msg is None:
+            run = ExperimentRun._get(self._conn, self._conf, _expt_run_id=id)
+            if run is None:
                 raise ValueError("no ExperimentRun found with ID {}".format(id))
+            expt_run_msg = run._get_self_as_msg()
             # set parent Project by ID
             try:
-                self.proj = Project(self._conn, self._conf, _proj_id=expt_run_msg.project_id)
+                self.proj = Project._get_or_create(self._conn, self._conf, _proj_id=expt_run_msg.project_id)
             except ValueError:  # parent Project not found
                 raise RuntimeError("unable to find parent Project of ExperimentRun with ID {};"
                                    " this should only ever occur due to a back end error".format(id))
             # set parent Experiment by ID
             try:
-                self.expt = Experiment(self._conn, self._conf, _expt_id=expt_run_msg.experiment_id)
+                self.expt = Experiment._get_or_create(self._conn, self._conf, _expt_id=expt_run_msg.experiment_id)
             except ValueError:  # parent Experiment not found
                 raise RuntimeError("unable to find parent Experiment of ExperimentRun with ID {};"
                                    " this should only ever occur due to a back end error".format(id))
-            # set ExperimentRun
-            expt_run = ExperimentRun(self._conn, self._conf,
-                                     _expt_run_id=id)
         else:
             # set ExperimentRun by name under current Experiment
             if self.expt is None:
@@ -488,11 +468,11 @@ class Client(object):
                 else:
                     raise AttributeError("an Experiment must first be in progress")
 
-            expt_run = ExperimentRun(self._conn, self._conf,
+            run = ExperimentRun._get_or_create(self._conn, self._conf,
                                      self.proj.id, self.expt.id, name,
                                      desc, tags, attrs, date_created=date_created)
 
-        return expt_run
+        return run
 
     def get_or_create_repository(self, name=None, workspace=None, id=None):
         """
@@ -1189,56 +1169,12 @@ class Project(_ModelDBEntity):
         Experiment Runs under this Project.
 
     """
-    def __init__(self, conn, conf,
-                 proj_name=None,
-                 desc=None, tags=None, attrs=None,
-                 workspace=None,
-                 public_within_org=None,
-                 _proj_id=None):
-        if proj_name is not None and _proj_id is not None:
-            raise ValueError("cannot specify both `proj_name` and `_proj_id`")
+    def __init__(self, conn, conf, id_):
+        super(Project, self).__init__(conn, conf, _ProjectService, "project", id_)
 
-        if workspace is not None:
-            WORKSPACE_PRINT_MSG = "workspace: {}".format(workspace)
-        else:
-            WORKSPACE_PRINT_MSG = "personal workspace"
+        self._conn = conn
 
-        if _proj_id is not None:
-            proj = Project._get(conn, _proj_id=_proj_id)
-            if proj is not None:
-                print("set existing Project: {}".format(proj.name))
-            else:
-                raise ValueError("Project with ID {} not found".format(_proj_id))
-        else:
-            if proj_name is None:
-                proj_name = Project._generate_default_name()
-            try:
-                proj = Project._create(conn, proj_name, desc, tags, attrs, workspace, public_within_org)
-            except requests.HTTPError as e:
-                if e.response.status_code == 403:  # cannot create in other workspace
-                    proj = Project._get(conn, proj_name, workspace)
-                    if proj is not None:
-                        print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
-                    else:  # no accessible project in other workspace
-                        six.raise_from(e, None)
-                elif e.response.status_code == 409:  # already exists
-                    if any(param is not None for param in (desc, tags, attrs, public_within_org)):
-                        warnings.warn(
-                            "Project with name {} already exists;"
-                            " cannot set `desc`, `tags`, `attrs`, or `public_within_org`".format(proj_name)
-                        )
-                    proj = Project._get(conn, proj_name, workspace)
-                    if proj is not None:
-                        print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
-                    else:
-                        raise RuntimeError("unable to retrieve Project {};"
-                                           " please notify the Verta development team".format(proj_name))
-                else:
-                    raise e
-            else:
-                print("created new Project: {} in {}".format(proj.name, WORKSPACE_PRINT_MSG))
-
-        super(Project, self).__init__(conn, conf, _ProjectService, "project", proj.id)
+        self.id = id_
 
     def __repr__(self):
         return "<Project \"{}\">".format(self.name)
@@ -1268,7 +1204,59 @@ class Project(_ModelDBEntity):
         return "Proj {}".format(_utils.generate_default_name())
 
     @staticmethod
-    def _get(conn, proj_name=None, workspace=None, _proj_id=None):
+    def _get_or_create(conn, conf,
+                 proj_name=None,
+                 desc=None, tags=None, attrs=None,
+                 workspace=None,
+                 public_within_org=None,
+                 _proj_id=None):
+        if proj_name is not None and _proj_id is not None:
+            raise ValueError("cannot specify both `proj_name` and `_proj_id`")
+
+        if workspace is not None:
+            WORKSPACE_PRINT_MSG = "workspace: {}".format(workspace)
+        else:
+            WORKSPACE_PRINT_MSG = "personal workspace"
+
+        if _proj_id is not None:
+            proj = Project._get(conn, conf, _proj_id=_proj_id)
+            if proj is not None:
+                print("set existing Project: {}".format(proj.name))
+            else:
+                raise ValueError("Project with ID {} not found".format(_proj_id))
+        else:
+            if proj_name is None:
+                proj_name = Project._generate_default_name()
+            try:
+                proj = Project._create(conn, conf, proj_name, desc, tags, attrs, workspace, public_within_org)
+            except requests.HTTPError as e:
+                if e.response.status_code == 403:  # cannot create in other workspace
+                    proj = Project._get(conn, conf, proj_name, workspace)
+                    if proj is not None:
+                        print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
+                    else:  # no accessible project in other workspace
+                        six.raise_from(e, None)
+                elif e.response.status_code == 409:  # already exists
+                    if any(param is not None for param in (desc, tags, attrs, public_within_org)):
+                        warnings.warn(
+                            "Project with name {} already exists;"
+                            " cannot set `desc`, `tags`, `attrs`, or `public_within_org`".format(proj_name)
+                        )
+                    proj = Project._get(conn, conf, proj_name, workspace)
+                    if proj is not None:
+                        print("set existing Project: {} from {}".format(proj.name, WORKSPACE_PRINT_MSG))
+                    else:
+                        raise RuntimeError("unable to retrieve Project {};"
+                                           " please notify the Verta development team".format(proj_name))
+                else:
+                    raise e
+            else:
+                print("created new Project: {} in {}".format(proj.name, WORKSPACE_PRINT_MSG))
+
+        return proj
+
+    @classmethod
+    def _get(cls, conn, conf, proj_name=None, workspace=None, _proj_id=None):
         if _proj_id is not None:
             Message = _ProjectService.GetProjectById
             msg = Message(id=_proj_id)
@@ -1279,7 +1267,7 @@ class Project(_ModelDBEntity):
 
             if response.ok:
                 response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-                return response_msg.project
+                return cls(conn, conf, response_msg.project.id)
             else:
                 if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
                         or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
@@ -1307,7 +1295,7 @@ class Project(_ModelDBEntity):
                     raise RuntimeError("unable to retrieve Project {};"
                                        " please notify the Verta development team".format(proj_name))
 
-                return proj
+                return cls(conn, conf, proj.id)
             else:
                 if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
                         or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
@@ -1317,8 +1305,8 @@ class Project(_ModelDBEntity):
         else:
             raise ValueError("insufficient arguments")
 
-    @staticmethod
-    def _create(conn, proj_name, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
+    @classmethod
+    def _create(cls, conn, conf, proj_name, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
         if attrs is not None:
@@ -1344,9 +1332,32 @@ class Project(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.project
+            return cls(conn, conf, response_msg.project.id)
         else:
             _utils.raise_for_http_error(response)
+
+    def _get_self_as_msg(self):
+        """
+        Gets the full protobuf message representation of this Project.
+
+        Returns
+        -------
+        proj_msg : Project protobuf message
+
+        """
+        Message = _ProjectService.GetProjectById
+        msg = Message(id=self.id)
+        data = _utils.proto_to_json(msg)
+        url = "{}://{}/api/v1/modeldb/project/getProjectById".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        response = _utils.make_request("GET", url, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        return response_msg.project
 
 
 class Experiment(_ModelDBEntity):
@@ -1369,43 +1380,12 @@ class Experiment(_ModelDBEntity):
         Experiment Runs under this Experiment.
 
     """
-    def __init__(self, conn, conf,
-                 proj_id=None, expt_name=None,
-                 desc=None, tags=None, attrs=None,
-                 _expt_id=None):
-        if expt_name is not None and _expt_id is not None:
-            raise ValueError("cannot specify both `expt_name` and `_expt_id`")
+    def __init__(self, conn, conf, id_):
+        super(Experiment, self).__init__(conn, conf, _ExperimentService, "experiment", id_)
 
-        if _expt_id is not None:
-            expt = Experiment._get(conn, _expt_id=_expt_id)
-            if expt is not None:
-                print("set existing Experiment: {}".format(expt.name))
-            else:
-                raise ValueError("Experiment with ID {} not found".format(_expt_id))
-        elif proj_id is not None:
-            if expt_name is None:
-                expt_name = Experiment._generate_default_name()
-            try:
-                expt = Experiment._create(conn, proj_id, expt_name, desc, tags, attrs)
-            except requests.HTTPError as e:
-                if e.response.status_code == 409:  # already exists
-                    if any(param is not None for param in (desc, tags, attrs)):
-                        warnings.warn("Experiment with name {} already exists;"
-                                      " cannot initialize `desc`, `tags`, or `attrs`".format(expt_name))
-                    expt = Experiment._get(conn, proj_id, expt_name)
-                    if expt is not None:
-                        print("set existing Experiment: {}".format(expt.name))
-                    else:
-                        raise RuntimeError("unable to retrieve Experiment {};"
-                                           " please notify the Verta development team".format(expt_name))
-                else:
-                    raise e
-            else:
-                print("created new Experiment: {}".format(expt.name))
-        else:
-            raise ValueError("insufficient arguments")
+        self._conn = conn
 
-        super(Experiment, self).__init__(conn, conf, _ExperimentService, "experiment", expt.id)
+        self.id = id_
 
     def __repr__(self):
         return "<Experiment \"{}\">".format(self.name)
@@ -1435,7 +1415,46 @@ class Experiment(_ModelDBEntity):
         return "Expt {}".format(_utils.generate_default_name())
 
     @staticmethod
-    def _get(conn, proj_id=None, expt_name=None, _expt_id=None):
+    def _get_or_create(conn, conf,
+                 proj_id=None, expt_name=None,
+                 desc=None, tags=None, attrs=None,
+                 _expt_id=None):
+        if expt_name is not None and _expt_id is not None:
+            raise ValueError("cannot specify both `expt_name` and `_expt_id`")
+
+        if _expt_id is not None:
+            expt = Experiment._get(conn, conf, _expt_id=_expt_id)
+            if expt is not None:
+                print("set existing Experiment: {}".format(expt.name))
+            else:
+                raise ValueError("Experiment with ID {} not found".format(_expt_id))
+        elif proj_id is not None:
+            if expt_name is None:
+                expt_name = Experiment._generate_default_name()
+            try:
+                expt = Experiment._create(conn, conf, proj_id, expt_name, desc, tags, attrs)
+            except requests.HTTPError as e:
+                if e.response.status_code == 409:  # already exists
+                    if any(param is not None for param in (desc, tags, attrs)):
+                        warnings.warn("Experiment with name {} already exists;"
+                                      " cannot initialize `desc`, `tags`, or `attrs`".format(expt_name))
+                    expt = Experiment._get(conn, conf, proj_id, expt_name)
+                    if expt is not None:
+                        print("set existing Experiment: {}".format(expt.name))
+                    else:
+                        raise RuntimeError("unable to retrieve Experiment {};"
+                                           " please notify the Verta development team".format(expt_name))
+                else:
+                    raise e
+            else:
+                print("created new Experiment: {}".format(expt.name))
+        else:
+            raise ValueError("insufficient arguments")
+
+        return expt
+
+    @classmethod
+    def _get(cls, conn, conf, proj_id=None, expt_name=None, _expt_id=None):
         if _expt_id is not None:
             Message = _ExperimentService.GetExperimentById
             msg = Message(id=_expt_id)
@@ -1461,7 +1480,7 @@ class Experiment(_ModelDBEntity):
                 raise RuntimeError("unable to retrieve Experiment {};"
                                    " please notify the Verta development team".format(expt_name))
 
-            return expt
+            return cls(conn, conf, expt.id)
         else:
             if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
                     or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
@@ -1469,8 +1488,8 @@ class Experiment(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-    @staticmethod
-    def _create(conn, proj_id, expt_name, desc=None, tags=None, attrs=None):
+    @classmethod
+    def _create(cls, conn, conf, proj_id, expt_name, desc=None, tags=None, attrs=None):
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
         if attrs is not None:
@@ -1487,9 +1506,32 @@ class Experiment(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.experiment
+            return cls(conn, conf, response_msg.experiment.id)
         else:
             _utils.raise_for_http_error(response)
+
+    def _get_self_as_msg(self):
+        """
+        Gets the full protobuf message representation of this Experiment.
+
+        Returns
+        -------
+        expt_msg : Experiment protobuf message
+
+        """
+        Message = _ExperimentService.GetExperimentById
+        msg = Message(id=self.id)
+        data = _utils.proto_to_json(msg)
+        url = "{}://{}/api/v1/modeldb/experiment/getExperimentById".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        response = _utils.make_request("GET", url, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        return response_msg.experiment
 
 
 class ExperimentRuns(_utils.LazyList):
@@ -1549,7 +1591,7 @@ class ExperimentRuns(_utils.LazyList):
         return response_msg.experiment_runs
 
     def _create_element(self, id_):
-        return ExperimentRun(self._conn, self._conf, _expt_run_id=id_)
+        return ExperimentRun(self._conn, self._conf, id_)
 
     def find(self, where, ret_all_info=False):
         """
@@ -1826,59 +1868,20 @@ class ExperimentRun(_ModelDBEntity):
         Name of this Experiment Run.
 
     """
-    def __init__(self, conn, conf,
-                 proj_id=None, expt_id=None, expt_run_name=None,
-                 desc=None, tags=None, attrs=None,
-                 date_created=None,
-                 _expt_run_id=None):
-        if expt_run_name is not None and _expt_run_id is not None:
-            raise ValueError("cannot specify both `expt_run_name` and `_expt_run_id`")
+    def __init__(self, conn, conf, id_):
+        super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", id_)
 
-        if _expt_run_id is not None:
-            expt_run = ExperimentRun._get(conn, _expt_run_id=_expt_run_id)
-            if expt_run is not None:
-                print("set existing ExperimentRun: {}".format(expt_run.name))
-            else:
-                raise ValueError("ExperimentRun with ID {} not found".format(_expt_run_id))
-        elif None not in (proj_id, expt_id):
-            if expt_run_name is None:
-                expt_run_name = ExperimentRun._generate_default_name()
-            try:
-                expt_run = ExperimentRun._create(conn, proj_id, expt_id, expt_run_name, desc, tags, attrs, date_created=date_created)
-            except requests.HTTPError as e:
-                if e.response.status_code == 409:  # already exists
-                    if any(param is not None for param in (desc, tags, attrs)):
-                        warnings.warn("ExperimentRun with name {} already exists;"
-                                      " cannot initialize `desc`, `tags`, or `attrs`".format(expt_run_name))
-                    expt_run = ExperimentRun._get(conn, expt_id, expt_run_name)
-                    if expt_run is not None:
-                        print("set existing ExperimentRun: {}".format(expt_run.name))
-                    else:
-                        raise RuntimeError("unable to retrieve ExperimentRun {};"
-                                           " please notify the Verta development team".format(expt_run_name))
-                else:
-                    raise e
-            else:
-                print("created new ExperimentRun: {}".format(expt_run.name))
-        else:
-            raise ValueError("insufficient arguments")
+        self._conn = conn
 
-        super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", expt_run.id)
+        self.id = id_
 
     def __repr__(self):
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        run_msg = response_msg.experiment_run
+        run_msg = self._get_self_as_msg()
         return '\n'.join((
             "name: {}".format(run_msg.name),
             "url: {}://{}/{}/projects/{}/exp-runs/{}".format(self._conn.scheme, self._conn.socket, self.workspace, run_msg.project_id, self.id),
+            "date created: {}".format(_utils.timestamp_to_str(int(run_msg.date_created))),
+            "date updated: {}".format(_utils.timestamp_to_str(int(run_msg.date_updated))),
             "description: {}".format(run_msg.description),
             "tags: {}".format(run_msg.tags),
             "attributes: {}".format(_utils.unravel_key_values(run_msg.attributes)),
@@ -1893,14 +1896,7 @@ class ExperimentRun(_ModelDBEntity):
 
     @property
     def workspace(self):
-        response = _utils.make_request(
-            "GET",
-            "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-            self._conn, params={'id': self.id},
-        )
-        _utils.raise_for_http_error(response)
-
-        proj_id = _utils.body_to_json(response)['experiment_run']['project_id']
+        proj_id = self._get_self_as_msg().project_id
         response = _utils.make_request(
             "GET",
             "{}://{}/api/v1/modeldb/project/getProjectById".format(self._conn.scheme, self._conn.socket),
@@ -1939,23 +1935,54 @@ class ExperimentRun(_ModelDBEntity):
 
     @property
     def name(self):
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return response_msg.experiment_run.name
+        return self._get_self_as_msg().name
 
     @staticmethod
     def _generate_default_name():
         return "Run {}".format(_utils.generate_default_name())
 
     @staticmethod
-    def _get(conn, expt_id=None, expt_run_name=None, _expt_run_id=None):
+    def _get_or_create(conn, conf,
+                 proj_id=None, expt_id=None, expt_run_name=None,
+                 desc=None, tags=None, attrs=None,
+                 date_created=None,
+                 _expt_run_id=None):
+        if expt_run_name is not None and _expt_run_id is not None:
+            raise ValueError("cannot specify both `expt_run_name` and `_expt_run_id`")
+
+        if _expt_run_id is not None:
+            expt_run = ExperimentRun._get(conn, conf, _expt_run_id=_expt_run_id)
+            if expt_run is not None:
+                print("set existing ExperimentRun: {}".format(expt_run.name))
+            else:
+                raise ValueError("ExperimentRun with ID {} not found".format(_expt_run_id))
+        elif None not in (proj_id, expt_id):
+            if expt_run_name is None:
+                expt_run_name = ExperimentRun._generate_default_name()
+            try:
+                expt_run = ExperimentRun._create(conn, conf, proj_id, expt_id, expt_run_name, desc, tags, attrs, date_created=date_created)
+            except requests.HTTPError as e:
+                if e.response.status_code == 409:  # already exists
+                    if any(param is not None for param in (desc, tags, attrs)):
+                        warnings.warn("ExperimentRun with name {} already exists;"
+                                      " cannot initialize `desc`, `tags`, or `attrs`".format(expt_run_name))
+                    expt_run = ExperimentRun._get(conn, conf, expt_id, expt_run_name)
+                    if expt_run is not None:
+                        print("set existing ExperimentRun: {}".format(expt_run.name))
+                    else:
+                        raise RuntimeError("unable to retrieve ExperimentRun {};"
+                                           " please notify the Verta development team".format(expt_run_name))
+                else:
+                    raise e
+            else:
+                print("created new ExperimentRun: {}".format(expt_run.name))
+        else:
+            raise ValueError("insufficient arguments")
+
+        return expt_run
+
+    @classmethod
+    def _get(cls, conn, conf, expt_id=None, expt_run_name=None, _expt_run_id=None):
         if _expt_run_id is not None:
             Message = _ExperimentRunService.GetExperimentRunById
             msg = Message(id=_expt_run_id)
@@ -1981,7 +2008,7 @@ class ExperimentRun(_ModelDBEntity):
                 raise RuntimeError("unable to retrieve ExperimentRun {};"
                                    " please notify the Verta development team".format(expt_run_name))
 
-            return expt_run
+            return cls(conn, conf, expt_run.id)
         else:
             if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
                     or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
@@ -1989,8 +2016,8 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-    @staticmethod
-    def _create(conn, proj_id, expt_id, expt_run_name, desc=None, tags=None, attrs=None, date_created=None):
+    @classmethod
+    def _create(cls, conn, conf, proj_id, expt_id, expt_run_name, desc=None, tags=None, attrs=None, date_created=None):
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
         if attrs is not None:
@@ -2008,9 +2035,33 @@ class ExperimentRun(_ModelDBEntity):
 
         if response.ok:
             response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-            return response_msg.experiment_run
+            return cls(conn, conf, response_msg.experiment_run.id)
         else:
             _utils.raise_for_http_error(response)
+
+    # TODO: use this throughout `ExperimentRun`
+    def _get_self_as_msg(self):
+        """
+        Gets the full protobuf message representation of this Experiment Run.
+
+        Returns
+        -------
+        run_msg : ExperimentRun protobuf message
+
+        """
+        Message = _ExperimentRunService.GetExperimentRunById
+        msg = Message(id=self.id)
+        data = _utils.proto_to_json(msg)
+        url = "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        response = _utils.make_request("GET", url, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        return response_msg.experiment_run
 
     def _log_artifact(self, key, artifact, artifact_type, extension=None, method=None, overwrite=False):
         """
@@ -2065,11 +2116,20 @@ class ExperimentRun(_ModelDBEntity):
         # build upload path from checksum and basename
         artifact_path = os.path.join(artifact_hash, basename)
 
+        # TODO: incorporate into config
+        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR', "")
+        VERTA_ARTIFACT_DIR = os.path.expanduser(VERTA_ARTIFACT_DIR)
+        if VERTA_ARTIFACT_DIR:
+            print("set artifact directory from environment:")
+            print("    " + VERTA_ARTIFACT_DIR)
+            artifact_path = os.path.join(VERTA_ARTIFACT_DIR, artifact_path)
+            pathlib2.Path(artifact_path).parent.mkdir(parents=True, exist_ok=True)
+
         # log key to ModelDB
         Message = _ExperimentRunService.LogArtifact
         artifact_msg = _CommonCommonService.Artifact(key=key,
                                                path=artifact_path,
-                                               path_only=False,
+                                               path_only=True if VERTA_ARTIFACT_DIR else False,
                                                artifact_type=artifact_type,
                                                filename_extension=extension)
         msg = Message(id=self.id, artifact=artifact_msg)
@@ -2089,7 +2149,13 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-        self._upload_artifact(key, artifact_stream)
+        if VERTA_ARTIFACT_DIR:
+            print("logging artifact")
+            with open(artifact_path, 'wb') as f:
+                shutil.copyfileobj(artifact_stream, f)
+            print("log complete; file written to {}".format(artifact_path))
+        else:
+            self._upload_artifact(key, artifact_stream)
 
     def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
         """
@@ -2103,6 +2169,15 @@ class ExperimentRun(_ModelDBEntity):
             If using multipart upload, number of bytes to upload per part.
 
         """
+        # TODO: add to Client config
+        env_part_size = os.environ.get('VERTA_ARTIFACT_PART_SIZE', "")
+        try:
+            part_size = int(float(env_part_size))
+        except ValueError:  # not an int
+            pass
+        else:
+            print("set artifact part size {} from environment".format(part_size))
+
         artifact_stream.seek(0)
         if self._conf.debug:
             print("[DEBUG] uploading {} bytes ({})".format(_artifact_utils.get_stream_length(artifact_stream), key))
@@ -2139,7 +2214,7 @@ class ExperimentRun(_ModelDBEntity):
                         continue  # try again
                     else:
                         break
-                response.raise_for_status()
+                _utils.raise_for_http_error(response)
 
                 # commit part
                 url = "{}://{}/api/v1/modeldb/experiment-run/commitArtifactPart".format(
@@ -2310,7 +2385,7 @@ class ExperimentRun(_ModelDBEntity):
 
         """
         # get info for the current run
-        current_run = self._get(self._conn, _expt_run_id=self.id)
+        current_run = self._get_self_as_msg()
 
         # clone the current run
         Message = _ExperimentRunService.CreateExperimentRun
@@ -2360,9 +2435,35 @@ class ExperimentRun(_ModelDBEntity):
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         new_run_msg = response_msg.experiment_run
         print("created new ExperimentRun: {}".format(new_run_msg.name))
-        new_run = ExperimentRun(self._conn, self._conf, _expt_run_id=new_run_msg.id)
+        new_run = ExperimentRun(self._conn, self._conf, new_run_msg.id)
 
         return new_run
+
+    def get_date_created(self):
+        """
+        Gets a timestamp representing the time (in UTC) this Experiment Run was created.
+
+        Returns
+        -------
+        timestamp : int
+            Unix timestamp in milliseconds.
+
+        """
+        run_msg = self._get_self_as_msg()
+        return int(run_msg.date_created)
+
+    def get_date_updated(self):
+        """
+        Gets a timestamp representing the time (in UTC) this Experiment Run was updated.
+
+        Returns
+        -------
+        timestamp : int
+            Unix timestamp in milliseconds.
+
+        """
+        run_msg = self._get_self_as_msg()
+        return int(run_msg.date_updated)
 
     def log_tag(self, tag):
         """
@@ -2763,40 +2864,26 @@ class ExperimentRun(_ModelDBEntity):
 
     def log_dataset(self, key, dataset, overwrite=False):
         """
-        Logs a dataset artifact to this Experiment Run.
+        Alias for :meth:`~ExperimentRun.log_dataset_version`.
 
-        Parameters
-        ----------
-        key : str
-            Name of the dataset.
-        dataset : str or file-like or object
-            Dataset or some representation thereof.
-                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
-                  and uploaded as an artifact.
-                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
-                - If type is Dataset, then it will log a dataset version
-                - Otherwise, the object will be serialized and uploaded as an artifact.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing dataset with key `key`.
+        .. deprecated:: 0.14.12
+            ``log_dataset()`` can no longer be used to log artifacts.
+            :meth:`~ExperimentRun.log_artifact` should be used instead.
 
         """
-        _artifact_utils.validate_key(key)
-        _utils.validate_flat_key(key)
-
         if isinstance(dataset, _dataset.Dataset):
-            raise ValueError("directly logging a Dataset is not supported;"
-                             " consider using run.log_dataset_version() instead")
+            raise TypeError(
+                "directly logging a Dataset is not supported;"
+                " please create a DatasetVersion for logging"
+            )
 
-        if isinstance(dataset, _dataset.DatasetVersion):
-            # TODO: maybe raise a warning pointing to log_dataset_version()
-            self.log_dataset_version(key, dataset, overwrite=overwrite)
+        if not isinstance(dataset, _dataset.DatasetVersion):
+            raise TypeError(
+                "`dataset` must be of type DatasetVersion;"
+                " to log an artifact, consider using run.log_artifact() instead"
+            )
 
-        # log `dataset` as artifact
-        try:
-            extension = _artifact_utils.get_file_ext(dataset)
-        except (TypeError, ValueError):
-            extension = None
-        self._log_artifact(key, dataset, _CommonCommonService.ArtifactTypeEnum.DATA, extension, overwrite=overwrite)
+        self.log_dataset_version(key=key, dataset_version=dataset, overwrite=overwrite)
 
     def log_dataset_version(self, key, dataset_version, overwrite=False):
         """
@@ -2811,7 +2898,7 @@ class ExperimentRun(_ModelDBEntity):
 
         """
         if not isinstance(dataset_version, _dataset.DatasetVersion):
-            raise ValueError("`dataset_version` must be of type DatasetVersion")
+            raise TypeError("`dataset_version` must be of type DatasetVersion")
 
         # TODO: hack because path_only artifact needs a placeholder path
         dataset_path = "See attached dataset version"
@@ -3076,11 +3163,8 @@ class ExperimentRun(_ModelDBEntity):
 
         # validate that `artifacts` are actually logged
         if artifacts:
-            response = _utils.make_request("GET",
-                                           "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                           self._conn, params={'id': self.id})
-            _utils.raise_for_http_error(response)
-            existing_artifact_keys = {artifact['key'] for artifact in _utils.body_to_json(response)['experiment_run'].get('artifacts', [])}
+            run_msg = self._get_self_as_msg()
+            existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
             unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
             if unlogged_artifact_keys:
                 raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
@@ -3244,6 +3328,9 @@ class ExperimentRun(_ModelDBEntity):
         """
         Logs an artifact to this Experiment Run.
 
+        The ``VERTA_ARTIFACT_DIR`` environment variable can be used to specify a locally-accessible
+        directory to store artifacts.
+
         Parameters
         ----------
         key : str
@@ -3324,14 +3411,119 @@ class ExperimentRun(_ModelDBEntity):
         """
         artifact, path_only = self._get_artifact(key)
         if path_only:
-            return artifact
+            if not os.path.exists(artifact):
+                # path-only artifact; `artifact` is its path
+                return artifact
+            else:
+                # clientside storage; `artifact` is its path
+                # NOTE: can cause problem if accidentally picks up unrelated file w/ same name
+                artifact_stream = open(artifact, 'rb')
         else:
-            try:
-                return pickle.loads(artifact)
-            except:
-                return six.BytesIO(artifact)
+            # uploaded artifact; `artifact` is its bytes
+            artifact_stream = six.BytesIO(artifact)
 
-    def log_observation(self, key, value, timestamp=None):
+        if torch is not None:
+            try:
+                obj = torch.load(artifact_stream)
+            except:  # not something torch can deserialize
+                artifact_stream.seek(0)
+            else:
+                artifact_stream.close()
+                return obj
+
+        try:
+            obj = pickle.load(artifact_stream)
+        except:  # not something pickle can deserialize
+            artifact_stream.seek(0)
+        else:
+            artifact_stream.close()
+            return obj
+
+        return artifact_stream
+
+    def download_artifact(self, key, download_to_path):
+        """
+        Downloads the artifact with name `key` to path `download_to_path`.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+        download_to_path : str
+            Path to download to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where artifact was downloaded to. Matches `download_to_path`.
+
+        """
+        download_to_path = os.path.abspath(download_to_path)
+
+        # get key-path from ModelDB
+        # TODO: consolidate the following ~12 lines with ExperimentRun._get_artifact()
+        Message = _CommonService.GetArtifacts
+        msg = Message(id=self.id, key=key)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        artifact = {artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
+        if artifact is None:
+            raise KeyError("no artifact found with key {}".format(key))
+
+        # TODO: unpack dirs logged as artifacts
+        #     But we can't distinguish if a ZIP artifact is a directory we've compressed, or if it
+        #     was a ZIP file the user already had.
+
+        # create parent dirs
+        pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+        # TODO: clean up empty parent dirs if something later fails
+
+        # get a stream of the file bytes, without loading into memory, and write to file
+        # TODO: consolidate this with _get_artifact() and get_artifact()
+        print("downloading {} from ModelDB".format(key))
+        if artifact.path_only:
+            if os.path.exists(artifact.path):
+                # copy from clientside storage
+                shutil.copyfile(artifact.path, download_to_path)
+            else:
+                raise ValueError(
+                    "artifact {} appears to have been logged as path-only,"
+                    " and cannot be downloaded".format(key)
+                )
+            print("download complete; file written to {}".format(download_to_path))
+        else:
+            # download artifact from artifact store
+            url = self._get_url_for_artifact(key, "GET").url
+            with _utils.make_request("GET", url, self._conn, stream=True) as response:
+                _utils.raise_for_http_error(response)
+
+                # user-specified filepath, so overwrite
+                _request_utils.download(response, download_to_path, overwrite_ok=True)
+
+        return download_to_path
+
+    def get_artifact_parts(self, key):
+        endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+        data = {'id': self.id, 'key': key}
+        response = _utils.make_request("GET", endpoint, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        committed_parts = _utils.body_to_json(response).get('artifact_parts', [])
+        committed_parts = list(sorted(
+            committed_parts,
+            key=lambda part: int(part['part_number']),
+        ))
+        return committed_parts
+
+    def log_observation(self, key, value, timestamp=None, epoch_num=None):
         """
         Logs an observation to this Experiment Run.
 
@@ -3341,9 +3533,12 @@ class ExperimentRun(_ModelDBEntity):
             Name of the observation.
         value : one of {None, bool, float, int, str}
             Value of the observation.
-        timestamp: str or float or int, optional
+        timestamp : str or float or int, optional
             String representation of a datetime or numerical Unix timestamp. If not provided, the
             current time will be used.
+        epoch_num : non-negative int, optional
+            Epoch number associated with this observation. If not provided, it will automatically
+            be incremented from prior observations for the same `key`.
 
         Warnings
         --------
@@ -3358,8 +3553,18 @@ class ExperimentRun(_ModelDBEntity):
         else:
             timestamp = _utils.ensure_timestamp(timestamp)
 
+        if epoch_num is not None:
+            if (not isinstance(epoch_num, six.integer_types)
+                    and not (isinstance(epoch_num, float) and epoch_num.is_integer())):
+                raise TypeError("`epoch_num` must be int, not {}".format(type(epoch_num)))
+            if epoch_num < 0:
+                raise ValueError("`epoch_num` must be non-negative")
+
         attribute = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         observation = _ExperimentRunService.Observation(attribute=attribute, timestamp=timestamp)  # TODO: support Artifacts
+        if epoch_num is not None:
+            observation.epoch_number.number_value = epoch_num  # pylint: disable=no-member
+
         msg = _ExperimentRunService.LogObservation(id=self.id, observation=observation)
         data = _utils.proto_to_json(msg)
         response = _utils.make_request("POST",
@@ -3409,16 +3614,8 @@ class ExperimentRun(_ModelDBEntity):
             Names and values of all observation series.
 
         """
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return _utils.unravel_observations(response_msg.experiment_run.observations)
+        run_msg = self._get_self_as_msg()
+        return _utils.unravel_observations(run_msg.observations)
 
     def log_requirements(self, requirements, overwrite=False):
         """
@@ -3743,11 +3940,8 @@ class ExperimentRun(_ModelDBEntity):
             raise TypeError("`keys` must be list of str, not {}".format(type(keys)))
 
         # validate that `keys` are actually logged
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params={'id': self.id})
-        _utils.raise_for_http_error(response)
-        existing_artifact_keys = {artifact['key'] for artifact in _utils.body_to_json(response)['experiment_run'].get('artifacts', [])}
+        run_msg = self._get_self_as_msg()
+        existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
         unlogged_artifact_keys = set(keys) - existing_artifact_keys
         if unlogged_artifact_keys:
             raise ValueError("`keys` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
@@ -3852,13 +4046,8 @@ class ExperimentRun(_ModelDBEntity):
         data = {}
         if path is not None:
             # get project ID for URL path
-            response = _utils.make_request(
-                "GET",
-                "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(self._conn.scheme, self._conn.socket),
-                self._conn, params={'id': self.id})
-            _utils.raise_for_http_error(response)
-
-            data.update({'url_path': "{}/{}".format(_utils.body_to_json(response)['experiment_run']['project_id'], path)})
+            run_msg = self._get_self_as_msg()
+            data.update({'url_path': "{}/{}".format(run_msg.project_id, path)})
         if no_token:
             data.update({'token': ""})
         elif token is not None:
@@ -3954,11 +4143,101 @@ class ExperimentRun(_ModelDBEntity):
             If the model is not currently deployed.
 
         """
-        if self.get_deployment_status()['status'] != "deployed":
-            raise RuntimeError("model is not currently deployed")
+        status = self.get_deployment_status().get('status', "<no status>")
+        if status != "deployed":
+            raise RuntimeError("model is not currently deployed (status: {})".format(status))
 
         status = self.get_deployment_status()
         return deployment.DeployedModel.from_url(status['url'], status['token'])
+
+    def download_deployment_yaml(self, download_to_path, path=None, token=None, no_token=False):
+        """
+        Downloads this Experiment Run's model deployment CRD YAML.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download deployment YAML to.
+        path : str, optional
+            Suffix for the prediction endpoint URL. If not provided, one will be generated
+            automatically.
+        token : str, optional
+            Token to use to authorize predictions requests. If not provided and `no_token` is
+            ``False``, one will be generated automatically.
+        no_token : bool, default False
+            Whether to not require a token for predictions.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where deployment YAML was downloaded to. Matches `download_to_path`.
+
+        """
+        # NOTE: this param-handling block was copied verbatim from deploy()
+        data = {}
+        if path is not None:
+            # get project ID for URL path
+            run_msg = self._get_self_as_msg()
+            data.update({'url_path': "{}/{}".format(run_msg.project_id, path)})
+        if no_token:
+            data.update({'token': ""})
+        elif token is not None:
+            data.update({'token': token})
+
+        endpoint = "{}://{}/api/v1/deployment/models/{}/crd".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+        )
+        with _utils.make_request("POST", endpoint, self._conn, json=data, stream=True) as response:
+            try:
+                _utils.raise_for_http_error(response)
+            except requests.HTTPError as e:
+                # propagate error caused by missing artifact
+                error_text = e.response.text.strip()
+                if error_text.startswith("missing artifact"):
+                    new_e = RuntimeError("unable to obtain deployment CRD due to " + error_text)
+                    six.raise_from(new_e, None)
+                else:
+                    raise e
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
+
+    def download_docker_context(self, download_to_path):
+        """
+        Downloads this Experiment Run's Docker context ``tgz``.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download Docker context to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where Docker context was downloaded to. Matches `download_to_path`.
+
+        """
+        endpoint = "{}://{}/api/v1/deployment/models/{}/dockercontext".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+        )
+        with _utils.make_request("GET", endpoint, self._conn, stream=True) as response:
+            try:
+                _utils.raise_for_http_error(response)
+            except requests.HTTPError as e:
+                # propagate error caused by missing artifact
+                error_text = e.response.text.strip()
+                if error_text.startswith("missing artifact"):
+                    new_e = RuntimeError("unable to obtain Docker context due to " + error_text)
+                    six.raise_from(new_e, None)
+                else:
+                    raise e
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
 
     def log_commit(self, commit, key_paths=None):
         """
@@ -3976,6 +4255,9 @@ class ExperimentRun(_ModelDBEntity):
             used for this Experiment Run.
 
         """
+        if commit.id is None:
+            raise RuntimeError("Commit must be saved before it can be logged to an Experiment Run")
+
         msg = _ExperimentRunService.LogVersionedInput()
         msg.id = self.id
         msg.versioned_inputs.repository_id = commit._repo.id

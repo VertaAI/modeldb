@@ -2,6 +2,7 @@
 
 import six
 
+import pathlib2
 import subprocess
 import sys
 
@@ -28,9 +29,11 @@ class TestMakeRequest:
             client._conn,
         )
 
-        assert not response.history
         assert response.status_code == 200
+        assert not response.history
 
+    # https://github.com/postmanlabs/httpbin/issues/617
+    @pytest.mark.skip(reason="httpbin's /redirect-to is currently returning 404s")
     def test_301_continue(self, client):
         response = _utils.make_request(
             "GET",
@@ -42,10 +45,12 @@ class TestMakeRequest:
             },
         )
 
+        assert response.status_code == 200
         assert len(response.history) == 1
         assert response.history[0].status_code == 301
-        assert response.status_code == 200
 
+    # https://github.com/postmanlabs/httpbin/issues/617
+    @pytest.mark.skip(reason="httpbin's /redirect-to is currently returning 404s")
     def test_302_stop(self, client):
         with pytest.raises(RuntimeError) as excinfo:
             _utils.make_request(
@@ -286,7 +291,7 @@ class TestPipRequirementsUtils:
         ))
 
 
-class TestIncrementFilepath:
+class TestFileUtils:
     @pytest.mark.parametrize(
         "input_filepath, expected_filepath",
         [
@@ -300,5 +305,48 @@ class TestIncrementFilepath:
             ("my archive.tar 1.gz", "my archive.tar 2.gz"),
         ],
     )
-    def test_increment(self, input_filepath, expected_filepath):
+    def test_increment_path(self, input_filepath, expected_filepath):
         assert expected_filepath == _file_utils.increment_path(input_filepath)
+
+    @pytest.mark.parametrize(
+        "path, prefix_dir, expected",
+        [
+            # simple removal cases
+            ("files/data.csv",      "files",      "data.csv"),
+            ("files/data/data.csv", "files/data", "data.csv"),
+            # simple no-change cases
+            ("files/data.csv",      "foo",            "files/data.csv"),
+            ("files/data.csv",      "fil",            "files/data.csv"),
+            ("files/data/data.csv", "files/data.csv", "files/data/data.csv"),
+            # edge cases
+            ("data.csv", "data.csv", "data.csv"),
+            # examples from comments in fn
+            ("data/census-train.csv", "data/census", "data/census-train.csv"),
+            ("data/census/train.csv", "data/census", "train.csv"),
+            # remove "s3://"
+            ("s3://verta-starter/census-train.csv", "s3:",   "verta-starter/census-train.csv"),
+            ("s3://verta-starter/census-train.csv", "s3:/",  "verta-starter/census-train.csv"),
+            ("s3://verta-starter/census-train.csv", "s3://", "verta-starter/census-train.csv"),
+        ]
+    )
+    def test_remove_prefix_dir(self, path, prefix_dir, expected):
+        assert _file_utils.remove_prefix_dir(path, prefix_dir) == expected
+
+    def test_flatten_file_trees(self, in_tempdir):
+        filepaths = {
+            "README.md",
+            "data/train.csv",
+            "data/test.csv",
+            "script.py",
+            "utils/data/clean.py",
+            "utils/misc/misc.py",
+        }
+        paths = ["README.md", "data", "script.py", "utils"]
+
+        # create files
+        for filepath in filepaths:
+            filepath = pathlib2.Path(filepath)
+            filepath.parent.mkdir(parents=True, exist_ok=True)
+            filepath.touch()
+
+        assert _file_utils.flatten_file_trees(paths) == filepaths

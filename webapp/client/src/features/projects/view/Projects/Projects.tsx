@@ -2,13 +2,13 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import { selectCurrentContextFilters } from 'core/features/filter';
-import Button from 'core/shared/view/elements/Button/Button';
-import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub';
-import Pagination from 'core/shared/view/elements/Pagination/Pagination';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import Reloading from 'core/shared/view/elements/Reloading/Reloading';
+import { selectCurrentContextFilters } from 'features/filter';
+import Button from 'shared/view/elements/Button/Button';
+import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import NoResultsStub from 'shared/view/elements/NoResultsStub/NoResultsStub';
+import Pagination from 'shared/view/elements/Pagination/Pagination';
+import Preloader from 'shared/view/elements/Preloader/Preloader';
+import Reloading from 'shared/view/elements/Reloading/Reloading';
 import {
   selectCommunications,
   selectProjects,
@@ -17,15 +17,15 @@ import {
   getDefaultProjectsOptions,
   loadProjects,
 } from 'features/projects/store';
-import routes from 'routes';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import routes from 'shared/routes';
+import { IApplicationState, IConnectedReduxProps } from 'setup/store/store';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 import DeletingProjectsManager from './DeletingProjectsManager/DeletingProjectsManager';
 import styles from './Projects.module.css';
 import ProjectWidget from './ProjectWidget/ProjectWidget';
 import { cleanChartData } from 'features/experimentRuns/store';
-import NoEntitiesStub from 'core/shared/view/elements/NoEntitiesStub/NoEntitiesStub';
+import NoEntitiesStub from 'shared/view/elements/NoEntitiesStub/NoEntitiesStub';
 
 const mapStateToProps = (state: IApplicationState) => ({
   projects: selectProjects(state),

@@ -1,11 +1,11 @@
 import { combineReducers } from 'redux';
 
-import * as ActionHelpers from 'core/shared/utils/redux/actions';
+import * as ActionHelpers from 'shared/utils/redux/actions';
 import {
   makeCommunicationReducerFromEnum,
   makeCommunicationReducerByIdFromEnum,
   CommunicationActionsToObj,
-} from 'core/shared/utils/redux/communication';
+} from 'shared/utils/redux/communication';
 
 import * as actions from '../actions';
 import {

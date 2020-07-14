@@ -15,4 +15,5 @@ class _Configuration(blob.Blob):
     def __init__(self):
         super(_Configuration, self).__init__()
 
+        # TODO: don't use proto to store data
         self._msg = _ConfigService.ConfigBlob()

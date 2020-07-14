@@ -45,19 +45,35 @@ public interface CommitDAO {
       Session session, String commitHash, RepositoryFunction getRepositoryFunction)
       throws ModelDBException;
 
+  void deleteDatasetVersions(
+      RepositoryIdentification repositoryIdentification,
+      List<String> datasetVersionIds,
+      RepositoryDAO repositoryDAO)
+      throws ModelDBException;
+
   boolean deleteCommits(
       RepositoryIdentification repositoryIdentification,
       List<String> commitShas,
-      RepositoryDAO repositoryDAO,
-      boolean isDatasetVersion)
+      RepositoryDAO repositoryDAO)
       throws ModelDBException;
 
-  void addDeleteDatasetVersionTags(
+  DatasetVersion addDeleteDatasetVersionTags(
+      RepositoryDAO repositoryDAO,
+      BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       boolean addTags,
-      RepositoryEntity repositoryEntity,
+      String datasetId,
       String datasetVersionId,
       List<String> tagsList,
+      boolean deleteAll)
+      throws ModelDBException;
+
+  void addDeleteCommitLabels(
+      RepositoryEntity repositoryEntity,
+      String commitHash,
+      MetadataDAO metadataDAO,
+      boolean addLabels,
+      List<String> labelsList,
       boolean deleteAll)
       throws ModelDBException;
 
@@ -74,5 +90,16 @@ public interface CommitDAO {
       UserInfo currentLoginUserInfo,
       boolean idsOnly,
       boolean rootSHAOnly)
+      throws ModelDBException;
+
+  boolean isCommitExists(Session session, String commitHash);
+
+  DatasetVersion updateDatasetVersionDescription(
+      RepositoryDAO repositoryDAO,
+      BlobDAO blobDAO,
+      MetadataDAO metadataDAO,
+      String datasetId,
+      String datasetVersionId,
+      String description)
       throws ModelDBException;
 }

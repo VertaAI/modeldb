@@ -974,144 +974,6 @@
         ]
       }
     },
-    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path/runs": {
-      "get": {
-        "summary": "Getting ExperimentRuns linked to a blob",
-        "operationId": "ListBlobExperimentRuns2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/versioningListBlobExperimentRunsRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "repository_id.repo_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "commit_sha",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "repository_id.named_id.name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "repository_id.named_id.workspace_name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "location",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          }
-        ],
-        "tags": [
-          "VersioningService"
-        ]
-      }
-    },
-    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/runs": {
-      "get": {
-        "summary": "Getting ExperimentRuns linked to a commit",
-        "operationId": "ListCommitExperimentRuns2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/versioningListCommitExperimentRunsRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "repository_id.repo_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "commit_sha",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "repository_id.named_id.name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "repository_id.named_id.workspace_name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "tags": [
-          "VersioningService"
-        ]
-      }
-    },
     "/versioning/repositories/{repository_id.repo_id}/commits/{commit_to_revert_sha}/revert": {
       "post": {
         "operationId": "RevertRepositoryCommits2",
@@ -2304,144 +2166,6 @@
         ]
       }
     },
-    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path/runs": {
-      "get": {
-        "summary": "Getting ExperimentRuns linked to a blob",
-        "operationId": "ListBlobExperimentRuns",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/versioningListBlobExperimentRunsRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "repository_id.named_id.workspace_name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "repository_id.named_id.name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "commit_sha",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "repository_id.repo_id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "location",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          }
-        ],
-        "tags": [
-          "VersioningService"
-        ]
-      }
-    },
-    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/runs": {
-      "get": {
-        "summary": "Getting ExperimentRuns linked to a commit",
-        "operationId": "ListCommitExperimentRuns",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/versioningListCommitExperimentRunsRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "repository_id.named_id.workspace_name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "repository_id.named_id.name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "commit_sha",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "repository_id.repo_id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "tags": [
-          "VersioningService"
-        ]
-      }
-    },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_to_revert_sha}/revert": {
       "post": {
         "operationId": "RevertRepositoryCommits",
@@ -2925,20 +2649,6 @@
     }
   },
   "definitions": {
-    "ArtifactTypeEnumArtifactType": {
-      "type": "string",
-      "enum": [
-        "IMAGE",
-        "MODEL",
-        "TENSORBOARD",
-        "DATA",
-        "BLOB",
-        "STRING",
-        "CODE",
-        "CONTAINER"
-      ],
-      "default": "IMAGE"
-    },
     "DiffStatusEnumDiffStatus": {
       "type": "string",
       "enum": [
@@ -2974,15 +2684,6 @@
       ],
       "default": "PRIVATE"
     },
-    "TernaryEnumTernary": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "TRUE",
-        "FALSE"
-      ],
-      "default": "UNKNOWN"
-    },
     "ValueTypeEnumValueType": {
       "type": "string",
       "enum": [
@@ -3002,26 +2703,14 @@
       ],
       "default": "UNKNOWN"
     },
-    "commonArtifact": {
+    "commonArtifactPart": {
       "type": "object",
       "properties": {
-        "key": {
-          "type": "string"
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
         },
-        "path": {
-          "type": "string"
-        },
-        "path_only": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
-        },
-        "linked_artifact_id": {
-          "type": "string"
-        },
-        "filename_extension": {
+        "etag": {
           "type": "string"
         }
       }
@@ -3041,172 +2730,7 @@
         }
       }
     },
-    "modeldbArtifactPart": {
-      "type": "object",
-      "properties": {
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "etag": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbCodeVersion": {
-      "type": "object",
-      "properties": {
-        "git_snapshot": {
-          "$ref": "#/definitions/modeldbGitSnapshot"
-        },
-        "code_archive": {
-          "$ref": "#/definitions/commonArtifact"
-        },
-        "date_logged": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "title": "code version"
-    },
-    "modeldbExperimentRun": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "project_id": {
-          "type": "string"
-        },
-        "experiment_id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "date_created": {
-          "type": "string",
-          "format": "int64"
-        },
-        "date_updated": {
-          "type": "string",
-          "format": "int64"
-        },
-        "start_time": {
-          "type": "string",
-          "format": "int64"
-        },
-        "end_time": {
-          "type": "string",
-          "format": "int64"
-        },
-        "code_version": {
-          "type": "string"
-        },
-        "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
-        },
-        "parent_id": {
-          "type": "string"
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "attributes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonKeyValue"
-          }
-        },
-        "hyperparameters": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonKeyValue"
-          }
-        },
-        "artifacts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonArtifact"
-          }
-        },
-        "datasets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonArtifact"
-          }
-        },
-        "metrics": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonKeyValue"
-          }
-        },
-        "observations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/modeldbObservation"
-          }
-        },
-        "features": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/modeldbFeature"
-          }
-        },
-        "job_id": {
-          "type": "string"
-        },
-        "owner": {
-          "type": "string"
-        },
-        "versioned_inputs": {
-          "$ref": "#/definitions/modeldbVersioningEntry"
-        },
-        "code_version_from_blob": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/modeldbCodeVersion"
-          }
-        }
-      },
-      "title": "ExperimentRun Entity"
-    },
-    "modeldbFeature": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbGitSnapshot": {
-      "type": "object",
-      "properties": {
-        "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "repo": {
-          "type": "string"
-        },
-        "hash": {
-          "type": "string"
-        },
-        "is_dirty": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        }
-      }
-    },
-    "modeldbKeyValueQuery": {
+    "commonKeyValueQuery": {
       "type": "object",
       "properties": {
         "key": {
@@ -3223,41 +2747,7 @@
         }
       }
     },
-    "modeldbObservation": {
-      "type": "object",
-      "properties": {
-        "attribute": {
-          "$ref": "#/definitions/commonKeyValue"
-        },
-        "artifact": {
-          "$ref": "#/definitions/commonArtifact"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64"
-        }
-      },
-      "title": "observations with the same key are not overwritten, the are appended to a list"
-    },
-    "modeldbVersioningEntry": {
-      "type": "object",
-      "properties": {
-        "repository_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "commit": {
-          "type": "string"
-        },
-        "key_location_map": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/vertamodeldbLocation"
-          }
-        }
-      }
-    },
-    "modeldbversioningPagination": {
+    "commonPagination": {
       "type": "object",
       "properties": {
         "page_number": {
@@ -3368,6 +2858,12 @@
         },
         "blob": {
           "$ref": "#/definitions/versioningBlob"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
         }
       }
     },
@@ -3455,6 +2951,11 @@
         },
         "commit_sha": {
           "type": "string"
+        },
+        "date_updated": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Updated Date while create tags & attribute for the commit."
         }
       },
       "title": "Base commit for the versioning system\nDO NOT USE TO COMPUTE SHA"
@@ -3501,7 +3002,7 @@
           "type": "string"
         },
         "artifact_part": {
-          "$ref": "#/definitions/modeldbArtifactPart"
+          "$ref": "#/definitions/commonArtifactPart"
         }
       }
     },
@@ -3772,7 +3273,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "page_number": {
@@ -3826,6 +3327,13 @@
         "page_limit": {
           "type": "integer",
           "format": "int32"
+        },
+        "predicates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValueQuery"
+          },
+          "title": "In future requirement\nbool ascending = 8;\nstring sort_key = 9;"
         }
       }
     },
@@ -3905,6 +3413,12 @@
         },
         "blob": {
           "$ref": "#/definitions/versioningBlob"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
         }
       }
     },
@@ -3922,7 +3436,7 @@
         "artifact_parts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifactPart"
+            "$ref": "#/definitions/commonArtifactPart"
           }
         }
       }
@@ -4095,21 +3609,6 @@
         }
       }
     },
-    "versioningListBlobExperimentRunsRequestResponse": {
-      "type": "object",
-      "properties": {
-        "runs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/modeldbExperimentRun"
-          }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "versioningListBranchesRequestResponse": {
       "type": "object",
       "properties": {
@@ -4132,21 +3631,6 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/versioningBlobExpanded"
-          }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
-    "versioningListCommitExperimentRunsRequestResponse": {
-      "type": "object",
-      "properties": {
-        "runs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/modeldbExperimentRun"
           }
         },
         "total_records": {
@@ -4447,6 +3931,15 @@
         },
         "owner": {
           "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
         }
       }
     },
@@ -4598,17 +4091,6 @@
         },
         "C": {
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
-        }
-      }
-    },
-    "vertamodeldbLocation": {
-      "type": "object",
-      "properties": {
-        "location": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       }
     }

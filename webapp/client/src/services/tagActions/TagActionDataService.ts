@@ -1,7 +1,7 @@
-import { EntityWithTags } from 'core/shared/models/TagsCRUD';
+import { EntityWithTags } from 'shared/models/TagsCRUD';
 
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
-import { BaseDataService } from 'core/services/BaseDataService';
+import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
+import { BaseDataService } from 'services/BaseDataService';
 
 export default class TagActionDataService extends BaseDataService {
   constructor() {

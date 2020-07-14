@@ -4,7 +4,7 @@ import {
   makeCommunicationReducerFromEnum,
   makeCommunicationReducerByIdFromEnum,
   CommunicationActionsToObj,
-} from 'core/shared/utils/redux/communication';
+} from 'shared/utils/redux/communication';
 
 import {
   IExperimentRunsState,

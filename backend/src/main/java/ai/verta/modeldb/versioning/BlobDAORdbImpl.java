@@ -3,10 +3,15 @@ package ai.verta.modeldb.versioning;
 import static ai.verta.modeldb.ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION;
 import static java.util.stream.Collectors.toMap;
 
+import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
+import ai.verta.modeldb.CommitMultipartVersionedDatasetBlobArtifact;
+import ai.verta.modeldb.CommitVersionedDatasetBlobArtifactPart;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
+import ai.verta.modeldb.GetCommittedVersionedDatasetBlobArtifactParts;
 import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.PathDatasetVersionInfo;
@@ -124,18 +129,63 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   @Override
-  public void addUpdateBlobAttributes(
-      RepositoryEntity repositoryEntity,
-      CommitFunction commitFunction,
+  public DatasetVersion addUpdateDatasetVersionAttributes(
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      MetadataDAO metadataDAO,
+      Long repoId,
+      String commitHash,
       List<KeyValue> attributes,
       boolean addAttribute)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
-      CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
+      RepositoryEntity repositoryEntity;
 
+      RepositoryIdentification.Builder repositoryIdentification =
+          RepositoryIdentification.newBuilder();
+      if (repoId == null) {
+        CommitEntity commitEntity = session.get(CommitEntity.class, commitHash);
+        if (commitEntity == null) {
+          throw new ModelDBException("DatasetVersion not found", Status.Code.NOT_FOUND);
+        }
+
+        if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
+          throw new ModelDBException(
+              "DatasetVersion '"
+                  + commitEntity.getCommit_hash()
+                  + "' associated with multiple datasets",
+              Status.Code.INTERNAL);
+        }
+        assert commitEntity.getRepository() != null;
+        Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
+        repositoryIdentification.setRepoId(newRepoId);
+      } else {
+        repositoryIdentification.setRepoId(repoId);
+      }
+      repositoryEntity =
+          repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
+      addUpdateBlobAttributes(commitDAO, repositoryEntity, commitHash, attributes, addAttribute);
+      return convertToDatasetVersion(metadataDAO, repositoryEntity, commitHash);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addUpdateDatasetVersionAttributes(
+            repositoryDAO, commitDAO, metadataDAO, repoId, commitHash, attributes, addAttribute);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public void addUpdateBlobAttributes(
+      CommitDAO commitDAO,
+      RepositoryEntity repositoryEntity,
+      String commitHash,
+      List<KeyValue> attributes,
+      boolean addAttribute)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Blob.Builder blobBuilder = Blob.newBuilder();
-      blobBuilder.addAllAttributes(attributes);
       List<String> locations =
           Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION);
       List<BlobContainer> blobList =
@@ -144,7 +194,12 @@ public class BlobDAORdbImpl implements BlobDAO {
                   BlobExpanded.newBuilder()
                       .addAllLocation(locations)
                       .setBlob(blobBuilder.setDataset(DatasetBlob.newBuilder().build()).build())
+                      .addAllAttributes(attributes)
                       .build()));
+
+      session.beginTransaction();
+      CommitEntity commitEntity =
+          commitDAO.getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
       setBlobsAttributes(
           session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList, addAttribute);
       commitEntity.setDate_updated(new Date().getTime());
@@ -152,7 +207,65 @@ public class BlobDAORdbImpl implements BlobDAO {
       session.getTransaction().commit();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        addUpdateBlobAttributes(repositoryEntity, commitFunction, attributes, addAttribute);
+        addUpdateBlobAttributes(commitDAO, repositoryEntity, commitHash, attributes, addAttribute);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public DatasetVersion deleteDatasetVersionAttributes(
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      MetadataDAO metadataDAO,
+      Long repoId,
+      String commitHash,
+      List<String> attributesKeys,
+      List<String> location,
+      boolean deleteAll)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      RepositoryEntity repositoryEntity;
+
+      RepositoryIdentification.Builder repositoryIdentification =
+          RepositoryIdentification.newBuilder();
+      if (repoId == null) {
+        CommitEntity commitEntity = session.get(CommitEntity.class, commitHash);
+        if (commitEntity == null) {
+          throw new ModelDBException("DatasetVersion not found", Status.Code.NOT_FOUND);
+        }
+
+        if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
+          throw new ModelDBException(
+              "DatasetVersion '"
+                  + commitEntity.getCommit_hash()
+                  + "' associated with multiple datasets",
+              Status.Code.INTERNAL);
+        }
+        assert commitEntity.getRepository() != null;
+        Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
+        repositoryIdentification.setRepoId(newRepoId);
+      } else {
+        repositoryIdentification.setRepoId(repoId);
+      }
+      repositoryEntity =
+          repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
+
+      deleteBlobAttributes(
+          commitDAO, repositoryEntity, commitHash, attributesKeys, location, deleteAll);
+      return convertToDatasetVersion(metadataDAO, repositoryEntity, commitHash);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteDatasetVersionAttributes(
+            repositoryDAO,
+            commitDAO,
+            metadataDAO,
+            repoId,
+            commitHash,
+            attributesKeys,
+            location,
+            deleteAll);
       } else {
         throw ex;
       }
@@ -161,15 +274,17 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public void deleteBlobAttributes(
+      CommitDAO commitDAO,
       RepositoryEntity repositoryEntity,
-      CommitFunction commitFunction,
+      String commitHash,
       List<String> attributesKeys,
       List<String> location,
       boolean deleteAll)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
-      CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
+      CommitEntity commitEntity =
+          commitDAO.getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
       if (deleteAll) {
         String entityHash =
             VersioningUtils.getVersioningCompositeId(
@@ -192,7 +307,62 @@ public class BlobDAORdbImpl implements BlobDAO {
       session.getTransaction().commit();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        deleteBlobAttributes(repositoryEntity, commitFunction, attributesKeys, location, deleteAll);
+        deleteBlobAttributes(
+            commitDAO, repositoryEntity, commitHash, attributesKeys, location, deleteAll);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public List<KeyValue> getDatasetVersionAttributes(
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      Long repoId,
+      String commitHash,
+      List<String> location,
+      List<String> attributeKeysList)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      CommitEntity commitEntity = null;
+      RepositoryEntity repositoryEntity;
+
+      RepositoryIdentification.Builder repositoryIdentification =
+          RepositoryIdentification.newBuilder();
+      if (repoId == null) {
+        commitEntity = session.get(CommitEntity.class, commitHash);
+        if (commitEntity == null) {
+          throw new ModelDBException("DatasetVersion not found", Status.Code.NOT_FOUND);
+        }
+
+        if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
+          throw new ModelDBException(
+              "DatasetVersion '"
+                  + commitEntity.getCommit_hash()
+                  + "' associated with multiple datasets",
+              Status.Code.INTERNAL);
+        }
+        assert commitEntity.getRepository() != null;
+        Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
+        repositoryIdentification.setRepoId(newRepoId);
+      } else {
+        repositoryIdentification.setRepoId(repoId);
+      }
+      repositoryEntity =
+          repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
+
+      if (commitEntity == null) {
+        commitEntity =
+            commitDAO.getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
+      }
+
+      return getBlobAttributes(
+          repositoryEntity.getId(), commitEntity.getCommit_hash(), location, attributeKeysList);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetVersionAttributes(
+            repositoryDAO, commitDAO, repoId, commitHash, location, attributeKeysList);
       } else {
         throw ex;
       }
@@ -201,14 +371,14 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public List<KeyValue> getBlobAttributes(
-      Long repoId, String commitHash, List<String> location, List<String> attributeKeysList)
+      Long repositoryId, String commitHash, List<String> location, List<String> attributeKeysList)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       return VersioningUtils.getAttributes(
-          session, repoId, commitHash, location, attributeKeysList);
+          session, repositoryId, commitHash, location, attributeKeysList);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return getBlobAttributes(repoId, commitHash, location, attributeKeysList);
+        return getBlobAttributes(repositoryId, commitHash, location, attributeKeysList);
       } else {
         throw ex;
       }
@@ -326,8 +496,10 @@ public class BlobDAORdbImpl implements BlobDAO {
           List<KeyValue> attributeEntities =
               VersioningUtils.getAttributes(
                   session, repoId, commit.getCommit_hash(), locationList, null);
-          blob = blob.toBuilder().addAllAttributes(attributeEntities).build();
-          return GetCommitComponentRequest.Response.newBuilder().setBlob(blob).build();
+          return GetCommitComponentRequest.Response.newBuilder()
+              .setBlob(blob)
+              .addAllAttributes(attributeEntities)
+              .build();
         } else {
           throw new ModelDBException(
               "No such folder found : " + locationList.get(index + 1), Status.Code.NOT_FOUND);
@@ -357,8 +529,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         DatasetVersion.Builder datasetVersionBuilder = DatasetVersion.newBuilder();
         datasetVersionBuilder.setId(commit.getCommit_hash());
         if (commit.getParent_commits().size() != 0) {
-          datasetVersionBuilder.setParentId(
-              commit.getParent_commits().iterator().next().getCommit_hash());
+          datasetVersionBuilder.setParentId(commit.getParent_commits().get(0).getCommit_hash());
         }
         datasetVersionBuilder.setDatasetId(String.valueOf(repositoryEntity.getId()));
         datasetVersionBuilder.setTimeLogged(commit.getDate_created());
@@ -390,7 +561,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         }
         datasetVersionBuilder.setDatasetVersionVisibilityValue(
             repositoryEntity.getRepository_visibility());
-        datasetVersionBuilder.addAllAttributes(blob.getAttributesList());
+        datasetVersionBuilder.addAllAttributes(getComponentResponse.getAttributesList());
         datasetVersionBuilder.setOwner(commit.getAuthor());
         DatasetBlob dataset = blob.getDataset();
         PathDatasetVersionInfo.Builder builderPathDatasetVersion =
@@ -421,6 +592,7 @@ public class BlobDAORdbImpl implements BlobDAO {
             builderPathDatasetVersion
                 .setBasePath(locationList.get(0))
                 .addAllDatasetPartInfos(components));
+        datasetVersionBuilder.setDatasetBlob(dataset);
         return datasetVersionBuilder.build();
       } else {
         throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
@@ -504,6 +676,20 @@ public class BlobDAORdbImpl implements BlobDAO {
                   childLocation,
                   childElementFolder.getElement_sha(),
                   blobTypeList));
+        } else {
+          if (parentLocation.containsAll(requestedLocation)
+              || childLocation.containsAll(requestedLocation)) {
+            Blob blob = getBlob(session, childElementFolder);
+            if (blobTypeList != null && !blobTypeList.isEmpty()) {
+              if (blobTypeExistsInList(blobTypeList, blob.getContentCase())) {
+                setBlobInBlobExpandMap(
+                    parentLocation, childBlobExpandedMap, childElementFolder, blob);
+              }
+            } else {
+              setBlobInBlobExpandMap(
+                  parentLocation, childBlobExpandedMap, childElementFolder, blob);
+            }
+          }
         }
       } else {
         if (parentLocation.containsAll(requestedLocation)) {
@@ -658,8 +844,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                 Collections.singletonList(location),
                 null);
         BlobExpanded blobExpanded = locationBlobMap.get(location);
-        Blob blob = blobExpanded.getBlob().toBuilder().addAllAttributes(attributes).build();
-        blobExpanded = blobExpanded.toBuilder().setBlob(blob).build();
+        blobExpanded = blobExpanded.toBuilder().addAllAttributes(attributes).build();
         blobExpandedSet.add(blobExpanded);
       }
       return ListCommitBlobsRequest.Response.newBuilder().addAllBlobs(blobExpandedSet).build();
@@ -960,7 +1145,9 @@ public class BlobDAORdbImpl implements BlobDAO {
         String mergeMessage = request.getContent().getMessage();
         List<String> parentSHAs =
             Arrays.asList(internalCommitB.getCommit_hash(), internalCommitA.getCommit_hash());
-        List<CommitEntity> parentCommits = Arrays.asList(internalCommitB, internalCommitA);
+        Map<Integer, CommitEntity> parentCommits = new HashMap<>();
+        parentCommits.put(0, internalCommitB);
+        parentCommits.put(1, internalCommitA);
         if (mergeMessage.isEmpty()) {
           mergeMessage = "Merge " + branchOrCommitA + " into " + branchOrCommitB;
         }
@@ -1002,7 +1189,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       Session writeSession,
       RepositoryEntity repositoryEntity,
       List<String> parentSHAs,
-      List<CommitEntity> parentCommits,
+      Map<Integer, CommitEntity> parentCommits,
       List<BlobContainer> blobContainerList,
       String commitMessage)
       throws NoSuchAlgorithmException, ModelDBException {
@@ -1074,8 +1261,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         throw new ModelDBException(
             "No parent found for commit : " + request.getCommitToRevertSha(), Status.Code.INTERNAL);
       }
-      CommitEntity firstParentOfCommitToRevert =
-          new ArrayList<>(commitToRevertEntity.getParent_commits()).get(0);
+      CommitEntity firstParentOfCommitToRevert = commitToRevertEntity.getParent_commits().get(0);
 
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapFirstParentCommit =
           getCommitBlobMapWithHash(
@@ -1119,7 +1305,8 @@ public class BlobDAORdbImpl implements BlobDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<String> parentSHAs = Collections.singletonList(request.getBaseCommitSha());
-      List<CommitEntity> parentCommits = Collections.singletonList(baseCommitEntity);
+      Map<Integer, CommitEntity> parentCommits = new HashMap<>();
+      parentCommits.put(0, baseCommitEntity);
       String revertMessage = request.getContent().getMessage();
       if (revertMessage.isEmpty()) {
         revertMessage = VersioningUtils.revertCommitMessage(commitToRevertEntity.toCommitProto());
@@ -1176,7 +1363,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       } else {
         diffBuilder.addAllLocation(locSpecificBlobDiffB.get(0).getLocationList());
       }
-      blobDiffList.add(
+      blobDiffList.addAll(
           ConflictGenerator.setConflictBlobsInDiff(
               diffBuilder.build(),
               locSpecificBlobDiffA,
@@ -1381,7 +1568,6 @@ public class BlobDAORdbImpl implements BlobDAO {
               getStringFromLocationList(locationList), new LinkedList<String>());
         }
         conflictLocationMap.get(getStringFromLocationList(locationList)).addAll(conflictKeys);
-        continue;
       }
       locationBlobsMapNew.put(
           getStringFromLocationList(locationList),
@@ -1458,6 +1644,40 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   @Override
+  public GetUrlForDatasetBlobVersioned.Response getUrlForVersionedDatasetBlob(
+      ArtifactStoreDAO artifactStoreDAO,
+      RepositoryDAO repositoryDAO,
+      String datasetId,
+      CommitFunction commitFunction,
+      GetUrlForDatasetBlobVersioned request)
+      throws ModelDBException {
+    GetUrlForBlobVersioned getUrlForBlobVersionedRequest =
+        GetUrlForBlobVersioned.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(request.getDatasetId()))
+                    .build())
+            .setCommitSha(request.getDatasetVersionId())
+            .setMethod(request.getMethod())
+            .setPartNumber(request.getPartNumber())
+            .addLocation(DEFAULT_VERSIONING_BLOB_LOCATION)
+            .setPathDatasetComponentBlobPath(request.getPathDatasetComponentBlobPath())
+            .build();
+    GetUrlForBlobVersioned.Response response =
+        getUrlForVersionedBlob(
+            artifactStoreDAO,
+            (session) ->
+                VersioningUtils.getDatasetRepositoryEntity(
+                    session, repositoryDAO, datasetId, request.getDatasetVersionId()),
+            commitFunction,
+            getUrlForBlobVersionedRequest);
+    return GetUrlForDatasetBlobVersioned.Response.newBuilder()
+        .setUrl(response.getUrl())
+        .setMultipartUploadOk(response.getMultipartUploadOk())
+        .build();
+  }
+
+  @Override
   public GetUrlForBlobVersioned.Response getUrlForVersionedBlob(
       ArtifactStoreDAO artifactStoreDAO,
       RepositoryFunction repositoryFunction,
@@ -1499,41 +1719,36 @@ public class BlobDAORdbImpl implements BlobDAO {
   private GetUrlForArtifact.Response getPresignedUrl(
       ArtifactStoreDAO artifactStoreDAO, Session session, GetUrlForBlobVersioned request, Blob blob)
       throws ModelDBException {
-    try {
-      Map<String, String> componentWithSHAMap =
-          getDatasetComponentBlob(blob, request.getPathDatasetComponentBlobPath());
+    Map<String, String> componentWithSHAMap =
+        getDatasetComponentBlob(blob, request.getPathDatasetComponentBlobPath());
 
-      if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
-        String internalPath = componentWithSHAMap.get("internalPath");
-        String computeSha = componentWithSHAMap.get("computeSha");
-        Map.Entry<String, String> s3KeyUploadId =
-            getS3PathAndMultipartUploadId(
-                session,
-                computeSha,
-                internalPath,
-                blob.getDataset().getContentCase(),
-                request.getPartNumber() > 0,
-                key -> artifactStoreDAO.initializeMultipart(internalPath));
-        String errorMessage = "S3Key not found";
-        String s3Key = s3KeyUploadId.getKey();
-        String uploadId = s3KeyUploadId.getValue();
-        if (s3Key == null || s3Key.isEmpty()) {
-          LOGGER.warn(errorMessage);
-          throw new ModelDBException(errorMessage, Status.Code.NOT_FOUND);
-        }
-        return artifactStoreDAO.getUrlForArtifactMultipart(
-            s3Key, request.getMethod(), request.getPartNumber(), uploadId);
-      } else {
-        throw new ModelDBException("Invalid Blob type found", Status.Code.INVALID_ARGUMENT);
+    if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
+      String internalPath = componentWithSHAMap.get("internalPath");
+      String computeSha = componentWithSHAMap.get("computeSha");
+      Map.Entry<String, String> s3KeyUploadId =
+          getS3PathAndMultipartUploadId(
+              session,
+              computeSha,
+              internalPath,
+              blob.getDataset().getContentCase(),
+              request.getPartNumber() > 0,
+              key -> artifactStoreDAO.initializeMultipart(internalPath));
+      String errorMessage = "S3Key not found";
+      String s3Key = s3KeyUploadId.getKey();
+      String uploadId = s3KeyUploadId.getValue();
+      if (s3Key == null || s3Key.isEmpty()) {
+        LOGGER.warn(errorMessage);
+        throw new ModelDBException(errorMessage, Status.Code.NOT_FOUND);
       }
-    } catch (Exception e) {
-      throw new ModelDBException(e);
+      return artifactStoreDAO.getUrlForArtifactMultipart(
+          s3Key, request.getMethod(), request.getPartNumber(), uploadId);
+    } else {
+      throw new ModelDBException("Invalid Blob type found", Status.Code.INVALID_ARGUMENT);
     }
   }
 
   private Map<String, String> getDatasetComponentBlob(
-      Blob blob, String pathDatasetComponentBlobPath)
-      throws ModelDBException, NoSuchAlgorithmException {
+      Blob blob, String pathDatasetComponentBlobPath) throws ModelDBException {
     if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
       DatasetBlob datasetBlob = blob.getDataset();
       switch (datasetBlob.getContentCase()) {
@@ -1548,7 +1763,12 @@ public class BlobDAORdbImpl implements BlobDAO {
             PathDatasetComponentBlob pathDatasetComponentBlob = pathComponentBlob.get();
             AutogenPathDatasetComponentBlob autogenPathDatasetComponentBlob =
                 AutogenPathDatasetComponentBlob.fromProto(pathDatasetComponentBlob);
-            String computeSha = DatasetContainer.computeSHA(autogenPathDatasetComponentBlob);
+            String computeSha = null;
+            try {
+              computeSha = DatasetContainer.computeSHA(autogenPathDatasetComponentBlob);
+            } catch (NoSuchAlgorithmException e) {
+              throw new ModelDBException(e);
+            }
             Map<String, String> componentWithSHAMap = new HashMap<>();
             componentWithSHAMap.put(
                 "internalPath", pathDatasetComponentBlob.getInternalVersionedPath());
@@ -1567,7 +1787,12 @@ public class BlobDAORdbImpl implements BlobDAO {
               && !s3PathComponentBlob.get().getPath().getInternalVersionedPath().isEmpty()) {
             AutogenS3DatasetComponentBlob componentBlob =
                 AutogenS3DatasetComponentBlob.fromProto(s3PathComponentBlob.get());
-            String computeS3Sha = DatasetContainer.computeSHA(componentBlob);
+            String computeS3Sha = null;
+            try {
+              computeS3Sha = DatasetContainer.computeSHA(componentBlob);
+            } catch (NoSuchAlgorithmException e) {
+              throw new ModelDBException(e);
+            }
             Map<String, String> componentWithSHAMap = new HashMap<>();
             componentWithSHAMap.put(
                 "internalPath", s3PathComponentBlob.get().getPath().getInternalVersionedPath());
@@ -1581,7 +1806,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
     throw new ModelDBException(
         "Dataset component blob not found for the path: '" + pathDatasetComponentBlobPath + "'",
-        Status.Code.INVALID_ARGUMENT);
+        Status.Code.NOT_FOUND);
   }
 
   private Map.Entry<String, String> getS3PathAndMultipartUploadId(
@@ -1660,10 +1885,29 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   @Override
+  public void commitVersionedDatasetBlobArtifactPart(
+      RepositoryDAO repositoryDAO,
+      String datasetId,
+      CommitFunction commitFunction,
+      CommitVersionedDatasetBlobArtifactPart request)
+      throws ModelDBException {
+    commitVersionedBlobArtifactPart(
+        (session) ->
+            VersioningUtils.getDatasetRepositoryEntity(
+                session, repositoryDAO, datasetId, request.getDatasetVersionId()),
+        commitFunction,
+        Collections.singletonList(DEFAULT_VERSIONING_BLOB_LOCATION),
+        request.getPathDatasetComponentBlobPath(),
+        request.getArtifactPart());
+  }
+
+  @Override
   public CommitVersionedBlobArtifactPart.Response commitVersionedBlobArtifactPart(
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction,
-      CommitVersionedBlobArtifactPart request)
+      List<String> location,
+      String pathDatasetComponentBlobPath,
+      ArtifactPart artifactPart)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
@@ -1673,24 +1917,23 @@ public class BlobDAORdbImpl implements BlobDAO {
           getCommitBlobMapWithHash(
               session,
               commitEntity.getRootSha(),
-              request.getLocationList(),
+              location,
               Collections.singletonList(BlobType.DATASET_BLOB));
 
-      String locationKey = String.join("#", request.getLocationList());
+      String locationKey = String.join("#", location);
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
-            "Blob Location '" + request.getLocationList() + "' not found in commit blobs",
+            "Blob Location '" + location + "' not found in commit blobs",
             Status.Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
 
       Map<String, String> componentWithSHAMap =
-          getDatasetComponentBlob(
-              blobExpandedMap.getKey().getBlob(), request.getPathDatasetComponentBlobPath());
+          getDatasetComponentBlob(blobExpandedMap.getKey().getBlob(), pathDatasetComponentBlobPath);
       String computeSha = componentWithSHAMap.get("computeSha");
 
       VersioningUtils.saveOrUpdateArtifactPartEntity(
-          request.getArtifactPart(), session, computeSha, ArtifactPartEntity.VERSION_BLOB_ARTIFACT);
+          artifactPart, session, computeSha, ArtifactPartEntity.VERSION_BLOB_ARTIFACT);
       return CommitVersionedBlobArtifactPart.Response.newBuilder().build();
     } catch (Exception e) {
       throw new ModelDBException(e);
@@ -1698,10 +1941,32 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   @Override
+  public GetCommittedVersionedDatasetBlobArtifactParts.Response
+      getCommittedVersionedDatasetBlobArtifactParts(
+          RepositoryDAO repositoryDAO,
+          String datasetId,
+          CommitFunction commitFunction,
+          GetCommittedVersionedDatasetBlobArtifactParts request)
+          throws ModelDBException {
+    GetCommittedVersionedBlobArtifactParts.Response blobArtifactPartsResponse =
+        getCommittedVersionedBlobArtifactParts(
+            (session) ->
+                VersioningUtils.getDatasetRepositoryEntity(
+                    session, repositoryDAO, datasetId, request.getDatasetVersionId()),
+            commitFunction,
+            Collections.singletonList(DEFAULT_VERSIONING_BLOB_LOCATION),
+            request.getPathDatasetComponentBlobPath());
+    return GetCommittedVersionedDatasetBlobArtifactParts.Response.newBuilder()
+        .addAllArtifactParts(blobArtifactPartsResponse.getArtifactPartsList())
+        .build();
+  }
+
+  @Override
   public GetCommittedVersionedBlobArtifactParts.Response getCommittedVersionedBlobArtifactParts(
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction,
-      GetCommittedVersionedBlobArtifactParts request)
+      List<String> location,
+      String pathDatasetComponentBlobPath)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
@@ -1711,19 +1976,18 @@ public class BlobDAORdbImpl implements BlobDAO {
           getCommitBlobMapWithHash(
               session,
               commitEntity.getRootSha(),
-              request.getLocationList(),
+              location,
               Collections.singletonList(BlobType.DATASET_BLOB));
 
-      String locationKey = String.join("#", request.getLocationList());
+      String locationKey = String.join("#", location);
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
-            "Blob Location '" + request.getLocationList() + "' not found in commit blobs",
+            "Blob Location '" + location + "' not found in commit blobs",
             Status.Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
       Map<String, String> componentWithSHAMap =
-          getDatasetComponentBlob(
-              blobExpandedMap.getKey().getBlob(), request.getPathDatasetComponentBlobPath());
+          getDatasetComponentBlob(blobExpandedMap.getKey().getBlob(), pathDatasetComponentBlobPath);
       String computeSha = componentWithSHAMap.get("computeSha");
 
       Set<ArtifactPartEntity> artifactPartEntities =
@@ -1740,10 +2004,29 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   @Override
+  public void commitMultipartVersionedDatasetBlobArtifact(
+      RepositoryDAO repositoryDAO,
+      String datasetId,
+      CommitFunction commitFunction,
+      CommitMultipartVersionedDatasetBlobArtifact request,
+      CommitMultipartFunction commitMultipartFunction)
+      throws ModelDBException {
+    commitMultipartVersionedBlobArtifact(
+        (session) ->
+            VersioningUtils.getDatasetRepositoryEntity(
+                session, repositoryDAO, datasetId, request.getDatasetVersionId()),
+        commitFunction,
+        Collections.singletonList(DEFAULT_VERSIONING_BLOB_LOCATION),
+        request.getPathDatasetComponentBlobPath(),
+        commitMultipartFunction);
+  }
+
+  @Override
   public CommitMultipartVersionedBlobArtifact.Response commitMultipartVersionedBlobArtifact(
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction,
-      CommitMultipartVersionedBlobArtifact request,
+      List<String> location,
+      String pathDatasetComponentBlobPath,
       CommitMultipartFunction commitMultipartFunction)
       throws ModelDBException {
     List<PartETag> partETags;
@@ -1755,19 +2038,19 @@ public class BlobDAORdbImpl implements BlobDAO {
           getCommitBlobMapWithHash(
               session,
               commitEntity.getRootSha(),
-              request.getLocationList(),
+              location,
               Collections.singletonList(BlobType.DATASET_BLOB));
 
-      String locationKey = String.join("#", request.getLocationList());
+      String locationKey = String.join("#", location);
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
-            "Blob Location '" + request.getLocationList() + "' not found in commit blobs",
+            "Blob Location '" + location + "' not found in commit blobs",
             Status.Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
       Blob blob = blobExpandedMap.getKey().getBlob();
       Map<String, String> componentWithSHAMap =
-          getDatasetComponentBlob(blob, request.getPathDatasetComponentBlobPath());
+          getDatasetComponentBlob(blob, pathDatasetComponentBlobPath);
       String internalPath = componentWithSHAMap.get("internalPath");
       String computeSha = componentWithSHAMap.get("computeSha");
 

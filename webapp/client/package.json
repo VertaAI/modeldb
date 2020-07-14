@@ -144,9 +144,9 @@
     "tslint-config-prettier": "^1.17.0",
     "tslint-react": "^3.6.0"
   },
-  "husky": {
-    "hooks": {
-    }
+  "hooks": {
+    "pre-commit": "yarn check-types && lint-staged",
+    "pre-push": "yarn check-types && yarn test:CI"
   },
   "proxy": "http://localhost:3000",
   "lint-staged": {

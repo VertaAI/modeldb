@@ -3,10 +3,10 @@ import React from 'react';
 
 import ChartConfigDropdown, {
   IOption,
-} from 'core/shared/view/elements/ChartConfigDropdown/ChartConfigDropdown';
-import Collapsable from 'core/shared/view/elements/Collapsable/Collapsable';
-import { Icon } from 'core/shared/view/elements/Icon/Icon';
-import { cssTheme } from 'core/shared/styles/theme';
+} from 'shared/view/elements/ChartConfigDropdown/ChartConfigDropdown';
+import Collapsable from 'shared/view/elements/Collapsable/Collapsable';
+import { Icon } from 'shared/view/elements/Icon/Icon';
+import { cssTheme } from 'shared/styles/theme';
 
 import { IGroupedChartSelection } from '../shared/types/chartConfiguration';
 import GroupedChart from './chart/GroupedChart';

@@ -1,7 +1,7 @@
-import { IServerFiltersInRequest } from 'core/features/filter/service/serverModel/Filters/converters';
-import { IFilterData } from 'core/features/filter/Model';
-import { IPagination } from 'core/shared/models/Pagination';
-import { makeAddFiltersToRequestWithDefaultFilters } from 'features/filter/service/serverModel/Filter/converters';
+import { IServerFiltersInRequest } from 'services/serverModel/Filters/converters';
+import { IFilterData } from 'shared/models/Filters';
+import { IPagination } from 'shared/models/Pagination';
+import { makeAddFiltersToRequest } from 'services/serverModel/Filters/converters';
 import { addPaginationToRequest } from 'services/serverModel/Pagination/converters';
 import { IServerPaginationInRequest } from 'services/serverModel/Pagination/Pagination';
 
@@ -21,7 +21,7 @@ const addPagination = (
 ): TransformLoadDatasetsRequest => request =>
   Promise.resolve(addPaginationToRequest(pagination)(request));
 
-const addFilters = makeAddFiltersToRequestWithDefaultFilters();
+const addFilters = makeAddFiltersToRequest();
 
 const addDatasetId = (
   datasetId: string

@@ -2,9 +2,9 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Dispatch, bindActionCreators } from 'redux';
 
-import WithCurrentUserActionsAccesses from 'core/shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
-import { EntityWithDescription } from 'core/shared/models/Description';
-import DescriptionManager from 'core/shared/view/domain/BaseDescriptionManager/DescriptionManager';
+import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
+import { EntityWithDescription } from 'shared/models/Description';
+import DescriptionManager from 'shared/view/domain/BaseDescriptionManager/DescriptionManager';
 import { addOrEditDescription } from 'features/descriptionManager/store';
 
 interface ILocalProps {
