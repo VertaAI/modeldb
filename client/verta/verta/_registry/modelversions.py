@@ -4,9 +4,7 @@ from __future__ import print_function
 
 import copy
 
-from .._internal_utils import (
-    _utils,
-)
+from .._internal_utils import _utils
 
 
 class RegisteredModelVersions(_utils.LazyList):

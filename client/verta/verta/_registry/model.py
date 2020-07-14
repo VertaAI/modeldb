@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 from .._tracking.entity import _ModelDBEntity
+from .._internal_utils import _utils
 
 
 class RegisteredModel(_ModelDBEntity):
