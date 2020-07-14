@@ -7,3 +7,4 @@ from .experiment import Experiment
 from .experiments import Experiments
 from .experimentrun import ExperimentRun
 from .experimentruns import ExperimentRuns
+from .modelversion import ModelVersion

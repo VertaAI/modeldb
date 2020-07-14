@@ -65,6 +65,7 @@ from ._tracking import (
     Experiments,
     ExperimentRun,
     ExperimentRuns,
+    ModelVersion
 )
 
 
@@ -691,6 +692,22 @@ class Client(object):
                       workspace_name=workspace)
         endpoint = "{}://{}/api/v1/modeldb/dataset/findDatasets"
         return _dataset.DatasetLazyList(self._conn, self._conf, msg, endpoint, "POST")
+
+    def set_model_version(self, name=None, desc=None, id=None, time_created=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        if id is not None:
+            self._ctx.model_version = ModelVersion._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
+        else:
+            if self._ctx.registered_model is None:
+                self.set_registered_model()
+
+            self._ctx.model_version = ModelVersion._get_or_create_by_name(self._conn, name,
+                                                                    lambda name: ModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.expt.id),
+                                                                    lambda name: ModelVersion._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=None, attrs=None, date_created=time_created))
+        return self._ctx.model_version
 
     def get_dataset_version(self, id):
         """
