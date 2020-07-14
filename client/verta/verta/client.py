@@ -65,11 +65,8 @@ from ._tracking import (
     Experiments,
     ExperimentRun,
     ExperimentRuns,
-<<<<<<< HEAD
-    ModelVersion
-=======
     RegisteredModel,
->>>>>>> el/VR-5192_registry_get_set
+    ModelVersion,
 )
 
 
