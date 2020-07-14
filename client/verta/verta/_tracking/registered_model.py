@@ -8,6 +8,7 @@ import warnings
 from .entity import _ModelDBEntity
 from .experimentruns import ExperimentRuns
 from .experiments import Experiments
+from .._registry import RegisteredModelVersion # TODO: update this later on
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.registry import RegistryService_pb2 as _RegisteredModelService
@@ -100,3 +101,21 @@ class RegisteredModel(_ModelDBEntity):
 
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
+
+    def get_or_create_version(self, name=None, desc=None, tags=None, attrs=None, id=None, time_created=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        if id is not None:
+            return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
+        else:
+            return RegisteredModelVersion._get_or_create_by_name(self._conn, name,
+                                                       lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
+                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, None, name, desc=desc, tags=None, attrs=None, date_created=time_created, registered_model_id=self.id))
+
+    def get_version(self, name=None, id=None):
+        if id is not None:
+            return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
+        else:
+
+            return RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id)

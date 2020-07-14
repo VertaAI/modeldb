@@ -8,4 +8,3 @@ from .experiments import Experiments
 from .experimentrun import ExperimentRun
 from .experimentruns import ExperimentRuns
 from .registered_model import RegisteredModel
-from .modelversion import ModelVersion
