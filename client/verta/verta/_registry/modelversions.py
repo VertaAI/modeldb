@@ -6,6 +6,8 @@ import copy
 
 from .._internal_utils import _utils
 
+from . import RegisteredModelVersion
+
 
 class RegisteredModelVersions(_utils.LazyList):
     # keys that yield predictable, sensible results
@@ -25,7 +27,7 @@ class RegisteredModelVersions(_utils.LazyList):
         raise NotImplementedError
 
     def _create_element(self, msg):
-        return ModelVersion(self._conn, self._conf, msg)
+        return RegisteredModelVersion(self._conn, self._conf, msg)
 
     def with_model(self, registered_model=None):
         raise NotImplementedError

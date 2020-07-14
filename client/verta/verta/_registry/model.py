@@ -5,6 +5,8 @@ from __future__ import print_function
 from .._tracking.entity import _ModelDBEntity
 from .._internal_utils import _utils
 
+from . import RegisteredModelVersion, RegisteredModelVersions
+
 
 class RegisteredModel(_ModelDBEntity):
     def __init__(self, conn, conf, msg):
@@ -26,7 +28,7 @@ class RegisteredModel(_ModelDBEntity):
 
     @property
     def versions(self):
-        return ModelVersions(self._conn, self._conf).with_model(self)
+        return RegisteredModelVersions(self._conn, self._conf).with_model(self)
 
     @classmethod
     def _generate_default_name(cls):

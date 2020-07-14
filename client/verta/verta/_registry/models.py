@@ -6,6 +6,8 @@ import copy
 
 from .._internal_utils import _utils
 
+from . import RegisteredModel
+
 
 class RegisteredModels(_utils.LazyList):
     # keys that yield predictable, sensible results
@@ -25,7 +27,7 @@ class RegisteredModels(_utils.LazyList):
         raise NotImplementedError
 
     def _create_element(self, msg):
-        return Model(self._conn, self._conf, msg)
+        return RegisteredModel(self._conn, self._conf, msg)
 
     def with_workspace(self, workspace_name=None):
         new_list = copy.deepcopy(self)
