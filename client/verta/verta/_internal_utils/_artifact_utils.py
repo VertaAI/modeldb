@@ -275,8 +275,7 @@ def serialize_model(model):
         elif module_name.startswith("tensorflow.python.keras"):
             model_type = "tensorflow"
             tempf = tempfile.NamedTemporaryFile()
-            if (get_tensorflow_major_version() is not None
-                    and get_tensorflow_major_version() == '2'):  # save_format param may not exist in TF 1.X
+            if get_tensorflow_major_version() == 2:  # save_format param may not exist in TF 1.X
                 model.save(tempf.name, save_format='h5')  # TF 2.X uses SavedModel by default
             else:
                 model.save(tempf.name)

@@ -14,5 +14,5 @@ def maybe_dependency(module_name):
 
 def get_tensorflow_major_version():
     if maybe_dependency("tensorflow"):
-        return maybe_dependency("tensorflow").__version__.split('.')[0]
+        return int(maybe_dependency("tensorflow").__version__.split('.')[0])
     return None
