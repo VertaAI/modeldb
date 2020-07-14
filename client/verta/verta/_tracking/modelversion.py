@@ -41,20 +41,21 @@ class ModelVersion(_ModelDBEntity):
     def _get_proto_by_name(cls, conn, name, registered_model):
         Message = _ModelVersionService.FindModelVersionRequest
         RegisteredModelIDMessage = _ModelVersionService.RegisteredModelIdentification
+        registered_model_id = registered_model.id
 
         predicates = [
             _CommonCommonService.KeyValueQuery(key="version",
                                                value=_utils.python_to_val_proto(name),
                                                operator=_CommonCommonService.OperatorEnum.EQ)
         ]
-        endpoint = "/api/v1/registry/{}/versions".format(registered_model.id)
-        msg = Message(id=RegisteredModelIDMessage(registered_model_id=registered_model.id), predicates=predicates)
+        endpoint = "/api/v1/registry/{}/versions".format(registered_model_id)
+        msg = Message(id=RegisteredModelIDMessage(registered_model_id=registered_model_id), predicates=predicates)
 
         proto_response = conn.make_proto_request("POST", endpoint, msg)
-
         response = conn.must_proto_response(proto_response, Message.Response)
+
         if response.total_records == 0:
-            raise ValueError("ModelVersion with name {} does not exists".format(name))
+            raise ValueError("ModelVersion with version name {} does not exists".format(name))
 
         return response.model_versions[0] # should only have 1 entry here, as name/version is unique
 
