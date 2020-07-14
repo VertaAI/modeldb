@@ -30,10 +30,12 @@ class ModelVersion(_ModelDBEntity):
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
-        Message = _ModelVersionService.GetModelVersionRequest
-        response = conn.make_proto_request("GET",
-                                           "/api/v1/v1/registry/{}/versions/{}".format(registered_model_id, id))
-        return conn.maybe_proto_response(response, Message.Response).model_version
+        # Message = _ModelVersionService.GetModelVersionRequest
+        # response = conn.make_proto_request("GET",
+        #                                    "/api/v1/v1/registry/{}/versions/{}".format(registered_model_id, id))
+        # return conn.maybe_proto_response(response, Message.Response).model_version
+        # TODO: check/update the url of protos
+        raise NotImplementedError
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, registered_model):

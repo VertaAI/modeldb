@@ -787,6 +787,18 @@ class Client(object):
                                                                     lambda name: ModelVersion._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=None, attrs=None, date_created=time_created))
         return self._ctx.model_version
 
+    def get_model_version(self, name=None, id=None):
+        if id is not None:
+            self._ctx.model_version = ModelVersion._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
+        else:
+            if self._ctx.registered_model is None:
+                self.set_registered_model()
+
+            self._ctx.model_version = ModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.registered_model)
+
+        return self._ctx.model_version
+
     def get_dataset_version(self, id):
         """
         Retrieve an already created DatasetVersion.
