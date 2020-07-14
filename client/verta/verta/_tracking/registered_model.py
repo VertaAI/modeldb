@@ -74,9 +74,9 @@ class RegisteredModel(_ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, date_created=None, attrs=None, public_within_org=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, labels=None, date_created=None, attrs=None, public_within_org=None):
         Message = _RegisteredModelService.RegisteredModel
-        msg = Message(name=name, description=desc, labels=tags)
+        msg = Message(name=name, description=desc, labels=labels)
         if public_within_org:
             if ctx.workspace_name is None:
                 raise ValueError("cannot set `public_within_org` for personal workspace")
