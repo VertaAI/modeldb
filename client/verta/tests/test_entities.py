@@ -262,8 +262,8 @@ class TestExperiment:
         assert expt.id == client.get_experiment(expt.name).id
         assert expt.id == client.get_experiment(id=expt.id).id
 
-        # clear client state to test setting parent
-        client.proj = client.expt = None
+        # test parents are restored
+        client.set_project()
         client.get_experiment(id=expt.id)
         assert client.proj.id == proj.id
         assert client.expt.id == expt.id
@@ -323,8 +323,9 @@ class TestExperimentRun:
         assert run.id == client.get_experiment_run(run.name).id
         assert run.id == client.get_experiment_run(id=run.id).id
 
-        # clear client state to test setting parent
-        client.proj = client.expt = None
+        # test parents are restored
+        client.set_project()
+        client.set_experiment()
         client.get_experiment_run(id=run.id)
         assert client.proj.id == proj.id
         assert client.expt.id == expt.id
