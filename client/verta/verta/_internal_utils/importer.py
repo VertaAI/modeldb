@@ -5,9 +5,9 @@ from __future__ import print_function
 import importlib
 
 
-def maybe_dependency(module):
+def maybe_dependency(module_name):
     try:
-        return importlib.import_module(module)
+        return importlib.import_module(module_name)
     except ImportError:
         return None
 
