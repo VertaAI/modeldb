@@ -54,7 +54,7 @@ class ModelVersion(_ModelDBEntity):
         proto_response = conn.make_proto_request("POST", endpoint, msg)
         response = conn.must_proto_response(proto_response, Message.Response)
 
-        if response.total_records == 0:
+        if not response.model_versions:
             raise ValueError("ModelVersion with version name {} does not exists".format(name))
 
         return response.model_versions[0] # should only have 1 entry here, as name/version is unique
