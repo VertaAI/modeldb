@@ -4,7 +4,7 @@ import click
 
 from .registry import registry
 
-@registry.group()
+@registry.group(name="get")
 def get():
     """Get detailed information about an object.
 
@@ -20,12 +20,26 @@ def get():
     pass
 
 
-@get.command(name="model")
-@click.argument("name", nargs=1, required=True)
-@click.argument("version", nargs=1, required=False)
+@get.command(name="registeredmodel")
+@click.argument("model_name", nargs=1, required=True)
 @click.option("--output", "-o", type=click.Choice(['json'], case_sensitive=False), help="Print the output in the given format instead of regular text.")
 @click.option("--workspace", "-w", help="Workspace to use")
 def get_model(name, version, output, workspace):
+    """Get detailed information about a model.
+    """
+    if version is None:
+        print("Getting details for model %s" % (name,))
+    else:
+        print("Getting details for version %s of model %s" % (version, name))
+    print("output: %s" % output)
+
+@get.command(name="registeredmodelversion")
+@click.argument("model_name", nargs=1, required=True)
+@click.argument("version_name", nargs=1, required=False)
+@click.option("--output", "-o", type=click.Choice(['json'], case_sensitive=False), help="Print the output in the given format instead of regular text.")
+@click.option("--out-dir", help="Folder to download all the artifacts to.")
+@click.option("--workspace", "-w", help="Workspace to use")
+def get_model_version(name, version, output, workspace):
     """Get detailed information about a model.
     """
     if version is None:
