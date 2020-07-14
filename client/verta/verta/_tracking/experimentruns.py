@@ -104,8 +104,8 @@ class ExperimentRuns(_utils.LazyList):
         r"""
         Gets the Experiment Runs from this collection with the `k` highest `key`\ s.
 
-        .. deprecated:: 0.13.3
-           The `ret_all_info` parameter will removed in v0.15.0.
+        .. versionchanged:: 0.14.12
+           The `ret_all_info` parameter was removed.
 
         A `key` is a string containing a dot-delimited Experiment Run property such as
         ``metrics.accuracy``.
@@ -153,11 +153,11 @@ class ExperimentRuns(_utils.LazyList):
         msg.page_limit = k
         msg.page_number = 1
 
-        response_msg = self._call_back_end(msg)
+        records, _ = self._call_back_end(msg)
 
         # cannot assign to `experiment_run_ids` because Protobuf fields don't allow it
         del new_runs._msg.experiment_run_ids[:]
-        new_runs._msg.experiment_run_ids.extend(record.id for record in response_msg.experiment_runs)
+        new_runs._msg.experiment_run_ids.extend(record.id for record in records)
 
         return new_runs
 
@@ -165,8 +165,8 @@ class ExperimentRuns(_utils.LazyList):
         r"""
         Gets the Experiment Runs from this collection with the `k` lowest `key`\ s.
 
-        .. deprecated:: 0.13.3
-           The `ret_all_info` parameter will removed in v0.15.0.
+        .. versionchanged:: 0.14.12
+           The `ret_all_info` parameter was removed.
 
         A `key` is a string containing a dot-delimited Experiment Run property such as ``metrics.accuracy``.
 
@@ -213,10 +213,10 @@ class ExperimentRuns(_utils.LazyList):
         msg.page_limit = k
         msg.page_number = 1
 
-        response_msg = self._call_back_end(msg)
+        records, _ = self._call_back_end(msg)
 
         # cannot assign to `experiment_run_ids` because Protobuf fields don't allow it
         del new_runs._msg.experiment_run_ids[:]
-        new_runs._msg.experiment_run_ids.extend(record.id for record in response_msg.experiment_runs)
+        new_runs._msg.experiment_run_ids.extend(record.id for record in records)
 
         return new_runs

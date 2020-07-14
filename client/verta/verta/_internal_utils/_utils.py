@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import ast
+import copy
 import datetime
 import glob
 import inspect
@@ -178,6 +180,10 @@ class LazyList(object):
                '<=': _CommonCommonService.OperatorEnum.LTE}
     _OP_PATTERN = re.compile(r"({})".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
 
+    # keys that yield predictable, sensible results
+    # TODO: make LazyList an abstract base class; make this attr an abstract property
+    _VALID_QUERY_KEYS = None  # NOTE: must be overridden by subclasses
+
     def __init__(self, conn, conf, msg):
         self._conn = conn
         self._conf = conf
@@ -199,7 +205,7 @@ class LazyList(object):
 
             records, total_records = self._call_back_end(msg)
             if (not records
-                    and msg.page_number > response_msg.total_records):  # pylint: disable=no-member
+                    and msg.page_number > total_records):  # pylint: disable=no-member
                 raise IndexError("index out of range")
 
             return self._create_element(records[0])
@@ -305,8 +311,8 @@ class LazyList(object):
                     six.raise_from(e, None)
 
             new_list._msg.predicates.append(  # pylint: disable=no-member
-                _CommonService.KeyValueQuery(
-                    key=key, value=_utils.python_to_val_proto(value),
+                _CommonCommonService.KeyValueQuery(
+                    key=key, value=python_to_val_proto(value),
                     operator=operator,
                 )
             )
@@ -339,10 +345,6 @@ class LazyList(object):
             # <ExperimentRuns containing 3 runs>
 
         """
-        if ret_all_info:
-            warnings.warn("`ret_all_info` is deprecated and will removed in a later version",
-                          category=FutureWarning)
-
         if key.split('.')[0] not in self._VALID_QUERY_KEYS:
             raise ValueError("key `{}` is not a valid key for querying;"
                              " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))

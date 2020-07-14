@@ -4,6 +4,7 @@ ExperimentRuns
 
 .. autoclass:: verta._tracking.ExperimentRuns
     :members:
+    :inherited-members:
 
     .. describe:: len(runs)
 
