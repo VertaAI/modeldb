@@ -65,6 +65,7 @@ from ._tracking import (
     Experiments,
     ExperimentRun,
     ExperimentRuns,
+    RegisteredModel,
 )
 
 
@@ -692,6 +693,83 @@ class Client(object):
         endpoint = "{}://{}/api/v1/modeldb/dataset/findDatasets"
         return _dataset.DatasetLazyList(self._conn, self._conf, msg, endpoint, "POST")
 
+    def get_registered_model(self, name=None, workspace=None, id=None):
+        name = self._set_from_config_if_none(name, "registered_model")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self._get_personal_workspace()
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+
+        if id is not None:
+            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
+        else:
+            self._ctx.registered_model = RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+
+        return self._ctx.registered_model
+
+    def set_registered_model(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
+        """
+        Attaches a registered_model to this Client.
+
+        If an accessible registered_model with name `name` does not already exist, it will be created
+        and initialized with specified metadata parameters. If such a registered_model does already exist,
+        it will be retrieved; specifying metadata parameters in this case will raise an exception.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the registered_model. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the registered_model.
+        tags : list of str, optional
+            Tags of the registered_model.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the registered_model.
+        workspace : str, optional
+            Workspace under which the registered_model with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating a registered_model in an organization's workspace, whether to make this registered_model
+            accessible to all members of that organization.
+        id : str, optional
+            ID of the registered_model. This parameter cannot be provided alongside `name`, and other
+            parameters will be ignored.
+
+        Returns
+        -------
+        :class:`registered_model`
+
+        Raises
+        ------
+        ValueError
+            If a registered_model with `name` already exists, but metadata parameters are passed in.
+
+        """
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        name = self._set_from_config_if_none(name, "registered_model")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+
+        if workspace is None:
+            workspace = self._get_personal_workspace()
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+
+        if id is not None:
+            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
+        else:
+            self._ctx.registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
+                                                            lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
+                                                            lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
+
+        return self._ctx.registered_model
+
     def get_dataset_version(self, id):
         """
         Retrieve an already created DatasetVersion.
@@ -742,3 +820,11 @@ class Client(object):
 
         """
         return self.get_or_create_repository(*args, **kwargs)
+    # set aliases for get-or-create functions for API compatibility
+
+    def get_or_create_registered_model(self, *args, **kwargs):
+        """
+        Alias for :meth:`Client.set_project()`.
+
+        """
+        return self.set_registered_model(*args, **kwargs)
