@@ -15,6 +15,7 @@ import subprocess
 import sys
 import threading
 import time
+import warnings
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -28,43 +29,8 @@ from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
-try:
-    import pandas as pd
-except ImportError:  # pandas not installed
-    pd = None
+from . import importer
 
-try:
-    import tensorflow as tf
-except ImportError:  # TensorFlow not installed
-    tf = None
-
-try:
-    import ipykernel
-except ImportError:  # Jupyter not installed
-    pass
-else:
-    try:
-        from IPython.display import Javascript, display
-        try:  # Python 3
-            from notebook.notebookapp import list_running_servers
-        except ImportError:  # Python 2
-            import warnings
-            from IPython.utils.shimmodule import ShimWarning
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=ShimWarning)
-                from IPython.html.notebookapp import list_running_servers
-            del warnings, ShimWarning  # remove ad hoc imports from scope
-    except ImportError:  # abnormally nonstandard installation of Jupyter
-        pass
-
-
-try:
-    import numpy as np
-except ImportError:  # NumPy not installed
-    np = None
-    BOOL_TYPES = (bool,)
-else:
-    BOOL_TYPES = (bool, np.bool_)
 
 _GRPC_PREFIX = "Grpc-Metadata-"
 
@@ -639,6 +605,12 @@ def to_builtin(obj):
         A built-in equivalent of `obj`, or `obj` unchanged if it could not be handled by this function.
 
     """
+    np = importer.maybe_dependency("numpy")
+    if np is None:
+        BOOL_TYPES = (bool,)
+    else:
+        BOOL_TYPES = (bool, np.bool_)
+
     # jump through ludicrous hoops to avoid having hard dependencies in the Client
     cls_ = obj.__class__
     obj_class = getattr(cls_, '__name__', None)
@@ -661,6 +633,7 @@ def to_builtin(obj):
         return obj.values.tolist()
     if obj_class == "Tensor" and obj_module == "torch":
         return obj.detach().numpy().tolist()
+    tf = importer.maybe_dependency("tensorflow")
     if tf is not None and isinstance(obj, tf.Tensor):  # if TensorFlow
         try:
             return obj.numpy().tolist()
@@ -959,13 +932,15 @@ def ensure_timestamp(timestamp):
 
     """
     if isinstance(timestamp, six.string_types):
-        try:  # attempt with pandas, which can parse many time string formats
-            return timestamp_to_ms(pd.Timestamp(timestamp).timestamp())
-        except NameError:  # pandas not installed
+        pd = importer.maybe_dependency("pandas")
+        if pd is not None:
+            try:  # attempt with pandas, which can parse many time string formats
+                return timestamp_to_ms(pd.Timestamp(timestamp).timestamp())
+            except ValueError:  # can't be handled by pandas
+                six.raise_from(ValueError("unable to parse datetime string \"{}\"".format(timestamp)),
+                            None)
+        else:
             six.raise_from(ValueError("pandas must be installed to parse datetime strings"),
-                           None)
-        except ValueError:  # can't be handled by pandas
-            six.raise_from(ValueError("unable to parse datetime string \"{}\"".format(timestamp)),
                            None)
     elif isinstance(timestamp, numbers.Real):
         return timestamp_to_ms(timestamp)
@@ -1054,11 +1029,15 @@ def save_notebook(notebook_path=None, timeout=5):
         If the notebook is not saved within `timeout` seconds.
 
     """
+    IPython_display = importer.maybe_dependency("IPython.display")
+    if IPython_display is None:
+        raise ImportError("unable to import libraries necessary for saving notebook")
+
     if notebook_path is None:
         notebook_path = get_notebook_filepath()
     modtime = os.path.getmtime(notebook_path)
 
-    display(Javascript('''
+    IPython_display.display(IPython_display.Javascript('''
     require(["base/js/namespace"],function(Jupyter) {
         Jupyter.notebook.save_checkpoint();
     });
@@ -1106,6 +1085,19 @@ def get_notebook_filepath():
             - the calling notebook cannot be identified
 
     """
+    ipykernel = importer.maybe_dependency("ipykernel")
+    if ipykernel is None:
+        raise ImportError("unable to import libraries necessary for locating notebook")
+
+    notebookapp = importer.maybe_dependency("notebook.notebookapp")
+    if notebookapp is None:
+        # Python 2, util we need is in different module
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            notebookapp = importer.maybe_dependency("IPython.html.notebookapp")
+    if notebookapp is None:  # abnormally nonstandard installation of Jupyter
+        raise ImportError("unable to import libraries necessary for locating notebook")
+
     try:
         connection_file = ipykernel.connect.get_connection_file()
     except (NameError,  # Jupyter not installed
@@ -1113,7 +1105,7 @@ def get_notebook_filepath():
         pass
     else:
         kernel_id = re.search('kernel-(.*).json', connection_file).group(1)
-        for server in list_running_servers():
+        for server in notebookapp.list_running_servers():
             response = requests.get(urljoin(server['url'], 'api/sessions'),
                                     params={'token': server.get('token', '')})
             if response.ok:

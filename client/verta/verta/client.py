@@ -21,16 +21,6 @@ import zipfile
 import requests
 import yaml
 
-try:
-    import PIL
-except ImportError:  # Pillow not installed
-    PIL = None
-
-try:
-    import torch
-except ImportError:  # PyTorch not installed
-    torch = None
-
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
 from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService

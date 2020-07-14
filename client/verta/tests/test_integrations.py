@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import time
 
-from verta._internal_utils._artifact_utils import TF_MAJOR_VERSION_STR
+from verta._internal_utils.importer import get_tensorflow_major_version
 
 
 class TestKeras:
@@ -48,7 +48,7 @@ class TestKeras:
                   callbacks=[verta_integrations_keras.VertaCallback(experiment_run)])
 
         logged_hyperparams = experiment_run.get_hyperparameters()
-        if TF_MAJOR_VERSION_STR is not None and TF_MAJOR_VERSION_STR == '1':
+        if get_tensorflow_major_version() == 1:
             # not exposed in TF 2.X
             assert logged_hyperparams['batch_size'] == batch_size
             assert logged_hyperparams['samples'] == samples
@@ -111,7 +111,7 @@ class TestKeras:
                   callbacks=[verta_integrations_keras.VertaCallback(experiment_run)])
 
         logged_hyperparams = experiment_run.get_hyperparameters()
-        if TF_MAJOR_VERSION_STR is not None and TF_MAJOR_VERSION_STR == '1':
+        if get_tensorflow_major_version() == 1:
             # not exposed in TF 2.X
             assert logged_hyperparams['batch_size'] == batch_size
             assert logged_hyperparams['samples'] == samples

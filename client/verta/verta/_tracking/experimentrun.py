@@ -18,16 +18,6 @@ import zipfile
 
 import requests
 
-try:
-    import PIL
-except ImportError:  # Pillow not installed
-    PIL = None
-
-try:
-    import torch
-except ImportError:  # PyTorch not installed
-    torch = None
-
 from .entity import _ModelDBEntity
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -43,6 +33,7 @@ from .._internal_utils import (
     _pip_requirements_utils,
     _request_utils,
     _utils,
+    importer,
 )
 
 from .. import _dataset
@@ -1437,6 +1428,7 @@ class ExperimentRun(_ModelDBEntity):
         if path_only:
             return image
         else:
+            PIL = importer.maybe_dependency("PIL")
             if PIL is None:  # Pillow not installed
                 return six.BytesIO(image)
             try:
@@ -1542,6 +1534,7 @@ class ExperimentRun(_ModelDBEntity):
             # uploaded artifact; `artifact` is its bytes
             artifact_stream = six.BytesIO(artifact)
 
+        torch = importer.maybe_dependency("torch")
         if torch is not None:
             try:
                 obj = torch.load(artifact_stream)
