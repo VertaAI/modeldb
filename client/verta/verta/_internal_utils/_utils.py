@@ -603,9 +603,7 @@ def to_builtin(obj):
         A built-in equivalent of `obj`, or `obj` unchanged if it could not be handled by this function.
 
     """
-    tf = importer.maybe_dependency("tensorflow")
     np = importer.maybe_dependency("numpy")
-
     if np is None:
         BOOL_TYPES = (bool,)
     else:
@@ -633,6 +631,7 @@ def to_builtin(obj):
         return obj.values.tolist()
     if obj_class == "Tensor" and obj_module == "torch":
         return obj.detach().numpy().tolist()
+    tf = importer.maybe_dependency("tensorflow")
     if tf is not None and isinstance(obj, tf.Tensor):  # if TensorFlow
         try:
             return obj.numpy().tolist()
