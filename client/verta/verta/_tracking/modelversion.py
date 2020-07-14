@@ -22,7 +22,7 @@ class ModelVersion(_ModelDBEntity):
     @property
     def name(self):
         self._refresh_cache()
-        return self._msg.name
+        return self._msg.version
 
     @classmethod
     def _generate_default_name(cls):
