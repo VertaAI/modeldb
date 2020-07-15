@@ -12,7 +12,7 @@ from .._internal_utils import _utils
 
 class RegisteredModelVersion(_ModelDBEntity):
     def __init__(self, conn, conf, msg):
-        super(RegisteredModelVersion, self).__init__(conn, conf, _ModelVersionService, "model_version", msg)
+        super(RegisteredModelVersion, self).__init__(conn, conf, _ModelVersionService, "registered_model_versions", msg)
 
     def __repr__(self):
         raise NotImplementedError
@@ -31,7 +31,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         Message = _ModelVersionService.GetModelVersionRequest
         url_endpoint = "/api/v1/registry/registered_model_versions/{}".format(id)
         response = conn.make_proto_request("GET", url_endpoint)
-        
+
         return conn.maybe_proto_response(response, Message.Response).model_version
 
     @classmethod
