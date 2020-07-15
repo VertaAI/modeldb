@@ -34,6 +34,14 @@ message GetLabelsRequest {
     }
 }
 
+message GetLabelIdsRequest {
+    repeated string labels = 1;
+
+    message Response {
+        repeated IdentificationType ids = 1;
+    }
+}
+
 message AddLabelsRequest {
     IdentificationType id = 1;
     repeated string labels = 2;
@@ -84,6 +92,12 @@ service MetadataService {
     rpc GetLabels(GetLabelsRequest) returns (GetLabelsRequest.Response) {
         option (google.api.http) = {
             get: "/v1/metadata/labels"
+        };
+    };
+
+    rpc GetLabelIds(GetLabelIdsRequest) returns (GetLabelIdsRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/getLabelIds"
         };
     };
 

@@ -99,7 +99,7 @@ class RegistryServiceApi(client: HttpClient, val basePath: String = "/v1") {
     var __query = new mutable.HashMap[String,List[String]]
     if (id_registered_model_id == null) throw new Exception("Missing required parameter \"id_registered_model_id\"")
     if (body == null) throw new Exception("Missing required parameter \"body\"")
-    return client.request[RegistryFindModelVersionRequest, RegistryFindModelVersionRequestResponse]("POST", basePath + s"/registry/$id_registered_model_id/versions", __query.toMap, body, RegistryFindModelVersionRequestResponse.fromJson)
+    return client.request[RegistryFindModelVersionRequest, RegistryFindModelVersionRequestResponse]("POST", basePath + s"/registry/$id_registered_model_id/versions/find", __query.toMap, body, RegistryFindModelVersionRequestResponse.fromJson)
   }
 
   def FindModelVersion2(body: RegistryFindModelVersionRequest, id_registered_model_id: BigInt)(implicit ec: ExecutionContext): Try[RegistryFindModelVersionRequestResponse] = Await.result(FindModelVersion2Async(body, id_registered_model_id), Duration.Inf)
@@ -116,7 +116,7 @@ class RegistryServiceApi(client: HttpClient, val basePath: String = "/v1") {
   def FindRegisteredModel2Async(body: RegistryFindRegisteredModelRequest)(implicit ec: ExecutionContext): Future[Try[RegistryFindRegisteredModelRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
-    return client.request[RegistryFindRegisteredModelRequest, RegistryFindRegisteredModelRequestResponse]("POST", basePath + s"/registry/find", __query.toMap, body, RegistryFindRegisteredModelRequestResponse.fromJson)
+    return client.request[RegistryFindRegisteredModelRequest, RegistryFindRegisteredModelRequestResponse]("POST", basePath + s"/registry/registered_models/find", __query.toMap, body, RegistryFindRegisteredModelRequestResponse.fromJson)
   }
 
   def FindRegisteredModel2(body: RegistryFindRegisteredModelRequest)(implicit ec: ExecutionContext): Try[RegistryFindRegisteredModelRequestResponse] = Await.result(FindRegisteredModel2Async(body), Duration.Inf)

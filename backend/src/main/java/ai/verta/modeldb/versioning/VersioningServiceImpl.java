@@ -340,58 +340,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   }
 
   @Override
-  public void listCommitExperimentRuns(
-      ListCommitExperimentRunsRequest request,
-      StreamObserver<ListCommitExperimentRunsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-      if (request.getCommitSha().isEmpty()) {
-        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
-      }
-
-      ListCommitExperimentRunsRequest.Response response =
-          experimentRunDAO.listCommitExperimentRuns(
-              projectDAO,
-              request,
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
-              (session, repository) ->
-                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, ListCommitExperimentRunsRequest.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
-  public void listBlobExperimentRuns(
-      ListBlobExperimentRunsRequest request,
-      StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-      if (request.getCommitSha().isEmpty()) {
-        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
-      }
-
-      ListBlobExperimentRunsRequest.Response response =
-          experimentRunDAO.listBlobExperimentRuns(
-              projectDAO,
-              request,
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
-              (session, repository) ->
-                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
   public void getCommitComponent(
       GetCommitComponentRequest request,
       StreamObserver<GetCommitComponentRequest.Response> responseObserver) {

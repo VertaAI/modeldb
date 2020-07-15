@@ -11,39 +11,6 @@
     "application/json"
   ],
   "paths": {
-    "/registry/find": {
-      "post": {
-        "summary": "CRUD for RegisteredModel",
-        "operationId": "FindRegisteredModel2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryFindRegisteredModelRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryFindRegisteredModelRequest"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
     "/registry/registered_model_versions/{id.model_version_id}": {
       "get": {
         "operationId": "GetModelVersion2",
@@ -91,6 +58,39 @@
             "required": false,
             "type": "string",
             "format": "uint64"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/registered_models/find": {
+      "post": {
+        "summary": "CRUD for RegisteredModel",
+        "operationId": "FindRegisteredModel2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryFindRegisteredModelRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryFindRegisteredModelRequest"
+            }
           }
         ],
         "tags": [
@@ -991,7 +991,7 @@
         ]
       }
     },
-    "/registry/{id.registered_model_id}/versions": {
+    "/registry/{id.registered_model_id}/versions/find": {
       "post": {
         "summary": "CRUD for Model Version",
         "operationId": "FindModelVersion2",

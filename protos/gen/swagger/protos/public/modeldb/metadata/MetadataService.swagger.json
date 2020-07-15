@@ -11,6 +11,40 @@
     "application/json"
   ],
   "paths": {
+    "/metadata/getLabelIds": {
+      "get": {
+        "operationId": "GetLabelIds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataGetLabelIdsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "labels",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      }
+    },
     "/metadata/labels": {
       "get": {
         "operationId": "GetLabels",
@@ -362,6 +396,17 @@
     },
     "metadataDeletePropertyRequestResponse": {
       "type": "object"
+    },
+    "metadataGetLabelIdsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/metadataIdentificationType"
+          }
+        }
+      }
     },
     "metadataGetLabelsRequestResponse": {
       "type": "object",
