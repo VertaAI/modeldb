@@ -44,6 +44,106 @@
         ]
       }
     },
+    "/registry/registered_model_versions/{id.model_version_id}": {
+      "get": {
+        "operationId": "GetModelVersion2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryGetModelVersionRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_id.named_id.name",
+            "description": "Model Name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_id.registered_model_id",
+            "description": "Model refered to by id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/registered_models/{id.registered_model_id}": {
+      "get": {
+        "operationId": "GetRegisteredModel2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryGetRegisteredModelRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.named_id.name",
+            "description": "Model Name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.named_id.workspace_name",
+            "description": "WorkspaceName.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
     "/registry/versions/{model_version_id}/commitArtifactPart": {
       "post": {
         "operationId": "commitArtifactPart",
@@ -67,7 +167,8 @@
             "description": "id of model version",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "format": "uint64"
           },
           {
             "name": "body",
@@ -106,7 +207,8 @@
             "description": "id of model version",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "format": "uint64"
           },
           {
             "name": "body",
@@ -145,7 +247,8 @@
             "description": "id of model version",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "format": "uint64"
           },
           {
             "name": "key",
@@ -183,7 +286,8 @@
             "description": "id of model version",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "format": "uint64"
           },
           {
             "name": "body",
@@ -704,58 +808,6 @@
       }
     },
     "/registry/{id.model_id.registered_model_id}/versions/{id.model_version_id}": {
-      "get": {
-        "operationId": "GetModelVersion2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryGetModelVersionRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_id.registered_model_id",
-            "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_id.named_id.name",
-            "description": "Model Name.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      },
       "delete": {
         "operationId": "DeleteModelVersion2",
         "responses": {
@@ -856,50 +908,6 @@
       }
     },
     "/registry/{id.registered_model_id}": {
-      "get": {
-        "operationId": "GetRegisteredModel2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryGetRegisteredModelRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.registered_model_id",
-            "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.named_id.name",
-            "description": "Model Name.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "id.named_id.workspace_name",
-            "description": "WorkspaceName.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      },
       "delete": {
         "operationId": "DeleteRegisteredModel2",
         "responses": {
@@ -1176,6 +1184,7 @@
       "properties": {
         "model_version_id": {
           "type": "string",
+          "format": "uint64",
           "title": "id of model version"
         },
         "key": {
@@ -1195,6 +1204,7 @@
       "properties": {
         "model_version_id": {
           "type": "string",
+          "format": "uint64",
           "title": "id of model version"
         },
         "key": {
@@ -1329,6 +1339,7 @@
       "properties": {
         "model_version_id": {
           "type": "string",
+          "format": "uint64",
           "title": "id of model version"
         },
         "key": {

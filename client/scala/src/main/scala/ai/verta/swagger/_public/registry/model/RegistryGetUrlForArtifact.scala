@@ -17,7 +17,7 @@ case class RegistryGetUrlForArtifact (
   artifact_type: Option[ArtifactTypeEnumArtifactType] = None,
   key: Option[String] = None,
   method: Option[String] = None,
-  model_version_id: Option[String] = None,
+  model_version_id: Option[BigInt] = None,
   part_number: Option[BigInt] = None
 ) extends BaseSwagger {
   def toJson(): JValue = RegistryGetUrlForArtifact.toJson(this)
@@ -30,7 +30,7 @@ object RegistryGetUrlForArtifact {
         obj.artifact_type.map(x => JField("artifact_type", ((x: ArtifactTypeEnumArtifactType) => ArtifactTypeEnumArtifactType.toJson(x))(x))),
         obj.key.map(x => JField("key", JString(x))),
         obj.method.map(x => JField("method", JString(x))),
-        obj.model_version_id.map(x => JField("model_version_id", JString(x))),
+        obj.model_version_id.map(x => JField("model_version_id", JInt(x))),
         obj.part_number.map(x => JField("part_number", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -48,7 +48,7 @@ object RegistryGetUrlForArtifact {
           artifact_type = fieldsMap.get("artifact_type").map(ArtifactTypeEnumArtifactType.fromJson),
           key = fieldsMap.get("key").map(JsonConverter.fromJsonString),
           method = fieldsMap.get("method").map(JsonConverter.fromJsonString),
-          model_version_id = fieldsMap.get("model_version_id").map(JsonConverter.fromJsonString),
+          model_version_id = fieldsMap.get("model_version_id").map(JsonConverter.fromJsonInteger),
           part_number = fieldsMap.get("part_number").map(JsonConverter.fromJsonInteger)
         )
       }

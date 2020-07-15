@@ -923,7 +923,7 @@ class BigQueryDatasetVersionInfo(QueryDatasetVersionInfo):
 
     @staticmethod
     def get_bq_job(job_id, location):
-        bigquery = importer.maybe_dependency("bigquery")
+        bigquery = importer.maybe_dependency("google.cloud.bigquery")
         if bigquery is None:  # BigQuery not installed
             six.raise_from(ImportError("BigQuery is not installed;"
                                        " try `pip install google-cloud-bigquery`"),
