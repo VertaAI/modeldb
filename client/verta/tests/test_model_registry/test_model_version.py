@@ -5,6 +5,8 @@ from .. import utils
 import verta.dataset
 import verta.environment
 
+from sklearn.linear_model import LogisticRegression
+
 
 class TestModelVersion:
     def test_get_by_name(self, registered_model):
@@ -29,3 +31,33 @@ class TestModelVersion:
 
         if registered_model:
             utils.delete_registered_model(registered_model.id, client._conn)
+
+    def test_set_model(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+        log_reg_model = LogisticRegression()
+        model_version.set_model(log_reg_model)
+
+        model_version._refresh_cache()
+        assert model_version._msg.model.key == "model"
+
+        # overwrite should work:
+        model_version.set_model(log_reg_model, True)
+
+        with pytest.raises(ValueError) as excinfo:
+            model_version.set_model(log_reg_model)
+
+        assert "model already exists" in str(excinfo.value)
+
+
+    def test_add_asset(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+        log_reg_model = LogisticRegression()
+        model_version.add_asset("some-asset", log_reg_model)
+
+        # Overwrite should work:
+        model_version.add_asset("some-asset", log_reg_model, True)
+
+        with pytest.raises(ValueError) as excinfo:
+            model_version.add_asset("some-asset", log_reg_model)
+
+        assert "The key has been set" in str(excinfo.value)

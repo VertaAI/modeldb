@@ -325,7 +325,7 @@ def registered_model(client):
 def model_version(client):
     try:
         registered_model = client.set_registered_model()
-        model_version = registered_model.get_or_create_version(name="my version")
+        model_version = registered_model.get_or_create_version(name="my version5")
 
         yield model_version
     finally:
