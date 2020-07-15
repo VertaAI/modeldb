@@ -57,6 +57,8 @@ from ._tracking import (
     ExperimentRuns,
 )
 
+from ._dataset_versioning import Datasets
+
 
 _OSS_DEFAULT_WORKSPACE = "personal"
 
@@ -660,27 +662,26 @@ class Client(object):
         list of :class:`Dataset`
 
         """
+        # TODO: deprecate this whole method and add `client.datasets`
+        datasets = Datasets(self._conn, self._conf)
+        if dataset_ids:
+            datasets._msg.dataset_ids.extend(_utils.as_list_of_str(dataset_ids))
+        datasets._msg.sort_key = sort_key or ""
+        datasets._msg.ascending = ascending or False
+        datasets._msg.workspace_name = workspace or ""
+
         predicates = []
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
-            for tag in tags:
-                predicates.append(
-                    _CommonCommonService.KeyValueQuery(key="tags",
-                                                 value=_utils.python_to_val_proto(tag),
-                                                 operator=_CommonCommonService.OperatorEnum.EQ))
+            predicates.extend(
+                "tags == \"{}\"".format(tag)
+                for tag in tags
+            )
         if name is not None:
             if not isinstance(name, six.string_types):
                 raise TypeError("`name` must be str, not {}".format(type(name)))
-            predicates.append(
-                _CommonCommonService.KeyValueQuery(key="name",
-                                             value=_utils.python_to_val_proto(name),
-                                             operator=_CommonCommonService.OperatorEnum.CONTAIN))
-        Message = _dataset._DatasetService.FindDatasets
-        msg = Message(dataset_ids=dataset_ids, predicates=predicates,
-                      ascending=ascending, sort_key=sort_key,
-                      workspace_name=workspace)
-        endpoint = "{}://{}/api/v1/modeldb/dataset/findDatasets"
-        return _dataset.DatasetLazyList(self._conn, self._conf, msg, endpoint, "POST")
+            predicates.append("name ~= \"{}\"".format(name))
+        return datasets.find(predicates)
 
     def get_dataset_version(self, id):
         """
