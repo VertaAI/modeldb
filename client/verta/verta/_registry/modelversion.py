@@ -12,7 +12,7 @@ from .._internal_utils import _utils
 
 class RegisteredModelVersion(_ModelDBEntity):
     def __init__(self, conn, conf, msg):
-        super(RegisteredModelVersion, self).__init__(conn, conf, _ModelVersionService, "registered_model_versions", msg)
+        super(RegisteredModelVersion, self).__init__(conn, conf, _ModelVersionService, "registered_model_version", msg)
 
     def __repr__(self):
         raise NotImplementedError
