@@ -84,3 +84,12 @@ class RegisteredModel(_ModelDBEntity):
 
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
+
+    def add_label(self, label):
+        raise NotImplementedError
+
+    def del_label(self, label):
+        raise NotImplementedError
+
+    def get_labels(self):
+        raise NotImplementedError
