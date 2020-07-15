@@ -662,13 +662,13 @@ class Client(object):
         list of :class:`Dataset`
 
         """
-        # TODO: deprecate this whole method and add `client.datasets`
         datasets = Datasets(self._conn, self._conf)
         if dataset_ids:
             datasets._msg.dataset_ids.extend(_utils.as_list_of_str(dataset_ids))
-        datasets._msg.sort_key = sort_key or ""
-        datasets._msg.ascending = ascending or False
-        datasets._msg.workspace_name = workspace or ""
+        if sort_key:
+            datasets.sort(sort_key, not ascending)
+        if workspace:
+            datasets.with_workspace(workspace)
 
         predicates = []
         if tags is not None:
@@ -681,7 +681,10 @@ class Client(object):
             if not isinstance(name, six.string_types):
                 raise TypeError("`name` must be str, not {}".format(type(name)))
             predicates.append("name ~= \"{}\"".format(name))
-        return datasets.find(predicates)
+        if predicates:
+            datasets =  datasets.find(predicates)
+
+        return datasets
 
     def get_dataset_version(self, id):
         """
