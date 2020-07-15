@@ -7,9 +7,7 @@ from .._tracking.entity import _ModelDBEntity
 from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
-from .._internal_utils import (
-    _utils,
-)
+from .._internal_utils import _utils
 
 
 class RegisteredModelVersion(_ModelDBEntity):
@@ -39,7 +37,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, registered_model_id):
-        return None
+        return None # Not implemented yet!
 
         # Message = _ModelVersionService.FindModelVersionRequest
         # RegisteredModelIDMessage = _ModelVersionService.RegisteredModelIdentification
@@ -52,7 +50,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         # endpoint = "/api/registry/{}/versions".format(registered_model_id)
         # msg = Message(id=RegisteredModelIDMessage(registered_model_id=registered_model_id), predicates=predicates)
         #
-        # proto_response = conn.make_proto_request("POST", endpoint, msg)
+        # proto_response = conn.make_proto_request("POST", endpoint, body=msg)
         # response = conn.maybe_proto_response(proto_response, Message.Response)
         #
         # if not response.model_versions:
@@ -66,10 +64,9 @@ class RegisteredModelVersion(_ModelDBEntity):
         ModelVersionMessage = _ModelVersionService.ModelVersion
         SetModelVersionMessage = _ModelVersionService.SetModelVersion
 
-        model_version_msg = ModelVersionMessage(version=name, description=desc, registered_model_id=registered_model_id,
-                                                labels=labels, time_created=date_created, time_updated=date_created)
+        model_version_msg = ModelVersionMessage(version="name", description="", registered_model_id=4)
         response = conn.make_proto_request("POST",
-                                           "/api/v1/registry/{}/versions".format(registered_model_id),
+                                           "/api/v1/registry/{}/versions".format(4),
                                            body=model_version_msg)
         model_version = conn.must_proto_response(response, SetModelVersionMessage.Response).model_version
 

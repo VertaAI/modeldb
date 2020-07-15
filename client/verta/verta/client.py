@@ -21,16 +21,6 @@ import zipfile
 import requests
 import yaml
 
-try:
-    import PIL
-except ImportError:  # Pillow not installed
-    PIL = None
-
-try:
-    import torch
-except ImportError:  # PyTorch not installed
-    torch = None
-
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
 from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService
@@ -828,3 +818,17 @@ class Client(object):
 
         """
         return self.set_registered_model(*args, **kwargs)
+
+    def get_registered_model(self, name=None, workspace=None, id=None):
+        raise NotImplementedError
+
+    def get_registered_model_version(self, id=None):
+        raise NotImplementedError
+
+    # @property
+    # def registered_models(self):
+    #     return RegisteredModels(self._conn, self._conf)
+    #
+    # @property
+    # def registered_model_versions(self):
+    #     return RegisteredModelVersions(self._conn, self._conf)

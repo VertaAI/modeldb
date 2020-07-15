@@ -60,7 +60,7 @@ if (process.env.DEPLOYED === 'yes') {
     target: process.env.MDB_ADDRESS,
     pathRewrite: {'^/api/v1/modeldb' : '/v1'},
     // logLevel: "debug",
-    changeOrigin: false,
+    changeOrigin: process.env.MDB_CHANGE_ORIGIN || false,
     ws: true,
   })
   app.use(
@@ -75,7 +75,7 @@ if (process.env.DEPLOYED === 'yes') {
     target: process.env.ARTIFACTORY_ADDRESS,
     // pathRewrite: {'^/api/v1/artifact' : '/v1'},
     // logLevel: "debug",
-    changeOrigin: false,
+    changeOrigin: process.env.ARTIFACTORY_CHANGE_ORIGIN || false,
     ws: true,
   })
   app.use(
@@ -90,7 +90,7 @@ if (process.env.DEPLOYED === 'yes') {
     target: process.env.GQL_ADDRESS,
     pathRewrite: {'^/api/v1/graphql/' : '/'},
     // logLevel: "debug",
-    changeOrigin: false,
+    changeOrigin: process.env.GRAPHQL_CHANGE_ORIGIN || false,
     ws: true,
   })
   app.use(
@@ -113,7 +113,7 @@ if (process.env.DEPLOYED === 'yes') {
 } else {
   const aws_proxy = proxy({
     target: apiAddress,
-    changeOrigin: false,
+    changeOrigin: process.env.AWS_CHANGE_ORIGIN || false,
     ws: true,
   });
 
@@ -136,7 +136,7 @@ if (process.env.DEPLOYED === 'yes') {
 
   const local_proxy = proxy({
     target: 'http://localhost:3001',
-    changeOrigin: false,
+    changeOrigin: process.env.LOCAL_CHANGE_ORIGIN || false,
     ws: true,
   });
   app.use('*', (req, res, next) => {
