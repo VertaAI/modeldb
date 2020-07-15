@@ -1,9 +1,9 @@
 package ai.verta.modeldb.versioning;
 
-import ai.verta.modeldb.KeyValueQuery;
+import ai.verta.common.KeyValueQuery;
+import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;

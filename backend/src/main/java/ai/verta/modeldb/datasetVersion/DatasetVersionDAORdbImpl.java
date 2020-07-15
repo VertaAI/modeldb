@@ -1,18 +1,17 @@
 package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.Dataset;
-import ai.verta.modeldb.DatasetTypeEnum;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasetVersions;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
@@ -307,17 +306,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public String getUrlForDatasetVersion(String datasetVersionId, String method)
       throws InvalidProtocolBufferException {
-    DatasetVersion datasetVersion = getDatasetVersion(datasetVersionId);
-    if (!datasetVersion.getDatasetType().equals(DatasetTypeEnum.DatasetType.RAW)) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage("getUrl for dataset currently supported only for Raw dataset versions.")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
-
-    return datasetVersion.getRawDatasetVersionInfo().getObjectPath();
+    Status status =
+        Status.newBuilder()
+            .setCode(Code.INVALID_ARGUMENT_VALUE)
+            .setMessage("Not supported yet")
+            .build();
+    throw StatusProto.toStatusRuntimeException(status);
   }
 
   @Override
