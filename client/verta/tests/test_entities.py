@@ -7,6 +7,8 @@ import shutil
 import requests
 
 import pytest
+
+from verta._registry import RegisteredModels
 from . import utils
 
 import verta
@@ -504,3 +506,14 @@ class TestModel:
         client.set_registered_model()  # in case get erroneously fetches latest
 
         assert registered_model.id == client.set_registered_model(id=registered_model.id).id
+
+    def test_find(self, client):
+        name = verta._internal_utils._utils.generate_default_name()
+
+        registered_model = client.set_registered_model(name)
+
+        find = client.registered_models.find(["name == {}".format(name)])
+        length = len(find)
+        for item in find:
+            print(item)
+        pass
