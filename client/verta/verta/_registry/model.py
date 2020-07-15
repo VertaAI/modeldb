@@ -35,6 +35,11 @@ class RegisteredModel(_ModelDBEntity):
                                                        lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=time_created))
 
     def get_version(self, name=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
+
         if id is not None:
             return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
         else:
