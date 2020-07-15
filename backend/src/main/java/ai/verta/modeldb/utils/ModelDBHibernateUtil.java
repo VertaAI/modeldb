@@ -783,10 +783,13 @@ public class ModelDBHibernateUtil {
 
       Statement stmt = jdbcCon.createStatement();
 
-      String sql = "INSERT INTO migration_status VALUES (1,'" + migrationName + "', 1);";
-      stmt.executeUpdate(sql);
+      String sql =
+              "INSERT INTO migration_status (migration_name, status) VALUES ('"
+                      + migrationName
+                      + "', 1);";
+      int updatedRowCount = stmt.executeUpdate(sql);
       stmt.close();
-      LOGGER.debug("migration {} locked: {}", migrationName, true);
+      LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);
     } catch (DatabaseException e) {
       LOGGER.error(e.getMessage(), e);
       throw e;
