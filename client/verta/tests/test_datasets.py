@@ -194,7 +194,7 @@ class TestClientDatasetFunctions:
         assert len(datasets) == 3
 
     def test_find_datasets_client_api(self, client, created_datasets):
-        tags = ["test1-{}".format(_utils.now()), "test1-{}".format(_utils.now())]
+        tags = ["test1a-{}".format(_utils.now()), "test1b-{}".format(_utils.now())]
         dataset1 = client.set_dataset(type="big query", tags=tags)
         created_datasets.append(dataset1)
         assert dataset1._dataset_type == _DatasetService.DatasetTypeEnum.QUERY
