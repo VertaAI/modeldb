@@ -12,7 +12,7 @@ class Datasets(_utils.LazyList):
     _VALID_QUERY_KEYS = {
         'id',
         'name',
-        'tags',  # TODO: does this work?
+        'tags',
         'date_created',
     }
 

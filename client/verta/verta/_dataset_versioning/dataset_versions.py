@@ -13,7 +13,7 @@ class DatasetVersions(_utils.LazyList):
         'id',
         'dataset_id',
         'name',
-        'tags',  # TODO: does this work?
+        'tags',
         'time_logged',
     }
 
