@@ -2959,7 +2959,7 @@ func RegisterRegistryServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 var (
 	pattern_RegistryService_FindRegisteredModel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5}, []string{"v1", "registry", "workspaces", "workspace_name", "registered_models", "find"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_FindRegisteredModel_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "registry", "find"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_FindRegisteredModel_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "registry", "registered_models", "find"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_RegistryService_GetRegisteredModel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "registry", "workspaces", "id.named_id.workspace_name", "registered_models", "id.named_id.name"}, "", runtime.AssumeColonVerbOpt(true)))
 
@@ -2977,7 +2977,7 @@ var (
 
 	pattern_RegistryService_FindModelVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 2, 7}, []string{"v1", "registry", "workspaces", "id.named_id.workspace_name", "registered_models", "id.named_id.name", "versions", "find"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_FindModelVersion_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "registry", "id.registered_model_id", "versions"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_FindModelVersion_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 2, 4}, []string{"v1", "registry", "id.registered_model_id", "versions", "find"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_RegistryService_GetModelVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "registry", "workspaces", "id.model_id.named_id.workspace_name", "registered_models", "id.model_id.named_id.name", "versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
