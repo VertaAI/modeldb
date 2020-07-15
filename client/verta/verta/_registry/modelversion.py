@@ -37,6 +37,7 @@ class RegisteredModelVersion(_ModelDBEntity):
     @classmethod
     def _get_proto_by_name(cls, conn, name, registered_model_id):
         Message = _ModelVersionService.FindModelVersionRequest
+        IDMessage = _ModelVersionService.RegisteredModelIdentification
 
         predicates = [
             _CommonCommonService.KeyValueQuery(key="version",
@@ -44,7 +45,7 @@ class RegisteredModelVersion(_ModelDBEntity):
                                                operator=_CommonCommonService.OperatorEnum.EQ)
         ]
         endpoint = "/api/v1/registry/{}/versions/find".format(registered_model_id)
-        msg = Message(predicates=predicates)
+        msg = Message(id=IDMessage(registered_model_id=registered_model_id), predicates=predicates)
 
         proto_response = conn.make_proto_request("POST", endpoint, body=msg)
         response = conn.maybe_proto_response(proto_response, Message.Response)
