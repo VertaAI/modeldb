@@ -682,7 +682,7 @@ class Client(object):
                 raise TypeError("`name` must be str, not {}".format(type(name)))
             predicates.append("name ~= \"{}\"".format(name))
         if predicates:
-            datasets =  datasets.find(predicates)
+            datasets = datasets.find(predicates)
 
         return datasets
 
