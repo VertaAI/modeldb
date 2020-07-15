@@ -85,11 +85,32 @@ class RegisteredModel(_ModelDBEntity):
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
 
+    def _get_existing(self):
+        registered_model = RegisteredModel(self._conn, self._conf, self._get_proto_by_id(self._conn, self.id))
+        return registered_model
+
     def add_label(self, label):
-        raise NotImplementedError
+        if label is None:
+            raise ValueError("label is not specified")
+        registered_model = self._get_existing()
+        registered_model._msg.labels.append(label)
+        return registered_model._update()
 
     def del_label(self, label):
-        raise NotImplementedError
+        if label is None:
+            raise ValueError("label is not specified")
+        registered_model = self._get_existing()
+        if label in registered_model._msg.labels:
+            registered_model._msg.labels.remove(label)
+            return registered_model._update()
+        return registered_model
 
     def get_labels(self):
-        raise NotImplementedError
+        registered_model = self._get_existing()
+        return registered_model._msg.labels
+
+    def _update(self):
+        response = self._conn.make_proto_request("PUT",
+                                           "/api/v1/registry/{}".format(self.id),
+                                           body=self._msg)
+        return RegisteredModel(self._conn, self._conf, self._conn.must_proto_response(response, _RegisteredModelService.SetRegisteredModel.Response).registered_model)
