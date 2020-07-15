@@ -207,7 +207,7 @@ message DeleteModelVersionRequest {
 
 message GetUrlForArtifact {
     // id of model version
-    string model_version_id = 1;
+    uint64 model_version_id = 1;
     //artifact key 
     string key = 2;
     //GET or PUT
@@ -226,7 +226,7 @@ message GetUrlForArtifact {
 
 message CommitArtifactPart {
     // id of model version
-    string model_version_id = 1;
+    uint64 model_version_id = 1;
     //artifact key 
     string key = 2;
     common.ArtifactPart artifact_part = 3;
@@ -236,7 +236,7 @@ message CommitArtifactPart {
 
 message GetCommittedArtifactParts {
     // id of model version
-    string model_version_id = 1;
+    uint64 model_version_id = 1;
     //artifact key 
     string key = 2;
 
@@ -247,7 +247,7 @@ message GetCommittedArtifactParts {
 
 message CommitMultipartArtifact {
     // id of model version
-    string model_version_id = 1;
+    uint64 model_version_id = 1;
     //artifact key 
     string key = 2;
 
@@ -272,7 +272,7 @@ service RegistryService {
         option (google.api.http) = {
             get: "/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}"
             additional_bindings {
-                get: "/v1/registry/{id.registered_model_id}"
+                get: "/v1/registry/registered_models/{id.registered_model_id}"
             }
         };
     };
@@ -320,7 +320,7 @@ service RegistryService {
         option (google.api.http) = {
             get: "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/versions/{id.model_version_id}"
             additional_bindings {
-                get: "/v1/registry/{id.model_id.registered_model_id}/versions/{id.model_version_id}"
+                get: "/v1/registry/registered_model_versions/{id.model_version_id}"
             }
         };
     };
