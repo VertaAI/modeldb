@@ -34,7 +34,8 @@ class Datasets(_utils.LazyList):
 
     def _create_element(self, msg):
         from .._dataset import Dataset  # TODO: avoid circular import
-        return Dataset(self._conn, self._conf, msg)
+        # old interface; takes ID instead of msg
+        return Dataset(self._conn, self._conf, _dataset_id=msg.id)
 
     def with_workspace(self, workspace_name=None):
         new_list = copy.deepcopy(self)
