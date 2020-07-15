@@ -591,6 +591,23 @@ def json_to_proto(response_json, response_cls, ignore_unknown_fields=True):
                              ignore_unknown_fields=ignore_unknown_fields)
 
 
+def get_bool_types():
+    """
+    Determines available bool types (including NumPy's ``bool_`` if importable) for typechecks.
+
+    Returns
+    -------
+    tuple
+        Available bool types.
+
+    """
+    np = importer.maybe_dependency("numpy")
+    if np is None:
+        return (bool,)
+    else:
+        return (bool, np.bool_)
+
+
 def to_builtin(obj):
     """
     Tries to coerce `obj` into a built-in type, for JSON serialization.
@@ -605,19 +622,13 @@ def to_builtin(obj):
         A built-in equivalent of `obj`, or `obj` unchanged if it could not be handled by this function.
 
     """
-    np = importer.maybe_dependency("numpy")
-    if np is None:
-        BOOL_TYPES = (bool,)
-    else:
-        BOOL_TYPES = (bool, np.bool_)
-
     # jump through ludicrous hoops to avoid having hard dependencies in the Client
     cls_ = obj.__class__
     obj_class = getattr(cls_, '__name__', None)
     obj_module = getattr(cls_, '__module__', None)
 
     # booleans
-    if isinstance(obj, BOOL_TYPES):
+    if isinstance(obj, get_bool_types()):
         return True if obj else False
 
     # NumPy scalars
