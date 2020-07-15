@@ -75,7 +75,7 @@ class RegisteredModel(_ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, labels=None, date_created=None, attrs=None, public_within_org=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, labels=None, date_created=None, attrs=None, public_within_org=None):
         Message = _RegisteredModelService.RegisteredModel
         msg = Message(name=name, description=desc, labels=labels)
         if public_within_org:
@@ -111,7 +111,7 @@ class RegisteredModel(_ModelDBEntity):
         else:
             return RegisteredModelVersion._get_or_create_by_name(self._conn, name,
                                                        lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
-                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, None, name, desc=desc, tags=None, attrs=None, date_created=time_created, registered_model_id=self.id))
+                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, None, name, desc=desc, tags=tags, attrs=attrs, date_created=time_created, registered_model_id=self.id))
 
     def get_version(self, name=None, id=None):
         if id is not None:

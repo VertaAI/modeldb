@@ -39,39 +39,38 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, registered_model_id):
-        Message = _ModelVersionService.FindModelVersionRequest
-        RegisteredModelIDMessage = _ModelVersionService.RegisteredModelIdentification
+        return None
 
-        predicates = [
-            _CommonCommonService.KeyValueQuery(key="version",
-                                               value=_utils.python_to_val_proto(name),
-                                               operator=_CommonCommonService.OperatorEnum.EQ)
-        ]
-        endpoint = "/api/v1/registry/{}/versions".format(registered_model_id)
-        msg = Message(id=RegisteredModelIDMessage(registered_model_id=registered_model_id), predicates=predicates)
-
-        proto_response = conn.make_proto_request("POST", endpoint, msg)
-        response = conn.must_proto_response(proto_response, Message.Response)
-
-        if not response.model_versions:
-            raise ValueError("ModelVersion with version name {} does not exists".format(name))
-
-        return response.model_versions[0] # should only have 1 entry here, as name/version is unique
+        # Message = _ModelVersionService.FindModelVersionRequest
+        # RegisteredModelIDMessage = _ModelVersionService.RegisteredModelIdentification
+        #
+        # predicates = [
+        #     _CommonCommonService.KeyValueQuery(key="version",
+        #                                        value=_utils.python_to_val_proto(name),
+        #                                        operator=_CommonCommonService.OperatorEnum.EQ)
+        # ]
+        # endpoint = "/api/registry/{}/versions".format(registered_model_id)
+        # msg = Message(id=RegisteredModelIDMessage(registered_model_id=registered_model_id), predicates=predicates)
+        #
+        # proto_response = conn.make_proto_request("POST", endpoint, msg)
+        # response = conn.maybe_proto_response(proto_response, Message.Response)
+        #
+        # if not response.model_versions:
+        #     return None
+        #
+        # return response.model_versions[0] # should only have 1 entry here, as name/version is unique
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, registered_model_id=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, labels=None, attrs=None, date_created=None, registered_model_id=None):
         # ctx is always None here
         ModelVersionMessage = _ModelVersionService.ModelVersion
         SetModelVersionMessage = _ModelVersionService.SetModelVersion
 
         model_version_msg = ModelVersionMessage(version=name, description=desc, registered_model_id=registered_model_id,
-                                                time_created=date_created, time_updated=date_created)
-        msg = SetModelVersionMessage(model_version=model_version_msg)
-
+                                                labels=labels, time_created=date_created, time_updated=date_created)
         response = conn.make_proto_request("POST",
                                            "/api/v1/registry/{}/versions".format(registered_model_id),
-                                           body=msg)
-
+                                           body=model_version_msg)
         model_version = conn.must_proto_response(response, SetModelVersionMessage.Response).model_version
 
         print("Created new ModelVersion: {}".format(model_version.name))
