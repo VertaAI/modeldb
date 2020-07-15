@@ -372,7 +372,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
             .map(resp => {
               resp match {
                 case Success(response) => {
-                  val arr = new ByteArrayInputStream(response)
+                  val arr = new ByteArrayInputStream(response.body)
                   Success(arr)
                 }
                 case Failure(x) => Failure(x)

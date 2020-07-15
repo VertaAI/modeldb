@@ -210,8 +210,15 @@ class TestCommitDataVersioning extends FunSuite {
       // check that the content is now different:
       assert(!Files.readAllBytes((new File("somefile")).toPath).sameElements(originalContent))
 
+      // upload another file to commit:
+      generateRandomFile("somefile2").get
+      val pathBlob2 = PathBlob("somefile2", true).get
+      val newCommit = commit
+        .update("file2", pathBlob2)
+        .flatMap(_.save("some-msg-2")).get
+
       // recover the old versioned file:
-      val retrievedBlob: Dataset = commit.get("file").get match {
+      val retrievedBlob: Dataset = newCommit.get("file").get match {
         case path: PathBlob => path
       }
       retrievedBlob.download(Some("somefile"), Some("somefile"))
@@ -349,9 +356,36 @@ class TestCommitDataVersioning extends FunSuite {
       }
       val downloadAttempt3 = retrievedPathBlob2.download(downloadToPath = Some("some-path"))
       assert(downloadAttempt3.isFailure)
-      assert(downloadAttempt3 match {case Failure(e) => e.getMessage contains "This blob did not allow for versioning"})
+      assert(downloadAttempt3 match {case Failure(e) => e.getMessage contains "This dataset cannot be used for downloads"})
     } finally {
       cleanup(f)
     }
   }
+
+  // This test is comment out because it is big. Uncomment it with caution!
+  // test("multipart-upload should work") {
+  //   val f = fixture
+  //
+  //   try {
+  //     val originalContent = generateRandomFile("somefile", 128 * 1024 * 1024).get // 128 MB
+  //     val pathBlob = PathBlob("somefile", true).get
+  //     val commit = f.commit
+  //       .update("file", pathBlob)
+  //       .flatMap(_.save("some-msg")).get
+  //     generateRandomFile("somefile").get
+  //
+  //     // recover the old versioned file:
+  //     val retrievedBlob: Dataset = commit.get("file").get match {
+  //       case path: PathBlob => path
+  //     }
+  //     val downloadToPath = retrievedBlob.download().get
+  //
+  //     assert(downloadToPath equals (new File(f"${Dataset.DefaultDownloadDir}")).getAbsolutePath)
+  //     assert(
+  //       Files.readAllBytes((new File(f"${downloadToPath}/somefile")).toPath).sameElements(originalContent)
+  //     )
+  //   } finally {
+  //     cleanup(f)
+  //   }
+  // }
 }

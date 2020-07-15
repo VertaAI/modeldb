@@ -94,7 +94,7 @@ message Entities {
 message RoleBinding {
     string id = 1;
     string name = 2; // Unique within a scope
-    RoleScope scope = 3;
+    RoleScope scope = 3; // Was unused before introducing role_name in RoleBinding
 
     // Binds all roles to all given entities
     repeated Entities entities = 5;
@@ -102,6 +102,7 @@ message RoleBinding {
     // We optionally allow a more specialized list of resources that the original one allowed by the roles
     repeated Resources resources = 6;
     string role_id = 7;
+    string role_name = 9;
     bool public = 8;
 }
 

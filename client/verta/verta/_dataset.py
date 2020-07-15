@@ -9,23 +9,16 @@ import warnings
 
 import requests
 
-try:
-    from google.cloud import bigquery
-except ImportError:  # BigQuery not installed
-    bigquery = None
-
-try:
-    import boto3
-except ImportError:  # Boto 3 not installed
-    boto3 = None
-
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from ._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 
 from .external import six
 
-from ._internal_utils import _utils
+from ._internal_utils import (
+    _utils,
+    importer,
+)
 
 
 class Dataset(object):
@@ -540,16 +533,16 @@ class DatasetVersion(object):
     @staticmethod
     def _get(conn, _dataset_version_id=None):
         if _dataset_version_id is not None:
-            Message = _DatasetVersionService.GetDatasetVersionById
-            msg = Message(id=_dataset_version_id)
+            msg = _DatasetVersionService.FindDatasetVersions()
+            msg.dataset_version_ids.append(_dataset_version_id)
             data = _utils.proto_to_json(msg)
             response = _utils.make_request(
-                "GET",
-                "{}://{}/api/v1/modeldb/dataset-version/getDatasetVersionById".format(conn.scheme, conn.socket),
+                "POST",
+                "{}://{}/api/v1/modeldb/dataset-version/findDatasetVersions".format(conn.scheme, conn.socket),
                 conn, params=data
             )
             if response.ok:
-                dataset_version = _utils.json_to_proto(_utils.body_to_json(response), Message.Response).dataset_version
+                dataset_version = _utils.json_to_proto(_utils.body_to_json(response), msg.Response).dataset_versions[0]
 
                 if not dataset_version.id:  # 200, but empty message
                     raise RuntimeError("unable to retrieve DatasetVersion {};"
@@ -781,6 +774,7 @@ class S3DatasetVersionInfo(PathDatasetVersionInfo):
         self.compute_dataset_size()
 
     def get_dataset_part_infos(self):
+        boto3 = importer.maybe_dependency("boto3")
         if boto3 is None:  # Boto 3 not installed
             six.raise_from(ImportError("Boto 3 is not installed; try `pip install boto3`"), None)
 
@@ -929,6 +923,7 @@ class BigQueryDatasetVersionInfo(QueryDatasetVersionInfo):
 
     @staticmethod
     def get_bq_job(job_id, location):
+        bigquery = importer.maybe_dependency("google.cloud.bigquery")
         if bigquery is None:  # BigQuery not installed
             six.raise_from(ImportError("BigQuery is not installed;"
                                        " try `pip install google-cloud-bigquery`"),

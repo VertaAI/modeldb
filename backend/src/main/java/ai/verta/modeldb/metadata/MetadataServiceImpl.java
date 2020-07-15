@@ -88,6 +88,40 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   }
 
   @Override
+  public void updateLabels(
+      AddLabelsRequest request, StreamObserver<AddLabelsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId() == null
+          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+        errorMessage = "Invalid parameter set in AddLabelsRequest.Id";
+      } else if (request.getLabelsList().isEmpty()) {
+        errorMessage = "labels not found in AddLabelsRequest request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.info(errorMessage);
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(errorMessage)
+                .addDetails(Any.pack(AddLabelsRequest.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+
+      boolean status = metadataDAO.updateLabels(request.getId(), request.getLabelsList());
+      responseObserver.onNext(AddLabelsRequest.Response.newBuilder().setStatus(status).build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, AddLabelsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
   public void getLabelIds(
       GetLabelIdsRequest request, StreamObserver<GetLabelIdsRequest.Response> responseObserver) {
     QPSCountResource.inc();

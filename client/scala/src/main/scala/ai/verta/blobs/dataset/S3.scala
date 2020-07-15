@@ -25,7 +25,8 @@ import java.io.{File, FileOutputStream}
  */
 case class S3(
   protected val contents: HashMap[String, FileMetadata],
-  val enableMDBVersioning: Boolean = false
+  val enableMDBVersioning: Boolean = false,
+  val downloadable: Boolean = false
 ) extends Dataset {
   /** Get the version id of a file
    *  @param path: S3 URL of a file in the form "s3://<bucketName>/<key>"
@@ -162,9 +163,9 @@ object S3 {
       comp => comp.path.get.path.get -> Dataset.toMetadata(comp.path.get, comp.s3_version_id)
     )
 
-    // if internal versioned path of a component is defined, then the blob enables MDB Versioning
-    val enableMDBVersioning = componentList.head.path.get.internal_versioned_path.isDefined
-    new S3(HashMap(metadataList: _*), enableMDBVersioning)
+    // if internal versioned path of a component is defined, then the blob is downloadble
+    val downloadable = componentList.head.path.get.internal_versioned_path.isDefined
+    new S3(HashMap(metadataList: _*), downloadable = downloadable)
   }
 
   /** Combine two S3 instances
