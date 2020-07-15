@@ -11,13 +11,19 @@ From the root directory of the repository, run these commands:
 ## Linting
 Python doesn't have complete static nor compile-time checking, so linting is important for catching potential bugs.
 
-ModelDB uses [`pylint`](https://pylint.org/), which was installed during **Developer Installation**. Many Python IDEs can be configured to run `pylint` on file save (see instructions/plugins for [VS Code](https://code.visualstudio.com/docs/python/linting) and [PyCharm](https://plugins.jetbrains.com/plugin/11084-pylint)).
+ModelDB uses [`pylint`](https://pylint.org/) as its linter, which was installed during **Developer Installation**. Many Python IDEs can be configured to run `pylint` on file save (see instructions/plugins for [VS Code](https://code.visualstudio.com/docs/python/linting) and [PyCharm](https://plugins.jetbrains.com/plugin/11084-pylint)).
 
 Alternatively, `pylint` can be run manually through the Terminal using
 ```bash
 pylint --disable=R,C,W verta
 ```
 from inside `client/verta/`
+
+## Test Writing
+ModelDB uses `pytest` as its testing framework. See [the testing README](verta/tests) for more details.
+
+# Documentation Writing
+ModelDB uses `sphinx` as its documentation building framework. See [the docs README](verta/docs) for more details.
 
 ## Example and Demo Writing
 

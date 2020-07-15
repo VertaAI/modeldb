@@ -235,7 +235,7 @@ class _ModelDBEntity(object):
             # find dynamically
             try:
                 exec_path = _utils.get_notebook_filepath()
-            except OSError:  # notebook not found
+            except (ImportError, OSError):  # notebook not found
                 try:
                     exec_path = _utils.get_script_filepath()
                 except OSError:  # script not found
