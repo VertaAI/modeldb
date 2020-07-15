@@ -15,7 +15,7 @@ import ai.verta.swagger.client.objects._
 
 case class RegistryCommitMultipartArtifact (
   key: Option[String] = None,
-  model_version_id: Option[String] = None
+  model_version_id: Option[BigInt] = None
 ) extends BaseSwagger {
   def toJson(): JValue = RegistryCommitMultipartArtifact.toJson(this)
 }
@@ -25,7 +25,7 @@ object RegistryCommitMultipartArtifact {
     new JObject(
       List[Option[JField]](
         obj.key.map(x => JField("key", JString(x))),
-        obj.model_version_id.map(x => JField("model_version_id", JString(x)))
+        obj.model_version_id.map(x => JField("model_version_id", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -40,7 +40,7 @@ object RegistryCommitMultipartArtifact {
         RegistryCommitMultipartArtifact(
           // TODO: handle required
           key = fieldsMap.get("key").map(JsonConverter.fromJsonString),
-          model_version_id = fieldsMap.get("model_version_id").map(JsonConverter.fromJsonString)
+          model_version_id = fieldsMap.get("model_version_id").map(JsonConverter.fromJsonInteger)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

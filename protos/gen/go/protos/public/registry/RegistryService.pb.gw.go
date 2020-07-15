@@ -1008,7 +1008,7 @@ func local_request_RegistryService_GetModelVersion_0(ctx context.Context, marsha
 }
 
 var (
-	filter_RegistryService_GetModelVersion_1 = &utilities.DoubleArray{Encoding: map[string]int{"id": 0, "model_id": 1, "registered_model_id": 2, "model_version_id": 3}, Base: []int{1, 1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 3, 2, 4, 5}}
+	filter_RegistryService_GetModelVersion_1 = &utilities.DoubleArray{Encoding: map[string]int{"id": 0, "model_version_id": 1}, Base: []int{1, 1, 1, 0}, Check: []int{0, 1, 2, 3}}
 )
 
 func request_RegistryService_GetModelVersion_1(ctx context.Context, marshaler runtime.Marshaler, client RegistryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -1021,17 +1021,6 @@ func request_RegistryService_GetModelVersion_1(ctx context.Context, marshaler ru
 		err error
 		_   = err
 	)
-
-	val, ok = pathParams["id.model_id.registered_model_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_id.registered_model_id")
-	}
-
-	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_id.registered_model_id", val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_id.registered_model_id", err)
-	}
 
 	val, ok = pathParams["id.model_version_id"]
 	if !ok {
@@ -1066,17 +1055,6 @@ func local_request_RegistryService_GetModelVersion_1(ctx context.Context, marsha
 		err error
 		_   = err
 	)
-
-	val, ok = pathParams["id.model_id.registered_model_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_id.registered_model_id")
-	}
-
-	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_id.registered_model_id", val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_id.registered_model_id", err)
-	}
 
 	val, ok = pathParams["id.model_version_id"]
 	if !ok {
@@ -1754,7 +1732,7 @@ func request_RegistryService_GetUrlForArtifact_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.ModelVersionId, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
@@ -1789,7 +1767,7 @@ func local_request_RegistryService_GetUrlForArtifact_0(ctx context.Context, mars
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.ModelVersionId, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
@@ -1824,7 +1802,7 @@ func request_RegistryService_CommitArtifactPart_0(ctx context.Context, marshaler
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.ModelVersionId, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
@@ -1859,7 +1837,7 @@ func local_request_RegistryService_CommitArtifactPart_0(ctx context.Context, mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.ModelVersionId, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
@@ -1890,7 +1868,7 @@ func request_RegistryService_GetCommittedArtifactParts_0(ctx context.Context, ma
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.ModelVersionId, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
@@ -1924,7 +1902,7 @@ func local_request_RegistryService_GetCommittedArtifactParts_0(ctx context.Conte
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.ModelVersionId, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
@@ -1963,7 +1941,7 @@ func request_RegistryService_CommitMultipartArtifact_0(ctx context.Context, mars
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.ModelVersionId, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
@@ -1998,7 +1976,7 @@ func local_request_RegistryService_CommitMultipartArtifact_0(ctx context.Context
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.ModelVersionId, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
@@ -2985,7 +2963,7 @@ var (
 
 	pattern_RegistryService_GetRegisteredModel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "registry", "workspaces", "id.named_id.workspace_name", "registered_models", "id.named_id.name"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_GetRegisteredModel_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "registry", "id.registered_model_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_GetRegisteredModel_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "registry", "registered_models", "id.registered_model_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_RegistryService_CreateRegisteredModel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "workspaces", "id.named_id.workspace_name", "registered_models"}, "", runtime.AssumeColonVerbOpt(true)))
 
@@ -3003,7 +2981,7 @@ var (
 
 	pattern_RegistryService_GetModelVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "registry", "workspaces", "id.model_id.named_id.workspace_name", "registered_models", "id.model_id.named_id.name", "versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_GetModelVersion_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "registry", "id.model_id.registered_model_id", "versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_GetModelVersion_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "registry", "registered_model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_RegistryService_CreateModelVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "registry", "workspaces", "id.model_id.named_id.workspace_name", "registered_models", "id.model_id.named_id.name", "versions"}, "", runtime.AssumeColonVerbOpt(true)))
 
