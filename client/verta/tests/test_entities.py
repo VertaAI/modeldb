@@ -473,3 +473,34 @@ class TestExperimentRuns:
 
         # ignore duplicates
         assert local_expt1_run_ids == set(run.id for run in expt1.expt_runs + expt1.expt_runs)
+
+
+class TestModel:
+    def test_create(self, client):
+        assert client.set_registered_model()
+
+        assert client.registered_model is not None
+
+    def test_get(self, client):
+        name = verta._internal_utils._utils.generate_default_name()
+
+        assert client.get_registered_model(name) is None
+
+        registered_model = client.set_registered_model(name)
+
+        assert registered_model.id == client.get_registered_model(registered_model.name).id
+        assert registered_model.id == client.get_registered_model(id=registered_model.id).id
+
+    def test_get_by_name(self, client):
+        registered_model = client.set_registered_model()
+
+        client.set_registered_model()  # in case get erroneously fetches latest
+
+        assert registered_model.id == client.set_registered_model(registered_model.name).id
+
+    def test_get_by_id(self, client):
+        registered_model = client.set_registered_model()
+
+        client.set_registered_model()  # in case get erroneously fetches latest
+
+        assert registered_model.id == client.set_registered_model(id=registered_model.id).id
