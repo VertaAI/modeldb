@@ -43,7 +43,7 @@ class RegisteredModel(_ModelDBEntity):
     def _get_proto_by_id(cls, conn, id):
         Message = _RegisteredModelService.GetRegisteredModelRequest
         response = conn.make_proto_request("GET",
-                                           "/api/v1/registry/{}".format(id))
+                                           "/api/v1/registry/registered_models/{}".format(id))
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
