@@ -32,7 +32,6 @@ public class DatasetVersionEntity {
     setDescription(datasetVersion.getDescription());
     setTags(RdbmsUtils.convertTagListFromTagMappingList(this, datasetVersion.getTagsList()));
     setDataset_version_visibility(datasetVersion.getDatasetVersionVisibilityValue());
-    setDataset_type(datasetVersion.getDatasetTypeValue());
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, datasetVersion.getAttributesList()));
@@ -273,7 +272,6 @@ public class DatasetVersionEntity {
             .setDescription(getDescription())
             .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))
             .setDatasetVersionVisibilityValue(getDataset_version_visibility())
-            .setDatasetTypeValue(getDataset_type())
             .addAllAttributes(
                 RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))
             .setOwner(getOwner())
