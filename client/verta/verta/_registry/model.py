@@ -21,7 +21,7 @@ class RegisteredModel(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.name
 
-    def get_or_create_version(self, name=None, desc=None, labels=None, attrs=None, id=None):
+    def get_or_create_version(self, name=None, desc=None, tags=None, attrs=None, id=None, time_created=None):
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
