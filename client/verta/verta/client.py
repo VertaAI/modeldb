@@ -829,8 +829,10 @@ class Client(object):
 
         return self._ctx.registered_model
 
-    def get_registered_model_version(self, id=None):
-        raise NotImplementedError
+    def get_registered_model_version(self, name=None, id=None):
+        if self._ctx.registered_model is None:
+            raise RuntimeError("Registered model is not set. Please call `client.set_registered_model()`")
+        return self._ctx.registered_model.get_version(name, id)
 
     @property
     def registered_models(self):

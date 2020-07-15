@@ -55,10 +55,10 @@ class RegisteredModelVersion(_ModelDBEntity):
         return response.model_versions[0]
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, labels=None, attrs=None, date_created=None, registered_model_id=None):
-        # ctx is always None here
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, labels=None, attrs=None, date_created=None):
         ModelVersionMessage = _ModelVersionService.ModelVersion
         SetModelVersionMessage = _ModelVersionService.SetModelVersion
+        registered_model_id = ctx.registered_model.id
 
         model_version_msg = ModelVersionMessage(version=name, description=desc, registered_model_id=registered_model_id,
                                                 labels=labels, time_created=date_created, time_updated=date_created)
