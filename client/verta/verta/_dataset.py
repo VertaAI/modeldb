@@ -941,25 +941,3 @@ class RDBMSDatasetVersionInfo(QueryDatasetVersionInfo):
         self.query_template = query_template
         self.query_parameters = query_parameters
         self.num_records = num_records
-
-
-class DatasetLazyList(_utils.LazyList):
-    def __repr__(self):
-        return "<list-like of {} Dataset(s)>".format(self.__len__())
-
-    def _get_records(self, response_msg):
-        return response_msg.datasets
-
-    def _create_element(self, id_):
-        return Dataset(self._conn, self._conf, _dataset_id=id_)
-
-
-class DatasetVersionLazyList(_utils.LazyList):
-    def __repr__(self):
-        return "<list-like of {} DatasetVersion(s)>".format(self.__len__())
-
-    def _get_records(self, response_msg):
-        return response_msg.dataset_versions
-
-    def _create_element(self, id_):
-        return DatasetVersion(self._conn, self._conf, _dataset_version_id=id_)
