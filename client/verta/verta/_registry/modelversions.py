@@ -29,5 +29,7 @@ class RegisteredModelVersions(_utils.LazyList):
     def _create_element(self, msg):
         return RegisteredModelVersion(self._conn, self._conf, msg)
 
-    def with_model(self, registered_model=None):
-        raise NotImplementedError
+    def with_model(self, registered_model):
+        new_list = copy.deepcopy(self)
+        new_list._registered_model = registered_model
+        return new_list
