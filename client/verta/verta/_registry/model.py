@@ -21,11 +21,30 @@ class RegisteredModel(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.name
 
-    def get_or_create_version(self, name=None, desc=None, tags=None, attrs=None, id=None):
-        raise NotImplementedError
+    def get_or_create_version(self, name=None, desc=None, tags=None, attrs=None, id=None, time_created=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        if id is not None:
+            return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
+        else:
+            ctx = _Context(self._conn, self._conf)
+            ctx.registered_model = self
+            return RegisteredModelVersion._get_or_create_by_name(self._conn, name,
+                                                       lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
+                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=time_created))
 
     def get_version(self, name=None, id=None):
-        raise NotImplementedError
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
+
+        if id is not None:
+            return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
+        else:
+
+            return RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id)
 
     @property
     def versions(self):
