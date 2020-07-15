@@ -6,7 +6,7 @@ import copy
 
 from .._internal_utils import _utils
 
-from . import RegisteredModelVersion
+from .modelversion import RegisteredModelVersion
 
 
 class RegisteredModelVersions(_utils.LazyList):
