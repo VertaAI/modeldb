@@ -341,53 +341,6 @@
         ]
       }
     },
-    "/dataset/getDatasetAttributes": {
-      "get": {
-        "operationId": "getDatasetAttributes",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetAttributesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "attribute_keys",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "name": "get_all",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          }
-        ],
-        "tags": [
-          "DatasetService"
-        ]
-      }
-    },
     "/dataset/getDatasetById": {
       "get": {
         "operationId": "getDatasetById",
@@ -822,6 +775,23 @@
         }
       }
     },
+    "commonKeyValueQuery": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
+        }
+      }
+    },
     "modeldbAddDatasetAttributes": {
       "type": "object",
       "properties": {
@@ -1224,7 +1194,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "ids_only": {
@@ -1279,17 +1249,6 @@
         "total_records": {
           "type": "string",
           "format": "uint64"
-        }
-      }
-    },
-    "modeldbGetAttributesResponse": {
-      "type": "object",
-      "properties": {
-        "attributes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonKeyValue"
-          }
         }
       }
     },
@@ -1362,23 +1321,6 @@
         },
         "is_dirty": {
           "$ref": "#/definitions/TernaryEnumTernary"
-        }
-      }
-    },
-    "modeldbKeyValueQuery": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
-        },
-        "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },

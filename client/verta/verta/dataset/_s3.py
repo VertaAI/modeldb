@@ -49,6 +49,14 @@ class S3(_dataset._Dataset):
                         version_id="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
         ])
 
+    .. describe:: dataset += other
+
+        Updates the dataset, adding paths from ``other``.
+
+    .. describe:: dataset + other + ...
+
+        Returns a new dataset with paths from the dataset and all others.
+
     """
     _S3_PATH = "s3://{}/{}"
 
@@ -223,6 +231,25 @@ class S3(_dataset._Dataset):
         for component in self._components_map.values():
             if component._local_path and os.path.isfile(component._local_path):
                 os.remove(component._local_path)
+
+    def add(self, paths):
+        """
+        Adds `paths` to this dataset.
+
+        Parameters
+        ----------
+        paths : list
+            List of S3 URLs of the form ``"s3://<bucket-name>"`` or ``"s3://<bucket-name>/<key>"``, or
+            objects returned by :meth:`S3.location`.
+
+        """
+        # re-use logic in __init__
+        other = self.__class__(
+            paths=paths,
+            enable_mdb_versioning=self._mdb_versioned,
+        )
+
+        self += other
 
 
 class S3Location(object):
