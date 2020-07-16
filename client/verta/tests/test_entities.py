@@ -461,6 +461,38 @@ class TestExperimentRuns:
 
         assert len([client.set_experiment_run().id for _ in range(3)]) == len(expt_runs)
 
+    def test_as_dataframe(self, client, strs):
+        np = pytest.importorskip("numpy")
+        pytest.importorskip("pandas")
+
+        # initialize entities
+        client.set_project()
+        expt = client.set_experiment()
+        for _ in range(3):
+            client.set_experiment_run()
+
+        # log metadata
+        hpp1, hpp2, metric1, metric2 = strs[:4]
+        for run in expt.expt_runs:
+            run.log_hyperparameters({
+                hpp1: np.random.random(),
+                hpp2: np.random.random(),
+            })
+            run.log_metrics({
+                metric1: np.random.random(),
+                metric2: np.random.random(),
+            })
+
+        # verify that DataFrame matches
+        df = expt.expt_runs.as_dataframe()
+        assert set(df.index) == set(run.id for run in expt.expt_runs)
+        for run in expt.expt_runs:
+            row = df.loc[run.id]
+            assert row['hpp.'+hpp1] == run.get_hyperparameter(hpp1)
+            assert row['hpp.'+hpp2] == run.get_hyperparameter(hpp2)
+            assert row['metric.'+metric1] == run.get_metric(metric1)
+            assert row['metric.'+metric2] == run.get_metric(metric2)
+
     @pytest.mark.skip("functionality removed")
     def test_add(self, client):
         client.set_project()

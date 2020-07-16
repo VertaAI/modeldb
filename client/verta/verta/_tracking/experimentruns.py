@@ -68,25 +68,34 @@ class ExperimentRuns(_utils.LazyList):
         return ExperimentRun(self._conn, self._conf, msg)
 
     def as_dataframe(self):
+        """
+        Returns this collection of Experiment Runs as a table.
+
+        Returns
+        -------
+        :class:`pandas.DataFrame`
+
+        """
         pd = importer.maybe_dependency("pandas")
         if pd is None:
             e = ImportError("pandas is not installed; try `pip install pandas`")
             six.raise_from(e, None)
 
+        ids = []
         data = []
-        columns = set()
         for run in self:
-            run_data = {'id': run.id}
-
+            run_data = {}
             run_data.update({'hpp.'+k: v for k, v in run.get_hyperparameters().items()})
-            columns = columns.union(set(['hpp.'+k for k in run.get_hyperparameters().keys()]))
-
             run_data.update({'metric.'+k: v for k, v in run.get_metrics().items()})
-            columns = columns.union(set(['metric.'+k for k in run.get_metrics().keys()]))
 
+            ids.append(run.id)
             data.append(run_data)
 
-        return pd.DataFrame(data, columns=['id'] + sorted(list(columns)))
+        columns = set()
+        for run_data in data:
+            columns.update(run_data.keys())
+
+        return pd.DataFrame(data, index=ids, columns=sorted(list(columns)))
 
     def with_project(self, proj=None):
         new_list = copy.deepcopy(self)
