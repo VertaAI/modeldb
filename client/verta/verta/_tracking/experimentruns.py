@@ -44,7 +44,7 @@ class ExperimentRuns(_utils.LazyList):
     _VALID_QUERY_KEYS = {
         'id', 'project_id', 'experiment_id',
         'name',
-        'date_created',
+        'date_created', 'date_updated',
         'attributes', 'hyperparameters', 'metrics',
     }
 
