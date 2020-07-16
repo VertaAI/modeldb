@@ -50,3 +50,8 @@ class TestModelVersion:
 
         model_version = registered_model.get_version(id=model_version.id)
         assert not model_version.has_environment
+
+        with pytest.raises(RuntimeError) as excinfo:
+            model_version.get_environment()
+
+        assert "environment was not previously set" in str(excinfo.value)
