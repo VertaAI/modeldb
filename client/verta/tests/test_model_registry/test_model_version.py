@@ -29,3 +29,27 @@ class TestModelVersion:
 
         if registered_model:
             utils.delete_registered_model(registered_model.id, client._conn)
+
+class TestModelVersion2:
+
+    def test_find(self, client):
+        name = "registered_model_test"
+        registered_model = client.set_registered_model()
+        model_version = registered_model.get_or_create_version(name=name)
+
+        find_result = registered_model.versions.find(["name == '{}'".format(name)])
+        assert len(find_result) == 1
+        for item in find_result:
+            assert item._msg == registered_model._msg
+
+        tag_name = name + "_tag"
+        versions = {name + "1": registered_model.get_or_create_version(name + "1"),
+                    name + "2": registered_model.get_or_create_version(name + "2")}
+        versions[name + "1"].add_label(tag_name)
+        versions[name + "2"].add_label(tag_name)
+        versions[name + "2"].add_label("label2")
+        find_result = registered_model.versions.find(["labels == \"{}\"".format(tag_name)])
+        assert len(find_result) == 2
+        for item in find_result:
+            assert item._msg == versions[item._msg.name]._msg
+
