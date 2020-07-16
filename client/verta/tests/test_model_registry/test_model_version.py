@@ -41,6 +41,9 @@ class TestModelVersion:
         model_version = registered_model.get_or_create_version(name="my version")
         assert model_version._msg.model.key == "model"
 
+        retrieved_log_reg_model = model_version.get_model()
+        assert(retrieved_log_reg_model.coef_ == log_reg_model.coef_)
+
         # overwrite should work:
         model_version = registered_model.get_version(id=model_version.id)
         model_version.set_model(log_reg_model, True)

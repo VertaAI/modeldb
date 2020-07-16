@@ -105,7 +105,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     def get_model(self):
         # similar to ExperimentRun.get_model
-        raise NotImplementedError
+        return _artifact_utils.deserialize_model(self._get_artifact("model"))
 
     def add_asset(self, key, asset, overwrite=False):
         if key == "model":
@@ -290,3 +290,49 @@ class RegisteredModelVersion(_ModelDBEntity):
                                                filename_extension=extension)
 
         return artifact_msg
+
+    def _get_artifact(self, key):
+        """
+        Gets the artifact with name `key` from this Experiment Run.
+        If the artifact was originally logged as just a filesystem path, that path will be returned.
+        Otherwise, bytes representing the artifact object will be returned.
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+        Returns
+        -------
+        str or bytes
+            Filesystem path or bytes representing the artifact.
+        bool
+            True if the artifact was only logged as its filesystem path.
+        """
+        # get key-path from ModelDB
+        Message = _CommonCommonService.GetArtifacts
+        msg = Message(id=self.id, key=key)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        artifact = {artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
+
+        # check to see if key exists
+        self._refresh_cache()
+        if key == "model":
+            # get model artifact
+            if not self.has_model:
+                raise KeyError("no artifact found with key {}".format(key))
+        elif len(filter(lambda artifact: artifact.key == key, self._msg.assets)) == 0:
+            raise KeyError("no artifact found with key {}".format(key))
+
+        # download artifact from artifact store
+        url = self._get_url_for_artifact(key, "GET").url
+
+        response = _utils.make_request("GET", url, self._conn)
+        _utils.raise_for_http_error(response)
+
+        return response.content
+
