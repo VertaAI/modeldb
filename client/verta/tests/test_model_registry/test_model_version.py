@@ -37,13 +37,16 @@ class TestModelVersion:
         log_reg_model = LogisticRegression()
         model_version.set_model(log_reg_model)
 
-        model_version._refresh_cache()
+        # reload the model version:
+        model_version = registered_model.get_or_create_version(name="my version")
         assert model_version._msg.model.key == "model"
 
         # overwrite should work:
+        model_version = registered_model.get_version(id=model_version.id)
         model_version.set_model(log_reg_model, True)
 
         with pytest.raises(ValueError) as excinfo:
+            model_version = registered_model.get_version(id=model_version.id)
             model_version.set_model(log_reg_model)
 
         assert "model already exists" in str(excinfo.value)
@@ -55,9 +58,11 @@ class TestModelVersion:
         model_version.add_asset("some-asset", log_reg_model)
 
         # Overwrite should work:
+        model_version = registered_model.get_version(id=model_version.id)
         model_version.add_asset("some-asset", log_reg_model, True)
 
         with pytest.raises(ValueError) as excinfo:
+            model_version = registered_model.get_version(id=model_version.id)
             model_version.add_asset("some-asset", log_reg_model)
 
         assert "The key has been set" in str(excinfo.value)
