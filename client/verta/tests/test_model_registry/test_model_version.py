@@ -29,3 +29,13 @@ class TestModelVersion:
 
         if registered_model:
             utils.delete_registered_model(registered_model.id, client._conn)
+
+    def test_set_environment(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+
+        reqs = verta.environment.Python.read_pip_environment()
+        env = verta.environment.Python(requirements=reqs)
+        model_version.set_environment(env)
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert model_version._msg.env

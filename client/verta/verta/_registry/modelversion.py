@@ -89,8 +89,19 @@ class RegisteredModelVersion(_ModelDBEntity):
         raise NotImplementedError
 
     def set_environment(self, env):
-        # Env must be an EnvironmentBlob. Let's re-use the functionality from there
-        raise NotImplementedError
+        self._refresh_cache()
+        self._msg.environment.CopyFrom(env._msg)
+        self._update_model_version()
 
     def del_environment(self):
-        raise NotImplementedError
+        self._refresh_cache()
+        self._msg.ClearField("environment")
+        self._update_model_version()
+
+    def _update_model_version(self):
+        Message = _ModelVersionService.SetModelVersion
+        endpoint = "/api/v1/registry/{}/versions/{}".format(self._msg.registered_model_id, self.id)
+
+        response = self._conn.make_proto_request("PUT", endpoint, body=self._msg)
+        self._conn.must_proto_response(response, Message.Response)
+        self._clear_cache()
