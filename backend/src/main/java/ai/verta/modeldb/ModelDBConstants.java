@@ -11,6 +11,9 @@ public interface ModelDBConstants {
   String CLOUD_ACCESS_KEY = "cloudAccessKey";
   String CLOUD_SECRET_KEY = "cloudSecretKey";
   String CLOUD_BUCKET_NAME = "cloudBucketName";
+  String MINIO_ENDPOINT = "minioEndpoint";
+  String AWS_REGION = "aws_region";
+  String DEFAULT_AWS_REGION = "us-east-1";
   String DATABASE = "database";
   String DB_TYPE = "DBType";
   String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";
@@ -177,6 +180,8 @@ public interface ModelDBConstants {
   String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
   String POSTGRES_DB_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
+  String DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE =
+      "Can't add new versioning entry, because an existing one has different repository or commit";
 
   enum UserIdentifier {
     VERTA_ID,

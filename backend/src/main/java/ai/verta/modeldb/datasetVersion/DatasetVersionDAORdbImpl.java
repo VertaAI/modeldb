@@ -1,24 +1,24 @@
 package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.Dataset;
-import ai.verta.modeldb.DatasetTypeEnum;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasetVersions;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
+import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -78,7 +78,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(" AND dsv." + ModelDBConstants.DELETED + " = false ")
           .toString();
   private static final String DATASET_VERSION_BY_DATA_SET_IDS_QUERY =
-      "From DatasetVersionEntity ds where ds.dataset_id IN (:datasetIds) ";
+      "From DatasetVersionEntity ds where ds.dataset_id IN (:datasetIds) AND ds."
+          + ModelDBConstants.DELETED
+          + " = false ";
   private static final String DATASET_VERSION_BY_IDS_QUERY =
       "From DatasetVersionEntity ds where ds.id IN (:ids) AND ds."
           + ModelDBConstants.DELETED
@@ -304,17 +306,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public String getUrlForDatasetVersion(String datasetVersionId, String method)
       throws InvalidProtocolBufferException {
-    DatasetVersion datasetVersion = getDatasetVersion(datasetVersionId);
-    if (!datasetVersion.getDatasetType().equals(DatasetTypeEnum.DatasetType.RAW)) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage("getUrl for dataset currently supported only for Raw dataset versions.")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
-
-    return datasetVersion.getRawDatasetVersionInfo().getObjectPath();
+    Status status =
+        Status.newBuilder()
+            .setCode(Code.INVALID_ARGUMENT_VALUE)
+            .setMessage("Not supported yet")
+            .build();
+    throw StatusProto.toStatusRuntimeException(status);
   }
 
   @Override
@@ -438,7 +435,15 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       Root<DatasetVersionEntity> datasetVersionRoot =
           criteriaQuery.from(DatasetVersionEntity.class);
       datasetVersionRoot.alias("ds");
+
+      Root<DatasetEntity> datasetEntityRoot = criteriaQuery.from(DatasetEntity.class);
+      datasetEntityRoot.alias("dt");
+
       List<Predicate> finalPredicatesList = new ArrayList<>();
+      finalPredicatesList.add(
+          builder.equal(
+              datasetVersionRoot.get(ModelDBConstants.DATASET_ID),
+              datasetEntityRoot.get(ModelDBConstants.ID)));
 
       List<String> datasetIds = new ArrayList<>();
       if (!queryParameters.getDatasetId().isEmpty()) {
@@ -502,6 +507,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       finalPredicatesList.add(
           builder.equal(datasetVersionRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(
+          builder.equal(datasetEntityRoot.get(ModelDBConstants.DELETED), false));
 
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {

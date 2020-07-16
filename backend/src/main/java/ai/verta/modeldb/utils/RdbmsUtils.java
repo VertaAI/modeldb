@@ -2,6 +2,9 @@ package ai.verta.modeldb.utils;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
+import ai.verta.common.OperatorEnum;
+import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Comment;
 import ai.verta.modeldb.Dataset;
@@ -13,13 +16,10 @@ import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.Feature;
 import ai.verta.modeldb.GitSnapshot;
 import ai.verta.modeldb.Job;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Observation;
-import ai.verta.modeldb.OperatorEnum;
-import ai.verta.modeldb.OperatorEnum.Operator;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
@@ -1580,7 +1580,11 @@ public class RdbmsUtils {
                     operator,
                     subqueryVersion);
             predicatesArr[1] = newHyperparameterPredicate;
-            keyValuePredicates.add(builder.or(predicatesArr));
+            if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
+              keyValuePredicates.add(builder.and(predicatesArr));
+            } else {
+              keyValuePredicates.add(builder.or(predicatesArr));
+            }
             break;
           case ModelDBConstants.METRICS:
             LOGGER.debug("switch case : Metrics");
@@ -1843,29 +1847,31 @@ public class RdbmsUtils {
     configBlobEntityRootPredicates.add(keyPredicate);
 
     List<Predicate> orPredicates = new ArrayList<>();
-    try {
-      Predicate intValuePredicate =
-          getValuePredicate(
-              builder,
-              ModelDBConstants.HYPERPARAMETERS,
-              elementMappingEntityRoot.get("int_value"),
-              predicate,
-              false);
-      orPredicates.add(intValuePredicate);
-    } catch (Exception e) {
-      LOGGER.debug("Value could not be cast to int");
-    }
-    try {
-      Predicate floatValuePredicate =
-          getValuePredicate(
-              builder,
-              ModelDBConstants.HYPERPARAMETERS,
-              elementMappingEntityRoot.get("float_value"),
-              predicate,
-              false);
-      orPredicates.add(floatValuePredicate);
-    } catch (Exception e) {
-      LOGGER.debug("Value could not be cast to float");
+    if (predicate.getValue().getKindCase().equals(KindCase.NUMBER_VALUE)) {
+      try {
+        Predicate intValuePredicate =
+            getValuePredicate(
+                builder,
+                ModelDBConstants.HYPERPARAMETERS,
+                elementMappingEntityRoot.get("int_value"),
+                predicate,
+                false);
+        orPredicates.add(intValuePredicate);
+      } catch (Exception e) {
+        LOGGER.debug("Value could not be cast to int");
+      }
+      try {
+        Predicate floatValuePredicate =
+            getValuePredicate(
+                builder,
+                ModelDBConstants.HYPERPARAMETERS,
+                elementMappingEntityRoot.get("float_value"),
+                predicate,
+                false);
+        orPredicates.add(floatValuePredicate);
+      } catch (Exception e) {
+        LOGGER.debug("Value could not be cast to float");
+      }
     }
     Predicate stringValuePredicate =
         getValuePredicate(

@@ -10,8 +10,6 @@ import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.PathDatasetVersionInfo;
-import ai.verta.modeldb.QueryDatasetVersionInfo;
-import ai.verta.modeldb.RawDatasetVersionInfo;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
@@ -20,8 +18,6 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -250,83 +246,43 @@ public interface DatasetVersionDAO {
 
     if (parentDatasetVersion != null) {
       version = existingDatasetVersion.getVersion();
-      switch (request.getDatasetType()) {
-        case PATH:
-          PathDatasetVersionInfo requestedPathDatasetVersionInfo =
-              request.getPathDatasetVersionInfo();
-          PathDatasetVersionInfo parentPathDatasetVersionInfo =
-              parentDatasetVersion.getPathDatasetVersionInfo();
-          // ERROR: if the location_type is different from the parent
-          if (!requestedPathDatasetVersionInfo
-              .getLocationType()
-              .equals(parentPathDatasetVersionInfo.getLocationType())) {
-            ModelDBUtils.logAndThrowError(
-                ModelDBMessages.LOCATION_TYPE_NOT_MATCH_OF_PATH_DATASET_VERSION_INFO,
-                Code.INVALID_ARGUMENT_VALUE,
-                Any.pack(CreateDatasetVersion.Response.getDefaultInstance()));
-          }
+      PathDatasetVersionInfo requestedPathDatasetVersionInfo = request.getPathDatasetVersionInfo();
+      PathDatasetVersionInfo parentPathDatasetVersionInfo =
+          parentDatasetVersion.getPathDatasetVersionInfo();
+      // ERROR: if the location_type is different from the parent
+      if (!requestedPathDatasetVersionInfo
+          .getLocationType()
+          .equals(parentPathDatasetVersionInfo.getLocationType())) {
+        ModelDBUtils.logAndThrowError(
+            ModelDBMessages.LOCATION_TYPE_NOT_MATCH_OF_PATH_DATASET_VERSION_INFO,
+            Code.INVALID_ARGUMENT_VALUE,
+            Any.pack(CreateDatasetVersion.Response.getDefaultInstance()));
+      }
 
-          // base_path is the same?
-          // Length of dataset_path_infos is the same?
-          if (requestedPathDatasetVersionInfo
-                  .getBasePath()
-                  .equals(parentPathDatasetVersionInfo.getBasePath())
-              && requestedPathDatasetVersionInfo.getDatasetPartInfosCount()
-                  == parentPathDatasetVersionInfo.getDatasetPartInfosCount()) {
-            List<DatasetPartInfo> matchedDatasetPartInfo = new ArrayList<>();
-            for (DatasetPartInfo datasetPartInfo :
-                requestedPathDatasetVersionInfo.getDatasetPartInfosList()) {
-              for (DatasetPartInfo parentDatasetPartInfo :
-                  parentPathDatasetVersionInfo.getDatasetPartInfosList()) {
-                // Contents of dataset_path_infos are the same?, order not important
-                if (datasetPartInfo.getPath().equals(parentDatasetPartInfo.getPath())
-                    && datasetPartInfo.getSize() == parentDatasetPartInfo.getSize()
-                    && datasetPartInfo.getChecksum().equals(parentDatasetPartInfo.getChecksum())) {
-                  matchedDatasetPartInfo.add(datasetPartInfo);
-                }
-              }
-            }
-            if (matchedDatasetPartInfo.size()
-                == requestedPathDatasetVersionInfo.getDatasetPartInfosCount()) { // All match
-              return Collections.singletonList(parentDatasetVersion);
+      // base_path is the same?
+      // Length of dataset_path_infos is the same?
+      if (requestedPathDatasetVersionInfo
+              .getBasePath()
+              .equals(parentPathDatasetVersionInfo.getBasePath())
+          && requestedPathDatasetVersionInfo.getDatasetPartInfosCount()
+              == parentPathDatasetVersionInfo.getDatasetPartInfosCount()) {
+        List<DatasetPartInfo> matchedDatasetPartInfo = new ArrayList<>();
+        for (DatasetPartInfo datasetPartInfo :
+            requestedPathDatasetVersionInfo.getDatasetPartInfosList()) {
+          for (DatasetPartInfo parentDatasetPartInfo :
+              parentPathDatasetVersionInfo.getDatasetPartInfosList()) {
+            // Contents of dataset_path_infos are the same?, order not important
+            if (datasetPartInfo.getPath().equals(parentDatasetPartInfo.getPath())
+                && datasetPartInfo.getSize() == parentDatasetPartInfo.getSize()
+                && datasetPartInfo.getChecksum().equals(parentDatasetPartInfo.getChecksum())) {
+              matchedDatasetPartInfo.add(datasetPartInfo);
             }
           }
-          break;
-        case QUERY:
-          QueryDatasetVersionInfo requestedQueryDatasetVersionInfo =
-              request.getQueryDatasetVersionInfo();
-          QueryDatasetVersionInfo parentQueryDatasetVersionInfo =
-              parentDatasetVersion.getQueryDatasetVersionInfo();
-          if (requestedQueryDatasetVersionInfo
-                  .getQuery()
-                  .equals(parentQueryDatasetVersionInfo.getQuery())
-              && requestedQueryDatasetVersionInfo.getExecutionTimestamp()
-                  == parentQueryDatasetVersionInfo.getExecutionTimestamp()
-              && requestedQueryDatasetVersionInfo
-                  .getDataSourceUri()
-                  .equals(parentQueryDatasetVersionInfo.getDataSourceUri())
-              && requestedQueryDatasetVersionInfo.getNumRecords()
-                  == parentQueryDatasetVersionInfo.getNumRecords()) {
-            return Collections.singletonList(parentDatasetVersion);
-          }
-          break;
-        case RAW:
-          RawDatasetVersionInfo requestedRawDatasetVersionInfo = request.getRawDatasetVersionInfo();
-          RawDatasetVersionInfo parentRawDatasetVersionInfo =
-              parentDatasetVersion.getRawDatasetVersionInfo();
-          if (requestedRawDatasetVersionInfo.equals(parentRawDatasetVersionInfo)) {
-            return Collections.singletonList(parentDatasetVersion);
-          }
-          break;
-        case UNRECOGNIZED:
-        default:
-          LOGGER.info(ModelDBMessages.INVALID_DATSET_TYPE);
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.INVALID_ARGUMENT_VALUE)
-                  .setMessage(ModelDBMessages.INVALID_DATSET_TYPE)
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
+        }
+        if (matchedDatasetPartInfo.size()
+            == requestedPathDatasetVersionInfo.getDatasetPartInfosCount()) { // All match
+          return Collections.singletonList(parentDatasetVersion);
+        }
       }
     }
 
@@ -338,8 +294,7 @@ public interface DatasetVersionDAO {
             .addAllTags(request.getTagsList())
             .setDatasetVersionVisibility(request.getDatasetVersionVisibility())
             .addAllAttributes(request.getAttributesList())
-            .setVersion(version + 1L)
-            .setDatasetType(request.getDatasetType());
+            .setVersion(version + 1L);
 
     if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
       datasetVersionBuilder
@@ -359,27 +314,7 @@ public interface DatasetVersionDAO {
       datasetVersionBuilder.setOwner(authService.getVertaIdFromUserInfo(userInfo));
     }
 
-    switch (request.getDatasetType()) {
-      case PATH:
-        datasetVersionBuilder.setPathDatasetVersionInfo(request.getPathDatasetVersionInfo());
-        break;
-      case QUERY:
-        datasetVersionBuilder.setQueryDatasetVersionInfo(request.getQueryDatasetVersionInfo());
-        break;
-      case RAW:
-        // TODO: need to process this data?
-        datasetVersionBuilder.setRawDatasetVersionInfo(request.getRawDatasetVersionInfo());
-        break;
-      case UNRECOGNIZED:
-      default:
-        LOGGER.info(ModelDBMessages.INVALID_DATSET_TYPE);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBMessages.INVALID_DATSET_TYPE)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-    }
+    datasetVersionBuilder.setPathDatasetVersionInfo(request.getPathDatasetVersionInfo());
 
     List<DatasetVersion> datasetVersionList = new ArrayList<>();
     datasetVersionList.add(parentDatasetVersion);

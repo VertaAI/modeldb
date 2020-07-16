@@ -15,6 +15,7 @@ import ai.verta.swagger.client.objects._
 
 case class ModeldbAddDatasetVersionAttributes (
   attributes: Option[List[CommonKeyValue]] = None,
+  dataset_id: Option[String] = None,
   id: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbAddDatasetVersionAttributes.toJson(this)
@@ -25,6 +26,7 @@ object ModeldbAddDatasetVersionAttributes {
     new JObject(
       List[Option[JField]](
         obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
+        obj.dataset_id.map(x => JField("dataset_id", JString(x))),
         obj.id.map(x => JField("id", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -40,6 +42,7 @@ object ModeldbAddDatasetVersionAttributes {
         ModeldbAddDatasetVersionAttributes(
           // TODO: handle required
           attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          dataset_id = fieldsMap.get("dataset_id").map(JsonConverter.fromJsonString),
           id = fieldsMap.get("id").map(JsonConverter.fromJsonString)
         )
       }

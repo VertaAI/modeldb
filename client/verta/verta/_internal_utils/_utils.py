@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import ast
+import copy
 import datetime
 import glob
 import inspect
@@ -13,6 +15,7 @@ import subprocess
 import sys
 import threading
 import time
+import warnings
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -26,43 +29,8 @@ from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
-try:
-    import pandas as pd
-except ImportError:  # pandas not installed
-    pd = None
+from . import importer
 
-try:
-    import tensorflow as tf
-except ImportError:  # TensorFlow not installed
-    tf = None
-
-try:
-    import ipykernel
-except ImportError:  # Jupyter not installed
-    pass
-else:
-    try:
-        from IPython.display import Javascript, display
-        try:  # Python 3
-            from notebook.notebookapp import list_running_servers
-        except ImportError:  # Python 2
-            import warnings
-            from IPython.utils.shimmodule import ShimWarning
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=ShimWarning)
-                from IPython.html.notebookapp import list_running_servers
-            del warnings, ShimWarning  # remove ad hoc imports from scope
-    except ImportError:  # abnormally nonstandard installation of Jupyter
-        pass
-
-
-try:
-    import numpy as np
-except ImportError:  # NumPy not installed
-    np = None
-    BOOL_TYPES = (bool,)
-else:
-    BOOL_TYPES = (bool, np.bool_)
 
 _GRPC_PREFIX = "Grpc-Metadata-"
 
@@ -110,6 +78,46 @@ class Connection:
                            raise_on_status=False)  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
 
+    def make_proto_request(self, method, path, params=None, body=None):
+        if params is not None:
+            params = proto_to_json(params)
+        if body is not None:
+            body = proto_to_json(body)
+        response = make_request(method,
+                                "{}://{}{}".format(self.scheme, self.socket, path),
+                                self, params=params, json=body)
+
+        return response
+
+    @staticmethod
+    def maybe_proto_response(response, response_type):
+        if response.ok:
+            response_msg = json_to_proto(body_to_json(response), response_type)
+            return response_msg
+        else:
+            if ((response.status_code == 403 and body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and     body_to_json(response)['code'] == 5)):
+                return NoneProtoResponse()
+            else:
+                raise_for_http_error(response)
+
+    @staticmethod
+    def must_proto_response(response, response_type):
+        if response.ok:
+            response_msg = json_to_proto(body_to_json(response), response_type)
+            return response_msg
+        else:
+            raise_for_http_error(response)
+
+
+class NoneProtoResponse(object):
+    def __init__(self):
+        pass
+    def __getattr__(self, item):
+        return None
+    def HasField(self, name):
+        return False
+
 
 class Configuration:
     def __init__(self, use_git=True, debug=False):
@@ -130,12 +138,23 @@ class LazyList(object):
     # number of items to fetch per back end call in __iter__()
     _ITER_PAGE_LIMIT = 100
 
-    def __init__(self, conn, conf, msg, endpoint, rest_method):
+    _OP_MAP = {'in': _CommonCommonService.OperatorEnum.CONTAIN,
+               '==': _CommonCommonService.OperatorEnum.EQ,
+               '!=': _CommonCommonService.OperatorEnum.NE,
+               '>':  _CommonCommonService.OperatorEnum.GT,
+               '>=': _CommonCommonService.OperatorEnum.GTE,
+               '<':  _CommonCommonService.OperatorEnum.LT,
+               '<=': _CommonCommonService.OperatorEnum.LTE}
+    _OP_PATTERN = re.compile(r" ({}) ".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
+
+    # keys that yield predictable, sensible results
+    # TODO: make LazyList an abstract base class; make this attr an abstract property
+    _VALID_QUERY_KEYS = None  # NOTE: must be overridden by subclasses
+
+    def __init__(self, conn, conf, msg):
         self._conn = conn
         self._conf = conf
         self._msg = msg  # protobuf msg used to make back end calls
-        self._endpoint = endpoint
-        self._rest_method = rest_method
 
     def __getitem__(self, index):
         if isinstance(index, int):
@@ -151,15 +170,12 @@ class LazyList(object):
                 msg.ascending = not msg.ascending  # pylint: disable=no-member
                 msg.page_number = abs(index)
 
-            response_msg = self._call_back_end(msg)
-
-            records = self._get_records(response_msg)
+            records, total_records = self._call_back_end(msg)
             if (not records
-                    and msg.page_number > response_msg.total_records):  # pylint: disable=no-member
+                    and msg.page_number > total_records):  # pylint: disable=no-member
                 raise IndexError("index out of range")
-            id_ = records[0].id
 
-            return self._create_element(id_)
+            return self._create_element(records[0])
         else:
             raise TypeError("index must be integer, not {}".format(type(index)))
 
@@ -175,19 +191,15 @@ class LazyList(object):
         while msg.page_limit*msg.page_number < total_records:  # pylint: disable=no-member
             msg.page_number += 1  # pylint: disable=no-member
 
-            response_msg = self._call_back_end(msg)
-
-            total_records = response_msg.total_records
-
-            ids = self._get_ids(response_msg)
-            for id_ in ids:
+            records, total_records = self._call_back_end(msg)
+            for rec in records:
                 # skip if we've seen the ID before
-                if id_ in seen_ids:
+                if rec.id in seen_ids:
                     continue
                 else:
-                    seen_ids.add(id_)
+                    seen_ids.add(rec.id)
 
-                yield self._create_element(id_)
+                yield self._create_element(rec)
 
     def __len__(self):
         # copy msg to avoid mutating `self`'s state
@@ -195,38 +207,127 @@ class LazyList(object):
         msg.CopyFrom(self._msg)
         msg.page_limit = msg.page_number = 1  # minimal request just to get total_records
 
-        response_msg = self._call_back_end(msg)
+        _, total_records = self._call_back_end(msg)
 
-        return response_msg.total_records
+        return total_records
+
+    def find(self, where):
+        """
+        Gets the results from this collection that match predicates `where`.
+
+        A predicate in `where` is a string containing a simple boolean expression consisting of:
+
+            - a dot-delimited property such as ``metrics.accuracy``
+            - a Python boolean operator such as ``>=``
+            - a literal value such as ``.8``
+
+        Parameters
+        ----------
+        where : str or list of str
+            Predicates specifying results to get.
+
+        Returns
+        -------
+        The same type of object given in the input.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            runs.find(["hyperparameters.hidden_size == 256",
+                       "metrics.accuracy >= .8"])
+            # <ExperimentRuns containing 3 runs>
+
+        """
+        new_list = copy.deepcopy(self)
+
+        if isinstance(where, six.string_types):
+            where = [where]
+        for predicate in where:
+            # split predicate
+            try:
+                key, operator, value = map(lambda token: token.strip(), self._OP_PATTERN.split(predicate, maxsplit=1))
+            except ValueError:
+                six.raise_from(ValueError("predicate `{}` must be a two-operand comparison".format(predicate)),
+                               None)
+
+            if key.split('.')[0] not in self._VALID_QUERY_KEYS:
+                raise ValueError("key `{}` is not a valid key for querying;"
+                                 " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
+
+            # cast operator into protobuf enum variant
+            operator = self._OP_MAP[operator]
+
+            try:
+                value = float(value)
+            except ValueError:  # not a number
+                # parse value
+                try:
+                    expr_node = ast.parse(value, mode='eval')
+                except SyntaxError:
+                    e = ValueError("value `{}` must be a number or string literal".format(value))
+                    six.raise_from(e, None)
+                value_node = expr_node.body
+                if type(value_node) is ast.Str:
+                    value = value_node.s
+                elif type(value_node) is ast.Compare:
+                    e = ValueError("predicate `{}` must be a two-operand comparison".format(predicate))
+                    six.raise_from(e, None)
+                else:
+                    e = ValueError("value `{}` must be a number or string literal".format(value))
+                    six.raise_from(e, None)
+
+            new_list._msg.predicates.append(  # pylint: disable=no-member
+                _CommonCommonService.KeyValueQuery(
+                    key=key, value=python_to_val_proto(value),
+                    operator=operator,
+                )
+            )
+
+        return new_list
+
+    def sort(self, key, descending=False):
+        """
+        Sorts the results from this collection by `key`.
+
+        A `key` is a string containing a dot-delimited property such as
+        ``metrics.accuracy``.
+
+        Parameters
+        ----------
+        key : str
+            Dot-delimited property.
+        descending : bool, default False
+            Order in which to return sorted results.
+
+        Returns
+        -------
+        The same type of object given in the input.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            runs.sort("metrics.accuracy")
+            # <ExperimentRuns containing 3 runs>
+
+        """
+        if key.split('.')[0] not in self._VALID_QUERY_KEYS:
+            raise ValueError("key `{}` is not a valid key for querying;"
+                             " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
+
+        new_list = copy.deepcopy(self)
+
+        new_list._msg.sort_key = key
+        new_list._msg.ascending = not descending
+
+        return new_list
 
     def _call_back_end(self, msg):
-        data = proto_to_json(msg)
-
-        if self._rest_method == "GET":
-            response = make_request(
-                self._rest_method,
-                self._endpoint.format(self._conn.scheme, self._conn.socket),
-                self._conn, params=data,
-            )
-        elif self._rest_method == "POST":
-            response = make_request(
-                self._rest_method,
-                self._endpoint.format(self._conn.scheme, self._conn.socket),
-                self._conn, json=data,
-            )
-        raise_for_http_error(response)
-
-        response_msg = json_to_proto(body_to_json(response), msg.Response)
-        return response_msg
-
-    def _get_ids(self, response_msg):
-        return (record.id for record in self._get_records(response_msg))
-
-    def _get_records(self, response_msg):
-        """Get the attribute of `response_msg` that is not `total_records`."""
+        """Find the request in the backend and returns (elements, total count)."""
         raise NotImplementedError
 
-    def _create_element(self, id_):
+    def _create_element(self, msg):
         """Instantiate element to return to user."""
         raise NotImplementedError
 
@@ -329,10 +430,15 @@ def raise_for_http_error(response):
     try:
         response.raise_for_status()
     except requests.HTTPError as e:
+        # get current time in UTC to display alongside exception
+        curr_time = timestamp_to_str(now(), utc=True)
+        time_str = " at {} UTC".format(curr_time)
+
         try:
             reason = body_to_json(response)['message']
         except (ValueError,  # not JSON response
                 KeyError):  # no 'message' from back end
+            e.args = (e.args[0] + time_str,) + e.args[1:]  # attach time to error message
             six.raise_from(e, None)  # use default reason
         else:
             # replicate https://github.com/psf/requests/blob/428f7a/requests/models.py#L954
@@ -343,6 +449,7 @@ def raise_for_http_error(response):
             else:  # should be impossible here, but sure okay
                 cause = "Unexpected"
             message = "{} {} Error: {} for url: {}".format(response.status_code, cause, reason, response.url)
+            message += time_str  # attach time to error message
             six.raise_from(requests.HTTPError(message, response=response), None)
 
 
@@ -485,6 +592,23 @@ def json_to_proto(response_json, response_cls, ignore_unknown_fields=True):
                              ignore_unknown_fields=ignore_unknown_fields)
 
 
+def get_bool_types():
+    """
+    Determines available bool types (including NumPy's ``bool_`` if importable) for typechecks.
+
+    Returns
+    -------
+    tuple
+        Available bool types.
+
+    """
+    np = importer.maybe_dependency("numpy")
+    if np is None:
+        return (bool,)
+    else:
+        return (bool, np.bool_)
+
+
 def to_builtin(obj):
     """
     Tries to coerce `obj` into a built-in type, for JSON serialization.
@@ -505,7 +629,7 @@ def to_builtin(obj):
     obj_module = getattr(cls_, '__module__', None)
 
     # booleans
-    if isinstance(obj, BOOL_TYPES):
+    if isinstance(obj, get_bool_types()):
         return True if obj else False
 
     # NumPy scalars
@@ -521,6 +645,7 @@ def to_builtin(obj):
         return obj.values.tolist()
     if obj_class == "Tensor" and obj_module == "torch":
         return obj.detach().numpy().tolist()
+    tf = importer.maybe_dependency("tensorflow")
     if tf is not None and isinstance(obj, tf.Tensor):  # if TensorFlow
         try:
             return obj.numpy().tolist()
@@ -819,13 +944,15 @@ def ensure_timestamp(timestamp):
 
     """
     if isinstance(timestamp, six.string_types):
-        try:  # attempt with pandas, which can parse many time string formats
-            return timestamp_to_ms(pd.Timestamp(timestamp).timestamp())
-        except NameError:  # pandas not installed
+        pd = importer.maybe_dependency("pandas")
+        if pd is not None:
+            try:  # attempt with pandas, which can parse many time string formats
+                return timestamp_to_ms(pd.Timestamp(timestamp).timestamp())
+            except ValueError:  # can't be handled by pandas
+                six.raise_from(ValueError("unable to parse datetime string \"{}\"".format(timestamp)),
+                            None)
+        else:
             six.raise_from(ValueError("pandas must be installed to parse datetime strings"),
-                           None)
-        except ValueError:  # can't be handled by pandas
-            six.raise_from(ValueError("unable to parse datetime string \"{}\"".format(timestamp)),
                            None)
     elif isinstance(timestamp, numbers.Real):
         return timestamp_to_ms(timestamp)
@@ -840,7 +967,7 @@ def ensure_timestamp(timestamp):
         raise TypeError("unable to parse timestamp of type {}".format(type(timestamp)))
 
 
-def timestamp_to_str(timestamp):
+def timestamp_to_str(timestamp, utc=False):
     """
     Converts a Unix timestamp into a human-readable string representation.
 
@@ -856,7 +983,12 @@ def timestamp_to_str(timestamp):
 
     """
     num_digits = len(str(timestamp))
-    return str(datetime.datetime.fromtimestamp(timestamp*10**(10 - num_digits)))
+    ts_as_sec = timestamp*10**(10 - num_digits)
+    if utc:
+        datetime_obj = datetime.datetime.utcfromtimestamp(ts_as_sec)
+    else:
+        datetime_obj = datetime.datetime.fromtimestamp(ts_as_sec)
+    return str(datetime_obj)
 
 
 def now():
@@ -909,11 +1041,15 @@ def save_notebook(notebook_path=None, timeout=5):
         If the notebook is not saved within `timeout` seconds.
 
     """
+    IPython_display = importer.maybe_dependency("IPython.display")
+    if IPython_display is None:
+        raise ImportError("unable to import libraries necessary for saving notebook")
+
     if notebook_path is None:
         notebook_path = get_notebook_filepath()
     modtime = os.path.getmtime(notebook_path)
 
-    display(Javascript('''
+    IPython_display.display(IPython_display.Javascript('''
     require(["base/js/namespace"],function(Jupyter) {
         Jupyter.notebook.save_checkpoint();
     });
@@ -961,6 +1097,19 @@ def get_notebook_filepath():
             - the calling notebook cannot be identified
 
     """
+    ipykernel = importer.maybe_dependency("ipykernel")
+    if ipykernel is None:
+        raise ImportError("unable to import libraries necessary for locating notebook")
+
+    notebookapp = importer.maybe_dependency("notebook.notebookapp")
+    if notebookapp is None:
+        # Python 2, util we need is in different module
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            notebookapp = importer.maybe_dependency("IPython.html.notebookapp")
+    if notebookapp is None:  # abnormally nonstandard installation of Jupyter
+        raise ImportError("unable to import libraries necessary for locating notebook")
+
     try:
         connection_file = ipykernel.connect.get_connection_file()
     except (NameError,  # Jupyter not installed
@@ -968,7 +1117,7 @@ def get_notebook_filepath():
         pass
     else:
         kernel_id = re.search('kernel-(.*).json', connection_file).group(1)
-        for server in list_running_servers():
+        for server in notebookapp.list_running_servers():
             response = requests.get(urljoin(server['url'], 'api/sessions'),
                                     params={'token': server.get('token', '')})
             if response.ok:

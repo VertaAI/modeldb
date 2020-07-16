@@ -2,6 +2,7 @@
 
 import six
 
+import pathlib2
 import subprocess
 import sys
 
@@ -330,3 +331,22 @@ class TestFileUtils:
     )
     def test_remove_prefix_dir(self, path, prefix_dir, expected):
         assert _file_utils.remove_prefix_dir(path, prefix_dir) == expected
+
+    def test_flatten_file_trees(self, in_tempdir):
+        filepaths = {
+            "README.md",
+            "data/train.csv",
+            "data/test.csv",
+            "script.py",
+            "utils/data/clean.py",
+            "utils/misc/misc.py",
+        }
+        paths = ["README.md", "data", "script.py", "utils"]
+
+        # create files
+        for filepath in filepaths:
+            filepath = pathlib2.Path(filepath)
+            filepath.parent.mkdir(parents=True, exist_ok=True)
+            filepath.touch()
+
+        assert _file_utils.flatten_file_trees(paths) == filepaths

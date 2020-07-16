@@ -1,6 +1,7 @@
 package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
+import ai.verta.repository.Commit
 
 import java.io.{File, FileInputStream}
 
@@ -8,7 +9,7 @@ import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 import scala.annotation.tailrec
 
-/** Captures metadata about files
+/** Captures metadata about files.
  *  To create a new instance, use the constructor taking a list of paths (each is a string) or a single path:
  *  {{{
  *  val pathList = List("some-path1", "some-path2")
@@ -19,9 +20,27 @@ import scala.annotation.tailrec
  */
 case class PathBlob(
   protected val contents: HashMap[String, FileMetadata],
-  protected val enableMDBVersioning: Boolean = false
+  val enableMDBVersioning: Boolean = false,
+  val downloadable: Boolean = false
 ) extends Dataset {
-  override def prepareForUpload() = ???
+  /** Prepare the PathBlob for uploading
+   *  @return whether the attempt succeeds
+   */
+  override def prepareForUpload() =
+    if (enableMDBVersioning)
+      Try(contents.values.map(updateMetadata).map(_.get))
+    else
+      Success(())
+
+  /** Update metadata for uploading
+   *  @param metadata metadata of the file
+   *  @return whether the attempt succeeds
+   */
+  private def updateMetadata(metadata: FileMetadata) = Try {
+    val file = (new File(metadata.path)).getAbsoluteFile()
+    metadata.internalVersionedPath = Some(f"${Dataset.hash(file, "SHA-256").get}/${file.getName}")
+    metadata.localPath = Some(file.getPath)
+  }
 
   override def equals(other: Any) = other match {
     case other: PathBlob => contents.equals(other.contents)
@@ -93,7 +112,10 @@ object PathBlob {
     val metadataList = pathVersioningBlob.components.get.map(
       comp => comp.path.get -> Dataset.toMetadata(comp)
     )
-    new PathBlob(HashMap(metadataList: _*))
+
+    // if internal versioned path of a component is defined, then the blob is downloadable
+    val downloadable = pathVersioningBlob.components.get.head.internal_versioned_path.isDefined
+    new PathBlob(HashMap(metadataList: _*), downloadable = downloadable)
   }
 
   /** Convert a PathBlob instance to a VersioningBlob

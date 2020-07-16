@@ -5,7 +5,6 @@ from __future__ import print_function
 import collections
 from datetime import datetime
 import heapq
-import os
 import time
 
 import requests
@@ -234,7 +233,7 @@ class Commit(object):
                         continue  # try again
                     else:
                         break
-                response.raise_for_status()
+                _utils.raise_for_http_error(response)
 
                 # commit part
                 url = "{}://{}/api/v1/modeldb/versioning/commitVersionedBlobArtifactPart".format(
@@ -330,18 +329,7 @@ class Commit(object):
         for path, blob in six.viewitems(self._blobs):
             blob_msg = _VersioningService.BlobExpanded()
             blob_msg.location.extend(path_to_location(path))  # pylint: disable=no-member
-            # TODO: move typecheck & CopyFrom to root blob base class
-            if isinstance(blob, code._Code):
-                blob_msg.blob.code.CopyFrom(blob._msg)  # pylint: disable=no-member
-            elif isinstance(blob, configuration._Configuration):
-                blob_msg.blob.config.CopyFrom(blob._msg)  # pylint: disable=no-member
-            elif isinstance(blob, dataset._Dataset):
-                blob_msg.blob.dataset.CopyFrom(blob._msg)  # pylint: disable=no-member
-            elif isinstance(blob, environment._Environment):
-                blob_msg.blob.environment.CopyFrom(blob._msg)  # pylint: disable=no-member
-            else:
-                raise RuntimeError("Commit contains an unexpected item {};"
-                                   " please notify the Verta development team".format(type(blob)))
+            blob_msg.blob.CopyFrom(blob._as_proto())
             msg.blobs.append(blob_msg)  # pylint: disable=no-member
 
         return msg
@@ -510,12 +498,10 @@ class Commit(object):
 
         # upload ModelDB-versioned blobs
         for blob_path, blob in mdb_versioned_blobs.items():
-            for component_blob in blob._path_component_blobs:
-                if component_blob.internal_versioned_path:
-                    component_path = component_blob.path
-                    downloaded_filepath = blob._components_to_upload[component_path]
-                    with open(downloaded_filepath, 'rb') as f:
-                        self._upload_artifact(blob_path, component_path, f)
+            for component in blob._components_map.values():
+                if component._internal_versioned_path:
+                    with open(component._local_path, 'rb') as f:
+                        self._upload_artifact(blob_path, component.path, f)
 
             blob._clean_up_uploaded_components()
 
@@ -573,11 +559,17 @@ class Commit(object):
             Ancestor commit.
 
         """
+        if self.id is None:  # unsaved commit
+            # use parent
+            commit_id = self._parent_ids[0]
+        else:
+            commit_id = self.id
+
         endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/log".format(
             self._conn.scheme,
             self._conn.socket,
             self._repo.id,
-            self.id,
+            commit_id,
         )
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
@@ -587,7 +579,7 @@ class Commit(object):
         commits = response_msg.commits
 
         for c in commits:
-            yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == self.id else None)
+            yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == commit_id else None)
 
     def new_branch(self, branch):
         """
@@ -873,29 +865,29 @@ def blob_msg_to_object(blob_msg):
     # TODO: make this more concise
     content_type = blob_msg.WhichOneof('content')
     content_subtype = None
-    obj = None
+    blob_cls = None
     if content_type == 'code':
         content_subtype = blob_msg.code.WhichOneof('content')
         if content_subtype == 'git':
-            obj = code.Git(_autocapture=False)
+            blob_cls = code.Git
         elif content_subtype == 'notebook':
-            obj = code.Notebook(_autocapture=False)
+            blob_cls = code.Notebook
     elif content_type == 'config':
-        obj = configuration.Hyperparameters()
+        blob_cls = configuration.Hyperparameters
     elif content_type == 'dataset':
         content_subtype = blob_msg.dataset.WhichOneof('content')
         if content_subtype == 's3':
-            obj = dataset.S3(paths=[])
+            blob_cls = dataset.S3
         elif content_subtype == 'path':
-            obj = dataset.Path(paths=[])
+            blob_cls = dataset.Path
     elif content_type == 'environment':
         content_subtype = blob_msg.environment.WhichOneof('content')
         if content_subtype == 'python':
-            obj = environment.Python(_autocapture=False)
+            blob_cls = environment.Python
         elif content_subtype == 'docker':
             raise NotImplementedError
 
-    if obj is None:
+    if blob_cls is None:
         if content_subtype is None:
             raise NotImplementedError("found unexpected content type {};"
                                       " please notify the Verta development team".format(content_type))
@@ -903,8 +895,7 @@ def blob_msg_to_object(blob_msg):
             raise NotImplementedError("found unexpected {} type {};"
                                       " please notify the Verta development team".format(content_type, content_subtype))
 
-    obj._msg.CopyFrom(getattr(blob_msg, content_type))
-    return obj
+    return blob_cls._from_proto(blob_msg)
 
 
 def path_to_location(path):

@@ -37,6 +37,15 @@ Release Notes
      <>`__
 
 
+v0.14.11 (2020-06-26)
+---------------------
+
+New Features
+^^^^^^^^^^^^
+- `add visibility for date created & updated on ExperimentRuns
+  <https://github.com/VertaAI/modeldb/pull/843>`__
+
+
 v0.14.10 (2020-06-22)
 ---------------------
 

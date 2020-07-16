@@ -2,7 +2,6 @@ package ai.verta.modeldb;
 
 import static ai.verta.modeldb.ExperimentTest.getCreateExperimentRequest;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub;
@@ -21,30 +20,21 @@ import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.ManagedChannel;
-import io.grpc.Status;
-import io.grpc.Status.Code;
-import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
@@ -74,7 +64,7 @@ public class LineageTest {
 
   private DatasetVersionServiceBlockingStub datasetVersionServiceStub;
   private ExperimentRunTest experimentRunTest;
-  private DatasetVersionTest datasetVersionTest;
+  // private DatasetVersionTest datasetVersionTest;
   private ProjectServiceBlockingStub projectServiceStub;
   private ExperimentServiceBlockingStub experimentServiceStub;
   private ExperimentRunServiceBlockingStub experimentRunServiceStub;
@@ -140,7 +130,7 @@ public class LineageTest {
     lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
 
     experimentRunTest = new ExperimentRunTest();
-    datasetVersionTest = new DatasetVersionTest();
+    // datasetVersionTest = new DatasetVersionTest();
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
     experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
@@ -148,6 +138,7 @@ public class LineageTest {
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
   }
 
+  /*commented temporarily till dataset int code is integrated
   @Test
   public void createAndDeleteLineageNegativeTest() {
     List<String> experimentIds = new ArrayList<>();
@@ -281,203 +272,204 @@ public class LineageTest {
       deleteAll(datasetVersionList, project);
     }
   }
+  */
+  /* commented temporarily till dataset int code is integrated
+    @Test
+    public void createAndDeleteLineageTest() {
+      LOGGER.info("Create and delete Lineage test start................................");
 
-  @Test
-  public void createAndDeleteLineageTest() {
-    LOGGER.info("Create and delete Lineage test start................................");
+      List<String> experimentIds = new ArrayList<>();
+      List<ExperimentRun> experimentRunList = new ArrayList<>();
+      List<DatasetVersion> datasetVersionList = new ArrayList<>();
 
-    List<String> experimentIds = new ArrayList<>();
-    List<ExperimentRun> experimentRunList = new ArrayList<>();
-    List<DatasetVersion> datasetVersionList = new ArrayList<>();
+      // Create project
+      Project project = getProject(projectServiceStub);
 
-    // Create project
-    Project project = getProject(projectServiceStub);
+      // Create experiment of above project
+      Experiment experiment = getExperiment(experimentIds, experimentServiceStub, project);
 
-    // Create experiment of above project
-    Experiment experiment = getExperiment(experimentIds, experimentServiceStub, project);
+      ExperimentRun experimentRun =
+          getExperimentRun(
+              experimentRunList,
+              experimentRunTest,
+              experimentRunServiceStub,
+              project,
+              experiment,
+              "name1");
+      final LineageEntry.Builder inputOutputExp =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.EXPERIMENT_RUN)
+              .setExternalId(experimentRun.getId());
 
-    ExperimentRun experimentRun =
-        getExperimentRun(
-            experimentRunList,
-            experimentRunTest,
-            experimentRunServiceStub,
-            project,
-            experiment,
-            "name1");
-    final LineageEntry.Builder inputOutputExp =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.EXPERIMENT_RUN)
-            .setExternalId(experimentRun.getId());
+      experimentRun =
+          getExperimentRun(
+              experimentRunList,
+              experimentRunTest,
+              experimentRunServiceStub,
+              project,
+              experiment,
+              "name2");
+      final LineageEntry.Builder inputExp =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.EXPERIMENT_RUN)
+              .setExternalId(experimentRun.getId());
 
-    experimentRun =
-        getExperimentRun(
-            experimentRunList,
-            experimentRunTest,
-            experimentRunServiceStub,
-            project,
-            experiment,
-            "name2");
-    final LineageEntry.Builder inputExp =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.EXPERIMENT_RUN)
-            .setExternalId(experimentRun.getId());
+      experimentRun =
+          getExperimentRun(
+              experimentRunList,
+              experimentRunTest,
+              experimentRunServiceStub,
+              project,
+              experiment,
+              "name3");
+      final LineageEntry.Builder outputExp =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.EXPERIMENT_RUN)
+              .setExternalId(experimentRun.getId());
 
-    experimentRun =
-        getExperimentRun(
-            experimentRunList,
-            experimentRunTest,
-            experimentRunServiceStub,
-            project,
-            experiment,
-            "name3");
-    final LineageEntry.Builder outputExp =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.EXPERIMENT_RUN)
-            .setExternalId(experimentRun.getId());
+      DatasetTest datasetTest = new DatasetTest();
 
-    DatasetTest datasetTest = new DatasetTest();
+      DatasetVersion datasetVersion =
+          getDatasetVersion(
+              datasetVersionList,
+              datasetVersionTest,
+              datasetVersionServiceStub,
+              datasetTest,
+              datasetServiceStub,
+              "name");
+      final LineageEntry.Builder inputDataset =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.DATASET_VERSION)
+              .setExternalId(datasetVersion.getId());
 
-    DatasetVersion datasetVersion =
-        getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name");
-    final LineageEntry.Builder inputDataset =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.DATASET_VERSION)
-            .setExternalId(datasetVersion.getId());
+      datasetVersion =
+          getDatasetVersion(
+              datasetVersionList,
+              datasetVersionTest,
+              datasetVersionServiceStub,
+              datasetTest,
+              datasetServiceStub,
+              "name1");
+      final LineageEntry.Builder inputDataset2 =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.DATASET_VERSION)
+              .setExternalId(datasetVersion.getId());
 
-    datasetVersion =
-        getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name1");
-    final LineageEntry.Builder inputDataset2 =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.DATASET_VERSION)
-            .setExternalId(datasetVersion.getId());
+      datasetVersion =
+          getDatasetVersion(
+              datasetVersionList,
+              datasetVersionTest,
+              datasetVersionServiceStub,
+              datasetTest,
+              datasetServiceStub,
+              "name2");
+      final LineageEntry.Builder outputDataset =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.DATASET_VERSION)
+              .setExternalId(datasetVersion.getId());
+      try {
+        check(
+            Arrays.asList(inputExp, NOT_EXISTENT_DATASET),
+            Arrays.asList(null, null),
+            Arrays.asList(null, null));
 
-    datasetVersion =
-        getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name2");
-    final LineageEntry.Builder outputDataset =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.DATASET_VERSION)
-            .setExternalId(datasetVersion.getId());
-    try {
-      check(
-          Arrays.asList(inputExp, NOT_EXISTENT_DATASET),
-          Arrays.asList(null, null),
-          Arrays.asList(null, null));
+        AddLineage.Builder addLineage =
+            AddLineage.newBuilder()
+                .addInput(inputDataset)
+                .addInput(inputDataset2)
+                .addOutput(inputOutputExp);
+        Assert.assertTrue(lineageServiceStub.addLineage(addLineage.build()).getStatus());
 
-      AddLineage.Builder addLineage =
-          AddLineage.newBuilder()
-              .addInput(inputDataset)
-              .addInput(inputDataset2)
-              .addOutput(inputOutputExp);
-      Assert.assertTrue(lineageServiceStub.addLineage(addLineage.build()).getStatus());
+        check(
+            Arrays.asList(
+                inputOutputExp, inputDataset, inputDataset2, inputExp, NOT_EXISTENT_DATASET),
+            Arrays.asList(Arrays.asList(inputDataset, inputDataset2), null, null, null, null),
+            Arrays.asList(
+                null,
+                Collections.singletonList(inputOutputExp),
+                Collections.singletonList(inputOutputExp),
+                null,
+                null));
 
-      check(
-          Arrays.asList(
-              inputOutputExp, inputDataset, inputDataset2, inputExp, NOT_EXISTENT_DATASET),
-          Arrays.asList(Arrays.asList(inputDataset, inputDataset2), null, null, null, null),
-          Arrays.asList(
-              null,
-              Collections.singletonList(inputOutputExp),
-              Collections.singletonList(inputOutputExp),
-              null,
-              null));
+        addLineage =
+            AddLineage.newBuilder()
+                .addOutput(outputDataset)
+                .addOutput(outputExp)
+                .addInput(inputExp)
+                .addInput(inputOutputExp);
+        Assert.assertTrue(lineageServiceStub.addLineage(addLineage.build()).getStatus());
 
-      addLineage =
-          AddLineage.newBuilder()
-              .addOutput(outputDataset)
-              .addOutput(outputExp)
-              .addInput(inputExp)
-              .addInput(inputOutputExp);
-      Assert.assertTrue(lineageServiceStub.addLineage(addLineage.build()).getStatus());
+        check(
+            Arrays.asList(
+                inputOutputExp, inputDataset, inputDataset2, inputExp, outputDataset, outputExp),
+            Arrays.asList(
+                Arrays.asList(inputDataset, inputDataset2),
+                null,
+                null,
+                null,
+                Arrays.asList(inputExp, inputOutputExp),
+                Arrays.asList(inputExp, inputOutputExp)),
+            Arrays.asList(
+                Arrays.asList(outputDataset, outputExp),
+                Collections.singletonList(inputOutputExp),
+                Collections.singletonList(inputOutputExp),
+                Arrays.asList(outputDataset, outputExp),
+                null,
+                null));
 
-      check(
-          Arrays.asList(
-              inputOutputExp, inputDataset, inputDataset2, inputExp, outputDataset, outputExp),
-          Arrays.asList(
-              Arrays.asList(inputDataset, inputDataset2),
-              null,
-              null,
-              null,
-              Arrays.asList(inputExp, inputOutputExp),
-              Arrays.asList(inputExp, inputOutputExp)),
-          Arrays.asList(
-              Arrays.asList(outputDataset, outputExp),
-              Collections.singletonList(inputOutputExp),
-              Collections.singletonList(inputOutputExp),
-              Arrays.asList(outputDataset, outputExp),
-              null,
-              null));
+        DeleteLineage.Builder deleteLineage =
+            DeleteLineage.newBuilder()
+                .addInput(inputExp)
+                .addOutput(outputDataset)
+                .addOutput(outputExp);
+        Assert.assertTrue(lineageServiceStub.deleteLineage(deleteLineage.build()).getStatus());
 
-      DeleteLineage.Builder deleteLineage =
-          DeleteLineage.newBuilder()
-              .addInput(inputExp)
-              .addOutput(outputDataset)
-              .addOutput(outputExp);
-      Assert.assertTrue(lineageServiceStub.deleteLineage(deleteLineage.build()).getStatus());
+        check(
+            Arrays.asList(
+                inputOutputExp, inputDataset, inputDataset2, inputExp, outputDataset, outputExp),
+            Arrays.asList(
+                Arrays.asList(inputDataset, inputDataset2),
+                null,
+                null,
+                null,
+                Collections.singletonList(inputOutputExp),
+                Collections.singletonList(inputOutputExp)),
+            Arrays.asList(
+                Arrays.asList(outputDataset, outputExp),
+                Collections.singletonList(inputOutputExp),
+                Collections.singletonList(inputOutputExp),
+                null,
+                null,
+                null));
 
-      check(
-          Arrays.asList(
-              inputOutputExp, inputDataset, inputDataset2, inputExp, outputDataset, outputExp),
-          Arrays.asList(
-              Arrays.asList(inputDataset, inputDataset2),
-              null,
-              null,
-              null,
-              Collections.singletonList(inputOutputExp),
-              Collections.singletonList(inputOutputExp)),
-          Arrays.asList(
-              Arrays.asList(outputDataset, outputExp),
-              Collections.singletonList(inputOutputExp),
-              Collections.singletonList(inputOutputExp),
-              null,
-              null,
-              null));
+        deleteLineage =
+            DeleteLineage.newBuilder()
+                .addInput(inputExp)
+                .addInput(inputDataset)
+                .addInput(inputDataset2)
+                .addInput(inputOutputExp)
+                .addOutput(inputOutputExp)
+                .addOutput(outputDataset)
+                .addOutput(outputExp);
+        Assert.assertTrue(lineageServiceStub.deleteLineage(deleteLineage.build()).getStatus());
 
-      deleteLineage =
-          DeleteLineage.newBuilder()
-              .addInput(inputExp)
-              .addInput(inputDataset)
-              .addInput(inputDataset2)
-              .addInput(inputOutputExp)
-              .addOutput(inputOutputExp)
-              .addOutput(outputDataset)
-              .addOutput(outputExp);
-      Assert.assertTrue(lineageServiceStub.deleteLineage(deleteLineage.build()).getStatus());
+        check(
+            Arrays.asList(
+                inputOutputExp, inputDataset, inputDataset2, inputExp, outputDataset, outputExp),
+            Arrays.asList(null, null, null, null, null, null),
+            Arrays.asList(null, null, null, null, null, null));
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        e.printStackTrace();
+        fail();
+      } finally {
+        deleteAll(datasetVersionList, project);
+      }
 
-      check(
-          Arrays.asList(
-              inputOutputExp, inputDataset, inputDataset2, inputExp, outputDataset, outputExp),
-          Arrays.asList(null, null, null, null, null, null),
-          Arrays.asList(null, null, null, null, null, null));
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      e.printStackTrace();
-      fail();
-    } finally {
-      deleteAll(datasetVersionList, project);
+      LOGGER.info("Create and delete Lineage test stop................................");
     }
-
-    LOGGER.info("Create and delete Lineage test stop................................");
-  }
-
+  */
   private void deleteAll(List<DatasetVersion> datasetVersionList, Project project) {
     for (DatasetVersion datasetVersion1 : datasetVersionList) {
       DeleteDatasetVersion deleteDatasetVersionRequest =
@@ -526,31 +518,31 @@ public class LineageTest {
     return project;
   }
 
-  private DatasetVersion getDatasetVersion(
-      List<DatasetVersion> datasetVersionList,
-      DatasetVersionTest datasetVersionTest,
-      DatasetVersionServiceBlockingStub datasetVersionServiceStub,
-      DatasetTest datasetTest,
-      DatasetServiceBlockingStub datasetServiceStub,
-      String name) {
-    CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv" + name);
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
-    Dataset dataset = createDatasetResponse.getDataset();
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
-    CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset.getId());
-    CreateDatasetVersion.Response createDatasetVersionResponse =
-        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
-    DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
-    datasetVersionList.add(datasetVersion);
-    return datasetVersion;
-  }
+  //  private DatasetVersion getDatasetVersion(
+  //      List<DatasetVersion> datasetVersionList,
+  //      DatasetVersionTest datasetVersionTest,
+  //      DatasetVersionServiceBlockingStub datasetVersionServiceStub,
+  //      DatasetTest datasetTest,
+  //      DatasetServiceBlockingStub datasetServiceStub,
+  //      String name) {
+  //    CreateDataset createDatasetRequest =
+  //        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv" + name);
+  //    CreateDataset.Response createDatasetResponse =
+  //        datasetServiceStub.createDataset(createDatasetRequest);
+  //    LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
+  //    Dataset dataset = createDatasetResponse.getDataset();
+  //    assertEquals(
+  //        "Dataset name not match with expected dataset name",
+  //        createDatasetRequest.getName(),
+  //        dataset.getName());
+  //    CreateDatasetVersion createDatasetVersionRequest =
+  //        datasetVersionTest.getDatasetVersionRequest(dataset.getId());
+  //    CreateDatasetVersion.Response createDatasetVersionResponse =
+  //        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
+  //    DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
+  //    datasetVersionList.add(datasetVersion);
+  //    return datasetVersion;
+  //  }
 
   private ExperimentRun getExperimentRun(
       List<ExperimentRun> experimentRunList,
