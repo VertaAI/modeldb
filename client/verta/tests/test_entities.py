@@ -475,7 +475,7 @@ class TestExperimentRuns:
         assert local_expt1_run_ids == set(run.id for run in expt1.expt_runs + expt1.expt_runs)
 
 
-class TestModel2:
+class TestModel:
 
     def test_create(self, client):
         assert client.set_registered_model()
@@ -505,8 +505,6 @@ class TestModel2:
         client.set_registered_model()  # in case get erroneously fetches latest
 
         assert registered_model.id == client.set_registered_model(id=registered_model.id).id
-
-class TestModel:
 
     def test_labels(self, client):
         assert client.set_registered_model(tags=["tag1", "tag2"])
