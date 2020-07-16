@@ -7,6 +7,9 @@ from verta._cli import cli
 from verta._internal_utils import _config_utils
 
 
+pytest.skip("repository sub-CLI has been disabled", allow_module_level=True)
+
+
 class TestInit:
     def test_init(self):
         runner = CliRunner()
