@@ -2,9 +2,6 @@ import pytest
 
 from .. import utils
 
-import verta.dataset
-import verta.environment
-
 from sklearn.linear_model import LogisticRegression
 import numpy as np
 
@@ -35,44 +32,51 @@ class TestModelVersion:
 
     def test_set_model(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
-        log_reg_model = LogisticRegression()
-        log_reg_model.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.set_model(log_reg_model)
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        original_coef = classifier.coef_
+        model_version.set_model(classifier)
 
-        # reload the model version:
-        model_version = registered_model.get_or_create_version(name="my version")
-        assert model_version._msg.model.key == "model"
-
-        retrieved_log_reg_model = model_version.get_model()
-        assert (retrieved_log_reg_model.coef_ == log_reg_model.coef_).all()
+        # retrieve the classifier:
+        retrieved_classfier = model_version.get_model()
+        assert (retrieved_classfier.coef_ == original_coef).all()
 
         # overwrite should work:
-        model_version = registered_model.get_version(id=model_version.id)
-        model_version.set_model(log_reg_model, True)
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.set_model(new_classifier, True)
+        retrieved_classfier = model_version.get_model()
+        assert (retrieved_classfier.coef_ == new_classifier.coef_).all()
 
+        # when overwrite = false, overwriting should fail
         with pytest.raises(ValueError) as excinfo:
             model_version = registered_model.get_version(id=model_version.id)
-            model_version.set_model(log_reg_model)
+            model_version.set_model(new_classifier)
 
         assert "model already exists" in str(excinfo.value)
 
-
     def test_add_asset(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
-        log_reg_model = LogisticRegression()
-        log_reg_model.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.add_asset("coef", log_reg_model.coef_)
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        original_coef = classifier.coef_
+        model_version.add_asset("coef", original_coef)
 
+        # retrieve the asset:
         retrieved_coef = model_version.get_asset("coef")
-        assert (retrieved_coef == log_reg_model.coef_).all()
+        assert (retrieved_coef == original_coef).all()
 
         # Overwrite should work:
-        model_version = registered_model.get_version(id=model_version.id)
-        model_version.add_asset("coef", log_reg_model.coef_, True)
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.add_asset("coef", new_classifier.coef_, True)
+        retrieved_coef = model_version.get_asset("coef")
+        assert (retrieved_coef == new_classifier.coef_).all()
 
+        # when overwrite = false, overwriting should fail
         with pytest.raises(ValueError) as excinfo:
             model_version = registered_model.get_version(id=model_version.id)
-            model_version.add_asset("coef", log_reg_model)
+            model_version.add_asset("coef", new_classifier.coef_)
 
         assert "The key has been set" in str(excinfo.value)
 
