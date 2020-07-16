@@ -10,5 +10,7 @@ public interface MetadataDAO {
 
   List<String> getLabels(IdentificationType id);
 
+  List<IdentificationType> getLabelIds(List<String> labels) throws ModelDBException;
+
   boolean deleteLabels(IdentificationType id, List<String> labels, boolean deleteAll);
 }
