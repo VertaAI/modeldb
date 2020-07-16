@@ -25,10 +25,10 @@ def lst():
 def lst_model(filter, output, workspace):
     """List all models available.
     """
-    print("Listing all models")
+    click.echo("Listing all models")
 
-    print("filter: %s" % (filter,))
-    print("output: %s" % output)
+    click.echo("filter: {}".format(filter))
+    click.echo("output: {}".format(output))
 
 
 @lst.command(name="registeredmodelversion")
@@ -40,8 +40,8 @@ def lst_model_version(model_name, filter, output, workspace):
     """List all models available.
     """
     if model_name is None:
-        print("Listing versions for all models")
+        click.echo("Listing versions for all models")
     else:
-        print("Listing versions for model %s" % (model_name,))
-    print("filter: %s" % (filter,))
-    print("output: %s" % output)
+        click.echo("Listing versions for model {}".format(model_name))
+    click.echo("filter: {}".format(filter))
+    click.echo("output: {}".format(output))
