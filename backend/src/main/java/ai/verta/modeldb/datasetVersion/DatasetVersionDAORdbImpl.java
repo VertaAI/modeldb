@@ -180,9 +180,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public String getUrlForDatasetVersion(String datasetVersionId, String method)
       throws InvalidProtocolBufferException {
-    DatasetVersion datasetVersion = getDatasetVersion(datasetVersionId);
-
-    return datasetVersion.getRawDatasetVersionInfo().getObjectPath();
+    Status status =
+        Status.newBuilder()
+            .setCode(Code.INVALID_ARGUMENT_VALUE)
+            .setMessage("Not supported yet")
+            .build();
+    throw StatusProto.toStatusRuntimeException(status);
   }
 
   @Override

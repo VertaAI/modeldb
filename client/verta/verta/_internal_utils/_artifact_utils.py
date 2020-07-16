@@ -11,25 +11,7 @@ from ..external.six.moves import cPickle as pickle  # pylint: disable=import-err
 
 from .. import __about__
 
-try:
-    import joblib
-except ImportError:  # joblib not installed
-    pass
-
-try:
-    import tensorflow as tf
-except ImportError:
-    tf = None
-    TF_MAJOR_VERSION_STR = None
-else:
-    # TODO: use in TF integration module
-    TF_MAJOR_VERSION_STR = tf.__version__.split('.')[0]  # don't cast to int at module scope; breaks autodoc
-
-# TODO: use the newly-added tf = None above for this module's install checks
-try:
-    from tensorflow import keras
-except ImportError:  # TensorFlow not installed
-    pass
+from .importer import maybe_dependency, get_tensorflow_major_version
 
 
 # default for chunked utils
@@ -218,14 +200,15 @@ def ensure_bytestream(obj):
             bytestream.seek(0)
             return bytestream, "cloudpickle"
 
-        try:
-            joblib.dump(obj, bytestream)
-        except (NameError,  # joblib not installed
-                pickle.PicklingError):  # can't be handled by joblib
-            pass
-        else:
-            bytestream.seek(0)
-            return bytestream, "joblib"
+        if maybe_dependency("joblib"):
+            try:
+                maybe_dependency("joblib").dump(obj, bytestream)
+            except (NameError,  # joblib not installed
+                    pickle.PicklingError):  # can't be handled by joblib
+                pass
+            else:
+                bytestream.seek(0)
+                return bytestream, "joblib"
 
         try:
             pickle.dump(obj, bytestream)
@@ -292,8 +275,7 @@ def serialize_model(model):
         elif module_name.startswith("tensorflow.python.keras"):
             model_type = "tensorflow"
             tempf = tempfile.NamedTemporaryFile()
-            if (TF_MAJOR_VERSION_STR is not None
-                    and TF_MAJOR_VERSION_STR == '2'):  # save_format param may not exist in TF 1.X
+            if get_tensorflow_major_version() == 2:  # save_format param may not exist in TF 1.X
                 model.save(tempf.name, save_format='h5')  # TF 2.X uses SavedModel by default
             else:
                 model.save(tempf.name)
@@ -330,15 +312,16 @@ def deserialize_model(bytestring):
         Model or buffered bytestream representing the model.
 
     """
-    # try deserializing with Keras (HDF5)
-    with tempfile.NamedTemporaryFile() as tempf:
-        tempf.write(bytestring)
-        tempf.seek(0)
-        try:
-            return keras.models.load_model(tempf.name)
-        except (NameError,  # Tensorflow not installed
-                IOError, OSError):  # not a Keras model
-            pass
+    if maybe_dependency("tensorflow.keras"):
+        # try deserializing with Keras (HDF5)
+        with tempfile.NamedTemporaryFile() as tempf:
+            tempf.write(bytestring)
+            tempf.seek(0)
+            try:
+                return maybe_dependency("tensorflow.keras").models.load_model(tempf.name)
+            except (NameError,  # Tensorflow not installed
+                    IOError, OSError):  # not a Keras model
+                pass
 
     # try deserializing with cloudpickle
     bytestream = six.BytesIO(bytestring)

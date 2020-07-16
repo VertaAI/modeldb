@@ -784,9 +784,9 @@ public class ModelDBHibernateUtil {
       Statement stmt = jdbcCon.createStatement();
 
       String sql =
-              "INSERT INTO migration_status (migration_name, status) VALUES ('"
-                      + migrationName
-                      + "', 1);";
+          "INSERT INTO migration_status (migration_name, status) VALUES ('"
+              + migrationName
+              + "', 1);";
       int updatedRowCount = stmt.executeUpdate(sql);
       stmt.close();
       LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);

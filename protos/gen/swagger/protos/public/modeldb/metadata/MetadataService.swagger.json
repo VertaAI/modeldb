@@ -11,6 +11,40 @@
     "application/json"
   ],
   "paths": {
+    "/metadata/getLabelIds": {
+      "get": {
+        "operationId": "GetLabelIds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataGetLabelIdsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "labels",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      }
+    },
     "/metadata/labels": {
       "get": {
         "operationId": "GetLabels",
@@ -84,6 +118,36 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/metadataDeleteLabelsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      },
+      "post": {
+        "operationId": "UpdateLabels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataAddLabelsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/metadataAddLabelsRequest"
             }
           }
         ],
@@ -303,6 +367,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "delete_all": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -328,6 +396,17 @@
     },
     "metadataDeletePropertyRequestResponse": {
       "type": "object"
+    },
+    "metadataGetLabelIdsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/metadataIdentificationType"
+          }
+        }
+      }
     },
     "metadataGetLabelsRequestResponse": {
       "type": "object",

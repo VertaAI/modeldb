@@ -3678,459 +3678,461 @@ public class ExperimentRunTest {
         "Get Metrics from ExperimentRun tags Negative test stop................................");
   }
 
-  @Test
-  public void k_logDatasetTest() {
-    LOGGER.info(" Log Dataset in ExperimentRun test start................................");
+  /* commented till dataset int code is in
+    @Test
+    public void k_logDatasetTest() {
+      LOGGER.info(" Log Dataset in ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
+      ProjectTest projectTest = new ProjectTest();
+      ExperimentTest experimentTest = new ExperimentTest();
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
+      ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+      ExperimentServiceBlockingStub experimentServiceStub =
+          ExperimentServiceGrpc.newBlockingStub(channel);
+      ExperimentRunServiceBlockingStub experimentRunServiceStub =
+          ExperimentRunServiceGrpc.newBlockingStub(channel);
 
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-
-    DatasetTest datasetTest = new DatasetTest();
-    CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        createDatasetResponse.getDataset().getName());
-
-    Artifact artifact =
-        Artifact.newBuilder()
-            .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
-            .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactType.DATA)
-            .setLinkedArtifactId(createDatasetResponse.getDataset().getId())
-            .build();
-
-    LogDataset logDatasetRequest =
-        LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
-
-    experimentRunServiceStub.logDataset(logDatasetRequest);
-
-    GetExperimentRunById getExperimentRunById =
-        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
-    GetExperimentRunById.Response response =
-        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
-    assertTrue(
-        "Experiment dataset not match with expected dataset",
-        response.getExperimentRun().getDatasetsList().contains(artifact));
-
-    assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
-        experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
-
-    artifact =
-        artifact
-            .toBuilder()
-            .setPath(
-                "Overwritten data, This is overwritten data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactType.DATA)
-            .build();
-
-    logDatasetRequest =
-        LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
-
-    try {
-      experimentRunServiceStub.logDataset(logDatasetRequest);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
-    }
-
-    logDatasetRequest =
-        LogDataset.newBuilder()
-            .setId(experimentRun.getId())
-            .setDataset(artifact)
-            .setOverwrite(true)
-            .build();
-    experimentRunServiceStub.logDataset(logDatasetRequest);
-
-    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    assertTrue(
-        "Experiment dataset not match with expected dataset",
-        response.getExperimentRun().getDatasetsList().contains(artifact));
-
-    artifact =
-        Artifact.newBuilder()
-            .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
-            .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactType.MODEL)
-            .setLinkedArtifactId(createDatasetResponse.getDataset().getId())
-            .build();
-
-    logDatasetRequest =
-        LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
-
-    try {
-      experimentRunServiceStub.logDataset(logDatasetRequest);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    DeleteDataset deleteDataset =
-        DeleteDataset.newBuilder().setId(createDatasetResponse.getDataset().getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    LOGGER.info("Log Dataset in ExperimentRun tags test stop................................");
-  }
-
-  @Test
-  public void k_logDatasetNegativeTest() {
-    LOGGER.info(
-        " Log Dataset in ExperimentRun Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
-    Artifact artifact =
-        Artifact.newBuilder()
-            .setKey("Google Pay datasets")
-            .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactType.MODEL)
-            .setLinkedArtifactId("dadasdadaasd")
-            .build();
-
-    LogDataset logDatasetRequest = LogDataset.newBuilder().setDataset(artifact).build();
-
-    try {
-      experimentRunServiceStub.logDataset(logDatasetRequest);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    artifact = artifact.toBuilder().setArtifactType(ArtifactType.DATA).build();
-    logDatasetRequest = LogDataset.newBuilder().setId("sdsdsa").setDataset(artifact).build();
-
-    try {
-      experimentRunServiceStub.logDataset(logDatasetRequest);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
-    }
-
-    artifact =
-        Artifact.newBuilder()
-            .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
-            .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactType.DATA)
-            .setLinkedArtifactId("fsdfsdfsdfds")
-            .build();
-
-    logDatasetRequest =
-        LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
-
-    experimentRunServiceStub.logDataset(logDatasetRequest);
-
-    GetExperimentRunById getExperimentRunById =
-        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
-    GetExperimentRunById.Response response =
-        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
-    assertTrue(
-        "Experiment dataset not match with expected dataset",
-        response.getExperimentRun().getDatasetsList().contains(artifact));
-
-    logDatasetRequest =
-        LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
-    try {
-      experimentRunServiceStub.logDataset(logDatasetRequest);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
-    }
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    LOGGER.info(
-        "Log Dataset in ExperimentRun tags Negative test stop................................");
-  }
-
-  @Test
-  public void k_logDatasetsTest() {
-    LOGGER.info(" Log Datasets in ExperimentRun test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-
-    DatasetTest datasetTest = new DatasetTest();
-    CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    Dataset dataset = createDatasetResponse.getDataset();
-    LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
-
-    Map<String, Artifact> artifactMap = new HashMap<>();
-    for (Artifact existingDataset : experimentRun.getDatasetsList()) {
-      artifactMap.put(existingDataset.getKey(), existingDataset);
-    }
-    List<Artifact> artifacts = new ArrayList<>();
-    Artifact artifact1 =
-        Artifact.newBuilder()
-            .setKey("Google Pay datasets_1")
-            .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactType.DATA)
-            .setLinkedArtifactId(dataset.getId())
-            .build();
-    artifacts.add(artifact1);
-    artifactMap.put(artifact1.getKey(), artifact1);
-    Artifact artifact2 =
-        Artifact.newBuilder()
-            .setKey("Google Pay datasets_2")
-            .setPath("This is new added data artifact type in Google Pay datasets")
-            .setArtifactType(ArtifactType.DATA)
-            .setLinkedArtifactId(dataset.getId())
-            .build();
-    artifacts.add(artifact2);
-    artifactMap.put(artifact2.getKey(), artifact2);
-
-    LogDatasets logDatasetRequest =
-        LogDatasets.newBuilder().setId(experimentRun.getId()).addAllDatasets(artifacts).build();
-
-    experimentRunServiceStub.logDatasets(logDatasetRequest);
-
-    GetExperimentRunById getExperimentRunById =
-        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
-    GetExperimentRunById.Response response =
-        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
-
-    for (Artifact datasetArtifact : response.getExperimentRun().getDatasetsList()) {
+      // Create project
+      CreateProject createProjectRequest =
+          projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
+      CreateProject.Response createProjectResponse =
+          projectServiceStub.createProject(createProjectRequest);
+      Project project = createProjectResponse.getProject();
+      LOGGER.info("Project created successfully");
       assertEquals(
-          "Experiment datasets not match with expected datasets",
-          artifactMap.get(datasetArtifact.getKey()),
-          datasetArtifact);
+          "Project name not match with expected project name",
+          createProjectRequest.getName(),
+          project.getName());
+
+      // Create two experiment of above project
+      CreateExperiment createExperimentRequest =
+          experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
+      CreateExperiment.Response createExperimentResponse =
+          experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment = createExperimentResponse.getExperiment();
+      LOGGER.info("Experiment created successfully");
+      assertEquals(
+          "Experiment name not match with expected Experiment name",
+          createExperimentRequest.getName(),
+          experiment.getName());
+
+      CreateExperimentRun createExperimentRunRequest =
+          getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
+      CreateExperimentRun.Response createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
+      LOGGER.info("ExperimentRun created successfully");
+      assertEquals(
+          "ExperimentRun name not match with expected ExperimentRun name",
+          createExperimentRunRequest.getName(),
+          experimentRun.getName());
+
+      DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
+          DatasetServiceGrpc.newBlockingStub(channel);
+
+      DatasetTest datasetTest = new DatasetTest();
+      CreateDataset createDatasetRequest =
+          datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
+      CreateDataset.Response createDatasetResponse =
+          datasetServiceStub.createDataset(createDatasetRequest);
+      LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
+      assertEquals(
+          "Dataset name not match with expected dataset name",
+          createDatasetRequest.getName(),
+          createDatasetResponse.getDataset().getName());
+
+      Artifact artifact =
+          Artifact.newBuilder()
+              .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
+              .setPath("This is new added data artifact type in Google Pay datasets")
+              .setArtifactType(ArtifactType.DATA)
+              .setLinkedArtifactId(createDatasetResponse.getDataset().getId())
+              .build();
+
+      LogDataset logDatasetRequest =
+          LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
+
+      experimentRunServiceStub.logDataset(logDatasetRequest);
+
+      GetExperimentRunById getExperimentRunById =
+          GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+      GetExperimentRunById.Response response =
+          experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+      LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
+      assertTrue(
+          "Experiment dataset not match with expected dataset",
+          response.getExperimentRun().getDatasetsList().contains(artifact));
+
+      assertNotEquals(
+          "ExperimentRun date_updated field not update on database",
+          experimentRun.getDateUpdated(),
+          response.getExperimentRun().getDateUpdated());
+
+      artifact =
+          artifact
+              .toBuilder()
+              .setPath(
+                  "Overwritten data, This is overwritten data artifact type in Google Pay datasets")
+              .setArtifactType(ArtifactType.DATA)
+              .build();
+
+      logDatasetRequest =
+          LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
+
+      try {
+        experimentRunServiceStub.logDataset(logDatasetRequest);
+        fail();
+      } catch (StatusRuntimeException ex) {
+        Status status = Status.fromThrowable(ex);
+        LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+      }
+
+      logDatasetRequest =
+          LogDataset.newBuilder()
+              .setId(experimentRun.getId())
+              .setDataset(artifact)
+              .setOverwrite(true)
+              .build();
+      experimentRunServiceStub.logDataset(logDatasetRequest);
+
+      response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+      assertTrue(
+          "Experiment dataset not match with expected dataset",
+          response.getExperimentRun().getDatasetsList().contains(artifact));
+
+      artifact =
+          Artifact.newBuilder()
+              .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
+              .setPath("This is new added data artifact type in Google Pay datasets")
+              .setArtifactType(ArtifactType.MODEL)
+              .setLinkedArtifactId(createDatasetResponse.getDataset().getId())
+              .build();
+
+      logDatasetRequest =
+          LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
+
+      try {
+        experimentRunServiceStub.logDataset(logDatasetRequest);
+        fail();
+      } catch (StatusRuntimeException ex) {
+        Status status = Status.fromThrowable(ex);
+        LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      }
+
+      DeleteDataset deleteDataset =
+          DeleteDataset.newBuilder().setId(createDatasetResponse.getDataset().getId()).build();
+      DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
+      LOGGER.info("Dataset deleted successfully");
+      LOGGER.info(deleteDatasetResponse.toString());
+      assertTrue(deleteDatasetResponse.getStatus());
+
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
+
+      LOGGER.info("Log Dataset in ExperimentRun tags test stop................................");
     }
 
-    logDatasetRequest =
-        LogDatasets.newBuilder().setId(experimentRun.getId()).addAllDatasets(artifacts).build();
 
-    try {
+    @Test
+    public void k_logDatasetNegativeTest() {
+      LOGGER.info(
+          " Log Dataset in ExperimentRun Negative test start................................");
+
+      ProjectTest projectTest = new ProjectTest();
+      ExperimentTest experimentTest = new ExperimentTest();
+
+      ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+      ExperimentServiceBlockingStub experimentServiceStub =
+          ExperimentServiceGrpc.newBlockingStub(channel);
+      ExperimentRunServiceBlockingStub experimentRunServiceStub =
+          ExperimentRunServiceGrpc.newBlockingStub(channel);
+
+      // Create project
+      CreateProject createProjectRequest =
+          projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
+      CreateProject.Response createProjectResponse =
+          projectServiceStub.createProject(createProjectRequest);
+      Project project = createProjectResponse.getProject();
+      LOGGER.info("Project created successfully");
+      assertEquals(
+          "Project name not match with expected project name",
+          createProjectRequest.getName(),
+          project.getName());
+
+      // Create two experiment of above project
+      CreateExperiment createExperimentRequest =
+          experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
+      CreateExperiment.Response createExperimentResponse =
+          experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment = createExperimentResponse.getExperiment();
+      LOGGER.info("Experiment created successfully");
+      assertEquals(
+          "Experiment name not match with expected Experiment name",
+          createExperimentRequest.getName(),
+          experiment.getName());
+
+      CreateExperimentRun createExperimentRunRequest =
+          getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
+      CreateExperimentRun.Response createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
+      LOGGER.info("ExperimentRun created successfully");
+      assertEquals(
+          "ExperimentRun name not match with expected ExperimentRun name",
+          createExperimentRunRequest.getName(),
+          experimentRun.getName());
+
+      Artifact artifact =
+          Artifact.newBuilder()
+              .setKey("Google Pay datasets")
+              .setPath("This is new added data artifact type in Google Pay datasets")
+              .setArtifactType(ArtifactType.MODEL)
+              .setLinkedArtifactId("dadasdadaasd")
+              .build();
+
+      LogDataset logDatasetRequest = LogDataset.newBuilder().setDataset(artifact).build();
+
+      try {
+        experimentRunServiceStub.logDataset(logDatasetRequest);
+        fail();
+      } catch (StatusRuntimeException ex) {
+        Status status = Status.fromThrowable(ex);
+        LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      }
+
+      artifact = artifact.toBuilder().setArtifactType(ArtifactType.DATA).build();
+      logDatasetRequest = LogDataset.newBuilder().setId("sdsdsa").setDataset(artifact).build();
+
+      try {
+        experimentRunServiceStub.logDataset(logDatasetRequest);
+        fail();
+      } catch (StatusRuntimeException ex) {
+        Status status = Status.fromThrowable(ex);
+        LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
+      }
+
+      artifact =
+          Artifact.newBuilder()
+              .setKey("Google Pay datasets " + Calendar.getInstance().getTimeInMillis())
+              .setPath("This is new added data artifact type in Google Pay datasets")
+              .setArtifactType(ArtifactType.DATA)
+              .setLinkedArtifactId("fsdfsdfsdfds")
+              .build();
+
+      logDatasetRequest =
+          LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
+
+      experimentRunServiceStub.logDataset(logDatasetRequest);
+
+      GetExperimentRunById getExperimentRunById =
+          GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+      GetExperimentRunById.Response response =
+          experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+      LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
+      assertTrue(
+          "Experiment dataset not match with expected dataset",
+          response.getExperimentRun().getDatasetsList().contains(artifact));
+
+      logDatasetRequest =
+          LogDataset.newBuilder().setId(experimentRun.getId()).setDataset(artifact).build();
+      try {
+        experimentRunServiceStub.logDataset(logDatasetRequest);
+        fail();
+      } catch (StatusRuntimeException ex) {
+        Status status = Status.fromThrowable(ex);
+        LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+      }
+
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
+
+      LOGGER.info(
+          "Log Dataset in ExperimentRun tags Negative test stop................................");
+    }
+
+    @Test
+    public void k_logDatasetsTest() {
+      LOGGER.info(" Log Datasets in ExperimentRun test start................................");
+
+      ProjectTest projectTest = new ProjectTest();
+      ExperimentTest experimentTest = new ExperimentTest();
+
+      ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+      ExperimentServiceBlockingStub experimentServiceStub =
+          ExperimentServiceGrpc.newBlockingStub(channel);
+      ExperimentRunServiceBlockingStub experimentRunServiceStub =
+          ExperimentRunServiceGrpc.newBlockingStub(channel);
+
+      // Create project
+      CreateProject createProjectRequest =
+          projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
+      CreateProject.Response createProjectResponse =
+          projectServiceStub.createProject(createProjectRequest);
+      Project project = createProjectResponse.getProject();
+      LOGGER.info("Project created successfully");
+      assertEquals(
+          "Project name not match with expected project name",
+          createProjectRequest.getName(),
+          project.getName());
+
+      // Create two experiment of above project
+      CreateExperiment createExperimentRequest =
+          experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
+      CreateExperiment.Response createExperimentResponse =
+          experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment = createExperimentResponse.getExperiment();
+      LOGGER.info("Experiment created successfully");
+      assertEquals(
+          "Experiment name not match with expected Experiment name",
+          createExperimentRequest.getName(),
+          experiment.getName());
+
+      CreateExperimentRun createExperimentRunRequest =
+          getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
+      CreateExperimentRun.Response createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
+      LOGGER.info("ExperimentRun created successfully");
+      assertEquals(
+          "ExperimentRun name not match with expected ExperimentRun name",
+          createExperimentRunRequest.getName(),
+          experimentRun.getName());
+
+      DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
+          DatasetServiceGrpc.newBlockingStub(channel);
+
+      DatasetTest datasetTest = new DatasetTest();
+      CreateDataset createDatasetRequest =
+          datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
+      CreateDataset.Response createDatasetResponse =
+          datasetServiceStub.createDataset(createDatasetRequest);
+      Dataset dataset = createDatasetResponse.getDataset();
+      LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
+      assertEquals(
+          "Dataset name not match with expected dataset name",
+          createDatasetRequest.getName(),
+          dataset.getName());
+
+      Map<String, Artifact> artifactMap = new HashMap<>();
+      for (Artifact existingDataset : experimentRun.getDatasetsList()) {
+        artifactMap.put(existingDataset.getKey(), existingDataset);
+      }
+      List<Artifact> artifacts = new ArrayList<>();
+      Artifact artifact1 =
+          Artifact.newBuilder()
+              .setKey("Google Pay datasets_1")
+              .setPath("This is new added data artifact type in Google Pay datasets")
+              .setArtifactType(ArtifactType.DATA)
+              .setLinkedArtifactId(dataset.getId())
+              .build();
+      artifacts.add(artifact1);
+      artifactMap.put(artifact1.getKey(), artifact1);
+      Artifact artifact2 =
+          Artifact.newBuilder()
+              .setKey("Google Pay datasets_2")
+              .setPath("This is new added data artifact type in Google Pay datasets")
+              .setArtifactType(ArtifactType.DATA)
+              .setLinkedArtifactId(dataset.getId())
+              .build();
+      artifacts.add(artifact2);
+      artifactMap.put(artifact2.getKey(), artifact2);
+
+      LogDatasets logDatasetRequest =
+          LogDatasets.newBuilder().setId(experimentRun.getId()).addAllDatasets(artifacts).build();
+
       experimentRunServiceStub.logDatasets(logDatasetRequest);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+
+      GetExperimentRunById getExperimentRunById =
+          GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+      GetExperimentRunById.Response response =
+          experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+      LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
+
+      for (Artifact datasetArtifact : response.getExperimentRun().getDatasetsList()) {
+        assertEquals(
+            "Experiment datasets not match with expected datasets",
+            artifactMap.get(datasetArtifact.getKey()),
+            datasetArtifact);
+      }
+
+      logDatasetRequest =
+          LogDatasets.newBuilder().setId(experimentRun.getId()).addAllDatasets(artifacts).build();
+
+      try {
+        experimentRunServiceStub.logDatasets(logDatasetRequest);
+        fail();
+      } catch (StatusRuntimeException ex) {
+        Status status = Status.fromThrowable(ex);
+        LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+      }
+
+      artifact1 =
+          artifact1
+              .toBuilder()
+              .setPath(
+                  "Overwritten data 1, This is overwritten data artifact type in Google Pay datasets")
+              .build();
+      artifactMap.put(artifact1.getKey(), artifact1);
+      artifact2 =
+          artifact2
+              .toBuilder()
+              .setPath(
+                  "Overwritten data 2, This is overwritten data artifact type in Google Pay datasets")
+              .build();
+      artifactMap.put(artifact2.getKey(), artifact2);
+
+      logDatasetRequest =
+          LogDatasets.newBuilder()
+              .setId(experimentRun.getId())
+              .setOverwrite(true)
+              .addDatasets(artifact1)
+              .addDatasets(artifact2)
+              .build();
+      experimentRunServiceStub.logDatasets(logDatasetRequest);
+
+      response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+      LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
+
+      for (Artifact datasetArtifact : response.getExperimentRun().getDatasetsList()) {
+        assertEquals(
+            "Experiment datasets not match with expected datasets",
+            artifactMap.get(datasetArtifact.getKey()),
+            datasetArtifact);
+      }
+
+      assertNotEquals(
+          "ExperimentRun date_updated field not update on database",
+          experimentRun.getDateUpdated(),
+          response.getExperimentRun().getDateUpdated());
+
+      DeleteDataset deleteDataset =
+          DeleteDataset.newBuilder().setId(createDatasetResponse.getDataset().getId()).build();
+      DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
+      LOGGER.info("Dataset deleted successfully");
+      LOGGER.info(deleteDatasetResponse.toString());
+      assertTrue(deleteDatasetResponse.getStatus());
+
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
+
+      LOGGER.info("Log Datasets in ExperimentRun tags test stop................................");
     }
-
-    artifact1 =
-        artifact1
-            .toBuilder()
-            .setPath(
-                "Overwritten data 1, This is overwritten data artifact type in Google Pay datasets")
-            .build();
-    artifactMap.put(artifact1.getKey(), artifact1);
-    artifact2 =
-        artifact2
-            .toBuilder()
-            .setPath(
-                "Overwritten data 2, This is overwritten data artifact type in Google Pay datasets")
-            .build();
-    artifactMap.put(artifact2.getKey(), artifact2);
-
-    logDatasetRequest =
-        LogDatasets.newBuilder()
-            .setId(experimentRun.getId())
-            .setOverwrite(true)
-            .addDatasets(artifact1)
-            .addDatasets(artifact2)
-            .build();
-    experimentRunServiceStub.logDatasets(logDatasetRequest);
-
-    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
-
-    for (Artifact datasetArtifact : response.getExperimentRun().getDatasetsList()) {
-      assertEquals(
-          "Experiment datasets not match with expected datasets",
-          artifactMap.get(datasetArtifact.getKey()),
-          datasetArtifact);
-    }
-
-    assertNotEquals(
-        "ExperimentRun date_updated field not update on database",
-        experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
-
-    DeleteDataset deleteDataset =
-        DeleteDataset.newBuilder().setId(createDatasetResponse.getDataset().getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    LOGGER.info("Log Datasets in ExperimentRun tags test stop................................");
-  }
-
+  */
   @Test
   public void k_logDatasetsNegativeTest() {
     LOGGER.info(

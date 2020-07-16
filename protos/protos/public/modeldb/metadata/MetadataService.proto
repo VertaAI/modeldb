@@ -34,6 +34,14 @@ message GetLabelsRequest {
     }
 }
 
+message GetLabelIdsRequest {
+    repeated string labels = 1;
+
+    message Response {
+        repeated IdentificationType ids = 1;
+    }
+}
+
 message AddLabelsRequest {
     IdentificationType id = 1;
     repeated string labels = 2;
@@ -46,6 +54,7 @@ message AddLabelsRequest {
 message DeleteLabelsRequest {
     IdentificationType id = 1;
     repeated string labels = 2;
+    bool delete_all = 3;
 
     message Response {
         bool status = 1;
@@ -86,9 +95,22 @@ service MetadataService {
         };
     };
 
+    rpc GetLabelIds(GetLabelIdsRequest) returns (GetLabelIdsRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/getLabelIds"
+        };
+    };
+
     rpc AddLabels(AddLabelsRequest) returns (AddLabelsRequest.Response) {
         option (google.api.http) = {
             put: "/v1/metadata/labels"
+            body: "*"
+        };
+    };
+
+    rpc UpdateLabels(AddLabelsRequest) returns (AddLabelsRequest.Response) {
+        option (google.api.http) = {
+            post: "/v1/metadata/labels"
             body: "*"
         };
     };

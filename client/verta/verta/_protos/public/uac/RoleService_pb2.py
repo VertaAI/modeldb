@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x15uac/RoleService.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"U\n\x0bServiceEnum\"F\n\x07Service\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x13\n\x0fMODELDB_SERVICE\x10\x04\"\x04\x08\x02\x10\x02\"\x04\x08\x03\x10\x03\"\x04\x08\x05\x10\x05\"\x8d\x01\n\x11ModelDBActionEnum\"x\n\x15ModelDBServiceActions\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\n\n\x06\x43REATE\x10\x02\x12\x08\n\x04READ\x10\x03\x12\n\n\x06UPDATE\x10\x04\x12\n\n\x06\x44\x45LETE\x10\x05\x12\n\n\x06\x44\x45PLOY\x10\x06\x12\x0f\n\x0bPUBLIC_READ\x10\x07\"\xb1\x01\n\x06\x41\x63tion\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12W\n\x16modeldb_service_action\x18\x04 \x01(\x0e\x32\x35.ai.verta.uac.ModelDBActionEnum.ModelDBServiceActionsH\x00\x42\x08\n\x06\x61\x63tionJ\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04J\x04\x08\x05\x10\x06\"\x97\x01\n\x0cResourceType\x12i\n\x1dmodeldb_service_resource_type\x18\x03 \x01(\x0e\x32@.ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypesH\x00\x42\n\n\x08resourceJ\x04\x08\x01\x10\x02J\x04\x08\x02\x10\x03J\x04\x08\x04\x10\x05\"\x88\x01\n\tResources\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x14\n\x0cresource_ids\x18\x02 \x03(\t\x12\x31\n\rresource_type\x18\x06 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\",\n\tRoleScope\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x0f\n\x07team_id\x18\x02 \x01(\t\"h\n\x13ResourceActionGroup\x12*\n\tresources\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\x8b\x01\n\x04Role\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12&\n\x05scope\x18\x03 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x12\x41\n\x16resource_action_groups\x18\x04 \x03(\x0b\x32!.ai.verta.uac.ResourceActionGroup\"?\n\x08\x45ntities\x12\x10\n\x08user_ids\x18\x01 \x03(\t\x12\x0f\n\x07org_ids\x18\x02 \x03(\t\x12\x10\n\x08team_ids\x18\x03 \x03(\t\"\xc6\x01\n\x0bRoleBinding\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12&\n\x05scope\x18\x03 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x12(\n\x08\x65ntities\x18\x05 \x03(\x0b\x32\x16.ai.verta.uac.Entities\x12*\n\tresources\x18\x06 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x12\x0f\n\x07role_id\x18\x07 \x01(\t\x12\x0e\n\x06public\x18\x08 \x01(\x08\"G\n\x0bGetRoleById\x12\n\n\x02id\x18\x01 \x01(\t\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"s\n\rGetRoleByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"b\n\tListRoles\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a-\n\x08Response\x12!\n\x05roles\x18\x01 \x03(\x0b\x32\x12.ai.verta.uac.Role\"Y\n\x07SetRole\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"4\n\nDeleteRole\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"]\n\x12GetRoleBindingById\x12\n\n\x02id\x18\x01 \x01(\t\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\"\x89\x01\n\x14GetRoleBindingByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\"\x8b\x01\n\x10ListRoleBindings\x12\x11\n\tentity_id\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a<\n\x08Response\x12\x30\n\rrole_bindings\x18\x01 \x03(\x0b\x32\x19.ai.verta.uac.RoleBinding\"~\n\x0eSetRoleBinding\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\";\n\x11\x44\x65leteRoleBinding\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"J\n\x12\x44\x65leteRoleBindings\x12\x18\n\x10roleBindingNames\x18\x01 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"v\n\x0fRemoveResources\x12\x14\n\x0cresource_ids\x18\x01 \x03(\t\x12\x31\n\rresource_type\x18\x02 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\x32\xc9\x0b\n\x0bRoleService\x12j\n\x0bgetRoleById\x12\x19.ai.verta.uac.GetRoleById\x1a\".ai.verta.uac.GetRoleById.Response\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/role/getRoleById\x12r\n\rgetRoleByName\x12\x1b.ai.verta.uac.GetRoleByName\x1a$.ai.verta.uac.GetRoleByName.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/role/getRoleByName\x12\x62\n\tlistRoles\x12\x17.ai.verta.uac.ListRoles\x1a .ai.verta.uac.ListRoles.Response\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/v1/role/listRoles\x12]\n\x07setRole\x12\x15.ai.verta.uac.SetRole\x1a\x1e.ai.verta.uac.SetRole.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\"\x10/v1/role/setRole:\x01*\x12i\n\ndeleteRole\x12\x18.ai.verta.uac.DeleteRole\x1a!.ai.verta.uac.DeleteRole.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/role/deleteRole:\x01*\x12\x86\x01\n\x12getBindingRoleById\x12 .ai.verta.uac.GetRoleBindingById\x1a).ai.verta.uac.GetRoleBindingById.Response\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/v1/role/getRoleBindingById\x12\x8e\x01\n\x14getRoleBindingByName\x12\".ai.verta.uac.GetRoleBindingByName\x1a+.ai.verta.uac.GetRoleBindingByName.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/role/getRoleBindingByName\x12~\n\x10listRoleBindings\x12\x1e.ai.verta.uac.ListRoleBindings\x1a\'.ai.verta.uac.ListRoleBindings.Response\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/role/listRoleBindings\x12y\n\x0esetRoleBinding\x12\x1c.ai.verta.uac.SetRoleBinding\x1a%.ai.verta.uac.SetRoleBinding.Response\"\"\x82\xd3\xe4\x93\x02\x1c\"\x17/v1/role/setRoleBinding:\x01*\x12\x85\x01\n\x11\x64\x65leteRoleBinding\x12\x1f.ai.verta.uac.DeleteRoleBinding\x1a(.ai.verta.uac.DeleteRoleBinding.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/role/deleteRoleBinding:\x01*\x12\x89\x01\n\x12\x64\x65leteRoleBindings\x12 .ai.verta.uac.DeleteRoleBindings\x1a).ai.verta.uac.DeleteRoleBindings.Response\"&\x82\xd3\xe4\x93\x02 \"\x1b/v1/role/deleteRoleBindings:\x01*\x12\x82\x01\n\x0fremoveResources\x12\x1d.ai.verta.uac.RemoveResources\x1a&.ai.verta.uac.RemoveResources.Response\"(\x82\xd3\xe4\x93\x02\"* /v1/collaborator/removeResourcesB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x15uac/RoleService.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"U\n\x0bServiceEnum\"F\n\x07Service\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x13\n\x0fMODELDB_SERVICE\x10\x04\"\x04\x08\x02\x10\x02\"\x04\x08\x03\x10\x03\"\x04\x08\x05\x10\x05\"\x8d\x01\n\x11ModelDBActionEnum\"x\n\x15ModelDBServiceActions\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\n\n\x06\x43REATE\x10\x02\x12\x08\n\x04READ\x10\x03\x12\n\n\x06UPDATE\x10\x04\x12\n\n\x06\x44\x45LETE\x10\x05\x12\n\n\x06\x44\x45PLOY\x10\x06\x12\x0f\n\x0bPUBLIC_READ\x10\x07\"\xb1\x01\n\x06\x41\x63tion\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12W\n\x16modeldb_service_action\x18\x04 \x01(\x0e\x32\x35.ai.verta.uac.ModelDBActionEnum.ModelDBServiceActionsH\x00\x42\x08\n\x06\x61\x63tionJ\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04J\x04\x08\x05\x10\x06\"\x97\x01\n\x0cResourceType\x12i\n\x1dmodeldb_service_resource_type\x18\x03 \x01(\x0e\x32@.ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypesH\x00\x42\n\n\x08resourceJ\x04\x08\x01\x10\x02J\x04\x08\x02\x10\x03J\x04\x08\x04\x10\x05\"\x88\x01\n\tResources\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x14\n\x0cresource_ids\x18\x02 \x03(\t\x12\x31\n\rresource_type\x18\x06 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\",\n\tRoleScope\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x0f\n\x07team_id\x18\x02 \x01(\t\"h\n\x13ResourceActionGroup\x12*\n\tresources\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\x8b\x01\n\x04Role\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12&\n\x05scope\x18\x03 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x12\x41\n\x16resource_action_groups\x18\x04 \x03(\x0b\x32!.ai.verta.uac.ResourceActionGroup\"?\n\x08\x45ntities\x12\x10\n\x08user_ids\x18\x01 \x03(\t\x12\x0f\n\x07org_ids\x18\x02 \x03(\t\x12\x10\n\x08team_ids\x18\x03 \x03(\t\"\xd9\x01\n\x0bRoleBinding\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12&\n\x05scope\x18\x03 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x12(\n\x08\x65ntities\x18\x05 \x03(\x0b\x32\x16.ai.verta.uac.Entities\x12*\n\tresources\x18\x06 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x12\x0f\n\x07role_id\x18\x07 \x01(\t\x12\x11\n\trole_name\x18\t \x01(\t\x12\x0e\n\x06public\x18\x08 \x01(\x08\"G\n\x0bGetRoleById\x12\n\n\x02id\x18\x01 \x01(\t\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"s\n\rGetRoleByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"b\n\tListRoles\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a-\n\x08Response\x12!\n\x05roles\x18\x01 \x03(\x0b\x32\x12.ai.verta.uac.Role\"Y\n\x07SetRole\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"4\n\nDeleteRole\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"]\n\x12GetRoleBindingById\x12\n\n\x02id\x18\x01 \x01(\t\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\"\x89\x01\n\x14GetRoleBindingByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\"\x8b\x01\n\x10ListRoleBindings\x12\x11\n\tentity_id\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a<\n\x08Response\x12\x30\n\rrole_bindings\x18\x01 \x03(\x0b\x32\x19.ai.verta.uac.RoleBinding\"~\n\x0eSetRoleBinding\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\";\n\x11\x44\x65leteRoleBinding\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"J\n\x12\x44\x65leteRoleBindings\x12\x18\n\x10roleBindingNames\x18\x01 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"v\n\x0fRemoveResources\x12\x14\n\x0cresource_ids\x18\x01 \x03(\t\x12\x31\n\rresource_type\x18\x02 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\x32\xc9\x0b\n\x0bRoleService\x12j\n\x0bgetRoleById\x12\x19.ai.verta.uac.GetRoleById\x1a\".ai.verta.uac.GetRoleById.Response\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/role/getRoleById\x12r\n\rgetRoleByName\x12\x1b.ai.verta.uac.GetRoleByName\x1a$.ai.verta.uac.GetRoleByName.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/role/getRoleByName\x12\x62\n\tlistRoles\x12\x17.ai.verta.uac.ListRoles\x1a .ai.verta.uac.ListRoles.Response\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/v1/role/listRoles\x12]\n\x07setRole\x12\x15.ai.verta.uac.SetRole\x1a\x1e.ai.verta.uac.SetRole.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\"\x10/v1/role/setRole:\x01*\x12i\n\ndeleteRole\x12\x18.ai.verta.uac.DeleteRole\x1a!.ai.verta.uac.DeleteRole.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/role/deleteRole:\x01*\x12\x86\x01\n\x12getBindingRoleById\x12 .ai.verta.uac.GetRoleBindingById\x1a).ai.verta.uac.GetRoleBindingById.Response\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/v1/role/getRoleBindingById\x12\x8e\x01\n\x14getRoleBindingByName\x12\".ai.verta.uac.GetRoleBindingByName\x1a+.ai.verta.uac.GetRoleBindingByName.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/role/getRoleBindingByName\x12~\n\x10listRoleBindings\x12\x1e.ai.verta.uac.ListRoleBindings\x1a\'.ai.verta.uac.ListRoleBindings.Response\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/role/listRoleBindings\x12y\n\x0esetRoleBinding\x12\x1c.ai.verta.uac.SetRoleBinding\x1a%.ai.verta.uac.SetRoleBinding.Response\"\"\x82\xd3\xe4\x93\x02\x1c\"\x17/v1/role/setRoleBinding:\x01*\x12\x85\x01\n\x11\x64\x65leteRoleBinding\x12\x1f.ai.verta.uac.DeleteRoleBinding\x1a(.ai.verta.uac.DeleteRoleBinding.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/role/deleteRoleBinding:\x01*\x12\x89\x01\n\x12\x64\x65leteRoleBindings\x12 .ai.verta.uac.DeleteRoleBindings\x1a).ai.verta.uac.DeleteRoleBindings.Response\"&\x82\xd3\xe4\x93\x02 \"\x1b/v1/role/deleteRoleBindings:\x01*\x12\x82\x01\n\x0fremoveResources\x12\x1d.ai.verta.uac.RemoveResources\x1a&.ai.verta.uac.RemoveResources.Response\"(\x82\xd3\xe4\x93\x02\"* /v1/collaborator/removeResourcesB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
@@ -492,7 +492,14 @@ _ROLEBINDING = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='public', full_name='ai.verta.uac.RoleBinding.public', index=6,
+      name='role_name', full_name='ai.verta.uac.RoleBinding.role_name', index=6,
+      number=9, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='public', full_name='ai.verta.uac.RoleBinding.public', index=7,
       number=8, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
@@ -511,7 +518,7 @@ _ROLEBINDING = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1161,
-  serialized_end=1359,
+  serialized_end=1378,
 )
 
 
@@ -541,8 +548,8 @@ _GETROLEBYID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1388,
-  serialized_end=1432,
+  serialized_start=1407,
+  serialized_end=1451,
 )
 
 _GETROLEBYID = _descriptor.Descriptor(
@@ -571,8 +578,8 @@ _GETROLEBYID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1361,
-  serialized_end=1432,
+  serialized_start=1380,
+  serialized_end=1451,
 )
 
 
@@ -602,8 +609,8 @@ _GETROLEBYNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1388,
-  serialized_end=1432,
+  serialized_start=1407,
+  serialized_end=1451,
 )
 
 _GETROLEBYNAME = _descriptor.Descriptor(
@@ -639,8 +646,8 @@ _GETROLEBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1434,
-  serialized_end=1549,
+  serialized_start=1453,
+  serialized_end=1568,
 )
 
 
@@ -670,8 +677,8 @@ _LISTROLES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1604,
-  serialized_end=1649,
+  serialized_start=1623,
+  serialized_end=1668,
 )
 
 _LISTROLES = _descriptor.Descriptor(
@@ -700,8 +707,8 @@ _LISTROLES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1551,
-  serialized_end=1649,
+  serialized_start=1570,
+  serialized_end=1668,
 )
 
 
@@ -731,8 +738,8 @@ _SETROLE_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1388,
-  serialized_end=1432,
+  serialized_start=1407,
+  serialized_end=1451,
 )
 
 _SETROLE = _descriptor.Descriptor(
@@ -761,8 +768,8 @@ _SETROLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1651,
-  serialized_end=1740,
+  serialized_start=1670,
+  serialized_end=1759,
 )
 
 
@@ -792,8 +799,8 @@ _DELETEROLE_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1768,
-  serialized_end=1794,
+  serialized_start=1787,
+  serialized_end=1813,
 )
 
 _DELETEROLE = _descriptor.Descriptor(
@@ -822,8 +829,8 @@ _DELETEROLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1742,
-  serialized_end=1794,
+  serialized_start=1761,
+  serialized_end=1813,
 )
 
 
@@ -853,8 +860,8 @@ _GETROLEBINDINGBYID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1830,
-  serialized_end=1889,
+  serialized_start=1849,
+  serialized_end=1908,
 )
 
 _GETROLEBINDINGBYID = _descriptor.Descriptor(
@@ -883,8 +890,8 @@ _GETROLEBINDINGBYID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1796,
-  serialized_end=1889,
+  serialized_start=1815,
+  serialized_end=1908,
 )
 
 
@@ -914,8 +921,8 @@ _GETROLEBINDINGBYNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1830,
-  serialized_end=1889,
+  serialized_start=1849,
+  serialized_end=1908,
 )
 
 _GETROLEBINDINGBYNAME = _descriptor.Descriptor(
@@ -951,8 +958,8 @@ _GETROLEBINDINGBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1892,
-  serialized_end=2029,
+  serialized_start=1911,
+  serialized_end=2048,
 )
 
 
@@ -982,8 +989,8 @@ _LISTROLEBINDINGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2111,
-  serialized_end=2171,
+  serialized_start=2130,
+  serialized_end=2190,
 )
 
 _LISTROLEBINDINGS = _descriptor.Descriptor(
@@ -1019,8 +1026,8 @@ _LISTROLEBINDINGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2032,
-  serialized_end=2171,
+  serialized_start=2051,
+  serialized_end=2190,
 )
 
 
@@ -1050,8 +1057,8 @@ _SETROLEBINDING_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1830,
-  serialized_end=1889,
+  serialized_start=1849,
+  serialized_end=1908,
 )
 
 _SETROLEBINDING = _descriptor.Descriptor(
@@ -1080,8 +1087,8 @@ _SETROLEBINDING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2173,
-  serialized_end=2299,
+  serialized_start=2192,
+  serialized_end=2318,
 )
 
 
@@ -1111,8 +1118,8 @@ _DELETEROLEBINDING_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1768,
-  serialized_end=1794,
+  serialized_start=1787,
+  serialized_end=1813,
 )
 
 _DELETEROLEBINDING = _descriptor.Descriptor(
@@ -1141,8 +1148,8 @@ _DELETEROLEBINDING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2301,
-  serialized_end=2360,
+  serialized_start=2320,
+  serialized_end=2379,
 )
 
 
@@ -1172,8 +1179,8 @@ _DELETEROLEBINDINGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1768,
-  serialized_end=1794,
+  serialized_start=1787,
+  serialized_end=1813,
 )
 
 _DELETEROLEBINDINGS = _descriptor.Descriptor(
@@ -1202,8 +1209,8 @@ _DELETEROLEBINDINGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2362,
-  serialized_end=2436,
+  serialized_start=2381,
+  serialized_end=2455,
 )
 
 
@@ -1233,8 +1240,8 @@ _REMOVERESOURCES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1768,
-  serialized_end=1794,
+  serialized_start=1787,
+  serialized_end=1813,
 )
 
 _REMOVERESOURCES = _descriptor.Descriptor(
@@ -1270,8 +1277,8 @@ _REMOVERESOURCES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2438,
-  serialized_end=2556,
+  serialized_start=2457,
+  serialized_end=2575,
 )
 
 _SERVICEENUM_SERVICE.containing_type = _SERVICEENUM
@@ -1604,8 +1611,8 @@ _ROLESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2559,
-  serialized_end=4040,
+  serialized_start=2578,
+  serialized_end=4059,
   methods=[
   _descriptor.MethodDescriptor(
     name='getRoleById',

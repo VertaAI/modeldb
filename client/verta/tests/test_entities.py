@@ -168,9 +168,10 @@ class TestClient:
 
 class TestEntities:
     def test_cache(self, client, strs):
+        client.set_project()
+        client.set_experiment()
+
         entities = (
-            client.set_project(),
-            client.set_experiment(),
             client.set_experiment_run(),
         )
 
@@ -195,18 +196,21 @@ class TestEntities:
 
 
 class TestProject:
-    def test_set_project_warning(self, client):
-        """setting Project by name with desc, tags, and/or attrs raises warning"""
-        proj = client.set_project()
-
-        for kwargs in KWARGS_COMBOS:
-            with pytest.warns(UserWarning):
-                client.set_project(proj.name, **kwargs)
-
     def test_create(self, client):
         assert client.set_project()
 
         assert client.proj is not None
+
+    def test_get(self, client):
+        name = verta._internal_utils._utils.generate_default_name()
+
+        with pytest.raises(ValueError):
+            client.get_project(name)
+
+        proj = client.set_project(name)
+
+        assert proj.id == client.get_project(proj.name).id
+        assert proj.id == client.get_project(id=proj.id).id
 
     def test_get_by_name(self, client):
         proj = client.set_project()
@@ -219,7 +223,6 @@ class TestProject:
         proj = client.set_project()
 
         client.set_project()  # in case get erroneously fetches latest
-        client.proj = None
 
         assert proj.id == client.set_project(id=proj.id).id
 
@@ -241,20 +244,29 @@ class TestProject:
 
 
 class TestExperiment:
-    def test_set_experiment_warning(self, client):
-        """setting Experiment by name with desc, tags, and/or attrs raises warning"""
-        client.set_project()
-        expt = client.set_experiment()
-
-        for kwargs in KWARGS_COMBOS:
-            with pytest.warns(UserWarning):
-                client.set_experiment(expt.name, **kwargs)
-
     def test_create(self, client):
         client.set_project()
         assert client.set_experiment()
 
         assert client.expt is not None
+
+    def test_get(self, client):
+        proj = client.set_project()
+        name = verta._internal_utils._utils.generate_default_name()
+
+        with pytest.raises(ValueError):
+            client.get_experiment(name)
+
+        expt = client.set_experiment(name)
+
+        assert expt.id == client.get_experiment(expt.name).id
+        assert expt.id == client.get_experiment(id=expt.id).id
+
+        # test parents are restored
+        client.set_project()
+        client.get_experiment(id=expt.id)
+        assert client.proj.id == proj.id
+        assert client.expt.id == expt.id
 
     def test_get_by_name(self, client):
         client.set_project()
@@ -269,7 +281,6 @@ class TestExperiment:
         expt = client.set_experiment()
 
         client.set_experiment()  # in case get erroneously fetches latest
-        client.proj = client.expt = None
 
         assert expt.id == client.set_experiment(id=expt.id).id
         assert proj.id == client.proj.id
@@ -277,10 +288,6 @@ class TestExperiment:
     def test_get_nonexistent_id_error(self, client):
         with pytest.raises(ValueError):
             client.set_experiment(id="nonexistent_id")
-
-    def test_no_project_error(self, client):
-        with pytest.raises(AttributeError):
-            client.set_experiment()
 
     @pytest.mark.parametrize("tags", [TAG, [TAG]])
     def test_tags_is_list_of_str(self, client, tags):
@@ -297,21 +304,31 @@ class TestExperiment:
 
 
 class TestExperimentRun:
-    def test_set_experiment_run_warning(self, client):
-        """setting ExperimentRun by name with desc, tags, and/or attrs raises warning"""
-        client.set_project()
-        client.set_experiment()
-        expt_run = client.set_experiment_run()
-
-        for kwargs in KWARGS_COMBOS:
-            with pytest.warns(UserWarning):
-                client.set_experiment_run(expt_run.name, **kwargs)
-
     def test_create(self, client):
         client.set_project()
         client.set_experiment()
 
         assert client.set_experiment_run()
+
+    def test_get(self, client):
+        proj = client.set_project()
+        expt = client.set_experiment()
+        name = verta._internal_utils._utils.generate_default_name()
+
+        with pytest.raises(ValueError):
+            client.get_experiment_run(name)
+
+        run = client.set_experiment_run(name)
+
+        assert run.id == client.get_experiment_run(run.name).id
+        assert run.id == client.get_experiment_run(id=run.id).id
+
+        # test parents are restored by first setting new, unrelated ones
+        client.set_project()
+        client.set_experiment()
+        client.get_experiment_run(id=run.id)
+        assert client.proj.id == proj.id
+        assert client.expt.id == expt.id
 
     def test_get_by_name(self, client):
         client.set_project()
@@ -327,7 +344,6 @@ class TestExperimentRun:
         expt_run = client.set_experiment_run()
 
         client.set_experiment_run()  # in case get erroneously fetches latest
-        client.proj = client.expt = None
 
         assert expt_run.id == client.set_experiment_run(id=expt_run.id).id
         assert proj.id == client.proj.id
@@ -372,11 +388,11 @@ class TestExperimentRun:
         new_run_art_code_data = expt_run.clone(copy_artifacts=True,
             copy_code_version=True, copy_datasets=True)
 
-        old_run_msg = expt_run._get_self_as_msg()
-        new_run_no_art_msg = new_run_no_art._get_self_as_msg()
-        new_run_art_only_msg = new_run_art_only._get_self_as_msg()
-        new_run_art_code_msg = new_run_art_code._get_self_as_msg()
-        new_run_art_code_data_msg = new_run_art_code_data._get_self_as_msg()
+        old_run_msg = expt_run._get_proto_by_id(expt_run._conn, expt_run.id)
+        new_run_no_art_msg = new_run_no_art._get_proto_by_id(new_run_no_art._conn, new_run_no_art.id)
+        new_run_art_only_msg = new_run_art_only._get_proto_by_id(new_run_art_only._conn, new_run_art_only.id)
+        new_run_art_code_msg = new_run_art_code._get_proto_by_id(new_run_art_code._conn, new_run_art_code.id)
+        new_run_art_code_data_msg = new_run_art_code_data._get_proto_by_id(new_run_art_code_data._conn, new_run_art_code_data.id)
 
         # ensure basic data is the same
         assert expt_run.id != new_run_no_art_msg.id

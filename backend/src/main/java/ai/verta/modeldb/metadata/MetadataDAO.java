@@ -14,7 +14,11 @@ public interface MetadataDAO {
 
   boolean addProperty(IdentificationType id, String key, String value);
 
+  boolean updateLabels(IdentificationType id, List<String> labels);
+
   List<String> getLabels(IdentificationType id) throws ModelDBException;
+
+  List<IdentificationType> getLabelIds(List<String> labels) throws ModelDBException;
 
   List<String> getLabels(Session session, IdentificationType id) throws ModelDBException;
 

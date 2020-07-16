@@ -16,8 +16,6 @@ import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceBlockingStub
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import io.grpc.ManagedChannel;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
@@ -161,18 +159,6 @@ public class MetadataTest {
             .build();
     deleteLabelsResponse = serviceBlockingStub.deleteLabels(deleteLabelsRequest);
     assertTrue(deleteLabelsResponse.getStatus());
-
-    try {
-      deleteLabelsRequest = DeleteLabelsRequest.newBuilder().setId(id2).addLabels("PQR").build();
-      serviceBlockingStub.deleteLabels(deleteLabelsRequest);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      ex.printStackTrace();
-      assertEquals(
-          "Data already exists but the backend not return an expected response",
-          Status.NOT_FOUND.getCode(),
-          ex.getStatus().getCode());
-    }
 
     LOGGER.info("Add & Delete labels test stop................................");
   }

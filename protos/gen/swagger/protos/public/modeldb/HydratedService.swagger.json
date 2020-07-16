@@ -939,6 +939,15 @@
       ],
       "default": "READ_ONLY"
     },
+    "DatasetTypeEnumDatasetType": {
+      "type": "string",
+      "enum": [
+        "RAW",
+        "PATH",
+        "QUERY"
+      ],
+      "default": "RAW"
+    },
     "DatasetVisibilityEnumDatasetVisibility": {
       "type": "string",
       "enum": [
@@ -1264,6 +1273,9 @@
         "dataset_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
+        "dataset_type": {
+          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
+        },
         "attributes": {
           "type": "array",
           "items": {
@@ -1332,6 +1344,9 @@
         },
         "dataset_version_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
+        },
+        "dataset_type": {
+          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
         },
         "attributes": {
           "type": "array",

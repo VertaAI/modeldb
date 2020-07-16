@@ -43,6 +43,15 @@ class MetadataServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def DeleteProperty(body: MetadataDeletePropertyRequest)(implicit ec: ExecutionContext): Try[MetadataDeletePropertyRequestResponse] = Await.result(DeletePropertyAsync(body), Duration.Inf)
 
+  def GetLabelIdsAsync(labels: Option[List[String]]=None)(implicit ec: ExecutionContext): Future[Try[MetadataGetLabelIdsRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (labels.isDefined) __query.update("labels", client.toQuery(labels.get))
+    val body: String = null
+    return client.request[String, MetadataGetLabelIdsRequestResponse]("GET", basePath + s"/metadata/getLabelIds", __query.toMap, body, MetadataGetLabelIdsRequestResponse.fromJson)
+  }
+
+  def GetLabelIds(labels: Option[List[String]]=None)(implicit ec: ExecutionContext): Try[MetadataGetLabelIdsRequestResponse] = Await.result(GetLabelIdsAsync(labels), Duration.Inf)
+
   def GetLabelsAsync(id_id_type: Option[String]=None, id_int_id: Option[BigInt]=None, id_string_id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[MetadataGetLabelsRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (id_id_type.isDefined) __query.update("id.id_type", client.toQuery(id_id_type.get))
@@ -65,5 +74,13 @@ class MetadataServiceApi(client: HttpClient, val basePath: String = "/v1") {
   }
 
   def GetProperty(id_id_type: Option[String]=None, id_int_id: Option[BigInt]=None, id_string_id: Option[String]=None, key: Option[String]=None)(implicit ec: ExecutionContext): Try[MetadataGetPropertyRequestResponse] = Await.result(GetPropertyAsync(id_id_type, id_int_id, id_string_id, key), Duration.Inf)
+
+  def UpdateLabelsAsync(body: MetadataAddLabelsRequest)(implicit ec: ExecutionContext): Future[Try[MetadataAddLabelsRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[MetadataAddLabelsRequest, MetadataAddLabelsRequestResponse]("POST", basePath + s"/metadata/labels", __query.toMap, body, MetadataAddLabelsRequestResponse.fromJson)
+  }
+
+  def UpdateLabels(body: MetadataAddLabelsRequest)(implicit ec: ExecutionContext): Try[MetadataAddLabelsRequestResponse] = Await.result(UpdateLabelsAsync(body), Duration.Inf)
 
 }

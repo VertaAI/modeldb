@@ -1,6 +1,7 @@
 package ai.verta.modeldb.metadata;
 
 import ai.verta.modeldb.ModelDBAuthInterceptor;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
@@ -31,7 +32,6 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
 
       if (request.getId() == null
-          || request.getId().getIdTypeValue() == 0
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         String errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
         LOGGER.info(errorMessage);
@@ -61,7 +61,6 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       String errorMessage = null;
       if (request.getId() == null
-          || request.getId().getIdTypeValue() == 0
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         errorMessage = "Invalid parameter set in AddLabelsRequest.Id";
       } else if (request.getLabelsList().isEmpty()) {
@@ -89,6 +88,48 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   }
 
   @Override
+  public void updateLabels(
+      AddLabelsRequest request, StreamObserver<AddLabelsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getId() == null
+          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+        throw new ModelDBException(
+            "Invalid parameter set in AddLabelsRequest.Id", io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      boolean status = metadataDAO.updateLabels(request.getId(), request.getLabelsList());
+      responseObserver.onNext(AddLabelsRequest.Response.newBuilder().setStatus(status).build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, AddLabelsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getLabelIds(
+      GetLabelIdsRequest request, StreamObserver<GetLabelIdsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+
+      if (request.getLabelsList().isEmpty()) {
+        throw new ModelDBException(
+            "Labels not found in GetLabelIdsRequest", io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      List<IdentificationType> labelIds = metadataDAO.getLabelIds(request.getLabelsList());
+      responseObserver.onNext(GetLabelIdsRequest.Response.newBuilder().addAllIds(labelIds).build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetLabelIdsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
   public void deleteLabels(
       DeleteLabelsRequest request, StreamObserver<DeleteLabelsRequest.Response> responseObserver) {
     QPSCountResource.inc();
@@ -96,11 +137,10 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       String errorMessage = null;
       if (request.getId() == null
-          || request.getId().getIdTypeValue() == 0
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
-        errorMessage = "Invalid parameter set in DeleteLabelsRequest.Id";
-      } else if (request.getLabelsList().isEmpty()) {
-        errorMessage = "Labels not found in DeleteLabelsRequest";
+        errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
+      } else if (request.getLabelsList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage = "Labels not found in GetLabelsRequest";
       }
 
       if (errorMessage != null) {
@@ -114,7 +154,9 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean status = metadataDAO.deleteLabels(request.getId(), request.getLabelsList(), false);
+      boolean status =
+          metadataDAO.deleteLabels(
+              request.getId(), request.getLabelsList(), request.getDeleteAll());
       responseObserver.onNext(DeleteLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {

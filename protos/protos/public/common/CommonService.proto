@@ -69,6 +69,7 @@ message ModelDBResourceEnum {
         DATASET_VERSION = 6;
         DASHBOARD = 7;
         REPOSITORY = 8;
+        REGISTERED_MODEL = 9;
     }
 };
 
@@ -130,5 +131,16 @@ message OperatorEnum {
         CONTAIN = 6;
         NOT_CONTAIN = 7;
         IN = 8; // This is not fully supported by backend.
+    }
+}
+
+message VisibilityEnum {
+    enum Visibility {
+        //Default to private
+        PRIVATE = 0;
+        //Not supported
+        PUBLIC = 1;
+        //Uses access setup by organization
+        ORG_SCOPED_PUBLIC = 2;
     }
 }

@@ -326,7 +326,8 @@
         "DATASET",
         "DATASET_VERSION",
         "DASHBOARD",
-        "REPOSITORY"
+        "REPOSITORY",
+        "REGISTERED_MODEL"
       ],
       "default": "UNKNOWN"
     },
