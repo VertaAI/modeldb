@@ -24,6 +24,7 @@ class _ModelDBEntity(object):
         self._conn = conn
         self._conf = conf
 
+        # TODO: remove these b/c they're barely used, and don't even work with registry
         self._service = service_module
         self._request_url = "{}://{}/api/v1/modeldb/{}/{}".format(self._conn.scheme,
                                                       self._conn.socket,

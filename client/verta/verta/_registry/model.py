@@ -26,11 +26,30 @@ class RegisteredModel(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.name
 
-    def get_or_create_version(self, name=None, desc=None, labels=None, attrs=None, id=None):
-        raise NotImplementedError
+    def get_or_create_version(self, name=None, desc=None, tags=None, attrs=None, id=None, time_created=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        if id is not None:
+            return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
+        else:
+            ctx = _Context(self._conn, self._conf)
+            ctx.registered_model = self
+            return RegisteredModelVersion._get_or_create_by_name(self._conn, name,
+                                                       lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
+                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=time_created))
 
     def get_version(self, name=None, id=None):
-        raise NotImplementedError
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
+
+        if id is not None:
+            return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
+        else:
+
+            return RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id)
 
     @property
     def versions(self):
@@ -50,12 +69,8 @@ class RegisteredModel(_ModelDBEntity):
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
         Message = _RegisteredModelService.GetRegisteredModelRequest
-        if name and workspace :
-            response = conn.make_proto_request("GET",
-                                               "/api/v1/registry/workspaces/{}/registered_models/{}".format(workspace, name))
-        else:
-            raise RuntimeError("the Client has encountered an error;"
-                               " please notify the Verta development team: registered model name or workspace not specified")
+        response = conn.make_proto_request("GET",
+                                           "/api/v1/registry/workspaces/{}/registered_models/{}".format(workspace, name))
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
@@ -86,17 +101,14 @@ class RegisteredModel(_ModelDBEntity):
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
 
-    def _get_existing(self):
-        registered_model = RegisteredModel(self._conn, self._conf, self._get_proto_by_id(self._conn, self.id))
-        return registered_model
-
     def add_label(self, label):
         if label is None:
             raise ValueError("label is not specified")
         self._clear_cache()
         self._refresh_cache()
-        self._msg.labels.append(label)
-        self._update()
+        if label not in self._msg.labels:
+            self._msg.labels.append(label)
+            self._update()
 
     def del_label(self, label):
         if label is None:

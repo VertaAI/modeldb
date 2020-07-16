@@ -19,6 +19,11 @@ class MetadataServiceStub(object):
         request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelsRequest.SerializeToString,
         response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelsRequest.Response.FromString,
         )
+    self.GetLabelIds = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/GetLabelIds',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelIdsRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelIdsRequest.Response.FromString,
+        )
     self.AddLabels = channel.unary_unary(
         '/ai.verta.modeldb.metadata.MetadataService/AddLabels',
         request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddLabelsRequest.SerializeToString,
@@ -56,6 +61,13 @@ class MetadataServiceServicer(object):
   pass
 
   def GetLabels(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetLabelIds(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -111,6 +123,11 @@ def add_MetadataServiceServicer_to_server(servicer, server):
           servicer.GetLabels,
           request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelsRequest.FromString,
           response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelsRequest.Response.SerializeToString,
+      ),
+      'GetLabelIds': grpc.unary_unary_rpc_method_handler(
+          servicer.GetLabelIds,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelIdsRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelIdsRequest.Response.SerializeToString,
       ),
       'AddLabels': grpc.unary_unary_rpc_method_handler(
           servicer.AddLabels,

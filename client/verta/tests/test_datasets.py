@@ -194,7 +194,7 @@ class TestClientDatasetFunctions:
         assert len(datasets) == 3
 
     def test_find_datasets_client_api(self, client, created_datasets):
-        tags = ["test1-{}".format(_utils.now()), "test1-{}".format(_utils.now())]
+        tags = ["test1a-{}".format(_utils.now()), "test1b-{}".format(_utils.now())]
         dataset1 = client.set_dataset(type="big query", tags=tags)
         created_datasets.append(dataset1)
         assert dataset1._dataset_type == _DatasetService.DatasetTypeEnum.QUERY
@@ -231,12 +231,22 @@ class TestClientDatasetFunctions:
         assert len(datasets) == 1
         assert datasets[0].id == dataset1.id
 
-        datasets = client.find_datasets(dataset_ids=[dataset1.id, dataset2.id])
-        assert len(datasets) == 2
-
         datasets = client.find_datasets(dataset_ids=[dataset1.id, dataset2.id], name=dataset1.name)
         assert len(datasets) == 1
         assert datasets[0].id == dataset1.id
+
+        # test sorting ascending
+        datasets = client.find_datasets(
+            dataset_ids=[dataset1.id, dataset2.id],
+            sort_key="time_created", ascending=True,
+        )
+        assert [dataset.id for dataset in datasets] == [dataset1.id, dataset2.id]
+        # and descending
+        datasets = client.find_datasets(
+            dataset_ids=[dataset1.id, dataset2.id],
+            sort_key="time_created", ascending=False,
+        )
+        assert [dataset.id for dataset in datasets] == [dataset2.id, dataset1.id]
 
 
 class TestClientDatasetVersionFunctions:
