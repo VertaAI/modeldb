@@ -26,6 +26,7 @@ class Preloader extends React.PureComponent<ILocalProps> {
           className={className}
           src={dotsPreloaderSrc}
           data-test="preloader"
+          alt="preloader"
         />
       );
     }

@@ -7,9 +7,7 @@ import { Link } from 'react-router-dom';
 import ProjectEntityDescriptionManager from 'features/descriptionManager/view/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
 import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
-import Avatar from 'shared/view/elements/Avatar/Avatar';
 import CopyToClipboard from 'shared/view/elements/CopyToClipboard/CopyToClipboard';
-import Draggable from 'shared/view/elements/Draggable/Draggable';
 import { Icon } from 'shared/view/elements/Icon/Icon';
 import { Project } from 'shared/models/Project';
 import routes from 'shared/routes';
@@ -17,7 +15,6 @@ import { IConnectedReduxProps } from 'setup/store/store';
 
 import ProjectBulkDeletion from './ProjectBulkDeletion/ProjectBulkDeletion';
 import styles from './ProjectWidget.module.css';
-import { unknownUser } from 'shared/models/User';
 
 interface ILocalProps {
   project: Project;
@@ -125,7 +122,9 @@ class ProjectWidget extends React.Component<AllProps> {
 
   @bind
   private onTagsManagerClick(e: React.MouseEvent, byEmptiness: boolean) {
-    !byEmptiness ? this.preventRedirect(e) : undefined;
+    if (!byEmptiness) {
+      this.preventRedirect(e);
+    }
   }
 
   @bind

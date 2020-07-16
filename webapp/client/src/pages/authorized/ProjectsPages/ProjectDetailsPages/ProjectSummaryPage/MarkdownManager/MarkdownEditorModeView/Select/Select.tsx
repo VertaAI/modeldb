@@ -19,11 +19,11 @@ class Select<T extends string | number> extends React.PureComponent<
   ILocalProps<T>
 > {
   public render() {
-    const { title, value, options, onChange } = this.props;
+    const { title, value, options } = this.props;
     return (
       <select className={styles.select} value={value} onChange={this.onChange}>
         <optgroup label={title}>
-          {options.map(option => (
+          {options.map((option) => (
             <option className={styles.option} value={option.value}>
               {option.label}
             </option>

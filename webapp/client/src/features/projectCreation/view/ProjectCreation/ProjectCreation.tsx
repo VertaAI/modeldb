@@ -61,7 +61,7 @@ class ProjectCreation extends React.PureComponent<AllProps> {
   }
 
   public render() {
-    const { creatingProject, currentWorkspace } = this.props;
+    const { creatingProject } = this.props;
 
     return (
       <PageCard>
@@ -115,7 +115,7 @@ class ProjectCreation extends React.PureComponent<AllProps> {
                       />
                     ),
                   },
-                  error => <InlineCommunicationError error={error} />
+                  (error) => <InlineCommunicationError error={error} />
                 )}
             </>
           )}
@@ -137,7 +137,4 @@ class ProjectCreation extends React.PureComponent<AllProps> {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(ProjectCreation);
+export default connect(mapStateToProps, mapDispatchToProps)(ProjectCreation);

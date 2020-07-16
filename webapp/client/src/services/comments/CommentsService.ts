@@ -4,10 +4,6 @@ import { EntityId, IComment } from 'shared/models/Comment';
 import { convertServerComment } from '../serverModel/Comments/converters';
 
 export default class CommentsService extends BaseDataService {
-  constructor() {
-    super();
-  }
-
   public async addComment(
     entityId: EntityId,
     message: string

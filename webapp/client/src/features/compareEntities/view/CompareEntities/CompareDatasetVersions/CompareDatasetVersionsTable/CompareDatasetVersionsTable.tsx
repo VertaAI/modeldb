@@ -1,5 +1,4 @@
 import Paper from '@material-ui/core/Paper';
-import { bind } from 'decko';
 import * as R from 'ramda';
 import React, { useMemo } from 'react';
 
@@ -35,11 +34,11 @@ interface IColumnSetting {
 }
 
 type PropObject<Prop extends IPropDefinition['prop']> = {
-  [K in Prop]: IPropDefinition<K>
+  [K in Prop]: IPropDefinition<K>;
 };
 
 type PropWithRenderPropsObject<Prop extends IPropDefinition['prop']> = {
-  [K in Prop]: IPropDefinitionRenderProps<K>
+  [K in Prop]: IPropDefinitionRenderProps<K>;
 };
 
 export interface IPropDefinition<
@@ -99,7 +98,7 @@ const CompareDatasetVersionsTable: React.FC<ILocalProps> = ({
 
   const columnsData = useMemo(
     () =>
-      columnsSettings.map(columnSetting => ({
+      columnsSettings.map((columnSetting) => ({
         columnTitle: columnSetting.title,
         dataName: columnSetting.name,
         data: getColumnData({
@@ -117,14 +116,14 @@ const CompareDatasetVersionsTable: React.FC<ILocalProps> = ({
     ]
   );
 
-  const rowsDefinitions: Array<
-    IRowDefinition<PropWithRenderPropsObject<IPropDefinition['prop']>>
-  > = useMemo(
+  const rowsDefinitions: Array<IRowDefinition<
+    PropWithRenderPropsObject<IPropDefinition['prop']>
+  >> = useMemo(
     () =>
-      propDefinitions.map(p => ({
+      propDefinitions.map((p) => ({
         title: p.title,
         type: p.prop,
-        render: d => p.render(d[p.prop]),
+        render: (d) => p.render(d[p.prop]),
         titleDataTest: `property-name-${p.prop}`,
         displayOnlyOne: p.prop === ('datasetPathInfos' as any),
       })),
@@ -167,7 +166,10 @@ const makePropObject = ({
 }: {
   propDefinitions: IPropDefinition[];
 }): PropObject<IPropDefinition['prop']> => {
-  const propObject = mapObj(x => x[0], groupBy(p => p.prop, propDefinitions));
+  const propObject = mapObj(
+    (x) => x[0],
+    groupBy((p) => p.prop, propDefinitions)
+  );
 
   return propObject as PropObject<IPropDefinition['prop']>;
 };
@@ -184,7 +186,7 @@ const makePropWithRenderPropsObject = ({
   datasetVersions: Required<ComparedDatasetVersions>;
 }): PropWithRenderPropsObject<IPropDefinition['prop']> => {
   const propWithRenderPropsObject = mapObj(
-    row =>
+    (row) =>
       getRenderPropsByRowAndColumn({
         columnSetting,
         row,

@@ -36,19 +36,17 @@ class ComparableDatasets extends React.PureComponent<ILocalProps> {
 
     const comparedDatasets = (() => {
       if (entityType === EntityType.entity1) {
-        return entity1Datasets.map<IComparedDataset>(dataset => ({
+        return entity1Datasets.map<IComparedDataset>((dataset) => ({
           dataset,
           otherEntityDataset: entity2Datasets.find(
-            dataset2 => dataset.key === dataset2.key
+            (dataset2) => dataset.key === dataset2.key
           ),
           isDifferent: diffInfo[dataset.key],
         }));
       }
-      return entity2Datasets.map<IComparedDataset>(dataset => ({
+      return entity2Datasets.map<IComparedDataset>((dataset) => ({
         dataset,
-        otherEntityDataset: entity1Datasets.find(
-          dataset => dataset.key === dataset.key
-        ),
+        otherEntityDataset: entity1Datasets.find((d) => d.key === dataset.key),
         isDifferent: diffInfo[dataset.key],
       }));
     })();
@@ -63,7 +61,7 @@ class ComparableDatasets extends React.PureComponent<ILocalProps> {
             containerOffsetValue={12}
             children={
               <>
-                {comparedDatasets.map(comparedDataset => (
+                {comparedDatasets.map((comparedDataset) => (
                   <ComparableDatasetButton
                     key={comparedDataset.dataset.key}
                     comparedDataset={comparedDataset}
