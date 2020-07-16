@@ -44,7 +44,7 @@ class TestModelVersion:
         assert model_version._msg.model.key == "model"
 
         retrieved_log_reg_model = model_version.get_model()
-        assert((retrieved_log_reg_model.coef_ == log_reg_model.coef_).all())
+        assert (retrieved_log_reg_model.coef_ == log_reg_model.coef_).all()
 
         # overwrite should work:
         model_version = registered_model.get_version(id=model_version.id)
@@ -64,7 +64,7 @@ class TestModelVersion:
         model_version.add_asset("coef", log_reg_model.coef_)
 
         retrieved_coef = model_version.get_asset("coef")
-        assert((retrieved_coef == log_reg_model.coef_).all())
+        assert (retrieved_coef == log_reg_model.coef_).all()
 
         # Overwrite should work:
         model_version = registered_model.get_version(id=model_version.id)
