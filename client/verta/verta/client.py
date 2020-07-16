@@ -285,7 +285,12 @@ class Client(object):
         return var or None
 
     def get_project(self, name=None, workspace=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
         name = self._set_from_config_if_none(name, "project")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
         self._ctx = _Context(self._conn, self._conf)
@@ -297,6 +302,8 @@ class Client(object):
         else:
             self._ctx.proj = Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
 
+        if self._ctx.proj is None:
+            raise ValueError("Project not found")
         return self._ctx.proj
 
     def set_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
@@ -359,7 +366,12 @@ class Client(object):
         return self._ctx.proj
 
     def get_experiment(self, name=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
         name = self._set_from_config_if_none(name, "experiment")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
 
         if id is not None:
             self._ctx.expt = Experiment._get_by_id(self._conn, self._conf, id)
@@ -370,6 +382,8 @@ class Client(object):
 
             self._ctx.expt = Experiment._get_by_name(self._conn, self._conf, name, self._ctx.proj.id)
 
+        if self._ctx.expt is None:
+            raise ValueError("Experment not found")
         return self._ctx.expt
 
     def set_experiment(self, name=None, desc=None, tags=None, attrs=None, id=None):
@@ -426,6 +440,12 @@ class Client(object):
         return self._ctx.expt
 
     def get_experiment_run(self, name=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
+
         if id is not None:
             self._ctx.expt_run = ExperimentRun._get_by_id(self._conn, self._conf, id)
             self._ctx.populate()
@@ -435,6 +455,8 @@ class Client(object):
 
             self._ctx.expt_run = ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id)
 
+        if self._ctx.expt_run is None:
+            raise ValueError("ExperimentRun not Found")
         return self._ctx.expt_run
 
     def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None):

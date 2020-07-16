@@ -18,7 +18,8 @@ class _Context(object):
         self.registered_model = None
 
     def populate(self):
-        if self.expt is None and self.expt_run is not None:
+        # TODO: check if the upper entity is already correct, in which case don't re-populate
+        if self.expt_run is not None:
             self.expt = Experiment._get_by_id(self._conn, self._conf, self.expt_run._msg.experiment_id)
-        if self.proj is None and self.expt is not None:
+        if self.expt is not None:
             self.proj = Project._get_by_id(self._conn, self._conf, self.expt._msg.project_id)
