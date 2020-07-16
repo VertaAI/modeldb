@@ -323,7 +323,7 @@ class TestExperimentRun:
         assert run.id == client.get_experiment_run(run.name).id
         assert run.id == client.get_experiment_run(id=run.id).id
 
-        # test parents are restored
+        # test parents are restored by first setting new, unrelated ones
         client.set_project()
         client.set_experiment()
         client.get_experiment_run(id=run.id)
