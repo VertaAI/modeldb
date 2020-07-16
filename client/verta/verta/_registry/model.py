@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+from .._internal_utils._utils import NoneProtoResponse
 from .._tracking.entity import _ModelDBEntity
 from .._tracking.context import _Context
 from .._internal_utils import _utils
@@ -112,5 +113,8 @@ class RegisteredModel(_ModelDBEntity):
         return self._msg.labels
 
     def _update(self):
-        self._conn.make_proto_request("PUT", "/api/v1/registry/{}".format(self.id),
+        response = self._conn.make_proto_request("PUT", "/api/v1/registry/{}".format(self.id),
                                            body=self._msg)
+        Message = _RegisteredModelService.SetRegisteredModel
+        if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
+            raise ValueError("Model not found")
