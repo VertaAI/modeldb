@@ -4,8 +4,9 @@ import verta
 from .. import utils
 import os
 
-from sklearn.linear_model import LogisticRegression
 import numpy as np
+
+from sklearn.linear_model import LogisticRegression
 
 
 class TestModelVersion:
@@ -101,3 +102,14 @@ class TestModelVersion:
 
         assert "no artifact found with key non-existing" in str(excinfo.value)
 
+    def test_del_asset(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.add_asset("coef", classifier.coef_)
+
+        model_version = registered_model.get_version(id=model_version.id)
+        model_version.del_asset("coef")
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert len(model_version._msg.assets) == 0
