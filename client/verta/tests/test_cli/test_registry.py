@@ -6,6 +6,9 @@ from click.testing import CliRunner
 from verta._cli import cli
 
 
+pytest.skip("registry in Client not yet implemented", allow_module_level=True)
+
+
 class TestCreate:
     pass
 
