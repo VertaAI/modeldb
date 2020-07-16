@@ -63,6 +63,7 @@ from ._registry import (
     RegisteredModelVersion,
     RegisteredModelVersions,
 )
+from ._dataset_versioning import Datasets
 
 
 _OSS_DEFAULT_WORKSPACE = "personal"
@@ -296,7 +297,12 @@ class Client(object):
         return var or None
 
     def get_project(self, name=None, workspace=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
         name = self._set_from_config_if_none(name, "project")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
         self._ctx = _Context(self._conn, self._conf)
@@ -308,6 +314,8 @@ class Client(object):
         else:
             self._ctx.proj = Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
 
+        if self._ctx.proj is None:
+            raise ValueError("Project not found")
         return self._ctx.proj
 
     def set_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
@@ -370,7 +378,12 @@ class Client(object):
         return self._ctx.proj
 
     def get_experiment(self, name=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
         name = self._set_from_config_if_none(name, "experiment")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
 
         if id is not None:
             self._ctx.expt = Experiment._get_by_id(self._conn, self._conf, id)
@@ -381,6 +394,8 @@ class Client(object):
 
             self._ctx.expt = Experiment._get_by_name(self._conn, self._conf, name, self._ctx.proj.id)
 
+        if self._ctx.expt is None:
+            raise ValueError("Experment not found")
         return self._ctx.expt
 
     def set_experiment(self, name=None, desc=None, tags=None, attrs=None, id=None):
@@ -437,6 +452,12 @@ class Client(object):
         return self._ctx.expt
 
     def get_experiment_run(self, name=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
+
         if id is not None:
             self._ctx.expt_run = ExperimentRun._get_by_id(self._conn, self._conf, id)
             self._ctx.populate()
@@ -446,6 +467,8 @@ class Client(object):
 
             self._ctx.expt_run = ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id)
 
+        if self._ctx.expt_run is None:
+            raise ValueError("ExperimentRun not Found")
         return self._ctx.expt_run
 
     def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None):
@@ -671,27 +694,29 @@ class Client(object):
         list of :class:`Dataset`
 
         """
+        datasets = Datasets(self._conn, self._conf)
+        if dataset_ids:
+            datasets = datasets.with_ids(_utils.as_list_of_str(dataset_ids))
+        if sort_key:
+            datasets = datasets.sort(sort_key, not ascending)
+        if workspace:
+            datasets = datasets.with_workspace(workspace)
+
         predicates = []
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
-            for tag in tags:
-                predicates.append(
-                    _CommonCommonService.KeyValueQuery(key="tags",
-                                                 value=_utils.python_to_val_proto(tag),
-                                                 operator=_CommonCommonService.OperatorEnum.EQ))
+            predicates.extend(
+                "tags == \"{}\"".format(tag)
+                for tag in tags
+            )
         if name is not None:
             if not isinstance(name, six.string_types):
                 raise TypeError("`name` must be str, not {}".format(type(name)))
-            predicates.append(
-                _CommonCommonService.KeyValueQuery(key="name",
-                                             value=_utils.python_to_val_proto(name),
-                                             operator=_CommonCommonService.OperatorEnum.CONTAIN))
-        Message = _dataset._DatasetService.FindDatasets
-        msg = Message(dataset_ids=dataset_ids, predicates=predicates,
-                      ascending=ascending, sort_key=sort_key,
-                      workspace_name=workspace)
-        endpoint = "{}://{}/api/v1/modeldb/dataset/findDatasets"
-        return _dataset.DatasetLazyList(self._conn, self._conf, msg, endpoint, "POST")
+            predicates.append("name in \"{}\"".format(name))
+        if predicates:
+            datasets = datasets.find(predicates)
+
+        return datasets
 
     def get_dataset_version(self, id):
         """
@@ -834,8 +859,10 @@ class Client(object):
 
         return self._ctx.registered_model
 
-    def get_registered_model_version(self, id=None):
-        raise NotImplementedError
+    def get_registered_model_version(self, name=None, id=None):
+        if self._ctx.registered_model is None:
+            raise RuntimeError("Registered model is not set. Please call `client.set_registered_model()`")
+        return self._ctx.registered_model.get_version(name, id)
 
     @property
     def registered_models(self):
