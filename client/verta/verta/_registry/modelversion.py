@@ -141,7 +141,20 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def del_asset(self, key):
-        raise NotImplementedError
+        self._refresh_cache()
+
+        ind = -1
+        for i in range(len(self._msg.assets)):
+            artifact = self._msg.assets[i]
+            if artifact.key == key:
+                ind = i
+                break
+
+        if ind == -1:
+            raise KeyError("no artifact found with key {}".format(key))
+
+        del self._msg.assets[ind]
+        self._update_model_version()
 
     def set_environment(self, env):
         # Env must be an EnvironmentBlob. Let's re-use the functionality from there

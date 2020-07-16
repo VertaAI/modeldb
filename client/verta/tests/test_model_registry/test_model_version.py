@@ -5,6 +5,8 @@ from .. import utils
 import verta.dataset
 import verta.environment
 
+import numpy as np
+
 from sklearn.linear_model import LogisticRegression
 
 
@@ -66,3 +68,15 @@ class TestModelVersion:
             model_version.add_asset("some-asset", log_reg_model)
 
         assert "The key has been set" in str(excinfo.value)
+
+    def test_del_asset(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.add_asset("coef", classifier.coef_)
+
+        model_version = registered_model.get_version(id=model_version.id)
+        model_version.del_asset("coef")
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert len(model_version._msg.assets) == 0
