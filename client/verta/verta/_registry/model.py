@@ -49,12 +49,8 @@ class RegisteredModel(_ModelDBEntity):
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
         Message = _RegisteredModelService.GetRegisteredModelRequest
-        if name and workspace :
-            response = conn.make_proto_request("GET",
-                                               "/api/v1/registry/workspaces/{}/registered_models/{}".format(workspace, name))
-        else:
-            raise RuntimeError("the Client has encountered an error;"
-                               " please notify the Verta development team: registered model name or workspace not specified")
+        response = conn.make_proto_request("GET",
+                                           "/api/v1/registry/workspaces/{}/registered_models/{}".format(workspace, name))
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
