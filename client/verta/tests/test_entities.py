@@ -518,4 +518,3 @@ class TestModel:
         assert client.registered_model.get_labels() == ["tag1", "tag3"]
         client.registered_model.add_label("tag2")
         assert client.registered_model.get_labels() == ["tag1", "tag2", "tag3"]
-        pass
