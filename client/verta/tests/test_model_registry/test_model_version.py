@@ -3,7 +3,7 @@ import pytest
 from .. import utils
 
 import verta.dataset
-import verta.environment
+from verta.environment import Python
 
 
 class TestModelVersion:
@@ -30,12 +30,23 @@ class TestModelVersion:
         if registered_model:
             utils.delete_registered_model(registered_model.id, client._conn)
 
-    def test_set_environment(self, registered_model):
+    def test_log_environment(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
 
-        reqs = verta.environment.Python.read_pip_environment()
-        env = verta.environment.Python(requirements=reqs)
-        model_version.set_environment(env)
+        reqs = Python.read_pip_environment()
+        env = Python(requirements=reqs)
+        model_version.log_environment(env)
 
         model_version = registered_model.get_version(id=model_version.id)
-        assert model_version._msg.env
+        assert(str(env) == str(Python._from_proto(model_version._msg)))
+
+    def test_del_environment(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+
+        reqs = Python.read_pip_environment()
+        env = Python(requirements=reqs)
+        model_version.log_environment(env)
+        model_version.del_environment()
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert not model_version.has_environment

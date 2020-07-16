@@ -22,6 +22,11 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.version
 
+    @property
+    def has_environment(self):
+        self._refresh_cache()
+        return self._msg.environment.HasField("python") or self._msg.environment.HasField("docker")
+
     @classmethod
     def _generate_default_name(cls):
         return "ModelVersion {}".format(_utils.generate_default_name())
@@ -88,7 +93,7 @@ class RegisteredModelVersion(_ModelDBEntity):
     def del_asset(self, key):
         raise NotImplementedError
 
-    def set_environment(self, env):
+    def log_environment(self, env):
         self._refresh_cache()
         self._msg.environment.CopyFrom(env._msg)
         self._update_model_version()
