@@ -36,7 +36,7 @@ class RegisteredModels(_utils.LazyList):
             url = "/api/v1/registry/registered_models/find"
         response = self._conn.make_proto_request("POST", url, body=msg)
         response = self._conn.must_proto_response(response, msg.Response)
-        return response.projects, response.total_records
+        return response.registered_models, response.total_records
 
     def _create_element(self, msg):
         return RegisteredModel(self._conn, self._conf, msg)
