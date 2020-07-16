@@ -804,7 +804,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`registered_model`
+        :class:`~verta._registry.model.RegisteredModel`
 
         Raises
         ------
