@@ -73,8 +73,16 @@ class RegisteredModelVersion(_ModelDBEntity):
         # similar to ExperimentRun.log_artifact
         raise NotImplementedError
 
+    def get_model(self):
+        # similar to ExperimentRun.get_model
+        raise NotImplementedError
+
     def add_asset(self, key, asset, overwrite=False):
         # similar to ExperimentRun.log_artifact
+        raise NotImplementedError
+
+    def get_asset(self, key):
+        # similar to ExperimentRun.get_artifact
         raise NotImplementedError
 
     def del_asset(self, key):
