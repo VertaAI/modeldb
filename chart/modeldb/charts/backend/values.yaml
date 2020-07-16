@@ -38,6 +38,8 @@ pdb:
   enabled: false
 labels: {}
 
+securityContext: {}
+
 config:
   grpcServer:
     port: 8085
