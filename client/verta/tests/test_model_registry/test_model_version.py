@@ -30,8 +30,7 @@ class TestModelVersion:
         if registered_model:
             utils.delete_registered_model(registered_model.id, client._conn)
 
-    def test_set_model(self, registered_model):
-        model_version = registered_model.get_or_create_version(name="my version")
+    def test_set_model(self, model_version):
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
         original_coef = classifier.coef_
@@ -50,13 +49,11 @@ class TestModelVersion:
 
         # when overwrite = false, overwriting should fail
         with pytest.raises(ValueError) as excinfo:
-            model_version = registered_model.get_version(id=model_version.id)
             model_version.set_model(new_classifier)
 
         assert "model already exists" in str(excinfo.value)
 
-    def test_add_asset(self, registered_model):
-        model_version = registered_model.get_or_create_version(name="my version")
+    def test_add_asset(self, model_version):
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
         original_coef = classifier.coef_
@@ -75,13 +72,11 @@ class TestModelVersion:
 
         # when overwrite = false, overwriting should fail
         with pytest.raises(ValueError) as excinfo:
-            model_version = registered_model.get_version(id=model_version.id)
             model_version.add_asset("coef", new_classifier.coef_)
 
         assert "The key has been set" in str(excinfo.value)
 
-    def test_wrong_key(self, registered_model):
-        model_version = registered_model.get_or_create_version(name="my version")
+    def test_wrong_key(self, model_version):
         with pytest.raises(KeyError) as excinfo:
             model_version.get_model()
 
