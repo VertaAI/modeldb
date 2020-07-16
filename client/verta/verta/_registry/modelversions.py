@@ -24,21 +24,17 @@ class RegisteredModelVersions(_utils.LazyList):
     def __init__(self, conn, conf):
         super(RegisteredModelVersions, self).__init__(
             conn, conf,
-            _RegisteredModelService.FindRegisteredModelRequest(),
+            _RegisteredModelService.FindModelVersionRequest(),
         )
 
     def __repr__(self):
         return "<RegisteredModelVersions containing {} versions>".format(self.__len__())
 
     def _call_back_end(self, msg):
-        if msg.workspace_name:
-            url = "/api/v1/registry/workspaces/{}/registered_models/find".format(msg.workspace_name)
-        else:
-            url = "/api/v1/registry/registered_models/find"
+        url = "/api/v1/registry/{}/versions/find".format(self._msg.id.registered_model_id)
         response = self._conn.make_proto_request("POST", url, body=msg)
         response = self._conn.must_proto_response(response, msg.Response)
-        return response.registered_models, response.total_records
-        raise NotImplementedError
+        return response.model_versions, response.total_records
 
     def _create_element(self, msg):
         return RegisteredModelVersion(self._conn, self._conf, msg)
@@ -50,3 +46,17 @@ class RegisteredModelVersions(_utils.LazyList):
         else:
             new_list._msg.id.registered_model_id = None
         return new_list
+
+    def set_page_limit(self, msg, param):
+        msg.pagination.page_limit = param
+        return msg
+
+    def set_page_number(self, msg, param):
+        msg.pagination.page_number = param
+        return msg
+
+    def page_limit(self, msg):
+        return msg.pagination.page_limit
+
+    def page_number(self, msg):
+        return msg.pagination.page_number
