@@ -105,6 +105,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._update_model_version()
 
     def get_environment(self):
+        self._refresh_cache()
         if not self.has_environment:
             raise RuntimeError("environment was not previously set.")
 
