@@ -770,36 +770,7 @@ class Client(object):
         return self.get_or_create_repository(*args, **kwargs)
     # set aliases for get-or-create functions for API compatibility
 
-    def get_or_create_registered_model(self, *args, **kwargs):
-        """
-        Alias for :meth:`Client.set_project()`.
-
-        """
-        return self.set_registered_model(*args, **kwargs)
-
-    def get_registered_model(self, name=None, workspace=None, id=None):
-        if name is not None and id is not None:
-            raise ValueError("cannot specify both `name` and `id`")
-
-        name = self._set_from_config_if_none(name, "registered_model")
-        if name is None and id is None:
-            raise ValueError("must specify either `name` or `id`")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
-        if workspace is None:
-            workspace = self._get_personal_workspace()
-
-        self._ctx = _Context(self._conn, self._conf)
-        self._ctx.workspace_name = workspace
-
-        if id is not None:
-            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
-            self._ctx.populate()
-        else:
-            self._ctx.registered_model = RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
-
-        return self._ctx.registered_model
-
-    def set_registered_model(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
+    def get_or_create_registered_model(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
         """
         Attaches a registered_model to this Client.
 
@@ -858,6 +829,31 @@ class Client(object):
                                                                                 lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
 
         return self._ctx.registered_model
+
+    def get_registered_model(self, name=None, workspace=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        name = self._set_from_config_if_none(name, "registered_model")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self._get_personal_workspace()
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+
+        if id is not None:
+            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
+        else:
+            self._ctx.registered_model = RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+
+        return self._ctx.registered_model
+
+    def set_registered_model(self, *args, **kwargs):
+        return self.get_or_create_registered_model(*args, **kwargs)
 
     def get_registered_model_version(self, name=None, id=None):
         if self._ctx.registered_model is None:
