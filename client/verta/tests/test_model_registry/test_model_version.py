@@ -83,13 +83,12 @@ class TestModelVersion:
         FILE_CONTENTS = os.urandom(2**16)
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
-        os.remove(filename)
-
         model_version.add_asset("file", filename)
+        os.remove(filename)
 
         # retrieve the asset:
         retrieved_file = model_version.get_asset("file")
-        print(retrieved_file)
+        assert retrieved_file.getvalue() == FILE_CONTENTS
 
     def test_wrong_key(self, model_version):
         with pytest.raises(KeyError) as excinfo:
