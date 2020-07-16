@@ -58,7 +58,12 @@ from ._tracking import (
 )
 
 from ._dataset_versioning import Datasets
-from ._registry import RegisteredModelVersion
+from ._registry import (
+    RegisteredModel,
+    RegisteredModels,
+    RegisteredModelVersion,
+    RegisteredModelVersions,
+)
 
 
 _OSS_DEFAULT_WORKSPACE = "personal"
