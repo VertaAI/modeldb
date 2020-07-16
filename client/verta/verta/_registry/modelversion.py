@@ -7,12 +7,13 @@ from .._tracking.entity import _ModelDBEntity
 from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
-from .._internal_utils import _utils, _artifact_utils
+from .._internal_utils import _utils, _artifact_utils, importer
 
 from ..external import six
 import requests
 import time
 import os
+import pickle
 
 
 class RegisteredModelVersion(_ModelDBEntity):
@@ -104,8 +105,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         )
 
     def get_model(self):
-        # similar to ExperimentRun.get_model
-        return _artifact_utils.deserialize_model(self._get_artifact("model"))
+        return _artifact_utils.deserialize_model(self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL))
 
     def add_asset(self, key, asset, overwrite=False):
         if key == "model":
@@ -145,8 +145,28 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def get_asset(self, key):
-        # similar to ExperimentRun.get_artifact
-        raise NotImplementedError
+        artifact = self._get_artifact(key, _CommonCommonService.ArtifactTypeEnum.BLOB)
+        artifact_stream = six.BytesIO(artifact)
+
+        torch = importer.maybe_dependency("torch")
+        if torch is not None:
+            try:
+                obj = torch.load(artifact_stream)
+            except:  # not something torch can deserialize
+                artifact_stream.seek(0)
+            else:
+                artifact_stream.close()
+                return obj
+
+        try:
+            obj = pickle.load(artifact_stream)
+        except:  # not something pickle can deserialize
+            artifact_stream.seek(0)
+        else:
+            artifact_stream.close()
+            return obj
+
+        return artifact_stream
 
     def del_asset(self, key):
         raise NotImplementedError
@@ -291,34 +311,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         return artifact_msg
 
-    def _get_artifact(self, key):
-        """
-        Gets the artifact with name `key` from this Experiment Run.
-        If the artifact was originally logged as just a filesystem path, that path will be returned.
-        Otherwise, bytes representing the artifact object will be returned.
-        Parameters
-        ----------
-        key : str
-            Name of the artifact.
-        Returns
-        -------
-        str or bytes
-            Filesystem path or bytes representing the artifact.
-        bool
-            True if the artifact was only logged as its filesystem path.
-        """
-        # get key-path from ModelDB
-        Message = _CommonCommonService.GetArtifacts
-        msg = Message(id=self.id, key=key)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        artifact = {artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
-
+    def _get_artifact(self, key, artifact_type):
         # check to see if key exists
         self._refresh_cache()
         if key == "model":
@@ -329,7 +322,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             raise KeyError("no artifact found with key {}".format(key))
 
         # download artifact from artifact store
-        url = self._get_url_for_artifact(key, "GET").url
+        url = self._get_url_for_artifact(key, "GET", artifact_type).url
 
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)

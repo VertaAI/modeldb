@@ -6,6 +6,7 @@ import verta.dataset
 import verta.environment
 
 from sklearn.linear_model import LogisticRegression
+import numpy as np
 
 
 class TestModelVersion:
@@ -35,6 +36,7 @@ class TestModelVersion:
     def test_set_model(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
         log_reg_model = LogisticRegression()
+        log_reg_model.fit(np.random.random((36, 12)), np.random.random(36).round())
         model_version.set_model(log_reg_model)
 
         # reload the model version:
@@ -42,7 +44,7 @@ class TestModelVersion:
         assert model_version._msg.model.key == "model"
 
         retrieved_log_reg_model = model_version.get_model()
-        assert(retrieved_log_reg_model.coef_ == log_reg_model.coef_)
+        assert((retrieved_log_reg_model.coef_ == log_reg_model.coef_).all())
 
         # overwrite should work:
         model_version = registered_model.get_version(id=model_version.id)
@@ -58,14 +60,18 @@ class TestModelVersion:
     def test_add_asset(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
         log_reg_model = LogisticRegression()
-        model_version.add_asset("some-asset", log_reg_model)
+        log_reg_model.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.add_asset("coef", log_reg_model.coef_)
+
+        retrieved_coef = model_version.get_asset("coef")
+        assert((retrieved_coef == log_reg_model.coef_).all())
 
         # Overwrite should work:
         model_version = registered_model.get_version(id=model_version.id)
-        model_version.add_asset("some-asset", log_reg_model, True)
+        model_version.add_asset("coef", log_reg_model.coef_, True)
 
         with pytest.raises(ValueError) as excinfo:
             model_version = registered_model.get_version(id=model_version.id)
-            model_version.add_asset("some-asset", log_reg_model)
+            model_version.add_asset("coef", log_reg_model)
 
         assert "The key has been set" in str(excinfo.value)
