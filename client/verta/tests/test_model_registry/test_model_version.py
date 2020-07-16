@@ -17,6 +17,9 @@ class TestModelVersion:
         retrieved_model_version = registered_model.get_version(id=model_version.id)
         assert model_version.id == retrieved_model_version.id
 
+    def test_repr(self, model_version):
+        assert model_version.name in str(model_version)
+
     def test_get_by_clent(self, client):
         registered_model = client.set_registered_model()
         model_version = registered_model.get_or_create_version(name="my version")
