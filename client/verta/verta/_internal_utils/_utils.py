@@ -138,13 +138,14 @@ class LazyList(object):
     # number of items to fetch per back end call in __iter__()
     _ITER_PAGE_LIMIT = 100
 
-    _OP_MAP = {'==': _CommonCommonService.OperatorEnum.EQ,
+    _OP_MAP = {'in': _CommonCommonService.OperatorEnum.CONTAIN,
+               '==': _CommonCommonService.OperatorEnum.EQ,
                '!=': _CommonCommonService.OperatorEnum.NE,
                '>':  _CommonCommonService.OperatorEnum.GT,
                '>=': _CommonCommonService.OperatorEnum.GTE,
                '<':  _CommonCommonService.OperatorEnum.LT,
                '<=': _CommonCommonService.OperatorEnum.LTE}
-    _OP_PATTERN = re.compile(r"({})".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
+    _OP_PATTERN = re.compile(r" ({}) ".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
 
     # keys that yield predictable, sensible results
     # TODO: make LazyList an abstract base class; make this attr an abstract property
@@ -608,6 +609,23 @@ def json_to_proto(response_json, response_cls, ignore_unknown_fields=True):
                              ignore_unknown_fields=ignore_unknown_fields)
 
 
+def get_bool_types():
+    """
+    Determines available bool types (including NumPy's ``bool_`` if importable) for typechecks.
+
+    Returns
+    -------
+    tuple
+        Available bool types.
+
+    """
+    np = importer.maybe_dependency("numpy")
+    if np is None:
+        return (bool,)
+    else:
+        return (bool, np.bool_)
+
+
 def to_builtin(obj):
     """
     Tries to coerce `obj` into a built-in type, for JSON serialization.
@@ -622,19 +640,13 @@ def to_builtin(obj):
         A built-in equivalent of `obj`, or `obj` unchanged if it could not be handled by this function.
 
     """
-    np = importer.maybe_dependency("numpy")
-    if np is None:
-        BOOL_TYPES = (bool,)
-    else:
-        BOOL_TYPES = (bool, np.bool_)
-
     # jump through ludicrous hoops to avoid having hard dependencies in the Client
     cls_ = obj.__class__
     obj_class = getattr(cls_, '__name__', None)
     obj_module = getattr(cls_, '__module__', None)
 
     # booleans
-    if isinstance(obj, BOOL_TYPES):
+    if isinstance(obj, get_bool_types()):
         return True if obj else False
 
     # NumPy scalars

@@ -117,7 +117,7 @@ class ModelAPI(object):
         if data is None:
             return {'type': "VertaNull",
                     'name': str(name)}
-        elif isinstance(data, _utils.BOOL_TYPES):  # did you know that `bool` is a subclass of `int`?
+        elif isinstance(data, _utils.get_bool_types()):  # did you know that `bool` is a subclass of `int`?
             return {'type': "VertaBool",
                     'name': str(name)}
         elif isinstance(data, numbers.Integral):
