@@ -41,3 +41,10 @@ class Datasets(_utils.LazyList):
         new_list = copy.deepcopy(self)
         new_list._msg.workspace_name = workspace_name
         return new_list
+
+    def with_ids(self, ids=None):
+        new_list = copy.deepcopy(self)
+        del new_list._msg.dataset_ids[:]
+        if ids:
+            new_list._msg.dataset_ids.extend(ids)
+        return new_list

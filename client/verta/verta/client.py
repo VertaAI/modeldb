@@ -664,7 +664,7 @@ class Client(object):
         """
         datasets = Datasets(self._conn, self._conf)
         if dataset_ids:
-            datasets._msg.dataset_ids.extend(_utils.as_list_of_str(dataset_ids))
+            datasets = datasets.with_ids(_utils.as_list_of_str(dataset_ids))
         if sort_key:
             datasets = datasets.sort(sort_key, not ascending)
         if workspace:
