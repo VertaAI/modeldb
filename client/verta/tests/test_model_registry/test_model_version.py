@@ -75,3 +75,16 @@ class TestModelVersion:
             model_version.add_asset("coef", log_reg_model)
 
         assert "The key has been set" in str(excinfo.value)
+
+    def test_wrong_key(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+        with pytest.raises(KeyError) as excinfo:
+            model_version.get_model()
+
+        assert "no model associated with this version" in str(excinfo.value)
+
+        with pytest.raises(KeyError) as excinfo:
+            model_version.get_asset("non-existing")
+
+        assert "no artifact found with key non-existing" in str(excinfo.value)
+
