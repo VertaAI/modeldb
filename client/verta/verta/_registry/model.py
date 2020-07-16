@@ -95,8 +95,9 @@ class RegisteredModel(_ModelDBEntity):
             raise ValueError("label is not specified")
         self._clear_cache()
         self._refresh_cache()
-        self._msg.labels.append(label)
-        self._update()
+        if label not in self._msg.labels:
+            self._msg.labels.append(label)
+            self._update()
 
     def del_label(self, label):
         if label is None:
