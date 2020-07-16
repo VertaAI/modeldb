@@ -702,7 +702,7 @@ class Client(object):
         if name is not None:
             if not isinstance(name, six.string_types):
                 raise TypeError("`name` must be str, not {}".format(type(name)))
-            predicates.append("name in \"{}\"".format(name))
+            predicates.append("name ~= \"{}\"".format(name))
         if predicates:
             datasets = datasets.find(predicates)
 
