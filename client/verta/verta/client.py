@@ -753,7 +753,12 @@ class Client(object):
         return self.set_registered_model(*args, **kwargs)
 
     def get_registered_model(self, name=None, workspace=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
         name = self._set_from_config_if_none(name, "registered_model")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
             workspace = self._get_personal_workspace()
