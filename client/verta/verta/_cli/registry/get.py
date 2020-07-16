@@ -10,11 +10,11 @@ def get():
 
     For example, to see information about a registered model named BERT, run
 
-    `verta registry get model BERT`
+    `verta registry get registeredmodel BERT`
 
-    or to get the latest BERT model, run
+    or to get the BERT model with the version latest, run
 
-    `verta registry get model BERT latest`
+    `verta registry get registeredmodelversion BERT latest`
 
     """
     pass
@@ -24,26 +24,17 @@ def get():
 @click.argument("model_name", nargs=1, required=True)
 @click.option("--output", "-o", type=click.Choice(['json'], case_sensitive=False), help="Print the output in the given format instead of regular text.")
 @click.option("--workspace", "-w", help="Workspace to use")
-def get_model(name, version, output, workspace):
+def get_model(model_name, output, workspace):
     """Get detailed information about a model.
     """
-    if version is None:
-        print("Getting details for model %s" % (name,))
-    else:
-        print("Getting details for version %s of model %s" % (version, name))
-    print("output: %s" % output)
+    pass
 
 @get.command(name="registeredmodelversion")
 @click.argument("model_name", nargs=1, required=True)
-@click.argument("version_name", nargs=1, required=False)
+@click.argument("version_name", nargs=1, required=True)
 @click.option("--output", "-o", type=click.Choice(['json'], case_sensitive=False), help="Print the output in the given format instead of regular text.")
-@click.option("--out-dir", help="Folder to download all the artifacts to.")
 @click.option("--workspace", "-w", help="Workspace to use")
-def get_model_version(name, version, output, workspace):
-    """Get detailed information about a model.
+def get_model_version(model_name, version_name, output, workspace):
+    """Get detailed information about a model version.
     """
-    if version is None:
-        print("Getting details for model %s" % (name,))
-    else:
-        print("Getting details for version %s of model %s" % (version, name))
-    print("output: %s" % output)
+    pass
