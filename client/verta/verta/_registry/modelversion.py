@@ -8,6 +8,7 @@ from .._protos.public.registry import RegistryService_pb2 as _ModelVersionServic
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 from .._internal_utils import _utils
+from ..environment import Python
 
 
 class RegisteredModelVersion(_ModelDBEntity):
@@ -102,6 +103,12 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         self._msg.ClearField("environment")
         self._update_model_version()
+
+    def get_environment(self):
+        if not self.has_environment:
+            raise RuntimeError("environment was not previously set.")
+
+        return Python._from_proto(self._msg)
 
     def _update_model_version(self):
         Message = _ModelVersionService.SetModelVersion
