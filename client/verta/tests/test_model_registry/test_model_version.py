@@ -113,3 +113,17 @@ class TestModelVersion:
 
         model_version = registered_model.get_version(id=model_version.id)
         assert len(model_version._msg.assets) == 0
+
+    def test_del_model(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.add_model(classifier)
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert model_version.has_model
+        model_version.del_model()
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert (not model_version.has_model)
+

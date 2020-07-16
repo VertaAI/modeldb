@@ -107,6 +107,11 @@ class RegisteredModelVersion(_ModelDBEntity):
     def get_model(self):
         return _artifact_utils.deserialize_model(self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL))
 
+    def del_model(self):
+        self._refresh_cache()
+        self._msg.ClearField("model")
+        self._update_model_version()
+
     def add_asset(self, key, asset, overwrite=False):
         if key == "model":
             raise ValueError("The key `model` is reserved for model. Please use `set_model`")
