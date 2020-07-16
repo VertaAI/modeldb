@@ -86,10 +86,6 @@ class RegisteredModel(_ModelDBEntity):
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
 
-    def _get_existing(self):
-        registered_model = RegisteredModel(self._conn, self._conf, self._get_proto_by_id(self._conn, self.id))
-        return registered_model
-
     def add_label(self, label):
         if label is None:
             raise ValueError("label is not specified")
