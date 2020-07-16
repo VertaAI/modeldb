@@ -666,9 +666,9 @@ class Client(object):
         if dataset_ids:
             datasets._msg.dataset_ids.extend(_utils.as_list_of_str(dataset_ids))
         if sort_key:
-            datasets.sort(sort_key, not ascending)
+            datasets = datasets.sort(sort_key, not ascending)
         if workspace:
-            datasets.with_workspace(workspace)
+            datasets = datasets.with_workspace(workspace)
 
         predicates = []
         if tags is not None:

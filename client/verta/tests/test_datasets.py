@@ -231,12 +231,22 @@ class TestClientDatasetFunctions:
         assert len(datasets) == 1
         assert datasets[0].id == dataset1.id
 
-        datasets = client.find_datasets(dataset_ids=[dataset1.id, dataset2.id])
-        assert len(datasets) == 2
-
         datasets = client.find_datasets(dataset_ids=[dataset1.id, dataset2.id], name=dataset1.name)
         assert len(datasets) == 1
         assert datasets[0].id == dataset1.id
+
+        # test sorting ascending
+        datasets = client.find_datasets(
+            dataset_ids=[dataset1.id, dataset2.id],
+            sort_key="time_created", ascending=True,
+        )
+        assert [dataset.id for dataset in datasets] == [dataset1.id, dataset2.id]
+        # and descending
+        datasets = client.find_datasets(
+            dataset_ids=[dataset1.id, dataset2.id],
+            sort_key="time_created", ascending=False,
+        )
+        assert [dataset.id for dataset in datasets] == [dataset2.id, dataset1.id]
 
 
 class TestClientDatasetVersionFunctions:
