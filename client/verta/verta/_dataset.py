@@ -20,6 +20,8 @@ from ._internal_utils import (
     importer,
 )
 
+from ._dataset_versioning import DatasetVersions
+
 
 class Dataset(object):
     # TODO: delete is not supported on the API yet
@@ -186,10 +188,7 @@ class Dataset(object):
         list of DatasetVersions for this Dataset
 
         """
-        Message = _DatasetVersionService.GetAllDatasetVersionsByDatasetId
-        msg = Message(dataset_id=self.id)
-        endpoint = "{}://{}/api/v1/modeldb/dataset-version/getAllDatasetVersionsByDatasetId"
-        return DatasetVersionLazyList(self._conn, self._conf, msg, endpoint, "GET")
+        return DatasetVersions(self._conn, self._conf).with_dataset(self)
 
     # TODO: sorting seems to be incorrect
     def get_latest_version(self, ascending=None, sort_key=None):
@@ -524,8 +523,8 @@ class DatasetVersion(object):
             return msg_copy.__repr__()
         elif self.dataset_version_info:
             msg_copy = self.dataset_version_info.__class__()
-            msg_copy.CopyFrom(self.dataset_version_info)
-            return msg_copy.__repr__()
+            msg_copy.CopyFrom(self.dataset_version_info)  # pylint: disable=no-member
+            return msg_copy.__repr__()  # pylint: disable=no-member
         else:
             return "<{} \"{}\">".format(self.__class__.__name__, self.version)
 
@@ -539,7 +538,7 @@ class DatasetVersion(object):
             response = _utils.make_request(
                 "POST",
                 "{}://{}/api/v1/modeldb/dataset-version/findDatasetVersions".format(conn.scheme, conn.socket),
-                conn, params=data
+                conn, json=data,
             )
             if response.ok:
                 dataset_version = _utils.json_to_proto(_utils.body_to_json(response), msg.Response).dataset_versions[0]
@@ -942,25 +941,3 @@ class RDBMSDatasetVersionInfo(QueryDatasetVersionInfo):
         self.query_template = query_template
         self.query_parameters = query_parameters
         self.num_records = num_records
-
-
-class DatasetLazyList(_utils.LazyList):
-    def __repr__(self):
-        return "<list-like of {} Dataset(s)>".format(self.__len__())
-
-    def _get_records(self, response_msg):
-        return response_msg.datasets
-
-    def _create_element(self, id_):
-        return Dataset(self._conn, self._conf, _dataset_id=id_)
-
-
-class DatasetVersionLazyList(_utils.LazyList):
-    def __repr__(self):
-        return "<list-like of {} DatasetVersion(s)>".format(self.__len__())
-
-    def _get_records(self, response_msg):
-        return response_msg.dataset_versions
-
-    def _create_element(self, id_):
-        return DatasetVersion(self._conn, self._conf, _dataset_version_id=id_)

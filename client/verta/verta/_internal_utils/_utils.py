@@ -138,13 +138,14 @@ class LazyList(object):
     # number of items to fetch per back end call in __iter__()
     _ITER_PAGE_LIMIT = 100
 
-    _OP_MAP = {'==': _CommonCommonService.OperatorEnum.EQ,
+    _OP_MAP = {'in': _CommonCommonService.OperatorEnum.CONTAIN,
+               '==': _CommonCommonService.OperatorEnum.EQ,
                '!=': _CommonCommonService.OperatorEnum.NE,
                '>':  _CommonCommonService.OperatorEnum.GT,
                '>=': _CommonCommonService.OperatorEnum.GTE,
                '<':  _CommonCommonService.OperatorEnum.LT,
                '<=': _CommonCommonService.OperatorEnum.LTE}
-    _OP_PATTERN = re.compile(r"({})".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
+    _OP_PATTERN = re.compile(r" ({}) ".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
 
     # keys that yield predictable, sensible results
     # TODO: make LazyList an abstract base class; make this attr an abstract property
