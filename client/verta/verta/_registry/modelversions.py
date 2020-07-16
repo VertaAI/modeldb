@@ -29,7 +29,10 @@ class RegisteredModelVersions(_utils.LazyList):
     def _create_element(self, msg):
         return RegisteredModelVersion(self._conn, self._conf, msg)
 
-    def with_model(self, registered_model):
+    def with_model(self, registered_model=None):
         new_list = copy.deepcopy(self)
-        new_list._registered_model = registered_model
+        if registered_model:
+            new_list._msg.id.registered_model_id = registered_model.id
+        else:
+            new_list._msg.id.registered_model_id = None
         return new_list
