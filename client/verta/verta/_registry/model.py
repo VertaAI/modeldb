@@ -92,25 +92,25 @@ class RegisteredModel(_ModelDBEntity):
     def add_label(self, label):
         if label is None:
             raise ValueError("label is not specified")
-        registered_model = self._get_existing()
-        registered_model._msg.labels.append(label)
-        return registered_model._update()
+        self._clear_cache()
+        self._refresh_cache()
+        self._msg.labels.append(label)
+        self._update()
 
     def del_label(self, label):
         if label is None:
             raise ValueError("label is not specified")
-        registered_model = self._get_existing()
-        if label in registered_model._msg.labels:
-            registered_model._msg.labels.remove(label)
-            return registered_model._update()
-        return registered_model
+        self._clear_cache()
+        self._refresh_cache()
+        if label in self._msg.labels:
+            self._msg.labels.remove(label)
+            self._update()
 
     def get_labels(self):
-        registered_model = self._get_existing()
-        return registered_model._msg.labels
+        self._clear_cache()
+        self._refresh_cache()
+        return self._msg.labels
 
     def _update(self):
-        response = self._conn.make_proto_request("PUT",
-                                           "/api/v1/registry/{}".format(self.id),
+        self._conn.make_proto_request("PUT", "/api/v1/registry/{}".format(self.id),
                                            body=self._msg)
-        return RegisteredModel(self._conn, self._conf, self._conn.must_proto_response(response, _RegisteredModelService.SetRegisteredModel.Response).registered_model)

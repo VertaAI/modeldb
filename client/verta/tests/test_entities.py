@@ -478,6 +478,7 @@ class TestExperimentRuns:
 
 
 class TestModel:
+
     def test_create(self, client):
         assert client.set_registered_model()
 
@@ -516,4 +517,16 @@ class TestModel:
         length = len(find)
         for item in find:
             print(item)
-        pass
+            
+    def test_labels(self, client):
+        assert client.set_registered_model(tags=["tag1", "tag2"])
+
+        assert client.registered_model is not None
+        client.registered_model.add_label("tag3")
+        assert client.registered_model.get_labels() == ["tag1", "tag2", "tag3"]
+        client.registered_model.del_label("tag2")
+        assert client.registered_model.get_labels() == ["tag1", "tag3"]
+        client.registered_model.del_label("tag4")
+        assert client.registered_model.get_labels() == ["tag1", "tag3"]
+        client.registered_model.add_label("tag2")
+        assert client.registered_model.get_labels() == ["tag1", "tag2", "tag3"]
