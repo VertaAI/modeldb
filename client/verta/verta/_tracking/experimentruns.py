@@ -68,6 +68,14 @@ class ExperimentRuns(_utils.LazyList):
         return ExperimentRun(self._conn, self._conf, msg)
 
     def as_dataframe(self):
+        """
+        Returns this collection of Experiment Runs as a table.
+
+        Returns
+        -------
+        :class:`pandas.DataFrame`
+
+        """
         pd = importer.maybe_dependency("pandas")
         if pd is None:
             e = ImportError("pandas is not installed; try `pip install pandas`")
@@ -86,7 +94,7 @@ class ExperimentRuns(_utils.LazyList):
 
             data.append(run_data)
 
-        return pd.DataFrame(data, columns=['id'] + sorted(list(columns)))
+        return pd.DataFrame(data, columns=['id'] + sorted(list(columns))).set_index('id')
 
     def with_project(self, proj=None):
         new_list = copy.deepcopy(self)
