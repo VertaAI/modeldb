@@ -1,12 +1,12 @@
-import * as R from 'ramda';
-
 import generateId from 'shared/utils/generateId';
 import { Brand } from 'shared/utils/Brand';
+import { Milliseconds } from 'shared/utils/types';
 
 export enum PropertyType {
   STRING = 'STRING',
   METRIC = 'METRIC',
   EXPERIMENT_NAME = 'EXPERIMENT_NAME',
+  DATE = 'DATE',
 }
 
 export const OperatorType: { [T in OperatorType]: T } = {
@@ -43,14 +43,15 @@ export interface IStringFilterData {
   isActive: boolean;
 }
 
-export type MetricFilterOperator = Exclude<OperatorType, 'LIKE' | 'NOT_LIKE'>;
+export type NumberFilterOperator = Exclude<OperatorType, 'LIKE' | 'NOT_LIKE'>;
+
 export interface IMetricFilterData {
   id: string;
   type: PropertyType.METRIC;
   caption?: string;
   name: string;
   value: number;
-  operator: MetricFilterOperator;
+  operator: NumberFilterOperator;
   isActive: boolean;
 }
 
@@ -58,10 +59,16 @@ export type IExperimentNameFilterData = Omit<IStringFilterData, 'type'> & {
   type: PropertyType.EXPERIMENT_NAME;
 };
 
+export type IDateFilterData = Omit<IMetricFilterData, 'type' | 'value'> & {
+  value: number | undefined;
+  type: PropertyType.DATE;
+};
+
 export type IFilterData =
   | IStringFilterData
   | IMetricFilterData
-  | IExperimentNameFilterData;
+  | IExperimentNameFilterData
+  | IDateFilterData;
 
 export const makeDefaultStringFilter = (
   name: string,
@@ -78,6 +85,17 @@ export const makeDefaultStringFilter = (
   };
 };
 
+export const makeDefaultDateFilter = (value: Milliseconds): IDateFilterData => {
+  return {
+    id: generateId(),
+    value,
+    name: 'dateUpdated',
+    type: PropertyType.DATE,
+    operator: OperatorType.EQUALS,
+    isActive: false,
+  };
+};
+
 export const makeDefaultExprNameFilter = (
   value: string
 ): IExperimentNameFilterData => {
@@ -86,6 +104,20 @@ export const makeDefaultExprNameFilter = (
     name: 'experiment.name',
     type: PropertyType.EXPERIMENT_NAME,
     caption: 'experiment',
+    value,
+    operator: 'EQUALS',
+    isActive: true,
+  };
+};
+
+export const makeDefaultDateCreatedFilter = (
+  value: Milliseconds
+): IDateFilterData => {
+  return {
+    id: generateId(),
+    name: 'date_created',
+    type: PropertyType.DATE,
+    caption: 'timestamp',
     value,
     operator: 'EQUALS',
     isActive: true,
@@ -129,27 +161,13 @@ export const makeDefaultTagFilter = (
 
 export interface IQuickFilter {
   propertyName: string;
-  type: PropertyType.STRING;
+  type: PropertyType.STRING | PropertyType.DATE;
   isFuzzy: boolean;
   caption?: string;
 }
 
-export const makeDefaultFilterDataFromQuickFilter = (
-  quickFilter: IQuickFilter,
-  value: string
-): IStringFilterData => {
-  return {
-    ...makeDefaultStringFilter(
-      quickFilter.propertyName,
-      value,
-      quickFilter.isFuzzy ? 'LIKE' : 'EQUALS'
-    ),
-    caption: quickFilter.caption,
-  };
-};
-
 export const defaultQuickFilters: Record<
-  'name' | 'description' | 'tag' | 'owner',
+  'name' | 'description' | 'tag' | 'owner' | 'timestamp',
   IQuickFilter
 > = {
   name: {
@@ -175,6 +193,12 @@ export const defaultQuickFilters: Record<
     propertyName: 'owner',
     isFuzzy: false,
     caption: 'owner',
+  },
+  timestamp: {
+    type: PropertyType.DATE,
+    propertyName: 'date_created',
+    isFuzzy: false,
+    caption: 'timestamp',
   },
 };
 

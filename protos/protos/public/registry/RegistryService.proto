@@ -38,6 +38,9 @@ message RegisteredModel {
 
     //readme
     string readme_text = 9;
+
+    //owner's verta_id
+    string owner = 10;
 }
 
 //CRUD for Registred Models
@@ -135,7 +138,7 @@ message ModelVersion {
     modeldb.versioning.EnvironmentBlob environment = 10;
 
     // Other artifacts
-    repeated common.Artifact assets = 11;
+    repeated common.Artifact artifacts = 11;
 
     //flag to archive a model version currently does nothing other than storing the information in DB
     common.TernaryEnum.Ternary archived = 12;
@@ -145,6 +148,9 @@ message ModelVersion {
 
     //APIs
     repeated string apis = 15;
+
+    //owner's verta_id
+    string owner = 16;
 
 }
 

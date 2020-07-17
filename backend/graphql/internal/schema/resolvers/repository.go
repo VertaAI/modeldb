@@ -9,7 +9,7 @@ import (
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/dataloaders"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/errors"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
-	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
+	pcommon "github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadata"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
@@ -71,7 +71,7 @@ func (r *repositoryResolver) AllowedActions(ctx context.Context, obj *versioning
 				ResourceIds: []string{id},
 				ResourceType: &uac.ResourceType{
 					Resource: &uac.ResourceType_ModeldbServiceResourceType{
-						ModeldbServiceResourceType: common.ModelDBResourceEnum_REPOSITORY,
+						ModeldbServiceResourceType: pcommon.ModelDBResourceEnum_REPOSITORY,
 					},
 				},
 			},
@@ -228,6 +228,10 @@ func (r *repositoryResolver) Diff(ctx context.Context, obj *versioning.Repositor
 		CommitA: idA,
 		CommitB: idB,
 	})
+	if err != nil {
+		r.Logger.Error("failed to compute repository diff", zap.Error(err))
+		return nil, err
+	}
 	result := make([]string, len(res.GetDiffs()))
 	for i, diff := range res.GetDiffs() {
 		buffer := &bytes.Buffer{}

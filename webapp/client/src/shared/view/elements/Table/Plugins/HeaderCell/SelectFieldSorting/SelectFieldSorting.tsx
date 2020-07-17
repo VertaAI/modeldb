@@ -71,7 +71,7 @@ class SelectFieldSorting extends React.PureComponent<IProps, ILocalState> {
                     key={field.name}
                     data-test="select-field-sorting-item"
                   >
-                    <span className={styles.option_label}>{field.name}</span>
+                    <span className={styles.option_label}>{field.label}</span>
                     <div className={styles.option_sort_direction_buttons}>
                       <button
                         className={cn(styles.option_sort_direction_button, {

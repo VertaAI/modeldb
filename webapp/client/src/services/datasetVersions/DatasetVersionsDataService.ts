@@ -13,10 +13,6 @@ import {
 import makeLoadDatasetVersionsRequest from './responseRequest/makeLoadDatasetVersionsRequest';
 
 export default class DatasetVersionsDataService extends BaseDataService {
-  constructor() {
-    super();
-  }
-
   public async loadDatasetVersions(
     datasetId: string,
     filters: IFilterData[],
@@ -109,6 +105,7 @@ const convertServerHydratedDatasetVersion = ({
         const serverInfo = serverDatasetVersion.path_dataset_version_info;
         const info: IPathBasedDatasetVersionInfo = {
           size:
+            // eslint-disable-next-line eqeqeq
             serverInfo.size != undefined ? Number(serverInfo.size) : undefined,
           basePath: serverInfo.base_path,
           locationType: (() => {
@@ -161,6 +158,7 @@ const convertServerHydratedDatasetVersion = ({
         features: serverInfo.features || [],
         objectPath: serverInfo.object_path,
         numRecords: serverInfo.num_records,
+        // eslint-disable-next-line eqeqeq
         size: serverInfo.size != undefined ? serverInfo.size : undefined,
       };
       return info;

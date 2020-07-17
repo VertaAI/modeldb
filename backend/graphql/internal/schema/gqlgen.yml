@@ -16,6 +16,10 @@ models:
     model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.Experiment
   ExperimentRun:
     model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.ExperimentRun
+  Dataset:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.Dataset
+  DatasetVersion:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.DatasetVersion
   Artifact:
     model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/common.Artifact
   Feature:
