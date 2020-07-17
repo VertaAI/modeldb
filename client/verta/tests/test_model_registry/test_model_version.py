@@ -5,7 +5,6 @@ from .. import utils
 import os
 
 import numpy as np
-
 from sklearn.linear_model import LogisticRegression
 
 
