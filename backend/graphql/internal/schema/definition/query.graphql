@@ -6,6 +6,7 @@ type Query {
   project(id: ID!): Project
   experiment(id: ID!): Experiment
   run(id: ID!): ExperimentRun
+  dataset(id: ID!): Dataset
   repository(id: ID!): Repository
   organization(id: ID!): Organization
 

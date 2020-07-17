@@ -11,6 +11,8 @@ interface ILocalProps {
   isShowTimeSelect?: boolean;
   disabled?: boolean;
   onChange(value: Date): void;
+  onBlur?(): void;
+  onKeyDown?(event: React.KeyboardEvent<HTMLDivElement>): void;
 }
 
 class DatePicker extends React.PureComponent<ILocalProps> {
@@ -22,7 +24,10 @@ class DatePicker extends React.PureComponent<ILocalProps> {
       isShowTimeSelect,
       disabled,
       onChange,
+      onBlur,
+      onKeyDown,
     } = this.props;
+
     return (
       <div className={styles.root}>
         <DatePickerLibrary
@@ -35,8 +40,15 @@ class DatePicker extends React.PureComponent<ILocalProps> {
           timeCaption="time"
           disabled={disabled}
           disabledKeyboardNavigation={true}
-          dateFormat="MM/dd/yyyy h:mm aa"
+          dateFormat="MM/dd/yyyy hh:mm:ss"
           onChange={onChange}
+          onCalendarClose={() => {
+            if (onBlur) {
+              onBlur();
+            }
+          }}
+          onBlur={onBlur}
+          onKeyDown={onKeyDown}
         />
       </div>
     );

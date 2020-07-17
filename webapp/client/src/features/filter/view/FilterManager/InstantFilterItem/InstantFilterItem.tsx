@@ -11,6 +11,7 @@ import {
   IMetricFilterData,
   IExperimentNameFilterData,
   IQuickFilter,
+  IDateFilterData,
 } from 'shared/models/Filters';
 import Checkbox from 'shared/view/elements/Checkbox/Checkbox';
 import ClickOutsideListener from 'shared/view/elements/ClickOutsideListener/ClickOutsideListener';
@@ -20,6 +21,7 @@ import FilterSelect from './FilterSelect/FilterSelect';
 import styles from './InstantFilterItem.module.css';
 import MetricFilterEditor from './MetricFilterEditor/MetricFilterEditor';
 import StringFilterEditor from './StringFilterEditor/StringFilterEditor';
+import DateFilterEditor from './DateFilterEditor/DateFilterEditor';
 
 interface ILocalProps {
   data: IFilterData;
@@ -49,7 +51,7 @@ export default class InstantFilterItem extends React.Component<ILocalProps> {
 
     const filterOptions = quickFilters.map(f => ({
       value: f,
-      label: f.propertyName,
+      label: f.caption || f.propertyName,
     }));
 
     const filter = (
@@ -83,7 +85,14 @@ export default class InstantFilterItem extends React.Component<ILocalProps> {
               </div>
               <div className={styles.editor} onClick={this.onOpen}>
                 {(() => {
-                  const viewByType: Partial<Record<PropertyType, any>> = {
+                  const viewByType: Record<PropertyType, any> = {
+                    [PropertyType.DATE]: (
+                      <DateFilterEditor
+                        onChange={this.onChange}
+                        data={data as IDateFilterData}
+                        isReadonly={!isOpen}
+                      />
+                    ),
                     [PropertyType.STRING]: (
                       <StringFilterEditor
                         onChange={this.onChange}
@@ -115,7 +124,7 @@ export default class InstantFilterItem extends React.Component<ILocalProps> {
             <div
               className={styles.remove_button}
               onClick={this.onClickRemove}
-              data-test="close-filter"
+              data-test="remove-filter"
             >
               <Icon type="close" />
             </div>
@@ -187,14 +196,25 @@ export default class InstantFilterItem extends React.Component<ILocalProps> {
 
   @bind
   private onChangeFilterName({ value }: { value: IQuickFilter }) {
-    this.onChange({
-      ...this.props.data,
-      name: value.propertyName,
-      type: value.type,
-      operator: 'EQUALS',
-      caption: value.caption,
-      value: '',
-    });
+    if (value.type === PropertyType.STRING) {
+      this.onChange({
+        ...this.props.data,
+        name: value.propertyName,
+        type: value.type,
+        operator: 'EQUALS',
+        caption: value.caption,
+        value: '',
+      });
+    } else {
+      this.onChange({
+        ...this.props.data,
+        name: value.propertyName,
+        type: value.type,
+        operator: 'EQUALS',
+        caption: value.caption,
+        value: undefined,
+      });
+    }
   }
 
   @bind

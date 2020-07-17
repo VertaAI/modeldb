@@ -2,11 +2,7 @@ import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
-import {
-  OperatorType,
-  IMetricFilterData,
-  MetricFilterOperator,
-} from 'shared/models/Filters';
+import { OperatorType, IMetricFilterData } from 'shared/models/Filters';
 import { withScientificNotationOrRounded } from 'shared/utils/formatters/number';
 import TextInput from 'shared/view/elements/TextInput/TextInput';
 
@@ -20,7 +16,9 @@ interface ILocalProps {
 }
 
 const operatorOptions = (() => {
-  const map: { [T in MetricFilterOperator]: { value: T; label: string } } = {
+  const map: {
+    [T in IMetricFilterData['operator']]: { value: T; label: string };
+  } = {
     [OperatorType.MORE]: {
       value: OperatorType.MORE,
       label: '>',
@@ -114,7 +112,7 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
   }
 
   @bind
-  private onComparisonChanged(operator: MetricFilterOperator) {
+  private onComparisonChanged(operator: IMetricFilterData['operator']) {
     this.onSave({
       ...this.props.data,
       operator,

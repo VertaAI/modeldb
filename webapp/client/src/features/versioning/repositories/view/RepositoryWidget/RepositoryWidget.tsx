@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import cn from 'classnames';
 import { NavLink } from 'react-router-dom';
 
-import Avatar from 'shared/view/elements/Avatar/Avatar';
 import { IRepository } from 'shared/models/Versioning/Repository';
 import Tooltip from 'shared/view/elements/Tooltip/Tooltip';
 import ActionIcon from 'shared/view/elements/ActionIcon/ActionIcon';
@@ -61,8 +60,7 @@ const RepositoryWidget: React.FC<AllProps> = ({ repository, onDeleted }) => {
           </div>
         </div>
         <div className={styles.right}>
-          <div className={styles.owner_block}>
-          </div>
+          <div className={styles.owner_block}></div>
           <span
             className={styles.date}
           >{`Created: ${repository.dateCreated.toLocaleDateString()}`}</span>

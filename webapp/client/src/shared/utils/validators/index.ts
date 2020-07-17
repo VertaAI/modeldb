@@ -10,7 +10,7 @@ export const validateEmailNotEmpty = validateNotEmpty('Email');
 
 export const validateEmail = (email: string) => {
   // tslint:disable-next-line: max-line-length
-  const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return !re.test(String(email).toLowerCase())
     ? UIValidationErrorMessage.common.email
     : undefined;
@@ -28,12 +28,9 @@ export function combineValidators<Value, Error = string>(
   validators: Array<Validator<Value, Error>>
 ): Validator<Value, Error> {
   return (value: Value) =>
-    validators.reduce(
-      (maybeError, validator) => {
-        return maybeError !== undefined ? maybeError : validator(value);
-      },
-      undefined as Error | undefined
-    );
+    validators.reduce((maybeError, validator) => {
+      return maybeError !== undefined ? maybeError : validator(value);
+    }, undefined as Error | undefined);
 }
 
 export const validateMinLength = (min: number) => (value: string) =>
@@ -70,7 +67,7 @@ export const validateLengthLessThen = (n: number, fieldName: string) => (
 };
 
 export const validateSymbols = (symbolNames: string[]) => (value: string) =>
-  !/^[a-zA-Z0-9\_\-]*$/.test(value)
+  !/^[a-zA-Z0-9_-]*$/.test(value)
     ? UIValidationErrorMessage.common.symbols(symbolNames)
     : undefined;
 

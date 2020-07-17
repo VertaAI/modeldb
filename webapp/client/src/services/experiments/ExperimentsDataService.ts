@@ -7,7 +7,6 @@ import { IPagination, DataWithPagination } from 'shared/models/Pagination';
 import * as Experiment from 'shared/models/Experiment';
 import { convertServerCodeVersion } from 'services/serverModel/CodeVersion/converters';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
-import { convertServerUser } from 'services/serverModel/User/converters';
 import * as EntityAlreadyExistError from '../shared/EntityAlreadyExistError';
 
 import { BaseDataService } from 'services/BaseDataService';
@@ -23,10 +22,6 @@ import {
 } from 'services/serverModel/Pagination/Pagination';
 
 export default class ExperimentsDataService extends BaseDataService {
-  constructor() {
-    super();
-  }
-
   public async createExperiment(
     projectId: string,
     settings: Experiment.IExperimentCreationSettings
@@ -36,7 +31,7 @@ export default class ExperimentsDataService extends BaseDataService {
         [K in keyof Required<Experiment.IExperimentCreationSettings>]: [
           string,
           any
-        ]
+        ];
       } = {
         name: ['name', settings.name],
         description: ['description', settings.description],
@@ -52,7 +47,7 @@ export default class ExperimentsDataService extends BaseDataService {
       url: `/v1/modeldb/experiment/createExperiment`,
       data: { ...serverExperimentSettings, project_id: projectId },
       errorConverters: {
-        entityAlreadyExists: errorResponse => errorResponse.status === 409,
+        entityAlreadyExists: (errorResponse) => errorResponse.status === 409,
       },
     });
     return this.loadExperiment(
@@ -86,7 +81,7 @@ export default class ExperimentsDataService extends BaseDataService {
 
     return convertServerPaginationResponse(
       this.convertServerExperiment,
-      d => d.hydrated_experiments,
+      (d) => d.hydrated_experiments,
       response.data
     );
   }
@@ -141,7 +136,7 @@ export default class ExperimentsDataService extends BaseDataService {
 
     return convertServerPaginationResponse(
       this.convertServerExperiment,
-      d => d.hydrated_experiments,
+      (d) => d.hydrated_experiments,
       response.data
     );
   }

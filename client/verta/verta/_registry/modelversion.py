@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+from .._internal_utils._utils import NoneProtoResponse
 from .._tracking.entity import _ModelDBEntity
 
 from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
@@ -97,12 +98,12 @@ class RegisteredModelVersion(_ModelDBEntity):
     def log_environment(self, env):
         self._refresh_cache()
         self._msg.environment.CopyFrom(env._msg)
-        self._update_model_version()
+        self._update()
 
     def del_environment(self):
         self._refresh_cache()
         self._msg.ClearField("environment")
-        self._update_model_version()
+        self._update()
 
     def get_environment(self):
         self._refresh_cache()
@@ -111,10 +112,32 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         return Python._from_proto(self._msg)
 
-    def _update_model_version(self):
-        Message = _ModelVersionService.SetModelVersion
-        endpoint = "/api/v1/registry/{}/versions/{}".format(self._msg.registered_model_id, self.id)
-
-        response = self._conn.make_proto_request("PUT", endpoint, body=self._msg)
-        self._conn.must_proto_response(response, Message.Response)
+    def add_label(self, label):
+        if label is None:
+            raise ValueError("label is not specified")
         self._clear_cache()
+        self._refresh_cache()
+        if label not in self._msg.labels:
+            self._msg.labels.append(label)
+            self._update()
+
+    def del_label(self, label):
+        if label is None:
+            raise ValueError("label is not specified")
+        self._clear_cache()
+        self._refresh_cache()
+        if label in self._msg.labels:
+            self._msg.labels.remove(label)
+            self._update()
+
+    def get_labels(self):
+        self._clear_cache()
+        self._refresh_cache()
+        return self._msg.labels
+
+    def _update(self):
+        response = self._conn.make_proto_request("PUT", "/api/v1/registry/{}/versions/{}".format(self._msg.registered_model_id, self.id),
+                                                 body=self._msg)
+        Message = _ModelVersionService.SetModelVersion
+        if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
+            raise ValueError("Model not found")
