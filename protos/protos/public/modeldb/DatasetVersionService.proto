@@ -285,8 +285,7 @@ message CommitMultipartVersionedDatasetBlobArtifact {
 }
 
 message GetDatasetVersionById {
-    string id = 2;
-    string dataset_id = 1;
+    string id = 1;
 
     message Response {
         DatasetVersion dataset_version = 1;
