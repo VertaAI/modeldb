@@ -71,6 +71,16 @@ class TestList:
         assert str(model1._msg.name) in result.output
         assert str(model._msg.name) in result.output
 
+        result = runner.invoke(
+            cli,
+            ['registry', 'list', 'registeredmodel', '--filter', "labels == \"{}\"".format(label), "--output=json"],
+        )
+
+        assert not result.exception
+        assert 'result count: 2' in result.output
+        assert str(model1._msg.name) in result.output
+        assert str(model._msg.name) in result.output
+
 
 class TestUpdate:
     pass

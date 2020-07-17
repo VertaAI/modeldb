@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+from functools import reduce
 
 import click
 
@@ -38,13 +39,18 @@ def lst_model(filter, output, workspace):
 
     click.echo("result count: {}".format(len(models)))
     click.echo("Listing all models")
-    for model in models:
-        if output == "json":
-            model_repr = json.dumps(_utils.proto_to_json(model._msg))
-        else:
-            model_repr = model._msg
+    if output == "json":
+        array = reduce(lambda a, b: "{}, {}".format(a, b),
+               map(lambda model: json.dumps(_utils.proto_to_json(model._msg)), models))
+        result = "\"models\": [{}]".format(array)
+        result = '{' + result + '}'
         click.echo()
-        click.echo(model_repr)
+        click.echo(result)
+    else:
+        for model in models:
+            model_repr = model._msg
+            click.echo()
+            click.echo(model_repr)
 
 
 @lst.command(name="registeredmodelversion")
