@@ -30,4 +30,9 @@ class RegisteredModelVersions(_utils.LazyList):
         return RegisteredModelVersion(self._conn, self._conf, msg)
 
     def with_model(self, registered_model=None):
-        raise NotImplementedError
+        new_list = copy.deepcopy(self)
+        if registered_model:
+            new_list._msg.id.registered_model_id = registered_model.id
+        else:
+            new_list._msg.id.registered_model_id = None
+        return new_list
