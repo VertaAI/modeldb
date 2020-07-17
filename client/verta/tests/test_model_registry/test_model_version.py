@@ -64,5 +64,14 @@ class TestModelVersion:
         find_result = registered_model.versions.find(["labels == \"{}\"".format(tag_name)])
         assert len(find_result) == 2
         for item in find_result:
-            assert item._msg == versions[item._msg.version]._msg
+            assert versions[item._msg.version]
+            msg_other = versions[item._msg.version]._msg
+            item._msg.time_updated = msg_other.time_updated = 0
+            labels1 = set(item._msg.labels)
+            item._msg.labels[:] = []
+            labels2 = set(msg_other.labels)
+            msg_other.labels[:] = []
+            msg_other.model.CopyFrom(item._msg.model)
+            assert labels1 == labels2
+            assert item._msg == msg_other
 

@@ -510,7 +510,7 @@ class TestModel:
         assert registered_model.id == client.set_registered_model(id=registered_model.id).id
 
     def test_find(self, client):
-        name = "registered_model_test"
+        name = "registered_model_new_test"
         registered_model = client.set_registered_model(name)
 
         find = client.registered_models.find(["name == '{}'".format(name)])
@@ -518,7 +518,7 @@ class TestModel:
         for item in find:
             assert item._msg == registered_model._msg
 
-        tag_name = name + "_tag"
+        tag_name = name + "_new_tag"
         registered_model = {name + "1": client.set_registered_model(name + "1", labels=[tag_name, "tag2"]),
                             name + "2": client.set_registered_model(name + "2", labels=[tag_name])}
         find = client.registered_models.find(["labels == \"{}\"".format(tag_name)])
