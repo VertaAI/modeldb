@@ -705,8 +705,9 @@ public class ModelDBHibernateUtil {
                 } catch (InterruptedException | ExecutionException e) {
                   LOGGER.warn(
                       "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
+                } finally {
+                  ModelDBUtils.unregisteredBackgroundUtilsCount();
                 }
-                ModelDBUtils.unregisteredBackgroundUtilsCount();
               })
           .start();
     }

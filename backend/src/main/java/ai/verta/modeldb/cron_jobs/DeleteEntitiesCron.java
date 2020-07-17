@@ -86,8 +86,9 @@ public class DeleteEntitiesCron extends TimerTask {
       } else {
         LOGGER.error("DeleteEntitiesCron Exception: ", ex);
       }
+    } finally {
+      ModelDBUtils.unregisteredBackgroundUtilsCount();
     }
-    ModelDBUtils.unregisteredBackgroundUtilsCount();
     LOGGER.info("DeleteEntitiesCron finish tasks and reschedule");
   }
 
