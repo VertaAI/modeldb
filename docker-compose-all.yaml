@@ -1,7 +1,7 @@
 version: "3.5"
 services:
     modeldb-backend:
-        image: vertaaiofficial/modeldb-backend:2.0.8
+        image: vertaaiofficial/modeldb-backend:2.0.7
         container_name: "modeldb-backend"
         expose:
             - "8085"
@@ -18,7 +18,7 @@ services:
             - ./artifact-store:/artifact-store/
 
     modeldb-proxy:
-        image: vertaaiofficial/modeldb-proxy:2.0.8
+        image: vertaaiofficial/modeldb-proxy:2.0.7
         container_name: "modeldb-proxy"
         environment:
             MDB_ADDRESS: "modeldb-backend:8085"
