@@ -9,7 +9,6 @@ metadata:
 {{toYaml .Values.labels | indent 4 -}}
 {{- end}}
   name: {{ .Release.Name }}-backend
-  namespace: {{ .Release.Namespace | quote }}
 spec:
   selector:
     matchLabels:
@@ -28,6 +27,15 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         verta.ai/disable_anti_affinity: "true"
     spec:
+{{- if .Values.securityContext.enabled }}
+      securityContext:
+        {{- if .Values.securityContext.runAsUser }}
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+        {{- end}}
+        {{- if .Values.securityContext.fsGroup }}
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+        {{- end}}
+{{- end}}
       containers:
         - image: {{ .Values.image }}:{{ .Values.imageTag }}
           env:
@@ -70,6 +78,7 @@ spec:
               readOnly: true
             - mountPath: "{{ .Values.artifactStore.path }}"
               name: {{ .Release.Name }}
+              subPath: {{ .Values.artifactStore.subPath }}
         - image: {{ .Values.proxy.image }}:{{ .Values.proxy.imageTag }}
           imagePullPolicy: Always
           name: proxy
@@ -99,6 +108,14 @@ spec:
         - name: {{ .Release.Name }}-secret-volume
           secret:
             secretName: {{ .Release.Name }}-backend-config-secret
+{{- if .Values.artifactStore.existingClaim }}
+        - name: {{ .Release.Name }}
+          persistentVolumeClaim:
+{{- with .Values.artifactStore.existingClaim }}
+            claimName: {{ tpl . $ }}
+{{- end }}
+{{- end }}
+{{- if not .Values.artifactStore.existingClaim }}
   volumeClaimTemplates:
   - metadata:
       labels:
@@ -111,4 +128,5 @@ spec:
       resources:
         requests:
           storage: "{{ .Values.artifactStore.storage }}"
+{{- end }}
 {{- end -}}

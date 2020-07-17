@@ -10,7 +10,6 @@ import (
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
-	ai_verta_uac "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -19,10 +18,10 @@ import (
 
 type userCollaboratorResolver struct{ *Resolver }
 
-func (r *userCollaboratorResolver) User(ctx context.Context, obj *models.UserCollaborator) (*ai_verta_uac.UserInfo, error) {
+func (r *userCollaboratorResolver) User(ctx context.Context, obj *models.UserCollaborator) (*uac.UserInfo, error) {
 	res, err := dataloaders.GetUserById(ctx, obj.GetVertaId())
 	if err != nil {
-		r.Logger.Error("failed to get user", zap.Error(err), zap.String("user", obj.GetUserId()))
+		r.Logger.Error("failed to get user", zap.Error(err), zap.String("user", obj.GetVertaId()))
 		return nil, err
 	}
 	return res, nil
@@ -39,7 +38,7 @@ type teamCollaboratorResolver struct{ *Resolver }
 func (r *teamCollaboratorResolver) Team(ctx context.Context, obj *models.TeamCollaborator) (*uac.Team, error) {
 	res, err := dataloaders.GetTeamById(ctx, obj.GetVertaId())
 	if err != nil {
-		r.Logger.Error("failed to get team", zap.Error(err), zap.String("team", obj.GetUserId()))
+		r.Logger.Error("failed to get team", zap.Error(err), zap.String("team", obj.GetVertaId()))
 		return nil, err
 	}
 	return res, nil
@@ -72,10 +71,10 @@ func getConvertedCollaborators(r *Resolver, ctx context.Context, id string, gett
 	return ret, nil
 }
 
-func getCollaborators(r *Resolver, ctx context.Context, id string, getter CollaboratorGetter) ([]*ai_verta_uac.GetCollaboratorResponse, error) {
+func getCollaborators(r *Resolver, ctx context.Context, id string, getter CollaboratorGetter) ([]*uac.GetCollaboratorResponse, error) {
 	res, err := getter(
 		ctx,
-		&ai_verta_uac.GetCollaborator{EntityId: id},
+		&uac.GetCollaborator{EntityId: id},
 	)
 	if err != nil {
 		r.Logger.Error("failed to get collaborators", zap.Error(err), zap.String("entity", id))

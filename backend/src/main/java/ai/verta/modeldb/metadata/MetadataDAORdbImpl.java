@@ -97,7 +97,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   public boolean updateLabels(IdentificationType id, List<String> labels) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      deleteLabels(session, id, labels, false);
+      deleteLabels(session, id, labels, true);
       addLabels(session, id, labels);
       transaction.commit();
       return true;

@@ -2,7 +2,7 @@ export * from './AnyToStringOrNumberConverter';
 export * from './StringToDateConverter';
 export * from './DataSizeConverted';
 
-const damal = {
+export const damal = {
   epoch_acc: [
     { value: 0.8365, timeStamp: '2019-09-12T08:29:47.625Z' },
     { value: 0.1977, timeStamp: '2019-09-12T08:29:49.193Z' },

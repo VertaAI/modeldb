@@ -2,8 +2,6 @@ import * as React from 'react';
 
 import { IConfigHyperparameterValue } from 'shared/models/Versioning/Blob/ConfigBlob';
 
-import styles from './HyperparameterValue.module.css';
-
 const HyperparameterValue = ({
   value,
   rootStyles,

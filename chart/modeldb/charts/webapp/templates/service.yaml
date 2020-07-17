@@ -5,7 +5,6 @@ metadata:
     app: {{ .Release.Name }}
     component: webapp
   name: {{ .Release.Name }}-webapp
-  namespace: {{ .Release.Namespace | quote }}
   annotations:
 {{ toYaml .Values.service.annotations | indent 4 }}
 spec:

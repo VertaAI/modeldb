@@ -138,13 +138,14 @@ class LazyList(object):
     # number of items to fetch per back end call in __iter__()
     _ITER_PAGE_LIMIT = 100
 
-    _OP_MAP = {'==': _CommonCommonService.OperatorEnum.EQ,
+    _OP_MAP = {'~=': _CommonCommonService.OperatorEnum.CONTAIN,
+               '==': _CommonCommonService.OperatorEnum.EQ,
                '!=': _CommonCommonService.OperatorEnum.NE,
                '>':  _CommonCommonService.OperatorEnum.GT,
                '>=': _CommonCommonService.OperatorEnum.GTE,
                '<':  _CommonCommonService.OperatorEnum.LT,
                '<=': _CommonCommonService.OperatorEnum.LTE}
-    _OP_PATTERN = re.compile(r"({})".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
+    _OP_PATTERN = re.compile(r" ({}) ".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
 
     # keys that yield predictable, sensible results
     # TODO: make LazyList an abstract base class; make this attr an abstract property
@@ -160,18 +161,18 @@ class LazyList(object):
             # copy msg to avoid mutating `self`'s state
             msg = self._msg.__class__()
             msg.CopyFrom(self._msg)
-            msg.page_limit = 1
+            msg = self.set_page_limit(msg, 1)
             if index >= 0:
                 # convert zero-based indexing into page number
-                msg.page_number = index + 1
+                msg = self.set_page_number(msg, index + 1)
             else:
                 # reverse page order to index from end
                 msg.ascending = not msg.ascending  # pylint: disable=no-member
-                msg.page_number = abs(index)
+                msg = self.set_page_number(msg, abs(index))
 
             records, total_records = self._call_back_end(msg)
             if (not records
-                    and msg.page_number > total_records):  # pylint: disable=no-member
+                    and self.page_number(msg) > total_records):  # pylint: disable=no-member
                 raise IndexError("index out of range")
 
             return self._create_element(records[0])
@@ -182,13 +183,14 @@ class LazyList(object):
         # copy msg to avoid mutating `self`'s state
         msg = self._msg.__class__()
         msg.CopyFrom(self._msg)
-        msg.page_limit = self._ITER_PAGE_LIMIT
-        msg.page_number = 0  # this will be incremented as soon as we enter the loop
+        self.set_page_limit(msg, self._ITER_PAGE_LIMIT)
+        self.set_page_number(msg, 0) # this will be incremented as soon as we enter the loop
 
         seen_ids = set()
         total_records = float('inf')
-        while msg.page_limit*msg.page_number < total_records:  # pylint: disable=no-member
-            msg.page_number += 1  # pylint: disable=no-member
+        page_number = self.page_number(msg)
+        while self.page_limit(msg) * page_number < total_records:  # pylint: disable=no-member
+            page_number += 1  # pylint: disable=no-member
 
             records, total_records = self._call_back_end(msg)
             for rec in records:
@@ -204,7 +206,9 @@ class LazyList(object):
         # copy msg to avoid mutating `self`'s state
         msg = self._msg.__class__()
         msg.CopyFrom(self._msg)
-        msg.page_limit = msg.page_number = 1  # minimal request just to get total_records
+        # minimal request just to get total_records
+        self.set_page_limit(msg, 1)
+        self.set_page_number(msg, 1)
 
         _, total_records = self._call_back_end(msg)
 
@@ -329,6 +333,20 @@ class LazyList(object):
     def _create_element(self, msg):
         """Instantiate element to return to user."""
         raise NotImplementedError
+
+    def set_page_limit(self, msg, param):
+        msg.page_limit = param
+        return msg
+
+    def set_page_number(self, msg, param):
+        msg.page_number = param
+        return msg
+
+    def page_limit(self, msg):
+        return msg.page_limit
+
+    def page_number(self, msg):
+        return msg.page_number
 
 
 def make_request(method, url, conn, stream=False, **kwargs):

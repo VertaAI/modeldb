@@ -38,6 +38,14 @@ pdb:
   enabled: false
 labels: {}
 
+## Pod Security Context
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+##
+securityContext:
+  enabled: false
+  fsGroup: 1001
+  runAsUser: 1001
+
 config:
   grpcServer:
     port: 8085

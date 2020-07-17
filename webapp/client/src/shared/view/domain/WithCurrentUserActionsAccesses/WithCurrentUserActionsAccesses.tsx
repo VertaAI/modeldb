@@ -6,12 +6,6 @@ import * as EntitiesActions from 'shared/models/EntitiesActions';
 import { IApplicationState } from 'setup/store/store';
 
 import * as Common from 'shared/models/Common';
-import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
-import * as DatasetsStore from 'features/datasets/store';
-import * as DatasetVersionsStore from 'features/datasetVersions/store';
-import * as ExperimentRunsStore from 'features/experimentRuns/store';
-import * as ExperimentsStore from 'features/experiments/store';
-import * as ProjectsStore from 'features/projects/store';
 
 export interface ILocalProps<T extends EntitiesActions.UserEntityAction[]> {
   entityType: Exclude<Common.EntityType, 'endpoint'>;
@@ -44,7 +38,7 @@ class WithCurrentUserActionsAccesses<
     const { actions } = this.props;
 
     const actionsAccesses = R.fromPairs(
-      actions.map(action => [action, true])
+      actions.map((action) => [action, true])
     ) as IActionAccesses<EntitiesActions.UserEntityAction>;
 
     return this.props.children({
