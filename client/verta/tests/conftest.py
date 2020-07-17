@@ -313,21 +313,13 @@ def created_datasets(client):
 
 @pytest.fixture
 def registered_model(client):
-    registered_model = client.set_registered_model()
+    model = client.get_or_create_registered_model()
 
-    yield registered_model
+    yield model
 
-    if registered_model:
-        utils.delete_registered_model(registered_model.id, client._conn)
+    utils.delete_registered_model(model.id, client._conn)
 
 
 @pytest.fixture
-def model_version(client):
-    try:
-        registered_model = client.set_registered_model()
-        model_version = registered_model.get_or_create_version(name="my version")
-
-        yield model_version
-    finally:
-        if registered_model:
-            utils.delete_registered_model(registered_model.id, client._conn)
+def model_version(client, registered_model):
+    yield registered_model.get_or_create_version()
