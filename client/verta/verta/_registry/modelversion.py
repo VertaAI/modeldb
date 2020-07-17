@@ -79,7 +79,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         print("Created new ModelVersion: {}".format(model_version.version))
         return model_version
 
-    def set_model(self, model, overwrite=False):
+    def log_model(self, model, overwrite=False):
         self._refresh_cache()
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
@@ -107,7 +107,7 @@ class RegisteredModelVersion(_ModelDBEntity):
     def get_model(self):
         return _artifact_utils.deserialize_model(self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL))
 
-    def add_asset(self, key, asset, overwrite=False):
+    def log_artifact(self, key, asset, overwrite=False):
         if key == "model":
             raise ValueError("The key `model` is reserved for model. Please use `set_model`")
 
@@ -144,7 +144,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._update_model_version()
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
-    def get_asset(self, key):
+    def get_artifact(self, key):
         artifact = self._get_artifact(key, _CommonCommonService.ArtifactTypeEnum.BLOB)
         artifact_stream = six.BytesIO(artifact)
 
@@ -168,7 +168,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         return artifact_stream
 
-    def del_asset(self, key):
+    def del_artifact(self, key):
         self._refresh_cache()
 
         ind = -1
