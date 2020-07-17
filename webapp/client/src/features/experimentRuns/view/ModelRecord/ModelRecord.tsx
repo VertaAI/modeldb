@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import { handleCustomErrorWithFallback } from 'shared/models/Error';
-import ObservationsModelPage from 'shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/ObservationsModelPage';
+import ObservationsModelPage from 'shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/ObservationsModelPage/ObservationsModelPage';
 import vertaDocLinks from 'shared/utils/globalConstants/vertaDocLinks';
 import { initialCommunication } from 'shared/utils/redux/communication';
 import DeleteFAI from 'shared/view/elements/DeleteFAI/DeleteFAI';
@@ -152,7 +152,6 @@ class ModelRecordView extends React.PureComponent<AllProps> {
           <Section iconType="observations" title="Observations">
             <ObservationsModelPage
               observations={data.observations}
-              docLink={vertaDocLinks.log_observations}
             />
           </Section>
           <Section iconType="datasets" title="Datasets">

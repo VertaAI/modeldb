@@ -289,8 +289,8 @@ const convertServerExperimentRun = async (
   modelRecord.codeVersionsFromBlob = hydrated_experiment_run.experiment_run
     .code_version_from_blob
     ? convertServerCodeVersionsFromBlob(
-        hydrated_experiment_run.experiment_run.code_version_from_blob
-      )
+      hydrated_experiment_run.experiment_run.code_version_from_blob
+    )
     : undefined;
 
   if (
@@ -316,6 +316,8 @@ const convertServerExperimentRun = async (
     })();
     modelRecord.versionedInputs = versionedInputs;
   }
+
+  modelRecord.observations = R.sortBy(({ timestamp }) => +timestamp, modelRecord.observations);
 
   const dates = convertServerEntityWithLoggedDates(
     hydrated_experiment_run.experiment_run

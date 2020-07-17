@@ -44,6 +44,7 @@ import CompareModelsTable, {
 import { NA } from 'shared/view/elements/PageComponents';
 import sortArrayByAnotherArrayKeys from 'features/versioning/compareCommits/view/DiffView/shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
 import Reloading from 'shared/view/elements/Reloading/Reloading';
+import { CompareObservartionsChart } from './CompareObservationsChart/CompareObservationsChart';
 
 interface ILocalProps {
   comparedModelIds: Required<ComparedEntityIds>;
@@ -335,6 +336,16 @@ class CompareModels extends React.PureComponent<AllProps> {
                     }}
                   />
                 </CompareModelsTable>
+                <div className={styles.compareObservartionsChart}>
+                  <CompareObservartionsChart
+                    modelsObservations={[{
+                      number: 1,
+                      observations: comparedModels[0]?.observations || []
+                    },
+                    { number: 2, observations: comparedModels[1]?.observations || [] }
+                  ]}
+                  />
+                </div>
               </div>
             </div>
           )}
