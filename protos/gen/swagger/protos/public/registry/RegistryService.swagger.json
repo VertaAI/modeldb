@@ -1423,7 +1423,7 @@
           "$ref": "#/definitions/versioningEnvironmentBlob",
           "title": "Requirement"
         },
-        "assets": {
+        "artifacts": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/commonArtifact"
@@ -1444,6 +1444,10 @@
             "type": "string"
           },
           "title": "APIs"
+        },
+        "owner": {
+          "type": "string",
+          "title": "owner's verta_id"
         }
       }
     },
@@ -1505,6 +1509,10 @@
         "readme_text": {
           "type": "string",
           "title": "readme"
+        },
+        "owner": {
+          "type": "string",
+          "title": "owner's verta_id"
         }
       }
     },
