@@ -13,20 +13,23 @@ To execute the full test suite, run:
 ```bash
 pytest
 ```
-Add the `-vvs` flag to output `stdout` while tests are running.  
 `pytest` automatically runs any `test_*()` method in any `Test*` class in any `test_*.py` file.
 
-You can also run specific test scripts:
+Add the `-vvs` flag to output `stdout` while tests are running:
 ```bash
-pytest test_entities.py
+pytest -vvs
 ```
-...or specific classes:
+
+Add the `--oss` option to only run ModelDB OSS-compatible tests:
 ```bash
-pytest test_entities.py::TestProject
+pytest --oss
 ```
-...or specific methods within classes:
+
+You can also specify what group of tests to run:
 ```bash
-pytest test_entities.py::TestProject::test_create
+pytest test_entities.py # specific script
+pytest test_entities.py::TestProject # specific class
+pytest test_entities.py::TestProject::test_create # specific function within specific class
 ```
 
 ## Writing Tests
