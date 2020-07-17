@@ -580,4 +580,35 @@ public class ModelDBUtils {
     }
     throw ex;
   }
+
+  /**
+   * If service want to call other verta service internally then should to registered those service
+   * here with count
+   */
+  public static void registeredBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    if (System.getProperties().containsKey(ModelDBConstants.BACKGROUND_UTILS_COUNT)) {
+      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
+    }
+    backgroundUtilsCount = backgroundUtilsCount + 1;
+    LOGGER.trace("After registered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+    System.getProperties().put(ModelDBConstants.BACKGROUND_UTILS_COUNT, backgroundUtilsCount);
+  }
+
+  public static void unregisteredBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    if (System.getProperties().containsKey(ModelDBConstants.BACKGROUND_UTILS_COUNT)) {
+      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
+      backgroundUtilsCount = backgroundUtilsCount - 1;
+    }
+    LOGGER.trace("After unregistered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+    System.getProperties().put(ModelDBConstants.BACKGROUND_UTILS_COUNT, backgroundUtilsCount);
+  }
+
+  public static int getRegisteredBackgroundUtilsCount() {
+    int backgroundUtilsCount =
+        (int) System.getProperties().get(ModelDBConstants.BACKGROUND_UTILS_COUNT);
+    LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+    return backgroundUtilsCount;
+  }
 }
