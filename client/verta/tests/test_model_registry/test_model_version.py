@@ -69,7 +69,7 @@ class TestModelVersion:
         # Overwrite should work:
         new_classifier = LogisticRegression()
         new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.add_asset("coef", new_classifier.coef_, True)
+        model_version.log_artifact("coef", new_classifier.coef_, True)
         retrieved_coef = model_version.get_artifact("coef")
         assert (retrieved_coef == new_classifier.coef_).all()
 
@@ -79,16 +79,16 @@ class TestModelVersion:
 
         assert "The key has been set" in str(excinfo.value)
 
-    def test_add_asset_file(self, model_version):
+    def test_add_artifact_file(self, model_version):
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2**16)
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
-        model_version.add_asset("file", filename)
+        model_version.log_artifact("file", filename)
         os.remove(filename)
 
-        # retrieve the asset:
-        retrieved_file = model_version.get_asset("file")
+        # retrieve the artifact:
+        retrieved_file = model_version.get_artifact("file")
         assert retrieved_file.getvalue() == FILE_CONTENTS
 
     def test_wrong_key(self, model_version):
@@ -98,7 +98,7 @@ class TestModelVersion:
         assert "no model associated with this version" in str(excinfo.value)
 
         with pytest.raises(KeyError) as excinfo:
-            model_version.get_asset("non-existing")
+            model_version.get_artifact("non-existing")
 
         assert "no artifact found with key non-existing" in str(excinfo.value)
 
