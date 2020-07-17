@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+from .._internal_utils._utils import NoneProtoResponse
 from .._tracking.entity import _ModelDBEntity
 from .._tracking.context import _Context
 from .._internal_utils import _utils
@@ -99,3 +100,33 @@ class RegisteredModel(_ModelDBEntity):
 
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
+
+    def add_label(self, label):
+        if label is None:
+            raise ValueError("label is not specified")
+        self._clear_cache()
+        self._refresh_cache()
+        if label not in self._msg.labels:
+            self._msg.labels.append(label)
+            self._update()
+
+    def del_label(self, label):
+        if label is None:
+            raise ValueError("label is not specified")
+        self._clear_cache()
+        self._refresh_cache()
+        if label in self._msg.labels:
+            self._msg.labels.remove(label)
+            self._update()
+
+    def get_labels(self):
+        self._clear_cache()
+        self._refresh_cache()
+        return self._msg.labels
+
+    def _update(self):
+        response = self._conn.make_proto_request("PUT", "/api/v1/registry/{}".format(self.id),
+                                           body=self._msg)
+        Message = _RegisteredModelService.SetRegisteredModel
+        if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
+            raise ValueError("Model not found")

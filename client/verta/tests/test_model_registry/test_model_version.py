@@ -29,3 +29,18 @@ class TestModelVersion:
 
         if registered_model:
             utils.delete_registered_model(registered_model.id, client._conn)
+
+    def test_labels(self, client):
+        registered_model = client.set_registered_model()
+        model_version = registered_model.get_or_create_version(name="my version")
+
+        model_version.add_label("tag1")
+        model_version.add_label("tag2")
+        model_version.add_label("tag3")
+        assert model_version.get_labels() == ["tag1", "tag2", "tag3"]
+        model_version.del_label("tag2")
+        assert model_version.get_labels() == ["tag1", "tag3"]
+        model_version.del_label("tag4")
+        assert model_version.get_labels() == ["tag1", "tag3"]
+        model_version.add_label("tag2")
+        assert model_version.get_labels() == ["tag1", "tag2", "tag3"]
