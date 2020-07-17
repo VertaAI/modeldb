@@ -275,6 +275,16 @@ message GetObservations {
     }
 }
 
+message DeleteObservations {
+    string id = 1;
+    // delete all observations corresponding to the keys
+    repeated string observation_keys = 2;
+    // if true delete all observations corresponding to the run, ignoring observation_keys
+    bool delete_all = 3;
+
+    message Response {
+    }
+}
 // metric
 message LogMetric {
     string id = 1;
@@ -298,6 +308,17 @@ message GetMetrics {
 
     message Response {
         repeated common.KeyValue metrics = 1;
+    }
+}
+
+message DeleteMetrics {
+    string id = 1;
+    // delete metrics corresponding to the keys
+    repeated string metric_keys = 2;
+    // if true delete all metrics corresponding to the run, ignoring metric_keys
+    bool delete_all = 3;
+
+    message Response {
     }
 }
 
@@ -378,6 +399,17 @@ message GetHyperparameters {
 
     message Response {
         repeated common.KeyValue hyperparameters = 1;
+    }
+}
+
+message DeleteHyperparameters {
+    string id = 1;
+    // delete HyperParameters corresponding to the keys
+    repeated string hyperparameter_keys = 2;
+    // if true delete all hyper patrameters corresponding to the run, ignoring hyperparameter_keys
+    bool delete_all = 3;
+
+    message Response {
     }
 }
 
