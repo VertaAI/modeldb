@@ -45,3 +45,5 @@ func (r *experimentRunResolver) Hyperparameters(ctx context.Context, obj *ai_ver
 func (r *experimentRunResolver) Metrics(ctx context.Context, obj *ai_verta_modeldb.ExperimentRun) ([]schema.KeyValue, error) {
 	return keyValueSliceConverter(ctx, obj.GetMetrics())
 }
+
+// TODO: don't consume all errors to a single place

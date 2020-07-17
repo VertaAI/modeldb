@@ -57,6 +57,14 @@ from ._tracking import (
     ExperimentRuns,
 )
 
+from ._registry import (
+    RegisteredModel,
+    RegisteredModels,
+    RegisteredModelVersion,
+    RegisteredModelVersions,
+)
+from ._dataset_versioning import Datasets
+
 
 _OSS_DEFAULT_WORKSPACE = "personal"
 
@@ -202,6 +210,10 @@ class Client(object):
         return self._ctx.proj
 
     @property
+    def registered_model(self):
+        return self._ctx.registered_model
+
+    @property
     def expt(self):
         return self._ctx.expt
 
@@ -285,7 +297,12 @@ class Client(object):
         return var or None
 
     def get_project(self, name=None, workspace=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
         name = self._set_from_config_if_none(name, "project")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
         self._ctx = _Context(self._conn, self._conf)
@@ -297,6 +314,8 @@ class Client(object):
         else:
             self._ctx.proj = Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
 
+        if self._ctx.proj is None:
+            raise ValueError("Project not found")
         return self._ctx.proj
 
     def set_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
@@ -359,7 +378,12 @@ class Client(object):
         return self._ctx.proj
 
     def get_experiment(self, name=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
         name = self._set_from_config_if_none(name, "experiment")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
 
         if id is not None:
             self._ctx.expt = Experiment._get_by_id(self._conn, self._conf, id)
@@ -370,6 +394,8 @@ class Client(object):
 
             self._ctx.expt = Experiment._get_by_name(self._conn, self._conf, name, self._ctx.proj.id)
 
+        if self._ctx.expt is None:
+            raise ValueError("Experment not found")
         return self._ctx.expt
 
     def set_experiment(self, name=None, desc=None, tags=None, attrs=None, id=None):
@@ -426,6 +452,12 @@ class Client(object):
         return self._ctx.expt
 
     def get_experiment_run(self, name=None, id=None):
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
+
         if id is not None:
             self._ctx.expt_run = ExperimentRun._get_by_id(self._conn, self._conf, id)
             self._ctx.populate()
@@ -435,6 +467,8 @@ class Client(object):
 
             self._ctx.expt_run = ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id)
 
+        if self._ctx.expt_run is None:
+            raise ValueError("ExperimentRun not Found")
         return self._ctx.expt_run
 
     def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None):
@@ -660,27 +694,29 @@ class Client(object):
         list of :class:`Dataset`
 
         """
+        datasets = Datasets(self._conn, self._conf)
+        if dataset_ids:
+            datasets = datasets.with_ids(_utils.as_list_of_str(dataset_ids))
+        if sort_key:
+            datasets = datasets.sort(sort_key, not ascending)
+        if workspace:
+            datasets = datasets.with_workspace(workspace)
+
         predicates = []
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
-            for tag in tags:
-                predicates.append(
-                    _CommonCommonService.KeyValueQuery(key="tags",
-                                                 value=_utils.python_to_val_proto(tag),
-                                                 operator=_CommonCommonService.OperatorEnum.EQ))
+            predicates.extend(
+                "tags == \"{}\"".format(tag)
+                for tag in tags
+            )
         if name is not None:
             if not isinstance(name, six.string_types):
                 raise TypeError("`name` must be str, not {}".format(type(name)))
-            predicates.append(
-                _CommonCommonService.KeyValueQuery(key="name",
-                                             value=_utils.python_to_val_proto(name),
-                                             operator=_CommonCommonService.OperatorEnum.CONTAIN))
-        Message = _dataset._DatasetService.FindDatasets
-        msg = Message(dataset_ids=dataset_ids, predicates=predicates,
-                      ascending=ascending, sort_key=sort_key,
-                      workspace_name=workspace)
-        endpoint = "{}://{}/api/v1/modeldb/dataset/findDatasets"
-        return _dataset.DatasetLazyList(self._conn, self._conf, msg, endpoint, "POST")
+            predicates.append("name ~= \"{}\"".format(name))
+        if predicates:
+            datasets = datasets.find(predicates)
+
+        return datasets
 
     def get_dataset_version(self, id):
         """
@@ -732,12 +768,92 @@ class Client(object):
 
         """
         return self.get_or_create_repository(*args, **kwargs)
+    # set aliases for get-or-create functions for API compatibility
 
-    def get_or_create_registered_model(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
-        raise NotImplementedError
+    def get_or_create_registered_model(self, name=None, desc=None, labels=None, attrs=None, workspace=None, public_within_org=None, id=None):
+        """
+        Attaches a registered_model to this Client.
+
+        If an accessible registered_model with name `name` does not already exist, it will be created
+        and initialized with specified metadata parameters. If such a registered_model does already exist,
+        it will be retrieved; specifying metadata parameters in this case will raise an exception.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the registered_model. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the registered_model.
+        labels: list of str, optional
+            Labels of the registered_model.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the registered_model.
+        workspace : str, optional
+            Workspace under which the registered_model with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating a registered_model in an organization's workspace, whether to make this registered_model
+            accessible to all members of that organization.
+        id : str, optional
+            ID of the registered_model. This parameter cannot be provided alongside `name`, and other
+            parameters will be ignored.
+
+        Returns
+        -------
+        :class:`~verta._registry.model.RegisteredModel`
+
+        Raises
+        ------
+        ValueError
+            If a registered_model with `name` already exists, but metadata parameters are passed in.
+
+        """
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        name = self._set_from_config_if_none(name, "registered_model")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+
+        if workspace is None:
+            workspace = self._get_personal_workspace()
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+
+        if id is not None:
+            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
+        else:
+            self._ctx.registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
+                                                                                lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
+                                                                                lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=labels, attrs=attrs, public_within_org=public_within_org))
+
+        return self._ctx.registered_model
 
     def get_registered_model(self, name=None, workspace=None, id=None):
-        raise NotImplementedError
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        name = self._set_from_config_if_none(name, "registered_model")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self._get_personal_workspace()
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+
+        if id is not None:
+            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
+            self._ctx.populate()
+        else:
+            self._ctx.registered_model = RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+
+        return self._ctx.registered_model
+
+    def set_registered_model(self, *args, **kwargs):
+        return self.get_or_create_registered_model(*args, **kwargs)
 
     def get_registered_model_version(self, name=None, id=None):
         if self._ctx.registered_model is None:

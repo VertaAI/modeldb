@@ -19,6 +19,9 @@ class Experiments(_utils.LazyList):
         'id',
         'name',
         'date_created',
+        'date_updated',
+        'attributes',
+        'tags',
     }
 
     def __init__(self, conn, conf):

@@ -5,10 +5,6 @@ import { IServerRepository } from 'services/serverModel/Versioning/Repository/Re
 import { IRepository } from 'shared/models/Versioning/Repository';
 
 export default class RepositoriesDataService extends BaseDataService {
-  constructor() {
-    super();
-  }
-
   @bind
   public async loadRepositoryName(
     id: IRepository['id']

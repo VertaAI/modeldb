@@ -7,17 +7,16 @@ import (
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/errors"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
-	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func (r *workspaceResolver) resolveMDBPredicates(ctx context.Context, stringPredicates []*schema.StringPredicate, floatPredicates []*schema.FloatPredicate) ([]*modeldb.KeyValueQuery, error) {
-	predicates := make([]*modeldb.KeyValueQuery, 0)
+func (r *Resolver) resolveMDBPredicates(ctx context.Context, stringPredicates []*schema.StringPredicate, floatPredicates []*schema.FloatPredicate) ([]*common.KeyValueQuery, error) {
+	predicates := make([]*common.KeyValueQuery, 0)
 
 	for i, pred := range stringPredicates {
-		op, ok := modeldb.OperatorEnum_Operator_value[pred.Operator.String()]
+		op, ok := common.OperatorEnum_Operator_value[pred.Operator.String()]
 		if !ok {
 			return nil, errors.UnknownOperator(ctx, pred.Operator.String())
 		}
@@ -26,58 +25,69 @@ func (r *workspaceResolver) resolveMDBPredicates(ctx context.Context, stringPred
 			if !r.Connections.HasUac() {
 				stringPredicates[i] = nil
 			} else {
-				switch modeldb.OperatorEnum_Operator(op) {
-				case modeldb.OperatorEnum_CONTAIN:
+				switch common.OperatorEnum_Operator(op) {
+				case common.OperatorEnum_CONTAIN:
 					res, err := r.Connections.UAC.GetUsersFuzzy(ctx, &uac.GetUsersFuzzy{
 						Username: pred.Value,
 					})
 					if err != nil {
+						// Not transforming this errror to a "NULL" string as it should not be 404ing
+						// We want to see this error
 						r.Logger.Error("failed to get users", zap.Error(err))
 						return nil, err
 					}
+					// TODO: This was done to match existing webapp behavior, but this will also match a user named "NULL" and should be removed
+					// VR-5254
 					if len(res.GetUserInfos()) == 0 {
-						return nil, errors.NoUserFound(ctx)
+						pred.Value = "NULL"
+					} else {
+						ids := make([]string, len(res.GetUserInfos()))
+						for i, user := range res.GetUserInfos() {
+							ids[i] = user.GetVertaInfo().GetUserId()
+						}
+						pred.Value = strings.Join(ids, ",")
 					}
-					ids := make([]string, len(res.GetUserInfos()))
-					for i, user := range res.GetUserInfos() {
-						ids[i] = user.GetVertaInfo().GetUserId()
-					}
-					pred.Value = strings.Join(ids, ",")
 					pred.Operator = schema.PredicateOperatorIn
-				case modeldb.OperatorEnum_IN:
+				case common.OperatorEnum_IN:
 					usernames := strings.Split(pred.Value, ",")
 					res, err := r.Connections.UAC.GetUsers(ctx, &uac.GetUsers{
 						Usernames: usernames,
 					})
 					if err != nil {
-						r.Logger.Error("failed to get users", zap.Error(err))
-						return nil, err
+						r.Logger.Info("failed to get users", zap.Error(err))
+						// TODO: This was done to match existing webapp behavior, but this will also match a user named "NULL" and should be removed
+						// VR-5254
+						pred.Value = "NULL"
+					} else {
+						ids := make([]string, len(res.GetUserInfos()))
+						for i, user := range res.GetUserInfos() {
+							ids[i] = user.GetVertaInfo().GetUserId()
+						}
+						pred.Value = strings.Join(ids, ",")
 					}
-					ids := make([]string, len(res.GetUserInfos()))
-					for i, user := range res.GetUserInfos() {
-						ids[i] = user.GetVertaInfo().GetUserId()
-					}
-					pred.Value = strings.Join(ids, ",")
-				case modeldb.OperatorEnum_EQ:
+				case common.OperatorEnum_EQ:
 					fallthrough
-				case modeldb.OperatorEnum_NE:
+				case common.OperatorEnum_NE:
 					res, err := r.Connections.UAC.GetUser(ctx, &uac.GetUser{
 						Username: pred.Value,
 					})
 					if err != nil {
-						r.Logger.Error("failed to get user", zap.Error(err))
-						return nil, err
+						r.Logger.Info("failed to get users", zap.Error(err))
+						// TODO: This was done to match existing webapp behavior, but this will also match a user named "NULL" and should be removed
+						// VR-5254
+						pred.Value = "NULL"
+					} else {
+						pred.Value = res.VertaInfo.GetUserId()
 					}
-					pred.Value = res.VertaInfo.GetUserId()
-				case modeldb.OperatorEnum_LTE:
+				case common.OperatorEnum_LTE:
 					fallthrough
-				case modeldb.OperatorEnum_LT:
+				case common.OperatorEnum_LT:
 					fallthrough
-				case modeldb.OperatorEnum_GTE:
+				case common.OperatorEnum_GTE:
 					fallthrough
-				case modeldb.OperatorEnum_GT:
+				case common.OperatorEnum_GT:
 					fallthrough
-				case modeldb.OperatorEnum_NOT_CONTAIN:
+				case common.OperatorEnum_NOT_CONTAIN:
 					return nil, errors.UnknownOperator(ctx, pred.Operator.String())
 				}
 			}
@@ -86,13 +96,13 @@ func (r *workspaceResolver) resolveMDBPredicates(ctx context.Context, stringPred
 
 	for _, pred := range stringPredicates {
 		if pred != nil {
-			op, ok := modeldb.OperatorEnum_Operator_value[pred.Operator.String()]
+			op, ok := common.OperatorEnum_Operator_value[pred.Operator.String()]
 			if !ok {
 				return nil, errors.UnknownOperator(ctx, pred.Operator.String())
 			}
-			predicates = append(predicates, &modeldb.KeyValueQuery{
+			predicates = append(predicates, &common.KeyValueQuery{
 				Key:      pred.Key,
-				Operator: modeldb.OperatorEnum_Operator(op),
+				Operator: common.OperatorEnum_Operator(op),
 				Value: &structpb.Value{
 					Kind: &structpb.Value_StringValue{
 						StringValue: pred.Value,
@@ -105,13 +115,13 @@ func (r *workspaceResolver) resolveMDBPredicates(ctx context.Context, stringPred
 
 	for _, pred := range floatPredicates {
 		if pred != nil {
-			op, ok := modeldb.OperatorEnum_Operator_value[pred.Operator.String()]
+			op, ok := common.OperatorEnum_Operator_value[pred.Operator.String()]
 			if !ok {
 				return nil, errors.UnknownOperator(ctx, pred.Operator.String())
 			}
-			predicates = append(predicates, &modeldb.KeyValueQuery{
+			predicates = append(predicates, &common.KeyValueQuery{
 				Key:      pred.Key,
-				Operator: modeldb.OperatorEnum_Operator(op),
+				Operator: common.OperatorEnum_Operator(op),
 				Value: &structpb.Value{
 					Kind: &structpb.Value_NumberValue{
 						NumberValue: pred.Value,
