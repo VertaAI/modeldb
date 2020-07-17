@@ -946,4 +946,29 @@ service ExperimentRunService {
             }
         };
     }
+
+
+    rpc deleteObservations(DeleteObservations) returns (
+        DeleteObservations.Response) {
+        option (google.api.http) = {
+            delete: "/v1/experiment-run/deleteObservations"
+            body: "*"
+        };
+    };
+
+    rpc deleteMetrics(DeleteMetrics) returns (
+        DeleteMetrics.Response) {
+        option (google.api.http) = {
+            delete: "/v1/experiment-run/deleteMetrics"
+            body: "*"
+        };
+    };
+
+    rpc deleteHyperparameters(DeleteHyperparameters) returns (
+        DeleteHyperparameters.Response) {
+        option (google.api.http) = {
+            delete: "/v1/experiment-run/deleteHyperparameters"
+            body: "*"
+        };
+    };
 }

@@ -397,6 +397,102 @@
         ]
       }
     },
+    "/experiment-run/deleteHyperparameters": {
+      "delete": {
+        "operationId": "deleteHyperparameters",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteHyperparametersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteHyperparameters"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/experiment-run/deleteMetrics": {
+      "delete": {
+        "operationId": "deleteMetrics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteMetricsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteMetrics"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/experiment-run/deleteObservations": {
+      "delete": {
+        "operationId": "deleteObservations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteObservationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteObservations"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
     "/experiment-run/findExperimentRuns": {
       "post": {
         "summary": "queries",
@@ -2565,6 +2661,75 @@
           "format": "boolean"
         }
       }
+    },
+    "modeldbDeleteHyperparameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "hyperparameter_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "delete HyperParameters corresponding to the keys"
+        },
+        "delete_all": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "if true delete all hyper patrameters corresponding to the run, ignoring hyperparameter_keys"
+        }
+      }
+    },
+    "modeldbDeleteHyperparametersResponse": {
+      "type": "object"
+    },
+    "modeldbDeleteMetrics": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "metric_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "delete metrics corresponding to the keys"
+        },
+        "delete_all": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "if true delete all metrics corresponding to the run, ignoring metric_keys"
+        }
+      }
+    },
+    "modeldbDeleteMetricsResponse": {
+      "type": "object"
+    },
+    "modeldbDeleteObservations": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "observation_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "delete all observations corresponding to the keys"
+        },
+        "delete_all": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "if true delete all observations corresponding to the run, ignoring observation_keys"
+        }
+      }
+    },
+    "modeldbDeleteObservationsResponse": {
+      "type": "object"
     },
     "modeldbExperimentRun": {
       "type": "object",
