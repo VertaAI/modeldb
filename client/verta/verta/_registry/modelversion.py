@@ -324,7 +324,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             # get model artifact
             if not self.has_model:
                 raise KeyError("no model associated with this version")
-        elif len(filter(lambda artifact: artifact.key == key, self._msg.assets)) == 0:
+        elif len(filter(lambda artifact: artifact.key == key, self._msg.artifacts)) == 0:
             raise KeyError("no artifact found with key {}".format(key))
 
         # download artifact from artifact store
