@@ -96,7 +96,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         # Create artifact message and update ModelVersion's message:
         self._msg.model.CopyFrom(self._create_artifact_msg("model", serialized_model, artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension))
-        self._update_model_version()
+        self._update()
 
         # Upload the artifact to ModelDB:
         self._upload_artifact(
@@ -138,7 +138,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         else:
             self._msg.artifacts[same_key_ind].CopyFrom(artifact_msg)
 
-        self._update_model_version()
+        self._update()
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def del_artifact(self, key):
@@ -155,7 +155,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             raise KeyError("no artifact found with key {}".format(key))
 
         del self._msg.artifacts[ind]
-        self._update_model_version()
+        self._update()
 
     def set_environment(self, env):
         # Env must be an EnvironmentBlob. Let's re-use the functionality from there
@@ -259,14 +259,6 @@ class RegisteredModelVersion(_ModelDBEntity):
             _utils.raise_for_http_error(response)
 
         print("upload complete")
-
-    def _update_model_version(self):
-        Message = _ModelVersionService.SetModelVersion
-        endpoint = "/api/v1/registry/{}/versions/{}".format(self._msg.registered_model_id, self.id)
-
-        response = self._conn.make_proto_request("PUT", endpoint, body=self._msg)
-        self._conn.must_proto_response(response, Message.Response)
-        self._clear_cache()
 
     def _create_artifact_msg(self, key, artifact_stream, artifact_type, extension=None):
         # calculate checksum
