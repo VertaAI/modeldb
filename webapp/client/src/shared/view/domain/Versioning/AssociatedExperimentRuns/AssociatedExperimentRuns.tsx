@@ -79,7 +79,7 @@ class AssociatedExperimentRuns extends React.PureComponent<ILocalProps> {
                 title: 'Run Id',
                 type: 'runId',
                 width: '25%',
-                render: ({ project, id }) => (
+                render: ({ project, id, name }) => (
                   <div className={styles.experimentRunIdContainer}>
                     <NavLink
                       title={name}

@@ -1,0 +1,12 @@
+.root {
+  display: grid;
+  grid-template-columns: 46px auto;
+  text-align: end;
+  font-size: var(--font-size3);
+  color: var(--text-color3);
+  grid-column-gap: 5px;
+}
+
+.readonly {
+  grid-template-columns: auto auto;
+}

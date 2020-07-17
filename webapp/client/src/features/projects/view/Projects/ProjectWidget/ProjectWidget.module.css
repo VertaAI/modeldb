@@ -44,23 +44,6 @@
   margin-bottom: 5px;
 }
 
-.title_copy_icon {
-  margin-left: 6px;
-  opacity: 0;
-  color: var(--main-color2);
-  font-size: 16px;
-  font-weight: 500;
-  transition: all 0.15s ease-out;
-}
-
-.title:hover .title_copy_icon {
-  opacity: 0.8;
-}
-
-.title_copy_icon:hover {
-  color: var(--main-color1);
-}
-
 .tags_block {
   grid-area: tags;
   margin-top: 16px;

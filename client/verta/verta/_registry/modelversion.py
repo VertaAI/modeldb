@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+from .._internal_utils._utils import NoneProtoResponse
 from .._tracking.entity import _ModelDBEntity
 
 from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
@@ -114,8 +115,8 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         same_key_ind = -1
 
-        for i in range(len(self._msg.assets)):
-            artifact = self._msg.assets[i]
+        for i in range(len(self._msg.artifacts)):
+            artifact = self._msg.artifacts[i]
             if artifact.key == key:
                 if not overwrite:
                     raise ValueError("The key has been set; consider setting overwrite=True")
@@ -137,9 +138,9 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         artifact_msg = self._create_artifact_msg(key, artifact_stream, artifact_type=artifact_type, extension=extension)
         if same_key_ind == -1:
-            self._msg.assets.append(artifact_msg)
+            self._msg.artifacts.append(artifact_msg)
         else:
-            self._msg.assets[same_key_ind].CopyFrom(artifact_msg)
+            self._msg.artifacts[same_key_ind].CopyFrom(artifact_msg)
 
         self._update_model_version()
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
@@ -172,8 +173,8 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
 
         ind = -1
-        for i in range(len(self._msg.assets)):
-            artifact = self._msg.assets[i]
+        for i in range(len(self._msg.artifacts)):
+            artifact = self._msg.artifacts[i]
             if artifact.key == key:
                 ind = i
                 break
@@ -181,7 +182,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         if ind == -1:
             raise KeyError("no artifact found with key {}".format(key))
 
-        del self._msg.assets[ind]
+        del self._msg.artifacts[ind]
         self._update_model_version()
 
     def set_environment(self, env):
@@ -342,3 +343,32 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         return response.content
 
+    def add_label(self, label):
+        if label is None:
+            raise ValueError("label is not specified")
+        self._clear_cache()
+        self._refresh_cache()
+        if label not in self._msg.labels:
+            self._msg.labels.append(label)
+            self._update()
+
+    def del_label(self, label):
+        if label is None:
+            raise ValueError("label is not specified")
+        self._clear_cache()
+        self._refresh_cache()
+        if label in self._msg.labels:
+            self._msg.labels.remove(label)
+            self._update()
+
+    def get_labels(self):
+        self._clear_cache()
+        self._refresh_cache()
+        return self._msg.labels
+
+    def _update(self):
+        response = self._conn.make_proto_request("PUT", "/api/v1/registry/{}/versions/{}".format(self._msg.registered_model_id, self.id),
+                                                 body=self._msg)
+        Message = _ModelVersionService.SetModelVersion
+        if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
+            raise ValueError("Model not found")

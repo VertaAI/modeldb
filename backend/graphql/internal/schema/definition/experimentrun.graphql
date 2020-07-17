@@ -24,6 +24,7 @@ type ExperimentRun {
   jobId: String
   owner: User!
   codeVersion: String
+
 }
 
 type ExperimentRuns {

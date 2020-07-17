@@ -3,11 +3,16 @@ type Workspace {
 
   projects(next: String, query: ProjectsQuery): Projects!
 
+  datasets(query: DatasetsQuery): Datasets!
+  datasetVersions(query: DatasetVersionsQuery): DatasetVersions!
+  createDataset(name: String!, visibility: Visibility!): Dataset!
+
   repositories(next: String, query: RepositoriesQuery): Repositories!
   repository(name: String!): Repository
   createRepository(name: String!, visibility: Visibility!): Repository!
 
 
   # not sure this is needed now or later, but this feels like it where go
+
 
 }

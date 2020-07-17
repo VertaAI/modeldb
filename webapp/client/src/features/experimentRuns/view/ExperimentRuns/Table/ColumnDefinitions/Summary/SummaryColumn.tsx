@@ -4,9 +4,11 @@ import ResizeDetector from 'react-resize-detector';
 import { Link } from 'react-router-dom';
 
 import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
-import { makeDefaultExprNameFilter } from 'shared/models/Filters';
+import {
+  makeDefaultExprNameFilter,
+  makeDefaultDateCreatedFilter,
+} from 'shared/models/Filters';
 import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
-import withProps from 'shared/utils/react/withProps';
 import Draggable from 'shared/view/elements/Draggable/Draggable';
 import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 import routes from 'shared/routes';
@@ -30,7 +32,6 @@ class SummaryColumn extends React.PureComponent<AllProps> {
         id,
         projectId,
         shortExperiment: experiment,
-        owner,
         name,
         tags,
         dateCreated,
@@ -71,9 +72,15 @@ class SummaryColumn extends React.PureComponent<AllProps> {
         {dateCreated && (
           <div className={styles.timeStamp_block}>
             Timestamp:{' '}
-            <div className={styles.timestamp_value}>
-              {getFormattedDateTime(dateCreated)}
-            </div>
+            <Draggable
+              additionalClassName={styles.param_draggable}
+              type="filter"
+              data={makeDefaultDateCreatedFilter(+dateCreated)}
+            >
+              <div className={styles.timeStamp_value}>
+                {getFormattedDateTime(dateCreated)}
+              </div>
+            </Draggable>
           </div>
         )}
         {/* limit 5 tags after which a scrollable container is rendered */}
