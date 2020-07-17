@@ -1299,18 +1299,16 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryDAO repositoryDAO,
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
-      String datasetId,
       String datasetVersionId)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity =
           VersioningUtils.getDatasetRepositoryEntity(
-              session, repositoryDAO, datasetId, datasetVersionId, false);
+              session, repositoryDAO, null, datasetVersionId, false);
       return blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, datasetVersionId);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return getDatasetVersionById(
-            repositoryDAO, blobDAO, metadataDAO, datasetId, datasetVersionId);
+        return getDatasetVersionById(repositoryDAO, blobDAO, metadataDAO, datasetVersionId);
       } else {
         throw ex;
       }

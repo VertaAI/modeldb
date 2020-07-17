@@ -997,7 +997,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           GetDatasetVersionById.Response.newBuilder()
               .setDatasetVersion(
                   commitDAO.getDatasetVersionById(
-                      repositoryDAO, blobDAO, metadataDAO, request.getDatasetId(), request.getId()))
+                      repositoryDAO, blobDAO, metadataDAO, request.getId()))
               .build());
       responseObserver.onCompleted();
     } catch (Exception e) {

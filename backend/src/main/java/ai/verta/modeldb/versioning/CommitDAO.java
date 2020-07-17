@@ -107,7 +107,6 @@ public interface CommitDAO {
       RepositoryDAO repositoryDAO,
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
-      String datasetId,
       String datasetVersionId)
       throws ModelDBException;
 }
