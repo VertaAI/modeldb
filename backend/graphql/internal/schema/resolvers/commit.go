@@ -9,6 +9,8 @@ import (
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/dataloaders"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/errors"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
+	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
+	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 	"github.com/gogo/protobuf/jsonpb"
@@ -104,7 +106,7 @@ func (r *commitResolver) AsDiff(ctx context.Context, obj *models.Commit) (*schem
 	}, nil
 }
 func (r *commitResolver) Runs(ctx context.Context, obj *models.Commit, query *schema.ExperimentRunsQuery) (*schema.ExperimentRuns, error) {
-	pagination := &versioning.Pagination{
+	pagination := &common.Pagination{
 		PageLimit:  10,
 		PageNumber: 1,
 	}
@@ -120,7 +122,7 @@ func (r *commitResolver) Runs(ctx context.Context, obj *models.Commit, query *sc
 		}
 	}
 
-	res, err := r.Connections.Versioning.ListCommitExperimentRuns(ctx, &versioning.ListCommitExperimentRunsRequest{
+	res, err := r.Connections.ExperimentRun.ListCommitExperimentRuns(ctx, &modeldb.ListCommitExperimentRunsRequest{
 		RepositoryId: &versioning.RepositoryIdentification{
 			RepoId: obj.Repository.GetId(),
 		},
@@ -209,7 +211,7 @@ func (r *namedCommitFolderResolver) Content(ctx context.Context, obj *models.Nam
 type commitBlobResolver struct{ *Resolver }
 
 func (r *commitBlobResolver) Runs(ctx context.Context, obj *models.CommitBlob, query *schema.ExperimentRunsQuery) (*schema.ExperimentRuns, error) {
-	pagination := &versioning.Pagination{
+	pagination := &common.Pagination{
 		PageLimit:  10,
 		PageNumber: 1,
 	}
@@ -225,7 +227,7 @@ func (r *commitBlobResolver) Runs(ctx context.Context, obj *models.CommitBlob, q
 		}
 	}
 
-	res, err := r.Connections.Versioning.ListBlobExperimentRuns(ctx, &versioning.ListBlobExperimentRunsRequest{
+	res, err := r.Connections.ExperimentRun.ListBlobExperimentRuns(ctx, &modeldb.ListBlobExperimentRunsRequest{
 		RepositoryId: &versioning.RepositoryIdentification{
 			RepoId: obj.Commit.Repository.GetId(),
 		},
@@ -248,4 +250,20 @@ func (r *commitBlobResolver) Runs(ctx context.Context, obj *models.CommitBlob, q
 		Runs:       res.GetRuns(),
 		Pagination: pageResponse,
 	}, nil
+}
+func (r *commitBlobResolver) DownloadURLForComponent(ctx context.Context, obj *models.CommitBlob, componentPath string) (string, error) {
+	res, err := r.Connections.Versioning.GetUrlForBlobVersioned(ctx, &versioning.GetUrlForBlobVersioned{
+		RepositoryId: &versioning.RepositoryIdentification{
+			RepoId: obj.Commit.Repository.GetId(),
+		},
+		CommitSha:                    obj.Commit.Commit.GetCommitSha(),
+		Location:                     obj.Location,
+		PathDatasetComponentBlobPath: componentPath,
+		Method:                       "GET",
+	})
+	if err != nil {
+		r.Logger.Error("failed to load url", zap.Error(err))
+		return "", err
+	}
+	return res.GetUrl(), nil
 }
