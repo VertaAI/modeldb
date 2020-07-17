@@ -1,7 +1,11 @@
 import cn from 'classnames';
 import * as React from 'react';
 
-import { IObservation, groupObservationsByAttributeKey, hasEpochValues } from 'shared/models/Observation';
+import {
+  IObservation,
+  groupObservationsByAttributeKey,
+  hasEpochValues,
+} from 'shared/models/Observation';
 import { Icon } from 'shared/view/elements/Icon/Icon';
 import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 import Button from 'shared/view/elements/Button/Button';
@@ -21,13 +25,15 @@ interface ILocalProps {
 type XAxisType = 'epochNumber' | 'timeStamp';
 
 const ObservationsModelPage = React.memo(({ observations }: ILocalProps) => {
-  const [selectedObservations, setSelectedObservations] = React.useState<Record<string, boolean>>(() => getInitialSelection(observations));
+  const [selectedObservations, setSelectedObservations] = React.useState<
+    Record<string, boolean>
+  >(() => getInitialSelection(observations));
   const toggleObservationSelection = (attributeKey: string) => {
     setSelectedObservations({
       ...selectedObservations,
-      [attributeKey]: !selectedObservations[attributeKey]
+      [attributeKey]: !selectedObservations[attributeKey],
     });
-  }
+  };
 
   const { xAxisType, xAxisTypeSelect } = useXAxisTypeSelect(observations);
 
@@ -37,17 +43,19 @@ const ObservationsModelPage = React.memo(({ observations }: ILocalProps) => {
     <div>
       {Object.keys(groupedObs).length > 0 ? (
         <div>
-        {xAxisTypeSelect}
-        <div className={styles.observations_wrapper}>
-          <ScrollableContainer
-            maxHeight={480}
-            containerOffsetValue={12}
-            children={
-              <>
-                {Object.entries(groupedObs).map(
-                  ([attributeKey, values]) => {
+          {xAxisTypeSelect}
+          <div className={styles.observations_wrapper}>
+            <ScrollableContainer
+              maxHeight={480}
+              containerOffsetValue={12}
+              children={
+                <>
+                  {Object.entries(groupedObs).map(([attributeKey, values]) => {
                     return (
-                      <div className={styles.attribute_container} key={attributeKey}>
+                      <div
+                        className={styles.attribute_container}
+                        key={attributeKey}
+                      >
                         <ObservationButton
                           values={values}
                           attributeKey={attributeKey}
@@ -61,22 +69,23 @@ const ObservationsModelPage = React.memo(({ observations }: ILocalProps) => {
                               : styles.option_icon
                           )}
                           key={attributeKey}
-                          onClick={() => toggleObservationSelection(attributeKey)}
+                          onClick={() =>
+                            toggleObservationSelection(attributeKey)
+                          }
                         />
                       </div>
                     );
-                  }
-                )}
-              </>
-            }
-          />
-          <div className={styles.observations_chart_container}>
-            <ObservationsChart
-              data={getObservationLineData(groupedObs, selectedObservations)}
-              xAxisType={xAxisType}
+                  })}
+                </>
+              }
             />
+            <div className={styles.observations_chart_container}>
+              <ObservationsChart
+                data={getObservationLineData(groupedObs, selectedObservations)}
+                xAxisType={xAxisType}
+              />
+            </div>
           </div>
-        </div>
         </div>
       ) : (
         <ClientSuggestion
@@ -90,19 +99,34 @@ const ObservationsModelPage = React.memo(({ observations }: ILocalProps) => {
 });
 
 export const useXAxisTypeSelect = (observations: IObservation[]) => {
-  const [xAxisType, setXAxisType] = React.useState<XAxisType>(() => hasEpochValues(observations) ? 'epochNumber' : 'timeStamp');
+  const [xAxisType, setXAxisType] = React.useState<XAxisType>(() =>
+    hasEpochValues(observations) ? 'epochNumber' : 'timeStamp'
+  );
 
   const xAxisTypeSelect = hasEpochValues(observations) && (
     <div className={styles.changeXAxisButton}>
       <Button
         size="medium"
         fullWidth={true}
-        onClick={() => setXAxisType(matchType({ timeStamp: () => 'epochNumber', epochNumber: () => 'timeStamp' }, xAxisType))}
+        onClick={() =>
+          setXAxisType(
+            matchType(
+              {
+                timeStamp: () => 'epochNumber',
+                epochNumber: () => 'timeStamp',
+              },
+              xAxisType
+            )
+          )
+        }
       >
-        {matchType({
-          timeStamp: () => 'Switch to epoch',
-          epochNumber: () => 'Switch to timestamp',
-        }, xAxisType)}
+        {matchType(
+          {
+            timeStamp: () => 'Switch to epoch',
+            epochNumber: () => 'Switch to timestamp',
+          },
+          xAxisType
+        )}
       </Button>
     </div>
   );
@@ -111,10 +135,16 @@ export const useXAxisTypeSelect = (observations: IObservation[]) => {
 };
 
 function getInitialSelection(observations: IObservation[]) {
-  const observationAttrs = Object.keys(groupObservationsByAttributeKey(observations));
+  const observationAttrs = Object.keys(
+    groupObservationsByAttributeKey(observations)
+  );
   const initialSelectedObservationAttrs = observationAttrs.slice(0, 3);
 
-  return Object.fromEntries(observationAttrs.map((attr) => [attr, initialSelectedObservationAttrs.includes(attr)] as const));
+  return Object.fromEntries(
+    observationAttrs.map(
+      attr => [attr, initialSelectedObservationAttrs.includes(attr)] as const
+    )
+  );
 }
 
 export default ObservationsModelPage;

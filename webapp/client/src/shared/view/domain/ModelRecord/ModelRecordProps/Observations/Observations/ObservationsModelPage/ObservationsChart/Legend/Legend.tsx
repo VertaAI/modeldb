@@ -5,7 +5,7 @@ import { IObservationLineData } from '../../observationsChartHelpers';
 
 interface ILocalProps {
   data: IObservationLineDataWithColor[];
-  renderLegendItems?: (settings: { data: IObservationLineData[]; }) => void;
+  renderLegendItems?: (settings: { data: IObservationLineData[] }) => void;
 }
 
 export interface IObservationLineDataWithColor extends IObservationLineData {
@@ -17,12 +17,17 @@ const Legend = ({ data, renderLegendItems }: ILocalProps) => {
     <div className={styles.legendBlock}>
       <div className={styles.legendTitle}>Observations:</div>
       <div className={styles.legendContent}>
-        {renderLegendItems ? renderLegendItems({ data }) : (
+        {renderLegendItems ? (
+          renderLegendItems({ data })
+        ) : (
           <div className={styles.legendItems}>
             {data.map(({ lineIndex, color }, i) => (
               <div className={styles.legendItem}>
                 <div className={styles.legendItem__label}>{lineIndex}</div>
-                <div className={styles.legendItem__color} style={{ backgroundColor: color }}></div>
+                <div
+                  className={styles.legendItem__color}
+                  style={{ backgroundColor: color }}
+                ></div>
               </div>
             ))}
           </div>
@@ -33,13 +38,20 @@ const Legend = ({ data, renderLegendItems }: ILocalProps) => {
   );
 };
 
-export const LegendItems = ({ data }: { data: IObservationLineDataWithColor[] }) => {
+export const LegendItems = ({
+  data,
+}: {
+  data: IObservationLineDataWithColor[];
+}) => {
   return (
     <div className={styles.legendItems}>
       {data.map(({ lineIndex, color }, i) => (
         <div className={styles.legendItem}>
           <div className={styles.legendItem__label}>{lineIndex}</div>
-          <div className={styles.legendItem__color} style={{ backgroundColor: color }}></div>
+          <div
+            className={styles.legendItem__color}
+            style={{ backgroundColor: color }}
+          ></div>
         </div>
       ))}
     </div>

@@ -46,36 +46,35 @@ class ObservationButton extends React.PureComponent<ILocalProps, ILocalState> {
         >
           <div className={styles.popupContent}>
             {attributeKey && (
-                <Table
-                  dataRows={values
-                    .map((obs) => {
-                      return {
-                        ...obs,
-                        epochNumber:
-                          obs.epochNumber === undefined ? '-' : obs.epochNumber,
-                        timeStamp: getFormattedDateTime(obs.timeStamp),
-                      };
-                    })}
-                  getRowKey={this.getRowKey}
-                  columnDefinitions={(this.isWithEpoch(values)
-                    ? [epochColumn]
-                    : []
-                  ).concat([
-                    {
-                      type: 'timeStamp',
-                      title: 'TimeStamp',
-                      width: '33%',
-                      render: ({ timeStamp }: any) => <span>{timeStamp}</span>,
-                    },
-                    {
-                      type: 'value',
-                      title: 'Value',
-                      width: '34%',
-                      render: ({ value }: any) => <span>{value}</span>,
-                    },
-                  ])}
-                />
-              )}
+              <Table
+                dataRows={values.map(obs => {
+                  return {
+                    ...obs,
+                    epochNumber:
+                      obs.epochNumber === undefined ? '-' : obs.epochNumber,
+                    timeStamp: getFormattedDateTime(obs.timeStamp),
+                  };
+                })}
+                getRowKey={this.getRowKey}
+                columnDefinitions={(this.isWithEpoch(values)
+                  ? [epochColumn]
+                  : []
+                ).concat([
+                  {
+                    type: 'timeStamp',
+                    title: 'TimeStamp',
+                    width: '33%',
+                    render: ({ timeStamp }: any) => <span>{timeStamp}</span>,
+                  },
+                  {
+                    type: 'value',
+                    title: 'Value',
+                    width: '34%',
+                    render: ({ value }: any) => <span>{value}</span>,
+                  },
+                ])}
+              />
+            )}
           </div>
         </Popup>
 

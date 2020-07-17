@@ -21,6 +21,7 @@ type Result<T, GroupKey extends keyof T> = {
 };
 
 const useAutocomplete = <T, GroupKey extends keyof T>(
+  // @ts-ignore
   props: Omit<UseAutocompleteProps<T>, 'groupBy'>,
   groupKey: GroupKey
 ): Result<T, GroupKey> => {

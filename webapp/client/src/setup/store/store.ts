@@ -8,9 +8,10 @@ import ServiceFactory from 'services/ServiceFactory';
 
 import * as ArtifactManager from 'features/artifactManager/store';
 import * as Comment from 'features/comments';
-import * as CompareEntities from 'features/compareEntities';
 import * as Datasets from 'features/datasets/store';
 import * as DatasetVersions from 'features/datasetVersions/store';
+import * as CompareModels from 'features/compareModels';
+import * as CompareDatasets from 'features/compareDatasets';
 import * as DescriptionManager from 'features/descriptionManager';
 import * as ExperimentRuns from 'features/experimentRuns/store';
 import * as ExperimentRunsTableConfig from 'features/experimentRunsTableConfig';
@@ -26,11 +27,12 @@ import * as Workspaces from 'features/workspaces/store';
 
 export interface IApplicationState
   extends Filter.IFilterRootState,
-    Comment.ICommentsRootState,
-    ExperimentRunsTableConfig.IExperimentRunsTableConfigRootState,
-    Layout.ILayoutRootState {
+  Comment.ICommentsRootState,
+  ExperimentRunsTableConfig.IExperimentRunsTableConfigRootState,
+  Layout.ILayoutRootState {
   experiments: Experiments.IExperimentsState;
-  compareEntities: CompareEntities.ICompareEntitiesState;
+  compareModels: CompareModels.ICompareModelsState;
+  compareDatasets: CompareDatasets.ICompareDatasetsState;
   experimentRuns: ExperimentRuns.IExperimentRunsState;
   projectCreation: ProjectCreation.IProjectCreationState;
   projects: Projects.IProjectsState;
@@ -55,7 +57,8 @@ export const createRootReducer = (history: History) =>
     layout: Layout.reducer,
     experiments: Experiments.reducer,
     comments: Comment.reducer,
-    compareEntities: CompareEntities.reducer,
+    compareModels: CompareModels.reducer,
+    compareDatasets: CompareDatasets.reducer,
     experimentRunsTableConfig: ExperimentRunsTableConfig.reducer,
     experimentRuns: ExperimentRuns.reducer,
     filters: Filter.reducer,

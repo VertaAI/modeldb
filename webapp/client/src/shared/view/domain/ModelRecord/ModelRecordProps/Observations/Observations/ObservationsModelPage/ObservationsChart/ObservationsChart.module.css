@@ -1,32 +1,32 @@
 .root {
-    display: grid;
-    grid-template-rows: auto auto;
-  }
+  display: grid;
+  grid-template-rows: auto auto;
+}
 
-  .legendContent {
-    padding-top: 20px;
-    padding-left: 75px;
-  }
+.legendContent {
+  padding-top: 20px;
+  padding-left: 75px;
+}
 
-  .legendItems {
-    display: grid;
-    grid-gap: 12px;
-    grid-template-columns: min-content;
-    grid-template-rows: auto auto auto;
-    grid-auto-flow: column;
-    grid-auto-columns: min-content;
-  }
-  
-  .legendTitle {
-    color: var(--text-color3);
-    font-size: 12px;
-    margin-left: 20px;
-  }
-  
-  .legendBlock {
-    display: grid;
-    grid-template-rows: 1fr auto;
-  }
+.legendItems {
+  display: grid;
+  grid-gap: 12px;
+  grid-template-columns: min-content;
+  grid-template-rows: auto auto auto;
+  grid-auto-flow: column;
+  grid-auto-columns: min-content;
+}
+
+.legendTitle {
+  color: var(--text-color3);
+  font-size: 12px;
+  margin-left: 20px;
+}
+
+.legendBlock {
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
 
 .legendItem {
   display: flex;

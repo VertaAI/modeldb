@@ -7,12 +7,12 @@ import { Icon } from '../Icon/Icon';
 
 interface ILocalProps {
   dataTest: string;
-  button: {
-    text: string;
-    isDisabled?: boolean;
-    isLoading?: boolean;
-  };
-  menuItems: [IMenuItem, ...IMenuItem[]];
+  button: Omit<
+    React.ComponentProps<typeof Button>,
+    'children' | 'fullHeight' | 'fullWidth' | 'dataTest'
+  > & { text: string };
+  menuItems: IMenuItem[];
+  badge?: number;
 }
 
 interface IMenuItem {
@@ -33,7 +33,7 @@ const Dropdown = ({ button, menuItems, dataTest }: ILocalProps) => {
           <Button
             fullHeight={true}
             fullWidth={true}
-            disabled={button.isDisabled}
+            disabled={button.disabled}
             isLoading={button.isLoading}
             dataTest="dropdown-button"
             onClick={() => changeIsShowMenu(true)}

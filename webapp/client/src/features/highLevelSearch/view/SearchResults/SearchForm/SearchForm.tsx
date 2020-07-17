@@ -133,6 +133,7 @@ const Search = ({
         }
       },
     },
+    // @ts-ignore
     'group'
   );
 
@@ -165,6 +166,7 @@ const Search = ({
           className={styles.autocomplete__optionsList}
         >
           {autocompleteProps.groupedOptions.map(
+            // @ts-ignore
             ({ options, group, index: groupIndex }) => (
               <div className={styles.autocomplete__optionsGroup} key={group}>
                 <div className={styles.autocomplete__optionsGroupTitle}>
@@ -176,6 +178,7 @@ const Search = ({
                     group
                   )}
                 </div>
+                // @ts-ignore
                 {options.map((option, index) => {
                   const resIndex = groupIndex + index;
                   const additionalProps = autocompleteProps.getOptionProps({

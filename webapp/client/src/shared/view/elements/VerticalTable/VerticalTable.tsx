@@ -11,7 +11,7 @@ interface ILocalProps<T> {
 export interface IColumnData<T> {
   data: T;
   columnTitle?: string;
-  dataName?: string;
+  dataName?: string | number;
 }
 
 export interface IPropDefinition<T> {
@@ -143,7 +143,7 @@ export function PropCell({
   style: object;
   children: React.ReactNode;
   dataType?: string;
-  dataName?: string;
+  dataName?: string | number;
 }) {
   return (
     <div

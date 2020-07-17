@@ -155,9 +155,7 @@ class ModelRecordView extends React.PureComponent<AllProps> {
             versionedInputs={data.versionedInputs}
           />
           <Section iconType="observations" title="Observations">
-            <ObservationsModelPage
-              observations={data.observations}
-            />
+            <ObservationsModelPage observations={data.observations} />
           </Section>
           <Section iconType="datasets" title="Datasets">
             {data.datasets.length > 0 ? (

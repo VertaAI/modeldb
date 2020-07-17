@@ -24,7 +24,7 @@ const colorScale = d3
     '#a6761d',
     '#666666',
   ]);
-const getColor = (groupedObservationsN) => colorScale(groupedObservationsN);
+const getColor = groupedObservationsN => colorScale(groupedObservationsN);
 
 let lineOpacity = '0.35';
 let lineOpacityHover = '0.75';
@@ -141,7 +141,7 @@ class ObservationsChart extends Component {
         .style('text-anchor', 'end')
         .attr('dx', '-.8em')
         .attr('dy', '.15em')
-        .attr('transform', function (d) {
+        .attr('transform', function(d) {
           return 'rotate(-25)';
         });
 
@@ -204,7 +204,7 @@ class ObservationsChart extends Component {
         .attr('d', d => line(d.values))
         .style('stroke', (d, i) => getColor(i))
         .style('opacity', lineOpacity)
-        .on('mouseover', function (d) {
+        .on('mouseover', function(d) {
           d3.selectAll('.ml-line').style('opacity', otherLinesOpacityHover);
           d3.select(this)
             .transition()
@@ -213,7 +213,7 @@ class ObservationsChart extends Component {
             .style('stroke-width', lineStrokeHover)
             .style('cursor', 'pointer');
         })
-        .on('mouseout', function (d) {
+        .on('mouseout', function(d) {
           d3.selectAll('.ml-line').style('opacity', lineOpacity);
           d3.select(this)
             .transition()
@@ -235,7 +235,7 @@ class ObservationsChart extends Component {
         .enter()
         .append('g')
         .attr('class', 'ml-circle')
-        .on('mouseover', function (d) {
+        .on('mouseover', function(d) {
           d3.select(this)
             .style('cursor', 'pointer')
             .append('text')
@@ -260,7 +260,7 @@ class ObservationsChart extends Component {
               });
           }
         })
-        .on('mouseout', function (d) {
+        .on('mouseout', function(d) {
           d3.select(this)
             .style('cursor', 'none')
             .transition()
@@ -275,13 +275,13 @@ class ObservationsChart extends Component {
         .style('opacity', d => {
           return Number.isNaN(d.value) ? 0 : circleOpacity;
         })
-        .on('mouseover', function (d) {
+        .on('mouseover', function(d) {
           d3.select(this)
             .transition()
             .duration(duration)
             .attr('r', circleRadiusHover);
         })
-        .on('mouseout', function (d) {
+        .on('mouseout', function(d) {
           d3.select(this)
             .transition()
             .duration(duration)
@@ -306,16 +306,23 @@ class ObservationsChart extends Component {
             <div />
           </React.Fragment>
         </div>
-        <LegendView data={this.props.data.map((x, i) => ({ ...x, color: getColor(i) }))} />
+        <LegendView
+          data={this.props.data.map((x, i) => ({ ...x, color: getColor(i) }))}
+        />
       </div>
     );
   }
 }
 
 // https://stackoverflow.com/a/56821215
-const formatTicksAsInteger = (axis) => {
+const formatTicksAsInteger = axis => {
   return axis
-    .tickValues(axis.scale().ticks().filter(Number.isInteger))
+    .tickValues(
+      axis
+        .scale()
+        .ticks()
+        .filter(Number.isInteger)
+    )
     .tickFormat(d3.format('d'));
 };
 

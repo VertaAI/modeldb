@@ -37,25 +37,37 @@ export interface IObservationsValues {
   timeStamp: Date;
   epochNumber?: number;
 }
-export type IGroupedObservationsByAttributeKey = Record<string, IObservationsValues[]>;
-export const groupObservationsByAttributeKey = (observations: Observation[]): IGroupedObservationsByAttributeKey => {
+export type IGroupedObservationsByAttributeKey = Record<
+  string,
+  IObservationsValues[]
+>;
+export const groupObservationsByAttributeKey = (
+  observations: Observation[]
+): IGroupedObservationsByAttributeKey => {
   return R.fromPairs(
-    R.toPairs(
-      R.groupBy((obs) => obs.attribute.key, observations)
+    R.toPairs(R.groupBy(obs => obs.attribute.key, observations)).map(
+      ([key, observations]) => [
+        key,
+        observations.map(observation => {
+          const res: IObservationsValues = {
+            timeStamp: observation.timestamp,
+            value:
+              typeof observation.attribute.value === 'number'
+                ? withScientificNotationOrRounded(
+                    Number(observation.attribute.value)
+                  )
+                : observation.attribute.value,
+            epochNumber: observation.epochNumber,
+          };
+          return res;
+        }),
+      ]
     )
-    .map(([key, observations]) => [key, observations.map((observation) => {
-      const res: IObservationsValues = {
-        timeStamp: observation.timestamp,
-        value: typeof observation.attribute.value === 'number'
-        ? withScientificNotationOrRounded(Number(observation.attribute.value))
-        : observation.attribute.value,
-        epochNumber: observation.epochNumber,
-      };
-      return res;
-    })])
   );
-}
+};
 
 export const hasEpochValues = (observations: IObservation[]): boolean => {
-  return observations.some(({ epochNumber }) => typeof epochNumber !== 'undefined');
+  return observations.some(
+    ({ epochNumber }) => typeof epochNumber !== 'undefined'
+  );
 };

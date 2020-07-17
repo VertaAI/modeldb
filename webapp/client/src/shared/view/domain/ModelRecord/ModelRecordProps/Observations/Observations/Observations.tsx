@@ -1,6 +1,9 @@
 import * as React from 'react';
 
-import { IObservation, groupObservationsByAttributeKey } from 'shared/models/Observation';
+import {
+  IObservation,
+  groupObservationsByAttributeKey,
+} from 'shared/models/Observation';
 import ScrollableContainer from 'shared/view/elements/ScrollableContainer/ScrollableContainer';
 
 import ClientSuggestion from '../../shared/ClientSuggestion/ClientSuggestion';

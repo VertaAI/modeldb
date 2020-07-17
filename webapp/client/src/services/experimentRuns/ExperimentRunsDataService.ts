@@ -317,7 +317,10 @@ const convertServerExperimentRun = async (
     modelRecord.versionedInputs = versionedInputs;
   }
 
-  modelRecord.observations = R.sortBy(({ timestamp }) => +timestamp, modelRecord.observations);
+  modelRecord.observations = R.sortBy(
+    ({ timestamp }) => +timestamp,
+    modelRecord.observations
+  );
 
   const dates = convertServerEntityWithLoggedDates(
     hydrated_experiment_run.experiment_run
