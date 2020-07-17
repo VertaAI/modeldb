@@ -6,7 +6,7 @@ from click.testing import CliRunner
 from verta._cli import cli
 
 
-pytest.skip("registry not yet available in dev", allow_module_level=True)
+pytest.skip("registry not yet available in backend", allow_module_level=True)
 
 
 class TestCreate:
