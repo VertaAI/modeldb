@@ -8,6 +8,7 @@ import (
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/errors"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
 	ai_verta_common "github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
+	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	ai_verta_modeldb "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
 	ai_verta_uac "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
@@ -136,6 +137,9 @@ func (r *mutationResolver) DelProject(ctx context.Context, id string) (bool, err
 		return false, err
 	}
 	return res.GetStatus(), nil
+}
+func (r *mutationResolver) Dataset(ctx context.Context, id string) (*modeldb.Dataset, error) {
+	return r.Resolver.Query().Dataset(ctx, id)
 }
 func (r *mutationResolver) Repository(ctx context.Context, id string) (*versioning.Repository, error) {
 	return r.Resolver.Query().Repository(ctx, id)

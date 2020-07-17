@@ -4,10 +4,6 @@ import { exhaustiveCheck } from 'shared/utils/exhaustiveCheck';
 import { BaseDataService } from 'services/BaseDataService';
 
 export default class DescActionDataService extends BaseDataService {
-  constructor() {
-    super();
-  }
-
   public addOrEditDescription(
     id: string,
     description: string,
@@ -21,7 +17,7 @@ export default class DescActionDataService extends BaseDataService {
             id,
             description,
           },
-        }).then(res => res.data.experiment_run.description || '');
+        }).then((res) => res.data.experiment_run.description || '');
       }
       case 'project': {
         return this.post({
@@ -30,7 +26,7 @@ export default class DescActionDataService extends BaseDataService {
             id,
             description,
           },
-        }).then(res => res.data.project.description || '');
+        }).then((res) => res.data.project.description || '');
       }
       case 'experiment': {
         return this.post({
@@ -39,7 +35,7 @@ export default class DescActionDataService extends BaseDataService {
             id,
             description,
           },
-        }).then(res => res.data.experiment.description || '');
+        }).then((res) => res.data.experiment.description || '');
       }
       case 'dataset': {
         return this.post({
@@ -48,7 +44,7 @@ export default class DescActionDataService extends BaseDataService {
             id,
             description,
           },
-        }).then(res => res.data.dataset.description || '');
+        }).then((res) => res.data.dataset.description || '');
       }
       case 'datasetVersion': {
         return this.post({
@@ -57,7 +53,7 @@ export default class DescActionDataService extends BaseDataService {
             id,
             description,
           },
-        }).then(res => res.data.dataset_version.description || '');
+        }).then((res) => res.data.dataset_version.description || '');
       }
       default:
         return exhaustiveCheck(entityType, '');

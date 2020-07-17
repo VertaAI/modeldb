@@ -6,6 +6,7 @@ import (
 
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/dataloaders"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
+	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	ai_verta_modeldb "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
 	ai_verta_uac "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
@@ -72,6 +73,18 @@ func (r *queryResolver) Experiment(ctx context.Context, id string) (*ai_verta_mo
 	return res.GetExperiment(), nil
 }
 
+func (r *queryResolver) Dataset(ctx context.Context, id string) (*modeldb.Dataset, error) {
+	res, err := r.Connections.Dataset.GetDatasetById(
+		ctx,
+		&ai_verta_modeldb.GetDatasetById{Id: id},
+	)
+	if err != nil {
+		r.Logger.Error("failed to get experiment", zap.Error(err))
+		return nil, err
+	}
+	return res.GetDataset(), nil
+}
+
 func (r *queryResolver) Run(ctx context.Context, id string) (*ai_verta_modeldb.ExperimentRun, error) {
 	res, err := r.Connections.ExperimentRun.GetExperimentRunById(
 		ctx,
@@ -109,7 +122,15 @@ func (r *queryResolver) Organization(ctx context.Context, id string) (*ai_verta_
 
 func (r *queryResolver) Workspace(ctx context.Context, name *string) (*models.Workspace, error) {
 	if name == nil {
-		return &models.Workspace{Name: ""}, nil
+		if r.Connections.HasUac() {
+			res, err := r.Connections.UAC.GetCurrentUser(ctx, &ai_verta_uac.Empty{})
+			if err != nil {
+				r.Logger.Error("failed to get self", zap.Error(err))
+				return nil, err
+			}
+			return &models.Workspace{Name: res.GetVertaInfo().GetUsername()}, nil
+		}
+		return &models.Workspace{Name: "personal"}, nil
 	} else {
 		return &models.Workspace{Name: *name}, nil
 	}

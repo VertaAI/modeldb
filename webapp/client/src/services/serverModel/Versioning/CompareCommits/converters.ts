@@ -91,6 +91,7 @@ export const convertServerDiffToClient = (serverDiff: any): Diff => {
         default:
           exhaustiveCheck(diffType, '');
       }
+      break;
     }
 
     default: {

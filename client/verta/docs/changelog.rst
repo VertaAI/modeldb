@@ -4,7 +4,7 @@ Release Notes
 
 .. This comment block is a template for version release notes.
    v.. (--)
-   --------------------
+   ---------------------
 
    Backwards Incompatibilities
    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -35,6 +35,63 @@ Release Notes
    ^^^^^^^^^^^^^^^^
    - `
      <>`__
+
+
+v0.14.12 (2020-07-16)
+---------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `run.log_dataset() now only accepts DatasetVersion objects
+  <https://github.com/VertaAI/modeldb/pull/907>`__
+- `verta.environment.Python now requires its requirements parameter
+  <https://github.com/VertaAI/modeldb/pull/952>`__
+
+New Features
+^^^^^^^^^^^^
+- `add client.get_project(), get_experiment(), and get_experiment_run()
+  <https://github.com/VertaAI/modeldb/pull/966>`__
+- `add client.projects and client.experiments
+  <https://github.com/VertaAI/modeldb/pull/979>`__
+- `add expt_runs.as_dataframe()
+  <https://github.com/VertaAI/modeldb/pull/968>`__
+- `add list_components() to data versioning blobs
+  <https://github.com/VertaAI/modeldb/pull/903>`__
+- `implement addition for data versioning blobs
+  <https://github.com/VertaAI/modeldb/pull/938>`__
+- `add add() to data versioning blobs
+  <https://github.com/VertaAI/modeldb/pull/939>`__
+- `add run.download_deployment_crd()
+  <https://github.com/VertaAI/modeldb/pull/918>`__
+- `add run.download_docker_context()
+  <https://github.com/VertaAI/modeldb/pull/919>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `speed up verta import time by deferring external imports
+  <https://github.com/VertaAI/modeldb/pull/999>`__
+- `cache calls to get metrics and hyperparameters
+  <https://github.com/VertaAI/modeldb/pull/967>`__
+- `include UTC timestamps in HTTPError messages
+  <https://github.com/VertaAI/modeldb/pull/909>`__
+- `attempt torch.load() first in run.get_artifact()
+  <https://github.com/VertaAI/modeldb/pull/947>`__
+
+Bug Fixes
+^^^^^^^^^
+- `use parent for commit.log() if the commit is unsaved
+  <https://github.com/VertaAI/modeldb/pull/940>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `partially refactor versioning blobs
+  <https://github.com/VertaAI/modeldb/pull/901>`__
+- `split ModelDB entities into their own files
+  <https://github.com/VertaAI/modeldb/pull/964>`__
+- `refactor ModelDB entity gets/creates
+  <https://github.com/VertaAI/modeldb/pull/965>`__
+- `add pylint config to repo
+  <https://github.com/VertaAI/modeldb/pull/974>`__
 
 
 v0.14.11 (2020-06-26)

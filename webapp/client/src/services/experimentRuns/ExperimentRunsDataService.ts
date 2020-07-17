@@ -9,9 +9,7 @@ import { ISorting } from 'shared/models/Sorting';
 import { ShortExperiment } from 'shared/models/Experiment';
 import ModelRecord, {
   LoadExperimentRunErrorType,
-  IVersionedInputs,
 } from 'shared/models/ModelRecord';
-import User from 'shared/models/User';
 import {
   convertServerCodeVersion,
   convertServerCodeVersionsFromBlob,
@@ -37,10 +35,6 @@ export const chartsPageSettings = {
 };
 
 export default class ExperimentRunsDataService extends BaseDataService {
-  constructor() {
-    super();
-  }
-
   public async loadExperimentRuns(
     projectId: string,
     filters: IFilterData[] = [],
@@ -89,7 +83,7 @@ export default class ExperimentRunsDataService extends BaseDataService {
       withLoadingVersionedInputs
     );
     const res = {
-      data: data.map(v => v.experimentRun),
+      data: data.map((v) => v.experimentRun),
       totalCount: Number(response.data.total_records || 0),
     };
     return res;
@@ -131,17 +125,17 @@ export default class ExperimentRunsDataService extends BaseDataService {
       filters,
       paginationInitialLoad,
       sorting
-    ).then(request => {
+    ).then((request) => {
       let totalCount = 0;
       return this.post({
         url: '/v1/modeldb/hydratedData/findHydratedExperimentRuns',
         data: request,
       })
-        .then(serverResponse => {
+        .then((serverResponse) => {
           totalCount = serverResponse.data.total_records;
           return this.convertExperimentRuns(serverResponse.data);
         })
-        .then(response => {
+        .then((response) => {
           const res: ILazyLoadChartData = {
             lazyChartData: response.map(({ experimentRun }) => experimentRun),
             totalCount,
@@ -243,7 +237,7 @@ export default class ExperimentRunsDataService extends BaseDataService {
     );
     const res: DataWithPagination<ModelRecord> = {
       data: R.chain(
-        projectExperimentRuns => projectExperimentRuns.data,
+        (projectExperimentRuns) => projectExperimentRuns.data,
         experimentRunsByProjects
       ).map(({ experimentRun }) => experimentRun),
       totalCount: experimentRunsByProjects
@@ -261,7 +255,7 @@ export default class ExperimentRunsDataService extends BaseDataService {
       return [];
     }
     return await Promise.all(
-      (data.hydrated_experiment_runs as any[]).map(x =>
+      (data.hydrated_experiment_runs as any[]).map((x) =>
         convertServerExperimentRun(x, withLoadingVersionedInputs)
       )
     );
@@ -295,8 +289,8 @@ const convertServerExperimentRun = async (
   modelRecord.codeVersionsFromBlob = hydrated_experiment_run.experiment_run
     .code_version_from_blob
     ? convertServerCodeVersionsFromBlob(
-        hydrated_experiment_run.experiment_run.code_version_from_blob
-      )
+      hydrated_experiment_run.experiment_run.code_version_from_blob
+    )
     : undefined;
 
   if (
@@ -322,6 +316,11 @@ const convertServerExperimentRun = async (
     })();
     modelRecord.versionedInputs = versionedInputs;
   }
+
+  modelRecord.observations = R.sortBy(
+    ({ timestamp }) => +timestamp,
+    modelRecord.observations
+  );
 
   const dates = convertServerEntityWithLoggedDates(
     hydrated_experiment_run.experiment_run

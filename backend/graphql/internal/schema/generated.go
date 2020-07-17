@@ -43,6 +43,8 @@ type ResolverRoot interface {
 	Artifact() ArtifactResolver
 	Commit() CommitResolver
 	CommitBlob() CommitBlobResolver
+	Dataset() DatasetResolver
+	DatasetVersion() DatasetVersionResolver
 	Experiment() ExperimentResolver
 	ExperimentRun() ExperimentRunResolver
 	Mutation() MutationResolver
@@ -104,8 +106,9 @@ type ComplexityRoot struct {
 	}
 
 	CommitBlob struct {
-		Content func(childComplexity int) int
-		Runs    func(childComplexity int, query *ExperimentRunsQuery) int
+		Content                 func(childComplexity int) int
+		DownloadURLForComponent func(childComplexity int, componentPath string) int
+		Runs                    func(childComplexity int, query *ExperimentRunsQuery) int
 	}
 
 	CommitFolder struct {
@@ -115,6 +118,59 @@ type ComplexityRoot struct {
 
 	Commits struct {
 		Commits func(childComplexity int) int
+	}
+
+	Dataset struct {
+		AddTags           func(childComplexity int, tags []string) int
+		AllowedActions    func(childComplexity int) int
+		Attributes        func(childComplexity int) int
+		ChangeDescription func(childComplexity int, description string) int
+		Collaborators     func(childComplexity int) int
+		DatasetVersions   func(childComplexity int, query *DatasetVersionsQuery) int
+		DateCreated       func(childComplexity int) int
+		DateUpdated       func(childComplexity int) int
+		Delete            func(childComplexity int) int
+		DeleteTags        func(childComplexity int, tags []string) int
+		Description       func(childComplexity int) int
+		Id                func(childComplexity int) int
+		Name              func(childComplexity int) int
+		Owner             func(childComplexity int) int
+		Tags              func(childComplexity int) int
+		Visibility        func(childComplexity int) int
+	}
+
+	DatasetVersion struct {
+		AddTags           func(childComplexity int, tags []string) int
+		Attributes        func(childComplexity int) int
+		BlobInfo          func(childComplexity int) int
+		ChangeDescription func(childComplexity int, description string) int
+		Dataset           func(childComplexity int) int
+		DatasetId         func(childComplexity int) int
+		DateCreated       func(childComplexity int) int
+		DateUpdated       func(childComplexity int) int
+		Delete            func(childComplexity int) int
+		DeleteTags        func(childComplexity int, tags []string) int
+		Description       func(childComplexity int) int
+		DownloadURL       func(childComplexity int, blobPath string) int
+		Id                func(childComplexity int) int
+		Owner             func(childComplexity int) int
+		ParentId          func(childComplexity int) int
+		PathInfo          func(childComplexity int) int
+		QueryInfo         func(childComplexity int) int
+		RawInfo           func(childComplexity int) int
+		Runs              func(childComplexity int, query *ExperimentRunsQuery) int
+		Tags              func(childComplexity int) int
+		Version           func(childComplexity int) int
+	}
+
+	DatasetVersions struct {
+		DatasetVersions func(childComplexity int) int
+		Total           func(childComplexity int) int
+	}
+
+	Datasets struct {
+		Datasets func(childComplexity int) int
+		Total    func(childComplexity int) int
 	}
 
 	Experiment struct {
@@ -183,6 +239,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AddProjectTag          func(childComplexity int, id string, tag string) int
 		AddRunTag              func(childComplexity int, id string, tag string) int
+		Dataset                func(childComplexity int, id string) int
 		DelCollaboratorProject func(childComplexity int, projid string, collid string) int
 		DelProject             func(childComplexity int, id string) int
 		DelProjectTag          func(childComplexity int, id string, tag string) int
@@ -270,6 +327,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		Dataset       func(childComplexity int, id string) int
 		Experiment    func(childComplexity int, id string) int
 		Organization  func(childComplexity int, id string) int
 		Organizations func(childComplexity int) int
@@ -360,7 +418,10 @@ type ComplexityRoot struct {
 	}
 
 	Workspace struct {
+		CreateDataset    func(childComplexity int, name string, visibility Visibility) int
 		CreateRepository func(childComplexity int, name string, visibility Visibility) int
+		DatasetVersions  func(childComplexity int, query *DatasetVersionsQuery) int
+		Datasets         func(childComplexity int, query *DatasetsQuery) int
 		Name             func(childComplexity int) int
 		Projects         func(childComplexity int, next *string, query *ProjectsQuery) int
 		Repositories     func(childComplexity int, next *string, query *RepositoriesQuery) int
@@ -384,6 +445,42 @@ type CommitResolver interface {
 }
 type CommitBlobResolver interface {
 	Runs(ctx context.Context, obj *models.CommitBlob, query *ExperimentRunsQuery) (*ExperimentRuns, error)
+	DownloadURLForComponent(ctx context.Context, obj *models.CommitBlob, componentPath string) (string, error)
+}
+type DatasetResolver interface {
+	DateCreated(ctx context.Context, obj *modeldb.Dataset) (string, error)
+	DateUpdated(ctx context.Context, obj *modeldb.Dataset) (string, error)
+	Visibility(ctx context.Context, obj *modeldb.Dataset) (DatasetVisibility, error)
+	AllowedActions(ctx context.Context, obj *modeldb.Dataset) (*AllowedActions, error)
+	Attributes(ctx context.Context, obj *modeldb.Dataset) ([]KeyValue, error)
+
+	Owner(ctx context.Context, obj *modeldb.Dataset) (*uac.UserInfo, error)
+	Collaborators(ctx context.Context, obj *modeldb.Dataset) ([]Collaborator, error)
+	AddTags(ctx context.Context, obj *modeldb.Dataset, tags []string) (*modeldb.Dataset, error)
+	DeleteTags(ctx context.Context, obj *modeldb.Dataset, tags []string) (*modeldb.Dataset, error)
+	DatasetVersions(ctx context.Context, obj *modeldb.Dataset, query *DatasetVersionsQuery) (*DatasetVersions, error)
+	ChangeDescription(ctx context.Context, obj *modeldb.Dataset, description string) (*modeldb.Dataset, error)
+	Delete(ctx context.Context, obj *modeldb.Dataset) (bool, error)
+}
+type DatasetVersionResolver interface {
+	Dataset(ctx context.Context, obj *modeldb.DatasetVersion) (*modeldb.Dataset, error)
+
+	DateCreated(ctx context.Context, obj *modeldb.DatasetVersion) (string, error)
+	DateUpdated(ctx context.Context, obj *modeldb.DatasetVersion) (string, error)
+	Attributes(ctx context.Context, obj *modeldb.DatasetVersion) ([]KeyValue, error)
+	Owner(ctx context.Context, obj *modeldb.DatasetVersion) (*uac.UserInfo, error)
+	Version(ctx context.Context, obj *modeldb.DatasetVersion) (int, error)
+	DownloadURL(ctx context.Context, obj *modeldb.DatasetVersion, blobPath string) (*string, error)
+
+	AddTags(ctx context.Context, obj *modeldb.DatasetVersion, tags []string) (*modeldb.DatasetVersion, error)
+	DeleteTags(ctx context.Context, obj *modeldb.DatasetVersion, tags []string) (*modeldb.DatasetVersion, error)
+	Runs(ctx context.Context, obj *modeldb.DatasetVersion, query *ExperimentRunsQuery) (*ExperimentRuns, error)
+	BlobInfo(ctx context.Context, obj *modeldb.DatasetVersion) (*string, error)
+	RawInfo(ctx context.Context, obj *modeldb.DatasetVersion) (*string, error)
+	PathInfo(ctx context.Context, obj *modeldb.DatasetVersion) (*string, error)
+	QueryInfo(ctx context.Context, obj *modeldb.DatasetVersion) (*string, error)
+	ChangeDescription(ctx context.Context, obj *modeldb.DatasetVersion, description string) (*modeldb.DatasetVersion, error)
+	Delete(ctx context.Context, obj *modeldb.DatasetVersion) (bool, error)
 }
 type ExperimentResolver interface {
 	Project(ctx context.Context, obj *modeldb.Experiment) (*modeldb.Project, error)
@@ -421,6 +518,7 @@ type MutationResolver interface {
 	AddProjectTag(ctx context.Context, id string, tag string) (*modeldb.Project, error)
 	DelProjectTag(ctx context.Context, id string, tag string) (*modeldb.Project, error)
 	DelProject(ctx context.Context, id string) (bool, error)
+	Dataset(ctx context.Context, id string) (*modeldb.Dataset, error)
 	Repository(ctx context.Context, id string) (*versioning.Repository, error)
 	Workspace(ctx context.Context, name *string) (*models.Workspace, error)
 }
@@ -461,6 +559,7 @@ type QueryResolver interface {
 	Project(ctx context.Context, id string) (*modeldb.Project, error)
 	Experiment(ctx context.Context, id string) (*modeldb.Experiment, error)
 	Run(ctx context.Context, id string) (*modeldb.ExperimentRun, error)
+	Dataset(ctx context.Context, id string) (*modeldb.Dataset, error)
 	Repository(ctx context.Context, id string) (*versioning.Repository, error)
 	Organization(ctx context.Context, id string) (*uac.Organization, error)
 	Workspace(ctx context.Context, name *string) (*models.Workspace, error)
@@ -522,6 +621,9 @@ type UserCollaboratorResolver interface {
 }
 type WorkspaceResolver interface {
 	Projects(ctx context.Context, obj *models.Workspace, next *string, query *ProjectsQuery) (*Projects, error)
+	Datasets(ctx context.Context, obj *models.Workspace, query *DatasetsQuery) (*Datasets, error)
+	DatasetVersions(ctx context.Context, obj *models.Workspace, query *DatasetVersionsQuery) (*DatasetVersions, error)
+	CreateDataset(ctx context.Context, obj *models.Workspace, name string, visibility Visibility) (*modeldb.Dataset, error)
 	Repositories(ctx context.Context, obj *models.Workspace, next *string, query *RepositoriesQuery) (*Repositories, error)
 	Repository(ctx context.Context, obj *models.Workspace, name string) (*versioning.Repository, error)
 	CreateRepository(ctx context.Context, obj *models.Workspace, name string, visibility Visibility) (*versioning.Repository, error)
@@ -723,6 +825,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CommitBlob.Content(childComplexity), true
 
+	case "CommitBlob.downloadUrlForComponent":
+		if e.complexity.CommitBlob.DownloadURLForComponent == nil {
+			break
+		}
+
+		args, err := ec.field_CommitBlob_downloadUrlForComponent_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.CommitBlob.DownloadURLForComponent(childComplexity, args["componentPath"].(string)), true
+
 	case "CommitBlob.runs":
 		if e.complexity.CommitBlob.Runs == nil {
 			break
@@ -755,6 +869,338 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Commits.Commits(childComplexity), true
+
+	case "Dataset.addTags":
+		if e.complexity.Dataset.AddTags == nil {
+			break
+		}
+
+		args, err := ec.field_Dataset_addTags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Dataset.AddTags(childComplexity, args["tags"].([]string)), true
+
+	case "Dataset.allowedActions":
+		if e.complexity.Dataset.AllowedActions == nil {
+			break
+		}
+
+		return e.complexity.Dataset.AllowedActions(childComplexity), true
+
+	case "Dataset.attributes":
+		if e.complexity.Dataset.Attributes == nil {
+			break
+		}
+
+		return e.complexity.Dataset.Attributes(childComplexity), true
+
+	case "Dataset.changeDescription":
+		if e.complexity.Dataset.ChangeDescription == nil {
+			break
+		}
+
+		args, err := ec.field_Dataset_changeDescription_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Dataset.ChangeDescription(childComplexity, args["description"].(string)), true
+
+	case "Dataset.collaborators":
+		if e.complexity.Dataset.Collaborators == nil {
+			break
+		}
+
+		return e.complexity.Dataset.Collaborators(childComplexity), true
+
+	case "Dataset.datasetVersions":
+		if e.complexity.Dataset.DatasetVersions == nil {
+			break
+		}
+
+		args, err := ec.field_Dataset_datasetVersions_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Dataset.DatasetVersions(childComplexity, args["query"].(*DatasetVersionsQuery)), true
+
+	case "Dataset.dateCreated":
+		if e.complexity.Dataset.DateCreated == nil {
+			break
+		}
+
+		return e.complexity.Dataset.DateCreated(childComplexity), true
+
+	case "Dataset.dateUpdated":
+		if e.complexity.Dataset.DateUpdated == nil {
+			break
+		}
+
+		return e.complexity.Dataset.DateUpdated(childComplexity), true
+
+	case "Dataset.delete":
+		if e.complexity.Dataset.Delete == nil {
+			break
+		}
+
+		return e.complexity.Dataset.Delete(childComplexity), true
+
+	case "Dataset.deleteTags":
+		if e.complexity.Dataset.DeleteTags == nil {
+			break
+		}
+
+		args, err := ec.field_Dataset_deleteTags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Dataset.DeleteTags(childComplexity, args["tags"].([]string)), true
+
+	case "Dataset.description":
+		if e.complexity.Dataset.Description == nil {
+			break
+		}
+
+		return e.complexity.Dataset.Description(childComplexity), true
+
+	case "Dataset.id":
+		if e.complexity.Dataset.Id == nil {
+			break
+		}
+
+		return e.complexity.Dataset.Id(childComplexity), true
+
+	case "Dataset.name":
+		if e.complexity.Dataset.Name == nil {
+			break
+		}
+
+		return e.complexity.Dataset.Name(childComplexity), true
+
+	case "Dataset.owner":
+		if e.complexity.Dataset.Owner == nil {
+			break
+		}
+
+		return e.complexity.Dataset.Owner(childComplexity), true
+
+	case "Dataset.tags":
+		if e.complexity.Dataset.Tags == nil {
+			break
+		}
+
+		return e.complexity.Dataset.Tags(childComplexity), true
+
+	case "Dataset.visibility":
+		if e.complexity.Dataset.Visibility == nil {
+			break
+		}
+
+		return e.complexity.Dataset.Visibility(childComplexity), true
+
+	case "DatasetVersion.addTags":
+		if e.complexity.DatasetVersion.AddTags == nil {
+			break
+		}
+
+		args, err := ec.field_DatasetVersion_addTags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.DatasetVersion.AddTags(childComplexity, args["tags"].([]string)), true
+
+	case "DatasetVersion.attributes":
+		if e.complexity.DatasetVersion.Attributes == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.Attributes(childComplexity), true
+
+	case "DatasetVersion.blobInfo":
+		if e.complexity.DatasetVersion.BlobInfo == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.BlobInfo(childComplexity), true
+
+	case "DatasetVersion.changeDescription":
+		if e.complexity.DatasetVersion.ChangeDescription == nil {
+			break
+		}
+
+		args, err := ec.field_DatasetVersion_changeDescription_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.DatasetVersion.ChangeDescription(childComplexity, args["description"].(string)), true
+
+	case "DatasetVersion.dataset":
+		if e.complexity.DatasetVersion.Dataset == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.Dataset(childComplexity), true
+
+	case "DatasetVersion.datasetID":
+		if e.complexity.DatasetVersion.DatasetId == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.DatasetId(childComplexity), true
+
+	case "DatasetVersion.dateCreated":
+		if e.complexity.DatasetVersion.DateCreated == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.DateCreated(childComplexity), true
+
+	case "DatasetVersion.dateUpdated":
+		if e.complexity.DatasetVersion.DateUpdated == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.DateUpdated(childComplexity), true
+
+	case "DatasetVersion.delete":
+		if e.complexity.DatasetVersion.Delete == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.Delete(childComplexity), true
+
+	case "DatasetVersion.deleteTags":
+		if e.complexity.DatasetVersion.DeleteTags == nil {
+			break
+		}
+
+		args, err := ec.field_DatasetVersion_deleteTags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.DatasetVersion.DeleteTags(childComplexity, args["tags"].([]string)), true
+
+	case "DatasetVersion.description":
+		if e.complexity.DatasetVersion.Description == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.Description(childComplexity), true
+
+	case "DatasetVersion.downloadUrl":
+		if e.complexity.DatasetVersion.DownloadURL == nil {
+			break
+		}
+
+		args, err := ec.field_DatasetVersion_downloadUrl_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.DatasetVersion.DownloadURL(childComplexity, args["blobPath"].(string)), true
+
+	case "DatasetVersion.id":
+		if e.complexity.DatasetVersion.Id == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.Id(childComplexity), true
+
+	case "DatasetVersion.owner":
+		if e.complexity.DatasetVersion.Owner == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.Owner(childComplexity), true
+
+	case "DatasetVersion.parentID":
+		if e.complexity.DatasetVersion.ParentId == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.ParentId(childComplexity), true
+
+	case "DatasetVersion.pathInfo":
+		if e.complexity.DatasetVersion.PathInfo == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.PathInfo(childComplexity), true
+
+	case "DatasetVersion.queryInfo":
+		if e.complexity.DatasetVersion.QueryInfo == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.QueryInfo(childComplexity), true
+
+	case "DatasetVersion.rawInfo":
+		if e.complexity.DatasetVersion.RawInfo == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.RawInfo(childComplexity), true
+
+	case "DatasetVersion.runs":
+		if e.complexity.DatasetVersion.Runs == nil {
+			break
+		}
+
+		args, err := ec.field_DatasetVersion_runs_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.DatasetVersion.Runs(childComplexity, args["query"].(*ExperimentRunsQuery)), true
+
+	case "DatasetVersion.tags":
+		if e.complexity.DatasetVersion.Tags == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.Tags(childComplexity), true
+
+	case "DatasetVersion.version":
+		if e.complexity.DatasetVersion.Version == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersion.Version(childComplexity), true
+
+	case "DatasetVersions.datasetVersions":
+		if e.complexity.DatasetVersions.DatasetVersions == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersions.DatasetVersions(childComplexity), true
+
+	case "DatasetVersions.total":
+		if e.complexity.DatasetVersions.Total == nil {
+			break
+		}
+
+		return e.complexity.DatasetVersions.Total(childComplexity), true
+
+	case "Datasets.datasets":
+		if e.complexity.Datasets.Datasets == nil {
+			break
+		}
+
+		return e.complexity.Datasets.Datasets(childComplexity), true
+
+	case "Datasets.total":
+		if e.complexity.Datasets.Total == nil {
+			break
+		}
+
+		return e.complexity.Datasets.Total(childComplexity), true
 
 	case "Experiment.attributes":
 		if e.complexity.Experiment.Attributes == nil {
@@ -1078,6 +1524,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.AddRunTag(childComplexity, args["id"].(string), args["tag"].(string)), true
+
+	case "Mutation.dataset":
+		if e.complexity.Mutation.Dataset == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_dataset_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Dataset(childComplexity, args["id"].(string)), true
 
 	case "Mutation.delCollaboratorProject":
 		if e.complexity.Mutation.DelCollaboratorProject == nil {
@@ -1516,6 +1974,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Projects.Projects(childComplexity), true
+
+	case "Query.dataset":
+		if e.complexity.Query.Dataset == nil {
+			break
+		}
+
+		args, err := ec.field_Query_dataset_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Dataset(childComplexity, args["id"].(string)), true
 
 	case "Query.experiment":
 		if e.complexity.Query.Experiment == nil {
@@ -2012,6 +2482,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.UserCollaborator.User(childComplexity), true
 
+	case "Workspace.createDataset":
+		if e.complexity.Workspace.CreateDataset == nil {
+			break
+		}
+
+		args, err := ec.field_Workspace_createDataset_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Workspace.CreateDataset(childComplexity, args["name"].(string), args["visibility"].(Visibility)), true
+
 	case "Workspace.createRepository":
 		if e.complexity.Workspace.CreateRepository == nil {
 			break
@@ -2023,6 +2505,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Workspace.CreateRepository(childComplexity, args["name"].(string), args["visibility"].(Visibility)), true
+
+	case "Workspace.datasetVersions":
+		if e.complexity.Workspace.DatasetVersions == nil {
+			break
+		}
+
+		args, err := ec.field_Workspace_datasetVersions_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Workspace.DatasetVersions(childComplexity, args["query"].(*DatasetVersionsQuery)), true
+
+	case "Workspace.datasets":
+		if e.complexity.Workspace.Datasets == nil {
+			break
+		}
+
+		args, err := ec.field_Workspace_datasets_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Workspace.Datasets(childComplexity, args["query"].(*DatasetsQuery)), true
 
 	case "Workspace.name":
 		if e.complexity.Workspace.Name == nil {
@@ -2248,6 +2754,87 @@ type CommitFolder {
 type CommitBlob {
   content: String!
   runs(query: ExperimentRunsQuery): ExperimentRuns!
+  downloadUrlForComponent(componentPath: String!): String!
+}
+enum DatasetVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+type Dataset {
+  id: ID!
+  name: String!
+  description: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+  visibility: DatasetVisibility!
+  allowedActions: AllowedActions!
+
+  attributes: [KeyValue!]!
+  tags: [String!]!
+  owner: User!
+  collaborators: [Collaborator!]!
+
+  addTags(tags: [String!]!): Dataset!
+  deleteTags(tags: [String!]!): Dataset!
+
+  datasetVersions(query: DatasetVersionsQuery): DatasetVersions!
+  changeDescription(description: String!): Dataset!
+  delete: Boolean!
+}
+
+type Datasets {
+  datasets: [Dataset!]!
+  total: Int!
+}
+
+input DatasetsQuery {
+  pagination: PaginationQuery
+  stringPredicates: [StringPredicate!]
+  floatPredicates: [FloatPredicate!]
+  ids: [ID!]
+}
+type DatasetVersion {
+  id: ID!
+  parentID: ID! # TODO: remove?
+  datasetID: ID!
+  dataset: Dataset!
+
+  description: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+  attributes: [KeyValue!]!
+  owner: User!
+  version: Int!
+
+  downloadUrl(blobPath: String!): String
+
+  tags: [String!]!
+  addTags(tags: [String!]!): DatasetVersion!
+  deleteTags(tags: [String!]!): DatasetVersion!
+
+  runs(query: ExperimentRunsQuery): ExperimentRuns!
+
+  blobInfo: String # serialized dataset blob
+  # Don't bother defining types for old info types as they'll be deleted laters
+  rawInfo: String
+  pathInfo: String
+  queryInfo: String
+
+  changeDescription(description: String!): DatasetVersion!
+  delete: Boolean!
+}
+
+type DatasetVersions {
+  datasetVersions: [DatasetVersion!]!
+  total: Int!
+}
+
+input DatasetVersionsQuery {
+  pagination: PaginationQuery
+  stringPredicates: [StringPredicate!]
+  floatPredicates: [FloatPredicate!]
+  ids: [ID!]
 }
 type Experiment {
   id: ID!
@@ -2299,6 +2886,7 @@ type ExperimentRun {
   jobId: String
   owner: User!
   codeVersion: String
+
 }
 
 type ExperimentRuns {
@@ -2334,6 +2922,8 @@ type Mutation {
   addProjectTag(id: ID!, tag: String!): Project
   delProjectTag(id: ID!, tag: String!): Project
   delProject(id: ID!): Boolean!
+
+  dataset(id: ID!): Dataset
 
   repository(id: ID!): Repository
   workspace(name: String): Workspace
@@ -2395,6 +2985,7 @@ type Query {
   project(id: ID!): Project
   experiment(id: ID!): Experiment
   run(id: ID!): ExperimentRun
+  dataset(id: ID!): Dataset
   repository(id: ID!): Repository
   organization(id: ID!): Organization
 
@@ -2529,12 +3120,17 @@ type Workspace {
 
   projects(next: String, query: ProjectsQuery): Projects!
 
+  datasets(query: DatasetsQuery): Datasets!
+  datasetVersions(query: DatasetVersionsQuery): DatasetVersions!
+  createDataset(name: String!, visibility: Visibility!): Dataset!
+
   repositories(next: String, query: RepositoriesQuery): Repositories!
   repository(name: String!): Repository
   createRepository(name: String!, visibility: Visibility!): Repository!
 
 
   # not sure this is needed now or later, but this feels like it where go
+
 
 }
 `},
@@ -2543,6 +3139,20 @@ type Workspace {
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_CommitBlob_downloadUrlForComponent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["componentPath"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["componentPath"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_CommitBlob_runs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -2614,6 +3224,132 @@ func (ec *executionContext) field_Commit_setTag_args(ctx context.Context, rawArg
 	return args, nil
 }
 
+func (ec *executionContext) field_DatasetVersion_addTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []string
+	if tmp, ok := rawArgs["tags"]; ok {
+		arg0, err = ec.unmarshalNString2ᚕstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tags"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_DatasetVersion_changeDescription_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["description"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["description"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_DatasetVersion_deleteTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []string
+	if tmp, ok := rawArgs["tags"]; ok {
+		arg0, err = ec.unmarshalNString2ᚕstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tags"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_DatasetVersion_downloadUrl_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["blobPath"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["blobPath"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_DatasetVersion_runs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ExperimentRunsQuery
+	if tmp, ok := rawArgs["query"]; ok {
+		arg0, err = ec.unmarshalOExperimentRunsQuery2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐExperimentRunsQuery(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["query"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Dataset_addTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []string
+	if tmp, ok := rawArgs["tags"]; ok {
+		arg0, err = ec.unmarshalNString2ᚕstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tags"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Dataset_changeDescription_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["description"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["description"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Dataset_datasetVersions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *DatasetVersionsQuery
+	if tmp, ok := rawArgs["query"]; ok {
+		arg0, err = ec.unmarshalODatasetVersionsQuery2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVersionsQuery(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["query"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Dataset_deleteTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []string
+	if tmp, ok := rawArgs["tags"]; ok {
+		arg0, err = ec.unmarshalNString2ᚕstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tags"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Experiment_runs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2677,6 +3413,20 @@ func (ec *executionContext) field_Mutation_addRunTag_args(ctx context.Context, r
 		}
 	}
 	args["tag"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_dataset_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -2942,6 +3692,20 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_dataset_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_experiment_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -3184,6 +3948,28 @@ func (ec *executionContext) field_Repository_tag_args(ctx context.Context, rawAr
 	return args, nil
 }
 
+func (ec *executionContext) field_Workspace_createDataset_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["name"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg0
+	var arg1 Visibility
+	if tmp, ok := rawArgs["visibility"]; ok {
+		arg1, err = ec.unmarshalNVisibility2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐVisibility(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["visibility"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Workspace_createRepository_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -3203,6 +3989,34 @@ func (ec *executionContext) field_Workspace_createRepository_args(ctx context.Co
 		}
 	}
 	args["visibility"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Workspace_datasetVersions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *DatasetVersionsQuery
+	if tmp, ok := rawArgs["query"]; ok {
+		arg0, err = ec.unmarshalODatasetVersionsQuery2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVersionsQuery(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["query"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Workspace_datasets_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *DatasetsQuery
+	if tmp, ok := rawArgs["query"]; ok {
+		arg0, err = ec.unmarshalODatasetsQuery2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetsQuery(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["query"] = arg0
 	return args, nil
 }
 
@@ -4214,6 +5028,50 @@ func (ec *executionContext) _CommitBlob_runs(ctx context.Context, field graphql.
 	return ec.marshalNExperimentRuns2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐExperimentRuns(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _CommitBlob_downloadUrlForComponent(ctx context.Context, field graphql.CollectedField, obj *models.CommitBlob) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "CommitBlob",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_CommitBlob_downloadUrlForComponent_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CommitBlob().DownloadURLForComponent(rctx, obj, args["componentPath"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _CommitFolder_subfolders(ctx context.Context, field graphql.CollectedField, obj *CommitFolder) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -4323,6 +5181,1571 @@ func (ec *executionContext) _Commits_commits(ctx context.Context, field graphql.
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNCommit2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚋmodelsᚐCommit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_id(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Id, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_name(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_description(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_dateCreated(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().DateCreated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDate2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_dateUpdated(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().DateUpdated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDate2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_visibility(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().Visibility(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(DatasetVisibility)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDatasetVisibility2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVisibility(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_allowedActions(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().AllowedActions(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*AllowedActions)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNAllowedActions2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐAllowedActions(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_attributes(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().Attributes(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]KeyValue)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNKeyValue2ᚕgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐKeyValue(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_tags(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tags, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2ᚕstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_owner(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().Owner(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*uac.UserInfo)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋuacᚐUserInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_collaborators(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().Collaborators(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]Collaborator)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNCollaborator2ᚕgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐCollaborator(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_addTags(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Dataset_addTags_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().AddTags(rctx, obj, args["tags"].([]string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*modeldb.Dataset)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDataset2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_deleteTags(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Dataset_deleteTags_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().DeleteTags(rctx, obj, args["tags"].([]string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*modeldb.Dataset)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDataset2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_datasetVersions(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Dataset_datasetVersions_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().DatasetVersions(rctx, obj, args["query"].(*DatasetVersionsQuery))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*DatasetVersions)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDatasetVersions2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVersions(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_changeDescription(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Dataset_changeDescription_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().ChangeDescription(rctx, obj, args["description"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*modeldb.Dataset)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDataset2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dataset_delete(ctx context.Context, field graphql.CollectedField, obj *modeldb.Dataset) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Dataset",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dataset().Delete(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_id(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Id, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_parentID(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ParentId, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_datasetID(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DatasetId, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_dataset(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().Dataset(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*modeldb.Dataset)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDataset2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_description(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_dateCreated(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().DateCreated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDate2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_dateUpdated(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().DateUpdated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDate2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_attributes(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().Attributes(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]KeyValue)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNKeyValue2ᚕgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐKeyValue(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_owner(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().Owner(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*uac.UserInfo)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋuacᚐUserInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_version(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().Version(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_downloadUrl(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_DatasetVersion_downloadUrl_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().DownloadURL(rctx, obj, args["blobPath"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_tags(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tags, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2ᚕstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_addTags(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_DatasetVersion_addTags_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().AddTags(rctx, obj, args["tags"].([]string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*modeldb.DatasetVersion)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDatasetVersion2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDatasetVersion(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_deleteTags(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_DatasetVersion_deleteTags_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().DeleteTags(rctx, obj, args["tags"].([]string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*modeldb.DatasetVersion)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDatasetVersion2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDatasetVersion(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_runs(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_DatasetVersion_runs_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().Runs(rctx, obj, args["query"].(*ExperimentRunsQuery))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ExperimentRuns)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNExperimentRuns2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐExperimentRuns(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_blobInfo(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().BlobInfo(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_rawInfo(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().RawInfo(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_pathInfo(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().PathInfo(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_queryInfo(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().QueryInfo(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_changeDescription(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_DatasetVersion_changeDescription_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().ChangeDescription(rctx, obj, args["description"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*modeldb.DatasetVersion)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDatasetVersion2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDatasetVersion(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersion_delete(ctx context.Context, field graphql.CollectedField, obj *modeldb.DatasetVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DatasetVersion().Delete(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersions_datasetVersions(ctx context.Context, field graphql.CollectedField, obj *DatasetVersions) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersions",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DatasetVersions, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*modeldb.DatasetVersion)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDatasetVersion2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDatasetVersion(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DatasetVersions_total(ctx context.Context, field graphql.CollectedField, obj *DatasetVersions) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "DatasetVersions",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Datasets_datasets(ctx context.Context, field graphql.CollectedField, obj *Datasets) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Datasets",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Datasets, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*modeldb.Dataset)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDataset2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Datasets_total(ctx context.Context, field graphql.CollectedField, obj *Datasets) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Datasets",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Experiment_id(ctx context.Context, field graphql.CollectedField, obj *modeldb.Experiment) (ret graphql.Marshaler) {
@@ -6275,6 +8698,47 @@ func (ec *executionContext) _Mutation_delProject(ctx context.Context, field grap
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_dataset(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_dataset_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Dataset(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*modeldb.Dataset)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalODataset2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_repository(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -8216,6 +10680,47 @@ func (ec *executionContext) _Query_run(ctx context.Context, field graphql.Collec
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOExperimentRun2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐExperimentRun(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_dataset(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_dataset_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Dataset(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*modeldb.Dataset)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalODataset2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_repository(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10423,6 +12928,138 @@ func (ec *executionContext) _Workspace_projects(ctx context.Context, field graph
 	return ec.marshalNProjects2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐProjects(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Workspace_datasets(ctx context.Context, field graphql.CollectedField, obj *models.Workspace) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Workspace",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Workspace_datasets_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Workspace().Datasets(rctx, obj, args["query"].(*DatasetsQuery))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Datasets)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDatasets2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasets(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Workspace_datasetVersions(ctx context.Context, field graphql.CollectedField, obj *models.Workspace) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Workspace",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Workspace_datasetVersions_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Workspace().DatasetVersions(rctx, obj, args["query"].(*DatasetVersionsQuery))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*DatasetVersions)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDatasetVersions2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVersions(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Workspace_createDataset(ctx context.Context, field graphql.CollectedField, obj *models.Workspace) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Workspace",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Workspace_createDataset_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Workspace().CreateDataset(rctx, obj, args["name"].(string), args["visibility"].(Visibility))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*modeldb.Dataset)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDataset2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Workspace_repositories(ctx context.Context, field graphql.CollectedField, obj *models.Workspace) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -11757,6 +14394,78 @@ func (ec *executionContext) unmarshalInputCommitReference(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputDatasetVersionsQuery(ctx context.Context, obj interface{}) (DatasetVersionsQuery, error) {
+	var it DatasetVersionsQuery
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "pagination":
+			var err error
+			it.Pagination, err = ec.unmarshalOPaginationQuery2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐPaginationQuery(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "stringPredicates":
+			var err error
+			it.StringPredicates, err = ec.unmarshalOStringPredicate2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐStringPredicate(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "floatPredicates":
+			var err error
+			it.FloatPredicates, err = ec.unmarshalOFloatPredicate2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐFloatPredicate(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "ids":
+			var err error
+			it.Ids, err = ec.unmarshalOID2ᚕstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputDatasetsQuery(ctx context.Context, obj interface{}) (DatasetsQuery, error) {
+	var it DatasetsQuery
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "pagination":
+			var err error
+			it.Pagination, err = ec.unmarshalOPaginationQuery2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐPaginationQuery(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "stringPredicates":
+			var err error
+			it.StringPredicates, err = ec.unmarshalOStringPredicate2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐStringPredicate(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "floatPredicates":
+			var err error
+			it.FloatPredicates, err = ec.unmarshalOFloatPredicate2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐFloatPredicate(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "ids":
+			var err error
+			it.Ids, err = ec.unmarshalOID2ᚕstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputExperimentRunsQuery(ctx context.Context, obj interface{}) (ExperimentRunsQuery, error) {
 	var it ExperimentRunsQuery
 	var asMap = obj.(map[string]interface{})
@@ -12321,6 +15030,20 @@ func (ec *executionContext) _CommitBlob(ctx context.Context, sel ast.SelectionSe
 				}
 				return res
 			})
+		case "downloadUrlForComponent":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CommitBlob_downloadUrlForComponent(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12377,6 +15100,536 @@ func (ec *executionContext) _Commits(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = graphql.MarshalString("Commits")
 		case "commits":
 			out.Values[i] = ec._Commits_commits(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var datasetImplementors = []string{"Dataset"}
+
+func (ec *executionContext) _Dataset(ctx context.Context, sel ast.SelectionSet, obj *modeldb.Dataset) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, datasetImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Dataset")
+		case "id":
+			out.Values[i] = ec._Dataset_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._Dataset_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "description":
+			out.Values[i] = ec._Dataset_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "dateCreated":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_dateCreated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "dateUpdated":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_dateUpdated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "visibility":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_visibility(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "allowedActions":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_allowedActions(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "attributes":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_attributes(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "tags":
+			out.Values[i] = ec._Dataset_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "owner":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_owner(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "collaborators":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_collaborators(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "addTags":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_addTags(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "deleteTags":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_deleteTags(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "datasetVersions":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_datasetVersions(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "changeDescription":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_changeDescription(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "delete":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dataset_delete(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var datasetVersionImplementors = []string{"DatasetVersion"}
+
+func (ec *executionContext) _DatasetVersion(ctx context.Context, sel ast.SelectionSet, obj *modeldb.DatasetVersion) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, datasetVersionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DatasetVersion")
+		case "id":
+			out.Values[i] = ec._DatasetVersion_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "parentID":
+			out.Values[i] = ec._DatasetVersion_parentID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "datasetID":
+			out.Values[i] = ec._DatasetVersion_datasetID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "dataset":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_dataset(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "description":
+			out.Values[i] = ec._DatasetVersion_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "dateCreated":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_dateCreated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "dateUpdated":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_dateUpdated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "attributes":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_attributes(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "owner":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_owner(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "version":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_version(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "downloadUrl":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_downloadUrl(ctx, field, obj)
+				return res
+			})
+		case "tags":
+			out.Values[i] = ec._DatasetVersion_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "addTags":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_addTags(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "deleteTags":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_deleteTags(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "runs":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_runs(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "blobInfo":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_blobInfo(ctx, field, obj)
+				return res
+			})
+		case "rawInfo":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_rawInfo(ctx, field, obj)
+				return res
+			})
+		case "pathInfo":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_pathInfo(ctx, field, obj)
+				return res
+			})
+		case "queryInfo":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_queryInfo(ctx, field, obj)
+				return res
+			})
+		case "changeDescription":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_changeDescription(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "delete":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DatasetVersion_delete(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var datasetVersionsImplementors = []string{"DatasetVersions"}
+
+func (ec *executionContext) _DatasetVersions(ctx context.Context, sel ast.SelectionSet, obj *DatasetVersions) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, datasetVersionsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DatasetVersions")
+		case "datasetVersions":
+			out.Values[i] = ec._DatasetVersions_datasetVersions(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "total":
+			out.Values[i] = ec._DatasetVersions_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var datasetsImplementors = []string{"Datasets"}
+
+func (ec *executionContext) _Datasets(ctx context.Context, sel ast.SelectionSet, obj *Datasets) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, datasetsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Datasets")
+		case "datasets":
+			out.Values[i] = ec._Datasets_datasets(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "total":
+			out.Values[i] = ec._Datasets_total(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -12895,6 +16148,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "dataset":
+			out.Values[i] = ec._Mutation_dataset(ctx, field)
 		case "repository":
 			out.Values[i] = ec._Mutation_repository(ctx, field)
 		case "workspace":
@@ -13585,6 +16840,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_run(ctx, field)
+				return res
+			})
+		case "dataset":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_dataset(ctx, field)
 				return res
 			})
 		case "repository":
@@ -14427,6 +17693,48 @@ func (ec *executionContext) _Workspace(ctx context.Context, sel ast.SelectionSet
 				}
 				return res
 			})
+		case "datasets":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Workspace_datasets(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "datasetVersions":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Workspace_datasetVersions(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "createDataset":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Workspace_createDataset(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "repositories":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -14969,6 +18277,145 @@ func (ec *executionContext) marshalNCommits2ᚖgithubᚗcomᚋVertaAIᚋmodeldb�
 		return graphql.Null
 	}
 	return ec._Commits(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNDataset2githubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx context.Context, sel ast.SelectionSet, v modeldb.Dataset) graphql.Marshaler {
+	return ec._Dataset(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDataset2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx context.Context, sel ast.SelectionSet, v []*modeldb.Dataset) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		rctx := &graphql.ResolverContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithResolverContext(ctx, rctx)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDataset2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNDataset2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx context.Context, sel ast.SelectionSet, v *modeldb.Dataset) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Dataset(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNDatasetVersion2githubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDatasetVersion(ctx context.Context, sel ast.SelectionSet, v modeldb.DatasetVersion) graphql.Marshaler {
+	return ec._DatasetVersion(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDatasetVersion2ᚕᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDatasetVersion(ctx context.Context, sel ast.SelectionSet, v []*modeldb.DatasetVersion) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		rctx := &graphql.ResolverContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithResolverContext(ctx, rctx)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDatasetVersion2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDatasetVersion(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNDatasetVersion2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDatasetVersion(ctx context.Context, sel ast.SelectionSet, v *modeldb.DatasetVersion) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._DatasetVersion(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNDatasetVersions2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVersions(ctx context.Context, sel ast.SelectionSet, v DatasetVersions) graphql.Marshaler {
+	return ec._DatasetVersions(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDatasetVersions2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVersions(ctx context.Context, sel ast.SelectionSet, v *DatasetVersions) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._DatasetVersions(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNDatasetVisibility2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVisibility(ctx context.Context, v interface{}) (DatasetVisibility, error) {
+	var res DatasetVisibility
+	return res, res.UnmarshalGQL(v)
+}
+
+func (ec *executionContext) marshalNDatasetVisibility2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVisibility(ctx context.Context, sel ast.SelectionSet, v DatasetVisibility) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNDatasets2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasets(ctx context.Context, sel ast.SelectionSet, v Datasets) graphql.Marshaler {
+	return ec._Datasets(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDatasets2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasets(ctx context.Context, sel ast.SelectionSet, v *Datasets) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Datasets(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNDate2string(ctx context.Context, v interface{}) (string, error) {
@@ -16320,6 +19767,41 @@ func (ec *executionContext) marshalOCommitElement2githubᚗcomᚋVertaAIᚋmodel
 	return ec._CommitElement(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalODataset2githubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx context.Context, sel ast.SelectionSet, v modeldb.Dataset) graphql.Marshaler {
+	return ec._Dataset(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalODataset2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋprotosᚋgenᚋgoᚋprotosᚋpublicᚋmodeldbᚐDataset(ctx context.Context, sel ast.SelectionSet, v *modeldb.Dataset) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Dataset(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalODatasetVersionsQuery2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVersionsQuery(ctx context.Context, v interface{}) (DatasetVersionsQuery, error) {
+	return ec.unmarshalInputDatasetVersionsQuery(ctx, v)
+}
+
+func (ec *executionContext) unmarshalODatasetVersionsQuery2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVersionsQuery(ctx context.Context, v interface{}) (*DatasetVersionsQuery, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalODatasetVersionsQuery2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetVersionsQuery(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) unmarshalODatasetsQuery2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetsQuery(ctx context.Context, v interface{}) (DatasetsQuery, error) {
+	return ec.unmarshalInputDatasetsQuery(ctx, v)
+}
+
+func (ec *executionContext) unmarshalODatasetsQuery2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetsQuery(ctx context.Context, v interface{}) (*DatasetsQuery, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalODatasetsQuery2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐDatasetsQuery(ctx, v)
+	return &res, err
+}
+
 func (ec *executionContext) unmarshalODate2string(ctx context.Context, v interface{}) (string, error) {
 	return graphql.UnmarshalString(v)
 }
@@ -16415,6 +19897,38 @@ func (ec *executionContext) unmarshalOID2string(ctx context.Context, v interface
 
 func (ec *executionContext) marshalOID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	return graphql.MarshalID(v)
+}
+
+func (ec *executionContext) unmarshalOID2ᚕstring(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNID2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOID2ᚕstring(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

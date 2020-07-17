@@ -3,7 +3,6 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import CompareClickAction from 'features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
 import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import { ICommunication } from 'shared/utils/redux/communication';
 import DeleteFAIWithLabel from 'shared/view/elements/DeleteFaiWithLabel/DeleteFaiWithLabel';
@@ -17,6 +16,7 @@ import { IApplicationState } from 'setup/store/store';
 
 import { IRow } from '../types';
 import styles from './Actions.module.css';
+import CompareClickActionView from 'features/compareModels/view/CompareEntities/CompareClickAction/CompareClickAction';
 
 interface ILocalProps {
   row: IRow;
@@ -54,7 +54,7 @@ class ActionsColumn extends React.PureComponent<AllProps> {
   public render() {
     const {
       row: {
-        experimentRun: { id, projectId, name, artifacts },
+        experimentRun: { id, projectId, name },
       },
     } = this.props;
 
@@ -68,20 +68,20 @@ class ActionsColumn extends React.PureComponent<AllProps> {
           <GroupFai
             groupFai={[
               requiredProps => (
-                <CompareClickAction
+                <CompareClickActionView
                   containerId={projectId}
                   enitityId={id}
                   {...requiredProps}
                 />
               ),
-              requiredProps => (
+              (requiredProps) => (
                 <ShowCommentsButtonWithAuthor
                   buttonType="faiWithLabel"
                   entityInfo={{ id, name }}
                   {...requiredProps}
                 />
               ),
-              requiredProps => (
+              (requiredProps) => (
                 <WithCurrentUserActionsAccesses
                   entityId={id}
                   entityType="experimentRun"
