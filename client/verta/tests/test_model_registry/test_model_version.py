@@ -95,4 +95,3 @@ class TestModelVersion:
             msg_other.model.CopyFrom(item._msg.model)
             assert labels1 == labels2
             assert item._msg == msg_other
-
