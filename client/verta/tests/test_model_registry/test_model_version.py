@@ -6,7 +6,6 @@ import verta.dataset
 import verta.environment
 
 import numpy as np
-
 from sklearn.linear_model import LogisticRegression
 
 
