@@ -118,7 +118,7 @@ class TestModelVersion:
         model_version = registered_model.get_or_create_version(name="my version")
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.set_model(classifier)
+        model_version.log_model(classifier)
 
         model_version = registered_model.get_version(id=model_version.id)
         assert model_version.has_model
