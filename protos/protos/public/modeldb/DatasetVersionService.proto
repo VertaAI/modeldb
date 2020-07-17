@@ -284,6 +284,15 @@ message CommitMultipartVersionedDatasetBlobArtifact {
     }
 }
 
+message GetDatasetVersionById {
+    string id = 2;
+    string dataset_id = 1;
+
+    message Response {
+        DatasetVersion dataset_version = 1;
+    }
+}
+
 service DatasetVersionService {
 
     rpc createDatasetVersion (CreateDatasetVersion) returns (CreateDatasetVersion.Response) {
@@ -296,6 +305,12 @@ service DatasetVersionService {
     rpc getAllDatasetVersionsByDatasetId (GetAllDatasetVersionsByDatasetId) returns (GetAllDatasetVersionsByDatasetId.Response) {
         option (google.api.http) ={
             get: "/v1/dataset-version/getAllDatasetVersionsByDatasetId"
+        };
+    };
+
+    rpc getDatasetVersionById (GetDatasetVersionById) returns (GetDatasetVersionById.Response) {
+        option (google.api.http) ={
+            get: "/v1/dataset-version/getDatasetVersionById"
         };
     };
 
