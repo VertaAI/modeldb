@@ -2,30 +2,28 @@ import * as R from 'ramda';
 import { useState } from 'react';
 
 import { ColumnDefinition } from '../types';
+import { SortInfo } from './types';
 
-type SortInfo = {
-  type: string;
-  isReversed: boolean;
-} | null;
+type OptionalSortInfo = SortInfo | null;
 
-export function useSortInfo(): [SortInfo, (type: string) => void] {
-  const [sortInfo, changeSortInfo] = useState<SortInfo>(null);
+export function useSortInfo(): [OptionalSortInfo, (type: string) => void] {
+  const [sortInfo, changeSortInfo] = useState<OptionalSortInfo>(null);
 
   const changeSortedType = (type: string) => {
     if (!sortInfo) {
       changeSortInfo({
         type,
-        isReversed: false,
+        isAscDirection: false,
       });
     } else if (sortInfo.type === type) {
       changeSortInfo({
         type,
-        isReversed: !sortInfo.isReversed,
+        isAscDirection: !sortInfo.isAscDirection,
       });
     } else {
       changeSortInfo({
         type,
-        isReversed: false,
+        isAscDirection: false,
       });
     }
   };
@@ -40,7 +38,7 @@ export function sortDataRows<T>({
 }: {
   columnDefinitions: Array<ColumnDefinition<T>>;
   dataRows: T[];
-  sortInfo: SortInfo;
+  sortInfo: OptionalSortInfo;
 }): T[] {
   if (!sortInfo) {
     return dataRows;
@@ -50,10 +48,10 @@ export function sortDataRows<T>({
     c => c.type === sortInfo.type
   );
 
-  if (columnDefinition && 'getValue' in columnDefinition) {
+  if (columnDefinition && 'getValue' in columnDefinition && columnDefinition.getValue) {
     const sortedRows = R.sortBy(columnDefinition.getValue)(dataRows);
 
-    const ret = sortInfo.isReversed ? sortedRows : R.reverse(sortedRows);
+    const ret = sortInfo.isAscDirection ? sortedRows : R.reverse(sortedRows);
 
     return ret;
   }

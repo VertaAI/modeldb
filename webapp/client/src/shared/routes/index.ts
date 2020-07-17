@@ -125,8 +125,9 @@ const routes = {
         P.param('projectId')(),
         'exp-runs',
         'compare',
-        P.param('modelRecordId1')(),
-        P.param('modelRecordId2')()
+        P.paramWithMod('modelIds', '*')<{
+          modelIds?: string
+        }>(),
       )(),
   }),
 

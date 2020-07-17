@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import { handleCustomErrorWithFallback } from 'shared/models/Error';
-import ObservationsModelPage from 'shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/ObservationsModelPage';
+import ObservationsModelPage from 'shared/view/domain/ModelRecord/ModelRecordProps/Observations/Observations/ObservationsModelPage/ObservationsModelPage';
 import vertaDocLinks from 'shared/utils/globalConstants/vertaDocLinks';
 import { initialCommunication } from 'shared/utils/redux/communication';
 import DeleteFAI from 'shared/view/elements/DeleteFAI/DeleteFAI';
@@ -29,6 +29,7 @@ import CodeVersionSection from './CodeVersionSection/CodeVersionSection';
 import Artifacts from './shared/Artifacts/Artifacts';
 import AttributesSection from './AttributesSection/AttributesSection';
 import Reloading from 'shared/view/elements/Reloading/Reloading';
+import WithCopyTextIcon from 'shared/view/elements/WithCopyTextIcon/WithCopyTextIcon';
 
 interface ILocalProps {
   id: string;
@@ -46,12 +47,12 @@ const mapStateToProps = (state: IApplicationState, localProps: ILocalProps) => {
     data: modelRecord,
     loading:
       ExperimentRunsStore.selectCommunications(state).loadingExperimentRun[
-        localProps.id
+      localProps.id
       ] || initialCommunication,
     project: ProjectsStore.selectProject(state, localProps.projectId),
     deleting:
       ExperimentRunsStore.selectCommunications(state).deletingExperimentRun[
-        localProps.id
+      localProps.id
       ] || initialCommunication,
   };
 };
@@ -85,7 +86,7 @@ class ModelRecordView extends React.PureComponent<AllProps> {
           entityNotFound: () =>
             this.props.onShowNotFoundPage(this.props.loading.error),
         },
-        () => {}
+        () => { }
       );
     }
 
@@ -116,7 +117,11 @@ class ModelRecordView extends React.PureComponent<AllProps> {
           dataTest="experiment-run"
         >
           <PageHeader
-            title={<span data-test="experiment-run-name">{data.name}</span>}
+            title={
+              <WithCopyTextIcon text={data.name}>
+                <span data-test="experiment-run-name">{data.name}</span>
+              </WithCopyTextIcon>
+            }
             rightContent={
               hasAccessToAction('delete', data) && (
                 <div className={styles.meta_id_container}>
@@ -150,10 +155,7 @@ class ModelRecordView extends React.PureComponent<AllProps> {
             versionedInputs={data.versionedInputs}
           />
           <Section iconType="observations" title="Observations">
-            <ObservationsModelPage
-              observations={data.observations}
-              docLink={vertaDocLinks.log_observations}
-            />
+            <ObservationsModelPage observations={data.observations} />
           </Section>
           <Section iconType="datasets" title="Datasets">
             {data.datasets.length > 0 ? (
@@ -163,12 +165,12 @@ class ModelRecordView extends React.PureComponent<AllProps> {
                 modelRecordId={data.id}
               />
             ) : (
-              <ClientSuggestion
-                fieldName={'dataset'}
-                clientMethod={'log_dataset_version()'}
-                link={vertaDocLinks.log_dataset}
-              />
-            )}
+                <ClientSuggestion
+                  fieldName={'dataset'}
+                  clientMethod={'log_dataset_version()'}
+                  link={vertaDocLinks.log_dataset}
+                />
+              )}
           </Section>
         </PageCard>
       </Reloading>
