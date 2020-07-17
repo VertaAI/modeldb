@@ -510,8 +510,8 @@ class TestExperimentRuns:
         assert local_expt1_run_ids == set(run.id for run in expt1.expt_runs + expt1.expt_runs)
 
 
+@pytest.skip("registry not yet available in dev")
 class TestModel:
-
     def test_create(self, client):
         assert client.set_registered_model()
 

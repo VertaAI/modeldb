@@ -6,6 +6,9 @@ import verta.dataset
 import verta.environment
 
 
+pytest.skip("registry not yet available in dev", allow_module_level=True)
+
+
 class TestModelVersion:
     def test_get_by_name(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
