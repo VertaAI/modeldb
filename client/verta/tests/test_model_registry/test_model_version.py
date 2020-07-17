@@ -6,9 +6,6 @@ import verta.dataset
 import verta.environment
 
 
-pytest.skip("RegisteredModel has not been merged yet", allow_module_level=True)
-
-
 class TestModelVersion:
     def test_get_by_name(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
@@ -77,4 +74,3 @@ class TestModelVersion:
             msg_other.model.CopyFrom(item._msg.model)
             assert labels1 == labels2
             assert item._msg == msg_other
-
