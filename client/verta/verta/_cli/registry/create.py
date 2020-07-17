@@ -34,9 +34,9 @@ def create_model(model_name, label, visibility, workspace):
 @click.argument("version_name", nargs=1, required=True)
 @click.option("--label", "-l", multiple=True, help="Labels to be associated with the object.")
 @click.option("--model", help="Path to the model.")
-@click.option("--asset", multiple=True, help="Path to the asset required for the model. The format if asset_name=path_to_asset.")
+@click.option("--artifact", type=(str, str), multiple=True, help="Path to the artifact required for the model. The format is --artifact artifact_key path_to_artifact.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-def create_model_version(model_name, version_name, label, model, asset, workspace):
+def create_model_version(model_name, version_name, label, model, artifact, workspace):
     """Create a new registeredmodelversion entry.
     """
     pass

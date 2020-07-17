@@ -24,7 +24,9 @@ class ButtonLikeText extends React.PureComponent<ILocalProps> {
     } = this.props;
     const Elem = (props: React.HTMLProps<any>) =>
       to ? (
-        <a href={to} {...props} data-test={dataTest} />
+        <a href={to} {...props} data-test={dataTest}>
+          {props.children}
+        </a>
       ) : (
         <button {...props} data-test={dataTest} type="button" />
       );

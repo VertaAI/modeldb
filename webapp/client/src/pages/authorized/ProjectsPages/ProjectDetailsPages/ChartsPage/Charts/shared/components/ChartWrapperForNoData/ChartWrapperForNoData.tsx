@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import React from 'react';
 import EmptyChart from './chart/chartWithNoData';
 import styles from './ChartWrapperForNoData.module.css';

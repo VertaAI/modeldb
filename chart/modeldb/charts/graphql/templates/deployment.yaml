@@ -8,7 +8,6 @@ metadata:
 {{toYaml .Values.labels | indent 4 -}}
 {{- end}}
   name: {{ .Release.Name }}-graphql
-  namespace: {{ .Release.Namespace | quote }}
 spec:
   selector:
     matchLabels:

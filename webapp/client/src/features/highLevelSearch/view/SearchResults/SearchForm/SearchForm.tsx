@@ -110,10 +110,10 @@ const Search = ({
       options: suggestionOptions,
       inputValue: inputValue,
       defaultValue: suggestionOptions.find(({ value }) => value === inputValue),
-      getOptionLabel: option => option.value,
-      getOptionSelected: (option, selectedOption) =>
+      getOptionLabel: (option: { value: any; }) => option.value,
+      getOptionSelected: (option: { value: any; }, selectedOption: { value: any; }) =>
         option.value === selectedOption.value,
-      onChange: (e, option, reason) => {
+      onChange: (e: any, option: ISearchOption | null, reason: string) => {
         if (
           typeof option !== 'string' &&
           option &&
@@ -122,7 +122,7 @@ const Search = ({
           onChange(option);
         }
       },
-      onInputChange: e => {
+      onInputChange: (e: React.ChangeEvent<{}>) => {
         if (!e) {
           return;
         }
@@ -133,6 +133,7 @@ const Search = ({
         }
       },
     },
+    // @ts-ignore
     'group'
   );
 
@@ -148,8 +149,8 @@ const Search = ({
           resetValueControl={
             inputValue && autocompleteProps.focused
               ? {
-                  onReset: () => onInputChange(''),
-                }
+                onReset: () => onInputChange(''),
+              }
               : undefined
           }
           onKeyUp={e => {
@@ -165,6 +166,7 @@ const Search = ({
           className={styles.autocomplete__optionsList}
         >
           {autocompleteProps.groupedOptions.map(
+            // @ts-ignore
             ({ options, group, index: groupIndex }) => (
               <div className={styles.autocomplete__optionsGroup} key={group}>
                 <div className={styles.autocomplete__optionsGroupTitle}>
@@ -176,6 +178,7 @@ const Search = ({
                     group
                   )}
                 </div>
+                // @ts-ignore
                 {options.map((option, index) => {
                   const resIndex = groupIndex + index;
                   const additionalProps = autocompleteProps.getOptionProps({
@@ -235,12 +238,12 @@ const Option = ({
           Add to favorites
         </OptionAction>
       ) : (
-        <OptionAction
-          onClick={() => onRemoveFavoriteFromSuggestions(option.value)}
-        >
-          Remove from favorites
-        </OptionAction>
-      )}
+          <OptionAction
+            onClick={() => onRemoveFavoriteFromSuggestions(option.value)}
+          >
+            Remove from favorites
+          </OptionAction>
+        )}
     </div>
   );
 };

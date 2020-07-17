@@ -11,6 +11,8 @@ type Resolver struct {
 	Connections *connections.Connections
 }
 
+var _ schema.ResolverRoot = &Resolver{}
+
 func (r *Resolver) Artifact() schema.ArtifactResolver {
 	return &artifactResolver{r}
 }
@@ -20,6 +22,12 @@ func (r *Resolver) Commit() schema.CommitResolver {
 }
 func (r *Resolver) CommitBlob() schema.CommitBlobResolver {
 	return &commitBlobResolver{r}
+}
+func (r *Resolver) Dataset() schema.DatasetResolver {
+	return &datasetResolver{r}
+}
+func (r *Resolver) DatasetVersion() schema.DatasetVersionResolver {
+	return &datasetVersionResolver{r}
 }
 
 func (r *Resolver) Experiment() schema.ExperimentResolver {
@@ -49,6 +57,7 @@ func (r *Resolver) Project() schema.ProjectResolver {
 func (r *Resolver) Query() schema.QueryResolver {
 	return &queryResolver{r}
 }
+
 func (r *Resolver) Repository() schema.RepositoryResolver {
 	return &repositoryResolver{r}
 }

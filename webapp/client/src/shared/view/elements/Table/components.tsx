@@ -1,15 +1,9 @@
 import cn from 'classnames';
-import React, { useCallback } from 'react';
+import React from 'react';
 
 import { getAlignClassname } from './helpers';
 import styles from './styles.module.css';
-import {
-  ICell,
-  IRow,
-  IGroup,
-  IAdditionalClassNames,
-  ISelection,
-} from './types';
+import { ICell, IRow, IAdditionalClassNames, ISelection } from './types';
 
 export function NoData({
   noData = () => 'No data',
