@@ -3,10 +3,9 @@ import json
 import pytest
 from click.testing import CliRunner
 
+from verta import Client
 from verta._cli import cli
 
-
-pytest.skip("registry in Client not yet implemented", allow_module_level=True)
 
 
 class TestCreate:
@@ -52,8 +51,27 @@ class TestGet:
 
 
 class TestList:
-    pass
+    def test_list_model(self):
+        client = Client()
+        model1 = client.get_or_create_registered_model()
+        label = model1._msg.name + "label1"
+        model1.add_label(label)
+        model1.add_label("label2")
+        client.get_or_create_registered_model()
+        model = client.get_or_create_registered_model()
+        model.add_label(label)
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'list', 'registeredmodel', '--filter', "labels == \"{}\"".format(label)],
+        )
+
+        assert not result.exception
+        assert 'result count: 2' in result.output
+        assert str(model1._msg.name) in result.output
+        assert str(model._msg.name) in result.output
 
 
 class TestUpdate:
     pass
+

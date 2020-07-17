@@ -42,9 +42,11 @@ class RegisteredModels(_utils.LazyList):
         return RegisteredModel(self._conn, self._conf, msg)
 
     def with_workspace(self, workspace_name=None):
-        new_list = copy.deepcopy(self)
-        new_list._msg.workspace_name = workspace_name
-        return new_list
+        if workspace_name is not None:
+            new_list = copy.deepcopy(self)
+            new_list._msg.workspace_name = workspace_name
+            return new_list
+        return self
 
     def set_page_limit(self, msg, param):
         msg.pagination.page_limit = param
