@@ -770,7 +770,7 @@ class Client(object):
         return self.get_or_create_repository(*args, **kwargs)
     # set aliases for get-or-create functions for API compatibility
 
-    def get_or_create_registered_model(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
+    def get_or_create_registered_model(self, name=None, desc=None, labels=None, attrs=None, workspace=None, public_within_org=None, id=None):
         """
         Attaches a registered_model to this Client.
 
@@ -784,7 +784,7 @@ class Client(object):
             Name of the registered_model. If no name is provided, one will be generated.
         desc : str, optional
             Description of the registered_model.
-        tags: list of str, optional
+        labels: list of str, optional
             Labels of the registered_model.
         attrs : dict of str to {None, bool, float, int, str}, optional
             Attributes of the registered_model.
@@ -826,7 +826,7 @@ class Client(object):
         else:
             self._ctx.registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
                                                                                 lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                                                lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
+                                                                                lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=labels, attrs=attrs, public_within_org=public_within_org))
 
         return self._ctx.registered_model
 
