@@ -406,7 +406,7 @@ message DeleteHyperparameters {
     string id = 1;
     // delete HyperParameters corresponding to the keys
     repeated string hyperparameter_keys = 2;
-    // if true delete all hyper patrameters corresponding to the run, ignoring hyperparameter_keys
+    // if true delete all hyper parameters corresponding to the run, ignoring hyperparameter_keys
     bool delete_all = 3;
 
     message Response {
