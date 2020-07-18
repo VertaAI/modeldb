@@ -1,7 +1,5 @@
 package ai.verta.modeldb.cron_jobs;
 
-import static ai.verta.modeldb.authservice.AuthServiceChannel.isBackgroundUtilsCall;
-
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.DatasetVisibilityEnum;
@@ -22,6 +20,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
@@ -57,7 +56,7 @@ public class DeleteEntitiesCron extends TimerTask {
   public void run() {
     LOGGER.info("DeleteEntitiesCron wakeup");
 
-    isBackgroundUtilsCall = true;
+    ModelDBUtils.registeredBackgroundUtilsCount();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       // Update project timestamp
       deleteProjects(session);
@@ -87,8 +86,9 @@ public class DeleteEntitiesCron extends TimerTask {
       } else {
         LOGGER.error("DeleteEntitiesCron Exception: ", ex);
       }
+    } finally {
+      ModelDBUtils.unregisteredBackgroundUtilsCount();
     }
-    isBackgroundUtilsCall = false;
     LOGGER.info("DeleteEntitiesCron finish tasks and reschedule");
   }
 
