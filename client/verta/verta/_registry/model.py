@@ -37,7 +37,7 @@ class RegisteredModel(_ModelDBEntity):
             ctx.registered_model = self
             return RegisteredModelVersion._get_or_create_by_name(self._conn, name,
                                                        lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
-                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, labels=labels, date_created=time_created))
+                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=labels, date_created=time_created))
 
     def get_version(self, name=None, id=None):
         if name is not None and id is not None:
