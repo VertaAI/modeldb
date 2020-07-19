@@ -280,10 +280,16 @@ public class DatasetToRepositoryMigration {
 
                 String updateDatasetsLinkedArtifactId =
                     "UPDATE ArtifactEntity ar SET ar.linked_artifact_id = :commitHash WHERE ar.linked_artifact_id = :datasetVersionId";
-                Query linekedArtifactQuery = session1.createQuery(updateDatasetsLinkedArtifactId);
-                linekedArtifactQuery.setParameter("commitHash", commitHash);
-                linekedArtifactQuery.setParameter("datasetVersionId", datasetVersionEntity.getId());
-                linekedArtifactQuery.executeUpdate();
+                Query linkedArtifactQuery = session1.createQuery(updateDatasetsLinkedArtifactId);
+                linkedArtifactQuery.setParameter("commitHash", commitHash);
+                linkedArtifactQuery.setParameter("datasetVersionId", datasetVersionEntity.getId());
+                int updateCount = linkedArtifactQuery.executeUpdate();
+                if (updateCount != 0) {
+                  LOGGER.debug(
+                      "Updated linked artifact id from {}  to {}",
+                      datasetVersionEntity.getId(),
+                      commitHash);
+                }
               } else {
                 LOGGER.warn(
                     "DatasetVersion found with versionInfo type : {}",
@@ -295,7 +301,7 @@ public class DatasetToRepositoryMigration {
             }
           }
         } else {
-          LOGGER.debug("DatasetVersions total count 0");
+          LOGGER.debug("DatasetVersions total count 0 for dataset {}", datasetId);
         }
 
         transaction.commit();
