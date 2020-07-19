@@ -132,10 +132,14 @@ public class DatasetToRepositoryMigration {
           if (!userIds.isEmpty()) {
             userInfoMap = authService.getUserInfoFromAuthServer(userIds, null, null);
           }
+
           for (DatasetEntity datasetEntity : datasetEntities) {
             UserInfo userInfoValue = userInfoMap.get(datasetEntity.getOwner());
             try {
-              createRepository(session, datasetEntity, userInfoValue);
+              Repository repo = createRepository(session, datasetEntity, userInfoValue);
+              migrateDatasetCollaborators(datasetEntity.getId(), repo);
+              migrateDatasetVersionToCommitsBlobsMigration(
+                  session, datasetEntity.getId(), repo.getId());
             } catch (Exception e) {
               e.printStackTrace();
               LOGGER.error(e.getMessage());
@@ -159,7 +163,7 @@ public class DatasetToRepositoryMigration {
     LOGGER.debug("Datasets To Repositories migration finished");
   }
 
-  private static void createRepository(
+  private static Repository createRepository(
       Session session, DatasetEntity datasetEntity, UserInfo userInfoValue)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     String datasetId = datasetEntity.getId();
@@ -168,7 +172,6 @@ public class DatasetToRepositoryMigration {
     try {
       repository =
           repositoryDAO.createRepository(commitDAO, metadataDAO, newDataset, true, userInfoValue);
-      migrateDatasetCollaborators(datasetId, repository);
     } catch (Exception e) {
       if (e instanceof StatusRuntimeException) {
         LOGGER.error("Getting error while migrating {} dataset", datasetId);
@@ -184,7 +187,7 @@ public class DatasetToRepositoryMigration {
         throw e;
       }
     }
-    migrateDatasetVersionToCommitsBlobsMigration(session, datasetId, repository.getId());
+    return repository;
   }
 
   private static void migrateDatasetCollaborators(String datasetId, Repository repository) {
