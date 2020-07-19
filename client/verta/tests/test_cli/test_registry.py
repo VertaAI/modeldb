@@ -7,7 +7,7 @@ from verta._cli import cli
 from verta._registry import RegisteredModelVersion
 
 
-# pytest.skip("registry not yet available in backend", allow_module_level=True)
+pytest.skip("registry not yet available in backend", allow_module_level=True)
 
 
 class TestCreate:
