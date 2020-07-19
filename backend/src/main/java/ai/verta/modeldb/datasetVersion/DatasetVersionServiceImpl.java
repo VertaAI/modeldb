@@ -15,6 +15,7 @@ import ai.verta.modeldb.DeleteDatasetVersions;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.GetAllDatasetVersionsByDatasetId;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
+import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
@@ -39,6 +40,8 @@ import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.Collections;
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -449,6 +452,41 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     }
   }
 
+  @Override	
+  public void getDatasetVersionTags(	
+      GetTags request, StreamObserver<GetTags.Response> responseObserver) {	
+    QPSCountResource.inc();	
+    try (RequestLatencyResource latencyResource =	
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {	
+      // Request Parameter Validation	
+      if (request.getId().isEmpty()) {	
+        LOGGER.info(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);	
+        Status status =	
+            Status.newBuilder()	
+                .setCode(Code.INVALID_ARGUMENT_VALUE)	
+                .setMessage(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST)	
+                .addDetails(Any.pack(GetTags.Response.getDefaultInstance()))	
+                .build();	
+        throw StatusProto.toStatusRuntimeException(status);	
+      }	
+
+      DatasetVersion datasetVersion = datasetVersionDAO.getDatasetVersion(request.getId());	
+      // Validate if current user has access to the entity or not	
+      roleService.validateEntityUserWithUserInfo(	
+          ModelDBServiceResourceTypes.DATASET,	
+          datasetVersion.getDatasetId(),	
+          ModelDBServiceActions.READ);	
+
+      List<String> tags = datasetVersionDAO.getDatasetVersionTags(request.getId());	
+      responseObserver.onNext(GetTags.Response.newBuilder().addAllTags(tags).build());	
+      responseObserver.onCompleted();	
+
+    } catch (Exception e) {	
+      ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());	
+    }	
+  }	
+
+  
   @Override
   public void addDatasetVersionAttributes(
       AddDatasetVersionAttributes request,
