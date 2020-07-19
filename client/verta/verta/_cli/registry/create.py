@@ -3,6 +3,8 @@
 import click
 
 from .registry import registry
+from ... import Client
+
 
 @registry.group(name="create")
 def create():
@@ -39,4 +41,19 @@ def create_model(model_name, label, visibility, workspace):
 def create_model_version(model_name, version_name, label, model, artifact, workspace):
     """Create a new registeredmodelversion entry.
     """
-    pass
+    client = Client()
+
+    registered_model = client.set_registered_model(name=model_name, workspace=workspace)
+    model_version = registered_model.get_or_create_version(name=version_name)
+
+    if label is not None:
+        for l in label:
+            model_version.add_label(l)
+
+    if model is not None:
+        model_version.log_model(model)
+
+    if artifact is not None:
+        for (key, path) in artifact:
+            model_version.log_artifact(key, path, True)
+

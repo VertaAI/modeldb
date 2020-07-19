@@ -4,13 +4,26 @@ import pytest
 from click.testing import CliRunner
 
 from verta._cli import cli
+from verta._registry import RegisteredModelVersion
 
 
-pytest.skip("registry not yet available in backend", allow_module_level=True)
+# pytest.skip("registry not yet available in backend", allow_module_level=True)
 
 
 class TestCreate:
-    pass
+    def test_create_version(self, registered_model):
+        model_name = registered_model.name
+        version_name = "my version"
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2'],
+        )
+        assert not result.exception
+
+        model_version = registered_model.get_version(name=version_name)
+        assert model_version.name in result.output
 
 
 class TestGet:
