@@ -15,6 +15,7 @@ import requests
 import time
 import os
 import pickle
+from ..environment import Python
 
 
 class RegisteredModelVersion(_ModelDBEntity):
@@ -32,6 +33,11 @@ class RegisteredModelVersion(_ModelDBEntity):
     @property
     def has_model(self):
         return bool(self._msg.model) and bool(self._msg.model.key)
+
+    @property
+    def has_environment(self):
+        self._refresh_cache()
+        return self._msg.environment.HasField("python") or self._msg.environment.HasField("docker")
 
     @classmethod
     def _generate_default_name(cls):
@@ -191,12 +197,22 @@ class RegisteredModelVersion(_ModelDBEntity):
         del self._msg.artifacts[ind]
         self._update()
 
-    def set_environment(self, env):
-        # Env must be an EnvironmentBlob. Let's re-use the functionality from there
-        raise NotImplementedError
+    def log_environment(self, env):
+        self._refresh_cache()
+        self._msg.environment.CopyFrom(env._msg)
+        self._update()
 
     def del_environment(self):
-        raise NotImplementedError
+        self._refresh_cache()
+        self._msg.ClearField("environment")
+        self._update()
+
+    def get_environment(self):
+        self._refresh_cache()
+        if not self.has_environment:
+            raise RuntimeError("environment was not previously set.")
+
+        return Python._from_proto(self._msg)
 
     def _get_url_for_artifact(self, key, method, artifact_type, part_num=0):
         if method.upper() not in ("GET", "PUT"):
