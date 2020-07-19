@@ -1,9 +1,11 @@
 import pytest
+import verta
 
 from .. import utils
+import os
 
-import verta.dataset
-import verta.environment
+import numpy as np
+from sklearn.linear_model import LogisticRegression
 
 
 pytest.skip("registry not yet available in backend", allow_module_level=True)
@@ -35,6 +37,102 @@ class TestModelVersion:
 
         if registered_model:
             utils.delete_registered_model(registered_model.id, client._conn)
+
+    def test_log_model(self, model_version):
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        original_coef = classifier.coef_
+        model_version.log_model(classifier)
+
+        # retrieve the classifier:
+        retrieved_classfier = model_version.get_model()
+        assert (retrieved_classfier.coef_ == original_coef).all()
+
+        # overwrite should work:
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(new_classifier, True)
+        retrieved_classfier = model_version.get_model()
+        assert (retrieved_classfier.coef_ == new_classifier.coef_).all()
+
+        # when overwrite = false, overwriting should fail
+        with pytest.raises(ValueError) as excinfo:
+            model_version.log_model(new_classifier)
+
+        assert "model already exists" in str(excinfo.value)
+
+    def test_log_artifact(self, model_version):
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        original_coef = classifier.coef_
+        model_version.log_artifact("coef", original_coef)
+
+        # retrieve the artifact:
+        retrieved_coef = model_version.get_artifact("coef")
+        assert (retrieved_coef == original_coef).all()
+
+        # Overwrite should work:
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_artifact("coef", new_classifier.coef_, True)
+        retrieved_coef = model_version.get_artifact("coef")
+        assert (retrieved_coef == new_classifier.coef_).all()
+
+        # when overwrite = false, overwriting should fail
+        with pytest.raises(ValueError) as excinfo:
+            model_version.log_artifact("coef", new_classifier.coef_)
+
+        assert "The key has been set" in str(excinfo.value)
+
+    def test_add_artifact_file(self, model_version):
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+        model_version.log_artifact("file", filename)
+        os.remove(filename)
+
+        # retrieve the artifact:
+        retrieved_file = model_version.get_artifact("file")
+        assert retrieved_file.getvalue() == FILE_CONTENTS
+
+    def test_wrong_key(self, model_version):
+        with pytest.raises(KeyError) as excinfo:
+            model_version.get_model()
+
+        assert "no model associated with this version" in str(excinfo.value)
+
+        with pytest.raises(KeyError) as excinfo:
+            model_version.get_artifact("non-existing")
+
+        assert "no artifact found with key non-existing" in str(excinfo.value)
+
+    def test_del_artifact(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_artifact("coef", classifier.coef_)
+
+        model_version = registered_model.get_version(id=model_version.id)
+        model_version.del_artifact("coef")
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert len(model_version._msg.artifacts) == 0
+
+    def test_del_model(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert model_version.has_model
+        model_version.del_model()
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert (not model_version.has_model)
+
+        assert len(model_version._msg.artifacts) == 0
 
     def test_labels(self, client):
         registered_model = client.set_registered_model()
