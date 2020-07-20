@@ -44,11 +44,7 @@ def create_model_version(model_name, version_name, label, model, artifact, works
     client = Client()
 
     registered_model = client.set_registered_model(name=model_name, workspace=workspace)
-    model_version = registered_model.get_or_create_version(name=version_name)
-
-    if label is not None:
-        for l in label:
-            model_version.add_label(l)
+    model_version = registered_model.get_or_create_version(name=version_name, labels=list(label))
 
     if model is not None:
         model_version.log_model(model)

@@ -5,25 +5,33 @@ from click.testing import CliRunner
 
 from verta._cli import cli
 from verta._registry import RegisteredModelVersion
+import os
 
 
-pytest.skip("registry not yet available in backend", allow_module_level=True)
+# pytest.skip("registry not yet available in backend", allow_module_level=True)
 
 
 class TestCreate:
     def test_create_version(self, registered_model):
         model_name = registered_model.name
         version_name = "my version"
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
 
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2'],
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2', "--artifact", "file", filename],
         )
+        os.remove(filename)
         assert not result.exception
 
         model_version = registered_model.get_version(name=version_name)
         assert model_version.name in result.output
+        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS
+        assert model_version.get_labels() == ["label1", "label2"]
 
 
 class TestGet:
