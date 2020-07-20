@@ -372,6 +372,10 @@ public class ExperimentRunEntity {
     }
   }
 
+  public List<ObservationEntity> getObservationMapping() {
+    return observationMapping;
+  }
+
   public List<FeatureEntity> getFeatures() {
     return features;
   }
