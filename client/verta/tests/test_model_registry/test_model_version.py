@@ -155,3 +155,14 @@ class TestModelVersion:
             msg_other.model.CopyFrom(item._msg.model)
             assert labels1 == labels2
             assert item._msg == msg_other
+
+    def test_archive(self, model_version):
+        assert (not model_version.is_archived)
+
+        model_version.archive()
+        assert model_version.is_archived
+
+        with pytest.raises(RuntimeError) as excinfo:
+            model_version.archive()
+
+        assert "the version has already been archived" in str(excinfo.value)
