@@ -22,7 +22,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         super(RegisteredModelVersion, self).__init__(conn, conf, _ModelVersionService, "registered_model_version", msg)
 
     def __repr__(self):
-        raise NotImplementedError
+        return "<ModelVersion \"{}\">".format(self.name)
 
     @property
     def name(self):
