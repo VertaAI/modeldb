@@ -26,7 +26,7 @@ class RegisteredModel(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.name
 
-    def get_or_create_version(self, name=None, desc=None, tags=None, attrs=None, id=None, time_created=None):
+    def get_or_create_version(self, name=None, desc=None, labels=None, id=None, time_created=None):
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -37,7 +37,7 @@ class RegisteredModel(_ModelDBEntity):
             ctx.registered_model = self
             return RegisteredModelVersion._get_or_create_by_name(self._conn, name,
                                                        lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
-                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=time_created))
+                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=labels, date_created=time_created))
 
     def get_version(self, name=None, id=None):
         if name is not None and id is not None:
@@ -76,7 +76,7 @@ class RegisteredModel(_ModelDBEntity):
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
         Message = _RegisteredModelService.RegisteredModel
-        msg = Message(name=name, description=desc, labels=tags)
+        msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created)
         if public_within_org:
             if ctx.workspace_name is None:
                 raise ValueError("cannot set `public_within_org` for personal workspace")

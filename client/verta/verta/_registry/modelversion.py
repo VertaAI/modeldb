@@ -16,7 +16,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         super(RegisteredModelVersion, self).__init__(conn, conf, _ModelVersionService, "registered_model_version", msg)
 
     def __repr__(self):
-        raise NotImplementedError
+        return "<ModelVersion \"{}\">".format(self.name)
 
     @property
     def name(self):
@@ -60,13 +60,14 @@ class RegisteredModelVersion(_ModelDBEntity):
         return response.model_versions[0]
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, labels=None, attrs=None, date_created=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
         ModelVersionMessage = _ModelVersionService.ModelVersion
         SetModelVersionMessage = _ModelVersionService.SetModelVersion
         registered_model_id = ctx.registered_model.id
 
-        model_version_msg = ModelVersionMessage(version=name, description=desc, registered_model_id=registered_model_id,
-                                                labels=labels, time_created=date_created, time_updated=date_created)
+        model_version_msg = ModelVersionMessage(registered_model_id=registered_model_id, version=name,
+                                                description=desc, labels=tags,
+                                                time_created=date_created, time_updated=date_created)
         endpoint = "/api/v1/registry/{}/versions".format(registered_model_id)
         response = conn.make_proto_request("POST", endpoint, body=model_version_msg)
         model_version = conn.must_proto_response(response, SetModelVersionMessage.Response).model_version
