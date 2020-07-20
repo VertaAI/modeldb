@@ -5,9 +5,6 @@ from .. import utils
 import verta.dataset
 import verta.environment
 
-import numpy as np
-from sklearn.linear_model import LogisticRegression
-
 
 pytest.skip("registry not yet available in backend", allow_module_level=True)
 
@@ -37,6 +34,9 @@ class TestModelVersion:
             utils.delete_registered_model(registered_model.id, client._conn)
 
     def test_log_model(self, registered_model):
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
         model_version = registered_model.get_or_create_version(name="my version")
         log_reg_model = LogisticRegression()
         model_version.log_model(log_reg_model)
@@ -57,6 +57,9 @@ class TestModelVersion:
 
 
     def test_log_artifact(self, registered_model):
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
         model_version = registered_model.get_or_create_version(name="my version")
         log_reg_model = LogisticRegression()
         model_version.log_artifact("some-asset", log_reg_model)
@@ -72,6 +75,10 @@ class TestModelVersion:
         assert "The key has been set" in str(excinfo.value)
 
     def test_del_artifact(self, registered_model):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
         model_version = registered_model.get_or_create_version(name="my version")
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
