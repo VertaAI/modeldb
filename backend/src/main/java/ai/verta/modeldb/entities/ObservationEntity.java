@@ -79,7 +79,7 @@ public class ObservationEntity {
   @JoinColumn(name = "experiment_id", nullable = true)
   private ExperimentEntity experimentEntity;
 
-  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "experiment_run_id", nullable = true)
   private ExperimentRunEntity experimentRunEntity;
 
