@@ -51,7 +51,7 @@ def create_model_version(model_name, version_name, label, model, artifact, works
     model_version = registered_model.get_or_create_version(name=version_name, labels=list(label))
 
     if model is not None:
-        model_version.log_model(model)
+        model_version.log_model(model, True)
 
     if artifact is not None:
         for (key, path) in artifact:
