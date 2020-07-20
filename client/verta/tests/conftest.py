@@ -268,8 +268,14 @@ def client(host, port, email, dev_key):
 
     yield client
 
-    if client.proj is not None:
-        utils.delete_project(client.proj.id, client._conn)
+    proj = client._ctx.proj
+    if proj is not None:
+        utils.delete_project(proj.id, client._conn)
+
+    model = client._ctx.registered_model
+    if model is not None:
+        utils.delete_registered_model(model.id, client._conn)
+
     print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
 
@@ -311,15 +317,12 @@ def created_datasets(client):
     if created_datasets:
         utils.delete_datasets(list(set(dataset.id for dataset in created_datasets)), client._conn)
 
+
 @pytest.fixture
 def registered_model(client):
-    model = client.get_or_create_registered_model()
-
-    yield model
-
-    utils.delete_registered_model(model.id, client._conn)
+    yield client.get_or_create_registered_model()
 
 
 @pytest.fixture
-def model_version(client, registered_model):
+def model_version(registered_model):
     yield registered_model.get_or_create_version()
