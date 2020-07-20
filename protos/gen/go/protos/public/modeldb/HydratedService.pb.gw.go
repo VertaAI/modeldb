@@ -55,7 +55,10 @@ func local_request_HydratedService_GetHydratedProjects_0(ctx context.Context, ma
 	var protoReq GetHydratedProjects
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_HydratedService_GetHydratedProjects_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_GetHydratedProjects_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -88,7 +91,10 @@ func local_request_HydratedService_GetHydratedPublicProjects_0(ctx context.Conte
 	var protoReq GetHydratedProjects
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_HydratedService_GetHydratedPublicProjects_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_GetHydratedPublicProjects_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -121,7 +127,10 @@ func local_request_HydratedService_GetHydratedProjectById_0(ctx context.Context,
 	var protoReq GetHydratedProjectById
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_HydratedService_GetHydratedProjectById_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_GetHydratedProjectById_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -154,7 +163,10 @@ func local_request_HydratedService_GetHydratedExperimentsByProjectId_0(ctx conte
 	var protoReq GetHydratedExperimentsByProjectId
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_HydratedService_GetHydratedExperimentsByProjectId_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_GetHydratedExperimentsByProjectId_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -187,7 +199,10 @@ func local_request_HydratedService_GetHydratedExperimentRunsInProject_0(ctx cont
 	var protoReq GetHydratedExperimentRunsByProjectId
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_HydratedService_GetHydratedExperimentRunsInProject_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_GetHydratedExperimentRunsInProject_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -220,7 +235,10 @@ func local_request_HydratedService_GetHydratedExperimentRunById_0(ctx context.Co
 	var protoReq GetHydratedExperimentRunById
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_HydratedService_GetHydratedExperimentRunById_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_GetHydratedExperimentRunById_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -287,7 +305,10 @@ func local_request_HydratedService_SortHydratedExperimentRuns_0(ctx context.Cont
 	var protoReq SortExperimentRuns
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_HydratedService_SortHydratedExperimentRuns_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_SortHydratedExperimentRuns_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -320,7 +341,10 @@ func local_request_HydratedService_GetTopHydratedExperimentRuns_0(ctx context.Co
 	var protoReq TopExperimentRunsSelector
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_HydratedService_GetTopHydratedExperimentRuns_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_GetTopHydratedExperimentRuns_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -727,7 +751,10 @@ func local_request_HydratedService_GetHydratedDatasetByName_0(ctx context.Contex
 	var protoReq GetHydratedDatasetByName
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_HydratedService_GetHydratedDatasetByName_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_GetHydratedDatasetByName_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -760,7 +787,10 @@ func local_request_HydratedService_GetHydratedDatasetsByProjectId_0(ctx context.
 	var protoReq GetHydratedDatasetsByProjectId
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_HydratedService_GetHydratedDatasetsByProjectId_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_GetHydratedDatasetsByProjectId_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
