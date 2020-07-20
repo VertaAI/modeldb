@@ -123,12 +123,22 @@ class TestModelVersion:
         model_version = registered_model.get_or_create_version(name="my version")
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+
         model_version.log_artifact("coef", classifier.coef_)
+        model_version.log_artifact("coef-2", classifier.coef_)
+        model_version.log_artifact("coef-3", classifier.coef_)
+
+
+        model_version = registered_model.get_version(id=model_version.id)
+        model_version.del_artifact("coef-2")
+        assert len(model_version._msg.artifacts) == 2
 
         model_version = registered_model.get_version(id=model_version.id)
         model_version.del_artifact("coef")
+        assert len(model_version._msg.artifacts) == 1
 
         model_version = registered_model.get_version(id=model_version.id)
+        model_version.del_artifact("coef-3")
         assert len(model_version._msg.artifacts) == 0
 
     def test_labels(self, client):
