@@ -36,7 +36,8 @@ def create_model(model_name, label, visibility, workspace):
 @click.option("--model", help="Path to the model.")
 @click.option("--artifact", type=(str, str), multiple=True, help="Path to the artifact required for the model. The format is --artifact artifact_key path_to_artifact.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-def create_model_version(model_name, version_name, label, model, artifact, workspace):
+@click.option("--from-run", help="ID of the Experiment Run to enter into the model registry")
+def create_model_version(model_name, version_name, label, model, artifact, workspace, from_run):
     """Create a new registeredmodelversion entry.
     """
     pass
