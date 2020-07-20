@@ -1133,10 +1133,7 @@ public class FindDatasetEntitiesTest {
             .build();
 
     FindDatasetVersions findDatasetVersions =
-        FindDatasetVersions.newBuilder()
-            .setDatasetId(dataset1.getId())
-            .addPredicates(keyValueQuery)
-            .build();
+        FindDatasetVersions.newBuilder().addPredicates(keyValueQuery).build();
 
     FindDatasetVersions.Response response =
         datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
@@ -1209,7 +1206,6 @@ public class FindDatasetEntitiesTest {
 
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
-            .setDatasetId(dataset1.getId())
             .addAllDatasetVersionIds(datasetVersionMap.keySet())
             .addAllPredicates(predicates)
             .setIdsOnly(true)
@@ -1445,7 +1441,6 @@ public class FindDatasetEntitiesTest {
 
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
-            .setDatasetId(dataset1.getId())
             .addAllDatasetVersionIds(datasetVersionMap.keySet())
             .addPredicates(keyValueQueryTag1)
             .addPredicates(keyValueQueryTag2)
@@ -1503,7 +1498,6 @@ public class FindDatasetEntitiesTest {
 
     findDatasetVersions =
         FindDatasetVersions.newBuilder()
-            .setDatasetId(dataset1.getId())
             .addAllDatasetVersionIds(datasetVersionMap.keySet())
             .addPredicates(keyValueQueryTag1)
             .build();
