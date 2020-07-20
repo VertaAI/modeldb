@@ -857,14 +857,14 @@ class Client(object):
         if id is not None:
             # TODO: Support registered_model in populate
             model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
-            self.set_registered_model(id=model_version.registered_model_id)
-
-            return model_version
+            self.get_registered_model(id=model_version.registered_model_id)
         else:
             if self._ctx.registered_model is None:
                 self.set_registered_model()
 
-            return RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.registered_model.id)
+            model_version = RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.registered_model.id)
+
+        return model_version
 
     @property
     def registered_models(self):

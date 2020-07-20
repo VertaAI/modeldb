@@ -25,6 +25,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     @property
     def registered_model_id(self):
+        self._refresh_cache()
         return self._msg.registered_model_id
 
     @classmethod
