@@ -19,7 +19,10 @@ class TestModelVersion:
         retrieved_model_version = registered_model.get_version(id=model_version.id)
         assert model_version.id == retrieved_model_version.id
 
-    def test_get_by_clent(self, client):
+    def test_repr(self, model_version):
+        assert model_version.name in str(model_version)
+
+    def test_get_by_client(self, client):
         registered_model = client.set_registered_model()
         model_version = registered_model.get_or_create_version(name="my version")
 
@@ -28,9 +31,6 @@ class TestModelVersion:
 
         assert retrieved_model_version_by_id.id == model_version.id
         assert retrieved_model_version_by_name.id == model_version.id
-
-        if registered_model:
-            utils.delete_registered_model(registered_model.id, client._conn)
 
     def test_log_model(self, model_version):
         np = pytest.importorskip("numpy")
@@ -109,6 +109,12 @@ class TestModelVersion:
 
         assert "no artifact found with key non-existing" in str(excinfo.value)
 
+        np = pytest.importorskip("numpy")
+        with pytest.raises(ValueError) as excinfo:
+            model_version.log_artifact("model", np.random.random((36, 12)))
+
+        assert "the key \"model\" is reserved for model; consider using log_model() instead" in str(excinfo.value)
+
     def test_del_artifact(self, registered_model):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
@@ -117,12 +123,22 @@ class TestModelVersion:
         model_version = registered_model.get_or_create_version(name="my version")
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+
         model_version.log_artifact("coef", classifier.coef_)
+        model_version.log_artifact("coef-2", classifier.coef_)
+        model_version.log_artifact("coef-3", classifier.coef_)
+
+
+        model_version = registered_model.get_version(id=model_version.id)
+        model_version.del_artifact("coef-2")
+        assert len(model_version._msg.artifacts) == 2
 
         model_version = registered_model.get_version(id=model_version.id)
         model_version.del_artifact("coef")
+        assert len(model_version._msg.artifacts) == 1
 
         model_version = registered_model.get_version(id=model_version.id)
+        model_version.del_artifact("coef-3")
         assert len(model_version._msg.artifacts) == 0
 
     def test_del_model(self, registered_model):
