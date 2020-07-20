@@ -83,14 +83,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         return response.model_versions[0]
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, experiment_run_id=None):
         ModelVersionMessage = _ModelVersionService.ModelVersion
         SetModelVersionMessage = _ModelVersionService.SetModelVersion
         registered_model_id = ctx.registered_model.id
 
         model_version_msg = ModelVersionMessage(registered_model_id=registered_model_id, version=name,
                                                 description=desc, labels=tags,
-                                                time_created=date_created, time_updated=date_created)
+                                                time_created=date_created, time_updated=date_created,
+                                                experiment_run_id=experiment_run_id)
         endpoint = "/api/v1/registry/{}/versions".format(registered_model_id)
         response = conn.make_proto_request("POST", endpoint, body=model_version_msg)
         model_version = conn.must_proto_response(response, SetModelVersionMessage.Response).model_version
@@ -99,9 +100,9 @@ class RegisteredModelVersion(_ModelDBEntity):
         return model_version
 
     @classmethod
-    def from_run(cls, run_id):
-        if isinstance(run_id, ExperimentRun):
-            run_id = run_id.id
+    def from_run(cls, run_id, name):
+        if not isinstance(run_id, six.string_types):
+            raise TypeError("`run_id` must be string, not {}".format(type(run_id)))
 
         raise NotImplementedError
 
