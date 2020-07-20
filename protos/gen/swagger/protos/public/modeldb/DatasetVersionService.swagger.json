@@ -13,7 +13,7 @@
   "paths": {
     "/dataset-version/addDatasetVersionAttributes": {
       "post": {
-        "operationId": "addDatasetVersionAttributes",
+        "operationId": "DatasetVersionService_addDatasetVersionAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/dataset-version/addDatasetVersionTags": {
       "post": {
-        "operationId": "addDatasetVersionTags",
+        "operationId": "DatasetVersionService_addDatasetVersionTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -77,7 +77,7 @@
     },
     "/dataset-version/commitMultipartVersionedDatasetBlobArtifact": {
       "post": {
-        "operationId": "commitMultipartVersionedDatasetBlobArtifact",
+        "operationId": "DatasetVersionService_commitMultipartVersionedDatasetBlobArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -109,7 +109,7 @@
     },
     "/dataset-version/commitVersionedDatasetBlobArtifactPart": {
       "post": {
-        "operationId": "commitVersionedDatasetBlobArtifactPart",
+        "operationId": "DatasetVersionService_commitVersionedDatasetBlobArtifactPart",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -141,7 +141,7 @@
     },
     "/dataset-version/createDatasetVersion": {
       "post": {
-        "operationId": "createDatasetVersion",
+        "operationId": "DatasetVersionService_createDatasetVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -173,7 +173,7 @@
     },
     "/dataset-version/dataset/{dataset_id}/datasetVersion/{dataset_version_id}/getUrlForDatasetBlobVersioned": {
       "post": {
-        "operationId": "getUrlForDatasetBlobVersioned2",
+        "operationId": "DatasetVersionService_getUrlForDatasetBlobVersioned2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -217,7 +217,7 @@
     },
     "/dataset-version/deleteDatasetVersion": {
       "delete": {
-        "operationId": "deleteDatasetVersion",
+        "operationId": "DatasetVersionService_deleteDatasetVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -249,7 +249,7 @@
     },
     "/dataset-version/deleteDatasetVersionAttributes": {
       "delete": {
-        "operationId": "deleteDatasetVersionAttributes",
+        "operationId": "DatasetVersionService_deleteDatasetVersionAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -281,7 +281,7 @@
     },
     "/dataset-version/deleteDatasetVersionTags": {
       "delete": {
-        "operationId": "deleteDatasetVersionTags",
+        "operationId": "DatasetVersionService_deleteDatasetVersionTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -313,7 +313,7 @@
     },
     "/dataset-version/deleteDatasetVersions": {
       "delete": {
-        "operationId": "deleteDatasetVersions",
+        "operationId": "DatasetVersionService_deleteDatasetVersions",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -346,7 +346,7 @@
     "/dataset-version/findDatasetVersions": {
       "post": {
         "summary": "queries",
-        "operationId": "findDatasetVersions",
+        "operationId": "DatasetVersionService_findDatasetVersions",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -378,7 +378,7 @@
     },
     "/dataset-version/getAllDatasetVersionsByDatasetId": {
       "get": {
-        "operationId": "getAllDatasetVersionsByDatasetId",
+        "operationId": "DatasetVersionService_getAllDatasetVersionsByDatasetId",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -436,7 +436,7 @@
     },
     "/dataset-version/getCommittedVersionedDatasetBlobArtifactParts": {
       "get": {
-        "operationId": "getCommittedVersionedDatasetBlobArtifactParts",
+        "operationId": "DatasetVersionService_getCommittedVersionedDatasetBlobArtifactParts",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -478,7 +478,7 @@
     },
     "/dataset-version/getDatasetVersionAttributes": {
       "get": {
-        "operationId": "getDatasetVersionAttributes",
+        "operationId": "DatasetVersionService_getDatasetVersionAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -531,7 +531,7 @@
     },
     "/dataset-version/getLatestDatasetVersionByDatasetId": {
       "get": {
-        "operationId": "getLatestDatasetVersionByDatasetId",
+        "operationId": "DatasetVersionService_getLatestDatasetVersionByDatasetId",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -574,7 +574,7 @@
     },
     "/dataset-version/setDatasetVersionVisibility": {
       "post": {
-        "operationId": "setDatasetVersionVisibility",
+        "operationId": "DatasetVersionService_setDatasetVersionVisibility",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -606,7 +606,7 @@
     },
     "/dataset-version/updateDatasetVersionAttributes": {
       "post": {
-        "operationId": "updateDatasetVersionAttributes",
+        "operationId": "DatasetVersionService_updateDatasetVersionAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -638,7 +638,7 @@
     },
     "/dataset-version/updateDatasetVersionDescription": {
       "post": {
-        "operationId": "updateDatasetVersionDescription",
+        "operationId": "DatasetVersionService_updateDatasetVersionDescription",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -670,7 +670,7 @@
     },
     "/dataset-version/workspaces/{workspace_name}/dataset/{dataset_id}/datasetVersion/{dataset_version_id}/getUrlForDatasetBlobVersioned": {
       "post": {
-        "operationId": "getUrlForDatasetBlobVersioned",
+        "operationId": "DatasetVersionService_getUrlForDatasetBlobVersioned",
         "responses": {
           "200": {
             "description": "A successful response.",

@@ -89,7 +89,10 @@ func local_request_DatasetVersionService_GetAllDatasetVersionsByDatasetId_0(ctx 
 	var protoReq GetAllDatasetVersionsByDatasetId
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DatasetVersionService_GetAllDatasetVersionsByDatasetId_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DatasetVersionService_GetAllDatasetVersionsByDatasetId_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -190,7 +193,10 @@ func local_request_DatasetVersionService_GetLatestDatasetVersionByDatasetId_0(ct
 	var protoReq GetLatestDatasetVersionByDatasetId
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DatasetVersionService_GetLatestDatasetVersionByDatasetId_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DatasetVersionService_GetLatestDatasetVersionByDatasetId_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -427,7 +433,10 @@ func local_request_DatasetVersionService_GetDatasetVersionAttributes_0(ctx conte
 	var protoReq GetDatasetVersionAttributes
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DatasetVersionService_GetDatasetVersionAttributes_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DatasetVersionService_GetDatasetVersionAttributes_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -768,7 +777,10 @@ func local_request_DatasetVersionService_GetCommittedVersionedDatasetBlobArtifac
 	var protoReq GetCommittedVersionedDatasetBlobArtifactParts
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DatasetVersionService_GetCommittedVersionedDatasetBlobArtifactParts_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DatasetVersionService_GetCommittedVersionedDatasetBlobArtifactParts_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
