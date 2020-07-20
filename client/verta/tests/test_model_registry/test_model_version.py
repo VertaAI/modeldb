@@ -109,6 +109,12 @@ class TestModelVersion:
 
         assert "no artifact found with key non-existing" in str(excinfo.value)
 
+        np = pytest.importorskip("numpy")
+        with pytest.raises(ValueError) as excinfo:
+            model_version.log_artifact("model", np.random.random((36, 12)))
+
+        assert "the key \"model\" is reserved for model; consider using log_model() instead" in str(excinfo.value)
+
     def test_del_artifact(self, registered_model):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")

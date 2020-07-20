@@ -110,7 +110,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     def log_artifact(self, key, asset, overwrite=False):
         if key == "model":
-            raise ValueError("The key `model` is reserved for model. Please use `set_model`")
+            raise ValueError("the key \"model\" is reserved for model; consider using log_model() instead")
 
         self._refresh_cache()
         same_key_ind = -1
