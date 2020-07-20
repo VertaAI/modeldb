@@ -59,15 +59,17 @@ def get_model_version(model_name, version_name, output, workspace):
     client = Client()
 
     try:
-        registered_model = client.get_registered_model(model_name, workspace=workspace)
+        client.get_registered_model(model_name, workspace=workspace)
     except ValueError:
         raise click.BadParameter("model {} not found".format(model_name))
 
     try:
-        version = registered_model.get_version(name=version_name)
+        version = client.get_registered_model_version(name=version_name)
     except ValueError:
         raise click.BadParameter("version {} not found".format(version_name))
 
+    if version is None:
+        raise click.BadParameter("version {} not found".format(version_name))
 
     if output == "json":
         version_repr = json.dumps(_utils.proto_to_json(version._msg))
