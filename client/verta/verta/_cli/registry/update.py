@@ -3,6 +3,8 @@
 import click
 
 from .registry import registry
+from ... import Client
+
 
 @registry.group(name="update")
 def update():
@@ -30,4 +32,30 @@ def update_model(model_name, label, workspace):
 def update_model_version(model_name, version_name, label, model, artifact, workspace):
     """Create a new registeredmodelversion entry.
     """
-    pass
+    client = Client()
+
+    try:
+        registered_model = client.get_registered_model(model_name, workspace=workspace)
+    except ValueError:
+        raise click.BadParameter("model {} not found".format(model_name))
+
+    try:
+        model_version = registered_model.get_version(name=version_name)
+    except ValueError:
+        raise click.BadParameter("version {} not found".format(version_name))
+
+    if model_version is None:
+        raise click.BadParameter("version {} not found".format(version_name))
+
+    if label is not None:
+        for l in label:
+            model_version.add_label(l)
+
+    if model is not None:
+        model_version.log_model(model, overwrite=True)
+
+    if artifact is not None:
+        for (key, path) in artifact:
+            model_version.log_artifact(key, path, True)
+
+
