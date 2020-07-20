@@ -1668,7 +1668,11 @@ public class BlobDAORdbImpl implements BlobDAO {
             artifactStoreDAO,
             (session) ->
                 VersioningUtils.getDatasetRepositoryEntity(
-                    session, repositoryDAO, datasetId, request.getDatasetVersionId()),
+                    session,
+                    repositoryDAO,
+                    datasetId,
+                    request.getDatasetVersionId(),
+                    request.getMethod().equalsIgnoreCase(ModelDBConstants.PUT)),
             commitFunction,
             getUrlForBlobVersionedRequest);
     return GetUrlForDatasetBlobVersioned.Response.newBuilder()
@@ -1894,7 +1898,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     commitVersionedBlobArtifactPart(
         (session) ->
             VersioningUtils.getDatasetRepositoryEntity(
-                session, repositoryDAO, datasetId, request.getDatasetVersionId()),
+                session, repositoryDAO, datasetId, request.getDatasetVersionId(), true),
         commitFunction,
         Collections.singletonList(DEFAULT_VERSIONING_BLOB_LOCATION),
         request.getPathDatasetComponentBlobPath(),
@@ -1952,7 +1956,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         getCommittedVersionedBlobArtifactParts(
             (session) ->
                 VersioningUtils.getDatasetRepositoryEntity(
-                    session, repositoryDAO, datasetId, request.getDatasetVersionId()),
+                    session, repositoryDAO, datasetId, request.getDatasetVersionId(), true),
             commitFunction,
             Collections.singletonList(DEFAULT_VERSIONING_BLOB_LOCATION),
             request.getPathDatasetComponentBlobPath());
@@ -2014,7 +2018,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     commitMultipartVersionedBlobArtifact(
         (session) ->
             VersioningUtils.getDatasetRepositoryEntity(
-                session, repositoryDAO, datasetId, request.getDatasetVersionId()),
+                session, repositoryDAO, datasetId, request.getDatasetVersionId(), true),
         commitFunction,
         Collections.singletonList(DEFAULT_VERSIONING_BLOB_LOCATION),
         request.getPathDatasetComponentBlobPath(),

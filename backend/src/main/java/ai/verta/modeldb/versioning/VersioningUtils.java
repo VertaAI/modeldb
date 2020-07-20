@@ -333,7 +333,11 @@ public class VersioningUtils {
   }
 
   public static RepositoryEntity getDatasetRepositoryEntity(
-      Session session, RepositoryDAO repositoryDAO, String datasetId, String datasetVersionId)
+      Session session,
+      RepositoryDAO repositoryDAO,
+      String datasetId,
+      String datasetVersionId,
+      boolean checkWrite)
       throws ModelDBException {
     RepositoryEntity repositoryEntity;
 
@@ -359,7 +363,7 @@ public class VersioningUtils {
       repositoryIdentification.setRepoId(Long.parseLong(datasetId));
     }
     repositoryEntity =
-        repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
+        repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), checkWrite);
     return repositoryEntity;
   }
 }

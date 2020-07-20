@@ -102,4 +102,11 @@ public interface CommitDAO {
       String datasetVersionId,
       String description)
       throws ModelDBException;
+
+  DatasetVersion getDatasetVersionById(
+      RepositoryDAO repositoryDAO,
+      BlobDAO blobDAO,
+      MetadataDAO metadataDAO,
+      String datasetVersionId)
+      throws ModelDBException;
 }

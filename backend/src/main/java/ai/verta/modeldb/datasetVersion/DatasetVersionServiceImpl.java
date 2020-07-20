@@ -21,6 +21,7 @@ import ai.verta.modeldb.GetAllDatasetVersionsByDatasetId;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetCommittedVersionedDatasetBlobArtifactParts;
 import ai.verta.modeldb.GetDatasetVersionAttributes;
+import ai.verta.modeldb.GetDatasetVersionById;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
 import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
@@ -977,6 +978,31 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           responseObserver,
           e,
           CommitMultipartVersionedDatasetBlobArtifact.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getDatasetVersionById(
+      GetDatasetVersionById request,
+      StreamObserver<GetDatasetVersionById.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getId().isEmpty()) {
+        String errorMessage = "DatasetVersion id not found in GetDatasetVersionById request";
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      }
+
+      responseObserver.onNext(
+          GetDatasetVersionById.Response.newBuilder()
+              .setDatasetVersion(
+                  commitDAO.getDatasetVersionById(
+                      repositoryDAO, blobDAO, metadataDAO, request.getId()))
+              .build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetDatasetVersionById.Response.getDefaultInstance());
     }
   }
 }
