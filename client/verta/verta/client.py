@@ -64,12 +64,6 @@ from ._registry import (
     RegisteredModelVersions,
 )
 from ._dataset_versioning import Datasets
-from ._registry import (
-    RegisteredModel,
-    RegisteredModels,
-    RegisteredModelVersion,
-    RegisteredModelVersions,
-)
 
 
 _OSS_DEFAULT_WORKSPACE = "personal"
@@ -863,15 +857,16 @@ class Client(object):
 
     def get_registered_model_version(self, name=None, id=None):
         if id is not None:
-            self._ctx.registered_model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
-            self._ctx.populate()
+            # TODO: Support registered_model in populate
+            model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
+            self.set_registered_model(id=model_version.registered_model_id)
+
+            return model_version
         else:
             if self._ctx.registered_model is None:
                 self.set_registered_model()
 
-            self._ctx.registered_model_version = RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.registered_model.id)
-
-        return self._ctx.registered_model_version
+            return RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.registered_model.id)
 
     @property
     def registered_models(self):
