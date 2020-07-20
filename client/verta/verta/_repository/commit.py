@@ -494,6 +494,7 @@ class Commit(object):
                 mdb_versioned_blobs[blob_path] = blob
 
         msg = self._to_create_msg(commit_message=message)
+        print(msg)
         self._save(msg)
 
         # upload ModelDB-versioned blobs

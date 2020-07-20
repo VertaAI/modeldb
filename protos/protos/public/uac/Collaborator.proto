@@ -126,4 +126,23 @@ service CollaboratorService {
             get: "/v1/collaborator/getRepositoryCollaborators"
         };
     };
+
+    rpc addOrUpdateRegisteredModelCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
+        option (google.api.http) = {
+            post: "/v1/collaborator/addOrUpdateRegisteredModelCollaborator"
+            body: "*"
+        };
+    };
+
+    rpc removeRegisteredModelCollaborator (RemoveCollaborator) returns (RemoveCollaborator.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeRegisteredModelCollaborator"
+        };
+    };
+
+    rpc getRegisteredModelCollaborators (GetCollaborator) returns (GetCollaborator.Response){
+        option (google.api.http) = {
+            get: "/v1/collaborator/getRegisteredModelCollaborators"
+        };
+    };
 }

@@ -529,6 +529,36 @@
         ]
       }
     },
+    "/dataset-version/getDatasetVersionById": {
+      "get": {
+        "operationId": "getDatasetVersionById",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetDatasetVersionByIdResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
     "/dataset-version/getLatestDatasetVersionByDatasetId": {
       "get": {
         "operationId": "getLatestDatasetVersionByDatasetId",
@@ -1226,6 +1256,14 @@
           "items": {
             "$ref": "#/definitions/commonKeyValue"
           }
+        }
+      }
+    },
+    "modeldbGetDatasetVersionByIdResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "$ref": "#/definitions/modeldbDatasetVersion"
         }
       }
     },
