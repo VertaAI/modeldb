@@ -23,6 +23,11 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.version
 
+    @property
+    def registered_model_id(self):
+        self._refresh_cache()
+        return self._msg.registered_model_id
+
     @classmethod
     def _generate_default_name(cls):
         return "ModelVersion {}".format(_utils.generate_default_name())
