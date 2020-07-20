@@ -92,6 +92,21 @@ public class DatasetToRepositoryMigration {
 
   private static void migrateDatasetsToRepositories() {
     LOGGER.debug("Datasets To Repositories migration started");
+
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      String addBackupLinkedArtifactId =
+          "ALTER TABLE artifact ADD COLUMN IF NOT EXISTS backup_linked_artifact_id varchar(255);";
+      Query query = session.createSQLQuery(addBackupLinkedArtifactId);
+      query.executeUpdate();
+
+      String copyDataToBackupColumn =
+          "UPDATE artifact set backup_linked_artifact_id = linked_artifact_id";
+      query = session.createSQLQuery(copyDataToBackupColumn);
+      query.executeUpdate();
+      session.getTransaction().commit();
+    }
+
     Long count = getEntityCount(DatasetEntity.class);
 
     int lowerBound = 0;
