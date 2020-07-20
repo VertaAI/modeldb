@@ -42,6 +42,19 @@ class TestCreate:
         assert model_version.get_labels() == ["label1", "label2"]
         assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS
 
+    def test_create_version_wrong_model_name(self, strs):
+        # TODO: re-run this test later on.
+        version_name = "my version"
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodelversion', strs[0], version_name],
+        )
+
+        assert result.exception
+        assert result.output.strip().endswith("not found")
+
 
 class TestGet:
     def test_get_model(self, registered_model):
