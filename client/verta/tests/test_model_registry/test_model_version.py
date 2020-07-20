@@ -3,7 +3,7 @@ import pytest
 from .. import utils
 
 import verta.dataset
-import verta.environment
+from verta.environment import Python
 
 
 pytest.skip("registry not yet available in backend", allow_module_level=True)
@@ -89,6 +89,27 @@ class TestModelVersion:
 
         model_version = registered_model.get_version(id=model_version.id)
         assert len(model_version._msg.artifacts) == 0
+
+    def test_log_environment(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+
+        reqs = Python.read_pip_environment()
+        env = Python(requirements=reqs)
+        model_version.log_environment(env)
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert(str(env) == str(Python._from_proto(model_version._msg)))
+
+    def test_del_environment(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+
+        reqs = Python.read_pip_environment()
+        env = Python(requirements=reqs)
+        model_version.log_environment(env)
+        model_version.del_environment()
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert not model_version.has_environment
 
     def test_labels(self, client):
         registered_model = client.set_registered_model()
