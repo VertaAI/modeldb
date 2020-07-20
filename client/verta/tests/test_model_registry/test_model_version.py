@@ -36,9 +36,6 @@ class TestModelVersion:
         assert retrieved_model_version_by_id.id == model_version.id
         assert retrieved_model_version_by_name.id == model_version.id
 
-        if registered_model:
-            utils.delete_registered_model(registered_model.id, client._conn)
-
     def test_log_model(self, model_version):
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())

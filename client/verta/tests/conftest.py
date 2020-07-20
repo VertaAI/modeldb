@@ -323,8 +323,6 @@ def registered_model(client):
 
     yield model
 
-    utils.delete_registered_model(model.id, client._conn)
-
 
 @pytest.fixture
 def model_version(client, registered_model):
