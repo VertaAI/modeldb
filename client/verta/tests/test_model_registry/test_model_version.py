@@ -4,9 +4,6 @@ import verta
 from .. import utils
 import os
 
-import numpy as np
-from sklearn.linear_model import LogisticRegression
-
 
 pytest.skip("registry not yet available in backend", allow_module_level=True)
 
@@ -36,6 +33,10 @@ class TestModelVersion:
             utils.delete_registered_model(registered_model.id, client._conn)
 
     def test_log_model(self, model_version):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
         original_coef = classifier.coef_
@@ -59,6 +60,10 @@ class TestModelVersion:
         assert "model already exists" in str(excinfo.value)
 
     def test_log_artifact(self, model_version):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
         original_coef = classifier.coef_
@@ -105,6 +110,10 @@ class TestModelVersion:
         assert "no artifact found with key non-existing" in str(excinfo.value)
 
     def test_del_artifact(self, registered_model):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
         model_version = registered_model.get_or_create_version(name="my version")
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
