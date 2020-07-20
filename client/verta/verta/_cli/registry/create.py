@@ -54,6 +54,10 @@ def create_model_version(model_name, version_name, label, model, artifact, works
         model_version.log_model(model, True)
 
     if artifact is not None:
+        for (key, _) in artifact:
+            if key == "model":
+                raise click.BadParameter("the key \"model\" is reserved for model")
+
         for (key, path) in artifact:
             model_version.log_artifact(key, path, True)
 
