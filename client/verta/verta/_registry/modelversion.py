@@ -9,6 +9,7 @@ from .._protos.public.registry import RegistryService_pb2 as _ModelVersionServic
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 from .._internal_utils import _utils
+from ..environment import _Environment
 
 
 class RegisteredModelVersion(_ModelDBEntity):
@@ -95,6 +96,9 @@ class RegisteredModelVersion(_ModelDBEntity):
         raise NotImplementedError
 
     def log_environment(self, env):
+        if not isinstance(env, _Environment):
+            raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
+
         self._refresh_cache()
         self._msg.environment.CopyFrom(env._msg)
         self._update()
