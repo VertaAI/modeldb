@@ -19,7 +19,6 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 
 from .._tracking.entity import _ModelDBEntity
-from .._tracking.experimentrun import ExperimentRun
 from ..environment import _Environment
 
 
@@ -98,13 +97,6 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         print("Created new ModelVersion: {}".format(model_version.version))
         return model_version
-
-    @classmethod
-    def from_run(cls, run_id, name):
-        if not isinstance(run_id, six.string_types):
-            raise TypeError("`run_id` must be string, not {}".format(type(run_id)))
-
-        raise NotImplementedError
 
     def log_model(self, model, overwrite=False):
         self._refresh_cache()
