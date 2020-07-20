@@ -11,11 +11,11 @@ class Project(val clientSet: ClientSet, val proj: ModeldbProject) extends Taggab
   def getOrCreateExperiment(name: String)(implicit ec: ExecutionContext) = {
     GetOrCreateEntity.getOrCreate[Experiment](
       get = () => {
-        clientSet.experimentService.getExperimentByName(Some(name), proj.id)
+        clientSet.experimentService.ExperimentService_.getExperimentByName(Some(name), proj.id)
           .map(r => if (r.experiment.isEmpty) null else new Experiment(clientSet, this, r.experiment.get))
       },
       create = () => {
-        clientSet.experimentService.createExperiment(ModeldbCreateExperiment(
+        clientSet.experimentService.ExperimentService_.createExperiment(ModeldbCreateExperiment(
           name = Some(name),
           project_id = proj.id
         ))
