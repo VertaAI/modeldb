@@ -1668,7 +1668,11 @@ public class BlobDAORdbImpl implements BlobDAO {
             artifactStoreDAO,
             (session) ->
                 VersioningUtils.getDatasetRepositoryEntity(
-                    session, repositoryDAO, datasetId, request.getDatasetVersionId(), true),
+                    session,
+                    repositoryDAO,
+                    datasetId,
+                    request.getDatasetVersionId(),
+                    request.getMethod().equalsIgnoreCase(ModelDBConstants.PUT)),
             commitFunction,
             getUrlForBlobVersionedRequest);
     return GetUrlForDatasetBlobVersioned.Response.newBuilder()
