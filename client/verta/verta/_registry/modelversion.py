@@ -49,6 +49,11 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.registered_model_id
 
+    @property
+    def is_archived(self):
+        self._refresh_cache()
+        return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
+
     def get_artifact_keys(self):
         self._refresh_cache()
         return set(map(lambda artifact: artifact.key, self._msg.artifacts))
@@ -339,6 +344,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._clear_cache()
         self._refresh_cache()
         return self._msg.labels
+
+    def archive(self):
+        if self.is_archived:
+            raise RuntimeError("the version has already been archived")
+
+        self._clear_cache()
+        self._refresh_cache()
+        self._msg.archived = _CommonCommonService.TernaryEnum.TRUE
+        self._update()
 
     def _update(self):
         response = self._conn.make_proto_request("PUT", "/api/v1/registry/{}/versions/{}".format(self._msg.registered_model_id, self.id),

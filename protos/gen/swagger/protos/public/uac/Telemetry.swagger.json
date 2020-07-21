@@ -13,7 +13,7 @@
   "paths": {
     "/telemetry/collectTelemetry": {
       "post": {
-        "operationId": "collectTelemetry",
+        "operationId": "TelemetryService_collectTelemetry",
         "responses": {
           "200": {
             "description": "A successful response.",
