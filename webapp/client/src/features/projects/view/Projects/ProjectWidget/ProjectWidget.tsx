@@ -7,11 +7,10 @@ import { Link } from 'react-router-dom';
 import ProjectEntityDescriptionManager from 'features/descriptionManager/view/ProjectEntityDescriptionManager/ProjectEntityDescriptionManager';
 import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
-import CopyToClipboard from 'shared/view/elements/CopyToClipboard/CopyToClipboard';
-import { Icon } from 'shared/view/elements/Icon/Icon';
 import { Project } from 'shared/models/Project';
 import routes from 'shared/routes';
 import { IConnectedReduxProps } from 'setup/store/store';
+import WithCopyTextIcon from 'shared/view/elements/WithCopyTextIcon/WithCopyTextIcon';
 
 import ProjectBulkDeletion from './ProjectBulkDeletion/ProjectBulkDeletion';
 import styles from './ProjectWidget.module.css';
@@ -50,25 +49,17 @@ class ProjectWidget extends React.Component<AllProps> {
                   <div className={styles.content}>
                     <div className={styles.title_block}>
                       <div className={styles.title}>
-                        <span
-                          className={styles.title_label}
-                          data-test="project-name"
-                        >
-                          {project.name}
-                        </span>
-                        <span
-                          className={styles.title_copy_icon}
+                        <WithCopyTextIcon
                           onClick={this.preventRedirect}
+                          text={project.name}
                         >
-                          <CopyToClipboard text={project.name}>
-                            {(onCopy: any) => (
-                              <Icon
-                                type={'copy-to-clipboard'}
-                                onClick={onCopy}
-                              />
-                            )}
-                          </CopyToClipboard>
-                        </span>
+                          <span
+                            className={styles.title_label}
+                            data-test="project-name"
+                          >
+                            {project.name}
+                          </span>
+                        </WithCopyTextIcon>
                       </div>
                       <div>
                         <span onClick={this.preventRedirect}>

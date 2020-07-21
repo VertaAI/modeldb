@@ -13,7 +13,7 @@
   "paths": {
     "/registry/registered_model_versions/{id.model_version_id}": {
       "get": {
-        "operationId": "GetModelVersion2",
+        "operationId": "RegistryService_GetModelVersion2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -68,7 +68,7 @@
     "/registry/registered_models/find": {
       "post": {
         "summary": "CRUD for RegisteredModel",
-        "operationId": "FindRegisteredModel2",
+        "operationId": "RegistryService_FindRegisteredModel2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -100,7 +100,7 @@
     },
     "/registry/registered_models/{id.registered_model_id}": {
       "get": {
-        "operationId": "GetRegisteredModel2",
+        "operationId": "RegistryService_GetRegisteredModel2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -146,7 +146,7 @@
     },
     "/registry/versions/{model_version_id}/commitArtifactPart": {
       "post": {
-        "operationId": "commitArtifactPart",
+        "operationId": "RegistryService_commitArtifactPart",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -186,7 +186,7 @@
     },
     "/registry/versions/{model_version_id}/commitMultipartArtifact": {
       "post": {
-        "operationId": "commitMultipartArtifact",
+        "operationId": "RegistryService_commitMultipartArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -226,7 +226,7 @@
     },
     "/registry/versions/{model_version_id}/getCommittedArtifactParts": {
       "get": {
-        "operationId": "getCommittedArtifactParts",
+        "operationId": "RegistryService_getCommittedArtifactParts",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -265,7 +265,7 @@
     },
     "/registry/versions/{model_version_id}/getUrlForArtifact": {
       "post": {
-        "operationId": "getUrlForArtifact",
+        "operationId": "RegistryService_getUrlForArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -305,7 +305,7 @@
     },
     "/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/versions": {
       "post": {
-        "operationId": "CreateModelVersion",
+        "operationId": "RegistryService_CreateModelVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -351,7 +351,7 @@
     },
     "/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/versions/{id.model_version_id}": {
       "get": {
-        "operationId": "GetModelVersion",
+        "operationId": "RegistryService_GetModelVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -403,7 +403,7 @@
         ]
       },
       "delete": {
-        "operationId": "DeleteModelVersion",
+        "operationId": "RegistryService_DeleteModelVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -455,7 +455,7 @@
         ]
       },
       "put": {
-        "operationId": "UpdateModelVersion",
+        "operationId": "RegistryService_UpdateModelVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -509,7 +509,7 @@
     },
     "/registry/workspaces/{id.named_id.workspace_name}/registered_models": {
       "post": {
-        "operationId": "CreateRegisteredModel",
+        "operationId": "RegistryService_CreateRegisteredModel",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -548,7 +548,7 @@
     },
     "/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}": {
       "get": {
-        "operationId": "GetRegisteredModel",
+        "operationId": "RegistryService_GetRegisteredModel",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -592,7 +592,7 @@
         ]
       },
       "delete": {
-        "operationId": "DeleteRegisteredModel",
+        "operationId": "RegistryService_DeleteRegisteredModel",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -636,7 +636,7 @@
         ]
       },
       "put": {
-        "operationId": "UpdateRegisteredModel",
+        "operationId": "RegistryService_UpdateRegisteredModel",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -683,7 +683,7 @@
     "/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/versions/find": {
       "post": {
         "summary": "CRUD for Model Version",
-        "operationId": "FindModelVersion",
+        "operationId": "RegistryService_FindModelVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -730,7 +730,7 @@
     "/registry/workspaces/{workspace_name}/registered_models/find": {
       "post": {
         "summary": "CRUD for RegisteredModel",
-        "operationId": "FindRegisteredModel",
+        "operationId": "RegistryService_FindRegisteredModel",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -769,7 +769,7 @@
     },
     "/registry/{id.model_id.registered_model_id}/versions": {
       "post": {
-        "operationId": "CreateModelVersion2",
+        "operationId": "RegistryService_CreateModelVersion2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -809,7 +809,7 @@
     },
     "/registry/{id.model_id.registered_model_id}/versions/{id.model_version_id}": {
       "delete": {
-        "operationId": "DeleteModelVersion2",
+        "operationId": "RegistryService_DeleteModelVersion2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -861,7 +861,7 @@
         ]
       },
       "put": {
-        "operationId": "UpdateModelVersion2",
+        "operationId": "RegistryService_UpdateModelVersion2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -909,7 +909,7 @@
     },
     "/registry/{id.registered_model_id}": {
       "delete": {
-        "operationId": "DeleteRegisteredModel2",
+        "operationId": "RegistryService_DeleteRegisteredModel2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -953,7 +953,7 @@
         ]
       },
       "put": {
-        "operationId": "UpdateRegisteredModel2",
+        "operationId": "RegistryService_UpdateRegisteredModel2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -994,7 +994,7 @@
     "/registry/{id.registered_model_id}/versions/find": {
       "post": {
         "summary": "CRUD for Model Version",
-        "operationId": "FindModelVersion2",
+        "operationId": "RegistryService_FindModelVersion2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1423,7 +1423,7 @@
           "$ref": "#/definitions/versioningEnvironmentBlob",
           "title": "Requirement"
         },
-        "assets": {
+        "artifacts": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/commonArtifact"
@@ -1444,6 +1444,10 @@
             "type": "string"
           },
           "title": "APIs"
+        },
+        "owner": {
+          "type": "string",
+          "title": "owner's verta_id"
         }
       }
     },
@@ -1505,6 +1509,10 @@
         "readme_text": {
           "type": "string",
           "title": "readme"
+        },
+        "owner": {
+          "type": "string",
+          "title": "owner's verta_id"
         }
       }
     },

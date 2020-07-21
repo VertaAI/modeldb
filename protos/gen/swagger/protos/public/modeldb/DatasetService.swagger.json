@@ -13,7 +13,7 @@
   "paths": {
     "/dataset/addDatasetAttributes": {
       "post": {
-        "operationId": "addDatasetAttributes",
+        "operationId": "DatasetService_addDatasetAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/dataset/addDatasetTags": {
       "post": {
-        "operationId": "addDatasetTags",
+        "operationId": "DatasetService_addDatasetTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -77,7 +77,7 @@
     },
     "/dataset/createDataset": {
       "post": {
-        "operationId": "createDataset",
+        "operationId": "DatasetService_createDataset",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -109,7 +109,7 @@
     },
     "/dataset/deleteDataset": {
       "delete": {
-        "operationId": "deleteDataset",
+        "operationId": "DatasetService_deleteDataset",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -141,7 +141,7 @@
     },
     "/dataset/deleteDatasetAttributes": {
       "delete": {
-        "operationId": "deleteDatasetAttributes",
+        "operationId": "DatasetService_deleteDatasetAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -188,7 +188,7 @@
     },
     "/dataset/deleteDatasetTags": {
       "delete": {
-        "operationId": "deleteDatasetTags",
+        "operationId": "DatasetService_deleteDatasetTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -220,7 +220,7 @@
     },
     "/dataset/deleteDatasets": {
       "delete": {
-        "operationId": "deleteDatasets",
+        "operationId": "DatasetService_deleteDatasets",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -253,7 +253,7 @@
     "/dataset/findDatasets": {
       "post": {
         "summary": "queries",
-        "operationId": "findDatasets",
+        "operationId": "DatasetService_findDatasets",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -285,7 +285,7 @@
     },
     "/dataset/getAllDatasets": {
       "get": {
-        "operationId": "getAllDatasets",
+        "operationId": "DatasetService_getAllDatasets",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -343,7 +343,7 @@
     },
     "/dataset/getDatasetById": {
       "get": {
-        "operationId": "getDatasetById",
+        "operationId": "DatasetService_getDatasetById",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -373,7 +373,7 @@
     },
     "/dataset/getDatasetByName": {
       "get": {
-        "operationId": "getDatasetByName",
+        "operationId": "DatasetService_getDatasetByName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -409,7 +409,7 @@
     },
     "/dataset/getDatasetTags": {
       "get": {
-        "operationId": "getDatasetTags",
+        "operationId": "DatasetService_getDatasetTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -439,7 +439,7 @@
     },
     "/dataset/getExperimentRunByDataset": {
       "post": {
-        "operationId": "getExperimentRunByDataset",
+        "operationId": "DatasetService_getExperimentRunByDataset",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -471,7 +471,7 @@
     },
     "/dataset/getLastExperimentByDatasetId": {
       "get": {
-        "operationId": "getLastExperimentByDatasetId",
+        "operationId": "DatasetService_getLastExperimentByDatasetId",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -501,7 +501,7 @@
     },
     "/dataset/setDatasetVisibility": {
       "post": {
-        "operationId": "setDatasetVisibility",
+        "operationId": "DatasetService_setDatasetVisibility",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -533,7 +533,7 @@
     },
     "/dataset/setDatasetWorkspace": {
       "post": {
-        "operationId": "setDatasetWorkspace",
+        "operationId": "DatasetService_setDatasetWorkspace",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -565,7 +565,7 @@
     },
     "/dataset/updateDatasetAttributes": {
       "post": {
-        "operationId": "updateDatasetAttributes",
+        "operationId": "DatasetService_updateDatasetAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -597,7 +597,7 @@
     },
     "/dataset/updateDatasetDescription": {
       "post": {
-        "operationId": "updateDatasetDescription",
+        "operationId": "DatasetService_updateDatasetDescription",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -629,7 +629,7 @@
     },
     "/dataset/updateDatasetName": {
       "post": {
-        "operationId": "updateDatasetName",
+        "operationId": "DatasetService_updateDatasetName",
         "responses": {
           "200": {
             "description": "A successful response.",

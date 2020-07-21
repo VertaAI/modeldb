@@ -1,5 +1,5 @@
 image: vertaaiofficial/modeldb-frontend
-imageTag: latest
+imageTag: 2.0.7
 tolerations: []
 resources:
   limits:

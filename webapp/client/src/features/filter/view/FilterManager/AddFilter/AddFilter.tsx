@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { IQuickFilter, IFilterData } from 'shared/models/Filters';
+import { IQuickFilter, IFilterData, PropertyType } from 'shared/models/Filters';
 import generateId from 'shared/utils/generateId';
 
 import styles from './AddFilter.module.css';
@@ -17,15 +17,27 @@ const AddFilter: React.FC<ILocalProps> = ({ onCreateFilter, quickFilters }) => {
 
   const newFilter = quickFilters[0];
 
-  const onClick = () =>
-    onCreateFilter({
-      type: newFilter.type,
-      operator: 'EQUALS',
-      value: '',
-      isActive: true,
-      name: newFilter.propertyName,
-      id: generateId(),
-    });
+  const onClick = () => {
+    if (newFilter.type === PropertyType.STRING) {
+      onCreateFilter({
+        type: newFilter.type,
+        operator: 'EQUALS',
+        value: '',
+        isActive: true,
+        name: newFilter.propertyName,
+        id: generateId(),
+      });
+    } else {
+      onCreateFilter({
+        type: newFilter.type,
+        operator: 'EQUALS',
+        value: undefined,
+        isActive: true,
+        name: newFilter.propertyName,
+        id: generateId(),
+      });
+    }
+  };
 
   return (
     <div className={styles.root} data-test="add-filter" onClick={onClick}>

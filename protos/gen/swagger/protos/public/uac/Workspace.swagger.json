@@ -13,7 +13,7 @@
   "paths": {
     "/workspace/getWorkspaceById": {
       "get": {
-        "operationId": "getWorkspaceById",
+        "operationId": "WorkspaceService_getWorkspaceById",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -44,7 +44,7 @@
     },
     "/workspace/getWorkspaceByName": {
       "get": {
-        "operationId": "getWorkspaceByName",
+        "operationId": "WorkspaceService_getWorkspaceByName",
         "responses": {
           "200": {
             "description": "A successful response.",

@@ -13,7 +13,7 @@
   "paths": {
     "/metadata/getLabelIds": {
       "get": {
-        "operationId": "GetLabelIds",
+        "operationId": "MetadataService_GetLabelIds",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -47,7 +47,7 @@
     },
     "/metadata/labels": {
       "get": {
-        "operationId": "GetLabels",
+        "operationId": "MetadataService_GetLabels",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -96,7 +96,7 @@
         ]
       },
       "delete": {
-        "operationId": "DeleteLabels",
+        "operationId": "MetadataService_DeleteLabels",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -126,7 +126,7 @@
         ]
       },
       "post": {
-        "operationId": "UpdateLabels",
+        "operationId": "MetadataService_UpdateLabels",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -156,7 +156,7 @@
         ]
       },
       "put": {
-        "operationId": "AddLabels",
+        "operationId": "MetadataService_AddLabels",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -188,7 +188,7 @@
     },
     "/metadata/property": {
       "get": {
-        "operationId": "GetProperty",
+        "operationId": "MetadataService_GetProperty",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -243,7 +243,7 @@
         ]
       },
       "delete": {
-        "operationId": "DeleteProperty",
+        "operationId": "MetadataService_DeleteProperty",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -273,7 +273,7 @@
         ]
       },
       "put": {
-        "operationId": "AddProperty",
+        "operationId": "MetadataService_AddProperty",
         "responses": {
           "200": {
             "description": "A successful response.",

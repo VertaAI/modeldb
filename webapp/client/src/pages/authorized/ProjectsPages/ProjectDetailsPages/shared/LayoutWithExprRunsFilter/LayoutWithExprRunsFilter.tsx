@@ -53,7 +53,11 @@ class ProjectDetailsPage extends React.Component<AllProps, ILocalState> {
     super(props);
     const projectId = props.match.params.projectId;
     this.filterContext = {
-      quickFilters: [defaultQuickFilters.name, defaultQuickFilters.tag],
+      quickFilters: [
+        defaultQuickFilters.name,
+        defaultQuickFilters.tag,
+        defaultQuickFilters.timestamp,
+      ],
       name: makeExprRunsFilterContextName(projectId),
       onApplyFilters: (filters, dispatch) => {
         const isChartsPage = Boolean(
@@ -90,7 +94,7 @@ class ProjectDetailsPage extends React.Component<AllProps, ILocalState> {
       >
         <div className={styles.root}>
           <ProjectPageTabs
-            {...this.props.tabsSetting || {}}
+            {...(this.props.tabsSetting || {})}
             projectId={this.props.match.params.projectId}
           />
           <div className={styles.content}>{this.props.children}</div>
