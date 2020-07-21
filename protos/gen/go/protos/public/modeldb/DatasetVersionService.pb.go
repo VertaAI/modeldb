@@ -1411,7 +1411,7 @@ func (x *DeleteDatasetVersionTags) GetTags() []string {
 	if x != nil {
 		return x.Tags
 	}
-	return mi.MessageOf(x)
+	return nil
 }
 
 func (x *DeleteDatasetVersionTags) GetDeleteAll() bool {
@@ -1608,6 +1608,7 @@ func (x *GetDatasetVersionAttributes) GetAttributeKeys() []string {
 	if x != nil {
 		return x.AttributeKeys
 	}
+	return nil
 }
 
 func (x *GetDatasetVersionAttributes) GetGetAll() bool {
@@ -2499,7 +2500,7 @@ func (x *DeleteDatasetVersionTags_Response) GetDatasetVersion() *DatasetVersion 
 	if x != nil {
 		return x.DatasetVersion
 	}
-	return DatasetVisibilityEnum_PRIVATE
+	return nil
 }
 
 type AddDatasetVersionAttributes_Response struct {
@@ -2546,7 +2547,7 @@ func (x *AddDatasetVersionAttributes_Response) GetDatasetVersion() *DatasetVersi
 	if x != nil {
 		return x.DatasetVersion
 	}
-	return mi.MessageOf(x)
+	return nil
 }
 
 type UpdateDatasetVersionAttributes_Response struct {
@@ -2782,6 +2783,7 @@ func (x *GetUrlForDatasetBlobVersioned_Response) GetUrl() string {
 	if x != nil {
 		return x.Url
 	}
+	return ""
 }
 
 func (x *GetUrlForDatasetBlobVersioned_Response) GetMultipartUploadOk() bool {

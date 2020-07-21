@@ -2287,7 +2287,7 @@ func (x *GetDatasets) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return mi.MessageOf(x)
+	return ""
 }
 
 // artifact
@@ -3094,7 +3094,7 @@ func (x *TopExperimentRunsSelector) GetTopK() int32 {
 	if x != nil {
 		return x.TopK
 	}
-	return mi.MessageOf(x)
+	return 0
 }
 
 func (x *TopExperimentRunsSelector) GetIdsOnly() bool {
@@ -5315,6 +5315,7 @@ func (x *SortExperimentRuns_Response) GetExperimentRuns() []*ExperimentRun {
 	if x != nil {
 		return x.ExperimentRuns
 	}
+	return nil
 }
 
 func (x *SortExperimentRuns_Response) GetTotalRecords() int64 {
@@ -5501,6 +5502,7 @@ func (x *GetChildrenExperimentRuns_Response) GetExperimentRuns() []*ExperimentRu
 	if x != nil {
 		return x.ExperimentRuns
 	}
+	return nil
 }
 
 func (x *GetChildrenExperimentRuns_Response) GetTotalRecords() int64 {
@@ -5750,7 +5752,7 @@ func (x *ListBlobExperimentRunsRequest_Response) GetRuns() []*ExperimentRun {
 	if x != nil {
 		return x.Runs
 	}
-	return mi.MessageOf(x)
+	return nil
 }
 
 func (x *ListBlobExperimentRunsRequest_Response) GetTotalRecords() int64 {
