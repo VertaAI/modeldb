@@ -5,6 +5,8 @@ from click.testing import CliRunner
 
 from verta._cli import cli
 
+import os
+
 
 pytest.skip("registry not yet available in backend", allow_module_level=True)
 
@@ -56,4 +58,34 @@ class TestList:
 
 
 class TestUpdate:
-    pass
+    def test_update_version(self, registered_model):
+        model_name = registered_model.name
+        version_name = "my version"
+        registered_model.get_or_create_version(version_name)
+
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+
+        classifier_name = "tiny2.pth"
+        CLASSIFIER_CONTENTS = os.urandom(2**16)
+        with open(classifier_name, 'wb') as f:
+            f.write(CLASSIFIER_CONTENTS)
+
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2', "--artifact", "file", filename, "--model", classifier_name],
+        )
+        os.remove(filename)
+        os.remove(classifier_name)
+        assert not result.exception
+
+        model_version = registered_model.get_version(name=version_name)
+        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS
+        assert model_version.get_labels() == ["label1", "label2"]
+        assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS
+
+
