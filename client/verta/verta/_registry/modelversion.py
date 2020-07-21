@@ -131,6 +131,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         return _artifact_utils.deserialize_model(self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL))
 
     def del_model(self):
+        self._clear_cache()
         self._refresh_cache()
         self._msg.ClearField("model")
         self._update()
