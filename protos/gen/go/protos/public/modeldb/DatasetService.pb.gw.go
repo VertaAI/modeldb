@@ -89,7 +89,10 @@ func local_request_DatasetService_GetAllDatasets_0(ctx context.Context, marshale
 	var protoReq GetAllDatasets
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DatasetService_GetAllDatasets_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DatasetService_GetAllDatasets_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -122,7 +125,10 @@ func local_request_DatasetService_GetDatasetById_0(ctx context.Context, marshale
 	var protoReq GetDatasetById
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DatasetService_GetDatasetById_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DatasetService_GetDatasetById_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -155,7 +161,10 @@ func local_request_DatasetService_GetDatasetByName_0(ctx context.Context, marsha
 	var protoReq GetDatasetByName
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DatasetService_GetDatasetByName_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DatasetService_GetDatasetByName_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -392,7 +401,10 @@ func local_request_DatasetService_GetDatasetTags_0(ctx context.Context, marshale
 	var protoReq GetTags
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DatasetService_GetDatasetTags_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DatasetService_GetDatasetTags_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -527,7 +539,10 @@ func local_request_DatasetService_DeleteDatasetAttributes_0(ctx context.Context,
 	var protoReq DeleteDatasetAttributes
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DatasetService_DeleteDatasetAttributes_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DatasetService_DeleteDatasetAttributes_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -594,7 +609,10 @@ func local_request_DatasetService_GetLastExperimentByDatasetId_0(ctx context.Con
 	var protoReq LastExperimentByDatasetId
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DatasetService_GetLastExperimentByDatasetId_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DatasetService_GetLastExperimentByDatasetId_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
