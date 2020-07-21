@@ -5,20 +5,14 @@ import * as React from 'react';
 import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
 import { Icon } from 'shared/view/elements/Icon/Icon';
 import Popup from 'shared/view/elements/Popup/Popup';
+import Table from 'shared/view/elements/Table/Table';
+import { IObservationsValues } from 'shared/models/Observation';
 
 import styles from './ObservationButton.module.css';
-import Table from 'shared/view/elements/Table/Table';
-
-interface IAttributeVal {
-  timeStamp: Date;
-  value: string;
-  epochNumber?: number;
-}
 
 interface ILocalProps {
-  // IAttributeVal here do not let me iterate over the map
-  groupedObs: Map<string, any>;
   attributeKey: string;
+  values: IObservationsValues[];
   additionalClassname?: string;
 }
 
@@ -26,12 +20,12 @@ interface ILocalState {
   isModalOpen: boolean;
 }
 
-class AttributeButton extends React.PureComponent<ILocalProps, ILocalState> {
+class ObservationButton extends React.PureComponent<ILocalProps, ILocalState> {
   public state: ILocalState = {
     isModalOpen: false,
   };
   public render() {
-    const { groupedObs, attributeKey, additionalClassname } = this.props;
+    const { attributeKey, values, additionalClassname } = this.props;
     const iconType = 'binoculars-tilted';
     const epochColumn = {
       type: 'epochNumber',
@@ -51,41 +45,36 @@ class AttributeButton extends React.PureComponent<ILocalProps, ILocalState> {
           onRequestClose={this.handleCloseModal}
         >
           <div className={styles.popupContent}>
-            {groupedObs &&
-              groupedObs !== undefined &&
-              attributeKey &&
-              attributeKey !== undefined && (
-                <Table
-                  dataRows={groupedObs
-                    .get(attributeKey)
-                    .map((obs: IAttributeVal) => {
-                      return {
-                        ...obs,
-                        epochNumber:
-                          obs.epochNumber === undefined ? '-' : obs.epochNumber,
-                        timeStamp: getFormattedDateTime(obs.timeStamp),
-                      };
-                    })}
-                  getRowKey={this.getRowKey}
-                  columnDefinitions={(this.isWithEpoch(groupedObs)
-                    ? [epochColumn]
-                    : []
-                  ).concat([
-                    {
-                      type: 'timeStamp',
-                      title: 'TimeStamp',
-                      width: '33%',
-                      render: ({ timeStamp }: any) => <span>{timeStamp}</span>,
-                    },
-                    {
-                      type: 'value',
-                      title: 'Value',
-                      width: '34%',
-                      render: ({ value }: any) => <span>{value}</span>,
-                    },
-                  ])}
-                />
-              )}
+            {attributeKey && (
+              <Table
+                dataRows={values.map(obs => {
+                  return {
+                    ...obs,
+                    epochNumber:
+                      obs.epochNumber === undefined ? '-' : obs.epochNumber,
+                    timeStamp: getFormattedDateTime(obs.timeStamp),
+                  };
+                })}
+                getRowKey={this.getRowKey}
+                columnDefinitions={(this.isWithEpoch(values)
+                  ? [epochColumn]
+                  : []
+                ).concat([
+                  {
+                    type: 'timeStamp',
+                    title: 'TimeStamp',
+                    width: '33%',
+                    render: ({ timeStamp }: any) => <span>{timeStamp}</span>,
+                  },
+                  {
+                    type: 'value',
+                    title: 'Value',
+                    width: '34%',
+                    render: ({ value }: any) => <span>{value}</span>,
+                  },
+                ])}
+              />
+            )}
           </div>
         </Popup>
 
@@ -108,10 +97,8 @@ class AttributeButton extends React.PureComponent<ILocalProps, ILocalState> {
   }
 
   @bind
-  private isWithEpoch(groupedObs: Map<string, any>) {
-    return groupedObs
-      .get(this.props.attributeKey)
-      .some((d: any) => d.epochNumber !== undefined);
+  private isWithEpoch(values: IObservationsValues[]) {
+    return values.some(d => d.epochNumber !== undefined);
   }
 
   @bind
@@ -130,4 +117,4 @@ class AttributeButton extends React.PureComponent<ILocalProps, ILocalState> {
   }
 }
 
-export default AttributeButton;
+export default ObservationButton;

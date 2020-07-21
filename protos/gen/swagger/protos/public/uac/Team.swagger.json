@@ -14,7 +14,7 @@
     "/team/addUser": {
       "post": {
         "summary": "Adds the given user to the team\nOnly enabled if the requester is the creator of the team or the organization",
-        "operationId": "addUser",
+        "operationId": "TeamService_addUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -47,7 +47,7 @@
     "/team/deleteTeam": {
       "post": {
         "summary": "Delete an existing team\nOnly enabled if the person deleting is the owner of the organization or owner of the team",
-        "operationId": "deleteTeam",
+        "operationId": "TeamService_deleteTeam",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -80,7 +80,7 @@
     "/team/getTeamById": {
       "get": {
         "summary": "Gets information from a given team",
-        "operationId": "getTeamById",
+        "operationId": "TeamService_getTeamById",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -111,7 +111,7 @@
     "/team/getTeamByName": {
       "get": {
         "summary": "Gets information from a given team",
-        "operationId": "getTeamByName",
+        "operationId": "TeamService_getTeamByName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -148,7 +148,7 @@
     "/team/getTeamByShortName": {
       "get": {
         "summary": "Gets information from a given team",
-        "operationId": "getTeamByShortName",
+        "operationId": "TeamService_getTeamByShortName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -185,7 +185,7 @@
     "/team/listMyTeams": {
       "get": {
         "summary": "Lists the teams that the current user can see",
-        "operationId": "listMyTeams",
+        "operationId": "TeamService_listMyTeams",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -208,7 +208,7 @@
     "/team/listUsers": {
       "get": {
         "summary": "List users inside a team\nOnly available for users inside the team itself",
-        "operationId": "listUsers",
+        "operationId": "TeamService_listUsers",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -239,7 +239,7 @@
     "/team/removeUser": {
       "post": {
         "summary": "Removes the given user to the team\nOnly enabled if the requester is the creator of the team\nThe owner can never be removed",
-        "operationId": "removeUser",
+        "operationId": "TeamService_removeUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -272,7 +272,7 @@
     "/team/setTeam": {
       "post": {
         "summary": "Create or update a team\nAutomatically adds the caller to the team",
-        "operationId": "setTeam",
+        "operationId": "TeamService_setTeam",
         "responses": {
           "200": {
             "description": "A successful response.",

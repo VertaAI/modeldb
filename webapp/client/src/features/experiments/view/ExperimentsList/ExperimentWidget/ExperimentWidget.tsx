@@ -14,6 +14,7 @@ import { IConnectedReduxProps, IApplicationState } from 'setup/store/store';
 
 import ExperimentBulkDeletion from './ExperimentBulkDeletion/ExperimentBulkDeletion';
 import styles from './ExperimentWidget.module.css';
+import WithCopyTextIcon from 'shared/view/elements/WithCopyTextIcon/WithCopyTextIcon';
 
 interface ILocalProps {
   projectId: string;
@@ -53,7 +54,12 @@ class ExperimentWidget extends React.PureComponent<AllProps> {
                 <div className={styles.content}>
                   <div className={styles.title_block}>
                     <div className={styles.title} data-test="experiment-name">
-                      {experiment.name}
+                      <WithCopyTextIcon
+                        text={experiment.name}
+                        onClick={this.preventOnViewExprRuns}
+                      >
+                        {experiment.name}
+                      </WithCopyTextIcon>
                     </div>
                     <div>
                       <span onClick={this.preventOnViewExprRuns}>

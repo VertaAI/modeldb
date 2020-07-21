@@ -10,7 +10,6 @@ import (
 	"github.com/VertaAI/modeldb/backend/graphql/internal/server/connections"
 	ai_verta_modeldb "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
-	ai_verta_uac "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -28,7 +27,7 @@ func (r *projectResolver) ProjectVisibility(ctx context.Context, obj *ai_verta_m
 }
 func (r *projectResolver) Access(ctx context.Context, obj *ai_verta_modeldb.Project) (schema.AccessType, error) {
 	if r.Connections.HasUac() {
-		self, ok := ctx.Value("uac-self").(*ai_verta_uac.UserInfo)
+		self, ok := ctx.Value("uac-self").(*uac.UserInfo)
 		if !ok {
 			r.Logger.Error(errors.FailedToFetchAuth(ctx).Message)
 			return "", errors.FailedToFetchAuth(ctx)
@@ -46,7 +45,7 @@ func (r *projectResolver) Access(ctx context.Context, obj *ai_verta_modeldb.Proj
 		}
 
 		for _, c := range collaborators {
-			if c.GetUserId() == self.GetUserId() {
+			if c.GetVertaId() == self.GetVertaInfo().GetUserId() {
 				return schema.AccessType(c.GetCollaboratorType().String()), nil
 			}
 		}
@@ -55,7 +54,7 @@ func (r *projectResolver) Access(ctx context.Context, obj *ai_verta_modeldb.Proj
 	}
 	return schema.AccessTypeOwner, nil
 }
-func (r *projectResolver) Owner(ctx context.Context, obj *ai_verta_modeldb.Project) (*ai_verta_uac.UserInfo, error) {
+func (r *projectResolver) Owner(ctx context.Context, obj *ai_verta_modeldb.Project) (*uac.UserInfo, error) {
 	return dataloaders.GetUserById(ctx, obj.GetOwner())
 }
 func (r *projectResolver) Attributes(ctx context.Context, obj *ai_verta_modeldb.Project) ([]schema.KeyValue, error) {

@@ -1,0 +1,20 @@
+.root {
+}
+
+.copyIcon {
+  margin-left: 6px;
+  opacity: 0;
+  color: var(--main-color2);
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.15s ease-out;
+  cursor: pointer;
+}
+
+.root:hover .copyIcon {
+  opacity: 0.8;
+}
+
+.copyIcon:hover {
+  color: var(--main-color1);
+}
