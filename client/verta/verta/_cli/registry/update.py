@@ -34,6 +34,9 @@ def update_model_version(model_name, version_name, label, model, artifact, works
     """
     client = Client()
 
+    if artifact is not None and len(artifact) < len(set(artifact)):
+        raise click.BadParameter("cannot have duplicate artifact keys")
+
     try:
         registered_model = client.get_registered_model(model_name, workspace=workspace)
     except ValueError:
