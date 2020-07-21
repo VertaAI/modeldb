@@ -319,6 +319,10 @@ service RegistryService {
                 post: "/v1/registry/{id.registered_model_id}/versions/find"
                 body: "*"
             }
+            additional_bindings {
+                post: "/v1/registry/versions/find"
+                body: "*"
+            }
         };
     };
 
