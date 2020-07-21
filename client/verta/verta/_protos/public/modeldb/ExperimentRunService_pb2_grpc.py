@@ -280,6 +280,21 @@ class ExperimentRunServiceStub(object):
         request_serializer=modeldb_dot_ExperimentRunService__pb2.ListBlobExperimentRunsRequest.SerializeToString,
         response_deserializer=modeldb_dot_ExperimentRunService__pb2.ListBlobExperimentRunsRequest.Response.FromString,
         )
+    self.deleteObservations = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/deleteObservations',
+        request_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteObservations.SerializeToString,
+        response_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteObservations.Response.FromString,
+        )
+    self.deleteMetrics = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/deleteMetrics',
+        request_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteMetrics.SerializeToString,
+        response_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteMetrics.Response.FromString,
+        )
+    self.deleteHyperparameters = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/deleteHyperparameters',
+        request_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.SerializeToString,
+        response_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.Response.FromString,
+        )
 
 
 class ExperimentRunServiceServicer(object):
@@ -657,6 +672,27 @@ class ExperimentRunServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def deleteObservations(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def deleteMetrics(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def deleteHyperparameters(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_ExperimentRunServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -924,6 +960,21 @@ def add_ExperimentRunServiceServicer_to_server(servicer, server):
           servicer.ListBlobExperimentRuns,
           request_deserializer=modeldb_dot_ExperimentRunService__pb2.ListBlobExperimentRunsRequest.FromString,
           response_serializer=modeldb_dot_ExperimentRunService__pb2.ListBlobExperimentRunsRequest.Response.SerializeToString,
+      ),
+      'deleteObservations': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteObservations,
+          request_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteObservations.FromString,
+          response_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteObservations.Response.SerializeToString,
+      ),
+      'deleteMetrics': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteMetrics,
+          request_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteMetrics.FromString,
+          response_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteMetrics.Response.SerializeToString,
+      ),
+      'deleteHyperparameters': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteHyperparameters,
+          request_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.FromString,
+          response_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

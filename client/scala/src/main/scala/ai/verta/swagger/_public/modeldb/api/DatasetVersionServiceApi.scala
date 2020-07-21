@@ -127,6 +127,15 @@ class DatasetVersionServiceApi(client: HttpClient, val basePath: String = "/v1")
 
   def DatasetVersionService_getDatasetVersionAttributes(attribute_keys: Option[List[String]]=None, dataset_id: Option[String]=None, get_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetDatasetVersionAttributesResponse] = Await.result(DatasetVersionService_getDatasetVersionAttributesAsync(attribute_keys, dataset_id, get_all, id), Duration.Inf)
 
+  def DatasetVersionService_getDatasetVersionByIdAsync(id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetDatasetVersionByIdResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (id.isDefined) __query.update("id", client.toQuery(id.get))
+    val body: String = null
+    return client.request[String, ModeldbGetDatasetVersionByIdResponse]("GET", basePath + s"/dataset-version/getDatasetVersionById", __query.toMap, body, ModeldbGetDatasetVersionByIdResponse.fromJson)
+  }
+
+  def DatasetVersionService_getDatasetVersionById(id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbGetDatasetVersionByIdResponse] = Await.result(DatasetVersionService_getDatasetVersionByIdAsync(id), Duration.Inf)
+
   def DatasetVersionService_getLatestDatasetVersionByDatasetIdAsync(ascending: Option[Boolean]=None, dataset_id: Option[String]=None, sort_key: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbGetLatestDatasetVersionByDatasetIdResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (dataset_id.isDefined) __query.update("dataset_id", client.toQuery(dataset_id.get))
