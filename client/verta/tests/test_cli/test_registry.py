@@ -89,18 +89,18 @@ class TestCreate:
         os.remove(filename)
         os.remove(classifier_name)
 
-            # def test_create_version_wrong_model_name(self, strs):
-    #     # TODO: re-run this test later on.
-    #     version_name = "my version"
-    #
-    #     runner = CliRunner()
-    #     result = runner.invoke(
-    #         cli,
-    #         ['registry', 'create', 'registeredmodelversion', strs[0], version_name],
-    #     )
-    #
-    #     assert result.exception
-    #     assert result.output.strip().endswith("not found")
+    def test_create_version_wrong_model_name(self, strs):
+        # TODO: re-run this test later on. It still fails for now.
+        version_name = "my version"
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodelversion', strs[0], version_name],
+        )
+
+        assert result.exception
+        assert result.output.strip().endswith("not found")
 
 
 class TestGet:
