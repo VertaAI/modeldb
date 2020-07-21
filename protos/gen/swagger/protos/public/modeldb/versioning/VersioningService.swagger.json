@@ -13,7 +13,7 @@
   "paths": {
     "/versioning/commitMultipartVersionedBlobArtifact": {
       "post": {
-        "operationId": "commitMultipartVersionedBlobArtifact",
+        "operationId": "VersioningService_commitMultipartVersionedBlobArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/versioning/commitVersionedBlobArtifactPart": {
       "post": {
-        "operationId": "commitVersionedBlobArtifactPart",
+        "operationId": "VersioningService_commitVersionedBlobArtifactPart",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -77,7 +77,7 @@
     },
     "/versioning/getCommittedVersionedBlobArtifactParts": {
       "get": {
-        "operationId": "getCommittedVersionedBlobArtifactParts",
+        "operationId": "VersioningService_getCommittedVersionedBlobArtifactParts",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -143,7 +143,7 @@
     "/versioning/repositories": {
       "get": {
         "summary": "CRUD for repositories",
-        "operationId": "ListRepositories2",
+        "operationId": "VersioningService_ListRepositories2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -187,7 +187,7 @@
     },
     "/versioning/repositories/{id.repo_id}": {
       "get": {
-        "operationId": "GetRepository2",
+        "operationId": "VersioningService_GetRepository2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -228,7 +228,7 @@
         ]
       },
       "put": {
-        "operationId": "UpdateRepository2",
+        "operationId": "VersioningService_UpdateRepository2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -267,7 +267,7 @@
     },
     "/versioning/repositories/{repository_id.repo_id}": {
       "delete": {
-        "operationId": "DeleteRepository2",
+        "operationId": "VersioningService_DeleteRepository2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -311,7 +311,7 @@
     "/versioning/repositories/{repository_id.repo_id}/branches": {
       "get": {
         "summary": "CRUD for Branches",
-        "operationId": "ListBranches2",
+        "operationId": "VersioningService_ListBranches2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -354,7 +354,7 @@
     },
     "/versioning/repositories/{repository_id.repo_id}/branches/{branch}": {
       "get": {
-        "operationId": "GetBranch2",
+        "operationId": "VersioningService_GetBranch2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -401,7 +401,7 @@
         ]
       },
       "delete": {
-        "operationId": "DeleteBranch2",
+        "operationId": "VersioningService_DeleteBranch2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -449,7 +449,7 @@
       },
       "put": {
         "summary": "Unlike tags, branches can be updated. The API must verify that the new commit is a child of the current branch.",
-        "operationId": "SetBranch2",
+        "operationId": "VersioningService_SetBranch2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -494,7 +494,7 @@
     },
     "/versioning/repositories/{repository_id.repo_id}/branches/{branch}/log": {
       "get": {
-        "operationId": "ListCommitsLog2",
+        "operationId": "VersioningService_ListCommitsLog2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -551,7 +551,7 @@
     "/versioning/repositories/{repository_id.repo_id}/commits": {
       "get": {
         "summary": "CRUD for commits",
-        "operationId": "ListCommits2",
+        "operationId": "VersioningService_ListCommits2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -618,7 +618,7 @@
         ]
       },
       "post": {
-        "operationId": "CreateCommit2",
+        "operationId": "VersioningService_CreateCommit2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -657,7 +657,7 @@
     },
     "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}": {
       "get": {
-        "operationId": "GetCommit2",
+        "operationId": "VersioningService_GetCommit2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -704,7 +704,7 @@
         ]
       },
       "delete": {
-        "operationId": "DeleteCommit2",
+        "operationId": "VersioningService_DeleteCommit2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -754,7 +754,7 @@
     "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/blobs": {
       "get": {
         "summary": "Getting blobs and folders in a commit",
-        "operationId": "ListCommitBlobs2",
+        "operationId": "VersioningService_ListCommitBlobs2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -815,7 +815,7 @@
     },
     "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForBlobVersioned": {
       "post": {
-        "operationId": "getUrlForBlobVersioned2",
+        "operationId": "VersioningService_getUrlForBlobVersioned2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -860,7 +860,7 @@
     },
     "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/log": {
       "get": {
-        "operationId": "ListCommitsLog4",
+        "operationId": "VersioningService_ListCommitsLog4",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -916,7 +916,7 @@
     },
     "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path": {
       "get": {
-        "operationId": "GetCommitComponent2",
+        "operationId": "VersioningService_GetCommitComponent2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -976,7 +976,7 @@
     },
     "/versioning/repositories/{repository_id.repo_id}/commits/{commit_to_revert_sha}/revert": {
       "post": {
-        "operationId": "RevertRepositoryCommits2",
+        "operationId": "VersioningService_RevertRepositoryCommits2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1022,7 +1022,7 @@
     "/versioning/repositories/{repository_id.repo_id}/diff": {
       "get": {
         "summary": "Git-like operations",
-        "operationId": "ComputeRepositoryDiff2",
+        "operationId": "VersioningService_ComputeRepositoryDiff2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1098,7 +1098,7 @@
     },
     "/versioning/repositories/{repository_id.repo_id}/merge": {
       "post": {
-        "operationId": "MergeRepositoryCommits2",
+        "operationId": "VersioningService_MergeRepositoryCommits2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1138,7 +1138,7 @@
     "/versioning/repositories/{repository_id.repo_id}/tags": {
       "get": {
         "summary": "CRUD for tags",
-        "operationId": "ListTags2",
+        "operationId": "VersioningService_ListTags2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1181,7 +1181,7 @@
     },
     "/versioning/repositories/{repository_id.repo_id}/tags/{tag}": {
       "get": {
-        "operationId": "GetTag2",
+        "operationId": "VersioningService_GetTag2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1228,7 +1228,7 @@
         ]
       },
       "delete": {
-        "operationId": "DeleteTag2",
+        "operationId": "VersioningService_DeleteTag2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1276,7 +1276,7 @@
       },
       "put": {
         "summary": "Can't update a tag. If someone tries to set one that exists, we should error.",
-        "operationId": "SetTag2",
+        "operationId": "VersioningService_SetTag2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1321,7 +1321,7 @@
     },
     "/versioning/workspaces/{id.named_id.workspace_name}/repositories": {
       "post": {
-        "operationId": "CreateRepository",
+        "operationId": "VersioningService_CreateRepository",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1359,7 +1359,7 @@
     },
     "/versioning/workspaces/{id.named_id.workspace_name}/repositories/{id.named_id.name}": {
       "get": {
-        "operationId": "GetRepository",
+        "operationId": "VersioningService_GetRepository",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1400,7 +1400,7 @@
         ]
       },
       "put": {
-        "operationId": "UpdateRepository",
+        "operationId": "VersioningService_UpdateRepository",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1444,7 +1444,7 @@
     },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}": {
       "delete": {
-        "operationId": "DeleteRepository",
+        "operationId": "VersioningService_DeleteRepository",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1488,7 +1488,7 @@
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches": {
       "get": {
         "summary": "CRUD for Branches",
-        "operationId": "ListBranches",
+        "operationId": "VersioningService_ListBranches",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1531,7 +1531,7 @@
     },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}": {
       "get": {
-        "operationId": "GetBranch",
+        "operationId": "VersioningService_GetBranch",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1578,7 +1578,7 @@
         ]
       },
       "delete": {
-        "operationId": "DeleteBranch",
+        "operationId": "VersioningService_DeleteBranch",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1626,7 +1626,7 @@
       },
       "put": {
         "summary": "Unlike tags, branches can be updated. The API must verify that the new commit is a child of the current branch.",
-        "operationId": "SetBranch",
+        "operationId": "VersioningService_SetBranch",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1676,7 +1676,7 @@
     },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/log": {
       "get": {
-        "operationId": "ListCommitsLog",
+        "operationId": "VersioningService_ListCommitsLog",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1733,7 +1733,7 @@
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits": {
       "get": {
         "summary": "CRUD for commits",
-        "operationId": "ListCommits",
+        "operationId": "VersioningService_ListCommits",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1800,7 +1800,7 @@
         ]
       },
       "post": {
-        "operationId": "CreateCommit",
+        "operationId": "VersioningService_CreateCommit",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1844,7 +1844,7 @@
     },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}": {
       "get": {
-        "operationId": "GetCommit",
+        "operationId": "VersioningService_GetCommit",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1891,7 +1891,7 @@
         ]
       },
       "delete": {
-        "operationId": "DeleteCommit",
+        "operationId": "VersioningService_DeleteCommit",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1941,7 +1941,7 @@
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/blobs": {
       "get": {
         "summary": "Getting blobs and folders in a commit",
-        "operationId": "ListCommitBlobs",
+        "operationId": "VersioningService_ListCommitBlobs",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2002,7 +2002,7 @@
     },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/getUrlForBlobVersioned": {
       "post": {
-        "operationId": "getUrlForBlobVersioned",
+        "operationId": "VersioningService_getUrlForBlobVersioned",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2052,7 +2052,7 @@
     },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/log": {
       "get": {
-        "operationId": "ListCommitsLog3",
+        "operationId": "VersioningService_ListCommitsLog3",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2108,7 +2108,7 @@
     },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path": {
       "get": {
-        "operationId": "GetCommitComponent",
+        "operationId": "VersioningService_GetCommitComponent",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2168,7 +2168,7 @@
     },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_to_revert_sha}/revert": {
       "post": {
-        "operationId": "RevertRepositoryCommits",
+        "operationId": "VersioningService_RevertRepositoryCommits",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2219,7 +2219,7 @@
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/diff": {
       "get": {
         "summary": "Git-like operations",
-        "operationId": "ComputeRepositoryDiff",
+        "operationId": "VersioningService_ComputeRepositoryDiff",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2295,7 +2295,7 @@
     },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/merge": {
       "post": {
-        "operationId": "MergeRepositoryCommits",
+        "operationId": "VersioningService_MergeRepositoryCommits",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2340,7 +2340,7 @@
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags": {
       "get": {
         "summary": "CRUD for tags",
-        "operationId": "ListTags",
+        "operationId": "VersioningService_ListTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2383,7 +2383,7 @@
     },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags/{tag}": {
       "get": {
-        "operationId": "GetTag",
+        "operationId": "VersioningService_GetTag",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2430,7 +2430,7 @@
         ]
       },
       "delete": {
-        "operationId": "DeleteTag",
+        "operationId": "VersioningService_DeleteTag",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2478,7 +2478,7 @@
       },
       "put": {
         "summary": "Can't update a tag. If someone tries to set one that exists, we should error.",
-        "operationId": "SetTag",
+        "operationId": "VersioningService_SetTag",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2528,7 +2528,7 @@
     },
     "/versioning/workspaces/{workspace_name}/findRepositories": {
       "post": {
-        "operationId": "findRepositories",
+        "operationId": "VersioningService_findRepositories",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2566,7 +2566,7 @@
     },
     "/versioning/workspaces/{workspace_name}/findRepositoriesBlobs": {
       "post": {
-        "operationId": "findRepositoriesBlobs",
+        "operationId": "VersioningService_findRepositoriesBlobs",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2605,7 +2605,7 @@
     "/versioning/workspaces/{workspace_name}/repositories": {
       "get": {
         "summary": "CRUD for repositories",
-        "operationId": "ListRepositories",
+        "operationId": "VersioningService_ListRepositories",
         "responses": {
           "200": {
             "description": "A successful response.",

@@ -49,6 +49,11 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.registered_model_id
 
+    @property
+    def is_archived(self):
+        self._refresh_cache()
+        return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
+
     @classmethod
     def _generate_default_name(cls):
         return "ModelVersion {}".format(_utils.generate_default_name())
@@ -353,6 +358,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         """
         # should be same as ExperimentRun.download_docker_context()
         raise NotImplementedError
+
+    def archive(self):
+        if self.is_archived:
+            raise RuntimeError("the version has already been archived")
+
+        self._clear_cache()
+        self._refresh_cache()
+        self._msg.archived = _CommonCommonService.TernaryEnum.TRUE
+        self._update()
 
     def _update(self):
         response = self._conn.make_proto_request("PUT", "/api/v1/registry/{}/versions/{}".format(self._msg.registered_model_id, self.id),
