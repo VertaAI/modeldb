@@ -2,19 +2,29 @@
 
 from __future__ import print_function
 
-from .._internal_utils._utils import NoneProtoResponse
-from .._tracking.entity import _ModelDBEntity
+import os
+import time
+
+import requests
 
 from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
-from .._internal_utils import _utils, _artifact_utils, importer
-
-from ..external import six
 import requests
 import time
 import os
 import pickle
+from ..external import six
+
+from .._internal_utils import (
+    _utils,
+    _artifact_utils,
+    importer
+)
+from .._internal_utils._utils import NoneProtoResponse
+
+from .._tracking.entity import _ModelDBEntity
+from ..environment import _Environment
 
 
 class RegisteredModelVersion(_ModelDBEntity):
@@ -28,6 +38,11 @@ class RegisteredModelVersion(_ModelDBEntity):
     def name(self):
         self._refresh_cache()
         return self._msg.version
+
+    @property
+    def has_environment(self):
+        self._refresh_cache()
+        return self._msg.environment.HasField("python") or self._msg.environment.HasField("docker")
 
     @property
     def has_model(self):
@@ -197,12 +212,18 @@ class RegisteredModelVersion(_ModelDBEntity):
         del self._msg.artifacts[ind]
         self._update()
 
-    def set_environment(self, env):
-        # Env must be an EnvironmentBlob. Let's re-use the functionality from there
-        raise NotImplementedError
+    def log_environment(self, env):
+        if not isinstance(env, _Environment):
+            raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
+
+        self._refresh_cache()
+        self._msg.environment.CopyFrom(env._msg)
+        self._update()
 
     def del_environment(self):
-        raise NotImplementedError
+        self._refresh_cache()
+        self._msg.ClearField("environment")
+        self._update()
 
     def _get_url_for_artifact(self, key, method, artifact_type, part_num=0):
         if method.upper() not in ("GET", "PUT"):
