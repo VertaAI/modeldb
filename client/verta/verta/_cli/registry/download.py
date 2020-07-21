@@ -24,7 +24,7 @@ def download():
 @click.argument("model_name", nargs=1, required=True)
 @click.argument("version_name", nargs=1, required=True)
 @click.option("--output", "-o", required=True, help="Filepath to write to")
-def create_model_version(model_name, version_name, output):
+def download_docker_context(model_name, version_name, output):
     """Create a new registeredmodelversion entry.
     """
     raise NotImplementedError
