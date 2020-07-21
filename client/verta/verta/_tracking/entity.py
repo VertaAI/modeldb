@@ -54,6 +54,11 @@ class _ModelDBEntity(object):
             self._cache_time = now
             self._update_cache()
 
+    def _fetch_with_no_cache(self):
+        self._msg = self._get_proto_by_id(self._conn, self.id)
+        self._cache_time = None
+        self._update_cache()
+
     def _update_cache(self):
         pass
 

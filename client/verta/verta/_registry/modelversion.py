@@ -103,8 +103,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         return model_version
 
     def log_model(self, model, overwrite=False):
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
 
@@ -132,8 +131,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         if key == "model":
             raise ValueError("The key `model` is reserved for model. Please use `set_model`")
 
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         same_key_ind = -1
 
         for i in range(len(self._msg.artifacts)):
@@ -167,8 +165,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def del_artifact(self, key):
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
 
         ind = -1
         for i in range(len(self._msg.artifacts)):
@@ -187,14 +184,12 @@ class RegisteredModelVersion(_ModelDBEntity):
         if not isinstance(env, _Environment):
             raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
 
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         self._msg.environment.CopyFrom(env._msg)
         self._update()
 
     def del_environment(self):
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         self._msg.ClearField("environment")
         self._update()
 
@@ -326,8 +321,7 @@ class RegisteredModelVersion(_ModelDBEntity):
     def add_label(self, label):
         if label is None:
             raise ValueError("label is not specified")
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         if label not in self._msg.labels:
             self._msg.labels.append(label)
             self._update()
@@ -335,14 +329,12 @@ class RegisteredModelVersion(_ModelDBEntity):
     def del_label(self, label):
         if label is None:
             raise ValueError("label is not specified")
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         if label in self._msg.labels:
             self._msg.labels.remove(label)
             self._update()
 
     def get_labels(self):
-        self._clear_cache()
         self._refresh_cache()
         return self._msg.labels
 
@@ -350,8 +342,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         if self.is_archived:
             raise RuntimeError("the version has already been archived")
 
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         self._msg.archived = _CommonCommonService.TernaryEnum.TRUE
         self._update()
 
