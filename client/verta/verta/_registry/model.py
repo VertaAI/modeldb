@@ -39,6 +39,23 @@ class RegisteredModel(_ModelDBEntity):
                                                        lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
                                                        lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=labels, date_created=time_created))
 
+    def create_version_from_run(self, run_id, name):
+        """
+        Creates a model registry entry based on an Experiment Run.
+
+        Parameters
+        ----------
+        run_id : str
+        name : str
+
+        Returns
+        -------
+        :class:`~verta._registry.modelversion.RegisteredModelVersion`
+
+        """
+        raise NotImplementedError
+        # return RegisteredModelVersion._create(self._conn, self._conf, ctx, name, experiment_run_id=run_id)
+
     def get_version(self, name=None, id=None):
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
