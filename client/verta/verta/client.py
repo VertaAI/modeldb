@@ -848,6 +848,9 @@ class Client(object):
         else:
             self._ctx.registered_model = RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
 
+        if self._ctx.registered_model is None:
+            raise ValueError("Registered model not found")
+
         return self._ctx.registered_model
 
     def set_registered_model(self, *args, **kwargs):
