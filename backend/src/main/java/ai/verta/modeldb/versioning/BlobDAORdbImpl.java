@@ -165,7 +165,8 @@ public class BlobDAORdbImpl implements BlobDAO {
       repositoryEntity =
           repositoryDAO.getProtectedRepositoryById(repositoryIdentification.build(), true);
       addUpdateBlobAttributes(commitDAO, repositoryEntity, commitHash, attributes, addAttribute);
-      return convertToDatasetVersion(metadataDAO, repositoryEntity, commitHash);
+      return convertToDatasetVersion(
+          repositoryDAO, metadataDAO, repositoryEntity, commitHash, true);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addUpdateDatasetVersionAttributes(
@@ -254,7 +255,8 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       deleteBlobAttributes(
           commitDAO, repositoryEntity, commitHash, attributesKeys, location, deleteAll);
-      return convertToDatasetVersion(metadataDAO, repositoryEntity, commitHash);
+      return convertToDatasetVersion(
+          repositoryDAO, metadataDAO, repositoryEntity, commitHash, true);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteDatasetVersionAttributes(
@@ -512,9 +514,18 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public DatasetVersion convertToDatasetVersion(
-      MetadataDAO metadataDAO, RepositoryEntity repositoryEntity, String commitHash)
+      RepositoryDAO repositoryDAO,
+      MetadataDAO metadataDAO,
+      RepositoryEntity repositoryEntity,
+      String commitHash,
+      boolean checkWrite)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      if (repositoryEntity == null) {
+        repositoryEntity =
+            VersioningUtils.getDatasetRepositoryEntity(
+                session, repositoryDAO, null, commitHash, checkWrite);
+      }
       if (!repositoryEntity.isDataset()) {
         throw new ModelDBException(
             "Repository should be created from Dataset to add Dataset Version to it",
@@ -599,7 +610,8 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return convertToDatasetVersion(metadataDAO, repositoryEntity, commitHash);
+        return convertToDatasetVersion(
+            repositoryDAO, metadataDAO, repositoryEntity, commitHash, checkWrite);
       } else {
         throw ex;
       }

@@ -682,7 +682,8 @@ public class CommitDAORdbImpl implements CommitDAO {
               session, repositoryDAO, datasetId, datasetVersionId, true);
       addDeleteCommitLabels(
           repositoryEntity, datasetVersionId, metadataDAO, addTags, tagsList, deleteAll);
-      return blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, datasetVersionId);
+      return blobDAO.convertToDatasetVersion(
+          repositoryDAO, metadataDAO, repositoryEntity, datasetVersionId, true);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addDeleteDatasetVersionTags(
@@ -1283,7 +1284,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       commitEntity.setDate_updated(new Date().getTime());
       session.update(commitEntity);
       session.getTransaction().commit();
-      return blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, datasetVersionId);
+      return blobDAO.convertToDatasetVersion(
+          repositoryDAO, metadataDAO, repositoryEntity, datasetVersionId, true);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateDatasetVersionDescription(
@@ -1302,10 +1304,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       String datasetVersionId)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity =
-          VersioningUtils.getDatasetRepositoryEntity(
-              session, repositoryDAO, null, datasetVersionId, false);
-      return blobDAO.convertToDatasetVersion(metadataDAO, repositoryEntity, datasetVersionId);
+      return blobDAO.convertToDatasetVersion(
+          repositoryDAO, metadataDAO, null, datasetVersionId, false);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getDatasetVersionById(repositoryDAO, blobDAO, metadataDAO, datasetVersionId);
