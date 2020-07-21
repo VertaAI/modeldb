@@ -103,6 +103,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         return model_version
 
     def log_model(self, model, overwrite=False):
+        self._clear_cache()
         self._refresh_cache()
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
@@ -131,6 +132,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         if key == "model":
             raise ValueError("The key `model` is reserved for model. Please use `set_model`")
 
+        self._clear_cache()
         self._refresh_cache()
         same_key_ind = -1
 
@@ -165,6 +167,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def del_artifact(self, key):
+        self._clear_cache()
         self._refresh_cache()
 
         ind = -1
@@ -184,11 +187,13 @@ class RegisteredModelVersion(_ModelDBEntity):
         if not isinstance(env, _Environment):
             raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
 
+        self._clear_cache()
         self._refresh_cache()
         self._msg.environment.CopyFrom(env._msg)
         self._update()
 
     def del_environment(self):
+        self._clear_cache()
         self._refresh_cache()
         self._msg.ClearField("environment")
         self._update()
