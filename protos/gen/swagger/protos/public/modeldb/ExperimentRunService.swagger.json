@@ -399,7 +399,7 @@
     },
     "/experiment-run/deleteHyperparameters": {
       "delete": {
-        "operationId": "deleteHyperparameters",
+        "operationId": "ExperimentRunService_deleteHyperparameters",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -431,7 +431,7 @@
     },
     "/experiment-run/deleteMetrics": {
       "delete": {
-        "operationId": "deleteMetrics",
+        "operationId": "ExperimentRunService_deleteMetrics",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -463,7 +463,7 @@
     },
     "/experiment-run/deleteObservations": {
       "delete": {
-        "operationId": "deleteObservations",
+        "operationId": "ExperimentRunService_deleteObservations",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -2678,7 +2678,7 @@
         "delete_all": {
           "type": "boolean",
           "format": "boolean",
-          "title": "if true delete all hyper patrameters corresponding to the run, ignoring hyperparameter_keys"
+          "title": "if true delete all hyper parameters corresponding to the run, ignoring hyperparameter_keys"
         }
       }
     },
