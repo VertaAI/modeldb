@@ -34,7 +34,7 @@ def update_model_version(model_name, version_name, label, model, artifact, works
     """
     client = Client()
 
-    if artifact is not None and len(artifact) < len(set(artifact)):
+    if artifact is not None and len(artifact) > len(set(artifact)):
         raise click.BadParameter("cannot have duplicate artifact keys")
 
     try:
