@@ -12,6 +12,7 @@ import routes from 'shared/routes';
 
 import DatasetBulkDeletion from './DatasetBulkDeletion/DatasetBulkDeletion';
 import styles from './DatasetWidget.module.css';
+import WithCopyTextIcon from 'shared/view/elements/WithCopyTextIcon/WithCopyTextIcon';
 
 interface ILocalProps {
   dataset: Dataset;
@@ -47,7 +48,12 @@ class DatasetWidget extends React.PureComponent<AllProps> {
                   <div className={styles.content}>
                     <div className={styles.title_block}>
                       <div className={styles.title} data-test="dataset-name">
-                        {dataset.name}
+                        <WithCopyTextIcon
+                          text={dataset.name}
+                          onClick={this.preventRedirect}
+                        >
+                          {dataset.name}
+                        </WithCopyTextIcon>
                       </div>
                       <div className={styles.description}>
                         <span onClick={this.preventRedirect}>

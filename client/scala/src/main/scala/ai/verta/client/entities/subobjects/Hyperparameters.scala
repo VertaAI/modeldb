@@ -19,7 +19,7 @@ class Hyperparameters(clientSet: ClientSet, ec: ExecutionContext, run: Experimen
   override def get(key: String): Option[ValueType] = seq.get(key)
 
   override def +=(kv: (String, ValueType)): Hyperparameters.this.type = {
-    clientSet.experimentRunService.logHyperparameter(ModeldbLogHyperparameter(
+    clientSet.experimentRunService.ExperimentRunService_logHyperparameter(ModeldbLogHyperparameter(
       id = run.run.id,
       hyperparameter = Some(CommonKeyValue(
         key = Some(kv._1),
@@ -38,7 +38,7 @@ class Hyperparameters(clientSet: ClientSet, ec: ExecutionContext, run: Experimen
 
   override def seq: mutable.Map[String, ValueType] =
     mutable.Map(
-      clientSet.experimentRunService.getHyperparameters(run.run.id)
+      clientSet.experimentRunService.ExperimentRunService_getHyperparameters(run.run.id)
         .flatMap(_.hyperparameters match {
           case Some(x) => Success(x)
           case None => Success(Nil)

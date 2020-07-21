@@ -7,6 +7,8 @@ from verta._cli import cli
 from verta._registry.model import RegisteredModel
 
 
+pytest.skip("registry not yet available in backend", allow_module_level=True)
+
 
 class TestCreate:
     def test_create_model(self):

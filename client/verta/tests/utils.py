@@ -130,7 +130,7 @@ def delete_repository(id_, conn):
     response = requests.delete(request_url, headers=conn.auth)
     _utils.raise_for_http_error(response)
 
-def delete_registered_model(id, conn):
-    request_url = "{}://{}/api/v1/registry/{}".format(conn.scheme, conn.socket, id)
+def delete_registered_model(id_, conn):
+    request_url = "{}://{}/api/v1/registry/{}".format(conn.scheme, conn.socket, id_)
     response = requests.delete(request_url, headers=conn.auth)
     _utils.raise_for_http_error(response)

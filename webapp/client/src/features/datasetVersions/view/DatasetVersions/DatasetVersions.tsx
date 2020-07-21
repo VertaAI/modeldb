@@ -5,8 +5,6 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import CompareClickAction from 'features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
-import ComparedEntitesManager from 'features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
 import { selectCurrentContextFilters } from 'features/filter';
 import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
 import { formatBytes } from 'shared/utils/mapperConverters/DataSizeConverted';
@@ -40,6 +38,8 @@ import styles from './DatasetVersions.module.css';
 import DeletingDatasetVersionsManager from './DatasetVersionsTable/BulkDeletion/Manager/Manager';
 import ToggleAllDatasetVersionsForBulkDeletion from './DatasetVersionsTable/BulkDeletion/ToggleAllRows/ToggleAllRows';
 import ToggleDatasetVersionForBulkDeletion from './DatasetVersionsTable/BulkDeletion/ToggleRow/ToggleRow';
+import ComparedEntitesManager from 'features/compareDatasets/view/ComparedEntitesManager/ComparedEntitesManager';
+import CompareClickAction from 'features/compareDatasets/view/CompareClickAction/CompareClickAction';
 
 const mapStateToProps = (state: IApplicationState) => {
   return {

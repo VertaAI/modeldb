@@ -64,6 +64,30 @@ type Commits struct {
 	Commits []*models.Commit `json:"commits"`
 }
 
+type DatasetVersions struct {
+	DatasetVersions []*modeldb.DatasetVersion `json:"datasetVersions"`
+	Total           int                       `json:"total"`
+}
+
+type DatasetVersionsQuery struct {
+	Pagination       *PaginationQuery   `json:"pagination"`
+	StringPredicates []*StringPredicate `json:"stringPredicates"`
+	FloatPredicates  []*FloatPredicate  `json:"floatPredicates"`
+	Ids              []string           `json:"ids"`
+}
+
+type Datasets struct {
+	Datasets []*modeldb.Dataset `json:"datasets"`
+	Total    int                `json:"total"`
+}
+
+type DatasetsQuery struct {
+	Pagination       *PaginationQuery   `json:"pagination"`
+	StringPredicates []*StringPredicate `json:"stringPredicates"`
+	FloatPredicates  []*FloatPredicate  `json:"floatPredicates"`
+	Ids              []string           `json:"ids"`
+}
+
 type ExperimentRuns struct {
 	Runs       []*modeldb.ExperimentRun `json:"runs"`
 	Next       *string                  `json:"next"`
@@ -250,6 +274,47 @@ func (e *ArtifactType) UnmarshalGQL(v interface{}) error {
 }
 
 func (e ArtifactType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type DatasetVisibility string
+
+const (
+	DatasetVisibilityPrivate DatasetVisibility = "PRIVATE"
+	DatasetVisibilityPublic  DatasetVisibility = "PUBLIC"
+)
+
+var AllDatasetVisibility = []DatasetVisibility{
+	DatasetVisibilityPrivate,
+	DatasetVisibilityPublic,
+}
+
+func (e DatasetVisibility) IsValid() bool {
+	switch e {
+	case DatasetVisibilityPrivate, DatasetVisibilityPublic:
+		return true
+	}
+	return false
+}
+
+func (e DatasetVisibility) String() string {
+	return string(e)
+}
+
+func (e *DatasetVisibility) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = DatasetVisibility(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid DatasetVisibility", str)
+	}
+	return nil
+}
+
+func (e DatasetVisibility) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

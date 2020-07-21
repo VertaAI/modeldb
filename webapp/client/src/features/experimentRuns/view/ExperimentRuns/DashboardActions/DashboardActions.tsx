@@ -3,13 +3,11 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import ComparedEntitesManager from 'features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
+import ComparedEntitesManager from 'features/compareModels/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
 import { ExperimentRunsTableConfig } from 'features/experimentRunsTableConfig';
 import Fai from 'shared/view/elements/Fai/Fai';
 import { Icon } from 'shared/view/elements/Icon/Icon';
 import ShareLink from 'shared/view/elements/ShareLink/ShareLink';
-import routes from 'shared/routes';
-import { ComparedEntityIds } from 'features/compareEntities/store';
 import { resetExperimentRunsSettings } from 'features/experimentRuns/store';
 
 import styles from './DashboardActions.module.css';
@@ -38,10 +36,7 @@ class DashboardActions extends React.PureComponent<AllProps> {
     return (
       <div className={styles.root}>
         <div className={styles.compared_models_manager}>
-          <ComparedEntitesManager
-            containerId={projectId}
-            getCompareUrl={this.getCompareUrl}
-          />
+          <ComparedEntitesManager projectId={projectId} />
         </div>
         <div className={styles.dashboard_settings_container}>
           {isEnableBulkDeletionMenuToggler && (
@@ -92,17 +87,6 @@ class DashboardActions extends React.PureComponent<AllProps> {
       isBulkMenuSelected: !prevSelection,
     });
     this.props.onToggleShowingBulkDeletion();
-  }
-
-  @bind
-  private getCompareUrl([modelRecordId1, modelRecordId2]: Required<
-    ComparedEntityIds
-  >) {
-    return routes.compareModels.getRedirectPathWithCurrentWorkspace({
-      projectId: this.props.projectId,
-      modelRecordId1,
-      modelRecordId2,
-    });
   }
 
   @bind
