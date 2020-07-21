@@ -165,6 +165,30 @@ class ExperimentRunServiceApi(client: HttpClient, val basePath: String = "/v1") 
 
   def ExperimentRunService_deleteExperimentRuns(body: ModeldbDeleteExperimentRuns)(implicit ec: ExecutionContext): Try[ModeldbDeleteExperimentRunsResponse] = Await.result(ExperimentRunService_deleteExperimentRunsAsync(body), Duration.Inf)
 
+  def ExperimentRunService_deleteHyperparametersAsync(body: ModeldbDeleteHyperparameters)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteHyperparametersResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbDeleteHyperparameters, ModeldbDeleteHyperparametersResponse]("DELETE", basePath + s"/experiment-run/deleteHyperparameters", __query.toMap, body, ModeldbDeleteHyperparametersResponse.fromJson)
+  }
+
+  def ExperimentRunService_deleteHyperparameters(body: ModeldbDeleteHyperparameters)(implicit ec: ExecutionContext): Try[ModeldbDeleteHyperparametersResponse] = Await.result(ExperimentRunService_deleteHyperparametersAsync(body), Duration.Inf)
+
+  def ExperimentRunService_deleteMetricsAsync(body: ModeldbDeleteMetrics)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteMetricsResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbDeleteMetrics, ModeldbDeleteMetricsResponse]("DELETE", basePath + s"/experiment-run/deleteMetrics", __query.toMap, body, ModeldbDeleteMetricsResponse.fromJson)
+  }
+
+  def ExperimentRunService_deleteMetrics(body: ModeldbDeleteMetrics)(implicit ec: ExecutionContext): Try[ModeldbDeleteMetricsResponse] = Await.result(ExperimentRunService_deleteMetricsAsync(body), Duration.Inf)
+
+  def ExperimentRunService_deleteObservationsAsync(body: ModeldbDeleteObservations)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteObservationsResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbDeleteObservations, ModeldbDeleteObservationsResponse]("DELETE", basePath + s"/experiment-run/deleteObservations", __query.toMap, body, ModeldbDeleteObservationsResponse.fromJson)
+  }
+
+  def ExperimentRunService_deleteObservations(body: ModeldbDeleteObservations)(implicit ec: ExecutionContext): Try[ModeldbDeleteObservationsResponse] = Await.result(ExperimentRunService_deleteObservationsAsync(body), Duration.Inf)
+
   def ExperimentRunService_findExperimentRunsAsync(body: ModeldbFindExperimentRuns)(implicit ec: ExecutionContext): Future[Try[ModeldbFindExperimentRunsResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
