@@ -47,6 +47,19 @@ def update_model_version(model_name, version_name, label, model, artifact, works
     if model_version is None:
         raise click.BadParameter("version {} not found".format(version_name))
 
+    if artifact is not None:
+        artifact_keys = model_version.get_artifact_keys()
+
+        for (key, _) in artifact:
+            if key == "model":
+                raise click.BadParameter("the key \"model\" is reserved for model")
+
+            if key in artifact_keys:
+                raise click.BadParameter("key \"{}\" already exists".format(key))
+
+        for (key, path) in artifact:
+            model_version.log_artifact(key, path, True)
+
     if label is not None:
         for l in label:
             model_version.add_label(l)
@@ -54,12 +67,5 @@ def update_model_version(model_name, version_name, label, model, artifact, works
     if model is not None:
         model_version.log_model(model, True)
 
-    if artifact is not None:
-        for (key, _) in artifact:
-            if key == "model":
-                raise click.BadParameter("the key \"model\" is reserved for model")
-
-        for (key, path) in artifact:
-            model_version.log_artifact(key, path, True)
 
 
