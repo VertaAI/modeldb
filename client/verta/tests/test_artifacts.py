@@ -16,6 +16,7 @@ from verta._internal_utils import _utils
 
 from . import utils
 
+
 class TestUtils:
     def test_calc_sha256(self):
         FILE_SIZE = 6*10**6  # 6 MB
