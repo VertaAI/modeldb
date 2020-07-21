@@ -341,6 +341,24 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.labels
 
+    def download_docker_context(self, download_to_path):
+        """
+        Downloads this Model Version's Docker context ``tgz``.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download Docker context to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where Docker context was downloaded to. Matches `download_to_path`.
+
+        """
+        # should be same as ExperimentRun.download_docker_context()
+        raise NotImplementedError
+
     def archive(self):
         if self.is_archived:
             raise RuntimeError("the version has already been archived")
