@@ -23,17 +23,17 @@ class Client(conn: ClientConnection) {
   def getOrCreateProject(name: String, workspace: String = "")(implicit ec: ExecutionContext) = {
     GetOrCreateEntity.getOrCreate[Project](
       get = () => {
-        clientSet.projectService.getProjectByName(name = Some(name), workspace_name = Some(workspace))
+        clientSet.projectService.ProjectService_getProjectByName(name = Some(name), workspace_name = Some(workspace))
           .map(r => new Project(clientSet, r.project_by_user.get))
       },
       create = () => {
-        clientSet.projectService.createProject(ModeldbCreateProject(name = Some(name), workspace_name = Some(workspace)))
+        clientSet.projectService.ProjectService_createProject(ModeldbCreateProject(name = Some(name), workspace_name = Some(workspace)))
           .map(r => new Project(clientSet, r.project.get))
       })
   }
 
   def getProject(id: String)(implicit ec: ExecutionContext) = {
-    clientSet.projectService.getProjectById(Some(id))
+    clientSet.projectService.ProjectService_getProjectById(Some(id))
       .map(r => new Project(clientSet, r.project.get))
   }
 
@@ -42,12 +42,12 @@ class Client(conn: ClientConnection) {
    *  @return whether the delete attempt suceeds
    */
   def deleteProject(id: String)(implicit ec: ExecutionContext) = {
-    clientSet.projectService.deleteProject(ModeldbDeleteProject(Some(id)))
+    clientSet.projectService.ProjectService_deleteProject(ModeldbDeleteProject(Some(id)))
       .map(_ => ())
   }
 
   def getExperiment(id: String)(implicit ec: ExecutionContext) = {
-    clientSet.experimentService.getExperimentById(Some(id))
+    clientSet.experimentService.ExperimentService_getExperimentById(Some(id))
       .flatMap(r => Try[Experiment]({
         getProject(r.experiment.get.project_id.get) match {
           case Success(proj) => new Experiment(clientSet, proj, r.experiment.get)
@@ -57,7 +57,7 @@ class Client(conn: ClientConnection) {
   }
 
   def getExperimentRun(id: String)(implicit ec: ExecutionContext) = {
-    clientSet.experimentRunService.getExperimentRunById(Some(id))
+    clientSet.experimentRunService.ExperimentRunService_getExperimentRunById(Some(id))
       .flatMap(r => Try[ExperimentRun]({
         getExperiment(r.experiment_run.get.experiment_id.get) match {
           case Success(expt) => new ExperimentRun(clientSet, expt, r.experiment_run.get)
@@ -73,13 +73,13 @@ class Client(conn: ClientConnection) {
   def getOrCreateRepository(name: String, workspace: Option[String] = None)(implicit ec: ExecutionContext) = {
     GetOrCreateEntity.getOrCreate[Repository](
       get = () => {
-        clientSet.versioningService.GetRepository(
+        clientSet.versioningService.VersioningService_GetRepository(
           id_named_id_workspace_name = workspace.getOrElse(getPersonalWorkspace()),
           id_named_id_name = name
         ).map(r => new Repository(clientSet, r.repository.get))
       },
       create = () => {
-        clientSet.versioningService.CreateRepository(
+        clientSet.versioningService.VersioningService_CreateRepository(
           id_named_id_workspace_name = workspace.getOrElse(getPersonalWorkspace()),
           body = VersioningRepository(
             name = Some(name),
@@ -95,7 +95,7 @@ class Client(conn: ClientConnection) {
    *  @return the repository
    */
   def getRepository(id: BigInt)(implicit ec: ExecutionContext): Try[Repository] = {
-    clientSet.versioningService.GetRepository2(
+    clientSet.versioningService.VersioningService_GetRepository2(
       id_repo_id = id
     ).map(r => new Repository(clientSet, r.repository.get))
   }
@@ -105,7 +105,7 @@ class Client(conn: ClientConnection) {
    *  @param id id of the repository
    */
   def deleteRepository(id: BigInt)(implicit ec: ExecutionContext): Try[Unit] = {
-    clientSet.versioningService.DeleteRepository2(
+    clientSet.versioningService.VersioningService_DeleteRepository2(
       repository_id_repo_id = id
     ).map(_ => ())
   }
