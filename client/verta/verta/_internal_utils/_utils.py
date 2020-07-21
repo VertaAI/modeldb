@@ -451,10 +451,8 @@ def raise_for_http_error(response):
         curr_time = timestamp_to_str(now(), utc=True)
         time_str = " at {} UTC".format(curr_time)
 
-        try:
-            reason = body_to_json(response)['message']
-        except (ValueError,  # not JSON response
-                KeyError):  # no 'message' from back end
+        reason = response.text.strip()
+        if not reason:
             e.args = (e.args[0] + time_str,) + e.args[1:]  # attach time to error message
             six.raise_from(e, None)  # use default reason
         else:
