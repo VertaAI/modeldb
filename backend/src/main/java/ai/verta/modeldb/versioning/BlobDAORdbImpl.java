@@ -1379,6 +1379,16 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
   }
 
+  /**
+   * select Component matching the path passed in pathDatasetComponentBlobPath. returns a map
+   * containing with keys 'internalPath' and 'computeSha' and values populated from the details of
+   * the Component
+   *
+   * @param blob : commit blob
+   * @param pathDatasetComponentBlobPath : pathDatasetComponentBlobPath
+   * @return
+   * @throws ModelDBException
+   */
   private Map<String, String> getDatasetComponentBlob(
       Blob blob, String pathDatasetComponentBlobPath) throws ModelDBException {
     if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
