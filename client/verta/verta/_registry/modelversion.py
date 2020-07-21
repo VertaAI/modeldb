@@ -361,3 +361,5 @@ class RegisteredModelVersion(_ModelDBEntity):
         Message = _ModelVersionService.SetModelVersion
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
+        self._clear_cache()
+
