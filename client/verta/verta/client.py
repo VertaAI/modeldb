@@ -712,7 +712,7 @@ class Client(object):
         if name is not None:
             if not isinstance(name, six.string_types):
                 raise TypeError("`name` must be str, not {}".format(type(name)))
-            predicates.append("name in \"{}\"".format(name))
+            predicates.append("name ~= \"{}\"".format(name))
         if predicates:
             datasets = datasets.find(predicates)
 
@@ -770,7 +770,7 @@ class Client(object):
         return self.get_or_create_repository(*args, **kwargs)
     # set aliases for get-or-create functions for API compatibility
 
-    def get_or_create_registered_model(self, name=None, desc=None, labels=None, attrs=None, workspace=None, public_within_org=None, id=None):
+    def get_or_create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, id=None):
         """
         Attaches a registered_model to this Client.
 
@@ -786,8 +786,6 @@ class Client(object):
             Description of the registered_model.
         labels: list of str, optional
             Labels of the registered_model.
-        attrs : dict of str to {None, bool, float, int, str}, optional
-            Attributes of the registered_model.
         workspace : str, optional
             Workspace under which the registered_model with name `name` exists. If not provided, the current
             user's personal workspace will be used.
@@ -826,7 +824,7 @@ class Client(object):
         else:
             self._ctx.registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
                                                                                 lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                                                lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=labels, attrs=attrs, public_within_org=public_within_org))
+                                                                                lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=labels, public_within_org=public_within_org))
 
         return self._ctx.registered_model
 
@@ -856,9 +854,17 @@ class Client(object):
         return self.get_or_create_registered_model(*args, **kwargs)
 
     def get_registered_model_version(self, name=None, id=None):
-        if self._ctx.registered_model is None:
-            raise RuntimeError("Registered model is not set. Please call `client.set_registered_model()`")
-        return self._ctx.registered_model.get_version(name, id)
+        if id is not None:
+            # TODO: Support registered_model in populate
+            model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
+            self.get_registered_model(id=model_version.registered_model_id)
+        else:
+            if self._ctx.registered_model is None:
+                self.set_registered_model()
+
+            model_version = RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.registered_model.id)
+
+        return model_version
 
     @property
     def registered_models(self):

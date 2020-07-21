@@ -9,12 +9,6 @@ import (
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
 )
 
-type networkCommitColorResolver struct{ *Resolver }
-
-func (r *networkCommitColorResolver) Commit(ctx context.Context, obj *models.NetworkCommitColor) (*models.Commit, error) {
-	return obj.Commit, nil
-}
-
 type NetworkCommit struct {
 	SHA     string
 	Parents []string

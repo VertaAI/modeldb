@@ -4,18 +4,13 @@
 .root :global input {
   font-size: 14px;
   color: var(--main-color5);
-  height: 34px;
+  height: 32px;
   width: 100%;
   padding-left: 12px;
   padding-right: 12px;
   outline: none;
   border-radius: 2px;
-  border: 1px solid var(--fr-color5);
-}
-.root :global input:active,
-.root :global input:focus {
-  border-width: 1px;
-  border-color: var(--main-color2);
+  border: 1px solid #ebebeb;
 }
 
 .root :global .react-datepicker-popper {

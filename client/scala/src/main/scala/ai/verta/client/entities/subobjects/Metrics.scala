@@ -19,7 +19,7 @@ class Metrics(clientSet: ClientSet, ec: ExecutionContext, run: ExperimentRun) ex
   override def get(key: String): Option[ValueType] = seq.get(key)
 
   override def +=(kv: (String, ValueType)): Metrics.this.type = {
-    clientSet.experimentRunService.logMetric(ModeldbLogMetric(
+    clientSet.experimentRunService.ExperimentRunService_logMetric(ModeldbLogMetric(
       id = run.run.id,
       metric = Some(CommonKeyValue(
         key = Some(kv._1),
@@ -38,7 +38,7 @@ class Metrics(clientSet: ClientSet, ec: ExecutionContext, run: ExperimentRun) ex
 
   override def seq: mutable.Map[String, ValueType] =
     mutable.Map(
-      clientSet.experimentRunService.getMetrics(run.run.id)
+      clientSet.experimentRunService.ExperimentRunService_getMetrics(run.run.id)
         .flatMap(_.metrics match {
           case Some(x) => Success(x)
           case None => Success(Nil)
