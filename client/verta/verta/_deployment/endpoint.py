@@ -47,6 +47,15 @@ class Endpoint(object):
         raise NotImplementedError
 
     @classmethod
+    def _get_or_create_by_name(cls, conn, name, getter, creator):
+        obj = getter(name)
+        if obj is None:
+            obj = creator(name)
+        else:
+            print("got existing {}: {}".format(cls.__name__, name))
+        return obj
+
+    @classmethod
     def _get_by_path(cls, conn, conf, workspace, path):
         endpoint_json = cls._get_json_by_path(conn, workspace, path)
         if endpoint_json:
@@ -67,6 +76,14 @@ class Endpoint(object):
         raise NotImplementedError
         # TODO: check if isinstance(run, experimentrun.ExperimentRun)
         # TODO: check if isinstance(strategy, deployment._UpdateStrategy)
+
+        # TODO: POST "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages".format(scheme, socket, workspace, self.id)
+        #       to create a stage
+
+        # TODO: POST "{}://{}/api/v1/deployment/workspace/{}/builds".format(scheme, socket, workspace)
+        #       to create a build. _utils.make_request(..., `json={'run_id': run.id}`)
+
+        # TODO: PUT
 
     def get_status(self):
         raise NotImplementedError
