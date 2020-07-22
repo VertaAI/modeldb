@@ -83,14 +83,14 @@ class Endpoint(object):
 
     def get_status(self):
         # Update stages with new build
-        url = "{}://{}/api/v1/deployment​/workspace​/{}​/endpoints​/{}​/stages​/{}".format(
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
             self._conn.scheme,
             self._conn.socket,
             self.workspace,
             self.id,
             self._get_or_create_active_stage()
         )
-        response = _utils.make_request("PUT", url, self._conn, json={})
+        response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
         return response.json()
 
