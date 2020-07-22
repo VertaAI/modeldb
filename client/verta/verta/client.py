@@ -64,6 +64,7 @@ from ._registry import (
     RegisteredModelVersions,
 )
 from ._dataset_versioning import Datasets
+from ._deployment import Endpoint
 
 
 _OSS_DEFAULT_WORKSPACE = "personal"
@@ -873,3 +874,32 @@ class Client(object):
     @property
     def registered_model_versions(self):
         return RegisteredModelVersions(self._conn, self._conf)
+
+    def get_or_create_endpoint(self, path, description=None, workspace=None):
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self._get_personal_workspace()
+
+        raise NotImplementedError
+
+    def get_endpoint(self, path=None, workspace=None, id=None):
+        if path is not None and id is not None:
+            raise ValueError("cannot specify both `path` and `id`")
+        if path is None and id is None:
+            raise ValueError("must specify either `path` or `id`")
+
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self._get_personal_workspace()
+
+        raise NotImplementedError
+
+    def set_endpoint(self, *args, **kwargs):
+        return self.get_or_create_endpoint(*args, **kwargs)
+
+    def endpoints(self, workspace=None):
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self._get_personal_workspace()
+
+        raise NotImplementedError
