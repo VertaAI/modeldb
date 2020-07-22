@@ -15,7 +15,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
    * @return specified commit
    */
   def getCommitById(id: String)(implicit ec: ExecutionContext): Try[Commit] = {
-    clientSet.versioningService.GetCommit2(
+    clientSet.versioningService.VersioningService_GetCommit2(
       repository_id_repo_id = repo.id.get,
       commit_sha = id
     ).map(r => new Commit(clientSet, this, r.commit.get))
@@ -26,7 +26,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
    *  @return specified commit
    */
    def getCommitByBranch(branch: String = "master")(implicit ec: ExecutionContext): Try[Commit] = {
-     clientSet.versioningService.GetBranch2(
+     clientSet.versioningService.VersioningService_GetBranch2(
        branch = branch,
        repository_id_repo_id = repo.id.get
      ).map(r => new Commit(clientSet, this, r.commit.get, Some(branch)))
@@ -37,7 +37,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
     *  @return specified commit
     */
    def getCommitByTag(tag: String)(implicit ec: ExecutionContext): Try[Commit] = {
-     clientSet.versioningService.GetTag2(
+     clientSet.versioningService.VersioningService_GetTag2(
        tag = tag,
        repository_id_repo_id = repo.id.get
      ).map(r => new Commit(clientSet, this, r.commit.get))
@@ -47,7 +47,7 @@ class Repository(private val clientSet: ClientSet, private val repo: VersioningR
     *  @param tag tag
     */
     def deleteTag(tag: String)(implicit ec: ExecutionContext): Try[Unit] = {
-      clientSet.versioningService.DeleteTag2(
+      clientSet.versioningService.VersioningService_DeleteTag2(
           repository_id_repo_id = repo.id.get,
           tag = tag
       ).map(_ => ())

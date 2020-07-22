@@ -20,6 +20,9 @@ import ai.verta.modeldb.DeleteExperimentRunTag;
 import ai.verta.modeldb.DeleteExperimentRunTags;
 import ai.verta.modeldb.DeleteExperimentRuns;
 import ai.verta.modeldb.DeleteExperiments;
+import ai.verta.modeldb.DeleteHyperparameters;
+import ai.verta.modeldb.DeleteMetrics;
+import ai.verta.modeldb.DeleteObservations;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceImplBase;
@@ -2423,6 +2426,96 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, CommitMultipartArtifact.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void deleteHyperparameters(
+      DeleteHyperparameters request,
+      StreamObserver<DeleteHyperparameters.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in DeleteHyperparameters request";
+      } else if (request.getHyperparameterKeysList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage =
+            "Hyperparameter keys not found and deleteAll flag has false in DeleteHyperparameters request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      experimentRunDAO.deleteExperimentRunKeyValuesEntities(
+          request.getId(),
+          request.getHyperparameterKeysList(),
+          request.getDeleteAll(),
+          ModelDBConstants.HYPERPARAMETERS);
+      responseObserver.onNext(DeleteHyperparameters.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteHyperparameters.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void deleteMetrics(
+      DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in DeleteMetrics request";
+      } else if (request.getMetricKeysList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage =
+            "Metrics keys not found and deleteAll flag has false in DeleteMetrics request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      experimentRunDAO.deleteExperimentRunKeyValuesEntities(
+          request.getId(),
+          request.getMetricKeysList(),
+          request.getDeleteAll(),
+          ModelDBConstants.METRICS);
+      responseObserver.onNext(DeleteMetrics.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(responseObserver, e, DeleteMetrics.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void deleteObservations(
+      DeleteObservations request, StreamObserver<DeleteObservations.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in DeleteObservations request";
+      } else if (request.getObservationKeysList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage =
+            "Observation keys not found and deleteAll flag has false in DeleteObservations request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      experimentRunDAO.deleteExperimentRunObservationsEntities(
+          request.getId(), request.getObservationKeysList(), request.getDeleteAll());
+      responseObserver.onNext(DeleteObservations.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteObservations.Response.getDefaultInstance());
     }
   }
 

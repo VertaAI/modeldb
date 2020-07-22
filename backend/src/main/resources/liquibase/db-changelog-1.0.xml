@@ -641,6 +641,15 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="set-commit_parent-parent_order-0" author="raviS" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+                <columnExists tableName="commit_parent" columnName="parent_order"/>
+        </preConditions>
+        <update tableName="commit_parent">
+            <column name="parent_order" value="0" />
+            <where>parent_order is null</where>
+        </update>
+    </changeSet>
     <!-- keep the line below at the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
     <changeSet author="anandJ" id="migration_status_table">

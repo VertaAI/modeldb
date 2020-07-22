@@ -38,7 +38,6 @@ import {
   ILoadDatasetVersionExperimentRunsActions,
   loadDatasetVersionExperimentRunsActionTypes,
 } from './types';
-import { WorkspaceName } from 'shared/models/Workspace';
 
 export const loadDatasetVersions = (
   datasetId: string,
@@ -54,12 +53,12 @@ export const loadDatasetVersions = (
 
   await ServiceFactory.getDatasetVersionsService()
     .loadDatasetVersions(datasetId, filters, pagination)
-    .then(res => {
+    .then((res) => {
       dispatch(
         action(loadDatasetVersionsActionTypes.SUCCESS, { datasetVersions: res })
       );
     })
-    .catch(error => {
+    .catch((error) => {
       dispatch(
         action(loadDatasetVersionsActionTypes.FAILURE, normalizeError(error))
       );
@@ -93,7 +92,7 @@ export const deleteDatasetVersion = (
           ),
       });
     })
-    .catch(error => {
+    .catch((error) => {
       dispatch(
         action(deleteDatasetVersionActionTypes.FAILURE, {
           id,
@@ -115,13 +114,13 @@ export const loadDatasetVersion = (
   dispatch(action(loadDatasetVersionActionTypes.REQUEST, { id }));
 
   await ServiceFactory.getDatasetVersionsService()
-    .loadDatasetVersion(id, datasetId)
-    .then(datasetVersion => {
+    .loadDatasetVersion(workspaceName, id, datasetId)
+    .then((datasetVersion) => {
       dispatch(
         action(loadDatasetVersionActionTypes.SUCCESS, { datasetVersion })
       );
     })
-    .catch(error => {
+    .catch((error) => {
       dispatch(
         action(loadDatasetVersionActionTypes.FAILURE, normalizeError(error))
       );
@@ -144,7 +143,7 @@ export const loadDatasetVersionExperimentRuns = (
 
   await ServiceFactory.getExperimentRunsService()
     .loadExperimentRunsByDatasetVersionId(workspaceName, datasetVersionId)
-    .then(res => {
+    .then((res) => {
       dispatch(
         action(loadDatasetVersionExperimentRunsActionTypes.SUCCESS, {
           datasetVersionId,
@@ -152,7 +151,7 @@ export const loadDatasetVersionExperimentRuns = (
         })
       );
     })
-    .catch(error => {
+    .catch((error) => {
       dispatch(
         action(loadDatasetVersionExperimentRunsActionTypes.FAILURE, {
           datasetVersionId,
@@ -311,7 +310,7 @@ export const loadComparedDatasetVersions = (
         })
       );
     })
-    .catch(error => {
+    .catch((error) => {
       dispatch(
         action(
           loadComparedDatasetVersionsActionTypes.FAILURE,
@@ -373,7 +372,7 @@ export const deleteDatasetVersions = (
           ),
       });
     })
-    .catch(error => {
+    .catch((error) => {
       dispatch(
         action(deleteDatasetVersionsActionTypes.FAILURE, normalizeError(error))
       );

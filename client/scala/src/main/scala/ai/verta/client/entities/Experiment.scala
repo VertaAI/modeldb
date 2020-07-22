@@ -16,11 +16,11 @@ class Experiment(val clientSet: ClientSet, val proj: Project, val expt: ModeldbE
 
     GetOrCreateEntity.getOrCreate[ExperimentRun](
       get = () => {
-        clientSet.experimentRunService.getExperimentRunByName(Some(internalName), expt.id)
+        clientSet.experimentRunService.ExperimentRunService_getExperimentRunByName(Some(internalName), expt.id)
           .map(r => if (r.experiment_run.isEmpty) null else new ExperimentRun(clientSet, this, r.experiment_run.get))
       },
       create = () => {
-        clientSet.experimentRunService.createExperimentRun(ModeldbCreateExperimentRun(
+        clientSet.experimentRunService.ExperimentRunService_createExperimentRun(ModeldbCreateExperimentRun(
           name = Some(internalName),
           experiment_id = expt.id,
           project_id = proj.proj.id // TODO: remove since we can get from the experiment
@@ -33,12 +33,12 @@ class Experiment(val clientSet: ClientSet, val proj: Project, val expt: ModeldbE
   def tags()(implicit ec: ExecutionContext) = new Tags(clientSet, ec, this)
 
   override def getTags()(implicit ec: ExecutionContext): Try[List[String]] = {
-    clientSet.experimentService.getExperimentTags(expt.id)
+    clientSet.experimentService.ExperimentService_getExperimentTags(expt.id)
       .map(r => r.tags.getOrElse(Nil))
   }
 
   override def delTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
-    clientSet.experimentService.deleteExperimentTags(ModeldbDeleteExperimentTags(
+    clientSet.experimentService.ExperimentService_deleteExperimentTags(ModeldbDeleteExperimentTags(
       id = expt.id,
       tags = Some(tags)
     ))
@@ -46,7 +46,7 @@ class Experiment(val clientSet: ClientSet, val proj: Project, val expt: ModeldbE
   }
 
   override def addTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
-    clientSet.experimentService.addExperimentTags(ModeldbAddExperimentTags(
+    clientSet.experimentService.ExperimentService_addExperimentTags(ModeldbAddExperimentTags(
       id = expt.id,
       tags = Some(tags)
     ))

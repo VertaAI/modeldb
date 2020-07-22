@@ -139,7 +139,9 @@ public class DatasetContainer extends BlobContainer {
         .append(":sha256:")
         .append(path.getSha256())
         .append(":md5:")
-        .append(path.getMd5());
+        .append(path.getMd5())
+        .append(":internal_versioned_path:")
+        .append(path.getInternalVersionedPath());
     return FileHasher.getSha(sb.toString());
   }
 

@@ -1,0 +1,38 @@
+enum DatasetVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+type Dataset {
+  id: ID!
+  name: String!
+  description: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+  visibility: DatasetVisibility!
+  allowedActions: AllowedActions!
+
+  attributes: [KeyValue!]!
+  tags: [String!]!
+  owner: User!
+  collaborators: [Collaborator!]!
+
+  addTags(tags: [String!]!): Dataset!
+  deleteTags(tags: [String!]!): Dataset!
+
+  datasetVersions(query: DatasetVersionsQuery): DatasetVersions!
+  changeDescription(description: String!): Dataset!
+  delete: Boolean!
+}
+
+type Datasets {
+  datasets: [Dataset!]!
+  total: Int!
+}
+
+input DatasetsQuery {
+  pagination: PaginationQuery
+  stringPredicates: [StringPredicate!]
+  floatPredicates: [FloatPredicate!]
+  ids: [ID!]
+}

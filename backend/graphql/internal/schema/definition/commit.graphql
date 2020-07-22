@@ -43,4 +43,5 @@ type CommitFolder {
 type CommitBlob {
   content: String!
   runs(query: ExperimentRunsQuery): ExperimentRuns!
+  downloadUrlForComponent(componentPath: String!): String!
 }

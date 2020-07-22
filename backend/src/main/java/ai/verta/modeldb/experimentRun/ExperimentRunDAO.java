@@ -493,6 +493,17 @@ public interface ExperimentRunDAO {
       CommitMultipartArtifact request, CommitMultipartFunction commitMultipart)
       throws ModelDBException, InvalidProtocolBufferException;
 
+  void deleteExperimentRunKeyValuesEntities(
+      String experimentRunId,
+      List<String> experimentRunKeyValuesKeys,
+      Boolean deleteAll,
+      String fieldType)
+      throws InvalidProtocolBufferException;
+
+  void deleteExperimentRunObservationsEntities(
+      String experimentRunId, List<String> experimentRunObservationsKeys, Boolean deleteAll)
+      throws InvalidProtocolBufferException;
+
   ExperimentRunPaginationDTO getExperimentRunsByDatasetVersionId(
       ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request)
       throws ModelDBException, InvalidProtocolBufferException;

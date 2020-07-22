@@ -177,7 +177,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
             .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
-            .setDatasetVisibility(request.getDatasetVisibility());
+            .setDatasetVisibility(request.getDatasetVisibility())
+            .setDatasetType(request.getDatasetType());
 
     if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
       datasetBuilder

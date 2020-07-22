@@ -1763,6 +1763,16 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
   }
 
+  /**
+   * select Component matching the path passed in pathDatasetComponentBlobPath. returns a map
+   * containing with keys 'internalPath' and 'computeSha' and values populated from the details of
+   * the Component
+   *
+   * @param blob : commit blob
+   * @param pathDatasetComponentBlobPath : pathDatasetComponentBlobPath
+   * @return
+   * @throws ModelDBException
+   */
   private Map<String, String> getDatasetComponentBlob(
       Blob blob, String pathDatasetComponentBlobPath) throws ModelDBException {
     if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
@@ -1772,7 +1782,10 @@ public class BlobDAORdbImpl implements BlobDAO {
           Optional<PathDatasetComponentBlob> pathComponentBlob =
               datasetBlob.getPath().getComponentsList().stream()
                   .filter(
-                      componentBlob -> componentBlob.getPath().equals(pathDatasetComponentBlobPath))
+                      componentBlob ->
+                          componentBlob.getPath().equals(pathDatasetComponentBlobPath)
+                              && componentBlob.getInternalVersionedPath() != null
+                              && !componentBlob.getInternalVersionedPath().isEmpty())
                   .findFirst();
           if (pathComponentBlob.isPresent()
               && !pathComponentBlob.get().getInternalVersionedPath().isEmpty()) {
@@ -1797,7 +1810,9 @@ public class BlobDAORdbImpl implements BlobDAO {
               datasetBlob.getS3().getComponentsList().stream()
                   .filter(
                       componentBlob ->
-                          componentBlob.getPath().getPath().equals(pathDatasetComponentBlobPath))
+                          componentBlob.getPath().getPath().equals(pathDatasetComponentBlobPath)
+                              && componentBlob.getPath().getInternalVersionedPath() != null
+                              && !componentBlob.getPath().getInternalVersionedPath().isEmpty())
                   .findFirst();
           if (s3PathComponentBlob.isPresent()
               && !s3PathComponentBlob.get().getPath().getInternalVersionedPath().isEmpty()) {

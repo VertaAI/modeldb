@@ -8,15 +8,13 @@ import ProjectEntityDescriptionManager from 'features/descriptionManager/view/Pr
 import ProjectEntityTagsManager from 'features/tagsManager/view/ProjectEntityTagsManager/ProjectEntityTagsManager';
 import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import { ICommunication } from 'shared/utils/redux/communication';
-import Avatar from 'shared/view/elements/Avatar/Avatar';
-import Draggable from 'shared/view/elements/Draggable/Draggable';
 import Experiment from 'shared/models/Experiment';
 import { selectDeletingExperiment } from 'features/experiments/store';
 import { IConnectedReduxProps, IApplicationState } from 'setup/store/store';
 
 import ExperimentBulkDeletion from './ExperimentBulkDeletion/ExperimentBulkDeletion';
 import styles from './ExperimentWidget.module.css';
-import { unknownUser } from 'shared/models/User';
+import WithCopyTextIcon from 'shared/view/elements/WithCopyTextIcon/WithCopyTextIcon';
 
 interface ILocalProps {
   projectId: string;
@@ -56,7 +54,12 @@ class ExperimentWidget extends React.PureComponent<AllProps> {
                 <div className={styles.content}>
                   <div className={styles.title_block}>
                     <div className={styles.title} data-test="experiment-name">
-                      {experiment.name}
+                      <WithCopyTextIcon
+                        text={experiment.name}
+                        onClick={this.preventOnViewExprRuns}
+                      >
+                        {experiment.name}
+                      </WithCopyTextIcon>
                     </div>
                     <div>
                       <span onClick={this.preventOnViewExprRuns}>
@@ -123,7 +126,9 @@ class ExperimentWidget extends React.PureComponent<AllProps> {
 
   @bind
   private onTagsManagerClick(e: React.MouseEvent, byEmptiness: boolean) {
-    !byEmptiness ? this.preventOnViewExprRuns(e) : undefined;
+    if (!byEmptiness) {
+      this.preventOnViewExprRuns(e);
+    }
   }
 
   @bind

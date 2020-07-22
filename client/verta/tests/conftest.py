@@ -268,8 +268,14 @@ def client(host, port, email, dev_key):
 
     yield client
 
-    if client.proj is not None:
-        utils.delete_project(client.proj.id, client._conn)
+    proj = client._ctx.proj
+    if proj is not None:
+        utils.delete_project(proj.id, client._conn)
+
+    model = client._ctx.registered_model
+    if model is not None:
+        utils.delete_registered_model(model.id, client._conn)
+
     print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
 
@@ -282,6 +288,30 @@ def experiment_run(client):
     print("[TEST LOG] Run ID is {}".format(run.id))
 
     return run
+
+
+@pytest.fixture
+def model_for_deployment(strs):
+    np = pytest.importorskip("numpy")
+    pd = pytest.importorskip("pandas")
+    sklearn = pytest.importorskip("sklearn")
+    from sklearn import linear_model
+
+    num_rows, num_cols = 36, 6
+
+    data = pd.DataFrame(np.tile(np.arange(num_rows).reshape(-1, 1),
+                                num_cols),
+                        columns=strs[:num_cols])
+    X_train = data.iloc[:,:-1]  # pylint: disable=bad-whitespace
+    y_train = data.iloc[:, -1]
+
+    return {
+        'model': sklearn.linear_model.LogisticRegression(),
+        'model_api': verta.utils.ModelAPI(X_train, y_train),
+        'requirements': six.StringIO("scikit-learn=={}".format(sklearn.__version__)),
+        'train_features': X_train,
+        'train_targets': y_train,
+    }
 
 
 @pytest.fixture
@@ -311,23 +341,12 @@ def created_datasets(client):
     if created_datasets:
         utils.delete_datasets(list(set(dataset.id for dataset in created_datasets)), client._conn)
 
+
 @pytest.fixture
 def registered_model(client):
-    registered_model = client.set_registered_model()
-
-    yield registered_model
-
-    if registered_model:
-        utils.delete_registered_model(registered_model.id, client._conn)
+    yield client.get_or_create_registered_model()
 
 
 @pytest.fixture
-def model_version(client):
-    try:
-        registered_model = client.set_registered_model()
-        model_version = registered_model.get_or_create_version(name="my version")
-
-        yield model_version
-    finally:
-        if registered_model:
-            utils.delete_registered_model(registered_model.id, client._conn)
+def model_version(registered_model):
+    yield registered_model.get_or_create_version()

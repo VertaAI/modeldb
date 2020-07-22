@@ -8,7 +8,6 @@ import { DataWithPagination, IPagination } from 'shared/models/Pagination';
 import * as Dataset from 'shared/models/Dataset';
 import { IWorkspace } from 'shared/models/Workspace';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
-import { convertServerUser } from 'services/serverModel/User/converters';
 
 import { convertServerShortWorkspaceToClient } from 'services/serverModel/Workspace/converters';
 import * as EntityAlreadyExistError from '../shared/EntityAlreadyExistError';
@@ -18,7 +17,6 @@ import {
   convertServerPaginationResponse,
   IServerPaginatedResponse,
 } from 'services/serverModel/Pagination/Pagination';
-import { unknownUser } from 'shared/models/User';
 
 const convertDatasetVisibilityToServer = (
   datasetVisibility: Dataset.DatasetVisibility
@@ -32,10 +30,6 @@ const convertDatasetVisibilityToServer = (
 };
 
 export default class DatasetsDataService extends BaseDataService {
-  constructor() {
-    super();
-  }
-
   public async createDataset(
     settings: Dataset.IDatasetCreationSettings
   ): Promise<Dataset.Dataset> {
@@ -44,7 +38,7 @@ export default class DatasetsDataService extends BaseDataService {
         [K in keyof Omit<
           Required<Dataset.IDatasetCreationSettings>,
           'workspaceName'
-        >]: [string, any]
+        >]: [string, any];
       } = {
         name: ['name', settings.name],
         visibility: [
@@ -65,7 +59,7 @@ export default class DatasetsDataService extends BaseDataService {
       url: `/v1/modeldb/dataset/createDataset`,
       data: request,
       errorConverters: {
-        entityAlreadyExists: errorResponse => errorResponse.status === 409,
+        entityAlreadyExists: (errorResponse) => errorResponse.status === 409,
       },
     });
     return this.loadDataset(response.data.dataset.id, settings.workspaceName);
@@ -89,7 +83,7 @@ export default class DatasetsDataService extends BaseDataService {
     });
     return convertServerPaginationResponse(
       convertServerHydratedDataset,
-      d => d.hydrated_datasets,
+      (d) => d.hydrated_datasets,
       response.data
     );
   }
@@ -145,13 +139,7 @@ export default class DatasetsDataService extends BaseDataService {
 const convertServerHydratedDataset = (
   server: Record<string, any>
 ): Dataset.Dataset => {
-  const {
-    collaborator_user_infos: serverCollaborators = [],
-    owner_user_info: serverOwner,
-    dataset: serverDataset,
-  } = server;
-
-  const owner = unknownUser;
+  const { dataset: serverDataset } = server;
 
   return {
     ...convertServerEntityWithLoggedDates(serverDataset),
