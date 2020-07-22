@@ -128,7 +128,8 @@ class RegisteredModelVersion(_ModelDBEntity):
         )
 
     def get_model(self):
-        return _artifact_utils.deserialize_model(self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL))
+        model_artifact = self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL)
+        return _artifact_utils.deserialize_model(model_artifact)
 
     def del_model(self):
         self._clear_cache()
@@ -358,7 +359,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             # get model artifact
             if not self.has_model:
                 raise KeyError("no model associated with this version")
-        elif len(filter(lambda artifact: artifact.key == key, self._msg.artifacts)) == 0:
+        elif len(list(filter(lambda artifact: artifact.key == key, self._msg.artifacts))) == 0:
             raise KeyError("no artifact found with key {}".format(key))
 
         # download artifact from artifact store
