@@ -19,7 +19,14 @@ def update():
 def update_model(model_name, label, workspace):
     """Create a new registeredmodel entry.
     """
-    pass
+    client = Client()
+    try:
+        registered_model = client.get_registered_model(model_name, workspace=workspace)
+    except ValueError:
+        raise click.BadParameter("model {} not found".format(model_name))
+    registered_model._msg.labels[:] = label[:]
+    registered_model._update()
+
 
 @update.command(name="registeredmodelversion")
 @click.argument("model_name", nargs=1, required=True)
