@@ -8,27 +8,12 @@ import warnings
 
 import requests
 
-from .external import six
-from .external.six.moves.urllib.parse import urljoin, urlparse  # pylint: disable=import-error, no-name-in-module
+from ..external import six
+from ..external.six.moves.urllib.parse import urljoin, urlparse  # pylint: disable=import-error, no-name-in-module
 
-from ._internal_utils import _utils
-
-
-# TODO: move these to verta/deployment/strategies if restructuring
-class _UpdateStrategy(object):
-    _STRATEGY = ""
-
-class DirectUpdateStrategy(_UpdateStrategy):
-    _STRATEGY = "rollout"
-
-class CanaryUpdateStrategy(_UpdateStrategy):
-    _STRATEGY = "canary"
-
-    def __init__(self):
-        raise NotImplementedError
+from .._internal_utils import _utils
 
 
-# TODO: move this to verta/deployment/deployedmodel if restructuring
 class DeployedModel:
     """
     Object for interacting with deployed models.
