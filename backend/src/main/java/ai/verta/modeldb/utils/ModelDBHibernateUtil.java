@@ -670,29 +670,6 @@ public class ModelDBHibernateUtil {
                         completableFutures[index] = futureTask;
                         index = index + 1;
                       }
-                      if (migrationName.equals(ModelDBConstants.DATASET_VERSIONING_MIGRATION)) {
-                        // Manual migration for populate RoleBinding of repository
-                        CompletableFuture<Boolean> futureTask =
-                            CompletableFuture.supplyAsync(
-                                () -> {
-                                  try {
-                                    boolean isLocked = checkMigrationLockedStatus(migrationName);
-                                    if (!isLocked) {
-                                      lockedMigration(migrationName);
-                                      int recordUpdateLimit =
-                                          (int)
-                                              migrationDetailMap.getOrDefault(
-                                                  ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-                                      DatasetToRepositoryMigration.execute(recordUpdateLimit);
-                                    }
-                                  } catch (SQLException | DatabaseException e) {
-                                    LOGGER.error("Error on migration: {}", e.getMessage());
-                                  }
-                                  return true;
-                                });
-                        completableFutures[index] = futureTask;
-                        index = index + 1;
-                      }
                       // add if here for the new migration type
                     }
                   }
@@ -710,6 +687,28 @@ public class ModelDBHibernateUtil {
                 }
               })
           .start();
+
+      // Blocking migration
+      String migrationName = ModelDBConstants.DATASET_VERSIONING_MIGRATION;
+      if (migrationTypeMap.containsKey(migrationName)) {
+        Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
+        if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
+          try {
+            ModelDBUtils.registeredBackgroundUtilsCount();
+            boolean isLocked = checkMigrationLockedStatus(migrationName);
+            if (!isLocked) {
+              lockedMigration(migrationName);
+              int recordUpdateLimit =
+                  (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+              DatasetToRepositoryMigration.execute(recordUpdateLimit);
+            }
+          } catch (SQLException | DatabaseException e) {
+            LOGGER.error("Error on migration: {}", e.getMessage());
+          } finally {
+            ModelDBUtils.unregisteredBackgroundUtilsCount();
+          }
+        }
+      }
     }
   }
 
