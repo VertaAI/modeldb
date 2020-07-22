@@ -44,7 +44,6 @@ def lst_model(filter, output, workspace):
                map(lambda model: json.dumps(_utils.proto_to_json(model._msg)), models))
         result = "\"models\": [{}]".format(array)
         result = '{' + result + '}'
-        click.echo()
         click.echo(result)
     else:
         for model in models:
