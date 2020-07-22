@@ -6,6 +6,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.Dataset;
+import ai.verta.modeldb.DatasetTypeEnum;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasetVersions;
@@ -306,12 +307,17 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public String getUrlForDatasetVersion(String datasetVersionId, String method)
       throws InvalidProtocolBufferException {
-    Status status =
-        Status.newBuilder()
-            .setCode(Code.INVALID_ARGUMENT_VALUE)
-            .setMessage("Not supported yet")
-            .build();
-    throw StatusProto.toStatusRuntimeException(status);
+    DatasetVersion datasetVersion = getDatasetVersion(datasetVersionId);
+    if (!datasetVersion.getDatasetType().equals(DatasetTypeEnum.DatasetType.RAW)) {
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.INVALID_ARGUMENT_VALUE)
+              .setMessage("getUrl for dataset currently supported only for Raw dataset versions.")
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+
+    return datasetVersion.getRawDatasetVersionInfo().getObjectPath();
   }
 
   @Override

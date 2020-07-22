@@ -12,7 +12,8 @@ class TestModel:
     def test_get(self, client):
         name = verta._internal_utils._utils.generate_default_name()
 
-        assert client.get_registered_model(name) is None
+        with pytest.raises(ValueError):
+            client.get_registered_model(name)
 
         registered_model = client.set_registered_model(name)
 

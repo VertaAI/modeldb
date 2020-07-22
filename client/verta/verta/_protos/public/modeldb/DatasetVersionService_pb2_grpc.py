@@ -24,6 +24,11 @@ class DatasetVersionServiceStub(object):
         request_serializer=modeldb_dot_DatasetVersionService__pb2.GetAllDatasetVersionsByDatasetId.SerializeToString,
         response_deserializer=modeldb_dot_DatasetVersionService__pb2.GetAllDatasetVersionsByDatasetId.Response.FromString,
         )
+    self.getDatasetVersionById = channel.unary_unary(
+        '/ai.verta.modeldb.DatasetVersionService/getDatasetVersionById',
+        request_serializer=modeldb_dot_DatasetVersionService__pb2.GetDatasetVersionById.SerializeToString,
+        response_deserializer=modeldb_dot_DatasetVersionService__pb2.GetDatasetVersionById.Response.FromString,
+        )
     self.deleteDatasetVersion = channel.unary_unary(
         '/ai.verta.modeldb.DatasetVersionService/deleteDatasetVersion',
         request_serializer=modeldb_dot_DatasetVersionService__pb2.DeleteDatasetVersion.SerializeToString,
@@ -118,6 +123,13 @@ class DatasetVersionServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def getAllDatasetVersionsByDatasetId(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getDatasetVersionById(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -248,6 +260,11 @@ def add_DatasetVersionServiceServicer_to_server(servicer, server):
           servicer.getAllDatasetVersionsByDatasetId,
           request_deserializer=modeldb_dot_DatasetVersionService__pb2.GetAllDatasetVersionsByDatasetId.FromString,
           response_serializer=modeldb_dot_DatasetVersionService__pb2.GetAllDatasetVersionsByDatasetId.Response.SerializeToString,
+      ),
+      'getDatasetVersionById': grpc.unary_unary_rpc_method_handler(
+          servicer.getDatasetVersionById,
+          request_deserializer=modeldb_dot_DatasetVersionService__pb2.GetDatasetVersionById.FromString,
+          response_serializer=modeldb_dot_DatasetVersionService__pb2.GetDatasetVersionById.Response.SerializeToString,
       ),
       'deleteDatasetVersion': grpc.unary_unary_rpc_method_handler(
           servicer.deleteDatasetVersion,

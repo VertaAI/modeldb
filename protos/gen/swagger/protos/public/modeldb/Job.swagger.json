@@ -13,7 +13,7 @@
   "paths": {
     "/job/createJob": {
       "post": {
-        "operationId": "createJob",
+        "operationId": "JobService_createJob",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/job/deleteJob": {
       "get": {
-        "operationId": "deleteJob",
+        "operationId": "JobService_deleteJob",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -75,7 +75,7 @@
     },
     "/job/getJob": {
       "get": {
-        "operationId": "getJob",
+        "operationId": "JobService_getJob",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -105,7 +105,7 @@
     },
     "/job/updateJob": {
       "get": {
-        "operationId": "updateJob",
+        "operationId": "JobService_updateJob",
         "responses": {
           "200": {
             "description": "A successful response.",

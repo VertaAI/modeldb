@@ -508,5 +508,3 @@ class TestExperimentRuns:
 
         # ignore duplicates
         assert local_expt1_run_ids == set(run.id for run in expt1.expt_runs + expt1.expt_runs)
-
-
