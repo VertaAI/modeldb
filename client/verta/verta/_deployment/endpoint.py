@@ -2,8 +2,9 @@
 
 from __future__ import print_function
 
-from .. import deployment
+from verta.deployment.strategies import _UpdateStrategy
 from .._tracking import experimentrun
+from .._internal_utils import _utils
 
 
 class Endpoint(object):
@@ -81,4 +82,15 @@ class Endpoint(object):
         # TODO: check if isinstance(strategy, deployment._UpdateStrategy)
 
     def get_status(self):
-        raise NotImplementedError
+        # Update stages with new build
+        url = "{}://{}/api/v1/deployment​/workspace​/{}​/endpoints​/{}​/stages​/{}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_active_stage()
+        )
+        response = _utils.make_request("PUT", url, self._conn, json={})
+        _utils.raise_for_http_error(response)
+        return response.json()
+
