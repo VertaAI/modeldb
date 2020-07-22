@@ -70,7 +70,7 @@ class RegisteredModelVersion(_ModelDBEntity):
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         Message = _ModelVersionService.GetModelVersionRequest
-        endpoint = "/api/v1/registry/registered_model_versions/{}".format(id)
+        endpoint = "/api/v1/registry/model_versions/{}".format(id)
         response = conn.make_proto_request("GET", endpoint)
 
         return conn.maybe_proto_response(response, Message.Response).model_version
@@ -83,7 +83,7 @@ class RegisteredModelVersion(_ModelDBEntity):
                                                value=_utils.python_to_val_proto(name),
                                                operator=_CommonCommonService.OperatorEnum.EQ)
         ]
-        endpoint = "/api/v1/registry/{}/versions/find".format(registered_model_id)
+        endpoint = "/api/v1/registry/registered_models/{}/model_versions/find".format(registered_model_id)
         msg = Message(predicates=predicates)
 
         proto_response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -105,7 +105,7 @@ class RegisteredModelVersion(_ModelDBEntity):
                                                 description=desc, labels=tags,
                                                 time_created=date_created, time_updated=date_created,
                                                 experiment_run_id=experiment_run_id)
-        endpoint = "/api/v1/registry/{}/versions".format(registered_model_id)
+        endpoint = "/api/v1/registry/registered_models/{}/model_versions".format(registered_model_id)
         response = conn.make_proto_request("POST", endpoint, body=model_version_msg)
         model_version = conn.must_proto_response(response, SetModelVersionMessage.Response).model_version
 
@@ -256,7 +256,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             part_number=part_num
         )
         data = _utils.proto_to_json(msg)
-        endpoint = "{}://{}/api/v1/registry/versions/{}/getUrlForArtifact".format(
+        endpoint = "{}://{}/api/v1/registry/model_versions/{}/getUrlForArtifact".format(
             self._conn.scheme,
             self._conn.socket,
             self.id
@@ -303,7 +303,7 @@ class RegisteredModelVersion(_ModelDBEntity):
                 _utils.raise_for_http_error(response)
 
                 # commit part
-                url = "{}://{}/api/v1/registry/versions/{}/commitArtifactPart".format(
+                url = "{}://{}/api/v1/registry/model_versions/{}/commitArtifactPart".format(
                     self._conn.scheme,
                     self._conn.socket,
                     self.id
@@ -320,7 +320,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             print()
 
             # complete upload
-            url = "{}://{}/api/v1/registry/versions/{}/commitMultipartArtifact".format(
+            url = "{}://{}/api/v1/registry/model_versions/{}/commitMultipartArtifact".format(
                 self._conn.scheme,
                 self._conn.socket,
                 self.id
@@ -433,10 +433,9 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._update()
 
     def _update(self):
-        response = self._conn.make_proto_request("PUT", "/api/v1/registry/{}/versions/{}".format(self._msg.registered_model_id, self.id),
+        response = self._conn.make_proto_request("PUT", "/api/v1/registry/registered_models/{}/model_versions/{}".format(self._msg.registered_model_id, self.id),
                                                  body=self._msg)
         Message = _ModelVersionService.SetModelVersion
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
         self._clear_cache()
-

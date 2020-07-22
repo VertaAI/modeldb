@@ -47,7 +47,7 @@ def create_model(model_name, label, visibility, workspace):
 def create_model_version(model_name, version_name, label, model, artifact, workspace, from_run):
     """Create a new registeredmodelversion entry.
     """
-    if artifact is not None and len(artifact) > len(set(map(lambda pair: pair[0], artifact))):
+    if artifact and len(artifact) > len(set(map(lambda pair: pair[0], artifact))):
         raise click.BadParameter("cannot have duplicate artifact keys")
 
     client = Client()
@@ -59,7 +59,7 @@ def create_model_version(model_name, version_name, label, model, artifact, works
 
     model_version = registered_model.get_or_create_version(name=version_name, labels=list(label))
 
-    if artifact is not None:
+    if artifact:
         artifact_keys = model_version.get_artifact_keys()
 
         for (key, _) in artifact:
@@ -74,4 +74,3 @@ def create_model_version(model_name, version_name, label, model, artifact, works
 
     if model is not None:
         model_version.log_model(model, True)
-
