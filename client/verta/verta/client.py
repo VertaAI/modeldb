@@ -875,7 +875,7 @@ class Client(object):
     def registered_model_versions(self):
         return RegisteredModelVersions(self._conn, self._conf)
 
-    def get_or_create_endpoint(self, path, description=None, workspace=None):
+    def get_or_create_endpoint(self, path, description=None, workspace=None, id=None):
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
             workspace = self._get_personal_workspace()
