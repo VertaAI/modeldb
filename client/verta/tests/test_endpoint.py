@@ -9,7 +9,6 @@ class TestEndpoint:
         experiment_run.log_model_for_deployment(**model_for_deployment)
         # TODO: remove hardcoding
         endpoint = Endpoint(experiment_run._conn, experiment_run._conf, "Nhat_Pham", 449)
-        endpoint._path = "/string"
 
         original_status = endpoint.get_status()
         endpoint.update(experiment_run, DirectUpdateStrategy)
