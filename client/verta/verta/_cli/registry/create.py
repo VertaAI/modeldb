@@ -30,6 +30,11 @@ def create_model(model_name, label, visibility, workspace):
     """Create a new registeredmodel entry.
     """
     public_within_org = visibility == "org"
+    client = Client()
+
+    model = client.get_or_create_registered_model(model_name, workspace=workspace, public_within_org=public_within_org)
+    for l in label:
+        model.add_label(l)
 
 @create.command(name="registeredmodelversion")
 @click.argument("model_name", nargs=1, required=True)
