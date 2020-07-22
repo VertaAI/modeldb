@@ -153,16 +153,16 @@ class TestModelVersion:
         model_version.log_artifact("coef-3", classifier.coef_)
 
 
-        model_version = registered_model.get_version(id=model_version.id)
         model_version.del_artifact("coef-2")
+        model_version = registered_model.get_version(id=model_version.id)
         assert len(model_version._msg.artifacts) == 2
 
-        model_version = registered_model.get_version(id=model_version.id)
         model_version.del_artifact("coef")
+        model_version = registered_model.get_version(id=model_version.id)
         assert len(model_version._msg.artifacts) == 1
 
-        model_version = registered_model.get_version(id=model_version.id)
         model_version.del_artifact("coef-3")
+        model_version = registered_model.get_version(id=model_version.id)
         assert len(model_version._msg.artifacts) == 0
 
     def test_log_environment(self, registered_model):
@@ -222,6 +222,10 @@ class TestModelVersion:
         versions[name + "1"].add_label(tag_name)
         versions[name + "2"].add_label(tag_name)
         versions[name + "2"].add_label("label2")
+
+        for version in versions:
+            versions[version] = registered_model.get_version(version)
+
         find_result = registered_model.versions.find(["labels == \"{}\"".format(tag_name)])
         assert len(find_result) == 2
         for item in find_result:
