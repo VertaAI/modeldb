@@ -96,7 +96,7 @@ public class DatasetToRepositoryMigration {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       String addBackupLinkedArtifactId =
-          "ALTER TABLE artifact ADD COLUMN IF NOT EXISTS backup_linked_artifact_id varchar(255);";
+          "ALTER TABLE artifact ADD COLUMN backup_linked_artifact_id varchar(255);";
       Query query = session.createSQLQuery(addBackupLinkedArtifactId);
       query.executeUpdate();
 
