@@ -58,7 +58,7 @@ class TestList:
         label = model1._msg.name + "label1"
         model1.add_label(label)
         model1.add_label("label2")
-        client.get_or_create_registered_model()
+        model2 = client.get_or_create_registered_model()
         model = client.get_or_create_registered_model()
         model.add_label(label)
         runner = CliRunner()
@@ -82,6 +82,15 @@ class TestList:
         assert str(model1._msg.name) in result.output
         assert str(model._msg.name) in result.output
 
+        result = runner.invoke(
+            cli,
+            ['registry', 'list', 'registeredmodel'],
+        )
+
+        assert not result.exception
+        assert str(model1._msg.name) in result.output
+        assert str(model._msg.name) in result.output
+        assert str(model2._msg.name) in result.output
 
 class TestUpdate:
     pass
