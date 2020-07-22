@@ -49,7 +49,6 @@ def lst_model(filter, output, workspace):
     else:
         for model in models:
             model_repr = model._msg.name
-            click.echo()
             click.echo(model_repr)
 
 
