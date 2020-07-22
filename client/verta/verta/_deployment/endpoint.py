@@ -47,6 +47,15 @@ class Endpoint(object):
         raise NotImplementedError
 
     @classmethod
+    def _get_or_create_by_name(cls, conn, name, getter, creator):
+        obj = getter(name)
+        if obj is None:
+            obj = creator(name)
+        else:
+            print("got existing {}: {}".format(cls.__name__, name))
+        return obj
+
+    @classmethod
     def _get_by_path(cls, conn, conf, workspace, path):
         endpoint_json = cls._get_json_by_path(conn, workspace, path)
         if endpoint_json:
