@@ -81,31 +81,7 @@ class Endpoint(object):
         if not isinstance(strategy, deployment._UpdateStrategy):
             raise TypeError("strategy must be an _UpdateStrategy")
 
-        # Check if a stage exists:
-        url = "{}://{}/api/v1/depoloyment/workspace/{}/endpoints/{}/stages".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.workspace,
-            self.id
-        )
-        response = _utils.make_request("GET", url, self._conn, params={})
-
-        if response.status_code == 200:
-            # found existing stage
-            stage_id = response.json()["id"]
-        elif response.status_code == 404:
-            # existing stage not found
-            url = "{}://{}/api/v1/depoloyment/workspace/{}/endpoints/{}/stages".format(
-                self._conn.scheme,
-                self._conn.socket,
-                self.workspace,
-                self.id
-            )
-            response = _utils.make_request("POST", url, self._conn, params={})
-            _utils.raise_for_http_error(response)
-            stage_id = response.json()["id"]
-        else:
-            _utils.raise_for_http_error(response)
+        stage_id = self._get_active_stage()
 
         # Create new build:
         url = "{}://{}/api/v1/depoloyment/workspace/{}/builds".format(
@@ -127,6 +103,37 @@ class Endpoint(object):
         )
         response = _utils.make_request("PUT", url, self._conn, json={"build_id": build_id, 'strategy': strategy._STRATEGY})
         _utils.raise_for_http_error(response)
+
+    def _get_active_stage(self):
+        # Check if a stage exists:
+        url = "{}://{}/api/v1/depoloyment/workspace/{}/endpoints/{}/stages".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id
+        )
+        response = _utils.make_request("GET", url, self._conn, params={})
+        _utils.raise_for_http_error(response)
+        response = response.json()
+
+        for stage in response["stages"]:
+            if stage["status"] == "active":
+                # found active stage
+                return stage["id"]
+
+        # no active stage found:
+        return self._create_stage()
+
+    def _create_stage(self):
+        url = "{}://{}/api/v1/depoloyment/workspace/{}/endpoints/{}/stages".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id
+        )
+        response = _utils.make_request("POST", url, self._conn, params={"name": self.path})
+        _utils.raise_for_http_error(response)
+        return response.json()["id"]
 
     def get_status(self):
         raise NotImplementedError
