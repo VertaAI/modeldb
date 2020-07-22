@@ -10,7 +10,8 @@ from .._internal_utils import _utils
 class Endpoint(object):
     def __init__(self, conn, conf, workspace, id):
         self._conn = conn
-        self.conf = conf
+        self._conf = conf
+
         self.workspace = workspace
         self.id = id
 
