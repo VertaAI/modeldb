@@ -19,7 +19,7 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 
 from .._tracking.entity import _ModelDBEntity
-from ..environment import _Environment
+from ..environment import _Environment, Python
 
 
 class RegisteredModelVersion(_ModelDBEntity):
@@ -193,6 +193,13 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         self._msg.ClearField("environment")
         self._update()
+
+    def get_environment(self):
+        self._refresh_cache()
+        if not self.has_environment:
+            raise RuntimeError("environment was not previously set.")
+
+        return Python._from_proto(self._msg)
 
     def _get_url_for_artifact(self, key, method, artifact_type, part_num=0):
         if method.upper() not in ("GET", "PUT"):
