@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 
+from verta._internal_utils import _utils
+
 from .. import deployment
 from .._tracking import experimentrun
 
@@ -29,10 +31,15 @@ class Endpoint(object):
 
     @classmethod
     def _create_json(cls, conn, workspace, path, description=None):
+        json = {}
+        if description:
+            json["description"] = description
         if not path.startswith('/'):
             path = '/' + path
-
-        raise NotImplementedError
+        json["path"] = path
+        response = _utils.make_request("POST", "{}://{}{}".format(conn.scheme, conn.socket, "/api/v1/deployment/workspace/{}/endpoints".format(workspace)), conn, json=json)
+        assert response.status_code == 200
+        return response.json()
 
     @classmethod
     def _get_by_id(cls, conn, conf, workspace, id):
