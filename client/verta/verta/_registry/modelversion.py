@@ -10,11 +10,16 @@ import requests
 from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
+import requests
+import time
+import os
+import pickle
 from ..external import six
 
 from .._internal_utils import (
     _utils,
     _artifact_utils,
+    importer
 )
 from .._internal_utils._utils import NoneProtoResponse
 
@@ -132,9 +137,13 @@ class RegisteredModelVersion(_ModelDBEntity):
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
 
+    def get_model(self):
+        model_artifact = self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL)
+        return _artifact_utils.deserialize_model(model_artifact)
+
     def log_artifact(self, key, asset, overwrite=False):
         if key == "model":
-            raise ValueError("The key `model` is reserved for model. Please use `set_model`")
+            raise ValueError("the key \"model\" is reserved for model; consider using log_model() instead")
 
         self._refresh_cache()
         same_key_ind = -1
@@ -168,6 +177,30 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         self._update()
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
+
+    def get_artifact(self, key):
+        artifact = self._get_artifact(key, _CommonCommonService.ArtifactTypeEnum.BLOB)
+        artifact_stream = six.BytesIO(artifact)
+
+        torch = importer.maybe_dependency("torch")
+        if torch is not None:
+            try:
+                obj = torch.load(artifact_stream)
+            except:  # not something torch can deserialize
+                artifact_stream.seek(0)
+            else:
+                artifact_stream.close()
+                return obj
+
+        try:
+            obj = pickle.load(artifact_stream)
+        except:  # not something pickle can deserialize
+            artifact_stream.seek(0)
+        else:
+            artifact_stream.close()
+            return obj
+
+        return artifact_stream
 
     def del_artifact(self, key):
         self._refresh_cache()
@@ -329,6 +362,24 @@ class RegisteredModelVersion(_ModelDBEntity):
                                                filename_extension=extension)
 
         return artifact_msg
+
+    def _get_artifact(self, key, artifact_type):
+        # check to see if key exists
+        self._refresh_cache()
+        if key == "model":
+            # get model artifact
+            if not self.has_model:
+                raise KeyError("no model associated with this version")
+        elif len(list(filter(lambda artifact: artifact.key == key, self._msg.artifacts))) == 0:
+            raise KeyError("no artifact found with key {}".format(key))
+
+        # download artifact from artifact store
+        url = self._get_url_for_artifact(key, "GET", artifact_type).url
+
+        response = _utils.make_request("GET", url, self._conn)
+        _utils.raise_for_http_error(response)
+
+        return response.content
 
     def add_label(self, label):
         if label is None:

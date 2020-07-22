@@ -1,6 +1,8 @@
 import pytest
+import verta
 
 from .. import utils
+import os
 
 import verta.dataset
 from verta.environment import Python
@@ -54,46 +56,88 @@ class TestModelVersion:
         assert retrieved_model_version_by_id.id == model_version.id
         assert retrieved_model_version_by_name.id == model_version.id
 
-    def test_log_model(self, registered_model):
+    def test_log_model(self, model_version):
+        np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
 
-        model_version = registered_model.get_or_create_version(name="my version")
-        log_reg_model = LogisticRegression()
-        model_version.log_model(log_reg_model)
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        original_coef = classifier.coef_
+        model_version.log_model(classifier)
 
-        # reload the model version:
-        model_version = registered_model.get_or_create_version(name="my version")
-        assert model_version._msg.model.key == "model"
+        # retrieve the classifier:
+        retrieved_classfier = model_version.get_model()
+        assert (retrieved_classfier.coef_ == original_coef).all()
 
         # overwrite should work:
-        model_version = registered_model.get_version(id=model_version.id)
-        model_version.log_model(log_reg_model, True)
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(new_classifier, True)
+        retrieved_classfier = model_version.get_model()
+        assert (retrieved_classfier.coef_ == new_classifier.coef_).all()
 
+        # when overwrite = false, overwriting should fail
         with pytest.raises(ValueError) as excinfo:
-            model_version = registered_model.get_version(id=model_version.id)
-            model_version.log_model(log_reg_model)
+            model_version.log_model(new_classifier)
 
         assert "model already exists" in str(excinfo.value)
 
-
-    def test_log_artifact(self, registered_model):
+    def test_log_artifact(self, model_version):
+        np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
 
-        model_version = registered_model.get_or_create_version(name="my version")
-        log_reg_model = LogisticRegression()
-        model_version.log_artifact("some-asset", log_reg_model)
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        original_coef = classifier.coef_
+        model_version.log_artifact("coef", original_coef)
+
+        # retrieve the artifact:
+        retrieved_coef = model_version.get_artifact("coef")
+        assert (retrieved_coef == original_coef).all()
 
         # Overwrite should work:
-        model_version = registered_model.get_version(id=model_version.id)
-        model_version.log_artifact("some-asset", log_reg_model, True)
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_artifact("coef", new_classifier.coef_, True)
+        retrieved_coef = model_version.get_artifact("coef")
+        assert (retrieved_coef == new_classifier.coef_).all()
 
+        # when overwrite = false, overwriting should fail
         with pytest.raises(ValueError) as excinfo:
-            model_version = registered_model.get_version(id=model_version.id)
-            model_version.log_artifact("some-asset", log_reg_model)
+            model_version.log_artifact("coef", new_classifier.coef_)
 
         assert "The key has been set" in str(excinfo.value)
+
+    def test_add_artifact_file(self, model_version):
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+        model_version.log_artifact("file", filename)
+        os.remove(filename)
+
+        # retrieve the artifact:
+        retrieved_file = model_version.get_artifact("file")
+        assert retrieved_file.getvalue() == FILE_CONTENTS
+
+    def test_wrong_key(self, model_version):
+        with pytest.raises(KeyError) as excinfo:
+            model_version.get_model()
+
+        assert "no model associated with this version" in str(excinfo.value)
+
+        with pytest.raises(KeyError) as excinfo:
+            model_version.get_artifact("non-existing")
+
+        assert "no artifact found with key non-existing" in str(excinfo.value)
+
+        np = pytest.importorskip("numpy")
+        with pytest.raises(ValueError) as excinfo:
+            model_version.log_artifact("model", np.random.random((36, 12)))
+
+        assert "the key \"model\" is reserved for model; consider using log_model() instead" in str(excinfo.value)
 
     def test_del_artifact(self, registered_model):
         np = pytest.importorskip("numpy")
@@ -103,12 +147,22 @@ class TestModelVersion:
         model_version = registered_model.get_or_create_version(name="my version")
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+
         model_version.log_artifact("coef", classifier.coef_)
+        model_version.log_artifact("coef-2", classifier.coef_)
+        model_version.log_artifact("coef-3", classifier.coef_)
+
+
+        model_version = registered_model.get_version(id=model_version.id)
+        model_version.del_artifact("coef-2")
+        assert len(model_version._msg.artifacts) == 2
 
         model_version = registered_model.get_version(id=model_version.id)
         model_version.del_artifact("coef")
+        assert len(model_version._msg.artifacts) == 1
 
         model_version = registered_model.get_version(id=model_version.id)
+        model_version.del_artifact("coef-3")
         assert len(model_version._msg.artifacts) == 0
 
     def test_log_environment(self, registered_model):
