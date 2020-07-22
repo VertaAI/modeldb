@@ -1,5 +1,5 @@
 from verta._deployment import Endpoint
-from verta.deployment import DirectUpdateStrategy
+from verta.deployment.strategies import DirectUpdateStrategy
 
 
 class TestEndpoint:

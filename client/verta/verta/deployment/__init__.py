@@ -5,9 +5,3 @@ from .deployedmodel import (
     prediction_input_unpack,
     prediction_io_cleanup,
 )
-
-from .strategies import (
-    _UpdateStrategy,
-    DirectUpdateStrategy,
-    CanaryUpdateStrategy,
-)

@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-from .. import deployment
+from verta.deployment.strategies import _UpdateStrategy
 from .._tracking import experimentrun
 from .._internal_utils import _utils
 
@@ -80,10 +80,10 @@ class Endpoint(object):
         if not isinstance(run, experimentrun.ExperimentRun):
             raise TypeError("run must be an ExperimentRun")
 
-        if not issubclass(strategy, deployment._UpdateStrategy):
-            raise TypeError("strategy must be an _UpdateStrategy")
+        if not issubclass(strategy, _UpdateStrategy):
+            raise TypeError("strategy must be an object from verta.deployment.strategies")
 
-        stage_id = self._get_active_stage()
+        stage_id = self._get_or_create_active_stage()
 
         # Create new build:
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
@@ -106,7 +106,7 @@ class Endpoint(object):
         response = _utils.make_request("PUT", url, self._conn, json={"build_id": build_id, 'strategy': strategy._STRATEGY})
         _utils.raise_for_http_error(response)
 
-    def _get_active_stage(self):
+    def _get_or_create_active_stage(self):
         # Check if a stage exists:
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages".format(
             self._conn.scheme,
@@ -117,9 +117,9 @@ class Endpoint(object):
         response = _utils.make_request("GET", url, self._conn, params={})
 
         _utils.raise_for_http_error(response)
-        response = response.json()
+        response_json = response.json()
 
-        for stage in response["stages"]:
+        for stage in response_json["stages"]:
             if stage["status"] == "active":
                 # found active stage
                 return stage["id"]
