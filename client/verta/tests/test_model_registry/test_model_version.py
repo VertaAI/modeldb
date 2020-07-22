@@ -175,9 +175,9 @@ class TestModelVersion:
         np = pytest.importorskip("numpy")
         artifact = np.random.random((36, 12))
 
-        for i in range(5):
+        for i in range(2):
             model_version.log_artifact("artifact_{}".format(2 * i), artifact)
             model_version_2.log_artifact("artifact_{}".format(2 * i + 1), artifact)
 
         model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
-        assert len(model_version._msg.artifacts) == 10
+        assert len(model_version._msg.artifacts) == 4
