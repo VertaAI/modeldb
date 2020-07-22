@@ -267,3 +267,18 @@ class TestModelVersion:
             model_version.archive()
 
         assert "the version has already been archived" in str(excinfo.value)
+
+    def test_clear_cache(self, registered_model):
+        # Multiple log_artifacts calls, which would potentially fail without clear_cache
+        model_version = registered_model.get_or_create_version(name="my version")
+        model_version_2 = registered_model.get_version(id=model_version.id) # same version object
+
+        np = pytest.importorskip("numpy")
+        artifact = np.random.random((36, 12))
+
+        for i in range(2):
+            model_version.log_artifact("artifact_{}".format(2 * i), artifact)
+            model_version_2.log_artifact("artifact_{}".format(2 * i + 1), artifact)
+
+        model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
+        assert len(model_version._msg.artifacts) == 4
