@@ -34,7 +34,7 @@ def update_model_version(model_name, version_name, label, model, artifact, works
     """
     client = Client()
 
-    if artifact is not None and len(artifact) > len(set(map(lambda pair: pair[0], artifact))):
+    if artifact and len(artifact) > len(set(map(lambda pair: pair[0], artifact))):
         raise click.BadParameter("cannot have duplicate artifact keys")
 
     try:
@@ -47,10 +47,7 @@ def update_model_version(model_name, version_name, label, model, artifact, works
     except ValueError:
         raise click.BadParameter("version {} not found".format(version_name))
 
-    if model_version is None:
-        raise click.BadParameter("version {} not found".format(version_name))
-
-    if artifact is not None:
+    if artifact:
         artifact_keys = model_version.get_artifact_keys()
 
         for (key, _) in artifact:
@@ -63,12 +60,9 @@ def update_model_version(model_name, version_name, label, model, artifact, works
         for (key, path) in artifact:
             model_version.log_artifact(key, path, True)
 
-    if label is not None:
+    if label:
         for l in label:
             model_version.add_label(l)
 
-    if model is not None:
+    if model:
         model_version.log_model(model, True)
-
-
-
