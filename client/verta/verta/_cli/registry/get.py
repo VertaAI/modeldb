@@ -56,4 +56,25 @@ def get_model(model_name, output, workspace):
 def get_model_version(model_name, version_name, output, workspace):
     """Get detailed information about a model version.
     """
-    pass
+    client = Client()
+
+    try:
+        model = client.get_registered_model(model_name, workspace=workspace)
+    except ValueError:
+        raise click.BadParameter("model {} not found".format(model_name))
+
+    try:
+        version = model.get_version(name=version_name)
+    except ValueError:
+        raise click.BadParameter("version {} not found".format(version_name))
+
+    if version is None:
+        raise click.BadParameter("version {} not found".format(version_name))
+
+    if output == "json":
+        version_repr = json.dumps(_utils.proto_to_json(version._msg))
+    else:
+        version_repr = version._msg
+
+    click.echo()
+    click.echo(version_repr)
