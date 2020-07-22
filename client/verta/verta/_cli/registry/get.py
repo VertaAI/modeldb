@@ -40,9 +40,6 @@ def get_model(model_name, output, workspace):
     except ValueError:
         raise click.BadParameter("model {} not found".format(model_name))
 
-    if model is None:
-        raise click.BadParameter("model {} not found".format(model_name))
-
     if output == "json":
         model_repr = json.dumps(_utils.proto_to_json(model._msg))
     else:
