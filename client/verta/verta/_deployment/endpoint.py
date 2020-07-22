@@ -21,7 +21,7 @@ class Endpoint(object):
 
     @property
     def path(self):
-        return self._path
+        raise NotImplementedError
 
     @classmethod
     def _create(cls, conn, conf, workspace, path, description=None):
