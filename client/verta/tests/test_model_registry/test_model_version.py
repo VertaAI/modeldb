@@ -154,15 +154,12 @@ class TestModelVersion:
 
 
         model_version.del_artifact("coef-2")
-        model_version = registered_model.get_version(id=model_version.id)
         assert len(model_version.get_artifact_keys()) == 2
 
         model_version.del_artifact("coef")
-        model_version = registered_model.get_version(id=model_version.id)
         assert len(model_version.get_artifact_keys()) == 1
 
         model_version.del_artifact("coef-3")
-        model_version = registered_model.get_version(id=model_version.id)
         assert len(model_version.get_artifact_keys()) == 0
 
     def test_log_environment(self, registered_model):
