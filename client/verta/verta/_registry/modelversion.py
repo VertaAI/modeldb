@@ -54,6 +54,10 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
 
+    def get_artifact_keys(self):
+        self._refresh_cache()
+        return set(map(lambda artifact: artifact.key, self._msg.artifacts))
+
     @classmethod
     def _generate_default_name(cls):
         return "ModelVersion {}".format(_utils.generate_default_name())
