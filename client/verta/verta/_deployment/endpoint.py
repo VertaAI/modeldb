@@ -77,13 +77,5 @@ class Endpoint(object):
         # TODO: check if isinstance(run, experimentrun.ExperimentRun)
         # TODO: check if isinstance(strategy, deployment._UpdateStrategy)
 
-        # TODO: POST "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages".format(scheme, socket, workspace, self.id)
-        #       to create a stage
-
-        # TODO: POST "{}://{}/api/v1/deployment/workspace/{}/builds".format(scheme, socket, workspace)
-        #       to create a build. _utils.make_request(..., `json={'run_id': run.id}`)
-
-        # TODO: PUT
-
     def get_status(self):
         raise NotImplementedError
