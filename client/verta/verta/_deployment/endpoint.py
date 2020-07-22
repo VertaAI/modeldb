@@ -4,10 +4,12 @@ from __future__ import print_function
 
 from .. import deployment
 from .._tracking import experimentrun
+from .._internal_utils import _utils
 
 
 class Endpoint(object):
     def __init__(self, conn, conf, workspace, id):
+        self._conn = conn
         self.workspace = workspace
         self.id = id
 
@@ -73,6 +75,22 @@ class Endpoint(object):
         # TODO: iterate through response.json().get('endpoints', []) to find matching creator_request.path
 
     def update(self, run, strategy):
+        if not isinstance(run, experimentrun.ExperimentRun):
+            raise TypeError("run must be an ExperimentRun")
+
+        if not isinstance(strategy, deployment._UpdateStrategy):
+            raise TypeError("strategy must be an _UpdateStrategy")
+
+        # Check if a stage exists:
+        endpoint = "{}://{}/api/v1/depoloyment//workspace/{}/endpoints/{}/stages".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id
+        )
+        response = _utils.make_request("GET", endpoint, self._conn, params={})
+
+
         raise NotImplementedError
         # TODO: check if isinstance(run, experimentrun.ExperimentRun)
         # TODO: check if isinstance(strategy, deployment._UpdateStrategy)
