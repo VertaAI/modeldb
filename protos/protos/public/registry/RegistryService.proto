@@ -337,7 +337,7 @@ service RegistryService {
 
     rpc CreateModelVersion(SetModelVersion) returns (SetModelVersion.Response) {
         option (google.api.http) = {
-            post: "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/versions"
+            post: "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions"
             body: "model_version"
             additional_bindings {
                 post: "/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions"
@@ -351,7 +351,7 @@ service RegistryService {
             put: "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}"
             body: "model_version"
             additional_bindings {
-                put: "/v1/registry/registered_model/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}"
+                put: "/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}"
                 body: "model_version"
             }
         };
@@ -371,27 +371,27 @@ service RegistryService {
 
     rpc getUrlForArtifact(GetUrlForArtifact) returns (GetUrlForArtifact.Response) {
         option (google.api.http) = {
-            post: "/v1/registry/versions/{model_version_id}/getUrlForArtifact"
+            post: "/v1/registry/model_versions/{model_version_id}/getUrlForArtifact"
             body: "*"
         };
     };
 
     rpc commitArtifactPart(CommitArtifactPart) returns (CommitArtifactPart.Response) {
         option (google.api.http) = {
-            post: "/v1/registry/versions/{model_version_id}/commitArtifactPart"
+            post: "/v1/registry/model_versions/{model_version_id}/commitArtifactPart"
             body: "*"
         };
     };
 
     rpc getCommittedArtifactParts(GetCommittedArtifactParts) returns (GetCommittedArtifactParts.Response) {
         option (google.api.http) = {
-            get: "/v1/registry/versions/{model_version_id}/getCommittedArtifactParts"
+            get: "/v1/registry/model_versions/{model_version_id}/getCommittedArtifactParts"
         };
     };
 
     rpc commitMultipartArtifact(CommitMultipartArtifact) returns (CommitMultipartArtifact.Response) {
         option (google.api.http) = {
-            post: "/v1/registry/versions/{model_version_id}/commitMultipartArtifact"
+            post: "/v1/registry/model_versions/{model_version_id}/commitMultipartArtifact"
             body: "*"
         };
     };

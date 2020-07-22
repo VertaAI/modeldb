@@ -150,14 +150,14 @@
         ]
       }
     },
-    "/registry/registered_model/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}": {
-      "put": {
-        "operationId": "RegistryService_UpdateModelVersion2",
+    "/registry/model_versions/{model_version_id}/commitArtifactPart": {
+      "post": {
+        "operationId": "RegistryService_commitArtifactPart",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registrySetModelVersionResponse"
+              "$ref": "#/definitions/registryCommitArtifactPartResponse"
             }
           },
           "default": {
@@ -169,16 +169,8 @@
         },
         "parameters": [
           {
-            "name": "id.model_id.registered_model_id",
-            "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id",
-            "description": "ModelVersion referred to by id",
+            "name": "model_version_id",
+            "description": "id of model version",
             "in": "path",
             "required": true,
             "type": "string",
@@ -189,7 +181,126 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryModelVersion"
+              "$ref": "#/definitions/registryCommitArtifactPart"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/model_versions/{model_version_id}/commitMultipartArtifact": {
+      "post": {
+        "operationId": "RegistryService_commitMultipartArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryCommitMultipartArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "description": "id of model version",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryCommitMultipartArtifact"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/model_versions/{model_version_id}/getCommittedArtifactParts": {
+      "get": {
+        "operationId": "RegistryService_getCommittedArtifactParts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryGetCommittedArtifactPartsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "description": "id of model version",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "key",
+            "description": "artifact key.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/model_versions/{model_version_id}/getUrlForArtifact": {
+      "post": {
+        "operationId": "RegistryService_getUrlForArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryGetUrlForArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "description": "id of model version",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryGetUrlForArtifact"
             }
           }
         ],
@@ -318,6 +429,52 @@
             "in": "query",
             "required": false,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
+      "put": {
+        "operationId": "RegistryService_UpdateModelVersion2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySetModelVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryModelVersion"
+            }
           }
         ],
         "tags": [
@@ -494,14 +651,14 @@
         ]
       }
     },
-    "/registry/versions/{model_version_id}/commitArtifactPart": {
+    "/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions": {
       "post": {
-        "operationId": "RegistryService_commitArtifactPart",
+        "operationId": "RegistryService_CreateModelVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryCommitArtifactPartResponse"
+              "$ref": "#/definitions/registrySetModelVersionResponse"
             }
           },
           "default": {
@@ -513,138 +670,25 @@
         },
         "parameters": [
           {
-            "name": "model_version_id",
-            "description": "id of model version",
+            "name": "id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryCommitArtifactPart"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/versions/{model_version_id}/commitMultipartArtifact": {
-      "post": {
-        "operationId": "RegistryService_commitMultipartArtifact",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryCommitMultipartArtifactResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "model_version_id",
-            "description": "id of model version",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryCommitMultipartArtifact"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/versions/{model_version_id}/getCommittedArtifactParts": {
-      "get": {
-        "operationId": "RegistryService_getCommittedArtifactParts",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryGetCommittedArtifactPartsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "model_version_id",
-            "description": "id of model version",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "key",
-            "description": "artifact key.",
-            "in": "query",
-            "required": false,
             "type": "string"
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/versions/{model_version_id}/getUrlForArtifact": {
-      "post": {
-        "operationId": "RegistryService_getUrlForArtifact",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryGetUrlForArtifactResponse"
-            }
           },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
           {
-            "name": "model_version_id",
-            "description": "id of model version",
+            "name": "id.model_id.named_id.name",
+            "description": "Model Name",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           },
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryGetUrlForArtifact"
+              "$ref": "#/definitions/registryModelVersion"
             }
           }
         ],
@@ -796,52 +840,6 @@
             "required": true,
             "type": "string",
             "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryModelVersion"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/versions": {
-      "post": {
-        "operationId": "RegistryService_CreateModelVersion",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registrySetModelVersionResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_id.named_id.name",
-            "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
           },
           {
             "name": "body",

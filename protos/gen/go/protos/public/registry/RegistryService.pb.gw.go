@@ -3219,13 +3219,13 @@ var (
 
 	pattern_RegistryService_GetModelVersion_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "registry", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_CreateModelVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "registry", "workspaces", "id.model_id.named_id.workspace_name", "registered_models", "id.model_id.named_id.name", "versions"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_CreateModelVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "registry", "workspaces", "id.model_id.named_id.workspace_name", "registered_models", "id.model_id.named_id.name", "model_versions"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_RegistryService_CreateModelVersion_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "registered_models", "id.model_id.registered_model_id", "model_versions"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_RegistryService_UpdateModelVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "registry", "workspaces", "id.model_id.named_id.workspace_name", "registered_models", "id.model_id.named_id.name", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_UpdateModelVersion_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "registry", "registered_model", "id.model_id.registered_model_id", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_UpdateModelVersion_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "registry", "registered_models", "id.model_id.registered_model_id", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_RegistryService_DeleteModelVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "registry", "workspaces", "id.model_id.named_id.workspace_name", "registered_models", "id.model_id.named_id.name", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
@@ -3233,13 +3233,13 @@ var (
 
 	pattern_RegistryService_DeleteModelVersion_2 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "registry", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_GetUrlForArtifact_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "versions", "model_version_id", "getUrlForArtifact"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_GetUrlForArtifact_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "model_version_id", "getUrlForArtifact"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_CommitArtifactPart_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "versions", "model_version_id", "commitArtifactPart"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_CommitArtifactPart_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "model_version_id", "commitArtifactPart"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_GetCommittedArtifactParts_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "versions", "model_version_id", "getCommittedArtifactParts"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_GetCommittedArtifactParts_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "model_version_id", "getCommittedArtifactParts"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_CommitMultipartArtifact_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "versions", "model_version_id", "commitMultipartArtifact"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_CommitMultipartArtifact_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "model_version_id", "commitMultipartArtifact"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
