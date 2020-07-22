@@ -44,6 +44,8 @@ import ai.verta.modeldb.GetObservations;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetVersionedInput;
+import ai.verta.modeldb.ListBlobExperimentRunsRequest;
+import ai.verta.modeldb.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.LogArtifact;
 import ai.verta.modeldb.LogArtifacts;
 import ai.verta.modeldb.LogAttribute;
@@ -80,6 +82,8 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -110,6 +114,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   private ExperimentDAO experimentDAO;
   private ArtifactStoreDAO artifactStoreDAO;
   private DatasetVersionDAO datasetVersionDAO;
+  private RepositoryDAO repositoryDAO;
+  private CommitDAO commitDAO;
 
   public ExperimentRunServiceImpl(
       AuthService authService,
@@ -118,7 +124,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      DatasetVersionDAO datasetVersionDAO,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.experimentRunDAO = experimentRunDAO;
@@ -126,6 +134,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     this.experimentDAO = experimentDAO;
     this.artifactStoreDAO = artifactStoreDAO;
     this.datasetVersionDAO = datasetVersionDAO;
+    this.commitDAO = commitDAO;
+    this.repositoryDAO = repositoryDAO;
   }
 
   private void validateExperimentEntity(String experimentId) throws InvalidProtocolBufferException {
@@ -2419,6 +2429,31 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
+  public void listCommitExperimentRuns(
+      ListCommitExperimentRunsRequest request,
+      StreamObserver<ListCommitExperimentRunsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getCommitSha().isEmpty()) {
+        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ListCommitExperimentRunsRequest.Response response =
+          experimentRunDAO.listCommitExperimentRuns(
+              projectDAO,
+              request,
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, ListCommitExperimentRunsRequest.Response.getDefaultInstance());
+    }
+  }
+
   public void deleteHyperparameters(
       DeleteHyperparameters request,
       StreamObserver<DeleteHyperparameters.Response> responseObserver) {
@@ -2451,6 +2486,31 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
+  public void listBlobExperimentRuns(
+      ListBlobExperimentRunsRequest request,
+      StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getCommitSha().isEmpty()) {
+        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ListBlobExperimentRunsRequest.Response response =
+          experimentRunDAO.listBlobExperimentRuns(
+              projectDAO,
+              request,
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
+    }
+  }
+
   public void deleteMetrics(
       DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
     QPSCountResource.inc();

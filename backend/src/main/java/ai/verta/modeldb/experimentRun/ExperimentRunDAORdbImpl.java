@@ -1385,13 +1385,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       CriteriaQuery<ExperimentRunEntity> criteriaQuery =
           builder.createQuery(ExperimentRunEntity.class);
       Root<ExperimentRunEntity> experimentRunRoot = criteriaQuery.from(ExperimentRunEntity.class);
-      experimentRunRoot.alias("exp");
+      experimentRunRoot.alias("run");
 
       Root<ProjectEntity> projectEntityRoot = criteriaQuery.from(ProjectEntity.class);
       projectEntityRoot.alias("pr");
 
       Root<ExperimentEntity> experimentEntityRoot = criteriaQuery.from(ExperimentEntity.class);
-      projectEntityRoot.alias("ex");
+      experimentEntityRoot.alias("ex");
 
       List<Predicate> finalPredicatesList = new ArrayList<>();
       finalPredicatesList.add(
