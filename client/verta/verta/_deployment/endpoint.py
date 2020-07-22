@@ -82,7 +82,6 @@ class Endpoint(object):
         # TODO: check if isinstance(strategy, deployment._UpdateStrategy)
 
     def get_status(self):
-        # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
             self._conn.scheme,
             self._conn.socket,
