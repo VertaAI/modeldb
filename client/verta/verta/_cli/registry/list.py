@@ -34,22 +34,16 @@ def lst_model(filter, output, workspace):
 
     models = client.registered_models.with_workspace(workspace).find(filter)
 
-    click.echo("filter: {}".format(filter))
-    click.echo("output: {}".format(output))
-
-    click.echo("result count: {}".format(len(models)))
-    click.echo("Listing all models")
+    click.echo()
     if output == "json":
         array = reduce(lambda a, b: "{}, {}".format(a, b),
                map(lambda model: json.dumps(_utils.proto_to_json(model._msg)), models))
         result = "\"models\": [{}]".format(array)
         result = '{' + result + '}'
-        click.echo()
         click.echo(result)
     else:
         for model in models:
             model_repr = model._msg.name
-            click.echo()
             click.echo(model_repr)
 
 

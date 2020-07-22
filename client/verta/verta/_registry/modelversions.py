@@ -15,6 +15,7 @@ class RegisteredModelVersions(_utils.LazyList):
     _VALID_QUERY_KEYS = {
         'id',
         'registered_model_id',
+        'experiment_run_id',
         'version',
         'time_created',
         'time_updated',

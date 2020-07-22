@@ -19,7 +19,7 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 
 from .._tracking.entity import _ModelDBEntity
-from ..environment import _Environment
+from ..environment import _Environment, Python
 
 
 class RegisteredModelVersion(_ModelDBEntity):
@@ -54,6 +54,10 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
 
+    def get_artifact_keys(self):
+        self._refresh_cache()
+        return set(map(lambda artifact: artifact.key, self._msg.artifacts))
+
     @classmethod
     def _generate_default_name(cls):
         return "ModelVersion {}".format(_utils.generate_default_name())
@@ -87,14 +91,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         return response.model_versions[0]
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, experiment_run_id=None):
         ModelVersionMessage = _ModelVersionService.ModelVersion
         SetModelVersionMessage = _ModelVersionService.SetModelVersion
         registered_model_id = ctx.registered_model.id
 
         model_version_msg = ModelVersionMessage(registered_model_id=registered_model_id, version=name,
                                                 description=desc, labels=tags,
-                                                time_created=date_created, time_updated=date_created)
+                                                time_created=date_created, time_updated=date_created,
+                                                experiment_run_id=experiment_run_id)
         endpoint = "/api/v1/registry/{}/versions".format(registered_model_id)
         response = conn.make_proto_request("POST", endpoint, body=model_version_msg)
         model_version = conn.must_proto_response(response, SetModelVersionMessage.Response).model_version
@@ -192,6 +197,13 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         self._msg.ClearField("environment")
         self._update()
+
+    def get_environment(self):
+        self._refresh_cache()
+        if not self.has_environment:
+            raise RuntimeError("environment was not previously set.")
+
+        return Python._from_proto(self._msg)
 
     def _get_url_for_artifact(self, key, method, artifact_type, part_num=0):
         if method.upper() not in ("GET", "PUT"):
@@ -340,6 +352,24 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._clear_cache()
         self._refresh_cache()
         return self._msg.labels
+
+    def download_docker_context(self, download_to_path):
+        """
+        Downloads this Model Version's Docker context ``tgz``.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download Docker context to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where Docker context was downloaded to. Matches `download_to_path`.
+
+        """
+        # should be same as ExperimentRun.download_docker_context()
+        raise NotImplementedError
 
     def archive(self):
         if self.is_archived:

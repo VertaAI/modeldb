@@ -109,6 +109,7 @@ class TestBaseDatasetVersions:
         assert version.id == same_version.id
 
     @pytest.mark.parametrize("tags", [TAG, [TAG]])
+    @pytest.mark.skip(reason="api no longer  supported by backend")
     def test_tags_is_list_of_str(self, client, created_datasets, tags):
         dataset = client.set_dataset(tags=tags)
         created_datasets.append(dataset)

@@ -91,6 +91,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
       Dataset dataset = datasetDAO.getDatasetById(request.getDatasetId());
 
+      if (dataset.getDatasetType() != request.getDatasetType()) {
+        logAndThrowError(
+            ModelDBMessages.DATASET_VERSION_TYPE_NOT_MATCH_WITH_DATSET_TYPE,
+            Code.INVALID_ARGUMENT_VALUE,
+            Any.pack(CreateDatasetVersion.Response.getDefaultInstance()));
+      }
+
       /*Get the user info from the Context*/
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetVersion datasetVersion =

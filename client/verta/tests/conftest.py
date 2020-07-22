@@ -291,6 +291,30 @@ def experiment_run(client):
 
 
 @pytest.fixture
+def model_for_deployment(strs):
+    np = pytest.importorskip("numpy")
+    pd = pytest.importorskip("pandas")
+    sklearn = pytest.importorskip("sklearn")
+    from sklearn import linear_model
+
+    num_rows, num_cols = 36, 6
+
+    data = pd.DataFrame(np.tile(np.arange(num_rows).reshape(-1, 1),
+                                num_cols),
+                        columns=strs[:num_cols])
+    X_train = data.iloc[:,:-1]  # pylint: disable=bad-whitespace
+    y_train = data.iloc[:, -1]
+
+    return {
+        'model': sklearn.linear_model.LogisticRegression(),
+        'model_api': verta.utils.ModelAPI(X_train, y_train),
+        'requirements': six.StringIO("scikit-learn=={}".format(sklearn.__version__)),
+        'train_features': X_train,
+        'train_targets': y_train,
+    }
+
+
+@pytest.fixture
 def repository(client):
     name = _utils.generate_default_name()
     repo = client.get_or_create_repository(name)
