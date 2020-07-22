@@ -897,9 +897,6 @@ class Client(object):
     def set_endpoint(self, *args, **kwargs):
         return self.get_or_create_endpoint(*args, **kwargs)
 
-    def endpoints(self, workspace=None):
-        workspace = self._set_from_config_if_none(workspace, "workspace")
-        if workspace is None:
-            workspace = self._get_personal_workspace()
-
+    @property
+    def endpoints(self):
         raise NotImplementedError
