@@ -9,9 +9,6 @@ from verta._registry import RegisteredModelVersion
 import os
 
 
-pytest.skip("registry not yet available in backend", allow_module_level=True)
-
-
 class TestCreate:
     def test_create_model(self):
         model_name = RegisteredModel._generate_default_name()
@@ -282,5 +279,3 @@ class TestUpdate:
 
         os.remove(filename)
         os.remove(classifier_name)
-
-
