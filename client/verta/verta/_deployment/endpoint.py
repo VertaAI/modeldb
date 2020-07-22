@@ -10,6 +10,7 @@ from .._internal_utils import _utils
 class Endpoint(object):
     def __init__(self, conn, conf, workspace, id):
         self._conn = conn
+        self.conf = conf
         self.workspace = workspace
         self.id = id
 
@@ -19,7 +20,7 @@ class Endpoint(object):
 
     @property
     def path(self):
-        raise NotImplementedError
+        return self._path
 
     @classmethod
     def _create(cls, conn, conf, workspace, path, description=None):
@@ -78,13 +79,13 @@ class Endpoint(object):
         if not isinstance(run, experimentrun.ExperimentRun):
             raise TypeError("run must be an ExperimentRun")
 
-        if not isinstance(strategy, deployment._UpdateStrategy):
+        if not issubclass(strategy, deployment._UpdateStrategy):
             raise TypeError("strategy must be an _UpdateStrategy")
 
         stage_id = self._get_active_stage()
 
         # Create new build:
-        url = "{}://{}/api/v1/depoloyment/workspace/{}/builds".format(
+        url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
             self._conn.scheme,
             self._conn.socket,
             self.workspace
@@ -94,7 +95,7 @@ class Endpoint(object):
         build_id = response.json()["id"]
 
         # Update stages with new build
-        url = "{}://{}/api/v1/depoloyment/workspace/{}/endpoints/{}/stages/{}/update".format(
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
             self._conn.scheme,
             self._conn.socket,
             self.workspace,
@@ -106,13 +107,14 @@ class Endpoint(object):
 
     def _get_active_stage(self):
         # Check if a stage exists:
-        url = "{}://{}/api/v1/depoloyment/workspace/{}/endpoints/{}/stages".format(
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages".format(
             self._conn.scheme,
             self._conn.socket,
             self.workspace,
             self.id
         )
         response = _utils.make_request("GET", url, self._conn, params={})
+
         _utils.raise_for_http_error(response)
         response = response.json()
 
@@ -125,13 +127,13 @@ class Endpoint(object):
         return self._create_stage()
 
     def _create_stage(self):
-        url = "{}://{}/api/v1/depoloyment/workspace/{}/endpoints/{}/stages".format(
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages".format(
             self._conn.scheme,
             self._conn.socket,
             self.workspace,
             self.id
         )
-        response = _utils.make_request("POST", url, self._conn, params={"name": self.path})
+        response = _utils.make_request("POST", url, self._conn, json={"name": self.path})
         _utils.raise_for_http_error(response)
         return response.json()["id"]
 
