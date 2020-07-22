@@ -9,7 +9,7 @@ from verta._registry import RegisteredModelVersion
 import os
 
 
-#pytest.skip("registry not yet available in backend", allow_module_level=True)
+pytest.skip("registry not yet available in backend", allow_module_level=True)
 
 
 class TestCreate:
