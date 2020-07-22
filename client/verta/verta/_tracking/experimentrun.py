@@ -276,6 +276,8 @@ class ExperimentRun(_ModelDBEntity):
         else:
             self._upload_artifact(key, artifact_stream)
 
+        self._clear_cache()
+
     def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
         """
         Uploads `artifact_stream` to ModelDB artifact store.
