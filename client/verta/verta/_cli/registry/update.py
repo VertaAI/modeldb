@@ -64,5 +64,5 @@ def update_model_version(model_name, version_name, label, model, artifact, works
         for l in label:
             model_version.add_label(l)
 
-    if model:
+    if model is not None:
         model_version.log_model(model, True)
