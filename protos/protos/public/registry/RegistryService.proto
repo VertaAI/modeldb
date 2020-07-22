@@ -6,7 +6,6 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/regi
 option java_multiple_files = true;
 
 import "google/api/annotations.proto";
-import "google/protobuf/struct.proto";
 import "common/CommonService.proto";
 import "modeldb/versioning/Environment.proto";
 
@@ -295,7 +294,7 @@ service RegistryService {
             put: "/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}"
             body: "registered_model"
             additional_bindings {
-                put: "/v1/registry/{id.registered_model_id}"
+                put: "/v1/registry/registered_models/{id.registered_model_id}"
                 body: "registered_model"
             }
         };
@@ -305,7 +304,7 @@ service RegistryService {
         option (google.api.http) = {
             delete: "/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}"
             additional_bindings {
-                delete: "/v1/registry/{id.registered_model_id}"
+                delete: "/v1/registry/registered_models/{id.registered_model_id}"
             }
         };
     }
@@ -313,10 +312,14 @@ service RegistryService {
     //CRUD for Model Version
     rpc FindModelVersion(FindModelVersionRequest) returns (FindModelVersionRequest.Response) {
         option (google.api.http) = {
-            post: "/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/versions/find"
+            post: "/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/model_versions/find"
             body: "*"
             additional_bindings {
-                post: "/v1/registry/{id.registered_model_id}/versions/find"
+                post: "/v1/registry/registered_models/{id.registered_model_id}/model_versions/find"
+                body: "*"
+            }
+            additional_bindings {
+                post: "/v1/registry/model_versions/find"
                 body: "*"
             }
         };
@@ -324,9 +327,9 @@ service RegistryService {
 
     rpc GetModelVersion(GetModelVersionRequest) returns (GetModelVersionRequest.Response) {
         option (google.api.http) = {
-            get: "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/versions/{id.model_version_id}"
+            get: "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}"
             additional_bindings {
-                get: "/v1/registry/registered_model_versions/{id.model_version_id}"
+                get: "/v1/registry/model_versions/{id.model_version_id}"
             }
         };
     };
@@ -337,7 +340,7 @@ service RegistryService {
             post: "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/versions"
             body: "model_version"
             additional_bindings {
-                post: "/v1/registry/{id.model_id.registered_model_id}/versions"
+                post: "/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions"
                 body: "model_version"
             }
         };
@@ -345,10 +348,10 @@ service RegistryService {
 
     rpc UpdateModelVersion(SetModelVersion) returns (SetModelVersion.Response) {
         option (google.api.http) = {
-            put: "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/versions/{id.model_version_id}"
+            put: "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}"
             body: "model_version"
             additional_bindings {
-                put: "/v1/registry/{id.model_id.registered_model_id}/versions/{id.model_version_id}"
+                put: "/v1/registry/registered_model/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}"
                 body: "model_version"
             }
         };
@@ -356,9 +359,12 @@ service RegistryService {
 
     rpc DeleteModelVersion(DeleteModelVersionRequest) returns (DeleteModelVersionRequest.Response) {
         option (google.api.http) = {
-            delete: "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/versions/{id.model_version_id}"
+            delete: "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}"
             additional_bindings {
-                delete: "/v1/registry/{id.model_id.registered_model_id}/versions/{id.model_version_id}"
+                delete: "/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}"
+            }
+            additional_bindings {
+                delete: "/v1/registry/model_versions/{id.model_version_id}"
             }
         };
     }
