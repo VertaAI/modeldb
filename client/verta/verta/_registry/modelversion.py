@@ -24,7 +24,7 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 
 from .._tracking.entity import _ModelDBEntity
-from ..environment import _Environment
+from ..environment import _Environment, Python
 
 
 class RegisteredModelVersion(_ModelDBEntity):
@@ -53,6 +53,15 @@ class RegisteredModelVersion(_ModelDBEntity):
     def registered_model_id(self):
         self._refresh_cache()
         return self._msg.registered_model_id
+
+    @property
+    def is_archived(self):
+        self._refresh_cache()
+        return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
+
+    def get_artifact_keys(self):
+        self._refresh_cache()
+        return set(map(lambda artifact: artifact.key, self._msg.artifacts))
 
     @classmethod
     def _generate_default_name(cls):
@@ -87,14 +96,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         return response.model_versions[0]
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, experiment_run_id=None):
         ModelVersionMessage = _ModelVersionService.ModelVersion
         SetModelVersionMessage = _ModelVersionService.SetModelVersion
         registered_model_id = ctx.registered_model.id
 
         model_version_msg = ModelVersionMessage(registered_model_id=registered_model_id, version=name,
                                                 description=desc, labels=tags,
-                                                time_created=date_created, time_updated=date_created)
+                                                time_created=date_created, time_updated=date_created,
+                                                experiment_run_id=experiment_run_id)
         endpoint = "/api/v1/registry/{}/versions".format(registered_model_id)
         response = conn.make_proto_request("POST", endpoint, body=model_version_msg)
         model_version = conn.must_proto_response(response, SetModelVersionMessage.Response).model_version
@@ -103,7 +113,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         return model_version
 
     def log_model(self, model, overwrite=False):
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
 
@@ -132,8 +142,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         return _artifact_utils.deserialize_model(model_artifact)
 
     def del_model(self):
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         self._msg.ClearField("model")
         self._update()
 
@@ -141,7 +150,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         if key == "model":
             raise ValueError("the key \"model\" is reserved for model; consider using log_model() instead")
 
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         same_key_ind = -1
 
         for i in range(len(self._msg.artifacts)):
@@ -199,7 +208,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         return artifact_stream
 
     def del_artifact(self, key):
-        self._refresh_cache()
+        self._fetch_with_no_cache()
 
         ind = -1
         for i in range(len(self._msg.artifacts)):
@@ -218,14 +227,21 @@ class RegisteredModelVersion(_ModelDBEntity):
         if not isinstance(env, _Environment):
             raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
 
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         self._msg.environment.CopyFrom(env._msg)
         self._update()
 
     def del_environment(self):
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         self._msg.ClearField("environment")
         self._update()
+
+    def get_environment(self):
+        self._refresh_cache()
+        if not self.has_environment:
+            raise RuntimeError("environment was not previously set.")
+
+        return Python._from_proto(self._msg)
 
     def _get_url_for_artifact(self, key, method, artifact_type, part_num=0):
         if method.upper() not in ("GET", "PUT"):
@@ -373,8 +389,7 @@ class RegisteredModelVersion(_ModelDBEntity):
     def add_label(self, label):
         if label is None:
             raise ValueError("label is not specified")
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         if label not in self._msg.labels:
             self._msg.labels.append(label)
             self._update()
@@ -382,16 +397,40 @@ class RegisteredModelVersion(_ModelDBEntity):
     def del_label(self, label):
         if label is None:
             raise ValueError("label is not specified")
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         if label in self._msg.labels:
             self._msg.labels.remove(label)
             self._update()
 
     def get_labels(self):
-        self._clear_cache()
         self._refresh_cache()
         return self._msg.labels
+
+    def download_docker_context(self, download_to_path):
+        """
+        Downloads this Model Version's Docker context ``tgz``.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download Docker context to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where Docker context was downloaded to. Matches `download_to_path`.
+
+        """
+        # should be same as ExperimentRun.download_docker_context()
+        raise NotImplementedError
+
+    def archive(self):
+        if self.is_archived:
+            raise RuntimeError("the version has already been archived")
+
+        self._fetch_with_no_cache()
+        self._msg.archived = _CommonCommonService.TernaryEnum.TRUE
+        self._update()
 
     def _update(self):
         response = self._conn.make_proto_request("PUT", "/api/v1/registry/{}/versions/{}".format(self._msg.registered_model_id, self.id),
@@ -399,3 +438,5 @@ class RegisteredModelVersion(_ModelDBEntity):
         Message = _ModelVersionService.SetModelVersion
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
+        self._clear_cache()
+

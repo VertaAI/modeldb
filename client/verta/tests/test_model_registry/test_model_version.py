@@ -11,6 +11,27 @@ from verta.environment import Python
 pytest.skip("registry not yet available in backend", allow_module_level=True)
 
 
+class TestMDBIntegration:
+    def test_from_run(self, experiment_run, model_for_deployment, registered_model):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+        # TODO: run.log_artifact(), doesn't matter what
+
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id,
+            name="From Run {}".format(experiment_run.id),
+        )
+
+        # TODO: assert model_version.get_environment() has
+        #       - Python version
+        #       - requirement scikit-learn
+
+        # TODO: something like
+        assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
+
+        # TODO: version.get_asset() has artifact from run.log_artifact()
+
+
 class TestModelVersion:
     def test_get_by_name(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
@@ -157,11 +178,10 @@ class TestModelVersion:
         model_version = registered_model.get_version(id=model_version.id)
         assert model_version.has_model
         model_version.del_model()
+        assert (not model_version.has_model)
 
         model_version = registered_model.get_version(id=model_version.id)
         assert (not model_version.has_model)
-
-        assert len(model_version._msg.artifacts) == 0
 
     def test_log_environment(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
@@ -171,7 +191,7 @@ class TestModelVersion:
         model_version.log_environment(env)
 
         model_version = registered_model.get_version(id=model_version.id)
-        assert(str(env) == str(Python._from_proto(model_version._msg)))
+        assert str(env) == str(model_version.get_environment())
 
     def test_del_environment(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
@@ -183,6 +203,11 @@ class TestModelVersion:
 
         model_version = registered_model.get_version(id=model_version.id)
         assert not model_version.has_environment
+
+        with pytest.raises(RuntimeError) as excinfo:
+            model_version.get_environment()
+
+        assert "environment was not previously set" in str(excinfo.value)
 
     def test_labels(self, client):
         registered_model = client.set_registered_model()
@@ -228,3 +253,29 @@ class TestModelVersion:
             msg_other.model.CopyFrom(item._msg.model)
             assert labels1 == labels2
             assert item._msg == msg_other
+
+    def test_archive(self, model_version):
+        assert (not model_version.is_archived)
+
+        model_version.archive()
+        assert model_version.is_archived
+
+        with pytest.raises(RuntimeError) as excinfo:
+            model_version.archive()
+
+        assert "the version has already been archived" in str(excinfo.value)
+
+    def test_clear_cache(self, registered_model):
+        # Multiple log_artifacts calls, which would potentially fail without clear_cache
+        model_version = registered_model.get_or_create_version(name="my version")
+        model_version_2 = registered_model.get_version(id=model_version.id) # same version object
+
+        np = pytest.importorskip("numpy")
+        artifact = np.random.random((36, 12))
+
+        for i in range(2):
+            model_version.log_artifact("artifact_{}".format(2 * i), artifact)
+            model_version_2.log_artifact("artifact_{}".format(2 * i + 1), artifact)
+
+        model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
+        assert len(model_version._msg.artifacts) == 4

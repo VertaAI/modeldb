@@ -126,7 +126,7 @@ class Commit(
     diffs: Option[List[VersioningBlobDiff]] = None,
     updateBranch: Boolean = true
   )(implicit ec: ExecutionContext) = {
-      clientSet.versioningService.CreateCommit2(
+      clientSet.versioningService.VersioningService_CreateCommit2(
         body = VersioningCreateCommitRequest(
           commit = Some(addMessage(message)),
           blobs = blobs,
@@ -197,7 +197,7 @@ class Commit(
   private def loadBlobsFromId(
     id: String
   )(implicit ec: ExecutionContext): Try[Map[String, Blob]] = {
-    clientSet.versioningService.ListCommitBlobs2(
+    clientSet.versioningService.VersioningService_ListCommitBlobs2(
       commit_sha = id,
       repository_id_repo_id = repo.id
     ) // Try[VersioningListCommitBlobsRequestResponse]
@@ -250,7 +250,7 @@ class Commit(
    */
   def newBranch(branch: String)(implicit ec: ExecutionContext) = {
     checkSaved("Commit must be saved before it can be attached to a branch").flatMap(_ =>
-      clientSet.versioningService.SetBranch2(
+      clientSet.versioningService.VersioningService_SetBranch2(
         body = commit.commit_sha.get,
         branch = branch,
         repository_id_repo_id = repo.id
@@ -263,7 +263,7 @@ class Commit(
    */
   def tag(tag: String)(implicit ec: ExecutionContext) = {
     checkSaved("Commit must be saved before it can be tagged").flatMap(_ =>
-      clientSet.versioningService.SetTag2(
+      clientSet.versioningService.VersioningService_SetTag2(
           body = commit.commit_sha.get,
           repository_id_repo_id = repo.id,
           tag = tag
@@ -281,7 +281,7 @@ class Commit(
     checkSaved("This commit must be saved").flatMap(_ => other.checkSaved("Other commit must be saved"))
       .flatMap(_ => checkSameRepository(other))
       .flatMap(_ => {
-        clientSet.versioningService.MergeRepositoryCommits2(
+        clientSet.versioningService.VersioningService_MergeRepositoryCommits2(
           /** TODO: is dry run? */
           body = VersioningMergeRepositoryCommitsRequest(
             commit_sha_a = other.id,
@@ -329,7 +329,7 @@ class Commit(
     // (the base of the modification)
     val commitSHA = commit.commit_sha.getOrElse(commit.parent_shas.get.head)
 
-    clientSet.versioningService.ListCommitsLog4(
+    clientSet.versioningService.VersioningService_ListCommitsLog4(
       repository_id_repo_id = repo.id,
       commit_sha = commitSHA
     ) // Try[VersioningListCommitsLogRequestResponse]
@@ -351,7 +351,7 @@ class Commit(
     checkSaved("This commit must be saved").flatMap(_ => other.checkSaved("Other commit must be saved"))
       .flatMap(_ => checkSameRepository(other))
       .flatMap(_ =>
-        clientSet.versioningService.RevertRepositoryCommits2(
+        clientSet.versioningService.VersioningService_RevertRepositoryCommits2(
           body = VersioningRevertRepositoryCommitsRequest(
             base_commit_sha = Some(id.get),
             commit_to_revert_sha = Some(other.id.get),
@@ -374,7 +374,7 @@ class Commit(
                  .flatMap(_ => checkSameRepository(reference.get))
       else
         Success(())
-    ).flatMap(_ => clientSet.versioningService.ComputeRepositoryDiff2(
+    ).flatMap(_ => clientSet.versioningService.VersioningService_ComputeRepositoryDiff2(
         repository_id_repo_id = repo.id,
         commit_a = Some(
           if (reference.isDefined) reference.get.id.get else commit.parent_shas.get.head
@@ -440,7 +440,7 @@ class Commit(
    *  @return the folder, if succeeds
    */
   def getFolder(location: PathList)(implicit ec: ExecutionContext): Try[Folder] = {
-    clientSet.versioningService.GetCommitComponent2(
+    clientSet.versioningService.VersioningService_GetCommitComponent2(
       commit_sha = id.get,
       repository_id_repo_id = repo.id,
       location = if (location.components.length > 0) Some(location.components) else None
@@ -517,7 +517,7 @@ class Commit(
     method: String,
     partNum: Int = 0
   )(implicit ec: ExecutionContext): Try[VersioningGetUrlForBlobVersionedResponse] = {
-    clientSet.versioningService.getUrlForBlobVersioned2(
+    clientSet.versioningService.VersioningService_getUrlForBlobVersioned2(
       VersioningGetUrlForBlobVersioned(
         commit_sha = id,
         location = Some(pathToLocation(blobPath)),
@@ -549,7 +549,7 @@ class Commit(
         Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
           try {
             uploadPart(blobPath, datasetComponentPath, inputStream, buffer)
-              .flatMap(_ => clientSet.versioningService.commitMultipartVersionedBlobArtifact(
+              .flatMap(_ => clientSet.versioningService.VersioningService_commitMultipartVersionedBlobArtifact(
                 VersioningCommitMultipartVersionedBlobArtifact(
                   commit_sha = id,
                   location = Some(pathToLocation(blobPath)),
@@ -600,7 +600,7 @@ class Commit(
           Try(new ByteArrayInputStream(buffer)).flatMap(filepart => {
             try {
               Await.result(clientSet.client.requestRaw("PUT", url, null, Map("Content-Length" -> readLen.toString), filepart), Duration.Inf)
-                .flatMap(resp => clientSet.versioningService.commitVersionedBlobArtifactPart(
+                .flatMap(resp => clientSet.versioningService.VersioningService_commitVersionedBlobArtifactPart(
                   VersioningCommitVersionedBlobArtifactPart(
                     artifact_part = Some(CommonArtifactPart(
                       etag = Some(resp.headers("ETag").get),

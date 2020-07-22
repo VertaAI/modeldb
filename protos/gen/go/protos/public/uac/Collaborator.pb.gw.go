@@ -89,7 +89,10 @@ func local_request_CollaboratorService_RemoveProjectCollaborator_0(ctx context.C
 	var protoReq RemoveCollaborator
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_CollaboratorService_RemoveProjectCollaborator_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_RemoveProjectCollaborator_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -122,7 +125,10 @@ func local_request_CollaboratorService_GetProjectCollaborators_0(ctx context.Con
 	var protoReq GetCollaborator
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_CollaboratorService_GetProjectCollaborators_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_GetProjectCollaborators_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -189,7 +195,10 @@ func local_request_CollaboratorService_RemoveDatasetCollaborator_0(ctx context.C
 	var protoReq RemoveCollaborator
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_CollaboratorService_RemoveDatasetCollaborator_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_RemoveDatasetCollaborator_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -222,7 +231,10 @@ func local_request_CollaboratorService_GetDatasetCollaborators_0(ctx context.Con
 	var protoReq GetCollaborator
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_CollaboratorService_GetDatasetCollaborators_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_GetDatasetCollaborators_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -289,7 +301,10 @@ func local_request_CollaboratorService_RemoveRepositoryCollaborator_0(ctx contex
 	var protoReq RemoveCollaborator
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_CollaboratorService_RemoveRepositoryCollaborator_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_RemoveRepositoryCollaborator_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -322,7 +337,10 @@ func local_request_CollaboratorService_GetRepositoryCollaborators_0(ctx context.
 	var protoReq GetCollaborator
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_CollaboratorService_GetRepositoryCollaborators_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_GetRepositoryCollaborators_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
