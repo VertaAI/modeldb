@@ -63,10 +63,12 @@ class RegisteredModel(_ModelDBEntity):
             raise ValueError("must specify either `name` or `id`")
 
         if id is not None:
-            return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
+            version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
         else:
-
-            return RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id)
+            version = RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id)
+        if version is None:
+            raise ValueError("Registered model version not found")
+        return version
 
     @property
     def versions(self):
