@@ -4,6 +4,7 @@ import click
 
 from .registry import registry
 from ... import Client
+from .update import update_model_version
 
 
 @registry.group(name="create")
@@ -44,7 +45,8 @@ def create_model(model_name, label, visibility, workspace):
 @click.option("--artifact", type=(str, str), multiple=True, help="Path to an artifact required for the model. The format is --artifact artifact_key path_to_artifact.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 @click.option("--from-run", help="ID of the Experiment Run to enter into the model registry. This option cannot be provided alongside --model nor --artifact.")
-def create_model_version(model_name, version_name, label, model, artifact, workspace, from_run):
+@click.pass_context
+def create_model_version(ctx, model_name, version_name, label, model, artifact, workspace, from_run):
     """Create a new registeredmodelversion entry.
     """
     if artifact and len(artifact) > len(set(map(lambda pair: pair[0], artifact))):
@@ -57,20 +59,6 @@ def create_model_version(model_name, version_name, label, model, artifact, works
     except ValueError:
         raise click.BadParameter("model {} not found".format(model_name))
 
-    model_version = registered_model.get_or_create_version(name=version_name, labels=list(label))
-
-    if artifact:
-        artifact_keys = model_version.get_artifact_keys()
-
-        for (key, _) in artifact:
-            if key == "model":
-                raise click.BadParameter("the key \"model\" is reserved for model")
-
-            if key in artifact_keys:
-                raise click.BadParameter("key \"{}\" already exists".format(key))
-
-        for (key, path) in artifact:
-            model_version.log_artifact(key, path, True)
-
-    if model is not None:
-        model_version.log_model(model, True)
+    registered_model.get_or_create_version(name=version_name, labels=list(label))
+    # labels have been added
+    ctx.invoke(update_model_version, model_name=model_name, version_name=version_name, model=model, artifact=artifact, workspace=workspace)
