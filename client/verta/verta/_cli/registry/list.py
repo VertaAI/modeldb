@@ -72,7 +72,6 @@ def lst_model_version(model_name, filter, output, workspace):
                        map(lambda model_version: json.dumps(_utils.proto_to_json(model_version._msg)), model_versions))
         result = "\"model versions\": [{}]".format(array)
         result = '{' + result + '}'
-        click.echo()
         click.echo(result)
     else:
         for model_version in model_versions:
