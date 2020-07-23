@@ -51,7 +51,7 @@ def create_model_version(model_name, version_name, label, model, artifact, works
         raise click.BadParameter("cannot have duplicate artifact keys")
 
     if from_run and (label or model or artifact):
-        raise click.BadParameter("--from_run cannot be provided alongside other options, except for --workspace")
+        raise click.BadParameter("--from-run cannot be provided alongside other options, except for --workspace")
 
     client = Client()
 
