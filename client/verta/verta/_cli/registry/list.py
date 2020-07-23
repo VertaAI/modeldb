@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
+import json
+from functools import reduce
 
 import click
 
 from .registry import registry
+from ... import Client
+from ..._internal_utils import _utils
+
 
 @registry.group(name="list")
 def lst():
@@ -25,10 +30,21 @@ def lst():
 def lst_model(filter, output, workspace):
     """List all models available.
     """
-    click.echo("Listing all models")
+    client = Client()
 
-    click.echo("filter: {}".format(filter))
-    click.echo("output: {}".format(output))
+    models = client.registered_models.with_workspace(workspace).find(filter)
+
+    click.echo()
+    if output == "json":
+        array = reduce(lambda a, b: "{}, {}".format(a, b),
+               map(lambda model: json.dumps(_utils.proto_to_json(model._msg)), models))
+        result = "\"models\": [{}]".format(array)
+        result = '{' + result + '}'
+        click.echo(result)
+    else:
+        for model in models:
+            model_repr = model._msg.name
+            click.echo(model_repr)
 
 
 @lst.command(name="registeredmodelversion")
