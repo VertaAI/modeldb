@@ -1,5 +1,6 @@
 from verta._deployment import Endpoint
 from verta.deployment.strategies import DirectUpdateStrategy, CanaryUpdateStrategy
+from verta.deployment.update_rules import AverageLatencyThreshold
 
 import time
 
@@ -18,4 +19,11 @@ class TestEndpoint:
 
         assert original_status["date_updated"] != updated_status["date_updated"]
 
-        endpoint.update(experiment_run, CanaryUpdateStrategy(interval=1, step=0.5))
+        strategy = CanaryUpdateStrategy(interval=1, step=0.5)
+        strategy.add_rule(AverageLatencyThreshold(0.8))
+        endpoint.update(experiment_run, strategy)
+        time.sleep(2) # wait for updating to complete
+        updated_status_2 = endpoint.get_status()
+
+        assert updated_status["date_updated"] != updated_status_2["date_updated"]
+        assert original_status["date_updated"] != updated_status_2["date_updated"]
