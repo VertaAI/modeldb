@@ -35,7 +35,7 @@ class RegisteredModelVersions(_utils.LazyList):
         if self._msg.id.registered_model_id == 0:
             url = "/api/v1/registry/model_versions/find"
         else:
-            url = "/api/v1/registered_models/{}/model_versions/find".format(self._msg.id.registered_model_id)
+            url = "/api/v1/registry/registered_models/{}/model_versions/find".format(self._msg.id.registered_model_id)
         response = self._conn.make_proto_request("POST", url, body=msg)
         response = self._conn.must_proto_response(response, msg.Response)
         return response.model_versions, response.total_records

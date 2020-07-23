@@ -247,7 +247,6 @@ class TestList:
         )
 
         assert not result.exception
-        assert 'result count: 2' in result.output
         assert version1_name in result.output
         assert version2_name in result.output
 
@@ -264,7 +263,6 @@ class TestList:
         )
 
         assert not result.exception
-        assert 'result count: 2' in result.output
         assert version2_1_name in result.output
         assert version2_name in result.output
 
