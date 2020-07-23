@@ -18,14 +18,18 @@ class TestEndpoint:
         assert "date_created" in status
         assert "id" in status
 
-    def test_update(self, experiment_run, model_for_deployment):
+    def test_direct_update(self, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
 
         # TODO: remove hardcoding
         endpoint = Endpoint(experiment_run._conn, experiment_run._conf, "Nhat_Pham", 210119)
 
         original_status = endpoint.get_status()
+        original_build_ids = list(map(lambda comp: comp["build_id"], original_status["components"]))
         endpoint.update(experiment_run, DirectUpdateStrategy())
+        updated_status = endpoint.get_status()
+
+        assert updated_status["status"] == "updating" or not updated_status["components"][0]["build_id"] in original_build_ids
 
     def test_canary_update(self, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
@@ -42,5 +46,7 @@ class TestEndpoint:
 
         strategy.add_rule(AverageLatencyThreshold(0.8))
         endpoint.update(experiment_run, strategy)
-        time.sleep(2) # wait for updating to complete
         updated_status = endpoint.get_status()
+
+        assert updated_status["status"] == "updating" or not updated_status["components"][0]["build_id"] in original_build_ids
+
