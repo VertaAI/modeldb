@@ -24,7 +24,7 @@ def update_model(model_name, label, workspace):
         registered_model = client.get_registered_model(model_name, workspace=workspace)
     except ValueError:
         raise click.BadParameter("model {} not found".format(model_name))
-    registered_model._msg.labels[:] = label[:]
+    registered_model._msg.labels.extend(label)
     registered_model._update()
 
 
@@ -76,6 +76,5 @@ def update_model_version(model_name, version_name, label, model, artifact, works
 
     if model is not None:
         model_version.log_model(model, True)
-
 
 
