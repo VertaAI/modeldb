@@ -66,11 +66,7 @@ def lst_model_version(model_name, filter, output, workspace):
 
     model_versions = client.registered_model_versions.with_model(registered_model).find(filter)
 
-    click.echo("filter: {}".format(filter))
-    click.echo("output: {}".format(output))
-
-    click.echo("result count: {}".format(len(model_versions)))
-    click.echo("Listing all model versions")
+    click.echo()
     if output == "json":
         array = reduce(lambda a, b: "{}, {}".format(a, b),
                        map(lambda model_version: json.dumps(_utils.proto_to_json(model_version._msg)), model_versions))
