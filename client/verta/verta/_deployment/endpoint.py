@@ -80,5 +80,8 @@ class Endpoint(object):
         # TODO: check if isinstance(run, experimentrun.ExperimentRun)
         # TODO: check if isinstance(strategy, deployment._UpdateStrategy)
 
+    def update_from_config(self, filepath):
+        raise NotImplementedError
+
     def get_status(self):
         raise NotImplementedError
