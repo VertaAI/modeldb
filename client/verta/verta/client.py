@@ -215,6 +215,10 @@ class Client(object):
         return self._ctx.registered_model
 
     @property
+    def endpoint(self):
+        return self._ctx.endpoint
+
+    @property
     def expt(self):
         return self._ctx.expt
 
@@ -887,9 +891,16 @@ class Client(object):
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
             workspace = self._get_personal_workspace()
-        Endpoint._get_or_create_by_name(self._conn, path, lambda name: None, lambda name: Endpoint._create( self._conn, self._conf, workspace, path, description))
+        if id is not None:
+            self._ctx.endpoint = Endpoint._get_by_id(self._conn, self._conf, workspace, id)
+            self._ctx.populate()
+        else:
+            self._ctx.endpoint = Endpoint._get_or_create_by_name(self._conn, path,
+                                            lambda name: None, #Endpoint._get_by_path(self._conn, self._conf, workspace, path),
+                                            lambda name: Endpoint._create( self._conn, self._conf, workspace, path, description))
+        return self._ctx.endpoint
 
-        raise NotImplementedError
+
 
     def get_endpoint(self, path=None, workspace=None, id=None):
         if path is not None and id is not None:

@@ -52,7 +52,10 @@ class Endpoint(object):
 
     @classmethod
     def _get_json_by_id(cls, conn, workspace, id):
-        raise NotImplementedError
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}".format(conn.scheme, conn.socket, workspace, id)
+        response = _utils.make_request("GET", url, conn)
+        _utils.raise_for_http_error(response)
+        return response.json()
 
     @classmethod
     def _get_or_create_by_name(cls, conn, name, getter, creator):
