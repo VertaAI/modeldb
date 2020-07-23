@@ -134,7 +134,7 @@ class Endpoint(object):
             self.workspace,
             self.id
         )
-        response = _utils.make_request("POST", url, self._conn, json={"name": self.path})
+        response = _utils.make_request("POST", url, self._conn, json={"name": "production"})
         _utils.raise_for_http_error(response)
         return response.json()["id"]
 
