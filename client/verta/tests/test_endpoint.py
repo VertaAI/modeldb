@@ -11,7 +11,7 @@ class TestEndpoint:
         endpoint = Endpoint(experiment_run._conn, experiment_run._conf, "Nhat_Pham", 449)
 
         original_status = endpoint.get_status()
-        endpoint.update(experiment_run, DirectUpdateStrategy)
+        endpoint.update(experiment_run, DirectUpdateStrategy())
 
         time.sleep(2) # wait for updating to complete
         updated_status = endpoint.get_status()
