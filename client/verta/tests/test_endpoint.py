@@ -32,7 +32,6 @@ class TestEndpoint:
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
         endpoint.update(experiment_run, DirectUpdateStrategy())
-        updated_status = endpoint.get_status()
 
         # Check that a new build is added:
         new_build_ids = get_build_ids(endpoint.get_status())
@@ -44,7 +43,7 @@ class TestEndpoint:
         # TODO: remove hardcoding
         endpoint = Endpoint(experiment_run._conn, experiment_run._conf, "Nhat_Pham", 210119)
         original_status = endpoint.get_status()
-        original_build_ids = list(map(lambda comp: comp["build_id"], original_status["components"]))
+        original_build_ids = get_build_ids(original_status)
 
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
         
@@ -55,7 +54,6 @@ class TestEndpoint:
 
         strategy.add_rule(AverageLatencyThreshold(0.8))
         endpoint.update(experiment_run, strategy)
-        updated_status = endpoint.get_status()
 
         # Check that a new build is added:
         new_build_ids = get_build_ids(endpoint.get_status())
