@@ -7,7 +7,6 @@ class TestEndpoint:
     def test_create(self, client):
         name = verta._internal_utils._utils.generate_default_name()
         assert client.set_endpoint(name)
-        assert client.endpoint is not None
 
     def test_get(self, client):
         name = verta._internal_utils._utils.generate_default_name()
