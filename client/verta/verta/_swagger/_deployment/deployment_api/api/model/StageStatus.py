@@ -22,9 +22,35 @@ class StageStatus(BaseType):
 
     tmp = d.get('traffic_shape', None)
     if tmp is not None:
-      d['traffic_shape'] =  { "ratio": (lambda tmp: [ { "build_id": (lambda tmp: tmp)(tmp.get("build_id")), "value": (lambda tmp: [tmp for tmp in tmp])(tmp.get("value")),  }  for tmp in tmp])(tmp.get("ratio")), "time": (lambda tmp: [tmp for tmp in tmp])(tmp.get("time")),  } 
+      d['traffic_shape'] = 
+    {
+            "ratio": (lambda tmp: list(map(lambda tmp: 
+    {
+            "build_id": (lambda tmp: 
+tmp
+)(tmp.get("build_id")),
+            "value": (lambda tmp: list(map(lambda tmp: 
+tmp
+, (tmp or [])))
+
+)(tmp.get("value")),
+    }
+
+, (tmp or [])))
+
+)(tmp.get("ratio")),
+            "time": (lambda tmp: list(map(lambda tmp: 
+tmp
+, (tmp or [])))
+
+)(tmp.get("time")),
+    }
+
+
     tmp = d.get('update_request', None)
     if tmp is not None:
-      d['update_request'] = StageUpdateRequest.from_json(tmp)
+      d['update_request'] = 
+StageUpdateRequest.from_json(tmp)
+
 
     return StageStatus(**d)

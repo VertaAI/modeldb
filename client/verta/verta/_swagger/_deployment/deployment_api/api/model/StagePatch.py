@@ -18,6 +18,8 @@ class StagePatch(BaseType):
 
     tmp = d.get('name', None)
     if tmp is not None:
-      d['name'] = tmp
+      d['name'] = 
+tmp
+
 
     return StagePatch(**d)

@@ -27,15 +27,33 @@ class CanaryRule(BaseType):
 
     tmp = d.get('description', None)
     if tmp is not None:
-      d['description'] = tmp
+      d['description'] = 
+tmp
+
     tmp = d.get('id', None)
     if tmp is not None:
-      d['id'] = tmp
+      d['id'] = 
+tmp
+
     tmp = d.get('name', None)
     if tmp is not None:
-      d['name'] = tmp
+      d['name'] = 
+tmp
+
     tmp = d.get('rule_parameters', None)
     if tmp is not None:
-      d['rule_parameters'] = [ { "name": (lambda tmp: tmp)(tmp.get("name")), "description": (lambda tmp: tmp)(tmp.get("description")),  }  for tmp in tmp]
+      d['rule_parameters'] = list(map(lambda tmp: 
+    {
+            "name": (lambda tmp: 
+tmp
+)(tmp.get("name")),
+            "description": (lambda tmp: 
+tmp
+)(tmp.get("description")),
+    }
+
+, (tmp or [])))
+
+
 
     return CanaryRule(**d)

@@ -35,21 +35,49 @@ class StageResponse(BaseType):
 
     tmp = d.get('components', None)
     if tmp is not None:
-      d['components'] = [ { "build_id": (lambda tmp: tmp)(tmp.get("build_id")), "ratio": (lambda tmp: tmp)(tmp.get("ratio")), "status": (lambda tmp: StageComponentStatusEnum.from_json(tmp))(tmp.get("status")), "message": (lambda tmp: tmp)(tmp.get("message")),  }  for tmp in tmp]
+      d['components'] = list(map(lambda tmp: 
+    {
+            "build_id": (lambda tmp: 
+tmp
+)(tmp.get("build_id")),
+            "ratio": (lambda tmp: 
+tmp
+)(tmp.get("ratio")),
+            "status": (lambda tmp: 
+StageComponentStatusEnum.from_json(tmp)
+)(tmp.get("status")),
+            "message": (lambda tmp: 
+tmp
+)(tmp.get("message")),
+    }
+
+, (tmp or [])))
+
+
     tmp = d.get('creator_request', None)
     if tmp is not None:
-      d['creator_request'] = StageCreate.from_json(tmp)
+      d['creator_request'] = 
+StageCreate.from_json(tmp)
+
     tmp = d.get('date_created', None)
     if tmp is not None:
-      d['date_created'] = tmp
+      d['date_created'] = 
+tmp
+
     tmp = d.get('date_updated', None)
     if tmp is not None:
-      d['date_updated'] = tmp
+      d['date_updated'] = 
+tmp
+
     tmp = d.get('id', None)
     if tmp is not None:
-      d['id'] = tmp
+      d['id'] = 
+tmp
+
     tmp = d.get('status', None)
     if tmp is not None:
-      d['status'] = StageStatusEnum.from_json(tmp)
+      d['status'] = 
+StageStatusEnum.from_json(tmp)
+
 
     return StageResponse(**d)

@@ -1,29 +1,18 @@
 {{#is_list}}
-    list(map(
-        lambda tmp: {{#list_type}}{{> from_json}}{{/list_type}},
-        tmp or []
-    ))
+list(map(lambda tmp: {{#list_type}}{{> from_json}}{{/list_type}}, (tmp or [])))
 {{/is_list}}
 {{#is_map}}
     dict(zip(
         tmp.keys()
         map(
-            lambda tmp: {{#map_val_type}}{{> from_json}}{{/map_val_type}},
-            tmp.items()
+            lambda tmp: {{#map_val_type}}{{> from_json}}{{/map_val_type}}, tmp.items()
         )
     ))
 {{/is_map}}
 {{#is_object}}
     {
         {{#properties}}
-            "{{key}}": (lambda tmp: {{#map_val_type}}{{> from_json}}{{/map_val_type}})
-                       (tmp.get("{{key}}")),
+            "{{key}}": (lambda tmp: {{#map_val_type}}{{> from_json}}{{/map_val_type}})(tmp.get("{{key}}")),
         {{/properties}}
     }
-{{/is_object}}
-{{#is_basic}}
-    tmp
-{{/is_basic}}
-{{#is_custom}}
-    {{#custom}}{{name}}.from_json(tmp){{/custom}}
-{{/is_custom}}
+{{/is_object}}{{#is_basic}}tmp{{/is_basic}}{{#is_custom}}{{#custom}}{{name}}.from_json(tmp){{/custom}}{{/is_custom}}

@@ -21,9 +21,27 @@ class CanaryRollout(BaseType):
 
     tmp = d.get('rollout', None)
     if tmp is not None:
-      d['rollout'] = [ { "build_id": (lambda tmp: tmp)(tmp.get("build_id")), "ratio": (lambda tmp: [tmp for tmp in tmp])(tmp.get("ratio")),  }  for tmp in tmp]
+      d['rollout'] = list(map(lambda tmp: 
+    {
+            "build_id": (lambda tmp: 
+tmp
+)(tmp.get("build_id")),
+            "ratio": (lambda tmp: list(map(lambda tmp: 
+tmp
+, (tmp or [])))
+
+)(tmp.get("ratio")),
+    }
+
+, (tmp or [])))
+
+
     tmp = d.get('time', None)
     if tmp is not None:
-      d['time'] = [tmp for tmp in tmp]
+      d['time'] = list(map(lambda tmp: 
+tmp
+, (tmp or [])))
+
+
 
     return CanaryRollout(**d)

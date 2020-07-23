@@ -24,12 +24,38 @@ class CanaryStrategy(BaseType):
 
     tmp = d.get('progress_interval_seconds', None)
     if tmp is not None:
-      d['progress_interval_seconds'] = tmp
+      d['progress_interval_seconds'] = 
+tmp
+
     tmp = d.get('progress_step', None)
     if tmp is not None:
-      d['progress_step'] = tmp
+      d['progress_step'] = 
+tmp
+
     tmp = d.get('rules', None)
     if tmp is not None:
-      d['rules'] = [ { "rule_id": (lambda tmp: tmp)(tmp.get("rule_id")), "rule_parameters": (lambda tmp: [ { "name": (lambda tmp: tmp)(tmp.get("name")), "value": (lambda tmp: tmp)(tmp.get("value")),  }  for tmp in tmp])(tmp.get("rule_parameters")),  }  for tmp in tmp]
+      d['rules'] = list(map(lambda tmp: 
+    {
+            "rule_id": (lambda tmp: 
+tmp
+)(tmp.get("rule_id")),
+            "rule_parameters": (lambda tmp: list(map(lambda tmp: 
+    {
+            "name": (lambda tmp: 
+tmp
+)(tmp.get("name")),
+            "value": (lambda tmp: 
+tmp
+)(tmp.get("value")),
+    }
+
+, (tmp or [])))
+
+)(tmp.get("rule_parameters")),
+    }
+
+, (tmp or [])))
+
+
 
     return CanaryStrategy(**d)

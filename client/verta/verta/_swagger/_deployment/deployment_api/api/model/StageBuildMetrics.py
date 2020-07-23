@@ -24,12 +24,47 @@ class StageBuildMetrics(BaseType):
 
     tmp = d.get('latency', None)
     if tmp is not None:
-      d['latency'] =  { "average": (lambda tmp: [tmp for tmp in tmp])(tmp.get("average")), "p90": (lambda tmp: [tmp for tmp in tmp])(tmp.get("p90")), "p99": (lambda tmp: [tmp for tmp in tmp])(tmp.get("p99")),  } 
+      d['latency'] = 
+    {
+            "average": (lambda tmp: list(map(lambda tmp: 
+tmp
+, (tmp or [])))
+
+)(tmp.get("average")),
+            "p90": (lambda tmp: list(map(lambda tmp: 
+tmp
+, (tmp or [])))
+
+)(tmp.get("p90")),
+            "p99": (lambda tmp: list(map(lambda tmp: 
+tmp
+, (tmp or [])))
+
+)(tmp.get("p99")),
+    }
+
+
     tmp = d.get('throughput', None)
     if tmp is not None:
-      d['throughput'] = {k: [tmp for tmp in tmp] for k, tmp in tmp.items()}
+      d['throughput'] = 
+    dict(zip(
+        tmp.keys()
+        map(
+            lambda tmp: list(map(lambda tmp: 
+tmp
+, (tmp or [])))
+
+, tmp.items()
+        )
+    ))
+
+
     tmp = d.get('time', None)
     if tmp is not None:
-      d['time'] = [tmp for tmp in tmp]
+      d['time'] = list(map(lambda tmp: 
+tmp
+, (tmp or [])))
+
+
 
     return StageBuildMetrics(**d)

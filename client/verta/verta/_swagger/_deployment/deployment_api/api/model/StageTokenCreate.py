@@ -18,6 +18,8 @@ class StageTokenCreate(BaseType):
 
     tmp = d.get('value', None)
     if tmp is not None:
-      d['value'] = tmp
+      d['value'] = 
+tmp
+
 
     return StageTokenCreate(**d)

@@ -25,12 +25,18 @@ class EndpointCreate(BaseType):
 
     tmp = d.get('description', None)
     if tmp is not None:
-      d['description'] = tmp
+      d['description'] = 
+tmp
+
     tmp = d.get('path', None)
     if tmp is not None:
-      d['path'] = tmp
+      d['path'] = 
+tmp
+
     tmp = d.get('visibility', None)
     if tmp is not None:
-      d['visibility'] = tmp
+      d['visibility'] = 
+tmp
+
 
     return EndpointCreate(**d)

@@ -25,12 +25,18 @@ class StageUpdateRequest(BaseType):
 
     tmp = d.get('build_id', None)
     if tmp is not None:
-      d['build_id'] = tmp
+      d['build_id'] = 
+tmp
+
     tmp = d.get('canary_strategy', None)
     if tmp is not None:
-      d['canary_strategy'] = CanaryStrategy.from_json(tmp)
+      d['canary_strategy'] = 
+CanaryStrategy.from_json(tmp)
+
     tmp = d.get('strategy', None)
     if tmp is not None:
-      d['strategy'] = tmp
+      d['strategy'] = 
+tmp
+
 
     return StageUpdateRequest(**d)

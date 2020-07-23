@@ -19,6 +19,8 @@ class StageCreate(BaseType):
 
     tmp = d.get('name', None)
     if tmp is not None:
-      d['name'] = tmp
+      d['name'] = 
+tmp
+
 
     return StageCreate(**d)

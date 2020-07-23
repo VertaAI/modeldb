@@ -19,6 +19,8 @@ class BuildCreate(BaseType):
 
     tmp = d.get('run_id', None)
     if tmp is not None:
-      d['run_id'] = tmp
+      d['run_id'] = 
+tmp
+
 
     return BuildCreate(**d)

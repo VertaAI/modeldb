@@ -31,18 +31,28 @@ class EndpointResponse(BaseType):
 
     tmp = d.get('creator_request', None)
     if tmp is not None:
-      d['creator_request'] = EndpointCreate.from_json(tmp)
+      d['creator_request'] = 
+EndpointCreate.from_json(tmp)
+
     tmp = d.get('date_created', None)
     if tmp is not None:
-      d['date_created'] = tmp
+      d['date_created'] = 
+tmp
+
     tmp = d.get('date_updated', None)
     if tmp is not None:
-      d['date_updated'] = tmp
+      d['date_updated'] = 
+tmp
+
     tmp = d.get('id', None)
     if tmp is not None:
-      d['id'] = tmp
+      d['id'] = 
+tmp
+
     tmp = d.get('owner_id', None)
     if tmp is not None:
-      d['owner_id'] = tmp
+      d['owner_id'] = 
+tmp
+
 
     return EndpointResponse(**d)

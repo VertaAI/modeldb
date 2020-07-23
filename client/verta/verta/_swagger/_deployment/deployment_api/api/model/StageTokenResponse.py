@@ -22,9 +22,13 @@ class StageTokenResponse(BaseType):
 
     tmp = d.get('creator_request', None)
     if tmp is not None:
-      d['creator_request'] = StageTokenCreate.from_json(tmp)
+      d['creator_request'] = 
+StageTokenCreate.from_json(tmp)
+
     tmp = d.get('id', None)
     if tmp is not None:
-      d['id'] = tmp
+      d['id'] = 
+tmp
+
 
     return StageTokenResponse(**d)
