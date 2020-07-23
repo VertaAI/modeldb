@@ -31,6 +31,7 @@ def main(output_dir, input, templates, file_suffix, case, model=None):
 
     protos_index = functools.reduce(basedirReducer, enumerate(input.split('/')), None)
     basedir = input.split('/')[protos_index+1:-1]
+    basedir = [segment.replace('-', '_') for segment in basedir]
     api_name = input.split('/')[-1].split('.')[0]
     basedir[0] = "_"+basedir[0]
     result_dir = os.path.join(output_dir, *basedir)

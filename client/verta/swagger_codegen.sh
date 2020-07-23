@@ -6,7 +6,7 @@ BASE="../../protos/gen/swagger/protos"
 
 rm -rf src/main/scala/ai/verta/swagger/_public
 
-for f in ~/workspace/services/deployment/deployment-api/api/swagger.json
+for f in ../../../services/deployment/deployment-api/api/swagger.json
 do
     echo "Processing $f"
     ../tools/swagger_codegen.py --input $f --output-dir verta/_swagger --templates templates/swagger --file-suffix py --case snake

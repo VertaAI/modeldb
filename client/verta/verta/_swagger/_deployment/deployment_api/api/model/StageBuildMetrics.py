@@ -24,7 +24,7 @@ class StageBuildMetrics(BaseType):
 
     tmp = d.get('latency', None)
     if tmp is not None:
-      d['latency'] =  { "average": (lambda tmp: [tmp for tmp in tmp])(tmp.get("average")), "p50": (lambda tmp: [tmp for tmp in tmp])(tmp.get("p50")), "p90": (lambda tmp: [tmp for tmp in tmp])(tmp.get("p90")), "p99": (lambda tmp: [tmp for tmp in tmp])(tmp.get("p99")),  } 
+      d['latency'] =  { "average": (lambda tmp: [tmp for tmp in tmp])(tmp.get("average")), "p90": (lambda tmp: [tmp for tmp in tmp])(tmp.get("p90")), "p99": (lambda tmp: [tmp for tmp in tmp])(tmp.get("p99")),  } 
     tmp = d.get('throughput', None)
     if tmp is not None:
       d['throughput'] = {k: [tmp for tmp in tmp] for k, tmp in tmp.items()}
