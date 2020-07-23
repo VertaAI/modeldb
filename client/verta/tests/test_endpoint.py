@@ -19,4 +19,4 @@ class TestEndpoint:
         assert original_status["date_updated"] != updated_status["date_updated"]
 
         experiment_run_2.log_model_for_deployment(**model_for_deployment_2)
-        endpoint.update(experiment_run_2, CanaryUpdateStrategy())
+        endpoint.update(experiment_run_2, CanaryUpdateStrategy(interval=1, step=0.5))
