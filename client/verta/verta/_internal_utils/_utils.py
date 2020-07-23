@@ -451,7 +451,7 @@ def raise_for_http_error(response):
         curr_time = timestamp_to_str(now(), utc=True)
         time_str = " at {} UTC".format(curr_time)
 
-        reason = response.text.strip()
+        reason = six.ensure_str(response.text.strip())
         if not reason:
             e.args = (e.args[0] + time_str,) + e.args[1:]  # attach time to error message
             six.raise_from(e, None)  # use default reason
