@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-from verta._internal_utils import _utils
+from .._internal_utils import _utils
 
 from .. import deployment
 from .._tracking import experimentrun
