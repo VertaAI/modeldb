@@ -8,10 +8,10 @@ import warnings
 
 import requests
 
-from .external import six
-from .external.six.moves.urllib.parse import urljoin, urlparse  # pylint: disable=import-error, no-name-in-module
+from ..external import six
+from ..external.six.moves.urllib.parse import urljoin, urlparse  # pylint: disable=import-error, no-name-in-module
 
-from ._internal_utils import _utils
+from .._internal_utils import _utils
 
 
 class DeployedModel:

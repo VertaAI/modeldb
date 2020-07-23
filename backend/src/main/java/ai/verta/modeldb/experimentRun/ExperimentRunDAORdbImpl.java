@@ -205,6 +205,26 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append(ModelDBConstants.ID)
           .append(" IN (:experimentRunIds)")
           .toString();
+  private static final String DELETE_ALL_KEY_VALUES_HQL =
+      new StringBuilder("delete from KeyValueEntity kv WHERE kv.experimentRunEntity.")
+          .append(ModelDBConstants.ID)
+          .append(" = :experimentRunId")
+          .append(" AND kv.field_type = :field_type")
+          .toString();
+  private static final String DELETE_SELECTED_KEY_VALUES_HQL =
+      new StringBuilder("delete from KeyValueEntity kv WHERE kv.")
+          .append(ModelDBConstants.KEY)
+          .append(" in (:keys) AND kv.experimentRunEntity.")
+          .append(ModelDBConstants.ID)
+          .append(" = :experimentRunId ")
+          .append(" AND kv.field_type = :field_type")
+          .toString();
+  private static final String GET_ALL_OBSERVATIONS_HQL =
+      new StringBuilder("FROM ObservationEntity oe WHERE oe.experimentRunEntity.")
+          .append(ModelDBConstants.ID)
+          .append(" = :experimentRunId")
+          .append(" AND oe.field_type = :field_type")
+          .toString();
 
   public ExperimentRunDAORdbImpl(
       AuthService authService,
@@ -1365,13 +1385,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       CriteriaQuery<ExperimentRunEntity> criteriaQuery =
           builder.createQuery(ExperimentRunEntity.class);
       Root<ExperimentRunEntity> experimentRunRoot = criteriaQuery.from(ExperimentRunEntity.class);
-      experimentRunRoot.alias("exp");
+      experimentRunRoot.alias("run");
 
       Root<ProjectEntity> projectEntityRoot = criteriaQuery.from(ProjectEntity.class);
       projectEntityRoot.alias("pr");
 
       Root<ExperimentEntity> experimentEntityRoot = criteriaQuery.from(ExperimentEntity.class);
-      projectEntityRoot.alias("ex");
+      experimentEntityRoot.alias("ex");
 
       List<Predicate> finalPredicatesList = new ArrayList<>();
       finalPredicatesList.add(
@@ -2509,5 +2529,113 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.getTransaction().commit();
     }
     return CommitMultipartArtifact.Response.newBuilder().build();
+  }
+
+  private void deleteAllKeyValueEntities(
+      Session session, String experimentRunId, String fieldType) {
+    Query query = session.createQuery(DELETE_ALL_KEY_VALUES_HQL);
+    query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
+    query.setParameter("field_type", fieldType);
+    query.executeUpdate();
+  }
+
+  private void deleteKeyValueEntities(
+      Session session, String experimentRunId, List<String> keys, String fieldType) {
+    Query query = session.createQuery(DELETE_SELECTED_KEY_VALUES_HQL);
+    query.setParameterList("keys", keys);
+    query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
+    query.setParameter("field_type", fieldType);
+    query.executeUpdate();
+  }
+
+  @Override
+  public void deleteExperimentRunKeyValuesEntities(
+      String experimentRunId,
+      List<String> experimentRunKeyValuesKeys,
+      Boolean deleteAll,
+      String fieldType)
+      throws InvalidProtocolBufferException {
+    String projectId = getProjectIdByExperimentRunId(experimentRunId);
+    // Validate if current user has access to the entity or not
+    roleService.validateEntityUserWithUserInfo(
+        ModelDBServiceResourceTypes.PROJECT,
+        projectId,
+        ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = session.beginTransaction();
+      if (deleteAll) {
+        deleteAllKeyValueEntities(session, experimentRunId, fieldType);
+      } else {
+        deleteKeyValueEntities(session, experimentRunId, experimentRunKeyValuesKeys, fieldType);
+      }
+      ExperimentRunEntity experimentRunObj =
+          session.get(ExperimentRunEntity.class, experimentRunId);
+      long currentTimestamp = Calendar.getInstance().getTimeInMillis();
+      experimentRunObj.setDate_updated(currentTimestamp);
+      session.update(experimentRunObj);
+      transaction.commit();
+      LOGGER.debug("ExperimentRun {} deleted successfully", fieldType);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        deleteExperimentRunKeyValuesEntities(
+            experimentRunId, experimentRunKeyValuesKeys, deleteAll, fieldType);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public void deleteExperimentRunObservationsEntities(
+      String experimentRunId, List<String> experimentRunObservationsKeys, Boolean deleteAll)
+      throws InvalidProtocolBufferException {
+    String projectId = getProjectIdByExperimentRunId(experimentRunId);
+    // Validate if current user has access to the entity or not
+    roleService.validateEntityUserWithUserInfo(
+        ModelDBServiceResourceTypes.PROJECT,
+        projectId,
+        ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = session.beginTransaction();
+      Query query = session.createQuery(GET_ALL_OBSERVATIONS_HQL);
+      query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
+      query.setParameter("field_type", ModelDBConstants.OBSERVATIONS);
+      List<ObservationEntity> observationEntities = query.list();
+      List<ObservationEntity> removedObservationEntities = new ArrayList<>();
+      if (deleteAll) {
+        observationEntities.forEach(session::delete);
+        removedObservationEntities.addAll(observationEntities);
+      } else {
+        observationEntities.forEach(
+            observationEntity -> {
+              if ((observationEntity.getKeyValueMapping() != null
+                      && experimentRunObservationsKeys.contains(
+                          observationEntity.getKeyValueMapping().getKey()))
+                  || (observationEntity.getArtifactMapping() != null
+                      && experimentRunObservationsKeys.contains(
+                          observationEntity.getArtifactMapping().getKey()))) {
+                session.delete(observationEntity);
+                removedObservationEntities.add(observationEntity);
+              }
+            });
+      }
+      ExperimentRunEntity experimentRunObj =
+          session.load(ExperimentRunEntity.class, experimentRunId);
+      experimentRunObj.getObservationMapping().removeAll(removedObservationEntities);
+      long currentTimestamp = Calendar.getInstance().getTimeInMillis();
+      experimentRunObj.setDate_updated(currentTimestamp);
+      session.update(experimentRunObj);
+      transaction.commit();
+      LOGGER.debug("ExperimentRun {} deleted successfully", ModelDBConstants.OBSERVATIONS);
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        deleteExperimentRunObservationsEntities(
+            experimentRunId, experimentRunObservationsKeys, deleteAll);
+      } else {
+        throw ex;
+      }
+    }
   }
 }

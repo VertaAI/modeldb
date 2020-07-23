@@ -39,6 +39,23 @@ class RegisteredModel(_ModelDBEntity):
                                                        lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
                                                        lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=labels, date_created=time_created))
 
+    def create_version_from_run(self, run_id, name):
+        """
+        Creates a model registry entry based on an Experiment Run.
+
+        Parameters
+        ----------
+        run_id : str
+        name : str
+
+        Returns
+        -------
+        :class:`~verta._registry.modelversion.RegisteredModelVersion`
+
+        """
+        raise NotImplementedError
+        # return RegisteredModelVersion._create(self._conn, self._conf, ctx, name, experiment_run_id=run_id)
+
     def get_version(self, name=None, id=None):
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
@@ -46,10 +63,12 @@ class RegisteredModel(_ModelDBEntity):
             raise ValueError("must specify either `name` or `id`")
 
         if id is not None:
-            return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
+            version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
         else:
-
-            return RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id)
+            version = RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id)
+        if version is None:
+            raise ValueError("Registered model version not found")
+        return version
 
     @property
     def versions(self):
@@ -125,7 +144,7 @@ class RegisteredModel(_ModelDBEntity):
         return self._msg.labels
 
     def _update(self):
-        response = self._conn.make_proto_request("PUT", "/api/v1/registry/{}".format(self.id),
+        response = self._conn.make_proto_request("PUT", "/api/v1/registry/registered_models/{}".format(self.id),
                                            body=self._msg)
         Message = _RegisteredModelService.SetRegisteredModel
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):

@@ -15,6 +15,7 @@ class RegisteredModelVersions(_utils.LazyList):
     _VALID_QUERY_KEYS = {
         'id',
         'registered_model_id',
+        'experiment_run_id',
         'version',
         'time_created',
         'time_updated',
@@ -31,7 +32,7 @@ class RegisteredModelVersions(_utils.LazyList):
         return "<RegisteredModelVersions containing {} versions>".format(self.__len__())
 
     def _call_back_end(self, msg):
-        url = "/api/v1/registry/{}/versions/find".format(self._msg.id.registered_model_id)
+        url = "/api/v1/registry/registered_models/{}/model_versions/find".format(self._msg.id.registered_model_id)
         response = self._conn.make_proto_request("POST", url, body=msg)
         response = self._conn.must_proto_response(response, msg.Response)
         return response.model_versions, response.total_records

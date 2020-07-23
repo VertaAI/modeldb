@@ -114,7 +114,7 @@ export const loadDatasetVersion = (
   dispatch(action(loadDatasetVersionActionTypes.REQUEST, { id }));
 
   await ServiceFactory.getDatasetVersionsService()
-    .loadDatasetVersion(id, datasetId)
+    .loadDatasetVersion(workspaceName, id, datasetId)
     .then((datasetVersion) => {
       dispatch(
         action(loadDatasetVersionActionTypes.SUCCESS, { datasetVersion })

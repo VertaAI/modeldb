@@ -77,7 +77,8 @@ class ExperimentRun(_ModelDBEntity):
         super(ExperimentRun, self).__init__(conn, conf, _ExperimentRunService, "experiment-run", msg)
 
     def __repr__(self):
-        run_msg = self._get_self_as_msg()
+        self._refresh_cache()
+        run_msg = self._msg
         return '\n'.join((
             "name: {}".format(run_msg.name),
             "url: {}://{}/{}/projects/{}/exp-runs/{}".format(self._conn.scheme, self._conn.socket, self.workspace, run_msg.project_id, self.id),
@@ -101,7 +102,8 @@ class ExperimentRun(_ModelDBEntity):
 
     @property
     def workspace(self):
-        proj_id = self._get_self_as_msg().project_id
+        self._refresh_cache()
+        proj_id = self._msg.project_id
         response = _utils.make_request(
             "GET",
             "{}://{}/api/v1/modeldb/project/getProjectById".format(self._conn.scheme, self._conn.socket),
@@ -179,30 +181,6 @@ class ExperimentRun(_ModelDBEntity):
         expt_run = conn.must_proto_response(response, Message.Response).experiment_run
         print("created new ExperimentRun: {}".format(expt_run.name))
         return expt_run
-
-    # TODO: use this throughout `ExperimentRun`
-    def _get_self_as_msg(self):
-        """
-        Gets the full protobuf message representation of this Experiment Run.
-
-        Returns
-        -------
-        run_msg : ExperimentRun protobuf message
-
-        """
-        Message = _ExperimentRunService.GetExperimentRunById
-        msg = Message(id=self.id)
-        data = _utils.proto_to_json(msg)
-        url = "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunById".format(
-            self._conn.scheme,
-            self._conn.socket,
-        )
-
-        response = _utils.make_request("GET", url, self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        return response_msg.experiment_run
 
     def _log_artifact(self, key, artifact, artifact_type, extension=None, method=None, overwrite=False):
         """
@@ -297,6 +275,8 @@ class ExperimentRun(_ModelDBEntity):
             print("log complete; file written to {}".format(artifact_path))
         else:
             self._upload_artifact(key, artifact_stream)
+
+        self._clear_cache()
 
     def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
         """
@@ -417,6 +397,8 @@ class ExperimentRun(_ModelDBEntity):
                                  " consider setting overwrite=True".format(key))
             else:
                 _utils.raise_for_http_error(response)
+
+        self._clear_cache()
 
     def _get_artifact(self, key):
         """
@@ -590,8 +572,8 @@ class ExperimentRun(_ModelDBEntity):
             Unix timestamp in milliseconds.
 
         """
-        run_msg = self._get_self_as_msg()
-        return int(run_msg.date_created)
+        self._refresh_cache()
+        return int(self._msg.date_created)
 
     def get_date_updated(self):
         """
@@ -603,8 +585,8 @@ class ExperimentRun(_ModelDBEntity):
             Unix timestamp in milliseconds.
 
         """
-        run_msg = self._get_self_as_msg()
-        return int(run_msg.date_updated)
+        self._refresh_cache()
+        return int(self._msg.date_updated)
 
     def log_tag(self, tag):
         """
@@ -627,6 +609,8 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, json=data)
         _utils.raise_for_http_error(response)
 
+        self._clear_cache()
+
     def log_tags(self, tags):
         """
         Logs multiple tags to this Experiment Run.
@@ -646,6 +630,8 @@ class ExperimentRun(_ModelDBEntity):
                                        "{}://{}/api/v1/modeldb/experiment-run/addExperimentRunTags".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
         _utils.raise_for_http_error(response)
+
+        self._clear_cache()
 
     def get_tags(self):
         """
@@ -695,6 +681,8 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
+        self._clear_cache()
+
     def log_attributes(self, attributes):
         """
         Logs potentially multiple attributes to this Experiment Run.
@@ -725,6 +713,8 @@ class ExperimentRun(_ModelDBEntity):
                                  " consider using observations instead")
             else:
                 _utils.raise_for_http_error(response)
+
+        self._clear_cache()
 
     def get_attribute(self, key):
         """
@@ -1033,6 +1023,8 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
+        self._clear_cache()
+
     def log_dataset_path(self, key, path):
         """
         Logs the filesystem path of an dataset to this Experiment Run.
@@ -1274,7 +1266,8 @@ class ExperimentRun(_ModelDBEntity):
 
         # validate that `artifacts` are actually logged
         if artifacts:
-            run_msg = self._get_self_as_msg()
+            self._refresh_cache()
+            run_msg = self._msg
             existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
             unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
             if unlogged_artifact_keys:
@@ -1685,6 +1678,8 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, json=data)
         _utils.raise_for_http_error(response)
 
+        self._clear_cache()
+
     def get_observation(self, key):
         """
         Gets the observation series with name `key` from this Experiment Run.
@@ -1727,8 +1722,8 @@ class ExperimentRun(_ModelDBEntity):
             Names and values of all observation series.
 
         """
-        run_msg = self._get_self_as_msg()
-        return _utils.unravel_observations(run_msg.observations)
+        self._refresh_cache()
+        return _utils.unravel_observations(self._msg.observations)
 
     def log_requirements(self, requirements, overwrite=False):
         """
@@ -2053,7 +2048,8 @@ class ExperimentRun(_ModelDBEntity):
             raise TypeError("`keys` must be list of str, not {}".format(type(keys)))
 
         # validate that `keys` are actually logged
-        run_msg = self._get_self_as_msg()
+        self._refresh_cache()
+        run_msg = self._msg
         existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
         unlogged_artifact_keys = set(keys) - existing_artifact_keys
         if unlogged_artifact_keys:
@@ -2159,7 +2155,8 @@ class ExperimentRun(_ModelDBEntity):
         data = {}
         if path is not None:
             # get project ID for URL path
-            run_msg = self._get_self_as_msg()
+            self._refresh_cache()
+            run_msg = self._msg
             data.update({'url_path': "{}/{}".format(run_msg.project_id, path)})
         if no_token:
             data.update({'token': ""})
@@ -2290,7 +2287,8 @@ class ExperimentRun(_ModelDBEntity):
         data = {}
         if path is not None:
             # get project ID for URL path
-            run_msg = self._get_self_as_msg()
+            self._refresh_cache()
+            run_msg = self._msg
             data.update({'url_path': "{}/{}".format(run_msg.project_id, path)})
         if no_token:
             data.update({'token': ""})
@@ -2387,6 +2385,8 @@ class ExperimentRun(_ModelDBEntity):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
+
+        self._clear_cache()
 
     def get_commit(self):
         """
