@@ -43,15 +43,15 @@ def create_model(model_name, label, visibility, workspace):
 @click.option("--model", help="Path to the model.")
 @click.option("--artifact", type=(str, str), multiple=True, help="Path to an artifact required for the model. The format is --artifact artifact_key path_to_artifact.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-@click.option("--from-run", type=str, help="ID of the Experiment Run to enter into the model registry. This option cannot be provided alongside --model nor --artifact.")
+@click.option("--from-run", type=str, help="ID of the Experiment Run to enter into the model registry. This option cannot be provided alongside other options, except for --workspace.")
 def create_model_version(model_name, version_name, label, model, artifact, workspace, from_run):
     """Create a new registeredmodelversion entry.
     """
     if artifact and len(artifact) > len(set(map(lambda pair: pair[0], artifact))):
         raise click.BadParameter("cannot have duplicate artifact keys")
 
-    if from_run and (model or artifact):
-        raise click.BadParameter("--from_run cannot be provided alongside --model nor --artifact")
+    if from_run and (label or model or artifact):
+        raise click.BadParameter("--from_run cannot be provided alongside other options, except for --workspace")
 
     client = Client()
 

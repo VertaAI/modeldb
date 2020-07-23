@@ -132,7 +132,7 @@ class TestCreate:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2', "--from-run", experiment_run.id],
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--from-run", experiment_run.id],
         )
         assert not result.exception
 
@@ -145,12 +145,11 @@ class TestCreate:
 
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
         assert (model_version.get_artifact("some-artifact") == artifact).all()
-        assert model_version.get_labels() == ["label1", "label2"]
 
     def test_create_from_run_with_model_artifact(self, experiment_run, registered_model):
         model_name = registered_model.name
         version_name = "from_run"
-        error_message = "--from_run cannot be provided alongside --model nor --artifact"
+        error_message = "--from_run cannot be provided alongside other options, except for --workspace"
 
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2**16)
@@ -169,6 +168,14 @@ class TestCreate:
         result = runner.invoke(
             cli,
             ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--model", filename,
+             "--from-run", experiment_run.id],
+        )
+        assert result.exception
+        assert error_message in result.output
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "-l", "some label",
              "--from-run", experiment_run.id],
         )
         assert result.exception
