@@ -200,6 +200,7 @@ def log_tensorboard_events(run, log_dir):
                 event_observations = _collect_observations(events_filepath, prefix=subdir)
                 observations.extend(event_observations)
 
+    # TODO: implement `run.log_observations()` instead of this
     _utils.make_request(
         "POST",
         "{}://{}/api/v1/modeldb/experiment-run/logObservations".format(run._conn.scheme, run._conn.socket),
@@ -209,3 +210,4 @@ def log_tensorboard_events(run, log_dir):
             'observations': observations,
         },
     )
+    run._clear_cache()

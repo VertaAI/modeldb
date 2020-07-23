@@ -8,9 +8,7 @@ import verta.dataset
 from verta.environment import Python
 
 
-pytest.skip("registry not yet available in backend", allow_module_level=True)
-
-
+@pytest.mark.skip("not implemented yet")
 class TestMDBIntegration:
     def test_from_run(self, experiment_run, model_for_deployment, registered_model):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
