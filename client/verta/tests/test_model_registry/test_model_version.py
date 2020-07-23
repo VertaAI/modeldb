@@ -25,7 +25,7 @@ class TestMDBIntegration:
 
         env_str = str(model_version.get_environment())
         assert 'scikit-learn' in env_str
-        assert 'Python 2.7.17' in env_str
+        assert 'Python' in env_str
 
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
         assert (model_version.get_artifact("some-artifact") == artifact).all()
