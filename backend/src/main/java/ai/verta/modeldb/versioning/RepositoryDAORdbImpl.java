@@ -530,6 +530,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
   }
 
+  @Override
   public void deleteRepositories(
       Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds) {
     Query deletedRepositoriesQuery = session.createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING);
