@@ -36,6 +36,8 @@ class TestEndpoint:
 
         # TODO: remove hardcoding
         endpoint = Endpoint(experiment_run._conn, experiment_run._conf, "Nhat_Pham", 210119)
+        original_status = endpoint.get_status()
+        original_build_ids = list(map(lambda comp: comp["build_id"], original_status["components"]))
 
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
         
