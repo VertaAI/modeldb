@@ -896,7 +896,7 @@ class Client(object):
             self._ctx.populate()
         else:
             self._ctx.endpoint = Endpoint._get_or_create_by_name(self._conn, path,
-                                            lambda name: None, #Endpoint._get_by_path(self._conn, self._conf, workspace, path),
+                                            lambda name: Endpoint._get_by_path(self._conn, self._conf, workspace, path),
                                             lambda name: Endpoint._create( self._conn, self._conf, workspace, path, description))
         return self._ctx.endpoint
 
@@ -912,7 +912,15 @@ class Client(object):
         if workspace is None:
             workspace = self._get_personal_workspace()
 
-        raise NotImplementedError
+        if id is not None:
+            self._ctx.endpoint = Endpoint._get_by_id(self._conn, self._conf, workspace, id)
+            self._ctx.populate()
+        else:
+            self._ctx.endpoint = Endpoint._get_by_path(self._conn, self._conf, workspace, path)
+
+        if self._ctx.endpoint is None:
+            raise ValueError("Endpoint not found")
+        return self._ctx.endpoint
 
     def set_endpoint(self, *args, **kwargs):
         return self.get_or_create_endpoint(*args, **kwargs)
