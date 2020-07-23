@@ -61,25 +61,26 @@ def create_model_version(model_name, version_name, label, model, artifact, works
         raise click.BadParameter("model {} not found".format(model_name))
 
     if from_run:
-        model_version = registered_model.create_version_from_run(run_id=from_run, name=version_name)
-    else:
-        model_version = registered_model.get_or_create_version(name=version_name, labels=list(label))
+        registered_model.create_version_from_run(run_id=from_run, name=version_name)
+        return
 
-        if model and model_version.has_model:
-            raise click.BadParameter("a model has already been associated with the version")
+    model_version = registered_model.get_or_create_version(name=version_name, labels=list(label))
 
-        if artifact:
-            artifact_keys = model_version.get_artifact_keys()
+    if model and model_version.has_model:
+        raise click.BadParameter("a model has already been associated with the version")
 
-            for (key, _) in artifact:
-                if key == "model":
-                    raise click.BadParameter("the key \"model\" is reserved for model")
+    if artifact:
+        artifact_keys = model_version.get_artifact_keys()
 
-                if key in artifact_keys:
-                    raise click.BadParameter("key \"{}\" already exists".format(key))
+        for (key, _) in artifact:
+            if key == "model":
+                raise click.BadParameter("the key \"model\" is reserved for model")
 
-            for (key, path) in artifact:
-                model_version.log_artifact(key, path)
+            if key in artifact_keys:
+                raise click.BadParameter("key \"{}\" already exists".format(key))
 
-        if model:
-            model_version.log_model(model)
+        for (key, path) in artifact:
+            model_version.log_artifact(key, path)
+
+    if model:
+        model_version.log_model(model)

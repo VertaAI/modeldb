@@ -146,7 +146,7 @@ class TestCreate:
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
         assert (model_version.get_artifact("some-artifact") == artifact).all()
 
-    def test_create_from_run_with_model_artifact(self, experiment_run, registered_model):
+    def test_create_from_run_with_model_artifact_error(self, experiment_run, registered_model):
         model_name = registered_model.name
         version_name = "from_run"
         error_message = "--from_run cannot be provided alongside other options, except for --workspace"
