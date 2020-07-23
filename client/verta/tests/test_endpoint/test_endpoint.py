@@ -5,8 +5,8 @@ import verta
 @pytest.mark.skip("endpoint not yet available in backend")
 class TestEndpoint:
     def test_create(self, client):
-        assert client.set_endpoint("/path")
-        assert client.endpoint is not None
+        name = verta._internal_utils._utils.generate_default_name()
+        assert client.set_endpoint(name)
 
     def test_get_by_id(self, client):
         endpoint = client.set_endpoint("/path1")
