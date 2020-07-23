@@ -1,14 +1,17 @@
 {{#is_list}}
-    [
-        {{#list_type}}{{> from_json}}{{/list_type}} for tmp in (tmp or [])
-    ]
+    list(map(
+        lambda tmp: {{#list_type}}{{> from_json}}{{/list_type}},
+        tmp or []
+    ))
 {{/is_list}}
 {{#is_map}}
-    {
-        k: {{#map_val_type}}{{> from_json}}{{/map_val_type}}
-        for k, tmp
-        in tmp.items()
-    }
+    dict(zip(
+        tmp.keys()
+        map(
+            lambda tmp: {{#map_val_type}}{{> from_json}}{{/map_val_type}},
+            tmp.items()
+        )
+    ))
 {{/is_map}}
 {{#is_object}}
     {
