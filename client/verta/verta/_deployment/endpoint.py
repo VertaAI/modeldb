@@ -37,7 +37,8 @@ class Endpoint(object):
         if not path.startswith('/'):
             path = '/' + path
         json["path"] = path
-        response = _utils.make_request("POST", "{}://{}{}".format(conn.scheme, conn.socket, "/api/v1/deployment/workspace/{}/endpoints".format(workspace)), conn, json=json)
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
+        response = _utils.make_request("POST", url, conn, json=json)
         _utils.raise_for_http_error(response)
         return response.json()
 
