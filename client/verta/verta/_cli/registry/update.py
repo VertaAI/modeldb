@@ -17,7 +17,7 @@ def update():
 @click.option("--label", "-l", multiple=True, help="Label to be associated with the object.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 def update_model(model_name, label, workspace):
-    """Create a new registeredmodel entry.
+    """Update an existing registeredmodel entry.
     """
     pass
 
@@ -30,7 +30,7 @@ def update_model(model_name, label, workspace):
 @click.option("--workspace", "-w", help="Workspace to use.")
 # TODO: add environment
 def update_model_version(model_name, version_name, label, model, artifact, workspace):
-    """Create a new registeredmodelversion entry.
+    """Update an existing registeredmodelversion entry.
     """
     client = Client()
 
