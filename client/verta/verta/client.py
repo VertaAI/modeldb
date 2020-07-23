@@ -887,6 +887,7 @@ class Client(object):
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
             workspace = self._get_personal_workspace()
+        Endpoint._get_or_create_by_name(self._conn, path, lambda name: None, lambda name: Endpoint._create( self._conn, self._conf, workspace, path, description))
 
         raise NotImplementedError
 
