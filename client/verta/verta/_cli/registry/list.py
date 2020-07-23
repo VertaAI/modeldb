@@ -76,5 +76,4 @@ def lst_model_version(model_name, filter, output, workspace):
     else:
         for model_version in model_versions:
             model_version_repr = model_version.name
-            click.echo()
             click.echo(model_version_repr)
