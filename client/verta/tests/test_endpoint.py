@@ -7,6 +7,11 @@ from verta.deployment.update_rules import AverageLatencyThreshold
 import time
 
 
+def get_build_ids(status):
+    # get the set of build_ids in the status of the stage:
+    return set(map(lambda comp: comp["build_id"], status["components"]))
+
+
 class TestEndpoint:
     def test_get_status(self, client):
         # TODO: remove hardcoding
@@ -25,11 +30,13 @@ class TestEndpoint:
         endpoint = Endpoint(experiment_run._conn, experiment_run._conf, "Nhat_Pham", 210119)
 
         original_status = endpoint.get_status()
-        original_build_ids = list(map(lambda comp: comp["build_id"], original_status["components"]))
+        original_build_ids = get_build_ids(original_status)
         endpoint.update(experiment_run, DirectUpdateStrategy())
         updated_status = endpoint.get_status()
 
-        assert updated_status["status"] == "updating" or not updated_status["components"][0]["build_id"] in original_build_ids
+        # Check that a new build is added:
+        new_build_ids = get_build_ids(endpoint.get_status())
+        assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
     def test_canary_update(self, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
@@ -50,5 +57,7 @@ class TestEndpoint:
         endpoint.update(experiment_run, strategy)
         updated_status = endpoint.get_status()
 
-        assert updated_status["status"] == "updating" or not updated_status["components"][0]["build_id"] in original_build_ids
+        # Check that a new build is added:
+        new_build_ids = get_build_ids(endpoint.get_status())
+        assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
