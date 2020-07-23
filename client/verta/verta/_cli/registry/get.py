@@ -68,9 +68,6 @@ def get_model_version(model_name, version_name, output, workspace):
     except ValueError:
         raise click.BadParameter("version {} not found".format(version_name))
 
-    if version is None:
-        raise click.BadParameter("version {} not found".format(version_name))
-
     if output == "json":
         version_repr = json.dumps(_utils.proto_to_json(version._msg))
     else:

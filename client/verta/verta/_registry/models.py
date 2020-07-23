@@ -43,7 +43,10 @@ class RegisteredModels(_utils.LazyList):
 
     def with_workspace(self, workspace_name=None):
         new_list = copy.deepcopy(self)
-        new_list._msg.workspace_name = workspace_name
+        if workspace_name is not None:
+            new_list._msg.workspace_name = workspace_name
+        else:
+            new_list._msg.workspace_name = ''
         return new_list
 
     def set_page_limit(self, msg, param):
