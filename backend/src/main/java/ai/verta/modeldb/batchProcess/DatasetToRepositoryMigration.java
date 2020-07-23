@@ -104,15 +104,19 @@ public class DatasetToRepositoryMigration {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
-      String addBackupLinkedArtifactId =
-          "ALTER TABLE artifact ADD COLUMN backup_linked_artifact_id varchar(255);";
-      Query query = session.createSQLQuery(addBackupLinkedArtifactId);
-      query.executeUpdate();
+      try {
+        String addBackupLinkedArtifactId =
+            "ALTER TABLE artifact ADD COLUMN backup_linked_artifact_id varchar(255);";
+        Query query = session.createSQLQuery(addBackupLinkedArtifactId);
+        query.executeUpdate();
 
-      String copyDataToBackupColumn =
-          "UPDATE artifact set backup_linked_artifact_id = linked_artifact_id";
-      query = session.createSQLQuery(copyDataToBackupColumn);
-      query.executeUpdate();
+        String copyDataToBackupColumn =
+            "UPDATE artifact set backup_linked_artifact_id = linked_artifact_id";
+        query = session.createSQLQuery(copyDataToBackupColumn);
+        query.executeUpdate();
+      } catch (Exception e) {
+        LOGGER.debug("backup_linked_artifact_id already exists");
+      }
 
       String createDatasetMigrationTable =
           "CREATE TABLE IF NOT EXISTS dataset_migration_status (dataset_id varchar(225) NOT NULL, repo_id bigint(20) NOT NULL, status varchar(255) DEFAULT NULL)";
@@ -201,9 +205,9 @@ public class DatasetToRepositoryMigration {
           throw ex;
         }
       } finally {
-    	LOGGER.debug("gc starts");
+        LOGGER.debug("gc starts");
         Runtime.getRuntime().gc();
-  	    LOGGER.debug("gc ends");
+        LOGGER.debug("gc ends");
       }
     }
 

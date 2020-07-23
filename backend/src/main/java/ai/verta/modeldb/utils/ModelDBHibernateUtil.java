@@ -697,10 +697,13 @@ public class ModelDBHibernateUtil {
             ModelDBUtils.registeredBackgroundUtilsCount();
             boolean isLocked = checkMigrationLockedStatus(migrationName);
             if (!isLocked) {
+              LOGGER.debug("Obtaingin migration lock");
               lockedMigration(migrationName);
               int recordUpdateLimit =
                   (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
               DatasetToRepositoryMigration.execute(recordUpdateLimit);
+            } else {
+              LOGGER.debug("Migration already locked");
             }
           } catch (SQLException | DatabaseException e) {
             LOGGER.error("Error on migration: {}", e.getMessage());
