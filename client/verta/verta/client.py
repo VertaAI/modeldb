@@ -64,7 +64,10 @@ from ._registry import (
     RegisteredModelVersions,
 )
 from ._dataset_versioning import Datasets
-from ._deployment import Endpoint
+from ._deployment import (
+    Endpoint,
+    Endpoints,
+)
 
 
 _OSS_DEFAULT_WORKSPACE = "personal"

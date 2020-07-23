@@ -3,13 +3,11 @@ import json
 import pytest
 from click.testing import CliRunner
 
+from verta import Client
 from verta._cli import cli
 from verta._registry import RegisteredModel
-from verta._registry import RegisteredModelVersion
 import os
 
-
-pytest.skip("registry not yet available in backend", allow_module_level=True)
 
 
 class TestCreate:
@@ -205,8 +203,34 @@ class TestGet:
 
 
 class TestList:
-    pass
+    def test_list_model(self):
+        client = Client()
+        model1 = client.get_or_create_registered_model()
+        label = model1._msg.name + "label1"
+        model1.add_label(label)
+        model1.add_label("label2")
+        model2 = client.get_or_create_registered_model()
+        model = client.get_or_create_registered_model()
+        model.add_label(label)
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'list', 'registeredmodel', '--filter', "labels == \"{}\"".format(label)],
+        )
 
+        assert not result.exception
+        assert str(model1._msg.name) in result.output
+        assert str(model._msg.name) in result.output
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'list', 'registeredmodel', "--output=json"],
+        )
+
+        assert not result.exception
+        assert str(model1._msg.name) in result.output
+        assert str(model._msg.name) in result.output
+        assert str(model2._msg.name) in result.output
 
 class TestUpdate:
     def test_update_model(self, registered_model):
@@ -308,5 +332,3 @@ class TestUpdate:
 
         os.remove(filename)
         os.remove(classifier_name)
-
-
