@@ -75,5 +75,5 @@ def create_model_version(model_name, version_name, label, model, artifact, works
         for (key, path) in artifact:
             model_version.log_artifact(key, path)
 
-    if model is not None:
+    if model:
         model_version.log_model(model)
