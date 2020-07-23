@@ -47,11 +47,11 @@ def create_model(model_name, label, visibility, workspace):
 def create_model_version(model_name, version_name, label, model, artifact, workspace, from_run):
     """Create a new registeredmodelversion entry.
     """
-    if from_run and (model or artifact):
-        raise click.BadParameter("--from_run cannot be provided alongside --model nor --artifact")
-
     if artifact and len(artifact) > len(set(map(lambda pair: pair[0], artifact))):
         raise click.BadParameter("cannot have duplicate artifact keys")
+
+    if from_run and (model or artifact):
+        raise click.BadParameter("--from_run cannot be provided alongside --model nor --artifact")
 
     client = Client()
 
@@ -60,20 +60,27 @@ def create_model_version(model_name, version_name, label, model, artifact, works
     except ValueError:
         raise click.BadParameter("model {} not found".format(model_name))
 
-    model_version = registered_model.get_or_create_version(name=version_name, labels=list(label), experiment_run_id=from_run)
+    if from_run:
+        model_version = registered_model.create_version_from_run(run_id=from_run, name=version_name)
 
-    if artifact:
-        artifact_keys = model_version.get_artifact_keys()
+        if label:
+            for l in label:
+                model_version.add_label(l)
+    else:
+        model_version = registered_model.get_or_create_version(name=version_name, labels=list(label))
 
-        for (key, _) in artifact:
-            if key == "model":
-                raise click.BadParameter("the key \"model\" is reserved for model")
+        if artifact:
+            artifact_keys = model_version.get_artifact_keys()
 
-            if key in artifact_keys:
-                raise click.BadParameter("key \"{}\" already exists".format(key))
+            for (key, _) in artifact:
+                if key == "model":
+                    raise click.BadParameter("the key \"model\" is reserved for model")
 
-        for (key, path) in artifact:
-            model_version.log_artifact(key, path, True)
+                if key in artifact_keys:
+                    raise click.BadParameter("key \"{}\" already exists".format(key))
 
-    if model is not None:
-        model_version.log_model(model, True)
+            for (key, path) in artifact:
+                model_version.log_artifact(key, path, True)
+
+        if model is not None:
+            model_version.log_model(model, True)
