@@ -61,7 +61,7 @@ class CanaryUpdateStrategy(_UpdateStrategy):
 
     def _as_build_update_req_body(self, build_id):
         if not self._rules:
-            raise RuntimeError("canary update strategy must have at leaset one rule")
+            raise RuntimeError("canary update strategy must have at least one rule")
 
         return {
             'build_id': build_id,
