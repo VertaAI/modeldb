@@ -103,7 +103,7 @@ class Endpoint(object):
             self.id,
             stage_id
         )
-        response = _utils.make_request("PUT", url, self._conn, json=strategy._as_build_update_req_body())
+        response = _utils.make_request("PUT", url, self._conn, json=strategy._as_build_update_req_body(build_id))
         _utils.raise_for_http_error(response)
 
     def _get_or_create_active_stage(self):
