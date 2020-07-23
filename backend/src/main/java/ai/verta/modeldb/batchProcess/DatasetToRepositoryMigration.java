@@ -100,6 +100,7 @@ public class DatasetToRepositoryMigration {
 
   private static void migrateDatasetsToRepositories() {
     LOGGER.debug("Datasets To Repositories migration started");
+    LOGGER.debug("using batch size {}", recordUpdateLimit);
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
@@ -120,6 +121,9 @@ public class DatasetToRepositoryMigration {
       session.getTransaction().commit();
     }
 
+    LOGGER.debug("created backup linked_artifact column");
+    LOGGER.debug("created dataset_migration_status table");
+
     Long count = getEntityCount(DatasetEntity.class);
 
     int lowerBound = 0;
@@ -129,6 +133,7 @@ public class DatasetToRepositoryMigration {
     while (lowerBound < count) {
 
       try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        LOGGER.debug("starting Dataset Processing for batch starting with {}", lowerBound);
         Transaction transaction = session.beginTransaction();
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
@@ -147,27 +152,31 @@ public class DatasetToRepositoryMigration {
         typedQuery.setFirstResult(lowerBound);
         typedQuery.setMaxResults(pagesize);
         List<DatasetEntity> datasetEntities = typedQuery.getResultList();
-
+        LOGGER.debug("got datasets");
         if (datasetEntities.size() > 0) {
           Set<String> userIds = new HashSet<>();
           for (DatasetEntity datasetsEntity : datasetEntities) {
             userIds.add(datasetsEntity.getOwner());
           }
-          LOGGER.debug("Datasets userId list : " + userIds);
+          LOGGER.debug("Distinct owners in the batch : " + userIds);
 
           // Fetch the Dataset owners userInfo
           Map<String, UserInfo> userInfoMap = new HashMap<>();
           if (!userIds.isEmpty()) {
             userInfoMap = authService.getUserInfoFromAuthServer(userIds, null, null);
           }
+          LOGGER.debug("Resolved owners in the batch from uac ");
+
           for (DatasetEntity datasetEntity : datasetEntities) {
             if (datasetEntity.getDataset_type() == DatasetTypeEnum.DatasetType.PATH_VALUE) {
+              LOGGER.debug("Starting migrating dataset {}", datasetEntity.getId());
 
               if (checkDatasetMigrationStatus(session, datasetEntity.getId(), "done")) {
-                LOGGER.debug("Dataset {} already migrated", datasetEntity.getId());
+                LOGGER.debug("Dataset {} already migrated, continuing", datasetEntity.getId());
               } else {
                 try {
                   if (checkDatasetMigrationStatus(session, datasetEntity.getId(), "started")) {
+                    LOGGER.debug("Rolling back Dataset migration {}", datasetEntity.getId());
                     deleteAlreadyMigratedEntities(datasetEntity);
                   }
                   createRepository(
@@ -192,7 +201,9 @@ public class DatasetToRepositoryMigration {
           throw ex;
         }
       } finally {
+    	LOGGER.debug("gc starts");
         Runtime.getRuntime().gc();
+  	    LOGGER.debug("gc ends");
       }
     }
 
@@ -271,9 +282,11 @@ public class DatasetToRepositoryMigration {
     Dataset newDataset = datasetEntity.getProtoObject().toBuilder().setId("").build();
     Repository repository;
     try {
+      LOGGER.debug("Creating repository for dataset {}", datasetEntity.getId());
       repository =
           repositoryDAO.createRepository(commitDAO, metadataDAO, newDataset, true, userInfoValue);
       markStartedDatasetMigration(datasetId, repository.getId(), "started");
+      LOGGER.debug("Adding repository collaborattor for dataset {}", datasetEntity.getId());
       migrateDatasetCollaborators(datasetId, repository);
     } catch (Exception e) {
       if (e instanceof StatusRuntimeException) {
@@ -283,6 +296,10 @@ public class DatasetToRepositoryMigration {
         if (status.getCode().equals(Status.Code.ALREADY_EXISTS)) {
           repository =
               repositoryDAO.createRepository(commitDAO, metadataDAO, newDataset, false, null);
+          LOGGER.debug(
+              "Continuing with repository {} already created for dataset {}",
+              repository.getId(),
+              datasetEntity.getId());
         } else {
           throw e;
         }
@@ -290,6 +307,7 @@ public class DatasetToRepositoryMigration {
         throw e;
       }
     }
+    LOGGER.debug("Created repository {} for dataset {}", repository.getId(), datasetEntity.getId());
     migrateDatasetVersionToCommitsBlobsMigration(session, datasetId, repository.getId());
     updateDatasetMigrationStatus(datasetId, repository.getId(), "done");
   }
@@ -337,7 +355,10 @@ public class DatasetToRepositoryMigration {
 
   private static void migrateDatasetVersionToCommitsBlobsMigration(
       Session session, String datasetId, Long repoId) {
-    LOGGER.info("DatasetVersions To Commits and Blobs migration started");
+    LOGGER.debug(
+        "DatasetVersions To Commits and Blobs migration started for dataset {}, repo id {}",
+        datasetId,
+        repoId);
     String countQuery =
         "SELECT COUNT(dv) FROM "
             + DatasetVersionEntity.class.getSimpleName()
@@ -348,11 +369,12 @@ public class DatasetToRepositoryMigration {
 
     int lowerBound = 0;
     final int pagesize = recordUpdateLimit;
-    LOGGER.debug("Total DatasetVersions {}", count);
+    LOGGER.debug("Total DatasetVersions {} in dataset {}", count, datasetId);
 
     while (lowerBound < count) {
 
       try (Session session1 = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        LOGGER.debug("starting Dataset Version Processing for batch starting with {}", lowerBound);
         Transaction transaction = session1.beginTransaction();
         CriteriaBuilder criteriaBuilder = session1.getCriteriaBuilder();
 
@@ -374,6 +396,7 @@ public class DatasetToRepositoryMigration {
         typedQuery.setFirstResult(lowerBound);
         typedQuery.setMaxResults(pagesize);
         List<DatasetVersionEntity> datasetVersionEntities = typedQuery.getResultList();
+        LOGGER.debug("got dataset versions");
 
         if (datasetVersionEntities.size() > 0) {
           for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
@@ -422,7 +445,10 @@ public class DatasetToRepositoryMigration {
       }
     }
 
-    LOGGER.info("DatasetVersionVersions To Commits and Blobs migration finished");
+    LOGGER.info(
+        "DatasetVersionVersions To Commits and Blobs migration finished for dataset {}, repo id {}",
+        datasetId,
+        repoId);
   }
 
   private static String createCommitAndBlobsFromDatsetVersion(
@@ -432,9 +458,6 @@ public class DatasetToRepositoryMigration {
     CreateCommitRequest.Response createCommitResponse =
         commitDAO.setCommitFromDatasetVersion(
             newDatasetVersion, repositoryDAO, blobDAO, metadataDAO, repositoryEntity);
-    LOGGER.debug(
-        "Migration done for datasetVersion to commit - commit hash : {}",
-        createCommitResponse.getCommit().getCommitSha());
     return createCommitResponse.getCommit().getCommitSha();
   }
 
