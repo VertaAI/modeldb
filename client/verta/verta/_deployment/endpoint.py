@@ -8,6 +8,9 @@ from .._tracking import experimentrun
 
 class Endpoint(object):
     def __init__(self, conn, conf, workspace, id):
+        self._conn = conn
+        self._conf = conf
+
         self.workspace = workspace
         self.id = id
 

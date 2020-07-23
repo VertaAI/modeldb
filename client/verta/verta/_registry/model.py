@@ -144,7 +144,7 @@ class RegisteredModel(_ModelDBEntity):
         return self._msg.labels
 
     def _update(self):
-        response = self._conn.make_proto_request("PUT", "/api/v1/registry/{}".format(self.id),
+        response = self._conn.make_proto_request("PUT", "/api/v1/registry/registered_models/{}".format(self.id),
                                            body=self._msg)
         Message = _RegisteredModelService.SetRegisteredModel
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):

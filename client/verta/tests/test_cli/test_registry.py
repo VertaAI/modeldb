@@ -9,8 +9,6 @@ from verta._registry import RegisteredModel
 import os
 
 
-pytest.skip("registry not yet available in backend", allow_module_level=True)
-
 class TestCreate:
     def test_create_model(self):
         model_name = RegisteredModel._generate_default_name()
@@ -225,16 +223,7 @@ class TestList:
 
         result = runner.invoke(
             cli,
-            ['registry', 'list', 'registeredmodel', '--filter', "labels == \"{}\"".format(label), "--output=json"],
-        )
-
-        assert not result.exception
-        assert str(model1._msg.name) in result.output
-        assert str(model._msg.name) in result.output
-
-        result = runner.invoke(
-            cli,
-            ['registry', 'list', 'registeredmodel'],
+            ['registry', 'list', 'registeredmodel', "--output=json"],
         )
 
         assert not result.exception
@@ -316,4 +305,3 @@ class TestUpdate:
 
         os.remove(filename)
         os.remove(classifier_name)
-

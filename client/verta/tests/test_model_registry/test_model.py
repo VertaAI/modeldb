@@ -2,7 +2,6 @@ import pytest
 import verta
 
 
-@pytest.mark.skip("registry not yet available in backend")
 class TestModel:
     def test_create(self, client):
         assert client.set_registered_model()
