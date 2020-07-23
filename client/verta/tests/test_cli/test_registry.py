@@ -107,7 +107,6 @@ class TestCreate:
         os.remove(classifier_name)
 
     def test_create_version_wrong_model_name(self, strs):
-        # TODO: re-run this test later on. It still fails for now.
         version_name = "my version"
 
         runner = CliRunner()
@@ -118,6 +117,71 @@ class TestCreate:
 
         assert result.exception
         assert result.output.strip().endswith("not found")
+
+    def test_create_version_from_run(self, experiment_run, model_for_deployment, registered_model):
+        np = pytest.importorskip("numpy")
+        model_name = registered_model.name
+        version_name = "from_run"
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        artifact = np.random.random((36, 12))
+        experiment_run.log_artifact("some-artifact", artifact)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--from-run", experiment_run.id],
+        )
+        assert not result.exception
+
+        model_version = registered_model.get_version(name=version_name)
+        assert model_version.name in result.output
+
+        env_str = str(model_version.get_environment())
+        assert 'scikit-learn' in env_str
+        assert 'Python' in env_str
+
+        assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
+        assert (model_version.get_artifact("some-artifact") == artifact).all()
+
+    def test_create_from_run_with_model_artifact_error(self, experiment_run, registered_model):
+        model_name = registered_model.name
+        version_name = "from_run"
+        error_message = "--from_run cannot be provided alongside other options, except for --workspace"
+
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact", "file",
+             filename, "--from-run", experiment_run.id],
+        )
+        assert result.exception
+        assert error_message in result.output
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--model", filename,
+             "--from-run", experiment_run.id],
+        )
+        assert result.exception
+        assert error_message in result.output
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "-l", "some label",
+             "--from-run", experiment_run.id],
+        )
+        assert result.exception
+        assert error_message in result.output
+
+        os.remove(filename)
 
 
 class TestGet:
