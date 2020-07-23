@@ -8,7 +8,17 @@ import time
 
 
 class TestEndpoint:
-    def test_update(self, strs, experiment_run, model_for_deployment):
+    def test_get_status(self, client):
+        # TODO: remove hardcoding
+        endpoint = Endpoint(client._conn, client._conf, "Nhat_Pham", 210119)
+        status = endpoint.get_status()
+
+        # Check that some fields exist:
+        assert "status" in status
+        assert "date_created" in status
+        assert "id" in status
+
+    def test_update(self, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
 
         # TODO: remove hardcoding
@@ -17,10 +27,11 @@ class TestEndpoint:
         original_status = endpoint.get_status()
         endpoint.update(experiment_run, DirectUpdateStrategy())
 
-        time.sleep(2) # wait for updating to complete
-        updated_status = endpoint.get_status()
+    def test_canary_update(self, experiment_run, model_for_deployment):
+        experiment_run.log_model_for_deployment(**model_for_deployment)
 
-        assert original_status["date_updated"] != updated_status["date_updated"]
+        # TODO: remove hardcoding
+        endpoint = Endpoint(experiment_run._conn, experiment_run._conf, "Nhat_Pham", 210119)
 
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
         
@@ -32,7 +43,4 @@ class TestEndpoint:
         strategy.add_rule(AverageLatencyThreshold(0.8))
         endpoint.update(experiment_run, strategy)
         time.sleep(2) # wait for updating to complete
-        updated_status_2 = endpoint.get_status()
-
-        assert updated_status["date_updated"] != updated_status_2["date_updated"]
-        assert original_status["date_updated"] != updated_status_2["date_updated"]
+        updated_status = endpoint.get_status()
