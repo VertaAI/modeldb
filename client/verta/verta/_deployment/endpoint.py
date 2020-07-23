@@ -87,7 +87,7 @@ class Endpoint(object):
             self._conn.socket,
             self.workspace,
             self.id,
-            self._get_or_create_active_stage()
+            self._get_or_create_stage()
         )
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
