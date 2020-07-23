@@ -38,7 +38,7 @@ class Endpoint(object):
             path = '/' + path
         json["path"] = path
         response = _utils.make_request("POST", "{}://{}{}".format(conn.scheme, conn.socket, "/api/v1/deployment/workspace/{}/endpoints".format(workspace)), conn, json=json)
-        assert response.status_code == 200
+        _utils.raise_for_http_error(response)
         return response.json()
 
     @classmethod
