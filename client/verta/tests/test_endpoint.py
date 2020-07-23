@@ -5,7 +5,7 @@ import time
 
 
 class TestEndpoint:
-    def test_update(self, experiment_run, model_for_deployment, experiment_run_2, model_for_deployment_2):
+    def test_update(self, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
         # TODO: remove hardcoding
         endpoint = Endpoint(experiment_run._conn, experiment_run._conf, "Nhat_Pham", 449)
@@ -18,5 +18,4 @@ class TestEndpoint:
 
         assert original_status["date_updated"] != updated_status["date_updated"]
 
-        experiment_run_2.log_model_for_deployment(**model_for_deployment_2)
-        endpoint.update(experiment_run_2, CanaryUpdateStrategy(interval=1, step=0.5))
+        endpoint.update(experiment_run, CanaryUpdateStrategy(interval=1, step=0.5))
