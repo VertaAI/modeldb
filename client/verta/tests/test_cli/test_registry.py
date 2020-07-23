@@ -147,7 +147,7 @@ class TestCreate:
         assert (model_version.get_artifact("some-artifact") == artifact).all()
         assert model_version.get_labels() == ["label1", "label2"]
 
-    def test_create_from_run_with_model(self, experiment_run, registered_model):
+    def test_create_from_run_with_model_artifact(self, experiment_run, registered_model):
         model_name = registered_model.name
         version_name = "from_run"
         error_message = "--from_run cannot be provided alongside --model nor --artifact"
