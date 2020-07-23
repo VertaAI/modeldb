@@ -16,12 +16,24 @@ class BaseType(dict):
         else:
             raise AttributeError
 
-    def to_json(self):
-        d = dict(self)
-        for k, v in d.items():
-            if isinstance(v, BaseType):
-                d[k] = v.to_json()
+    @staticmethod
+    def _clean_json(obj):
+        if isinstance(obj, dict):
+            return {k: v for k, v in obj.items() if v is not None}
+        return obj
 
-        d = {k: v for k, v in d.items() if v is not None}
+    def _to_json_walk(self, obj, keep_fields):
+        if isinstance(obj, BaseType) and self != obj:
+            obj = obj.to_json()
+        elif isinstance(obj, dict):
+            obj = {k: self._to_json_walk(v) for k,v in obj.items()}
+        elif isinstance(obj, list):
+            obj = [self._to_json_walk(v) for v in obj]
 
-        return d
+        if not keep_fields:
+            obj = BaseType._clean_json(obj)
+
+        return obj
+
+    def to_json(self, keep_fields=False):
+        return self._to_json_walk(self, keep_fields)

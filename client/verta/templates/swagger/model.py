@@ -50,6 +50,7 @@ class {{class_name}}(BaseType):
   def to_json(self):
     return self.value
 
+  @staticmethod
   def from_json(v):
     if isinstance(v, str):
       return {{class_name}}(v)

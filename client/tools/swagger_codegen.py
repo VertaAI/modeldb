@@ -22,7 +22,7 @@ def main(output_dir, input, templates, file_suffix, case, model=None):
         content = json.load(f)
 
     def basedirReducer(init, val):
-        if val[1] != 'protos':
+        if val[1] != 'services':
             return init
         return val[0]
 
@@ -40,7 +40,7 @@ def main(output_dir, input, templates, file_suffix, case, model=None):
         model = "model" + file_suffix
 
     create_models(result_dir, result_package, content, templates, file_suffix, case, model)
-    create_api(result_dir, result_package, api_name, content, templates, file_suffix, case)
+    # create_api(result_dir, result_package, api_name, content, templates, file_suffix, case)
 
 def create_api(result_dir, result_package, api_name, content, templates, file_suffix, case):
     if 'paths' not in content:
@@ -206,7 +206,7 @@ def create_model(result_dir, result_package, definition_name, definition, enums,
 
     type_flag = "__"+definition['type']+"_flag"
 
-    if definition['type'] == 'object':
+    if definition['type'] in ('object', 'array'):
         info['__object_flag'] = True
     elif 'enum' in definition:
         info['__enum_flag'] = True
@@ -228,6 +228,7 @@ def create_typedef(**kwargs):
         'float': kwargs.get('float', False),
         'any': kwargs.get('any', False),
         'is_custom': kwargs.get('custom', None) is not None,
+        'is_object': kwargs.get('object', None) is not None,
     })
 
 
@@ -240,6 +241,10 @@ def resolve_type(typedef):
     if 'schema' in typedef:
         return resolve_type(typedef['schema'])
 
+    if 'properties' in typedef and 'type' not in typedef:
+        typedef['type'] = 'object'
+
+    # print(typedef)
     if typedef['type'] == 'string':
         if 'format' in typedef:
             # TODO: support long?
@@ -251,7 +256,7 @@ def resolve_type(typedef):
     elif typedef['type'] == 'boolean':
         return create_typedef(boolean=True, is_basic=True)
     elif typedef['type'] == 'integer':
-        if typedef['format'] == 'int32':
+        if typedef.get('format') in (None, 'int32'):
             return create_typedef(integer=True, is_basic=True)
         else:
             raise ValueError(typedef['format'])
@@ -268,6 +273,8 @@ def resolve_type(typedef):
         return create_typedef(generic=True)
     elif typedef['type'] == 'object' and 'additionalProperties' in typedef and 'properties' not in typedef:
         return create_typedef(is_map=True, map_key_type=resolve_type({'type': 'string'}), map_val_type=resolve_type(typedef['additionalProperties']))
+    elif typedef['type'] == 'object' and 'additionalProperties' not in typedef and 'properties' in typedef:
+        return create_typedef(object='', properties=[{"key":k, "map_val_type": resolve_type(v)} for k,v in typedef['properties'].items()])
     else:
         raise ValueError(typedef['type'])
 
