@@ -280,7 +280,7 @@ class TestUpdate:
         os.remove(filename)
         os.remove(classifier_name)
 
-    def test_model_overwrite(self, registered_model):
+    def test_model_already_logged_error(self, registered_model):
         model_name = registered_model.name
         version_name = "my version"
 
