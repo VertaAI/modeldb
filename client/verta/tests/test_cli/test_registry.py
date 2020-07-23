@@ -235,28 +235,29 @@ class TestList:
 class TestUpdate:
     def test_update_model(self, registered_model):
         model_name = registered_model.name
+        assert registered_model.get_labels() == []
 
         runner = CliRunner()
         result = runner.invoke(
             cli,
             ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1', '-l', 'label2'],
         )
-        assert result.exception
+        assert not result.exception
         assert registered_model.get_labels() == ["label1", "label2"]
 
         result = runner.invoke(
             cli,
             ['registry', 'update', 'registeredmodel', model_name],
         )
-        assert result.exception
-        assert registered_model.get_labels() == []
+        assert not result.exception
+        assert registered_model.get_labels() == ["label1", "label2"]
 
         result = runner.invoke(
             cli,
             ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1'],
         )
-        assert result.exception
-        assert registered_model.get_labels() == ["label1"]
+        assert not result.exception
+        assert registered_model.get_labels() == ["label1", "label2"]
 
 
     def test_update_version(self, registered_model):

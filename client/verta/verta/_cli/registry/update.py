@@ -24,8 +24,8 @@ def update_model(model_name, label, workspace):
         registered_model = client.get_registered_model(model_name, workspace=workspace)
     except ValueError:
         raise click.BadParameter("model {} not found".format(model_name))
-    registered_model._msg.labels.extend(label)
-    registered_model._update()
+    for l in label:
+        registered_model.add_label(l)
 
 
 @update.command(name="registeredmodelversion")
