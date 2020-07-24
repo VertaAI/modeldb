@@ -53,8 +53,9 @@ class RegisteredModel(_ModelDBEntity):
         :class:`~verta._registry.modelversion.RegisteredModelVersion`
 
         """
-        raise NotImplementedError
-        # return RegisteredModelVersion._create(self._conn, self._conf, ctx, name, experiment_run_id=run_id)
+        ctx = _Context(self._conn, self._conf)
+        ctx.registered_model = self
+        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name, experiment_run_id=run_id)
 
     def get_version(self, name=None, id=None):
         if name is not None and id is not None:

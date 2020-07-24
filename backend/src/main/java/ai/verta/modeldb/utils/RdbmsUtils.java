@@ -67,6 +67,7 @@ import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -797,7 +798,8 @@ public class RdbmsUtils {
         LOGGER.debug("Called switch case : string_value");
         if (!value.getStringValue().isEmpty()) {
           LOGGER.debug("Called switch case : string value exist");
-          if (fieldName.equals(ModelDBConstants.ATTRIBUTES)) {
+          if (fieldName.equals(ModelDBConstants.ATTRIBUTES)
+              && !(operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
             return getOperatorPredicate(
                 builder, valueExpression, operator, ModelDBUtils.getStringFromProtoObject(value));
           } else if (keyValueQuery.getKey().equals(ModelDBConstants.PROJECT_VISIBILITY)
@@ -2080,6 +2082,76 @@ public class RdbmsUtils {
 
         finalPredicatesList.add(privatePredicate);
       }
+    }
+  }
+
+  public static void setValueWithOperatorInQuery(
+      StringBuilder queryBuilder,
+      OperatorEnum.Operator operator,
+      Object value,
+      Map<String, Object> parametersMap) {
+    long timestamp = Math.round(100.0 * Math.random()) + Calendar.getInstance().getTimeInMillis();
+    String key;
+    switch (operator.ordinal()) {
+      case OperatorEnum.Operator.GT_VALUE:
+        key = "GT_VALUE_" + timestamp;
+        queryBuilder.append(" > :").append(key);
+        parametersMap.put(key, value);
+        break;
+      case OperatorEnum.Operator.GTE_VALUE:
+        key = "GTE_VALUE_" + timestamp;
+        queryBuilder.append(" >= :").append(key);
+        parametersMap.put(key, value);
+        break;
+      case OperatorEnum.Operator.LT_VALUE:
+        key = "LT_VALUE_" + timestamp;
+        queryBuilder.append(" < :").append(key);
+        parametersMap.put(key, value);
+        break;
+      case OperatorEnum.Operator.LTE_VALUE:
+        key = "LTE_VALUE_" + timestamp;
+        queryBuilder.append(" <= :").append(key);
+        parametersMap.put(key, value);
+        break;
+      case OperatorEnum.Operator.NE_VALUE:
+        key = "NE_VALUE_" + timestamp;
+        queryBuilder.append(" <> :").append(key);
+        parametersMap.put(key, value);
+        break;
+      case OperatorEnum.Operator.CONTAIN_VALUE:
+        queryBuilder
+            .append(" LIKE ")
+            .append(("'%" + Pattern.compile((String) value) + "%'").toLowerCase());
+        break;
+      case OperatorEnum.Operator.NOT_CONTAIN_VALUE:
+        queryBuilder
+            .append(" NOT LIKE ")
+            .append(("'%" + Pattern.compile((String) value) + "%'").toLowerCase());
+        break;
+      case OperatorEnum.Operator.IN_VALUE:
+        key = "IN_VALUE_" + timestamp;
+        queryBuilder.append(" IN (:").append(key).append(")");
+        parametersMap.put(key, value);
+        break;
+      default:
+        key = "default_" + timestamp;
+        queryBuilder.append(" = :").append(key);
+        parametersMap.put(key, value);
+    }
+    queryBuilder.append(" ");
+  }
+
+  public static void setParameterInQuery(Query query, Map<String, Object> parametersMap) {
+    if (parametersMap.size() > 0) {
+      parametersMap.forEach(
+          (key, value) -> {
+            if (value instanceof List) {
+              List<Object> objectList = (List<Object>) value;
+              query.setParameterList(key, objectList);
+            } else {
+              query.setParameter(key, value);
+            }
+          });
     }
   }
 }

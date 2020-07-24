@@ -2,7 +2,6 @@ import pytest
 from verta._internal_utils import _utils
 
 
-@pytest.mark.skip("endpoint not yet available in backend")
 class TestEndpoint:
     def test_create(self, client):
         name = _utils.generate_default_name()

@@ -9,10 +9,11 @@ from .._tracking import experimentrun
 
 
 class Endpoint(object):
-    def __init__(self, conn, conf, workspace, id, path):
+    def __init__(self, conn, conf, workspace, endpoint_json):
         self.workspace = workspace
-        self.id = id
-        self._path = path
+        self._conn = conn
+        self._conf = conf
+        self.id = endpoint_json['id']
 
     def __repr__(self):
         # TODO: print full info
@@ -20,26 +21,26 @@ class Endpoint(object):
 
     @property
     def path(self):
-        return self._path
+        return Endpoint._get_json_by_id(self._conn, self.workspace, self.id)['creator_request']['path']
 
     @classmethod
     def _create(cls, conn, conf, workspace, path, description=None):
         endpoint_json = cls._create_json(conn, workspace, path, description)
         if endpoint_json:
-            return Endpoint._new(conf, conn, workspace, endpoint_json)
+            return cls(conn, conf, workspace, endpoint_json)
         else:
             return None
 
     @classmethod
     def _create_json(cls, conn, workspace, path, description=None):
-        input = {}
+        data = {}
         if description:
-            input["description"] = description
+            data["description"] = description
         if not path.startswith('/'):
             path = '/' + path
-        input["path"] = path
+        data["path"] = path
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
-        response = _utils.make_request("POST", url, conn, json=input)
+        response = _utils.make_request("POST", url, conn, json=data)
         _utils.raise_for_http_error(response)
         return response.json()
 
@@ -47,7 +48,7 @@ class Endpoint(object):
     def _get_by_id(cls, conn, conf, workspace, id):
         endpoint_json = cls._get_json_by_id(conn, workspace, id)
         if endpoint_json:
-            return Endpoint._new(conf, conn, workspace, endpoint_json)
+            return cls(conn, conf, workspace, endpoint_json)
         else:
             return None
 
@@ -71,16 +72,12 @@ class Endpoint(object):
     def _get_by_path(cls, conn, conf, workspace, path):
         endpoint_json = cls._get_json_by_path(conn, workspace, path)
         if endpoint_json:
-            return Endpoint._new(conf, conn, workspace, endpoint_json)
+            return cls(conn, conf, workspace, endpoint_json)
         else:
             return None
 
     @classmethod
-    def _new(cls, conf, conn, workspace, endpoint_json):
-        return cls(conn, conf, workspace, endpoint_json['id'], endpoint_json['creator_request']['path'])
-
-    @classmethod
-    def _get_endpoints(cls, conn, workspace):
+    def _get_json_by_path(cls, conn, workspace, path):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
         response = _utils.make_request("GET", url, conn)
         _utils.raise_for_http_error(response)
@@ -102,6 +99,9 @@ class Endpoint(object):
         raise NotImplementedError
         # TODO: check if isinstance(run, experimentrun.ExperimentRun)
         # TODO: check if isinstance(strategy, deployment._UpdateStrategy)
+
+    def update_from_config(self, filepath):
+        raise NotImplementedError
 
     def get_status(self):
         raise NotImplementedError
