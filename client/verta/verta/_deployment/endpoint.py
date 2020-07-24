@@ -89,7 +89,7 @@ class Endpoint(object):
         if not isinstance(run, experimentrun.ExperimentRun):
             raise TypeError("run must be an ExperimentRun")
 
-        if not issubclass(type(strategy), _UpdateStrategy):
+        if not isinstance(strategy, _UpdateStrategy):
             raise TypeError("strategy must be an object from verta.deployment.strategies")
 
         stage_id = self._get_or_create_stage()
