@@ -32,7 +32,10 @@ class RegisteredModelVersions(_utils.LazyList):
         return "<RegisteredModelVersions containing {} versions>".format(self.__len__())
 
     def _call_back_end(self, msg):
-        url = "/api/v1/registry/registered_models/{}/model_versions/find".format(self._msg.id.registered_model_id)
+        if self._msg.id.registered_model_id == 0:
+            url = "/api/v1/registry/model_versions/find"
+        else:
+            url = "/api/v1/registry/registered_models/{}/model_versions/find".format(self._msg.id.registered_model_id)
         response = self._conn.make_proto_request("POST", url, body=msg)
         response = self._conn.must_proto_response(response, msg.Response)
         return response.model_versions, response.total_records
@@ -45,7 +48,7 @@ class RegisteredModelVersions(_utils.LazyList):
         if registered_model:
             new_list._msg.id.registered_model_id = registered_model.id
         else:
-            new_list._msg.id.registered_model_id = ''
+            new_list._msg.id.registered_model_id = 0
         return new_list
 
     def set_page_limit(self, msg, param):
