@@ -161,6 +161,24 @@ class TestModelVersion:
         model_version.del_artifact("coef-3")
         assert len(model_version.get_artifact_keys()) == 0
 
+    def test_del_model(self, registered_model):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        model_version = registered_model.get_or_create_version(name="my version")
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert model_version.has_model
+        model_version.del_model()
+        assert (not model_version.has_model)
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert (not model_version.has_model)
+
     def test_log_environment(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
 
