@@ -8,6 +8,7 @@ import verta.dataset
 from verta.environment import Python
 
 
+@pytest.mark.skip(reason="dev is not updated yet")
 class TestMDBIntegration:
     def test_from_run(self, experiment_run, model_for_deployment, registered_model):
         np = pytest.importorskip("numpy")
