@@ -34,14 +34,14 @@ class Endpoint(object):
 
     @classmethod
     def _create_json(cls, conn, workspace, path, description=None):
-        input = {}
+        data = {}
         if description:
-            input["description"] = description
+            data["description"] = description
         if not path.startswith('/'):
             path = '/' + path
-        input["path"] = path
+        data["path"] = path
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
-        response = _utils.make_request("POST", url, conn, json=input)
+        response = _utils.make_request("POST", url, conn, json=data)
         _utils.raise_for_http_error(response)
         return response.json()
 
