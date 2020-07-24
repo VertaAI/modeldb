@@ -63,5 +63,5 @@ class TestModel:
         client.registered_model.add_label("tag2")
         assert client.registered_model.get_labels() == ["tag1", "tag2", "tag3"]
 
-        client.registered_model.add_labels(["tag2", "tag4" "tag1", "tag5"]) # some tags already exist
+        client.registered_model.add_labels(["tag2", "tag4", "tag1", "tag5"]) # some tags already exist
         assert client.registered_model.get_labels() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
