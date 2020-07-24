@@ -1,11 +1,8 @@
 import pytest
 
 import verta
-from verta._deployment import Endpoint
 from verta.deployment.strategies import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update_rules import AverageLatencyThreshold
-
-import time
 
 
 def get_build_ids(status):
