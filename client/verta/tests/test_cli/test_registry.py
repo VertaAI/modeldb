@@ -150,7 +150,7 @@ class TestCreate:
     def test_create_from_run_with_model_artifact_error(self, experiment_run, registered_model):
         model_name = registered_model.name
         version_name = "from_run"
-        error_message = "--from_run cannot be provided alongside other options, except for --workspace"
+        error_message = "--from-run cannot be provided alongside other options, except for --workspace"
 
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2**16)
