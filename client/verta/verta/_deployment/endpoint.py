@@ -2,9 +2,9 @@
 
 from __future__ import print_function
 
-from verta.deployment.strategies import _UpdateStrategy
-from .._tracking import experimentrun
+from ..deployment.strategies import _UpdateStrategy
 from .._internal_utils import _utils
+from .._tracking import experimentrun
 
 
 class Endpoint(object):
@@ -33,10 +33,16 @@ class Endpoint(object):
 
     @classmethod
     def _create_json(cls, conn, workspace, path, description=None):
+        data = {}
+        if description:
+            data["description"] = description
         if not path.startswith('/'):
             path = '/' + path
-
-        raise NotImplementedError
+        data["path"] = path
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
+        response = _utils.make_request("POST", url, conn, json=data)
+        _utils.raise_for_http_error(response)
+        return response.json()
 
     @classmethod
     def _get_by_id(cls, conn, conf, workspace, id):
@@ -48,7 +54,10 @@ class Endpoint(object):
 
     @classmethod
     def _get_json_by_id(cls, conn, workspace, id):
-        raise NotImplementedError
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}".format(conn.scheme, conn.socket, workspace, id)
+        response = _utils.make_request("GET", url, conn)
+        _utils.raise_for_http_error(response)
+        return response.json()
 
     @classmethod
     def _get_or_create_by_name(cls, conn, name, getter, creator):
@@ -126,7 +135,7 @@ class Endpoint(object):
             # no stage found:
             return self._create_stage("production")
         else:
-            raise NotImplementedError # currently not supported other stages
+            raise NotImplementedError("currently not supported other stages")
 
     def _create_stage(self, name="production"):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages".format(
@@ -138,6 +147,9 @@ class Endpoint(object):
         response = _utils.make_request("POST", url, self._conn, json={"name": name})
         _utils.raise_for_http_error(response)
         return response.json()["id"]
+
+    def update_from_config(self, filepath):
+        raise NotImplementedError
 
     def get_status(self):
         raise NotImplementedError

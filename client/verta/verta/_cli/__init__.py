@@ -12,6 +12,7 @@ import click
 # from . import blob
 
 from .registry.registry import registry
+from .deployment.deployment import deployment
 
 
 @click.group()
@@ -40,6 +41,7 @@ def cli():
 
 
 # cli.add_command(init)
+cli.add_command(deployment)
 cli.add_command(registry)
 # cli.add_command(remote.remote)
 # cli.add_command(branch.branch)

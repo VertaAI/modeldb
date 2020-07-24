@@ -48,5 +48,5 @@ class Experiments(_utils.LazyList):
         if proj:
             new_list._msg.project_id = proj.id
         else:
-            new_list._msg.project_id = None
+            new_list._msg.project_id = ''
         return new_list

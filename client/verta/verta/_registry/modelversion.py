@@ -141,6 +141,11 @@ class RegisteredModelVersion(_ModelDBEntity):
         model_artifact = self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL)
         return _artifact_utils.deserialize_model(model_artifact)
 
+    def del_model(self):
+        self._fetch_with_no_cache()
+        self._msg.ClearField("model")
+        self._update()
+
     def log_artifact(self, key, asset, overwrite=False):
         if key == "model":
             raise ValueError("the key \"model\" is reserved for model; consider using log_model() instead")
