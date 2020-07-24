@@ -1,9 +1,10 @@
 ## Developer Installation
 From the root directory of the repository, run these commands:
 1. `cd client/verta/`
-1. `python2 -m pip install virtualenv && virtualenv venv` to create a Python 2 virtual environment
+1. `python2 -m pip install virtualenv && virtualenv venv/` to create a Python 2 virtual environment
    - developing in Python 2 is recommended to help ensure compatibility
-   - if you wish to work in Python 3 (which is necessary for building docs locally), instead run `python3 -m venv venv`
+   - if you wish to work in Python 3 (which is necessary for building docs locally), instead run `python3 -m venv venv/`
+   - for both Python 2 and Python 3, you can replace the `venv/` argument with any name you'd like
 1. `source venv/bin/activate` to activate the virtual environment
 1. `python -m pip install -r requirements.txt` to install packages for development, testing, and documentation
    - if you see `error: [Errno 13] Permission denied: 'verta.egg-info/requires.txt'`, delete the `verta.egg-info/` directory and try again
