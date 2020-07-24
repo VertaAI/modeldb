@@ -9,6 +9,7 @@ from verta._registry import RegisteredModel
 import os
 
 
+
 class TestCreate:
     def test_create_model(self):
         model_name = RegisteredModel._generate_default_name()
@@ -29,7 +30,7 @@ class TestCreate:
         assert not result.exception
         assert "name: \"{}\"".format(model_name) in result.output
 
-    def test_create_version(self, registered_model):
+    def test_create_version(self, registered_model, in_tempdir):
         model_name = registered_model.name
         version_name = "my version"
 
@@ -49,8 +50,6 @@ class TestCreate:
             cli,
             ['registry', 'create', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2', "--artifact", "file", filename, "--model", classifier_name],
         )
-        os.remove(filename)
-        os.remove(classifier_name)
         assert not result.exception
 
         model_version = registered_model.get_version(name=version_name)
@@ -59,7 +58,7 @@ class TestCreate:
         assert model_version.get_labels() == ["label1", "label2"]
         assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS
 
-    def test_create_version_invalid_key(self, registered_model):
+    def test_create_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name
         version_name = "my version"
 
@@ -103,9 +102,6 @@ class TestCreate:
         assert result.exception
         assert "key \"file\" already exists" in result.output
 
-        os.remove(filename)
-        os.remove(classifier_name)
-
     def test_create_version_wrong_model_name(self, strs):
         version_name = "my version"
 
@@ -144,12 +140,12 @@ class TestCreate:
         assert 'Python' in env_str
 
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
-        assert (model_version.get_artifact("some-artifact") == artifact).all()
+        assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
 
-    def test_create_from_run_with_model_artifact_error(self, experiment_run, registered_model):
+    def test_create_from_run_with_model_artifact_error(self, experiment_run, registered_model, in_tempdir):
         model_name = registered_model.name
         version_name = "from_run"
-        error_message = "--from_run cannot be provided alongside other options, except for --workspace"
+        error_message = "--from-run cannot be provided alongside other options, except for --workspace"
 
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2**16)
@@ -180,8 +176,6 @@ class TestCreate:
         )
         assert result.exception
         assert error_message in result.output
-
-        os.remove(filename)
 
 
 class TestGet:
@@ -295,8 +289,70 @@ class TestList:
         assert str(model._msg.name) in result.output
         assert str(model2._msg.name) in result.output
 
+    def test_list_version(self):
+        client = Client()
+        runner = CliRunner()
+
+        model1 = client.get_or_create_registered_model()
+        version1_name = "version1"
+        version2_name = "version2"
+        model1.get_or_create_version(version1_name)
+        version2 = model1.get_or_create_version(version2_name)
+        label = model1._msg.name + "label1"
+        result = runner.invoke(
+            cli,
+            ['registry', 'list', 'registeredmodelversion', model1._msg.name]
+        )
+
+        assert not result.exception
+        assert version1_name in result.output
+        assert version2_name in result.output
+
+        version2.add_label(label)
+        model2 = client.get_or_create_registered_model()
+        version2_1_name = "version2_1"
+        version2_2_name = "version2_2"
+        version21 = model2.get_or_create_version(version2_1_name)
+        version21.add_label(label)
+        model2.get_or_create_version(version2_2_name)
+        result = runner.invoke(
+            cli,
+            ['registry', 'list', 'registeredmodelversion', '--filter', "labels == \"{}\"".format(label), "--output=json"]
+        )
+
+        assert not result.exception
+        assert version2_1_name in result.output
+        assert version2_name in result.output
+
 class TestUpdate:
-    def test_update_version(self, registered_model):
+    def test_update_model(self, registered_model):
+        model_name = registered_model.name
+        assert registered_model.get_labels() == []
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1', '-l', 'label2'],
+        )
+        assert not result.exception
+        assert registered_model.get_labels() == ["label1", "label2"]
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodel', model_name],
+        )
+        assert not result.exception
+        assert registered_model.get_labels() == ["label1", "label2"]
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1'],
+        )
+        assert not result.exception
+        assert registered_model.get_labels() == ["label1", "label2"]
+
+
+    def test_update_version(self, registered_model, in_tempdir):
         model_name = registered_model.name
         version_name = "my version"
         registered_model.get_or_create_version(version_name)
@@ -317,8 +373,6 @@ class TestUpdate:
             cli,
             ['registry', 'update', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2', "--artifact", "file", filename, "--model", classifier_name],
         )
-        os.remove(filename)
-        os.remove(classifier_name)
         assert not result.exception
 
         model_version = registered_model.get_version(name=version_name)
@@ -326,7 +380,7 @@ class TestUpdate:
         assert model_version.get_labels() == ["label1", "label2"]
         assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS
 
-    def test_update_version_invalid_key(self, registered_model):
+    def test_update_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name
         version_name = "my version"
         registered_model.get_or_create_version(version_name)
@@ -367,10 +421,7 @@ class TestUpdate:
         assert result.exception
         assert "key \"file\" already exists" in result.output
 
-        os.remove(filename)
-        os.remove(classifier_name)
-
-    def test_model_already_logged_error(self, registered_model):
+    def test_model_already_logged_error(self, registered_model, in_tempdir):
         model_name = registered_model.name
         version_name = "my version"
 
@@ -391,6 +442,4 @@ class TestUpdate:
         )
         assert result.exception
         assert "a model has already been associated with the version" in result.output
-
-        os.remove(classifier_name)
 
