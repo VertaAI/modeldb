@@ -102,7 +102,7 @@ class ExperimentRuns(_utils.LazyList):
         if proj:
             new_list._msg.project_id = proj.id
         else:
-            new_list._msg.project_id = None
+            new_list._msg.project_id = ''
         return new_list
 
     def with_experiment(self, expt=None):
@@ -110,7 +110,7 @@ class ExperimentRuns(_utils.LazyList):
         if expt:
             new_list._msg.experiment_id = expt.id
         else:
-            new_list._msg.experiment_id = None
+            new_list._msg.experiment_id = ''
         return new_list
 
     def top_k(self, key, k, ret_all_info=False):

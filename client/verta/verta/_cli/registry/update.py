@@ -17,7 +17,7 @@ def update():
 @click.option("--label", "-l", multiple=True, help="Label to be associated with the object.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 def update_model(model_name, label, workspace):
-    """Create a new registeredmodel entry.
+    """Update an existing registeredmodel entry.
     """
     pass
 
@@ -30,7 +30,7 @@ def update_model(model_name, label, workspace):
 @click.option("--workspace", "-w", help="Workspace to use.")
 # TODO: add environment
 def update_model_version(model_name, version_name, label, model, artifact, workspace):
-    """Create a new registeredmodelversion entry.
+    """Update an existing registeredmodelversion entry.
     """
     client = Client()
 
@@ -47,6 +47,9 @@ def update_model_version(model_name, version_name, label, model, artifact, works
     except ValueError:
         raise click.BadParameter("version {} not found".format(version_name))
 
+    if model and model_version.has_model:
+        raise click.BadParameter("a model has already been associated with the version")
+
     if artifact:
         artifact_keys = model_version.get_artifact_keys()
 
@@ -58,11 +61,11 @@ def update_model_version(model_name, version_name, label, model, artifact, works
                 raise click.BadParameter("key \"{}\" already exists".format(key))
 
         for (key, path) in artifact:
-            model_version.log_artifact(key, path, True)
+            model_version.log_artifact(key, path)
 
     if label:
         for l in label:
             model_version.add_label(l)
 
-    if model is not None:
-        model_version.log_model(model, True)
+    if model:
+        model_version.log_model(model)
