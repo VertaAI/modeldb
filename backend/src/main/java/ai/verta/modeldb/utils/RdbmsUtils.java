@@ -797,7 +797,8 @@ public class RdbmsUtils {
         LOGGER.debug("Called switch case : string_value");
         if (!value.getStringValue().isEmpty()) {
           LOGGER.debug("Called switch case : string value exist");
-          if (fieldName.equals(ModelDBConstants.ATTRIBUTES)) {
+          if (fieldName.equals(ModelDBConstants.ATTRIBUTES)
+              && !(operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
             return getOperatorPredicate(
                 builder, valueExpression, operator, ModelDBUtils.getStringFromProtoObject(value));
           } else if (keyValueQuery.getKey().equals(ModelDBConstants.PROJECT_VISIBILITY)
