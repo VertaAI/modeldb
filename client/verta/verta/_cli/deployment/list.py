@@ -4,17 +4,24 @@ import click
 
 from .deployment import deployment
 from ... import Client
+from terminaltables import AsciiTable
 
 
 @deployment.group(name="list")
 def lst():
     pass
 
+
+
 @lst.command(name="endpoint")
-@click.argument("path", nargs=1, required=True)
 @click.option("--workspace", "-w", help="Workspace to use.")
-def lst_endpoint(path, workspace):
+def lst_endpoint(workspace):
     """List all endpoints available.
     """
-    raise NotImplementedError
+    client = Client()
+
+    endpoints = client.endpoints(workspace)
+    table_data = [['MODEL NAME', 'ID', 'DATE UPDATED']] + list(map(lambda endpoint: endpoint._get_info_list_by_id(), endpoints))
+    table = AsciiTable(table_data)
+    print(table.table)
     # TODO: call client.endpoints, display PATH, ID, and DATE UPDATED
