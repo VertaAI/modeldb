@@ -17,9 +17,16 @@ def update():
 @click.option("--label", "-l", multiple=True, help="Label to be associated with the object.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 def update_model(model_name, label, workspace):
-    """Create a new registeredmodel entry.
+    """Update an existing registeredmodel entry.
     """
-    pass
+    client = Client()
+    try:
+        registered_model = client.get_registered_model(model_name, workspace=workspace)
+    except ValueError:
+        raise click.BadParameter("model {} not found".format(model_name))
+    for l in label:
+        registered_model.add_label(l)
+
 
 @update.command(name="registeredmodelversion")
 @click.argument("model_name", nargs=1, required=True)
@@ -30,7 +37,7 @@ def update_model(model_name, label, workspace):
 @click.option("--workspace", "-w", help="Workspace to use.")
 # TODO: add environment
 def update_model_version(model_name, version_name, label, model, artifact, workspace):
-    """Create a new registeredmodelversion entry.
+    """Update an existing registeredmodelversion entry.
     """
     client = Client()
 

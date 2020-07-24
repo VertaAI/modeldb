@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 
+from .._internal_utils import _utils
+
 from .. import deployment
 from .._tracking import experimentrun
 
@@ -32,10 +34,16 @@ class Endpoint(object):
 
     @classmethod
     def _create_json(cls, conn, workspace, path, description=None):
+        data = {}
+        if description:
+            data["description"] = description
         if not path.startswith('/'):
             path = '/' + path
-
-        raise NotImplementedError
+        data["path"] = path
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
+        response = _utils.make_request("POST", url, conn, json=data)
+        _utils.raise_for_http_error(response)
+        return response.json()
 
     @classmethod
     def _get_by_id(cls, conn, conf, workspace, id):
@@ -47,7 +55,10 @@ class Endpoint(object):
 
     @classmethod
     def _get_json_by_id(cls, conn, workspace, id):
-        raise NotImplementedError
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}".format(conn.scheme, conn.socket, workspace, id)
+        response = _utils.make_request("GET", url, conn)
+        _utils.raise_for_http_error(response)
+        return response.json()
 
     @classmethod
     def _get_or_create_by_name(cls, conn, name, getter, creator):
@@ -79,6 +90,9 @@ class Endpoint(object):
         raise NotImplementedError
         # TODO: check if isinstance(run, experimentrun.ExperimentRun)
         # TODO: check if isinstance(strategy, deployment._UpdateStrategy)
+
+    def update_from_config(self, filepath):
+        raise NotImplementedError
 
     def get_status(self):
         raise NotImplementedError

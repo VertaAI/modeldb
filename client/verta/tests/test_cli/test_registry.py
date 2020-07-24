@@ -9,6 +9,7 @@ from verta._registry import RegisteredModel
 import os
 
 
+
 class TestCreate:
     def test_create_model(self):
         model_name = RegisteredModel._generate_default_name()
@@ -288,7 +289,69 @@ class TestList:
         assert str(model._msg.name) in result.output
         assert str(model2._msg.name) in result.output
 
+    def test_list_version(self):
+        client = Client()
+        runner = CliRunner()
+
+        model1 = client.get_or_create_registered_model()
+        version1_name = "version1"
+        version2_name = "version2"
+        model1.get_or_create_version(version1_name)
+        version2 = model1.get_or_create_version(version2_name)
+        label = model1._msg.name + "label1"
+        result = runner.invoke(
+            cli,
+            ['registry', 'list', 'registeredmodelversion', model1._msg.name]
+        )
+
+        assert not result.exception
+        assert version1_name in result.output
+        assert version2_name in result.output
+
+        version2.add_label(label)
+        model2 = client.get_or_create_registered_model()
+        version2_1_name = "version2_1"
+        version2_2_name = "version2_2"
+        version21 = model2.get_or_create_version(version2_1_name)
+        version21.add_label(label)
+        model2.get_or_create_version(version2_2_name)
+        result = runner.invoke(
+            cli,
+            ['registry', 'list', 'registeredmodelversion', '--filter', "labels == \"{}\"".format(label), "--output=json"]
+        )
+
+        assert not result.exception
+        assert version2_1_name in result.output
+        assert version2_name in result.output
+
 class TestUpdate:
+    def test_update_model(self, registered_model):
+        model_name = registered_model.name
+        assert registered_model.get_labels() == []
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1', '-l', 'label2'],
+        )
+        assert not result.exception
+        assert registered_model.get_labels() == ["label1", "label2"]
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodel', model_name],
+        )
+        assert not result.exception
+        assert registered_model.get_labels() == ["label1", "label2"]
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1'],
+        )
+        assert not result.exception
+        assert registered_model.get_labels() == ["label1", "label2"]
+
+
     def test_update_version(self, registered_model, in_tempdir):
         model_name = registered_model.name
         version_name = "my version"
