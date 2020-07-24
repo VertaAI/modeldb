@@ -51,7 +51,7 @@ Bug Fixes
 ^^^^^^^^^
 - `fix artifact download when $TMPDIR is in a different filesystem
   <https://github.com/VertaAI/modeldb/pull/1130>`__
-- `clear cache after every ExperimentRun.log_*()
+- `clear cache after every ExperimentRun logs
   <https://github.com/VertaAI/modeldb/pull/1101>`__
 - `fix TypeError in LazyList.with_workspace(None)
   <https://github.com/VertaAI/modeldb/pull/1098>`__
