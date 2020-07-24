@@ -9,6 +9,7 @@ from verta._registry import RegisteredModel
 import os
 
 
+
 class TestCreate:
     def test_create_model(self):
         model_name = RegisteredModel._generate_default_name()
@@ -331,6 +332,33 @@ class TestList:
         assert version2_name in result.output
 
 class TestUpdate:
+    def test_update_model(self, registered_model):
+        model_name = registered_model.name
+        assert registered_model.get_labels() == []
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1', '-l', 'label2'],
+        )
+        assert not result.exception
+        assert registered_model.get_labels() == ["label1", "label2"]
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodel', model_name],
+        )
+        assert not result.exception
+        assert registered_model.get_labels() == ["label1", "label2"]
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1'],
+        )
+        assert not result.exception
+        assert registered_model.get_labels() == ["label1", "label2"]
+
+
     def test_update_version(self, registered_model):
         model_name = registered_model.name
         version_name = "my version"
