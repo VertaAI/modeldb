@@ -6,6 +6,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 option java_multiple_files = true;
 
 import "google/api/annotations.proto";
+import "common/CommonService.proto";
 
 message IDTypeEnum {
     enum IDType {
@@ -36,6 +37,7 @@ message GetLabelsRequest {
 
 message GetLabelIdsRequest {
     repeated string labels = 1;
+    common.OperatorEnum.Operator operator = 2; // Default = EQ
 
     message Response {
         repeated IdentificationType ids = 1;

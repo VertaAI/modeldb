@@ -1,15 +1,18 @@
 package ai.verta.modeldb.metadata;
 
+import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,10 +32,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
           .append(" = :entityType")
           .toString();
   private static final String GET_LABEL_IDS_HQL =
-      new StringBuilder("From LabelsMappingEntity lm where lm.id.")
-          .append(ModelDBConstants.LABEL)
-          .append(" IN (:labels) ")
-          .toString();
+      new StringBuilder("From LabelsMappingEntity lm where ").toString();
   private static final String DELETE_LABELS_HQL =
       new StringBuilder("DELETE From LabelsMappingEntity lm where lm.")
           .append(ModelDBConstants.ENTITY_HASH)
@@ -130,12 +130,30 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public List<IdentificationType> getLabelIds(List<String> labels) throws ModelDBException {
+  public List<IdentificationType> getLabelIds(List<String> labels, OperatorEnum.Operator operator) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+
+      Map<String, Object> parametersMap = new HashMap<>();
+      StringBuilder queryBuilder = new StringBuilder(GET_LABEL_IDS_HQL);
+      for (int index = 0; index < labels.size(); index++) {
+        if (operator.equals(OperatorEnum.Operator.CONTAIN)
+            || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+          queryBuilder.append(" lower(lm.id.").append(ModelDBConstants.LABEL).append(") ");
+        } else {
+          queryBuilder.append(" lm.id.").append(ModelDBConstants.LABEL);
+        }
+        RdbmsUtils.setValueWithOperatorInQuery(
+            queryBuilder, operator, labels.get(index), parametersMap);
+        if (index < labels.size() - 1) {
+          queryBuilder.append(" AND ");
+        }
+      }
+
+      queryBuilder.append(" ORDER BY lm.id.label ");
       Query<LabelsMappingEntity> query =
-          session.createQuery(
-              GET_LABEL_IDS_HQL + " ORDER BY lm.id.label", LabelsMappingEntity.class);
-      query.setParameterList("labels", labels);
+          session.createQuery(queryBuilder.toString(), LabelsMappingEntity.class);
+      RdbmsUtils.setParameterInQuery(query, parametersMap);
+
       List<LabelsMappingEntity> labelsMappingEntities = query.list();
       return labelsMappingEntities.stream()
           .map(
@@ -157,7 +175,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
           .collect(Collectors.toList());
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return getLabelIds(labels);
+        return getLabelIds(labels, operator);
       } else {
         throw ex;
       }

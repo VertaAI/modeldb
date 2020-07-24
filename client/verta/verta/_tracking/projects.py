@@ -45,5 +45,5 @@ class Projects(_utils.LazyList):
 
     def with_workspace(self, workspace_name=None):
         new_list = copy.deepcopy(self)
-        new_list._msg.workspace_name = workspace_name
+        new_list._msg.workspace_name = workspace_name or ''
         return new_list

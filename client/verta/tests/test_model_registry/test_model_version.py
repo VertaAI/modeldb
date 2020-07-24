@@ -8,26 +8,27 @@ import verta.dataset
 from verta.environment import Python
 
 
-@pytest.mark.skip("not implemented yet")
 class TestMDBIntegration:
     def test_from_run(self, experiment_run, model_for_deployment, registered_model):
+        np = pytest.importorskip("numpy")
+
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
-        # TODO: run.log_artifact(), doesn't matter what
+
+        artifact = np.random.random((36, 12))
+        experiment_run.log_artifact("some-artifact", artifact)
 
         model_version = registered_model.create_version_from_run(
             run_id=experiment_run.id,
             name="From Run {}".format(experiment_run.id),
         )
 
-        # TODO: assert model_version.get_environment() has
-        #       - Python version
-        #       - requirement scikit-learn
+        env_str = str(model_version.get_environment())
+        assert 'scikit-learn' in env_str
+        assert 'Python' in env_str
 
-        # TODO: something like
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
-
-        # TODO: version.get_asset() has artifact from run.log_artifact()
+        assert (model_version.get_artifact("some-artifact") == artifact).all()
 
 
 class TestModelVersion:
