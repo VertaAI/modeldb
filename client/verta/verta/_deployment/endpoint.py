@@ -152,4 +152,14 @@ class Endpoint(object):
         raise NotImplementedError
 
     def get_status(self):
-        raise NotImplementedError
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_stage()
+        )
+        response = _utils.make_request("GET", url, self._conn)
+        _utils.raise_for_http_error(response)
+        return response.json()
+
