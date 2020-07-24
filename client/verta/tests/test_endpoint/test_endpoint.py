@@ -1,5 +1,6 @@
 import pytest
 
+from verta._internal_utils._utils import generate_default_name
 from verta._deployment import Endpoint
 from verta.deployment.strategies import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update_rules import AverageLatencyThreshold
@@ -11,11 +12,11 @@ def get_build_ids(status):
     # get the set of build_ids in the status of the stage:
     return set(map(lambda comp: comp["build_id"], status["components"]))
 
-
+@pytest.mark.skip("functionality not completed yet")
 class TestEndpoint:
     def test_get_status(self, client):
-        # TODO: remove hardcoding
-        endpoint = Endpoint(client._conn, client._conf, "Nhat_Pham", 210119)
+        path = generate_default_name()
+        endpoint = client.set_endpoint(path)
         status = endpoint.get_status()
 
         # Check that some fields exist:
@@ -23,11 +24,11 @@ class TestEndpoint:
         assert "date_created" in status
         assert "id" in status
 
-    def test_direct_update(self, experiment_run, model_for_deployment):
+    def test_direct_update(self, client, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
 
-        # TODO: remove hardcoding
-        endpoint = Endpoint(experiment_run._conn, experiment_run._conf, "Nhat_Pham", 210119)
+        path = generate_default_name()
+        endpoint = client.set_endpoint(path)
 
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
@@ -37,11 +38,12 @@ class TestEndpoint:
         new_build_ids = get_build_ids(endpoint.get_status())
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
-    def test_canary_update(self, experiment_run, model_for_deployment):
+    def test_canary_update(self, client, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
 
-        # TODO: remove hardcoding
-        endpoint = Endpoint(experiment_run._conn, experiment_run._conf, "Nhat_Pham", 210119)
+        path = generate_default_name()
+        endpoint = client.set_endpoint(path)
+
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
 
