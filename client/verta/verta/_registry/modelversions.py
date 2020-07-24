@@ -45,7 +45,7 @@ class RegisteredModelVersions(_utils.LazyList):
         if registered_model:
             new_list._msg.id.registered_model_id = registered_model.id
         else:
-            new_list._msg.id.registered_model_id = None
+            new_list._msg.id.registered_model_id = ''
         return new_list
 
     def set_page_limit(self, msg, param):
