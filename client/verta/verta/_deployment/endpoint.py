@@ -77,7 +77,7 @@ class Endpoint(object):
             return None
 
     @classmethod
-    def _get_json_by_path(cls, conn, workspace, path):
+    def _get_endpoints(cls, conn, workspace):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
         response = _utils.make_request("GET", url, conn)
         _utils.raise_for_http_error(response)
