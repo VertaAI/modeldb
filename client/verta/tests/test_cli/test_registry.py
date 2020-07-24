@@ -48,7 +48,8 @@ class TestCreate:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2', "--artifact", "file", filename, "--model", classifier_name],
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2',
+             "--artifact", "file={}".format(filename), "--model", classifier_name],
         )
         os.remove(filename)
         os.remove(classifier_name)
@@ -77,29 +78,29 @@ class TestCreate:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact", "model",
-             filename],
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name,
+             "--artifact", "model={}".format(filename)],
         )
         assert result.exception
         assert "the key \"model\" is reserved for model" in result.output
 
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact", "file",
-             filename, "--artifact", "file", filename],
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name,
+             "--artifact", "file={}".format(filename), "--artifact", "file={}".format(filename)],
         )
         assert result.exception
         assert "cannot have duplicate artifact keys" in result.output
 
         runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact", "file",
-             filename],
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact",
+             "file={}".format(filename)],
         )
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact", "file",
-             filename],
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact",
+             "file={}".format(filename)],
         )
         assert result.exception
         assert "key \"file\" already exists" in result.output
@@ -150,7 +151,6 @@ class TestCreate:
     def test_create_from_run_with_model_artifact_error(self, experiment_run, registered_model):
         model_name = registered_model.name
         version_name = "from_run"
-        error_message = "--from_run cannot be provided alongside other options, except for --workspace"
 
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2**16)
@@ -160,8 +160,17 @@ class TestCreate:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact", "file",
-             filename, "--from-run", experiment_run.id],
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact",
+             "file {}".format(filename)],
+        )
+        error_message = "key and path for artifacts must be separated by a '='"
+        assert result.exception
+        assert error_message in result.output
+        error_message = "--from-run cannot be provided alongside other options, except for --workspace"
+        result = runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact",
+             "file={}".format(filename), "--from-run", experiment_run.id],
         )
         assert result.exception
         assert error_message in result.output
@@ -378,7 +387,7 @@ class TestUpdate:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'update', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2', "--artifact", "file", filename, "--model", classifier_name],
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2', "--artifact", "file={}".format(filename), "--model", classifier_name],
         )
         os.remove(filename)
         os.remove(classifier_name)
@@ -407,25 +416,25 @@ class TestUpdate:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "model", filename],
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "model={}".format(filename)],
         )
         assert result.exception
         assert "the key \"model\" is reserved for model" in result.output
 
         result = runner.invoke(
             cli,
-            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "file", filename, "--artifact", "file", filename],
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "file={}".format(filename), "--artifact", "file={}".format(filename)],
         )
         assert result.exception
         assert "cannot have duplicate artifact keys" in result.output
 
         runner.invoke(
             cli,
-            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "file", filename],
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "file={}".format(filename)],
         )
         result = runner.invoke(
             cli,
-            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "file", filename],
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "file={}".format(filename)],
         )
         assert result.exception
         assert "key \"file\" already exists" in result.output

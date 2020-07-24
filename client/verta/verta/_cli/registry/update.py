@@ -33,7 +33,7 @@ def update_model(model_name, label, workspace):
 @click.argument("version_name", nargs=1, required=True)
 @click.option("--label", "-l", multiple=True, help="Label to be associated with the object.")
 @click.option("--model", help="Path to the model.")
-@click.option("--artifact", type=(str, str), multiple=True, help="Path to the artifact required for the model. The format is --artifact artifact_key path_to_artifact.")
+@click.option("--artifact", type=str, multiple=True, help="Path to the artifact required for the model. The format is --artifact artifact_key=path_to_artifact.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 # TODO: add environment
 def update_model_version(model_name, version_name, label, model, artifact, workspace):
@@ -41,6 +41,7 @@ def update_model_version(model_name, version_name, label, model, artifact, works
     """
     client = Client()
 
+    artifact = list(map(lambda s: s.split('='), artifact))
     if artifact and len(artifact) > len(set(map(lambda pair: pair[0], artifact))):
         raise click.BadParameter("cannot have duplicate artifact keys")
 
@@ -60,7 +61,10 @@ def update_model_version(model_name, version_name, label, model, artifact, works
     if artifact:
         artifact_keys = model_version.get_artifact_keys()
 
-        for (key, _) in artifact:
+        for pair in artifact:
+            if len(pair) != 2:
+                raise click.BadParameter("key and path for artifacts must be separated by a '='")
+            (key, _) = pair
             if key == "model":
                 raise click.BadParameter("the key \"model\" is reserved for model")
 
