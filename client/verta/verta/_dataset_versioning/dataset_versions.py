@@ -43,5 +43,5 @@ class DatasetVersions(_utils.LazyList):
         if dataset:
             new_list._msg.dataset_id = dataset.id
         else:
-            new_list._msg.dataset_id = None
+            new_list._msg.dataset_id = ''
         return new_list

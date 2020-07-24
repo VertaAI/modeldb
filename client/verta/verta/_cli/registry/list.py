@@ -55,9 +55,25 @@ def lst_model(filter, output, workspace):
 def lst_model_version(model_name, filter, output, workspace):
     """List all models available.
     """
+    client = Client()
+
     if model_name is None:
         click.echo("Listing versions for all models")
+        registered_model = None
     else:
         click.echo("Listing versions for model {}".format(model_name))
-    click.echo("filter: {}".format(filter))
-    click.echo("output: {}".format(output))
+        registered_model = client.get_registered_model(model_name, workspace)
+
+    model_versions = client.registered_model_versions.with_model(registered_model).find(filter)
+
+    click.echo()
+    if output == "json":
+        array = reduce(lambda a, b: "{}, {}".format(a, b),
+                       map(lambda model_version: json.dumps(_utils.proto_to_json(model_version._msg)), model_versions))
+        result = "\"model versions\": [{}]".format(array)
+        result = '{' + result + '}'
+        click.echo(result)
+    else:
+        for model_version in model_versions:
+            model_version_repr = model_version.name
+            click.echo(model_version_repr)

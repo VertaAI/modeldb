@@ -1,6 +1,6 @@
 import pytest
 
-from verta._internal_utils._utils import generate_default_name
+import verta
 from verta._deployment import Endpoint
 from verta.deployment.strategies import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update_rules import AverageLatencyThreshold
@@ -14,8 +14,19 @@ def get_build_ids(status):
 
 @pytest.mark.skip("functionality not completed yet")
 class TestEndpoint:
+    def test_create(self, client):
+        name = verta._internal_utils._utils.generate_default_name()
+        assert client.set_endpoint(name)
+
+    def test_get_by_id(self, client):
+        endpoint = client.set_endpoint("/path1")
+
+        client.set_endpoint("/path2")  # in case get erroneously fetches latest
+
+        assert endpoint.id == client.set_endpoint(id=endpoint.id).id
+
     def test_get_status(self, client):
-        path = generate_default_name()
+        path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         status = endpoint.get_status()
 
@@ -27,7 +38,7 @@ class TestEndpoint:
     def test_direct_update(self, client, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
 
-        path = generate_default_name()
+        path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
 
         original_status = endpoint.get_status()
@@ -41,7 +52,7 @@ class TestEndpoint:
     def test_canary_update(self, client, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
 
-        path = generate_default_name()
+        path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
 
         original_status = endpoint.get_status()
@@ -60,4 +71,3 @@ class TestEndpoint:
         # Check that a new build is added:
         new_build_ids = get_build_ids(endpoint.get_status())
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
-

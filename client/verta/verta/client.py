@@ -890,8 +890,14 @@ class Client(object):
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
             workspace = self._get_personal_workspace()
+        if id is not None:
+            return Endpoint._get_by_id(self._conn, self._conf, workspace, id)
+        else:
+            return Endpoint._get_or_create_by_name(self._conn, path,
+                                            lambda name: None, #Endpoint._get_by_path(self._conn, self._conf, workspace, path),
+                                            lambda name: Endpoint._create( self._conn, self._conf, workspace, path, description))
 
-        raise NotImplementedError
+
 
     def get_endpoint(self, path=None, workspace=None, id=None):
         if path is not None and id is not None:
