@@ -37,6 +37,31 @@ Release Notes
      <>`__
 
 
+v0.14.13 (2020-07-24)
+---------------------
+
+Enhancements
+^^^^^^^^^^^^
+- `add more possible keys for LazyList.find()
+  <https://github.com/VertaAI/modeldb/pull/1038>`__
+- `print full response body for HTTP errors
+  <https://github.com/VertaAI/modeldb/pull/1083>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix artifact download when $TMPDIR is in a different filesystem
+  <https://github.com/VertaAI/modeldb/pull/1130>`__
+- `clear cache after every ExperimentRun.log_*()
+  <https://github.com/VertaAI/modeldb/pull/1101>`__
+- `fix TypeError in LazyList.with_workspace(None)
+  <https://github.com/VertaAI/modeldb/pull/1098>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `move verta/deployment.py to verta/deployment/
+  <https://github.com/VertaAI/modeldb/pull/1085>`__
+
+
 v0.14.12 (2020-07-16)
 ---------------------
 
