@@ -121,6 +121,16 @@ class RegisteredModel(_ModelDBEntity):
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
 
+    def add_labels(self, labels):
+        if not labels:
+            raise ValueError("label is not specified")
+
+        self._fetch_with_no_cache()
+        for label in labels:
+            if label not in self._msg.labels:
+                self._msg.labels.append(label)
+        self._update()
+
     def add_label(self, label):
         if label is None:
             raise ValueError("label is not specified")

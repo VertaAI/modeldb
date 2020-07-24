@@ -386,6 +386,16 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         return response.content
 
+    def add_labels(self, labels):
+        if not labels:
+            raise ValueError("label is not specified")
+
+        self._fetch_with_no_cache()
+        for label in labels:
+            if label not in self._msg.labels:
+                self._msg.labels.append(label)
+        self._update()
+
     def add_label(self, label):
         if label is None:
             raise ValueError("label is not specified")

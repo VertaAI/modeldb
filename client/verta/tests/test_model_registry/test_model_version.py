@@ -219,6 +219,9 @@ class TestModelVersion:
         model_version.add_label("tag2")
         assert model_version.get_labels() == ["tag1", "tag2", "tag3"]
 
+        model_version.add_labels(["tag2", "tag4", "tag1", "tag5"])
+        assert model_version.get_labels() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
+
     def test_find(self, client):
         name = "registered_model_test"
         registered_model = client.set_registered_model()
