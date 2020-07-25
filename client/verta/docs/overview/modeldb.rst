@@ -30,7 +30,7 @@ well as regulatory inquiries.
 
 Building an ML model involves a lot of trial and error and the building of hundreds to thousands of models.
 Each of these experiments in model building are essential to the development of the final model and for
-analyzing and debugging the preformance of different models.
+analyzing and debugging the performance of different models.
 
 Use ModelDB to version the models built in a project and manage the experiments via intuitive dashboards,
 reporting, and model analysis functionality.
