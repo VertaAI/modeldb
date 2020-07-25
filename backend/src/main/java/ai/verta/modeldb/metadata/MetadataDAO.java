@@ -1,5 +1,6 @@
 package ai.verta.modeldb.metadata;
 
+import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBException;
 import java.util.List;
 import org.hibernate.Session;
@@ -18,7 +19,7 @@ public interface MetadataDAO {
 
   List<String> getLabels(IdentificationType id) throws ModelDBException;
 
-  List<IdentificationType> getLabelIds(List<String> labels) throws ModelDBException;
+  List<IdentificationType> getLabelIds(List<String> labels, OperatorEnum.Operator operator);
 
   List<String> getLabels(Session session, IdentificationType id) throws ModelDBException;
 

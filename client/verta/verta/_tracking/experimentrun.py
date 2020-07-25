@@ -10,6 +10,7 @@ import pathlib2
 import pprint
 import shutil
 import sys
+import shutil
 import tarfile
 import tempfile
 import time
@@ -276,6 +277,8 @@ class ExperimentRun(_ModelDBEntity):
         else:
             self._upload_artifact(key, artifact_stream)
 
+        self._clear_cache()
+
     def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
         """
         Uploads `artifact_stream` to ModelDB artifact store.
@@ -395,6 +398,8 @@ class ExperimentRun(_ModelDBEntity):
                                  " consider setting overwrite=True".format(key))
             else:
                 _utils.raise_for_http_error(response)
+
+        self._clear_cache()
 
     def _get_artifact(self, key):
         """
@@ -605,6 +610,8 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, json=data)
         _utils.raise_for_http_error(response)
 
+        self._clear_cache()
+
     def log_tags(self, tags):
         """
         Logs multiple tags to this Experiment Run.
@@ -624,6 +631,8 @@ class ExperimentRun(_ModelDBEntity):
                                        "{}://{}/api/v1/modeldb/experiment-run/addExperimentRunTags".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
         _utils.raise_for_http_error(response)
+
+        self._clear_cache()
 
     def get_tags(self):
         """
@@ -673,6 +682,8 @@ class ExperimentRun(_ModelDBEntity):
             else:
                 _utils.raise_for_http_error(response)
 
+        self._clear_cache()
+
     def log_attributes(self, attributes):
         """
         Logs potentially multiple attributes to this Experiment Run.
@@ -703,6 +714,8 @@ class ExperimentRun(_ModelDBEntity):
                                  " consider using observations instead")
             else:
                 _utils.raise_for_http_error(response)
+
+        self._clear_cache()
 
     def get_attribute(self, key):
         """
@@ -1010,6 +1023,8 @@ class ExperimentRun(_ModelDBEntity):
                                  " consider setting overwrite=True".format(key))
             else:
                 _utils.raise_for_http_error(response)
+
+        self._clear_cache()
 
     def log_dataset_path(self, key, path):
         """
@@ -1663,6 +1678,8 @@ class ExperimentRun(_ModelDBEntity):
                                        "{}://{}/api/v1/modeldb/experiment-run/logObservation".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
         _utils.raise_for_http_error(response)
+
+        self._clear_cache()
 
     def get_observation(self, key):
         """
@@ -2370,6 +2387,8 @@ class ExperimentRun(_ModelDBEntity):
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
 
+        self._clear_cache()
+
     def get_commit(self):
         """
         Gets the Commit associated with this Experiment Run.
@@ -2526,7 +2545,7 @@ class ExperimentRun(_ModelDBEntity):
             pass
 
         # move written contents to cache location
-        os.rename(temp_path, path)
+        shutil.move(temp_path, path)
 
         return path
 

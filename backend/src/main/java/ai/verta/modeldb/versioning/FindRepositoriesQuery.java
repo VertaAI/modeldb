@@ -11,6 +11,7 @@ import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.metadata.IDTypeEnum;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.UserInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,7 +98,7 @@ public class FindRepositoriesQuery {
 
     public Query buildQuery() throws ModelDBException {
       Query query = session.createQuery(getHQLQueryString());
-      setParameterInQuery(query);
+      RdbmsUtils.setParameterInQuery(query, parametersMap);
 
       if (this.pageNumber != null
           && this.pageLimit != null
@@ -113,23 +114,9 @@ public class FindRepositoriesQuery {
       return query;
     }
 
-    private void setParameterInQuery(Query query) {
-      if (parametersMap.size() > 0) {
-        parametersMap.forEach(
-            (key, value) -> {
-              if (value instanceof List) {
-                List<Object> objectList = (List<Object>) value;
-                query.setParameterList(key, objectList);
-              } else {
-                query.setParameter(key, value);
-              }
-            });
-      }
-    }
-
     public Query buildCountQuery() {
       Query query = session.createQuery(this.countQueryString);
-      setParameterInQuery(query);
+      RdbmsUtils.setParameterInQuery(query, parametersMap);
       return query;
     }
 
@@ -277,7 +264,7 @@ public class FindRepositoriesQuery {
       if (operator.equals(OperatorEnum.Operator.IN)) {
         String ownerIdsArrString = keyValueQuery.getValue().getStringValue();
         List<String> ownerIds = Arrays.asList(ownerIdsArrString.split(","));
-        VersioningUtils.setValueWithOperatorInQuery(
+        RdbmsUtils.setValueWithOperatorInQuery(
             index, predicateStringBuilder, operator, ownerIds, parametersMap);
       } else if (operator.equals(OperatorEnum.Operator.CONTAIN)
           || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
@@ -290,7 +277,7 @@ public class FindRepositoriesQuery {
                   .map(authService::getVertaIdFromUserInfo)
                   .collect(Collectors.toList());
           if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
-            VersioningUtils.setValueWithOperatorInQuery(
+            RdbmsUtils.setValueWithOperatorInQuery(
                 index, predicateStringBuilder, OperatorEnum.Operator.IN, ownerIds, parametersMap);
           } else {
             String mapKey = "IN_VALUE_" + index;

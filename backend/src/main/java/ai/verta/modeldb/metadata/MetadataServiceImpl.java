@@ -116,11 +116,11 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
 
       if (request.getLabelsList().isEmpty()) {
-        throw new ModelDBException(
-            "Labels not found in GetLabelIdsRequest", io.grpc.Status.Code.INVALID_ARGUMENT);
+        throw new ModelDBException("Labels not found in GetLabelIdsRequest", Code.INVALID_ARGUMENT);
       }
 
-      List<IdentificationType> labelIds = metadataDAO.getLabelIds(request.getLabelsList());
+      List<IdentificationType> labelIds =
+          metadataDAO.getLabelIds(request.getLabelsList(), request.getOperator());
       responseObserver.onNext(GetLabelIdsRequest.Response.newBuilder().addAllIds(labelIds).build());
       responseObserver.onCompleted();
     } catch (Exception e) {

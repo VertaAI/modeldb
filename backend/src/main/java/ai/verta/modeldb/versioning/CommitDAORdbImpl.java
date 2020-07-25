@@ -923,14 +923,14 @@ public class CommitDAORdbImpl implements CommitDAO {
                         .append(LabelsMappingEntity.class.getSimpleName())
                         .append(" lb WHERE ")
                         .append(" lb.id.entity_type ");
-                VersioningUtils.setValueWithOperatorInQuery(
+                RdbmsUtils.setValueWithOperatorInQuery(
                     index,
                     subQueryBuilder,
                     OperatorEnum.Operator.EQ,
                     IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_VALUE,
                     parametersMap);
                 subQueryBuilder.append(" AND lb.id.label ");
-                VersioningUtils.setValueWithOperatorInQuery(
+                RdbmsUtils.setValueWithOperatorInQuery(
                     index,
                     subQueryBuilder,
                     OperatorEnum.Operator.EQ,
@@ -982,28 +982,28 @@ public class CommitDAORdbImpl implements CommitDAO {
                               + AttributeEntity.class.getSimpleName()
                               + " attr where attr.")
                       .append(ModelDBConstants.KEY);
-              VersioningUtils.setValueWithOperatorInQuery(
+              RdbmsUtils.setValueWithOperatorInQuery(
                   index,
                   attrQueryBuilder,
                   OperatorEnum.Operator.EQ,
                   names[1],
                   attrQueryParametersMap);
               attrQueryBuilder.append("AND attr.value ");
-              VersioningUtils.setValueWithOperatorInQuery(
+              RdbmsUtils.setValueWithOperatorInQuery(
                   index,
                   attrQueryBuilder,
                   predicate.getOperator(),
                   ModelDBUtils.getStringFromProtoObject(predicate.getValue()),
                   attrQueryParametersMap);
               attrQueryBuilder.append("AND attr.field_type ");
-              VersioningUtils.setValueWithOperatorInQuery(
+              RdbmsUtils.setValueWithOperatorInQuery(
                   index,
                   attrQueryBuilder,
                   OperatorEnum.Operator.EQ,
                   ModelDBConstants.ATTRIBUTES,
                   attrQueryParametersMap);
               attrQueryBuilder.append("AND attr.entity_name ");
-              VersioningUtils.setValueWithOperatorInQuery(
+              RdbmsUtils.setValueWithOperatorInQuery(
                   index,
                   attrQueryBuilder,
                   OperatorEnum.Operator.EQ,
@@ -1046,7 +1046,7 @@ public class CommitDAORdbImpl implements CommitDAO {
               Map<String, Object> innerQueryParametersMap = new HashMap<>();
               if (predicate.getOperator().equals(OperatorEnum.Operator.NE)
                   || predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-                VersioningUtils.setValueWithOperatorInQuery(
+                RdbmsUtils.setValueWithOperatorInQuery(
                     index,
                     subQueryBuilder,
                     predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
@@ -1055,7 +1055,7 @@ public class CommitDAORdbImpl implements CommitDAO {
                     predicate.getValue().getStringValue().toLowerCase(),
                     innerQueryParametersMap);
               } else {
-                VersioningUtils.setValueWithOperatorInQuery(
+                RdbmsUtils.setValueWithOperatorInQuery(
                     index,
                     subQueryBuilder,
                     predicate.getOperator(),

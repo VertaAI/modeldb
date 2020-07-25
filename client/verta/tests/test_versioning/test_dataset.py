@@ -679,7 +679,7 @@ class TestPathManagedVersioning:
         dataset = verta.dataset.Path(dirname, enable_mdb_versioning=True)
         commit.update(blob_path, dataset)
         commit.save("Version data.")
-        os.rename(dirname, reference_dir)  # move sources to avoid collision
+        shutil.move(dirname, reference_dir)  # move sources to avoid collision
         dataset = commit.get(blob_path)
 
         # download to implicit path
