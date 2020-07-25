@@ -51,6 +51,9 @@ public interface RepositoryDAO {
   Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException;
 
+  void deleteRepositories(
+      Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds);
+
   Repository createRepository(
       CommitDAO commitDAO,
       MetadataDAO metadataDAO,
