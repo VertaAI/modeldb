@@ -1,5 +1,5 @@
 image: vertaaiofficial/modeldb-graphql
-imageTag: 2.0.8
+imageTag: 2.0.8.1
 tolerations: []
 resources:
   limits:
