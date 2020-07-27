@@ -34,7 +34,7 @@ class RegisteredModelVersion(_ModelDBEntity):
     def __repr__(self):
         self._refresh_cache()
         msg = self._msg
-        artifact_keys = list(map(lambda artifact: artifact.key, self._msg.artifacts))
+        artifact_keys = self.get_artifact_keys()
         if self.has_model:
             artifact_keys.append("model")
 
@@ -78,7 +78,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     def get_artifact_keys(self):
         self._refresh_cache()
-        return set(map(lambda artifact: artifact.key, self._msg.artifacts))
+        return list(map(lambda artifact: artifact.key, self._msg.artifacts))
 
     @classmethod
     def _generate_default_name(cls):

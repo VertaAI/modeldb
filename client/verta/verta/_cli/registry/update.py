@@ -59,7 +59,7 @@ def update_model_version(model_name, version_name, label, model, artifact, works
         raise click.BadParameter("a model has already been associated with the version")
 
     if artifact:
-        artifact_keys = model_version.get_artifact_keys()
+        artifact_keys = set(model_version.get_artifact_keys())
 
         for (key, _) in artifact:
             if key == "model":
