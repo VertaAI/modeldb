@@ -82,6 +82,16 @@ class TestEndpoint:
         new_build_ids = get_build_ids(endpoint.get_status())
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
+    def test_update_wait(self, client, experiment_run, model_for_deployment):
+        experiment_run.log_model_for_deployment(**model_for_deployment)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+
+        endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+
+        assert endpoint.get_status()["status"] == "active"
+
     def test_canary_update(self, client, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
 
