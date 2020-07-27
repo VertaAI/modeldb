@@ -60,7 +60,7 @@ class Endpoint(object):
 
     def _get_info_list_by_id(self):
         data = Endpoint._get_json_by_id(self._conn, self.workspace, self.id)
-        return [self._path(data), self.id, self._date_updated(data)]
+        return [self._path(data), str(self.id), self._date_updated(data)]
 
     @classmethod
     def _get_json_by_id(cls, conn, workspace, id):
