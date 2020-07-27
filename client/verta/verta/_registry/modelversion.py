@@ -39,7 +39,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             artifact_keys.append("model")
 
         return '\n'.join((
-            "version: {}".format(msg.verrsion),
+            "version: {}".format(msg.version),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
@@ -48,7 +48,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             "registered model id: {}".format(msg.registered_model_id),
             "experiment run id: {}".format(msg.experiment_run_id),
             "archived status: {}".format(msg.archived),
-            "artifact keys: {}".format(_utils.unravel_artifacts(artifact_keys)),
+            "artifact keys: {}".format(artifact_keys),
         ))
 
     @property

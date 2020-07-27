@@ -23,7 +23,7 @@ class RegisteredModel(_ModelDBEntity):
         msg = self._msg
 
         return '\n'.join((
-            "version: {}".format(msg.verrsion),
+            "name: {}".format(msg.name),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
