@@ -331,7 +331,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         Returns
         -------
-        environment : `verta.environment._Environment.`
+        :class:`verta.environment._Environment`
             Environment of this ModelVersion.
 
         """
@@ -509,7 +509,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         Parameters
         ----------
-        label : str
+        str
             Label to add.
 
         """
@@ -526,7 +526,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         Parameters
         ----------
-        label : str
+        str
             Label to delete.
 
         """
@@ -543,7 +543,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         Returns
         -------
-        labels : list of str
+        list of str
             List of all labels of this Model Version.
 
         """

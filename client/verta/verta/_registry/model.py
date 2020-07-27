@@ -27,6 +27,35 @@ class RegisteredModel(_ModelDBEntity):
         return self._msg.name
 
     def get_or_create_version(self, name=None, desc=None, labels=None, id=None, time_created=None):
+        """
+        Gets or creates a Model Version.
+
+        If an accessible Model Version with name `name` does not already exist under this
+        Registered Model, it will be created and initialized with specified metadata
+        parameters. If such a Model Version does already exist, it will be retrieved.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Model Version. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Model Version.
+        labels : list of str, optional
+            Labels of the Model Version.
+        id : str, optional
+            ID of the Model Version. This parameter cannot be provided alongside `name`, and other
+            parameters will be ignored.
+
+        Returns
+        -------
+        :class:`RegisteredModelVersion`
+
+        Raises
+        ------
+        ValueError
+            If `name` and `id` are both passed in.
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -58,6 +87,25 @@ class RegisteredModel(_ModelDBEntity):
         return RegisteredModelVersion._create(self._conn, self._conf, ctx, name, experiment_run_id=run_id)
 
     def get_version(self, name=None, id=None):
+        """
+        Gets a Model Version of this Registered Model by `name` or `id`
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Model Version. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Model Version.
+        labels : list of str, optional
+            Labels of the Model Version.
+        id : str, optional
+            ID of the Model Version. This parameter cannot be provided alongside `name`, and other
+            parameters will be ignored.
+
+        Returns
+        -------
+        :class:`~verta._registry.modelversion.RegisteredModelVersion`
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
         if name is None and id is None:
