@@ -49,10 +49,6 @@ def create_model(model_name, label, visibility, workspace):
 def create_model_version(ctx, model_name, version_name, label, model, artifact, workspace, from_run):
     """Create a new registeredmodelversion entry.
     """
-    artifact = list(map(lambda s: s.split('='), artifact))
-    if artifact and len(artifact) > len(set(map(lambda pair: pair[0], artifact))):
-        raise click.BadParameter("cannot have duplicate artifact keys")
-
     if from_run and (label or model or artifact):
         raise click.BadParameter("--from-run cannot be provided alongside other options, except for --workspace")
 
