@@ -104,3 +104,10 @@ class TestEndpoint:
         # Check that a new build is added:
         new_build_ids = get_build_ids(endpoint.get_status())
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
+
+    def test_get_access_token(self, client):
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        token = endpoint.get_access_token()
+
+        assert token is None
