@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+import json
 
 from ..deployment.strategies import _UpdateStrategy
 from .._internal_utils import _utils
@@ -15,8 +16,11 @@ class Endpoint(object):
         self.id = id
 
     def __repr__(self):
-        # TODO: print full info
-        return "<Endpoint \"{}\">".format(self.path)
+        return '\n'.join((
+            "path: {}".format(self.path),
+            "id: {}".format(self.id),
+            "stage: {}".format(json.dumps(self.get_status(), indent=4)),
+        ))
 
     @property
     def path(self):

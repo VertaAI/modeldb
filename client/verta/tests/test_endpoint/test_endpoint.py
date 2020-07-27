@@ -57,7 +57,6 @@ class TestEndpoint:
                 has_new_id = True
         assert has_new_id
 
-
     def test_get_status(self, client):
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -67,6 +66,20 @@ class TestEndpoint:
         assert "status" in status
         assert "date_created" in status
         assert "id" in status
+
+    def test_repr(self, client, experiment_run, model_for_deployment):
+        experiment_run.log_model_for_deployment(**model_for_deployment)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        endpoint.update(experiment_run, DirectUpdateStrategy())
+
+        str_repr = str(endpoint)
+        status = endpoint.get_status()
+
+        assert "path: {}".format(endpoint.path) in str_repr
+        assert "id: {}".format(endpoint.id) in str_repr
+        assert str(status["id"]) in str_repr
 
     def test_direct_update(self, client, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
