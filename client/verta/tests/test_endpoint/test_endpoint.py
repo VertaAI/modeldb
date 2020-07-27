@@ -69,7 +69,7 @@ class TestEndpoint:
         assert "id" in status
 
     def test_direct_update(self, client, experiment_run, model_for_deployment):
-        experiment_run.log_model_for_deployment(**model_for_deployment)
+        experiment_run.log_model(model_for_deployment['model'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -83,7 +83,7 @@ class TestEndpoint:
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
     def test_canary_update(self, client, experiment_run, model_for_deployment):
-        experiment_run.log_model_for_deployment(**model_for_deployment)
+        experiment_run.log_model(model_for_deployment['model'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
