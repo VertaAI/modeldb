@@ -148,12 +148,12 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     def log_artifact(self, key, asset, overwrite=False):
         """
-        Logs an artifact to this version.
+        Logs an artifact to this Model Version.
 
         Parameters
         ----------
         key : str
-            Name of the artifact.
+            Name of the artifact. Cannot be "model".
         artifact : str or file-like or object
             Artifact or some representation thereof.
                 - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
@@ -162,7 +162,7 @@ class RegisteredModelVersion(_ModelDBEntity):
                 - Otherwise, the object will be serialized and uploaded as an artifact.
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
-            
+
         """
         if key == "model":
             raise ValueError("the key \"model\" is reserved for model; consider using log_model() instead")
@@ -201,6 +201,23 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def get_artifact(self, key):
+        """
+        Gets the artifact with name `key` from this Model Version.
+
+        If the artifact was originally logged as just a filesystem path, that path will be returned.
+        Otherwise, bytes representing the artifact object will be returned.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact. Cannot be "model"
+
+        Returns
+        -------
+        str or bytes
+            Filesystem path or bytes representing the artifact.
+
+        """
         artifact = self._get_artifact(key, _CommonCommonService.ArtifactTypeEnum.BLOB)
         artifact_stream = six.BytesIO(artifact)
 
