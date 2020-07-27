@@ -147,6 +147,23 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._update()
 
     def log_artifact(self, key, asset, overwrite=False):
+        """
+        Logs an artifact to this version.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+        artifact : str or file-like or object
+            Artifact or some representation thereof.
+                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
+                  and uploaded as an artifact. If it is a directory path, its contents will be zipped.
+                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
+                - Otherwise, the object will be serialized and uploaded as an artifact.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
+            
+        """
         if key == "model":
             raise ValueError("the key \"model\" is reserved for model; consider using log_model() instead")
 
