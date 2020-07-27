@@ -15,6 +15,20 @@ from .modelversions import RegisteredModelVersions
 
 
 class RegisteredModel(_ModelDBEntity):
+    """
+    Object representing a registered model.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`client.set_registered_model`.
+
+    Attributes
+    ----------
+    id : str
+        ID of this Registered Model.
+    name : str
+        Name of this Registered Model.
+
+    """
     def __init__(self, conn, conf, msg):
         super(RegisteredModel, self).__init__(conn, conf, _RegisteredModelService, "registered_model", msg)
 
