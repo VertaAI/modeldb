@@ -77,14 +77,19 @@ class Endpoint(object):
             return None
 
     @classmethod
-    def _get_json_by_path(cls, conn, workspace, path):
+    def _get_endpoints(cls, conn, workspace):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
         response = _utils.make_request("GET", url, conn)
         _utils.raise_for_http_error(response)
+        data_response = response.json()
+        return data_response['endpoints']
+
+    @classmethod
+    def _get_json_by_path(cls, conn, workspace, path):
+        endpoints = cls._get_endpoints(conn, workspace)
         if not path.startswith('/'):
             path = '/' + path
-        data_response = response.json()
-        for endpoint in data_response['endpoints']:
+        for endpoint in endpoints:
             creator_request = endpoint['creator_request']
             if creator_request['path'] == path:
                 return endpoint
