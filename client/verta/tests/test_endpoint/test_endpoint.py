@@ -82,6 +82,7 @@ class TestEndpoint:
         new_build_ids = get_build_ids(endpoint.get_status())
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
+    @pytest.mark.skip(reason="this test takes too long to complete")
     def test_update_wait(self, client, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
 
