@@ -9,10 +9,9 @@ from .._tracking import experimentrun
 
 class Endpoint(object):
     def __init__(self, conn, conf, workspace, id):
+        self.workspace = workspace
         self._conn = conn
         self._conf = conf
-
-        self.workspace = workspace
         self.id = id
 
     def __repr__(self):
@@ -21,7 +20,7 @@ class Endpoint(object):
 
     @property
     def path(self):
-        raise NotImplementedError
+        return Endpoint._get_json_by_id(self._conn, self.workspace, self.id)['creator_request']['path']
 
     @classmethod
     def _create(cls, conn, conf, workspace, path, description=None):
@@ -77,13 +76,23 @@ class Endpoint(object):
             return None
 
     @classmethod
+    def _get_endpoints(cls, conn, workspace):
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
+        response = _utils.make_request("GET", url, conn)
+        _utils.raise_for_http_error(response)
+        data_response = response.json()
+        return data_response['endpoints']
+
+    @classmethod
     def _get_json_by_path(cls, conn, workspace, path):
+        endpoints = cls._get_endpoints(conn, workspace)
         if not path.startswith('/'):
             path = '/' + path
-
-        raise NotImplementedError
-        # TODO: GET "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(scheme, socket, workspace)
-        # TODO: iterate through response.json().get('endpoints', []) to find matching creator_request.path
+        for endpoint in endpoints:
+            creator_request = endpoint['creator_request']
+            if creator_request['path'] == path:
+                return endpoint
+        return None
 
     def update(self, run, strategy):
         if not isinstance(run, experimentrun.ExperimentRun):

@@ -3,24 +3,60 @@ import pytest
 import verta
 from verta.deployment.strategies import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update_rules import AverageLatencyThreshold
+from verta._internal_utils import _utils
 
 
 def get_build_ids(status):
     # get the set of build_ids in the status of the stage:
     return set(map(lambda comp: comp["build_id"], status["components"]))
 
-@pytest.mark.skip("functionality not completed yet")
 class TestEndpoint:
     def test_create(self, client):
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
         assert client.set_endpoint(name)
 
-    def test_get_by_id(self, client):
-        endpoint = client.set_endpoint("/path1")
+    def test_get(self, client):
+        name = _utils.generate_default_name()
 
-        client.set_endpoint("/path2")  # in case get erroneously fetches latest
+        with pytest.raises(ValueError):
+            client.get_endpoint(name)
+
+        endpoint = client.set_endpoint(name)
+
+        assert endpoint.id == client.get_endpoint(endpoint.path).id
+        assert endpoint.id == client.get_endpoint(id=endpoint.id).id
+
+    def test_get_by_name(self, client):
+        path = _utils.generate_default_name()
+        path2 = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+
+        client.set_endpoint(path2)  # in case get erroneously fetches latest
+
+        assert endpoint.id == client.set_endpoint(endpoint.path).id
+        
+    def test_get_by_id(self, client):
+        path = _utils.generate_default_name()
+        path2 = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+
+        client.set_endpoint(path2)  # in case get erroneously fetches latest
 
         assert endpoint.id == client.set_endpoint(id=endpoint.id).id
+
+    def test_list(self, client):
+        name = _utils.generate_default_name()
+        endpoint = client.set_endpoint(name)
+
+        endpoints = client.endpoints()
+        assert len(endpoints) >= 1
+        has_new_id = False
+        for item in endpoints:
+            assert item.id
+            if item.id == endpoint.id:
+                has_new_id = True
+        assert has_new_id
+
 
     def test_get_status(self, client):
         path = verta._internal_utils._utils.generate_default_name()

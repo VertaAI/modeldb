@@ -16,6 +16,13 @@ def get():
 def get_endpoint(path, workspace):
     """Create detailed information about a deployment endpoint.
     """
-    raise NotImplementedError
-    # TODO: call client.get_endpoint()
+    client = Client()
+
+    try:
+        endpoint = client.get_endpoint(path, workspace=workspace)
+    except ValueError:
+        raise click.BadParameter("endpoint {} not found".format(path))
+
+    click.echo()
+    click.echo(endpoint)
     # TODO: call endpoint.get_status()
