@@ -396,9 +396,9 @@ public class App implements ApplicationContextAware {
       RoleService roleService) {
 
     // --------------- Start Initialize DAO --------------------------
-    CommitDAO commitDAO = new CommitDAORdbImpl();
+    CommitDAO commitDAO = new CommitDAORdbImpl(authService, roleService);
     RepositoryDAO repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
-    BlobDAO blobDAO = new BlobDAORdbImpl(authService);
+    BlobDAO blobDAO = new BlobDAORdbImpl(authService, roleService);
 
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, roleService);
     ExperimentRunDAO experimentRunDAO =
@@ -484,11 +484,21 @@ public class App implements ApplicationContextAware {
             datasetVersionDAO,
             projectDAO,
             experimentDAO,
-            experimentRunDAO));
+            experimentRunDAO,
+            repositoryDAO,
+            commitDAO,
+            metadataDAO));
     LOGGER.trace("Dataset serviceImpl initialized");
     wrapService(
         serverBuilder,
-        new DatasetVersionServiceImpl(authService, roleService, datasetDAO, datasetVersionDAO));
+        new DatasetVersionServiceImpl(
+            authService,
+            roleService,
+            repositoryDAO,
+            commitDAO,
+            blobDAO,
+            metadataDAO,
+            artifactStoreDAO));
     LOGGER.trace("Dataset Version serviceImpl initialized");
     wrapService(
         serverBuilder,
@@ -503,8 +513,7 @@ public class App implements ApplicationContextAware {
             datasetDAO,
             datasetVersionDAO));
     LOGGER.trace("Hydrated serviceImpl initialized");
-    wrapService(
-        serverBuilder, new LineageServiceImpl(lineageDAO, experimentRunDAO, datasetVersionDAO));
+    wrapService(serverBuilder, new LineageServiceImpl(lineageDAO, experimentRunDAO, commitDAO));
     LOGGER.trace("Lineage serviceImpl initialized");
 
     wrapService(

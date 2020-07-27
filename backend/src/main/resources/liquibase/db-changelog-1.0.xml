@@ -652,4 +652,18 @@
     </changeSet>
     <!-- keep the line below at the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
+    <changeSet author="anandJ" id="migration_status_table">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="migration_status"/>
+            </not>
+        </preConditions>
+        <createTable tableName="migration_status">
+            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="migration_name" type="varchar(255)"/>
+            <column name="status" type="tinyint(1)"/>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

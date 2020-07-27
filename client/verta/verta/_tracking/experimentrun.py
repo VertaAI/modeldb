@@ -10,6 +10,7 @@ import pathlib2
 import pprint
 import shutil
 import sys
+import shutil
 import tarfile
 import tempfile
 import time
@@ -2544,7 +2545,7 @@ class ExperimentRun(_ModelDBEntity):
             pass
 
         # move written contents to cache location
-        os.rename(temp_path, path)
+        shutil.move(temp_path, path)
 
         return path
 

@@ -38,6 +38,24 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          },
+          {
+            "name": "operator",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "EQ",
+              "NE",
+              "GT",
+              "GTE",
+              "LT",
+              "LTE",
+              "CONTAIN",
+              "NOT_CONTAIN",
+              "IN"
+            ],
+            "default": "EQ"
           }
         ],
         "tags": [
@@ -315,6 +333,21 @@
         "VERSIONING_REPO_COMMIT"
       ],
       "default": "UNKNOWN"
+    },
+    "OperatorEnumOperator": {
+      "type": "string",
+      "enum": [
+        "EQ",
+        "NE",
+        "GT",
+        "GTE",
+        "LT",
+        "LTE",
+        "CONTAIN",
+        "NOT_CONTAIN",
+        "IN"
+      ],
+      "default": "EQ"
     },
     "metadataAddLabelsRequest": {
       "type": "object",

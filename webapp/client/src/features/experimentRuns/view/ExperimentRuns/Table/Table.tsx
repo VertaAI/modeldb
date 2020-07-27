@@ -57,11 +57,14 @@ const Table = ({
   onCurrentPageChange,
   onSortingChange,
 }: ILocalProps) => {
-  const [columnContentHeightById, updateColumnContentHeightById] = useColumnContentHeightById({ data });
+  const [
+    columnContentHeightById,
+    updateColumnContentHeightById,
+  ] = useColumnContentHeightById({ data });
 
   React.useEffect(() => {
     resetShowingBulkDeletionMenu();
-  });
+  }, []);
 
   const hiddenColumnNames = Object.entries(columnConfig)
     .filter(([_, meta]: [any, IColumnMetaData]) => !meta.isShown)
@@ -73,9 +76,7 @@ const Table = ({
     onUpdateColumnContentHeightById: updateColumnContentHeightById,
   });
   const displayedColumnDefinitions = (() => {
-    return columnDefinitions.filter(
-      c => !hiddenColumnNames.includes(c.type)
-    )
+    return columnDefinitions.filter(c => !hiddenColumnNames.includes(c.type));
   })();
   const rows: IRow[] = data.map(experimentRun => ({
     experimentRun,
@@ -84,38 +85,36 @@ const Table = ({
 
   return (
     <TableWrapper>
-        <AppTable
-          dataRows={rows}
-          columnDefinitions={displayedColumnDefinitions}
-          getRowKey={getRowKey}
-          selection={{
-            headerCellComponent: () => (
-              <ToggleAllExperimentRunsForBulkDeletion />
-            ),
-            cellComponent: row => {
-              return (
-                <ToggleExperimentRunForBulkDeletion id={row.experimentRun.id} />
-              );
-            },
-            showSelectAll: withBulkDeletion && isShowBulkDeleteMenu,
-            showSelectionColumn: withBulkDeletion && isShowBulkDeleteMenu,
-          }}
-        />
+      <AppTable
+        dataRows={rows}
+        columnDefinitions={displayedColumnDefinitions}
+        getRowKey={getRowKey}
+        selection={{
+          headerCellComponent: () => <ToggleAllExperimentRunsForBulkDeletion />,
+          cellComponent: row => {
+            return (
+              <ToggleExperimentRunForBulkDeletion id={row.experimentRun.id} />
+            );
+          },
+          showSelectAll: withBulkDeletion && isShowBulkDeleteMenu,
+          showSelectionColumn: withBulkDeletion && isShowBulkDeleteMenu,
+        }}
+      />
 
-        <div className={styles.footer}>
-          {withBulkDeletion && isShowBulkDeleteMenu && (
-            <div className={styles.footer__bulkDeletionManager}>
-              <DeletingExperimentRunsManager projectId={projectId} />
-            </div>
-          )}
-          <div className={styles.footer__pagination}>
-            <PagingPanel
-              pagination={pagination}
-              onCurrentPageChange={onCurrentPageChange}
-            />
+      <div className={styles.footer}>
+        {withBulkDeletion && isShowBulkDeleteMenu && (
+          <div className={styles.footer__bulkDeletionManager}>
+            <DeletingExperimentRunsManager projectId={projectId} />
           </div>
+        )}
+        <div className={styles.footer__pagination}>
+          <PagingPanel
+            pagination={pagination}
+            onCurrentPageChange={onCurrentPageChange}
+          />
         </div>
-      </TableWrapper>
+      </div>
+    </TableWrapper>
   );
 };
 
@@ -134,7 +133,7 @@ const useGetColumnDefinitions = ({
     return withProps(SummarySorting)({
       onChange: onSortingChange,
       sorting,
-    })
+    });
   }, [onSortingChange, sorting]);
   const MetricsSortingLabel = React.useMemo(() => {
     return withProps(KeyValueSortingLabel)({
@@ -143,11 +142,7 @@ const useGetColumnDefinitions = ({
       onChange: onSortingChange,
       sorting,
     });
-  }, [
-    data,
-    onSortingChange,
-    sorting,
-  ]);
+  }, [data, onSortingChange, sorting]);
   const HyperparametersSortingLabel = React.useMemo(() => {
     return withProps(KeyValueSortingLabel)({
       columnName: 'hyperparameters',
@@ -155,11 +150,7 @@ const useGetColumnDefinitions = ({
       onChange: onSortingChange,
       sorting,
     });
-  }, [
-    data,
-    onSortingChange,
-    sorting,
-  ]);
+  }, [data, onSortingChange, sorting]);
 
   return [
     {
@@ -228,17 +219,19 @@ const useGetColumnDefinitions = ({
       width: '20%',
     },
   ];
-}
+};
 
 const getRowKey = (row: IRow) => {
   return row.experimentRun.id;
-}
+};
 
 const useColumnContentHeightById = ({ data }: { data: ModelRecord[] }) => {
-  const [columnContentHeightById, setColumnContentHeightById] = React.useState<Record<string, number | undefined>>({});
+  const [columnContentHeightById, setColumnContentHeightById] = React.useState<
+    Record<string, number | undefined>
+  >({});
   React.useEffect(() => {
-    const initialColumnContentHeightById =
-      R.fromPairs(R.zip(
+    const initialColumnContentHeightById = R.fromPairs(
+      R.zip(
         Array.from(
           document.querySelectorAll(
             '[data-column-name=experiment-runs-summary-column]'
@@ -248,21 +241,22 @@ const useColumnContentHeightById = ({ data }: { data: ModelRecord[] }) => {
             (summaryColumnContentElem as HTMLElement)?.offsetHeight
         ),
         data
-      ).map(([height, { id }]) => [id, height]));
+      ).map(([height, { id }]) => [id, height])
+    );
     setColumnContentHeightById(initialColumnContentHeightById);
   }, []);
 
   const updateColumnContentHeightById = (id: string, height: number) => {
     if (columnContentHeightById[id] !== height) {
-      setColumnContentHeightById(({
+      setColumnContentHeightById({
         ...columnContentHeightById,
-        [id]: height,        
-      }));
+        [id]: height,
+      });
     }
-  }
+  };
 
   return [columnContentHeightById, updateColumnContentHeightById] as const;
-}
+};
 
 const KeyValueSortingLabel = ({
   data,

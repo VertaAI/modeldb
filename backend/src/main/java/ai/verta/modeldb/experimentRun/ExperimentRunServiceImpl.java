@@ -35,6 +35,7 @@ import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunById;
 import ai.verta.modeldb.GetExperimentRunByName;
 import ai.verta.modeldb.GetExperimentRunCodeVersion;
+import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
 import ai.verta.modeldb.GetExperimentRunsInExperiment;
 import ai.verta.modeldb.GetExperimentRunsInProject;
 import ai.verta.modeldb.GetHyperparameters;
@@ -2429,31 +2430,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void listCommitExperimentRuns(
-      ListCommitExperimentRunsRequest request,
-      StreamObserver<ListCommitExperimentRunsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      if (request.getCommitSha().isEmpty()) {
-        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
-      }
-
-      ListCommitExperimentRunsRequest.Response response =
-          experimentRunDAO.listCommitExperimentRuns(
-              projectDAO,
-              request,
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
-              (session, repository) ->
-                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, ListCommitExperimentRunsRequest.Response.getDefaultInstance());
-    }
-  }
-
   public void deleteHyperparameters(
       DeleteHyperparameters request,
       StreamObserver<DeleteHyperparameters.Response> responseObserver) {
@@ -2486,31 +2462,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void listBlobExperimentRuns(
-      ListBlobExperimentRunsRequest request,
-      StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      if (request.getCommitSha().isEmpty()) {
-        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
-      }
-
-      ListBlobExperimentRunsRequest.Response response =
-          experimentRunDAO.listBlobExperimentRuns(
-              projectDAO,
-              request,
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
-              (session, repository) ->
-                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
-    }
-  }
-
   public void deleteMetrics(
       DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
     QPSCountResource.inc();
@@ -2565,6 +2516,84 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteObservations.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void listCommitExperimentRuns(
+      ListCommitExperimentRunsRequest request,
+      StreamObserver<ListCommitExperimentRunsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getCommitSha().isEmpty()) {
+        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ListCommitExperimentRunsRequest.Response response =
+          experimentRunDAO.listCommitExperimentRuns(
+              projectDAO,
+              request,
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, ListCommitExperimentRunsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void listBlobExperimentRuns(
+      ListBlobExperimentRunsRequest request,
+      StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getCommitSha().isEmpty()) {
+        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ListBlobExperimentRunsRequest.Response response =
+          experimentRunDAO.listBlobExperimentRuns(
+              projectDAO,
+              request,
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getExperimentRunsByDatasetVersionId(
+      GetExperimentRunsByDatasetVersionId request,
+      StreamObserver<GetExperimentRunsByDatasetVersionId.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getDatasetVersionId().isEmpty()) {
+        throw new ModelDBException("DatasetVersion Id should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+          experimentRunDAO.getExperimentRunsByDatasetVersionId(projectDAO, request);
+      GetExperimentRunsByDatasetVersionId.Response response =
+          GetExperimentRunsByDatasetVersionId.Response.newBuilder()
+              .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
+              .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
+              .build();
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetExperimentRunsByDatasetVersionId.Response.getDefaultInstance());
     }
   }
 }

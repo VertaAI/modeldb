@@ -43,20 +43,22 @@ class SummaryChartManager extends React.Component<ILocalProps, ILocalState> {
         <div className={styles.chart_header_container}>
           <div className={styles.chart_header}> Metric Summary Chart </div>
         </div>
-        <div className={styles.chart_config_selectors}>
-          <ChartConfigDropdown
-            value={this.state.userSelectedMetricVal}
-            label="Metric :"
-            options={metricKeys}
-            onChange={this.handleMetricChange}
-          />
-          <ChartConfigDropdown
-            label="Category :"
-            value={this.state.selectedCategory}
-            options={Object.values(Category)}
-            onChange={this.handleCategoryChange}
-          />
-        </div>
+        {!this.isNoData() ? (
+          <div className={styles.chart_config_selectors}>
+            <ChartConfigDropdown
+              value={this.state.userSelectedMetricVal}
+              label="Metric :"
+              options={metricKeys}
+              onChange={this.handleMetricChange}
+            />
+            <ChartConfigDropdown
+              label="Category :"
+              value={this.state.selectedCategory}
+              options={Object.values(Category)}
+              onChange={this.handleCategoryChange}
+            />
+          </div>
+        ) : null}
 
         <ScatterChart
           flatdata={genericChartData}
@@ -65,6 +67,11 @@ class SummaryChartManager extends React.Component<ILocalProps, ILocalState> {
         />
       </div>
     );
+  }
+
+  @bind
+  private isNoData() {
+    return this.props.genericChartData.length === 0;
   }
 
   @bind

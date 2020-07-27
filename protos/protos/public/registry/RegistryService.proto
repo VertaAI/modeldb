@@ -40,6 +40,9 @@ message RegisteredModel {
 
     //owner's verta_id
     string owner = 10;
+
+    // Other attributes
+    repeated common.KeyValue attributes = 11;
 }
 
 //CRUD for Registred Models
@@ -150,6 +153,9 @@ message ModelVersion {
 
     //owner's verta_id
     string owner = 16;
+
+    // Other attributes
+    repeated common.KeyValue attributes = 17;
 
 }
 
