@@ -135,7 +135,7 @@ class Endpoint(object):
                 time.sleep(5)
             print()
             if self.get_status()['status'] == "error":
-                raise RuntimeError("model update failed")
+                raise RuntimeError("endpoint updating failed")
 
     def _get_or_create_stage(self, name="production"):
         if name == "production":
