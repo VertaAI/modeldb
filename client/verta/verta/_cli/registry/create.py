@@ -42,16 +42,13 @@ def create_model(model_name, label, visibility, workspace):
 @click.argument("version_name", nargs=1, required=True)
 @click.option("--label", "-l", multiple=True, help="Labels to be associated with the object.")
 @click.option("--model", help="Path to the model.")
-@click.option("--artifact", type=(str, str), multiple=True, help="Path to an artifact required for the model. The format is --artifact artifact_key path_to_artifact.")
+@click.option("--artifact", type=str, multiple=True, help="Path to an artifact required for the model. The format is --artifact artifact_key=path_to_artifact.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 @click.option("--from-run", type=str, help="ID of the Experiment Run to enter into the model registry. This option cannot be provided alongside other options, except for --workspace.")
 @click.pass_context
 def create_model_version(ctx, model_name, version_name, label, model, artifact, workspace, from_run):
     """Create a new registeredmodelversion entry.
     """
-    if artifact and len(artifact) > len(set(map(lambda pair: pair[0], artifact))):
-        raise click.BadParameter("cannot have duplicate artifact keys")
-
     if from_run and (label or model or artifact):
         raise click.BadParameter("--from-run cannot be provided alongside other options, except for --workspace")
 
