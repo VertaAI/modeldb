@@ -73,14 +73,20 @@ class TestEndpoint:
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        endpoint.update(experiment_run, DirectUpdateStrategy())
+        status = endpoint.update(experiment_run, DirectUpdateStrategy())
 
         str_repr = str(endpoint)
-        status = endpoint.get_status()
+        print(str_repr)
 
         assert "path: {}".format(endpoint.path) in str_repr
         assert "id: {}".format(endpoint.id) in str_repr
-        assert str(status["id"]) in str_repr
+        assert "stage id: {}".format(status["id"]) in str_repr
+
+        # these fields might have changed:
+        assert "status" in str_repr
+        assert "date created" in str_repr
+        assert "date updated" in str_repr
+        assert "components" in str_repr
 
     def test_direct_update(self, client, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)

@@ -16,10 +16,16 @@ class Endpoint(object):
         self.id = id
 
     def __repr__(self):
+        status = self.get_status()
+
         return '\n'.join((
             "path: {}".format(self.path),
             "id: {}".format(self.id),
-            "stage: {}".format(json.dumps(self.get_status(), indent=4)),
+            "stage id: {}".format(status["id"]),
+            "status: {}".format(status["status"]),
+            "date created: {}".format(status["date_created"]),
+            "date updated: {}".format(status["date_updated"]),
+            "components: {}".format(json.dumps(status["components"], indent=4)),
         ))
 
     @property
