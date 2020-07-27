@@ -153,7 +153,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         Parameters
         ----------
         key : str
-            Name of the artifact. Cannot be "model".
+            Name of the artifact.
         artifact : str or file-like or object
             Artifact or some representation thereof.
                 - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
@@ -210,7 +210,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         Parameters
         ----------
         key : str
-            Name of the artifact. Cannot be "model"
+            Name of the artifact.
 
         Returns
         -------
@@ -430,6 +430,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         return response.content
 
     def add_labels(self, labels):
+        """
+        Logs multiple labels to this Model Version.
+
+        Parameters
+        ----------
+        labels : list of str
+            labels to log.
+
+        """
         if not labels:
             raise ValueError("label is not specified")
 
@@ -440,6 +449,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._update()
 
     def add_label(self, label):
+        """
+        Logs a label to this Model Version.
+
+        Parameters
+        ----------
+        label : str
+            label to log.
+
+        """
         if label is None:
             raise ValueError("label is not specified")
         self._fetch_with_no_cache()
@@ -448,6 +466,15 @@ class RegisteredModelVersion(_ModelDBEntity):
             self._update()
 
     def del_label(self, label):
+        """
+        Deletes a label from this Model Version.
+
+        Parameters
+        ----------
+        label : str
+            label to delete.
+
+        """
         if label is None:
             raise ValueError("label is not specified")
         self._fetch_with_no_cache()
@@ -456,6 +483,15 @@ class RegisteredModelVersion(_ModelDBEntity):
             self._update()
 
     def get_labels(self):
+        """
+        Gets all labels of this Model Version.
+
+        Returns
+        -------
+        labels : list of str
+            list of all labels of this ModelVersion
+
+        """
         self._refresh_cache()
         return self._msg.labels
 
