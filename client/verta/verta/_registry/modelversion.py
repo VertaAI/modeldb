@@ -113,6 +113,21 @@ class RegisteredModelVersion(_ModelDBEntity):
         return model_version
 
     def log_model(self, model, overwrite=False):
+        """
+        Logs a model to this Model Version.
+
+        Parameters
+        ----------
+        model : str or file-like or object
+            Model or some representation thereof.
+                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
+                  and uploaded as an artifact. If it is a directory path, its contents will be zipped.
+                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
+                - Otherwise, the object will be serialized and uploaded as an artifact.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
+
+        """
         self._fetch_with_no_cache()
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
@@ -138,10 +153,27 @@ class RegisteredModelVersion(_ModelDBEntity):
         )
 
     def get_model(self):
+        """
+        Gets the model of this Model Version.
+
+        If the model was originally logged as just a filesystem path, that path will be returned.
+        Otherwise, bytes representing the model object will be returned.
+
+        Returns
+        -------
+        str or object or bytes
+            Path of the model, the model object, or a bytestream representing the
+            model.
+
+        """
         model_artifact = self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL)
         return _artifact_utils.deserialize_model(model_artifact)
 
     def del_model(self):
+        """
+        Deletes model of this Model Version.
+
+        """
         self._fetch_with_no_cache()
         self._msg.ClearField("model")
         self._update()
@@ -515,6 +547,10 @@ class RegisteredModelVersion(_ModelDBEntity):
         raise NotImplementedError
 
     def archive(self):
+        """
+        Archive this Model Version.
+        
+        """
         if self.is_archived:
             raise RuntimeError("the version has already been archived")
 
