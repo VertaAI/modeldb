@@ -94,10 +94,6 @@ class RegisteredModel(_ModelDBEntity):
         ----------
         name : str, optional
             Name of the Model Version. If no name is provided, one will be generated.
-        desc : str, optional
-            Description of the Model Version.
-        labels : list of str, optional
-            Labels of the Model Version.
         id : str, optional
             ID of the Model Version. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
@@ -105,6 +101,7 @@ class RegisteredModel(_ModelDBEntity):
         Returns
         -------
         :class:`~verta._registry.modelversion.RegisteredModelVersion`
+
         """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
