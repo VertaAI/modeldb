@@ -36,8 +36,9 @@ def update_model(model_name, label, workspace):
 @click.option("--model", help="Path to the model.")
 @click.option("--artifact", type=str, multiple=True, help="Path to the artifact required for the model. The format is --artifact artifact_key=path_to_artifact.")
 @click.option("--workspace", "-w", help="Workspace to use.")
+@click.option('--overwrite', help="Overwrite model and artifacts if already logged.", is_flag=True)
 # TODO: add environment
-def update_model_version(model_name, version_name, label, model, artifact, workspace):
+def update_model_version(model_name, version_name, label, model, artifact, workspace, overwrite):
     """Update an existing registeredmodelversion entry.
     """
     client = Client()
@@ -56,8 +57,8 @@ def update_model_version(model_name, version_name, label, model, artifact, works
     except ValueError:
         raise click.BadParameter("version {} not found".format(version_name))
 
-    if model and model_version.has_model:
-        raise click.BadParameter("a model has already been associated with the version")
+    if not overwrite and model and model_version.has_model:
+        raise click.BadParameter("a model has already been associated with the version; consider using --overwrite flag")
 
     if artifact:
         artifact_keys = model_version.get_artifact_keys()
@@ -69,14 +70,14 @@ def update_model_version(model_name, version_name, label, model, artifact, works
             if key == "model":
                 raise click.BadParameter("the key \"model\" is reserved for model")
 
-            if key in artifact_keys:
-                raise click.BadParameter("key \"{}\" already exists".format(key))
+            if not overwrite and key in artifact_keys:
+                raise click.BadParameter("key \"{}\" already exists; consider using --overwrite flag".format(key))
 
         for (key, path) in artifact:
-            model_version.log_artifact(key, path)
+            model_version.log_artifact(key, path, overwrite)
 
     if label:
         model_version.add_labels(label)
 
     if model:
-        model_version.log_model(model)
+        model_version.log_model(model, overwrite)
