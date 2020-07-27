@@ -28,7 +28,7 @@ class TestCreate:
         )
 
         assert not result.exception
-        assert "name: \"{}\"".format(model_name) in result.output
+        assert "name: {}".format(model_name) in result.output
 
     def test_create_version(self, registered_model, in_tempdir):
         model_name = registered_model.name
