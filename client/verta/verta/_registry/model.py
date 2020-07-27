@@ -23,7 +23,7 @@ class RegisteredModel(_ModelDBEntity):
 
     Attributes
     ----------
-    id : str
+    id : int
         ID of this Registered Model.
     name : str
         Name of this Registered Model.

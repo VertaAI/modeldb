@@ -29,14 +29,14 @@ from ..environment import _Environment, Python
 
 class RegisteredModelVersion(_ModelDBEntity):
     """
-    Object representing a version of a registered model.
+    Object representing a version of a Registered Model.
 
     There should not be a need to instantiate this class directly; please use
     :meth:`RegisteredModel.get_or_create_version`.
 
     Attributes
     ----------
-    id : str
+    id : int
         ID of this Model Version.
     name : str
         Name of this Model Version.
@@ -44,7 +44,10 @@ class RegisteredModelVersion(_ModelDBEntity):
         Whether there is an environment associated with this Model Version
     has_model : bool
         Whether there is a model associated with this Model Version
-    registered_model_id :
+    registered_model_id : int
+        ID of this version's Registered Model
+    is_archived : bool
+        Whether this Model Version is archived
 
     """
     def __init__(self, conn, conf, msg):
