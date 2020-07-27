@@ -48,6 +48,7 @@ import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -447,7 +448,7 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else if (e instanceof ModelDBException) {
-        LOGGER.warn("Exception occurred: {}", e.getMessage());
+        LOGGER.warn("Exception occurred:{} {}", e.getClass(), e.getMessage());
         ModelDBException ModelDBException = (ModelDBException) e;
         status =
             Status.newBuilder()
@@ -464,7 +465,8 @@ public class ModelDBUtils {
                 .build();
       }
       StackTraceElement[] stack = e.getStackTrace();
-      LOGGER.error("Stacktrace with {} elements for {}", stack.length, e.getMessage());
+      LOGGER.error(
+          "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());
       int n = 0;
       boolean isLongStack = stack.length > STACKTRACE_LENGTH;
       if (isLongStack) {
@@ -538,6 +540,14 @@ public class ModelDBUtils {
     return String.join("/", locations);
   }
 
+  public static List<String> getLocationWithSplitSlashOperator(String locationsString) {
+    return Arrays.asList(locationsString.split("/"));
+  }
+
+  public static String getJoinedLocation(List<String> location) {
+    return String.join("#", location);
+  }
+
   public interface RetryCallInterface<T> {
     T retryCall(boolean retry);
   }
@@ -569,5 +579,36 @@ public class ModelDBUtils {
       throw StatusProto.toStatusRuntimeException(status);
     }
     throw ex;
+  }
+
+  /**
+   * If service want to call other verta service internally then should to registered those service
+   * here with count
+   */
+  public static void registeredBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    if (System.getProperties().containsKey(ModelDBConstants.BACKGROUND_UTILS_COUNT)) {
+      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
+    }
+    backgroundUtilsCount = backgroundUtilsCount + 1;
+    LOGGER.trace("After registered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+    System.getProperties().put(ModelDBConstants.BACKGROUND_UTILS_COUNT, backgroundUtilsCount);
+  }
+
+  public static void unregisteredBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    if (System.getProperties().containsKey(ModelDBConstants.BACKGROUND_UTILS_COUNT)) {
+      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
+      backgroundUtilsCount = backgroundUtilsCount - 1;
+    }
+    LOGGER.trace("After unregistered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+    System.getProperties().put(ModelDBConstants.BACKGROUND_UTILS_COUNT, backgroundUtilsCount);
+  }
+
+  public static int getRegisteredBackgroundUtilsCount() {
+    int backgroundUtilsCount =
+        (int) System.getProperties().get(ModelDBConstants.BACKGROUND_UTILS_COUNT);
+    LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+    return backgroundUtilsCount;
   }
 }

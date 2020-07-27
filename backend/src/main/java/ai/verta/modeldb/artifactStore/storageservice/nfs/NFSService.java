@@ -260,6 +260,6 @@ public class NFSService implements ArtifactStoreService {
   @Override
   public void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
       throws ModelDBException {
-    throw new ModelDBException("Not supported by NFS", io.grpc.Status.Code.FAILED_PRECONDITION);
+    throw new ModelDBException("Not supported by NFS", Code.FAILED_PRECONDITION);
   }
 }

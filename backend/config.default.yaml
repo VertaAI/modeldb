@@ -66,8 +66,13 @@ authService:
   port: 50051
 
 migration:
-  SUB_ENTITIES_OWNERS_RBAC_MIGRATION: false
-  #xyz : true
+  DATASET_VERSIONING_MIGRATION:
+    enable: true
+    record_update_limit: 100
+  SUB_ENTITIES_OWNERS_RBAC_MIGRATION:
+    enable: true
+  #xyz :
+  #  enable: true
 
 feature-flag:
   disabled-authz: true

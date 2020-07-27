@@ -141,6 +141,11 @@ class RegisteredModelVersion(_ModelDBEntity):
         model_artifact = self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL)
         return _artifact_utils.deserialize_model(model_artifact)
 
+    def del_model(self):
+        self._fetch_with_no_cache()
+        self._msg.ClearField("model")
+        self._update()
+
     def log_artifact(self, key, asset, overwrite=False):
         if key == "model":
             raise ValueError("the key \"model\" is reserved for model; consider using log_model() instead")
@@ -380,6 +385,16 @@ class RegisteredModelVersion(_ModelDBEntity):
         _utils.raise_for_http_error(response)
 
         return response.content
+
+    def add_labels(self, labels):
+        if not labels:
+            raise ValueError("label is not specified")
+
+        self._fetch_with_no_cache()
+        for label in labels:
+            if label not in self._msg.labels:
+                self._msg.labels.append(label)
+        self._update()
 
     def add_label(self, label):
         if label is None:

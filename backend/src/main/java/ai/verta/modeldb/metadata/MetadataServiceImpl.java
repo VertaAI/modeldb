@@ -149,7 +149,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(GetLabelsRequest.Response.getDefaultInstance()))
+                .addDetails(Any.pack(DeleteLabelsRequest.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }

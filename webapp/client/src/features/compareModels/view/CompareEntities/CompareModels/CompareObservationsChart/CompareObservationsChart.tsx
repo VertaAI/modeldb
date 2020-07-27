@@ -151,6 +151,10 @@ const GroupedObservations = ({
   selectedObservations: Record<string, boolean>;
   onToggleObservationSelection: (attributeKey: string) => void;
 }) => {
+  if (Object.keys(groupedObservations).length === 0) {
+    return null;
+  }
+
   return (
     <div>
       <div className={styles.grouped_observations_title}>{title}</div>

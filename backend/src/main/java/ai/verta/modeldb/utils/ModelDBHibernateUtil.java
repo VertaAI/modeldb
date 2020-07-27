@@ -1,12 +1,11 @@
 package ai.verta.modeldb.utils;
 
-import static ai.verta.modeldb.authservice.AuthServiceChannel.isBackgroundUtilsCall;
-
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.entities.ArtifactEntity;
@@ -49,8 +48,10 @@ import ai.verta.modeldb.entities.environment.EnvironmentVariablesEntity;
 import ai.verta.modeldb.entities.environment.PythonEnvironmentBlobEntity;
 import ai.verta.modeldb.entities.environment.PythonEnvironmentRequirementBlobEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
+import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
+import ai.verta.modeldb.entities.versioning.DatasetRepositoryMappingEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
@@ -81,6 +82,7 @@ import liquibase.configuration.LiquibaseConfiguration;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.LockException;
 import liquibase.lockservice.LockServiceFactory;
@@ -160,6 +162,8 @@ public class ModelDBHibernateUtil {
     BranchEntity.class,
     VersioningModeldbEntityMapping.class,
     HyperparameterElementMappingEntity.class,
+    MetadataPropertyMappingEntity.class,
+    DatasetRepositoryMappingEntity.class,
     UploadStatusEntity.class
   };
 
@@ -627,19 +631,19 @@ public class ModelDBHibernateUtil {
   @SuppressWarnings("unchecked")
   private static void runMigration() {
     App app = App.getInstance();
-    Map<String, Boolean> migrationTypeMap =
-        (Map<String, Boolean>) app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
+    Map<String, Map<String, Object>> migrationTypeMap =
+        (Map<String, Map<String, Object>>) app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
     if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
       new Thread(
               () -> {
-                isBackgroundUtilsCall = true;
+                ModelDBUtils.registeredBackgroundUtilsCount();
                 int index = 0;
                 try {
                   CompletableFuture<Boolean>[] completableFutures =
                       new CompletableFuture[migrationTypeMap.size()];
                   for (String migrationName : migrationTypeMap.keySet()) {
-                    Boolean migration = migrationTypeMap.get(migrationName);
-                    if (migration) {
+                    Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
+                    if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
                       if (migrationName.equals(
                           ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION)) {
                         // Manually migration for populate RoleBinding of experiment, experimentRun
@@ -665,7 +669,8 @@ public class ModelDBHibernateUtil {
                                 });
                         completableFutures[index] = futureTask;
                         index = index + 1;
-                      } // add else if here for the new migration type
+                      }
+                      // add if here for the new migration type
                     }
                   }
                   if (index > 0) {
@@ -677,10 +682,118 @@ public class ModelDBHibernateUtil {
                 } catch (InterruptedException | ExecutionException e) {
                   LOGGER.warn(
                       "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
+                } finally {
+                  ModelDBUtils.unregisteredBackgroundUtilsCount();
                 }
-                isBackgroundUtilsCall = false;
               })
           .start();
+
+      // Blocking migration
+      String migrationName = ModelDBConstants.DATASET_VERSIONING_MIGRATION;
+      if (migrationTypeMap.containsKey(migrationName)) {
+        Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
+        if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
+          try {
+            ModelDBUtils.registeredBackgroundUtilsCount();
+            boolean isLocked = checkMigrationLockedStatus(migrationName);
+            if (!isLocked) {
+              LOGGER.debug("Obtaingin migration lock");
+              lockedMigration(migrationName);
+              int recordUpdateLimit =
+                  (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+              DatasetToRepositoryMigration.execute(recordUpdateLimit);
+            } else {
+              LOGGER.debug("Migration already locked");
+            }
+          } catch (SQLException | DatabaseException e) {
+            LOGGER.error("Error on migration: {}", e.getMessage());
+          } finally {
+            ModelDBUtils.unregisteredBackgroundUtilsCount();
+          }
+        }
+      }
+    }
+  }
+
+  private static boolean checkMigrationLockedStatus(String migrationName)
+      throws SQLException, DatabaseException {
+    // Get database connection
+    String connectionString =
+        rDBUrl
+            + "/"
+            + databaseName
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
+
+    try {
+      Class.forName(rDBDriver);
+    } catch (ClassNotFoundException e) {
+      LOGGER.warn("ModelDBHibernateUtil checkDBConnection() got error ", e);
+      return false;
+    }
+    try (Connection con =
+        DriverManager.getConnection(connectionString, configUsername, configPassword)) {
+
+      JdbcConnection jdbcCon = new JdbcConnection(con);
+
+      Statement stmt = jdbcCon.createStatement();
+
+      String sql =
+          "SELECT * FROM migration_status ms WHERE ms.migration_name = '" + migrationName + "'";
+      ResultSet rs = stmt.executeQuery(sql);
+
+      boolean locked = false;
+      // Extract data from result set
+      while (rs.next()) {
+        // Retrieve by column name
+        int id = rs.getInt("id");
+        locked = rs.getBoolean("status");
+        String migrationNameDB = rs.getString("migration_name");
+
+        // Display values
+        LOGGER.debug("Id: {}, Locked: {}, migration_name: {}", id, locked, migrationNameDB);
+        LOGGER.debug("migration {} locked: {}", migrationNameDB, locked);
+      }
+      rs.close();
+      stmt.close();
+
+      return locked;
+    } catch (DatabaseException e) {
+      LOGGER.error(e.getMessage(), e);
+      throw e;
+    }
+  }
+
+  private static void lockedMigration(String migrationName) throws SQLException, DatabaseException {
+    // Get database connection
+    String connectionString =
+        rDBUrl
+            + "/"
+            + databaseName
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
+
+    try {
+      Class.forName(rDBDriver);
+    } catch (ClassNotFoundException e) {
+      LOGGER.warn("ModelDBHibernateUtil checkDBConnection() got error ", e);
+      return;
+    }
+    try (Connection con =
+        DriverManager.getConnection(connectionString, configUsername, configPassword)) {
+
+      JdbcConnection jdbcCon = new JdbcConnection(con);
+
+      Statement stmt = jdbcCon.createStatement();
+
+      String sql =
+          "INSERT INTO migration_status (migration_name, status) VALUES ('"
+              + migrationName
+              + "', 1);";
+      int updatedRowCount = stmt.executeUpdate(sql);
+      stmt.close();
+      LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);
+    } catch (DatabaseException e) {
+      LOGGER.error(e.getMessage(), e);
+      throw e;
     }
   }
 }
