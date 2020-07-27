@@ -68,7 +68,8 @@ class TestEndpoint:
         assert "id" in status
 
     def test_repr(self, client, experiment_run, model_for_deployment):
-        experiment_run.log_model_for_deployment(**model_for_deployment)
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
