@@ -71,7 +71,7 @@ def get_model_version(model_name, version_name, output, workspace):
     if output == "json":
         version_repr = json.dumps(_utils.proto_to_json(version._msg))
     else:
-        version_repr = repr(model)
+        version_repr = repr(version)
 
     click.echo()
     click.echo(version_repr)

@@ -190,7 +190,8 @@ class TestGet:
         )
 
         assert not result.exception
-        assert "name: \"{}\"".format(model_name) in result.output
+        assert "name: {}".format(model_name) in result.output
+        assert "id: {}".format(registered_model.id) in result.output
 
     def test_get_model_output_json(self, registered_model):
         model_name = registered_model.name
@@ -228,7 +229,9 @@ class TestGet:
         )
 
         assert not result.exception
-        assert "version: \"{}\"".format(version_name) in result.output
+        assert "version: {}".format(version_name) in result.output
+        assert str(model_version.id) in result.output
+        assert str(model_version.registered_model_id) in result.output
 
     def test_get_version_output_json(self, registered_model):
         model_name = registered_model.name
@@ -256,7 +259,6 @@ class TestGet:
         )
 
         assert result.exception
-        print(result.output.strip())
         assert result.output.strip().endswith("not found")
 
 
