@@ -300,6 +300,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._update()
 
     def log_environment(self, env):
+        """
+        Logs an environment to this Model Version.
+
+        Parameters
+        ----------
+        environment : `verta.environment._Environment.`
+            Environment to log.
+
+        """
         if not isinstance(env, _Environment):
             raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
 
@@ -308,11 +317,24 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._update()
 
     def del_environment(self):
+        """
+        Deletes the environment of this Model Version.
+
+        """
         self._fetch_with_no_cache()
         self._msg.ClearField("environment")
         self._update()
 
     def get_environment(self):
+        """
+        Gets the environment of this Model Version.
+
+        Returns
+        -------
+        environment : `verta.environment._Environment.`
+            Environment of this ModelVersion.
+
+        """
         self._refresh_cache()
         if not self.has_environment:
             raise RuntimeError("environment was not previously set.")
@@ -549,7 +571,7 @@ class RegisteredModelVersion(_ModelDBEntity):
     def archive(self):
         """
         Archive this Model Version.
-        
+
         """
         if self.is_archived:
             raise RuntimeError("the version has already been archived")
