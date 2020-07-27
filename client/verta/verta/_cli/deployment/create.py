@@ -16,5 +16,7 @@ def create():
 def create_endpoint(path, workspace):
     """Create a new deployment endpoint.
     """
-    raise NotImplementedError
+    client = Client()
+
+    client.get_or_create_endpoint(path, workspace=workspace)
     # TODO: call client.get_or_create_endpoint()
