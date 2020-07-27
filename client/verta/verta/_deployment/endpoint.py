@@ -32,7 +32,7 @@ class Endpoint(object):
     def _create(cls, conn, conf, workspace, path, description=None):
         endpoint_json = cls._create_json(conn, workspace, path, description)
         if endpoint_json:
-            return cls(conn, conf, workspace, endpoint_json)
+            return cls(conn, conf, workspace, endpoint_json['id'])
         else:
             return None
 
@@ -53,7 +53,7 @@ class Endpoint(object):
     def _get_by_id(cls, conn, conf, workspace, id):
         endpoint_json = cls._get_json_by_id(conn, workspace, id)
         if endpoint_json:
-            return cls(conn, conf, workspace, endpoint_json)
+            return cls(conn, conf, workspace, endpoint_json['id'])
         else:
             return None
 
@@ -81,7 +81,7 @@ class Endpoint(object):
     def _get_by_path(cls, conn, conf, workspace, path):
         endpoint_json = cls._get_json_by_path(conn, workspace, path)
         if endpoint_json:
-            return cls(conn, conf, workspace, endpoint_json)
+            return cls(conn, conf, workspace, endpoint_json['id'])
         else:
             return None
 
