@@ -1,5 +1,3 @@
-terminaltables
-
 # development
 pylint
 
