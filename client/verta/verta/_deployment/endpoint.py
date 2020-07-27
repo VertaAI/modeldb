@@ -137,6 +137,8 @@ class Endpoint(object):
             if self.get_status()['status'] == "error":
                 raise RuntimeError("endpoint update failed")
 
+        return self.get_status()
+
     def _get_or_create_stage(self, name="production"):
         if name == "production":
             # Check if a stage exists:
