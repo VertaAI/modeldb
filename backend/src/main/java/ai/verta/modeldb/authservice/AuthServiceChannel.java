@@ -4,6 +4,7 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.OrganizationServiceGrpc;
 import ai.verta.uac.RoleServiceGrpc;
@@ -32,7 +33,6 @@ public class AuthServiceChannel implements AutoCloseable {
   private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStub;
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
-  public static boolean isBackgroundUtilsCall = false;
   private String serviceUserEmail;
   private String serviceUserDevKey;
 
@@ -60,8 +60,10 @@ public class AuthServiceChannel implements AutoCloseable {
   }
 
   private Metadata getMetadataHeaders() {
+    int backgroundUtilsCount = ModelDBUtils.getRegisteredBackgroundUtilsCount();
+    LOGGER.trace("Header attaching with stub : backgroundUtilsCount : {}", backgroundUtilsCount);
     Metadata requestHeaders;
-    if (isBackgroundUtilsCall && ModelDBAuthInterceptor.METADATA_INFO.get() == null) {
+    if (backgroundUtilsCount > 0 && ModelDBAuthInterceptor.METADATA_INFO.get() == null) {
       requestHeaders = new Metadata();
       Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> dev_key =

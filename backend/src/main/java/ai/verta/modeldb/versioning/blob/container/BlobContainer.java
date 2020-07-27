@@ -58,4 +58,12 @@ public abstract class BlobContainer {
   public abstract void process(
       Session session, TreeElem rootTree, FileHasher fileHasher, Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException;
+
+  public abstract void processAttribute(
+      Session session, Long repoId, String commitHash, boolean addAttribute)
+      throws ModelDBException;
+
+  public BlobExpanded getBlobExpanded() {
+    return blobExpanded;
+  }
 }

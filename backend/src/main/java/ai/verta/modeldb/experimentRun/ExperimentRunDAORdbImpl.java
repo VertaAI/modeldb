@@ -16,6 +16,7 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.GetCommittedArtifactParts;
+import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
 import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.GitSnapshot;
 import ai.verta.modeldb.ListBlobExperimentRunsRequest;
@@ -2209,6 +2210,21 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
+  public void deleteLogVersionedInputs(Session session, List<Long> repoIds) {
+    StringBuilder fetchAllExpRunLogVersionedInputsHqlBuilder =
+        new StringBuilder(
+            "DELETE FROM VersioningModeldbEntityMapping vm WHERE vm.repository_id IN (:repoIds) ");
+    fetchAllExpRunLogVersionedInputsHqlBuilder
+        .append(" AND vm.entity_type = '")
+        .append(ExperimentRunEntity.class.getSimpleName())
+        .append("'");
+    Query query = session.createQuery(fetchAllExpRunLogVersionedInputsHqlBuilder.toString());
+    query.setParameter("repoIds", repoIds);
+    query.executeUpdate();
+    LOGGER.debug("ExperimentRun versioning deleted successfully");
+  }
+
+  @Override
   public GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -2636,6 +2652,57 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       } else {
         throw ex;
       }
+    }
+  }
+
+  @Override
+  public ExperimentRunPaginationDTO getExperimentRunsByDatasetVersionId(
+      ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request)
+      throws ModelDBException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      CommitEntity commitEntity = session.get(CommitEntity.class, request.getDatasetVersionId());
+      if (commitEntity == null) {
+        throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
+      }
+
+      List<RepositoryEntity> datasets = new ArrayList<>(commitEntity.getRepository());
+      if (datasets.size() == 0) {
+        throw new ModelDBException("DatasetVersion not attached with the dataset", Code.INTERNAL);
+      } else if (datasets.size() > 1) {
+        throw new ModelDBException(
+            "DatasetVersion '"
+                + commitEntity.getCommit_hash()
+                + "' associated with multiple datasets",
+            Code.INTERNAL);
+      } else if (!datasets.get(0).isDataset()) {
+        throw new ModelDBException("DatasetVersion not attached with the dataset", Code.NOT_FOUND);
+      }
+
+      KeyValueQuery entityKeyValuePredicate =
+          KeyValueQuery.newBuilder()
+              .setKey(ModelDBConstants.DATASETS + "." + ModelDBConstants.LINKED_ARTIFACT_ID)
+              .setValue(Value.newBuilder().setStringValue(commitEntity.getCommit_hash()).build())
+              .setOperator(OperatorEnum.Operator.EQ)
+              .setValueType(ValueTypeEnum.ValueType.STRING)
+              .build();
+
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setPageNumber(request.getPageNumber())
+              .setPageLimit(request.getPageLimit())
+              .setAscending(request.getAscending())
+              .setSortKey(request.getSortKey())
+              .addPredicates(entityKeyValuePredicate)
+              .build();
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
+      LOGGER.debug(
+          "Final return ExperimentRun count : {}",
+          experimentRunPaginationDTO.getExperimentRuns().size());
+      LOGGER.debug(
+          "Final return total record count : {}", experimentRunPaginationDTO.getTotalRecords());
+      return experimentRunPaginationDTO;
     }
   }
 }
