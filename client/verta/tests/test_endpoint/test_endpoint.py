@@ -79,7 +79,6 @@ class TestEndpoint:
 
         assert "path: {}".format(endpoint.path) in str_repr
         assert "id: {}".format(endpoint.id) in str_repr
-        assert "stage id: {}".format(status["id"]) in str_repr
 
         # these fields might have changed:
         assert "status" in str_repr

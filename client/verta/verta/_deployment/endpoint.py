@@ -23,7 +23,6 @@ class Endpoint(object):
         return '\n'.join((
             "path: {}".format(self.path),
             "id: {}".format(self.id),
-            "stage id: {}".format(status["id"]),
             "status: {}".format(status["status"]),
             "date created: {}".format(status["date_created"]),
             "date updated: {}".format(status["date_updated"]),
