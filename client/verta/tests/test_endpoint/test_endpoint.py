@@ -76,10 +76,10 @@ class TestEndpoint:
 
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
-        endpoint.update(experiment_run, DirectUpdateStrategy())
+        updated_status = endpoint.update(experiment_run, DirectUpdateStrategy())
 
         # Check that a new build is added:
-        new_build_ids = get_build_ids(endpoint.get_status())
+        new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
     def test_update_wait(self, client, experiment_run, model_for_deployment):
@@ -88,9 +88,9 @@ class TestEndpoint:
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
 
-        endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+        status = endpoint.update(experiment_run, DirectUpdateStrategy(), True)
 
-        assert endpoint.get_status()["status"] == "active"
+        assert status["status"] == "active"
 
     def test_canary_update(self, client, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
@@ -109,8 +109,8 @@ class TestEndpoint:
         assert "canary update strategy must have at least one rule" in str(excinfo.value)
 
         strategy.add_rule(AverageLatencyThreshold(0.8))
-        endpoint.update(experiment_run, strategy)
+        updated_status = endpoint.update(experiment_run, strategy)
 
         # Check that a new build is added:
-        new_build_ids = get_build_ids(endpoint.get_status())
+        new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
