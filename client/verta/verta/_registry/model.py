@@ -19,7 +19,17 @@ class RegisteredModel(_ModelDBEntity):
         super(RegisteredModel, self).__init__(conn, conf, _RegisteredModelService, "registered_model", msg)
 
     def __repr__(self):
-        return "<Model \"{}\">".format(self.name)
+        self._refresh_cache()
+        msg = self._msg
+
+        return '\n'.join((
+            "name: {}".format(msg.name),
+            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
+            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
+            "description: {}".format(msg.description),
+            "labels: {}".format(msg.labels),
+            "id: {}".format(msg.id),
+        ))
 
     @property
     def name(self):

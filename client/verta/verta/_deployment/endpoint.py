@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 import json
+import sys
+import time
 
 from ..deployment.strategies import _UpdateStrategy
 from .._internal_utils import _utils
@@ -104,7 +106,7 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    def update(self, run, strategy):
+    def update(self, run, strategy, wait=False):
         if not isinstance(run, experimentrun.ExperimentRun):
             raise TypeError("run must be an ExperimentRun")
 
@@ -133,6 +135,19 @@ class Endpoint(object):
         )
         response = _utils.make_request("PUT", url, self._conn, json=strategy._as_build_update_req_body(build_id))
         _utils.raise_for_http_error(response)
+
+        if wait:
+            print("waiting for update...", end='')
+            sys.stdout.flush()
+            while self.get_status()['status'] not in ("active", "error"):
+                print(".", end='')
+                sys.stdout.flush()
+                time.sleep(5)
+            print()
+            if self.get_status()['status'] == "error":
+                raise RuntimeError("endpoint update failed")
+
+        return self.get_status()
 
     def _get_or_create_stage(self, name="production"):
         if name == "production":
