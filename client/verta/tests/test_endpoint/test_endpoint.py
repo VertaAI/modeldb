@@ -1,3 +1,5 @@
+import time
+
 import pytest
 
 import verta
@@ -111,3 +113,20 @@ class TestEndpoint:
         token = endpoint.get_access_token()
 
         assert token is None
+
+    def test_get_deployed_model(self, client, experiment_run, model_for_deployment):
+        model = model_for_deployment['model'].fit(
+            model_for_deployment['train_features'],
+            model_for_deployment['train_targets'],
+        )
+        experiment_run.log_model_for_deployment(model)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        endpoint.update(experiment_run, DirectUpdateStrategy())
+
+        while not endpoint.get_status()['status'] == "active":
+            time.sleep(3)
+        x = model_for_deployment['train_features'].iloc[1].values
+        endpoint.get_deployed_model().predict([x])
+

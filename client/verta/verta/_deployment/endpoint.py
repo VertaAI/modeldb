@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+from ..deployment import DeployedModel
 from ..deployment.strategies import _UpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
@@ -188,3 +189,13 @@ class Endpoint(object):
             return None
         return tokens[0]
 
+    def get_deployed_model(self):
+        status = self.get_status()
+        if status['status'] != "active":
+            raise RuntimeError("model is not currently deployed (status: {})".format(status))
+
+        access_token = self.get_access_token()
+        return DeployedModel.from_url("{}://{}/api/v1/predict{}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.path), access_token)
