@@ -32,7 +32,24 @@ class RegisteredModelVersion(_ModelDBEntity):
         super(RegisteredModelVersion, self).__init__(conn, conf, _ModelVersionService, "registered_model_version", msg)
 
     def __repr__(self):
-        return "<ModelVersion \"{}\">".format(self.name)
+        self._refresh_cache()
+        msg = self._msg
+        artifact_keys = list(map(lambda artifact: artifact.key, self._msg.artifacts))
+        if self.has_model:
+            artifact_keys.append("model")
+
+        return '\n'.join((
+            "version: {}".format(msg.verrsion),
+            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
+            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
+            "description: {}".format(msg.description),
+            "labels: {}".format(msg.labels),
+            "id: {}".format(msg.id),
+            "registered model id: {}".format(msg.registered_model_id),
+            "experiment run id: {}".format(msg.experiment_run_id),
+            "archived status: {}".format(msg.archived),
+            "artifact keys: {}".format(_utils.unravel_artifacts(artifact_keys)),
+        ))
 
     @property
     def name(self):
