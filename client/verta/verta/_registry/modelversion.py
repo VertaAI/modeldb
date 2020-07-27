@@ -242,6 +242,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         return artifact_stream
 
     def del_artifact(self, key):
+        """
+        Deletes the artifact with name `key` from this Model Version.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+
+        """
         self._fetch_with_no_cache()
 
         ind = -1
