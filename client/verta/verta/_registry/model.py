@@ -122,6 +122,15 @@ class RegisteredModel(_ModelDBEntity):
         return registered_model
 
     def add_labels(self, labels):
+        """
+        Adds multiple labels to this Registered Model.
+
+        Parameters
+        ----------
+        labels : list of str
+            labels to add.
+
+        """
         if not labels:
             raise ValueError("label is not specified")
 
@@ -132,6 +141,15 @@ class RegisteredModel(_ModelDBEntity):
         self._update()
 
     def add_label(self, label):
+        """
+        Adds a label to this Registered Model.
+
+        Parameters
+        ----------
+        label : str
+            label to add.
+
+        """
         if label is None:
             raise ValueError("label is not specified")
         self._clear_cache()
@@ -141,6 +159,15 @@ class RegisteredModel(_ModelDBEntity):
             self._update()
 
     def del_label(self, label):
+        """
+        Deletes a label from this Registered Model.
+
+        Parameters
+        ----------
+        label : str
+            label to delete.
+
+        """
         if label is None:
             raise ValueError("label is not specified")
         self._clear_cache()
@@ -150,6 +177,15 @@ class RegisteredModel(_ModelDBEntity):
             self._update()
 
     def get_labels(self):
+        """
+        Gets all labels of this Registered Model.
+
+        Returns
+        -------
+        labels : list of str
+            list of all labels of this Registered Model.
+
+        """
         self._clear_cache()
         self._refresh_cache()
         return self._msg.labels

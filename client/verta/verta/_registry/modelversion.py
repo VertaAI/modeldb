@@ -431,12 +431,12 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     def add_labels(self, labels):
         """
-        Logs multiple labels to this Model Version.
+        Adds multiple labels to this Model Version.
 
         Parameters
         ----------
         labels : list of str
-            labels to log.
+            labels to add.
 
         """
         if not labels:
@@ -450,12 +450,12 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     def add_label(self, label):
         """
-        Logs a label to this Model Version.
+        Adds a label to this Model Version.
 
         Parameters
         ----------
         label : str
-            label to log.
+            label to add.
 
         """
         if label is None:
@@ -489,7 +489,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         Returns
         -------
         labels : list of str
-            list of all labels of this ModelVersion
+            list of all labels of this Model Version.
 
         """
         self._refresh_cache()
