@@ -1,5 +1,6 @@
 package ai.verta.modeldb.metadata;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBException;
 import java.util.List;
@@ -31,4 +32,10 @@ public interface MetadataDAO {
       throws ModelDBException;
 
   boolean deleteProperty(IdentificationType id, String key);
+
+  void addOrUpdateKeyValueProperties(AddKeyValuePropertiesRequest request) throws ModelDBException;
+
+  List<KeyValue> getKeyValueProperties(GetKeyValuePropertiesRequest request);
+
+  void deleteKeyValueProperties(DeleteKeyValuePropertiesRequest request);
 }

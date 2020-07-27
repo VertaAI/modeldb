@@ -1,17 +1,22 @@
 package ai.verta.modeldb.metadata;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.entities.metadata.KeyValuePropertyMappingEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
+import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +63,16 @@ public class MetadataDAORdbImpl implements MetadataDAO {
           .append(" AND pm.id.")
           .append("key")
           .append(" = :key")
+          .toString();
+  private static final String GET_KEY_VALUE_PROPERTY_HQL =
+      new StringBuilder("From KeyValuePropertyMappingEntity kv where kv.id.")
+          .append(ModelDBConstants.ENTITY_HASH)
+          .append(" = :")
+          .append(ModelDBConstants.ENTITY_HASH)
+          .append(" AND kv.id.")
+          .append(ModelDBConstants.PROPERTY_NAME)
+          .append(" = :")
+          .append(ModelDBConstants.PROPERTY_NAME)
           .toString();
 
   private String getEntityHash(IdentificationType id) {
@@ -340,6 +355,115 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       } else {
         throw ex;
       }
+    }
+  }
+
+  @Override
+  public void addOrUpdateKeyValueProperties(AddKeyValuePropertiesRequest request)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = session.beginTransaction();
+      for (KeyValue keyValue : request.getKeyValueList()) {
+        if (!keyValue.getValue().getKindCase().equals(Value.KindCase.STRING_VALUE)) {
+          throw new ModelDBException(
+              "Only 'String' value excepted in keyValue", Code.INVALID_ARGUMENT);
+        }
+        KeyValuePropertyMappingEntity.KeyValuePropertyMappingId id0 =
+            KeyValuePropertyMappingEntity.createId(
+                request.getId(), keyValue.getKey(), request.getPropertyName());
+        KeyValuePropertyMappingEntity existingEntity =
+            session.get(KeyValuePropertyMappingEntity.class, id0);
+        if (existingEntity == null) {
+          existingEntity =
+              new KeyValuePropertyMappingEntity(id0, keyValue.getValue().getStringValue());
+          session.saveOrUpdate(existingEntity);
+        } else {
+          existingEntity.setValue(keyValue.getValue().getStringValue());
+          session.update(existingEntity);
+        }
+      }
+      transaction.commit();
+    }
+  }
+
+  @Override
+  public List<KeyValue> getKeyValueProperties(GetKeyValuePropertiesRequest request) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      List<KeyValue> keyValues = new ArrayList<>();
+      if (request.getGetAll()) {
+        Query<KeyValuePropertyMappingEntity> query =
+            session.createQuery(GET_KEY_VALUE_PROPERTY_HQL, KeyValuePropertyMappingEntity.class);
+        query.setParameter(ModelDBConstants.ENTITY_HASH, getEntityHash(request.getId()));
+        query.setParameter(ModelDBConstants.PROPERTY_NAME, request.getPropertyName());
+        List<KeyValuePropertyMappingEntity> kvMappings = query.list();
+        if (!kvMappings.isEmpty()) {
+          kvMappings.forEach(
+              mappingEntity -> {
+                keyValues.add(
+                    KeyValue.newBuilder()
+                        .setKey(mappingEntity.getId().getKey())
+                        .setValue(
+                            Value.newBuilder().setStringValue(mappingEntity.getValue()).build())
+                        .build());
+              });
+        }
+      } else {
+        for (String key : request.getKeyList()) {
+          KeyValuePropertyMappingEntity.KeyValuePropertyMappingId id0 =
+              KeyValuePropertyMappingEntity.createId(
+                  request.getId(), key, request.getPropertyName());
+          KeyValuePropertyMappingEntity kvEntity =
+              session.get(KeyValuePropertyMappingEntity.class, id0);
+          if (kvEntity != null) {
+            keyValues.add(
+                KeyValue.newBuilder()
+                    .setKey(key)
+                    .setValue(Value.newBuilder().setStringValue(kvEntity.getValue()).build())
+                    .build());
+          }
+        }
+      }
+      return keyValues;
+    }
+  }
+
+  @Override
+  public void deleteKeyValueProperties(DeleteKeyValuePropertiesRequest request) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      if (request.getDeleteAll()) {
+        StringBuilder stringQueryBuilder =
+            new StringBuilder("delete from ")
+                .append(KeyValuePropertyMappingEntity.class.getSimpleName())
+                .append(" kv WHERE ");
+        stringQueryBuilder
+            .append(" kv.")
+            .append(ModelDBConstants.ID)
+            .append(".")
+            .append(ModelDBConstants.ENTITY_HASH)
+            .append(" = :")
+            .append(ModelDBConstants.ENTITY_HASH)
+            .append(" AND kv.id.")
+            .append(ModelDBConstants.PROPERTY_NAME)
+            .append(" = :")
+            .append(ModelDBConstants.PROPERTY_NAME);
+        Query<LabelsMappingEntity> query = session.createQuery(stringQueryBuilder.toString());
+        query.setParameter(ModelDBConstants.ENTITY_HASH, getEntityHash(request.getId()));
+        query.setParameter(ModelDBConstants.PROPERTY_NAME, request.getPropertyName());
+        query.executeUpdate();
+      } else {
+        for (String key : request.getKeyList()) {
+          KeyValuePropertyMappingEntity.KeyValuePropertyMappingId id0 =
+              KeyValuePropertyMappingEntity.createId(
+                  request.getId(), key, request.getPropertyName());
+          KeyValuePropertyMappingEntity kvEntity =
+              session.get(KeyValuePropertyMappingEntity.class, id0);
+          if (kvEntity != null) {
+            session.delete(kvEntity);
+          }
+        }
+      }
+      session.getTransaction().commit();
     }
   }
 }
