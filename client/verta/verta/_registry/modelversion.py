@@ -209,7 +209,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     def del_artifact(self, key):
         if key == "model":
-            raise ValueError("the key \"model\" is reserved for model; consider using del_model() instead")
+            raise ValueError("model can't be deleted through del_artifact(); consider using del_model() instead")
 
         self._fetch_with_no_cache()
 

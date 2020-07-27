@@ -141,7 +141,7 @@ class TestModelVersion:
         with pytest.raises(ValueError) as excinfo:
             model_version.del_artifact("model")
 
-        assert "the key \"model\" is reserved for model; consider using del_model() instead" in str(excinfo.value)
+        assert "model can't be deleted through del_artifact(); consider using del_model() instead" in str(excinfo.value)
 
     def test_del_artifact(self, registered_model):
         np = pytest.importorskip("numpy")
