@@ -63,6 +63,7 @@ public interface ModelDBConstants {
   String ATTRIBUTES = "attributes";
   String DATASET_COLLABORATORS = "dataset_collaborators";
   String DATASETS = "datasets";
+  String REPOSITORIES = "repositories";
   String DATE_CREATED = "date_created";
   String DATE_UPDATED = "date_updated";
   String ENTITY_ID = "entity_id";
@@ -137,6 +138,7 @@ public interface ModelDBConstants {
   String OBSERVATION_MAPPING = "observationMapping";
   String PROJECT_ID_STR = "projectId";
   String TOTAL_COUNT = "total_count";
+  String TIME_CREATED = "time_created";
   String TIME_UPDATED = "time_updated";
   String TIME_LOGGED = "time_logged";
   String UNSIGNED_USER = "unsigned_user";
@@ -174,14 +176,17 @@ public interface ModelDBConstants {
 
   // Migration Constants
   String MIGRATION = "migration";
+  String ENABLE = "enable";
   String SUB_ENTITIES_OWNERS_RBAC_MIGRATION = "SUB_ENTITIES_OWNERS_RBAC_MIGRATION";
   String ROLE_REPOSITORY_READ_WRITE = "REPOSITORY_READ_WRITE";
   String ROLE_REPOSITORY_READ_ONLY = "REPOSITORY_READ_ONLY";
   String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
+  String DATASET_VERSIONING_MIGRATION = "DATASET_VERSIONING_MIGRATION";
   String POSTGRES_DB_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
   String DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE =
       "Can't add new versioning entry, because an existing one has different repository or commit";
+  String REPOSITORY_ENTITY = "repositoryEntity";
 
   enum UserIdentifier {
     VERTA_ID,
@@ -218,6 +223,7 @@ public interface ModelDBConstants {
       "https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry";
 
   // Versioning constant
+  String BLOB = "blob";
   String BLOBS = "blobs";
   String SUBTREES = "subtrees";
   String REPOSITORY_ID = "repository_id";
@@ -235,6 +241,12 @@ public interface ModelDBConstants {
   String VERSIONING_LOCATION = "versioning_location";
   String REPOSITORY_VISIBILITY = "repository_visibility";
   String REPOSITORY = "repository";
+  String VERSIONING_REPOSITORY = "versioning_repository";
+  String VERSIONING_COMMIT = "versioning_commit";
+  String VERSIONING_REPO_COMMIT_BLOB = "versioning_repo_commit_blob";
+  String VERSIONING_REPO_COMMIT = "versioning_repo_commit";
+  String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
+  String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second
@@ -242,4 +254,5 @@ public interface ModelDBConstants {
   String CRON_JOB = "cron_job";
   String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
   String DELETE_ENTITIES = "delete_entities";
+  String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
 }

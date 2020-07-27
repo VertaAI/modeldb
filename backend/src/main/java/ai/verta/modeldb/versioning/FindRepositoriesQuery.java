@@ -9,14 +9,10 @@ import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.Value;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -161,7 +157,8 @@ public class FindRepositoriesQuery {
                     joinAlias
                         + ".id.entity_type = "
                         + IDTypeEnum.IDType.VERSIONING_REPOSITORY.getNumber();
-                setPredicatesWithQueryOperator(joinClause, "AND", joinClauses);
+                joinClause.append(
+                    VersioningUtils.setPredicatesWithQueryOperator("AND", joinClauses));
               }
               index[0]++;
             });
@@ -190,7 +187,8 @@ public class FindRepositoriesQuery {
           if (keyValueQuery.getKey().contains(ModelDBConstants.LABEL)) {
             String joinAlias = joinAliasMap.get(keyValueQuery.getKey() + index);
             StringBuilder joinStringBuilder = new StringBuilder(joinAlias).append(".id.label ");
-            setQueryParameters(joinStringBuilder, keyValueQuery, parametersMap);
+            VersioningUtils.setQueryParameters(
+                index, joinStringBuilder, keyValueQuery, parametersMap);
             whereClauseList.add(joinStringBuilder.toString());
           } else if (keyValueQuery.getKey().contains(ModelDBConstants.OWNER)) {
             StringBuilder predicateStringBuilder =
@@ -200,7 +198,8 @@ public class FindRepositoriesQuery {
           } else {
             StringBuilder predicateStringBuilder = new StringBuilder();
             predicateStringBuilder.append(alias).append(".").append(keyValueQuery.getKey());
-            setQueryParameters(predicateStringBuilder, keyValueQuery, parametersMap);
+            VersioningUtils.setQueryParameters(
+                index, predicateStringBuilder, keyValueQuery, parametersMap);
             whereClauseList.add(predicateStringBuilder.toString());
           }
         }
@@ -211,9 +210,15 @@ public class FindRepositoriesQuery {
         parametersMap.put("repoIds", this.repoIds);
       }
       whereClauseList.add(alias + "." + ModelDBConstants.DELETED + " = false ");
+      whereClauseList.add(
+          alias
+              + ".repositoryAccessModifier = "
+              + RepositoryEnums.RepositoryModifierEnum.REGULAR.ordinal());
 
       StringBuilder whereClause = new StringBuilder();
-      setPredicatesWithQueryOperator(whereClause, "AND", whereClauseList.toArray(new String[0]));
+      whereClause.append(
+          VersioningUtils.setPredicatesWithQueryOperator(
+              "AND", whereClauseList.toArray(new String[0])));
 
       // Order by clause
       StringBuilder orderClause =
@@ -260,7 +265,7 @@ public class FindRepositoriesQuery {
         String ownerIdsArrString = keyValueQuery.getValue().getStringValue();
         List<String> ownerIds = Arrays.asList(ownerIdsArrString.split(","));
         RdbmsUtils.setValueWithOperatorInQuery(
-            predicateStringBuilder, operator, ownerIds, parametersMap);
+            index, predicateStringBuilder, operator, ownerIds, parametersMap);
       } else if (operator.equals(OperatorEnum.Operator.CONTAIN)
           || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
         UserInfoPaginationDTO userInfoPaginationDTO =
@@ -273,7 +278,7 @@ public class FindRepositoriesQuery {
                   .collect(Collectors.toList());
           if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
             RdbmsUtils.setValueWithOperatorInQuery(
-                predicateStringBuilder, OperatorEnum.Operator.IN, ownerIds, parametersMap);
+                index, predicateStringBuilder, OperatorEnum.Operator.IN, ownerIds, parametersMap);
           } else {
             String mapKey = "IN_VALUE_" + index;
             predicateStringBuilder.append(" NOT IN (:").append(mapKey).append(")");
@@ -285,63 +290,8 @@ public class FindRepositoriesQuery {
               io.grpc.Status.Code.FAILED_PRECONDITION);
         }
       } else {
-        setQueryParameters(predicateStringBuilder, keyValueQuery, parametersMap);
-      }
-    }
-
-    private void setPredicatesWithQueryOperator(
-        StringBuilder queryStringBuilder, String operatorName, String[] predicateClause) {
-      queryStringBuilder.append(String.join(" " + operatorName + " ", predicateClause));
-    }
-
-    private void setQueryParameters(
-        StringBuilder queryBuilder,
-        KeyValueQuery keyValueQuery,
-        Map<String, Object> parametersMap) {
-      Value value = keyValueQuery.getValue();
-      OperatorEnum.Operator operator = keyValueQuery.getOperator();
-      switch (value.getKindCase()) {
-        case NUMBER_VALUE:
-          LOGGER.debug("Called switch case : number_value");
-          RdbmsUtils.setValueWithOperatorInQuery(
-              queryBuilder, operator, value.getNumberValue(), parametersMap);
-          break;
-        case STRING_VALUE:
-          LOGGER.debug("Called switch case : string_value");
-          if (!value.getStringValue().isEmpty()) {
-            LOGGER.debug("Called switch case : string value exist");
-            if (keyValueQuery.getKey().equals(ModelDBConstants.REPOSITORY_VISIBILITY)) {
-              RdbmsUtils.setValueWithOperatorInQuery(
-                  queryBuilder,
-                  operator,
-                  RepositoryVisibility.valueOf(value.getStringValue()).ordinal(),
-                  parametersMap);
-            } else {
-              RdbmsUtils.setValueWithOperatorInQuery(
-                  queryBuilder, operator, value.getStringValue(), parametersMap);
-            }
-            break;
-          } else {
-            Status invalidValueTypeError =
-                Status.newBuilder()
-                    .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
-                    .setMessage("Predicate does not contain string value in request")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
-          }
-        case BOOL_VALUE:
-          LOGGER.debug("Called switch case : bool_value");
-          RdbmsUtils.setValueWithOperatorInQuery(
-              queryBuilder, operator, value.getStringValue(), parametersMap);
-          break;
-        default:
-          Status invalidValueTypeError =
-              Status.newBuilder()
-                  .setCode(Code.UNIMPLEMENTED_VALUE)
-                  .setMessage(
-                      "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+        VersioningUtils.setQueryParameters(
+            index, predicateStringBuilder, keyValueQuery, parametersMap);
       }
     }
   }

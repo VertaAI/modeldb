@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import shutil
 import tempfile
 
 from . import _file_utils
@@ -43,7 +44,7 @@ def download(response, filepath, chunk_size=32*(10**6), overwrite_ok=False):
             filepath = _file_utils.without_collision(filepath)
 
         # move written contents to `filepath`
-        os.rename(tempf.name, filepath)
+        shutil.move(tempf.name, filepath)
     except Exception as e:
         # delete partially-downloaded file
         if tempf is not None and os.path.isfile(tempf.name):

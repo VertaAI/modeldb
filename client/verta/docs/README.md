@@ -1,10 +1,17 @@
-## Local Build Instructions
-1. `cd` to this directory
-1. `python -m pip install -r requirements.txt` to install Sphinx, the documentation build utility
-1. `rm -rf _build/; make html` to clear existing generated files and rebuild pages
-1. `open _build/html/index.html` to open the landing page in your web browser
+## Installation
+To install the packages needed for building documentation, refer to the *Python 3* steps of the **Developer Installation** instructions in [the contribution guide](../../CONTRIBUTING.md).
 
-## Deployment Directions
+## Building Documentation
+To clear existing generated files and rebuild pages, run:
+```bash
+rm -rf _build/; make html
+```
+To open the landing page in your web browser, run:
+```bash
+open _build/html/index.html
+```
+
+## Deployment and Publication
 1. (optional) Go to https://readthedocs.org/projects/verta/versions/ to activate a branch to be deployed
     - If your branch doesn't appear, wait about 10 minutes or so for ReadTheDocs to update its index.
 1. Go to https://readthedocs.org/projects/verta/builds/ to trigger and deploy a new build

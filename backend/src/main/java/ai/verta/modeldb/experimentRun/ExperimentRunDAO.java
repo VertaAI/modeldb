@@ -10,6 +10,7 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.GetCommittedArtifactParts;
+import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
 import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.ListCommitExperimentRunsRequest;
@@ -459,6 +460,8 @@ public interface ExperimentRunDAO {
 
   void deleteLogVersionedInputs(Session session, Long repoId, String commitHash);
 
+  void deleteLogVersionedInputs(Session session, List<Long> repoIds);
+
   GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)
       throws InvalidProtocolBufferException;
 
@@ -500,4 +503,8 @@ public interface ExperimentRunDAO {
   void deleteExperimentRunObservationsEntities(
       String experimentRunId, List<String> experimentRunObservationsKeys, Boolean deleteAll)
       throws InvalidProtocolBufferException;
+
+  ExperimentRunPaginationDTO getExperimentRunsByDatasetVersionId(
+      ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request)
+      throws ModelDBException, InvalidProtocolBufferException;
 }
