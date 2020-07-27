@@ -127,7 +127,7 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
 
         if wait:
-            print("waiting for updating...", end='')
+            print("waiting for update...", end='')
             sys.stdout.flush()
             while self.get_status()['status'] not in ("active", "error"):
                 print(".", end='')
@@ -135,7 +135,7 @@ class Endpoint(object):
                 time.sleep(5)
             print()
             if self.get_status()['status'] == "error":
-                raise RuntimeError("endpoint updating failed")
+                raise RuntimeError("endpoint update failed")
 
     def _get_or_create_stage(self, name="production"):
         if name == "production":
