@@ -99,6 +99,14 @@ class RegisteredModelVersion(_ModelDBEntity):
         return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
 
     def get_artifact_keys(self):
+        """
+        Gets the artifact keys of this Model Version.
+
+        Returns
+        -------
+        list of str
+            List of artifact keys of this Model Version.
+        """
         self._refresh_cache()
         return list(map(lambda artifact: artifact.key, self._msg.artifacts))
 
