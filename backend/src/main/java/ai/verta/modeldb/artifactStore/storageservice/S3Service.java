@@ -80,7 +80,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException("Bucket does not exists", io.grpc.Status.Code.INTERNAL);
+      throw new ModelDBException("Bucket does not exists", Code.INTERNAL);
     }
     InitiateMultipartUploadRequest initiateMultipartUploadRequest =
         new InitiateMultipartUploadRequest(bucketName, s3Key);
@@ -95,7 +95,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException("Bucket does not exists", io.grpc.Status.Code.INTERNAL);
+      throw new ModelDBException("Bucket does not exists", Code.INTERNAL);
     }
 
     HttpMethod reqMethod;
@@ -135,7 +135,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException("Bucket does not exists", io.grpc.Status.Code.INTERNAL);
+      throw new ModelDBException("Bucket does not exists", Code.INTERNAL);
     }
     CompleteMultipartUploadRequest completeMultipartUploadRequest =
         new CompleteMultipartUploadRequest(bucketName, s3Key, uploadId, partETags);
@@ -146,7 +146,7 @@ public class S3Service implements ArtifactStoreService {
     } catch (AmazonS3Exception e) {
       if (e.getStatusCode() == HttpStatusCodes.STATUS_CODE_BAD_REQUEST) {
         LOGGER.info("message: {} additional details: {}", e.getMessage(), e.getAdditionalDetails());
-        throw new ModelDBException(e.getErrorMessage(), io.grpc.Status.Code.FAILED_PRECONDITION);
+        throw new ModelDBException(e.getErrorMessage(), Code.FAILED_PRECONDITION);
       }
       throw e;
     }

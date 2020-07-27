@@ -1,5 +1,5 @@
 image: vertaaiofficial/modeldb-backend
-imageTag: 2.0.8
+imageTag: 2.0.8.1
 tolerations: []
 resources:
   limits:
@@ -16,7 +16,7 @@ service:
 
 proxy:
   image: vertaaiofficial/modeldb-proxy
-  imageTag: 2.0.8
+  imageTag: 2.0.8.1
   resources:
     limits:
       cpu: 500m

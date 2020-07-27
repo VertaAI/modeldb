@@ -1,7 +1,10 @@
 import styles from './DiffHighlight.module.css';
 
+const colorsAmount = 6;
+
 const getColor = (entityType: number, type: 'Bg' | 'Border') => {
-  return styles[`highlight${type}_${entityType}`];
+  const colorNum = (entityType % colorsAmount) + 1;
+  return styles[`highlight${type}_${colorNum}`];
 };
 
 export const getDiffValueBgClassname = (

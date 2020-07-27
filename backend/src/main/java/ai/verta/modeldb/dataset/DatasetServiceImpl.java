@@ -12,7 +12,6 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.CreateDataset;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
-import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.DeleteDataset;
 import ai.verta.modeldb.DeleteDatasetAttributes;
@@ -20,7 +19,6 @@ import ai.verta.modeldb.DeleteDatasetTags;
 import ai.verta.modeldb.DeleteDatasets;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.FindExperiments;
@@ -44,16 +42,23 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
-import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.Commit;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
+import ai.verta.modeldb.versioning.ListCommitsRequest;
+import ai.verta.modeldb.versioning.Repository;
+import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -67,17 +72,19 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class DatasetServiceImpl extends DatasetServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetServiceImpl.class);
+  private final RepositoryDAO repositoryDAO;
+  private final CommitDAO commitDAO;
+  private final MetadataDAO metadataDAO;
   private AuthService authService;
   private RoleService roleService;
-  private DatasetDAO datasetDAO;
-  private DatasetVersionDAO datasetVersionDAO;
+  // private DatasetDAO datasetDAO;
+  // private DatasetVersionDAO datasetVersionDAO;
   private ProjectDAO projectDAO;
   private ExperimentDAO experimentDAO;
   private ExperimentRunDAO experimentRunDAO;
@@ -89,14 +96,20 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       DatasetVersionDAO datasetVersionDAO,
       ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
-      ExperimentRunDAO experimentRunDAO) {
+      ExperimentRunDAO experimentRunDAO,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      MetadataDAO metadataDAO) {
     this.authService = authService;
     this.roleService = roleService;
-    this.datasetDAO = datasetDAO;
-    this.datasetVersionDAO = datasetVersionDAO;
+    // this.datasetDAO = datasetDAO;
+    // this.datasetVersionDAO = datasetVersionDAO;
     this.projectDAO = projectDAO;
     this.experimentDAO = experimentDAO;
     this.experimentRunDAO = experimentRunDAO;
+    this.repositoryDAO = repositoryDAO;
+    this.commitDAO = commitDAO;
+    this.metadataDAO = metadataDAO;
   }
 
   /**
@@ -122,18 +135,26 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, null, ModelDBServiceActions.CREATE);
+          ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
 
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
       Dataset dataset = getDatasetFromRequest(request, userInfo);
       ModelDBUtils.checkPersonalWorkspace(
-          userInfo, dataset.getWorkspaceType(), dataset.getWorkspaceId(), "dataset");
+          userInfo, dataset.getWorkspaceType(), dataset.getWorkspaceId(), "repository");
       if (App.getInstance().getPublicSharingEnabled()) {
         dataset = dataset.toBuilder().setDatasetVisibility(DatasetVisibility.PUBLIC).build();
       }
-      Dataset createdDataset = datasetDAO.createDataset(dataset, userInfo);
+      Repository repository =
+          repositoryDAO.createRepository(commitDAO, metadataDAO, dataset, true, userInfo);
+      Dataset createdDataset =
+          dataset
+              .toBuilder()
+              .setId(String.valueOf(repository.getId()))
+              .setTimeCreated(repository.getDateCreated())
+              .setTimeUpdated(repository.getDateUpdated())
+              .build();
 
       responseObserver.onNext(
           CreateDataset.Response.newBuilder().setDataset(createdDataset).build());
@@ -152,7 +173,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
      */
     Dataset.Builder datasetBuilder =
         Dataset.newBuilder()
-            .setId(UUID.randomUUID().toString())
             .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
@@ -208,8 +228,16 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .setSortKey(request.getSortKey())
               .setWorkspaceName(request.getWorkspaceName());
 
+      if (findDatasets.getSortKey().equals(ModelDBConstants.TIME_UPDATED)) {
+        findDatasets.setSortKey(ModelDBConstants.DATE_UPDATED);
+      }
+      if (findDatasets.getSortKey().equals(ModelDBConstants.TIME_CREATED)) {
+        findDatasets.setSortKey(ModelDBConstants.DATE_CREATED);
+      }
+
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
+          repositoryDAO.findDatasets(
+              metadataDAO, findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
 
       LOGGER.debug(
           ModelDBMessages.ACCESSIBLE_DATASET_IN_SERVICE, datasetPaginationDTO.getDatasets().size());
@@ -244,8 +272,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean deleteStatus = datasetDAO.deleteDatasets(Collections.singletonList(request.getId()));
-      responseObserver.onNext(DeleteDataset.Response.newBuilder().setStatus(deleteStatus).build());
+      deleteRepositoriesByDatasetIds(Collections.singletonList(request.getId()));
+      responseObserver.onNext(DeleteDataset.Response.newBuilder().setStatus(true).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -277,10 +305,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.READ);
 
-      Dataset dataset = datasetDAO.getDatasetById(request.getId());
-      responseObserver.onNext(GetDatasetById.Response.newBuilder().setDataset(dataset).build());
+      responseObserver.onNext(repositoryDAO.getDatasetById(metadataDAO, request.getId()));
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -297,7 +324,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(request, userInfo, DatasetVisibility.PRIVATE);
+          repositoryDAO.findDatasets(metadataDAO, request, userInfo, DatasetVisibility.PRIVATE);
       responseObserver.onNext(
           FindDatasets.Response.newBuilder()
               .addAllDatasets(datasetPaginationDTO.getDatasets())
@@ -346,7 +373,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       : request.getWorkspaceName());
 
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
+          repositoryDAO.findDatasets(
+              metadataDAO, findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
 
       if (datasetPaginationDTO.getTotalRecords() == 0) {
         Status status =
@@ -413,13 +441,18 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Dataset dataset =
-          datasetDAO.updateDatasetName(
-              request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
+      GetDatasetById.Response getDatasetResponse =
+          repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      Dataset updatedDataset =
+          getDatasetResponse.getDataset().toBuilder().setName(request.getName()).build();
+      repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
+      getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      updatedDataset = getDatasetResponse.getDataset();
 
-      responseObserver.onNext(UpdateDatasetName.Response.newBuilder().setDataset(dataset).build());
+      responseObserver.onNext(
+          UpdateDatasetName.Response.newBuilder().setDataset(updatedDataset).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -443,13 +476,22 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Dataset dataset =
-          datasetDAO.updateDatasetDescription(request.getId(), request.getDescription());
+      GetDatasetById.Response getDatasetResponse =
+          repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      Dataset updatedDataset =
+          getDatasetResponse
+              .getDataset()
+              .toBuilder()
+              .setDescription(request.getDescription())
+              .build();
+      repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
+      getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      updatedDataset = getDatasetResponse.getDataset();
 
       responseObserver.onNext(
-          UpdateDatasetDescription.Response.newBuilder().setDataset(dataset).build());
+          UpdateDatasetDescription.Response.newBuilder().setDataset(updatedDataset).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -487,14 +529,15 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Dataset updatedDataset =
-          datasetDAO.addDatasetTags(
-              request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+      AddDatasetTags.Response updatedDataset =
+          repositoryDAO.addDatasetTags(
+              metadataDAO,
+              request.getId(),
+              ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
 
-      responseObserver.onNext(
-          AddDatasetTags.Response.newBuilder().setDataset(updatedDataset).build());
+      responseObserver.onNext(updatedDataset);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -508,24 +551,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       // Request Parameter Validation
-      if (request.getId().isEmpty()) {
-        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST)
-                .addDetails(Any.pack(GetTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.READ);
-
-      List<String> tags = datasetDAO.getDatasetTags(request.getId());
-      responseObserver.onNext(GetTags.Response.newBuilder().addAllTags(tags).build());
-      responseObserver.onCompleted();
+      LOGGER.info("getDatasetTags not supported");
+      throw new ModelDBException("Not supported", Code.UNIMPLEMENTED);
 
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
@@ -561,11 +588,11 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
       Dataset updatedDataset =
-          datasetDAO.deleteDatasetTags(
-              request.getId(), request.getTagsList(), request.getDeleteAll());
+          repositoryDAO.deleteDatasetTags(
+              metadataDAO, request.getId(), request.getTagsList(), request.getDeleteAll());
 
       responseObserver.onNext(
           DeleteDatasetTags.Response.newBuilder().setDataset(updatedDataset).build());
@@ -607,10 +634,20 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
+      GetDatasetById.Response getDatasetResponse =
+          repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
-          datasetDAO.addDatasetAttributes(request.getId(), request.getAttributesList());
+          getDatasetResponse
+              .getDataset()
+              .toBuilder()
+              .addAllAttributes(request.getAttributesList())
+              .build();
+      repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
+      getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      updatedDataset = getDatasetResponse.getDataset();
+
       responseObserver.onNext(
           AddDatasetAttributes.Response.newBuilder().setDataset(updatedDataset).build());
       responseObserver.onCompleted();
@@ -652,10 +689,16 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
+      GetDatasetById.Response getDatasetResponse =
+          repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
-          datasetDAO.updateDatasetAttributes(request.getId(), request.getAttribute());
+          getDatasetResponse.getDataset().toBuilder().addAttributes(request.getAttribute()).build();
+      repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
+      getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      updatedDataset = getDatasetResponse.getDataset();
+
       responseObserver.onNext(
           UpdateDatasetAttributes.Response.newBuilder().setDataset(updatedDataset).build());
       responseObserver.onCompleted();
@@ -699,13 +742,19 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Dataset updatedDataset =
-          datasetDAO.deleteDatasetAttributes(
-              request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
+      repositoryDAO.deleteRepositoryAttributes(
+          Long.parseLong(request.getId()),
+          request.getAttributeKeysList(),
+          request.getDeleteAll(),
+          false);
+      GetDatasetById.Response getDatasetResponse =
+          repositoryDAO.getDatasetById(metadataDAO, request.getId());
       responseObserver.onNext(
-          DeleteDatasetAttributes.Response.newBuilder().setDataset(updatedDataset).build());
+          DeleteDatasetAttributes.Response.newBuilder()
+              .setDataset(getDatasetResponse.getDataset())
+              .build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -734,13 +783,22 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Dataset dataset =
-          datasetDAO.setDatasetVisibility(request.getId(), request.getDatasetVisibility());
+      GetDatasetById.Response getDatasetResponse =
+          repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      Dataset updatedDataset =
+          getDatasetResponse
+              .getDataset()
+              .toBuilder()
+              .setDatasetVisibility(request.getDatasetVisibility())
+              .build();
+      repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
+      getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      updatedDataset = getDatasetResponse.getDataset();
 
       responseObserver.onNext(
-          SetDatasetVisibilty.Response.newBuilder().setDataset(dataset).build());
+          SetDatasetVisibilty.Response.newBuilder().setDataset(updatedDataset).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -766,12 +824,25 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean deleteStatus = datasetDAO.deleteDatasets(request.getIdsList());
-      responseObserver.onNext(DeleteDatasets.Response.newBuilder().setStatus(deleteStatus).build());
+      deleteRepositoriesByDatasetIds(request.getIdsList());
+      responseObserver.onNext(DeleteDatasets.Response.newBuilder().setStatus(true).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, DeleteDatasets.Response.getDefaultInstance());
+    }
+  }
+
+  private void deleteRepositoriesByDatasetIds(List<String> datasetIds) throws ModelDBException {
+    for (String datasetId : datasetIds) {
+      repositoryDAO.deleteRepository(
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(datasetId)))
+              .build(),
+          commitDAO,
+          experimentRunDAO,
+          false);
     }
   }
 
@@ -792,31 +863,38 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
-
-      FindDatasetVersions findDatasetVersions =
-          FindDatasetVersions.newBuilder()
-              .setDatasetId(request.getDatasetId())
-              .setIdsOnly(true)
-              .build();
+          ModelDBServiceResourceTypes.REPOSITORY,
+          request.getDatasetId(),
+          ModelDBServiceActions.READ);
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.findDatasetVersions(datasetDAO, findDatasetVersions, userInfo);
+
+      RepositoryIdentification repositoryIdentification =
+          RepositoryIdentification.newBuilder()
+              .setRepoId(Long.parseLong(request.getDatasetId()))
+              .build();
+      ListCommitsRequest.Builder listCommitsRequest =
+          ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
+      ListCommitsRequest.Response listCommitsResponse =
+          commitDAO.listCommits(
+              listCommitsRequest.build(),
+              (session ->
+                  repositoryDAO.getRepositoryById(
+                      session, repositoryIdentification, false, false)));
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
-      if (datasetVersionDTO != null
-          && datasetVersionDTO.getDatasetVersions() != null
-          && !datasetVersionDTO.getDatasetVersions().isEmpty()) {
-        for (DatasetVersion datasetVersion : datasetVersionDTO.getDatasetVersions()) {
-          datasetVersionIds.add(datasetVersion.getId());
+      List<Commit> commitList = listCommitsResponse.getCommitsList();
+      if (!commitList.isEmpty()) {
+        for (Commit commit : commitList) {
+          datasetVersionIds.add(commit.getCommitSha());
           listValueBuilder.addValues(
-              Value.newBuilder().setStringValue(datasetVersion.getId()).build());
+              Value.newBuilder().setStringValue(commit.getCommitSha()).build());
         }
       }
 
       Experiment lastUpdatedExperiment = null;
       if (!datasetVersionIds.isEmpty()) {
+
         KeyValueQuery keyValueQuery =
             KeyValueQuery.newBuilder()
                 .setKey(ModelDBConstants.DATASETS + "." + ModelDBConstants.LINKED_ARTIFACT_ID)
@@ -885,26 +963,32 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.REPOSITORY,
+          request.getDatasetId(),
+          ModelDBServiceActions.READ);
 
-      FindDatasetVersions findDatasetVersions =
-          FindDatasetVersions.newBuilder()
-              .setDatasetId(request.getDatasetId())
-              .setIdsOnly(true)
-              .build();
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      DatasetVersionDTO datasetVersionDTO =
-          datasetVersionDAO.findDatasetVersions(datasetDAO, findDatasetVersions, userInfo);
+      RepositoryIdentification repositoryIdentification =
+          RepositoryIdentification.newBuilder()
+              .setRepoId(Long.parseLong(request.getDatasetId()))
+              .build();
+      ListCommitsRequest.Builder listCommitsRequest =
+          ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
+      ListCommitsRequest.Response listCommitsResponse =
+          commitDAO.listCommits(
+              listCommitsRequest.build(),
+              (session ->
+                  repositoryDAO.getRepositoryById(
+                      session, repositoryIdentification, false, false)));
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
-      if (datasetVersionDTO != null
-          && datasetVersionDTO.getDatasetVersions() != null
-          && !datasetVersionDTO.getDatasetVersions().isEmpty()) {
-        for (DatasetVersion datasetVersion : datasetVersionDTO.getDatasetVersions()) {
-          datasetVersionIds.add(datasetVersion.getId());
+      List<Commit> commitList = listCommitsResponse.getCommitsList();
+      if (!commitList.isEmpty()) {
+        for (Commit commit : commitList) {
+          datasetVersionIds.add(commit.getCommitSha());
           listValueBuilder.addValues(
-              Value.newBuilder().setStringValue(datasetVersion.getId()).build());
+              Value.newBuilder().setStringValue(commit.getCommitSha()).build());
         }
       }
 
@@ -961,19 +1045,31 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(SetDatasetWorkspace.Response.getDefaultInstance()));
       }
+
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
 
+      GetDatasetById.Response getDatasetResponse =
+          repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      Dataset updatedDataset = getDatasetResponse.getDataset();
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      WorkspaceDTO workspaceDTO = null;
+      WorkspaceDTO workspaceDTO;
       if (userInfo != null) {
         workspaceDTO =
             roleService.getWorkspaceDTOByWorkspaceName(userInfo, request.getWorkspaceName());
+        updatedDataset =
+            updatedDataset
+                .toBuilder()
+                .setWorkspaceId(workspaceDTO.getWorkspaceId())
+                .setWorkspaceType(workspaceDTO.getWorkspaceType())
+                .build();
+        repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
+        getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
+        updatedDataset = getDatasetResponse.getDataset();
       }
-      Dataset dataset = datasetDAO.setDatasetWorkspace(request.getId(), workspaceDTO);
       responseObserver.onNext(
-          SetDatasetWorkspace.Response.newBuilder().setDataset(dataset).build());
+          SetDatasetWorkspace.Response.newBuilder().setDataset(updatedDataset).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(

@@ -1,4 +1,5 @@
 import os
+import shutil
 import tempfile
 
 import yaml
@@ -40,7 +41,7 @@ def expected_config(in_tempdir):
         os.mkdir(_config_utils.HOME_VERTA_DIR)
     else:
         if os.path.exists(home_config_filepath):
-            os.rename(home_config_filepath, os.path.join(backup_dir, config_filename))
+            shutil.move(home_config_filepath, os.path.join(backup_dir, config_filename))
     try:
         # create home config
         with open(home_config_filepath, 'w') as f:
@@ -95,7 +96,7 @@ def expected_config(in_tempdir):
 
         # restore home config
         if os.path.exists(os.path.join(backup_dir, config_filename)):
-            os.rename(os.path.join(backup_dir, config_filename), home_config_filepath)
+            shutil.move(os.path.join(backup_dir, config_filename), home_config_filepath)
 
 
 class TestRead:
@@ -189,7 +190,7 @@ class TestWrite:
         # backup home config
         backup_dir = tempfile.mkdtemp(dir=".")
         if os.path.exists(os.path.join(home_verta_dir, config_filename)):
-            os.rename(
+            shutil.move(
                 os.path.join(home_verta_dir, config_filename),
                 os.path.join(backup_dir, config_filename),
             )
@@ -218,7 +219,7 @@ class TestWrite:
 
             # restore home config
             if os.path.exists(os.path.join(backup_dir, config_filename)):
-                os.rename(
+                shutil.move(
                     os.path.join(backup_dir, config_filename),
                     os.path.join(home_verta_dir, config_filename),
                 )

@@ -3,6 +3,7 @@
 import abc
 
 from ..external import six
+from .update_rules import _UpdateRule
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -59,18 +60,21 @@ class CanaryUpdateStrategy(_UpdateStrategy):
         self._rules = []
 
     def _as_build_update_req_body(self, build_id):
-        raise NotImplementedError
+        if not self._rules:
+            raise RuntimeError("canary update strategy must have at least one rule")
+
         return {
             'build_id': build_id,
             'strategy': self._STRATEGY,
             'canary_strategy': {
                 'progress_interval_seconds': self._progress_interval_seconds,
                 'progress_step': self._progress_step,
-                'rules': [
-                    # TODO
-                ],
+                'rules': list(map(lambda rule: rule._as_json(), self._rules)),
             },
         }
 
     def add_rule(self, rule):
-        raise NotImplementedError
+        if not isinstance(rule, _UpdateRule):
+            raise TypeError("strategy must be an object from verta.deployment.update_rules")
+
+        self._rules.append(rule)
