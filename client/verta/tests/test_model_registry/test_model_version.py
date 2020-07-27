@@ -65,9 +65,6 @@ class TestModelVersion:
         assert "model" in repr
         assert "coef" in repr
 
-        print(model_version)
-
-
     def test_get_by_client(self, client):
         registered_model = client.set_registered_model()
         model_version = registered_model.get_or_create_version(name="my version")
