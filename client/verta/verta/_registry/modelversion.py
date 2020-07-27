@@ -208,6 +208,9 @@ class RegisteredModelVersion(_ModelDBEntity):
         return artifact_stream
 
     def del_artifact(self, key):
+        if key == "model":
+            raise ValueError("the key \"model\" is reserved for model; consider using del_model() instead")
+
         self._fetch_with_no_cache()
 
         ind = -1
