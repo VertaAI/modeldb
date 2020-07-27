@@ -138,6 +138,11 @@ class TestModelVersion:
 
         assert "the key \"model\" is reserved for model; consider using log_model() instead" in str(excinfo.value)
 
+        with pytest.raises(ValueError) as excinfo:
+            model_version.del_artifact("model")
+
+        assert "model can't be deleted through del_artifact(); consider using del_model() instead" in str(excinfo.value)
+
     def test_del_artifact(self, registered_model):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
