@@ -90,6 +90,37 @@ message DeletePropertyRequest {
     }
 }
 
+message AddKeyValuePropertiesRequest {
+    IdentificationType id = 1;
+    string property_name = 2;
+    repeated common.KeyValue key_value = 3; // Only string value expected
+
+    message Response {
+    }
+}
+
+message GetKeyValuePropertiesRequest {
+    // If only id_type is provided, gather from all of such sources
+    IdentificationType id = 1;
+    string property_name = 2;
+    repeated string key = 3;
+    bool getAll = 4;
+
+    message Response {
+        repeated common.KeyValue key_value = 1;
+    }
+}
+
+message DeleteKeyValuePropertiesRequest {
+    IdentificationType id = 1;
+    string property_name = 2;
+    repeated string key = 3;
+    bool deleteAll = 4;
+
+    message Response {
+    }
+}
+
 service MetadataService {
     rpc GetLabels(GetLabelsRequest) returns (GetLabelsRequest.Response) {
         option (google.api.http) = {
@@ -140,6 +171,26 @@ service MetadataService {
     rpc DeleteProperty(DeletePropertyRequest) returns (DeletePropertyRequest.Response) {
         option (google.api.http) = {
             delete: "/v1/metadata/property"
+            body: "*"
+        };
+    };
+
+    rpc AddKeyValueProperties(AddKeyValuePropertiesRequest) returns (AddKeyValuePropertiesRequest.Response) {
+        option (google.api.http) = {
+            put: "/v1/metadata/keyValueProperties"
+            body: "*"
+        };
+    };
+
+    rpc GetKeyValueProperties(GetKeyValuePropertiesRequest) returns (GetKeyValuePropertiesRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/keyValueProperties"
+        };
+    };
+
+    rpc DeleteKeyValueProperties(DeleteKeyValuePropertiesRequest) returns (DeleteKeyValuePropertiesRequest.Response) {
+        option (google.api.http) = {
+            delete: "/v1/metadata/keyValueProperties"
             body: "*"
         };
     };
