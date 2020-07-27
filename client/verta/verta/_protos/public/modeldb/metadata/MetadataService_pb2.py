@@ -12,6 +12,7 @@ _sym_db = _symbol_database.Default()
 
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
+from ...common import CommonService_pb2 as common_dot_CommonService__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -19,9 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb.metadata',
   syntax='proto3',
   serialized_options=b'P\001ZGgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadata',
-  serialized_pb=b'\n&modeldb/metadata/MetadataService.proto\x12\x19\x61i.verta.modeldb.metadata\x1a\x1cgoogle/api/annotations.proto\"\x93\x01\n\nIDTypeEnum\"\x84\x01\n\x06IDType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x19\n\x15VERSIONING_REPOSITORY\x10\x01\x12\x15\n\x11VERSIONING_COMMIT\x10\x02\x12\x1f\n\x1bVERSIONING_REPO_COMMIT_BLOB\x10\x03\x12\x1a\n\x16VERSIONING_REPO_COMMIT\x10\x04\"\x80\x01\n\x12IdentificationType\x12=\n\x07id_type\x18\x01 \x01(\x0e\x32,.ai.verta.modeldb.metadata.IDTypeEnum.IDType\x12\x10\n\x06int_id\x18\x02 \x01(\x04H\x00\x12\x13\n\tstring_id\x18\x03 \x01(\tH\x00\x42\x04\n\x02id\"i\n\x10GetLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x1a\x1a\n\x08Response\x12\x0e\n\x06labels\x18\x01 \x03(\t\"l\n\x12GetLabelIdsRequest\x12\x0e\n\x06labels\x18\x01 \x03(\t\x1a\x46\n\x08Response\x12:\n\x03ids\x18\x01 \x03(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\"y\n\x10\x41\x64\x64LabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x90\x01\n\x13\x44\x65leteLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"w\n\x12GetPropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x19\n\x08Response\x12\r\n\x05value\x18\x03 \x01(\t\"w\n\x12\x41\x64\x64PropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\t\x1a\n\n\x08Response\"k\n\x15\x44\x65letePropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response2\xc8\t\n\x0fMetadataService\x12\x8b\x01\n\tGetLabels\x12+.ai.verta.modeldb.metadata.GetLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.GetLabelsRequest.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/metadata/labels\x12\x96\x01\n\x0bGetLabelIds\x12-.ai.verta.modeldb.metadata.GetLabelIdsRequest\x1a\x36.ai.verta.modeldb.metadata.GetLabelIdsRequest.Response\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/v1/metadata/getLabelIds\x12\x8e\x01\n\tAddLabels\x12+.ai.verta.modeldb.metadata.AddLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.AddLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x1a\x13/v1/metadata/labels:\x01*\x12\x91\x01\n\x0cUpdateLabels\x12+.ai.verta.modeldb.metadata.AddLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.AddLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/metadata/labels:\x01*\x12\x97\x01\n\x0c\x44\x65leteLabels\x12..ai.verta.modeldb.metadata.DeleteLabelsRequest\x1a\x37.ai.verta.modeldb.metadata.DeleteLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18*\x13/v1/metadata/labels:\x01*\x12\x93\x01\n\x0bGetProperty\x12-.ai.verta.modeldb.metadata.GetPropertyRequest\x1a\x36.ai.verta.modeldb.metadata.GetPropertyRequest.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/metadata/property\x12\x96\x01\n\x0b\x41\x64\x64Property\x12-.ai.verta.modeldb.metadata.AddPropertyRequest\x1a\x36.ai.verta.modeldb.metadata.AddPropertyRequest.Response\" \x82\xd3\xe4\x93\x02\x1a\x1a\x15/v1/metadata/property:\x01*\x12\x9f\x01\n\x0e\x44\x65leteProperty\x12\x30.ai.verta.modeldb.metadata.DeletePropertyRequest\x1a\x39.ai.verta.modeldb.metadata.DeletePropertyRequest.Response\" \x82\xd3\xe4\x93\x02\x1a*\x15/v1/metadata/property:\x01*BKP\x01ZGgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadatab\x06proto3'
+  serialized_pb=b'\n&modeldb/metadata/MetadataService.proto\x12\x19\x61i.verta.modeldb.metadata\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"\x93\x01\n\nIDTypeEnum\"\x84\x01\n\x06IDType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x19\n\x15VERSIONING_REPOSITORY\x10\x01\x12\x15\n\x11VERSIONING_COMMIT\x10\x02\x12\x1f\n\x1bVERSIONING_REPO_COMMIT_BLOB\x10\x03\x12\x1a\n\x16VERSIONING_REPO_COMMIT\x10\x04\"\x80\x01\n\x12IdentificationType\x12=\n\x07id_type\x18\x01 \x01(\x0e\x32,.ai.verta.modeldb.metadata.IDTypeEnum.IDType\x12\x10\n\x06int_id\x18\x02 \x01(\x04H\x00\x12\x13\n\tstring_id\x18\x03 \x01(\tH\x00\x42\x04\n\x02id\"i\n\x10GetLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x1a\x1a\n\x08Response\x12\x0e\n\x06labels\x18\x01 \x03(\t\"\xa6\x01\n\x12GetLabelIdsRequest\x12\x0e\n\x06labels\x18\x01 \x03(\t\x12\x38\n\x08operator\x18\x02 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\x1a\x46\n\x08Response\x12:\n\x03ids\x18\x01 \x03(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\"y\n\x10\x41\x64\x64LabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x90\x01\n\x13\x44\x65leteLabelsRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0e\n\x06labels\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"w\n\x12GetPropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x19\n\x08Response\x12\r\n\x05value\x18\x03 \x01(\t\"w\n\x12\x41\x64\x64PropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\t\x1a\n\n\x08Response\"k\n\x15\x44\x65letePropertyRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.modeldb.metadata.IdentificationType\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response2\xc8\t\n\x0fMetadataService\x12\x8b\x01\n\tGetLabels\x12+.ai.verta.modeldb.metadata.GetLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.GetLabelsRequest.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/metadata/labels\x12\x96\x01\n\x0bGetLabelIds\x12-.ai.verta.modeldb.metadata.GetLabelIdsRequest\x1a\x36.ai.verta.modeldb.metadata.GetLabelIdsRequest.Response\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/v1/metadata/getLabelIds\x12\x8e\x01\n\tAddLabels\x12+.ai.verta.modeldb.metadata.AddLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.AddLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x1a\x13/v1/metadata/labels:\x01*\x12\x91\x01\n\x0cUpdateLabels\x12+.ai.verta.modeldb.metadata.AddLabelsRequest\x1a\x34.ai.verta.modeldb.metadata.AddLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/metadata/labels:\x01*\x12\x97\x01\n\x0c\x44\x65leteLabels\x12..ai.verta.modeldb.metadata.DeleteLabelsRequest\x1a\x37.ai.verta.modeldb.metadata.DeleteLabelsRequest.Response\"\x1e\x82\xd3\xe4\x93\x02\x18*\x13/v1/metadata/labels:\x01*\x12\x93\x01\n\x0bGetProperty\x12-.ai.verta.modeldb.metadata.GetPropertyRequest\x1a\x36.ai.verta.modeldb.metadata.GetPropertyRequest.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/metadata/property\x12\x96\x01\n\x0b\x41\x64\x64Property\x12-.ai.verta.modeldb.metadata.AddPropertyRequest\x1a\x36.ai.verta.modeldb.metadata.AddPropertyRequest.Response\" \x82\xd3\xe4\x93\x02\x1a\x1a\x15/v1/metadata/property:\x01*\x12\x9f\x01\n\x0e\x44\x65leteProperty\x12\x30.ai.verta.modeldb.metadata.DeletePropertyRequest\x1a\x39.ai.verta.modeldb.metadata.DeletePropertyRequest.Response\" \x82\xd3\xe4\x93\x02\x1a*\x15/v1/metadata/property:\x01*BKP\x01ZGgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadatab\x06proto3'
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
 
 
@@ -54,8 +55,8 @@ _IDTYPEENUM_IDTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=115,
-  serialized_end=247,
+  serialized_start=143,
+  serialized_end=275,
 )
 _sym_db.RegisterEnumDescriptor(_IDTYPEENUM_IDTYPE)
 
@@ -80,8 +81,8 @@ _IDTYPEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=100,
-  serialized_end=247,
+  serialized_start=128,
+  serialized_end=275,
 )
 
 
@@ -128,8 +129,8 @@ _IDENTIFICATIONTYPE = _descriptor.Descriptor(
       name='id', full_name='ai.verta.modeldb.metadata.IdentificationType.id',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=250,
-  serialized_end=378,
+  serialized_start=278,
+  serialized_end=406,
 )
 
 
@@ -159,8 +160,8 @@ _GETLABELSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=459,
-  serialized_end=485,
+  serialized_start=487,
+  serialized_end=513,
 )
 
 _GETLABELSREQUEST = _descriptor.Descriptor(
@@ -189,8 +190,8 @@ _GETLABELSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=380,
-  serialized_end=485,
+  serialized_start=408,
+  serialized_end=513,
 )
 
 
@@ -220,8 +221,8 @@ _GETLABELIDSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=525,
-  serialized_end=595,
+  serialized_start=612,
+  serialized_end=682,
 )
 
 _GETLABELIDSREQUEST = _descriptor.Descriptor(
@@ -238,6 +239,13 @@ _GETLABELIDSREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='operator', full_name='ai.verta.modeldb.metadata.GetLabelIdsRequest.operator', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -250,8 +258,8 @@ _GETLABELIDSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=487,
-  serialized_end=595,
+  serialized_start=516,
+  serialized_end=682,
 )
 
 
@@ -281,8 +289,8 @@ _ADDLABELSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=692,
-  serialized_end=718,
+  serialized_start=779,
+  serialized_end=805,
 )
 
 _ADDLABELSREQUEST = _descriptor.Descriptor(
@@ -318,8 +326,8 @@ _ADDLABELSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=597,
-  serialized_end=718,
+  serialized_start=684,
+  serialized_end=805,
 )
 
 
@@ -349,8 +357,8 @@ _DELETELABELSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=692,
-  serialized_end=718,
+  serialized_start=779,
+  serialized_end=805,
 )
 
 _DELETELABELSREQUEST = _descriptor.Descriptor(
@@ -393,8 +401,8 @@ _DELETELABELSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=721,
-  serialized_end=865,
+  serialized_start=808,
+  serialized_end=952,
 )
 
 
@@ -424,8 +432,8 @@ _GETPROPERTYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=961,
-  serialized_end=986,
+  serialized_start=1048,
+  serialized_end=1073,
 )
 
 _GETPROPERTYREQUEST = _descriptor.Descriptor(
@@ -461,8 +469,8 @@ _GETPROPERTYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=867,
-  serialized_end=986,
+  serialized_start=954,
+  serialized_end=1073,
 )
 
 
@@ -485,8 +493,8 @@ _ADDPROPERTYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=459,
-  serialized_end=469,
+  serialized_start=487,
+  serialized_end=497,
 )
 
 _ADDPROPERTYREQUEST = _descriptor.Descriptor(
@@ -529,8 +537,8 @@ _ADDPROPERTYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=988,
-  serialized_end=1107,
+  serialized_start=1075,
+  serialized_end=1194,
 )
 
 
@@ -553,8 +561,8 @@ _DELETEPROPERTYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=459,
-  serialized_end=469,
+  serialized_start=487,
+  serialized_end=497,
 )
 
 _DELETEPROPERTYREQUEST = _descriptor.Descriptor(
@@ -590,8 +598,8 @@ _DELETEPROPERTYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1109,
-  serialized_end=1216,
+  serialized_start=1196,
+  serialized_end=1303,
 )
 
 _IDTYPEENUM_IDTYPE.containing_type = _IDTYPEENUM
@@ -606,6 +614,7 @@ _GETLABELSREQUEST_RESPONSE.containing_type = _GETLABELSREQUEST
 _GETLABELSREQUEST.fields_by_name['id'].message_type = _IDENTIFICATIONTYPE
 _GETLABELIDSREQUEST_RESPONSE.fields_by_name['ids'].message_type = _IDENTIFICATIONTYPE
 _GETLABELIDSREQUEST_RESPONSE.containing_type = _GETLABELIDSREQUEST
+_GETLABELIDSREQUEST.fields_by_name['operator'].enum_type = common_dot_CommonService__pb2._OPERATORENUM_OPERATOR
 _ADDLABELSREQUEST_RESPONSE.containing_type = _ADDLABELSREQUEST
 _ADDLABELSREQUEST.fields_by_name['id'].message_type = _IDENTIFICATIONTYPE
 _DELETELABELSREQUEST_RESPONSE.containing_type = _DELETELABELSREQUEST
@@ -755,8 +764,8 @@ _METADATASERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1219,
-  serialized_end=2443,
+  serialized_start=1306,
+  serialized_end=2530,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetLabels',

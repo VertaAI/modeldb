@@ -43,14 +43,15 @@ class MetadataServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def MetadataService_DeleteProperty(body: MetadataDeletePropertyRequest)(implicit ec: ExecutionContext): Try[MetadataDeletePropertyRequestResponse] = Await.result(MetadataService_DeletePropertyAsync(body), Duration.Inf)
 
-  def MetadataService_GetLabelIdsAsync(labels: Option[List[String]]=None)(implicit ec: ExecutionContext): Future[Try[MetadataGetLabelIdsRequestResponse]] = {
+  def MetadataService_GetLabelIdsAsync(labels: Option[List[String]]=None, operator: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[MetadataGetLabelIdsRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (labels.isDefined) __query.update("labels", client.toQuery(labels.get))
+    if (operator.isDefined) __query.update("operator", client.toQuery(operator.get))
     val body: String = null
     return client.request[String, MetadataGetLabelIdsRequestResponse]("GET", basePath + s"/metadata/getLabelIds", __query.toMap, body, MetadataGetLabelIdsRequestResponse.fromJson)
   }
 
-  def MetadataService_GetLabelIds(labels: Option[List[String]]=None)(implicit ec: ExecutionContext): Try[MetadataGetLabelIdsRequestResponse] = Await.result(MetadataService_GetLabelIdsAsync(labels), Duration.Inf)
+  def MetadataService_GetLabelIds(labels: Option[List[String]]=None, operator: Option[String]=None)(implicit ec: ExecutionContext): Try[MetadataGetLabelIdsRequestResponse] = Await.result(MetadataService_GetLabelIdsAsync(labels, operator), Duration.Inf)
 
   def MetadataService_GetLabelsAsync(id_id_type: Option[String]=None, id_int_id: Option[BigInt]=None, id_string_id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[MetadataGetLabelsRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
