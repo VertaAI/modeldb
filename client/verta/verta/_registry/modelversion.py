@@ -130,6 +130,21 @@ class RegisteredModelVersion(_ModelDBEntity):
         return model_version
 
     def log_model(self, model, overwrite=False):
+        """
+        Logs a model to this Model Version.
+
+        Parameters
+        ----------
+        model : str or file-like or object
+            Model or some representation thereof.
+                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
+                  and uploaded as an artifact. If it is a directory path, its contents will be zipped.
+                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
+                - Otherwise, the object will be serialized and uploaded as an artifact.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
+
+        """
         self._fetch_with_no_cache()
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
@@ -155,15 +170,49 @@ class RegisteredModelVersion(_ModelDBEntity):
         )
 
     def get_model(self):
+        """
+        Gets the model of this Model Version.
+
+        If the model was originally logged as just a filesystem path, that path will be returned.
+        Otherwise, bytes representing the model object will be returned.
+
+        Returns
+        -------
+        str or object or bytes
+            Path of the model, the model object, or a bytestream representing the
+            model.
+
+        """
         model_artifact = self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL)
         return _artifact_utils.deserialize_model(model_artifact)
 
     def del_model(self):
+        """
+        Deletes model of this Model Version.
+
+        """
         self._fetch_with_no_cache()
         self._msg.ClearField("model")
         self._update()
 
     def log_artifact(self, key, asset, overwrite=False):
+        """
+        Logs an artifact to this Model Version.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+        artifact : str or file-like or object
+            Artifact or some representation thereof.
+                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
+                  and uploaded as an artifact. If it is a directory path, its contents will be zipped.
+                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
+                - Otherwise, the object will be serialized and uploaded as an artifact.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
+
+        """
         if key == "model":
             raise ValueError("the key \"model\" is reserved for model; consider using log_model() instead")
 
@@ -201,6 +250,24 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def get_artifact(self, key):
+        """
+        Gets the artifact with name `key` from this Model Version.
+
+        If the artifact was originally logged as just a filesystem path, that path will be returned.
+        Otherwise, bytes representing the artifact object will be returned.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+
+        Returns
+        -------
+        str or object or bytes
+            Path of the artifact, the artifact object, or a bytestream representing the
+            artifact.
+
+        """
         artifact = self._get_artifact(key, _CommonCommonService.ArtifactTypeEnum.BLOB)
         artifact_stream = six.BytesIO(artifact)
 
@@ -225,6 +292,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         return artifact_stream
 
     def del_artifact(self, key):
+        """
+        Deletes the artifact with name `key` from this Model Version.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+
+        """
         if key == "model":
             raise ValueError("model can't be deleted through del_artifact(); consider using del_model() instead")
 
@@ -244,6 +320,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._update()
 
     def log_environment(self, env):
+        """
+        Logs an environment to this Model Version.
+
+        Parameters
+        ----------
+        environment : `verta.environment._Environment.`
+            Environment to log.
+
+        """
         if not isinstance(env, _Environment):
             raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
 
@@ -252,11 +337,24 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._update()
 
     def del_environment(self):
+        """
+        Deletes the environment of this Model Version.
+
+        """
         self._fetch_with_no_cache()
         self._msg.ClearField("environment")
         self._update()
 
     def get_environment(self):
+        """
+        Gets the environment of this Model Version.
+
+        Returns
+        -------
+        :class:`verta.environment._Environment`
+            Environment of this ModelVersion.
+
+        """
         self._refresh_cache()
         if not self.has_environment:
             raise RuntimeError("environment was not previously set.")
@@ -407,6 +505,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         return response.content
 
     def add_labels(self, labels):
+        """
+        Adds multiple labels to this Model Version.
+
+        Parameters
+        ----------
+        labels : list of str
+            Labels to add.
+
+        """
         if not labels:
             raise ValueError("label is not specified")
 
@@ -417,6 +524,15 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._update()
 
     def add_label(self, label):
+        """
+        Adds a label to this Model Version.
+
+        Parameters
+        ----------
+        str
+            Label to add.
+
+        """
         if label is None:
             raise ValueError("label is not specified")
         self._fetch_with_no_cache()
@@ -425,6 +541,15 @@ class RegisteredModelVersion(_ModelDBEntity):
             self._update()
 
     def del_label(self, label):
+        """
+        Deletes a label from this Model Version.
+
+        Parameters
+        ----------
+        str
+            Label to delete.
+
+        """
         if label is None:
             raise ValueError("label is not specified")
         self._fetch_with_no_cache()
@@ -433,6 +558,15 @@ class RegisteredModelVersion(_ModelDBEntity):
             self._update()
 
     def get_labels(self):
+        """
+        Gets all labels of this Model Version.
+
+        Returns
+        -------
+        list of str
+            List of all labels of this Model Version.
+
+        """
         self._refresh_cache()
         return self._msg.labels
 
@@ -455,6 +589,10 @@ class RegisteredModelVersion(_ModelDBEntity):
         raise NotImplementedError
 
     def archive(self):
+        """
+        Archive this Model Version.
+
+        """
         if self.is_archived:
             raise RuntimeError("the version has already been archived")
 
