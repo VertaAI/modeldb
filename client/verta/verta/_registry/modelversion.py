@@ -214,8 +214,9 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         Returns
         -------
-        str or bytes
-            Filesystem path or bytes representing the artifact.
+        str or object or bytes
+            Path of the artifact, the artifact object, or a bytestream representing the
+            artifact.
 
         """
         artifact = self._get_artifact(key, _CommonCommonService.ArtifactTypeEnum.BLOB)
@@ -436,7 +437,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         Parameters
         ----------
         labels : list of str
-            labels to add.
+            Labels to add.
 
         """
         if not labels:
@@ -455,7 +456,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         Parameters
         ----------
         label : str
-            label to add.
+            Label to add.
 
         """
         if label is None:
@@ -472,7 +473,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         Parameters
         ----------
         label : str
-            label to delete.
+            Label to delete.
 
         """
         if label is None:
@@ -489,7 +490,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         Returns
         -------
         labels : list of str
-            list of all labels of this Model Version.
+            List of all labels of this Model Version.
 
         """
         self._refresh_cache()

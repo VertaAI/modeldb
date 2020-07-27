@@ -128,7 +128,7 @@ class RegisteredModel(_ModelDBEntity):
         Parameters
         ----------
         labels : list of str
-            labels to add.
+            Labels to add.
 
         """
         if not labels:
@@ -147,7 +147,7 @@ class RegisteredModel(_ModelDBEntity):
         Parameters
         ----------
         label : str
-            label to add.
+            Label to add.
 
         """
         if label is None:
@@ -165,7 +165,7 @@ class RegisteredModel(_ModelDBEntity):
         Parameters
         ----------
         label : str
-            label to delete.
+            Label to delete.
 
         """
         if label is None:
@@ -183,7 +183,7 @@ class RegisteredModel(_ModelDBEntity):
         Returns
         -------
         labels : list of str
-            list of all labels of this Registered Model.
+            List of all labels of this Registered Model.
 
         """
         self._clear_cache()
