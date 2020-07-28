@@ -6,6 +6,7 @@ import importlib
 import os
 import time
 import zipfile
+import requests
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -423,3 +424,28 @@ class _ModelDBEntity(object):
             return zipfile.ZipFile(code_archive, 'r')  # TODO: return a util class instead, maybe
         else:
             raise RuntimeError("unable find code in response")
+
+    def _get_workspace_name_by_id(self, workspace_id):
+        # try getting organization
+        response = _utils.make_request(
+            "GET",
+            "{}://{}/api/v1/uac-proxy/organization/getOrganizationById".format(self._conn.scheme, self._conn.socket),
+            self._conn, params={'org_id': workspace_id},
+        )
+        try:
+            _utils.raise_for_http_error(response)
+        except requests.HTTPError:
+            # try getting user
+            response = _utils.make_request(
+                "GET",
+                "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
+                self._conn, params={'user_id': workspace_id},
+            )
+            _utils.raise_for_http_error(response)
+
+            # workspace is user
+            return _utils.body_to_json(response)['verta_info']['username']
+        else:
+            # workspace is organization
+            return _utils.body_to_json(response)['organization']['name']
+
