@@ -272,7 +272,7 @@ public class MetadataTest {
 
   @Test
   public void addDeleteKeyValuePropertiesTest() {
-    LOGGER.info("Add & Delete labels test start................................");
+    LOGGER.info("Add & Delete keyValue properties test start................................");
 
     MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
 
@@ -284,10 +284,10 @@ public class MetadataTest {
     AddKeyValuePropertiesRequest addKeyValuePropertiessRequest1 =
         AddKeyValuePropertiesRequest.newBuilder()
             .setId(id1)
-            .addKeyValue(
-                KeyValue.newBuilder()
+            .addKeyValueProperty(
+                KeyValueStringProperty.newBuilder()
                     .setKey(attrKey)
-                    .setValue(Value.newBuilder().setStringValue(value).build())
+                    .setValue(value)
                     .build())
             .setPropertyName(propertyName)
             .build();
@@ -297,7 +297,7 @@ public class MetadataTest {
     GetKeyValuePropertiesRequest getKeyValuePropertiessRequest =
         GetKeyValuePropertiesRequest.newBuilder()
             .setId(id1)
-            .addKey(attrKey)
+            .addKeys(attrKey)
             .setPropertyName(propertyName)
             .build();
     GetKeyValuePropertiesRequest.Response getKeyValuePropertiessResponse =
@@ -305,16 +305,16 @@ public class MetadataTest {
     assertEquals(
         "Response value count not match with expected value count",
         1,
-        getKeyValuePropertiessResponse.getKeyValueCount());
+        getKeyValuePropertiessResponse.getKeyValuePropertyCount());
     assertEquals(
         "Response value not match with expected value ",
         value,
-        getKeyValuePropertiessResponse.getKeyValue(0).getValue().getStringValue());
+        getKeyValuePropertiessResponse.getKeyValueProperty(0).getValue());
 
     DeleteKeyValuePropertiesRequest deleteKeyValuePropertiessRequest =
         DeleteKeyValuePropertiesRequest.newBuilder()
             .setId(id1)
-            .addKey(attrKey)
+            .addKeys(attrKey)
             .setPropertyName(propertyName)
             .build();
     serviceBlockingStub.deleteKeyValueProperties(deleteKeyValuePropertiessRequest);
@@ -325,8 +325,8 @@ public class MetadataTest {
     assertEquals(
         "response keyValue count not match with expected keyValue count",
         0,
-        response.getKeyValueCount());
+        response.getKeyValuePropertyCount());
 
-    LOGGER.info("Add & Delete labels test stop................................");
+    LOGGER.info("Add & Delete keyValue properties test stop................................");
   }
 }
