@@ -90,31 +90,37 @@ message DeletePropertyRequest {
     }
 }
 
+message KeyValueStringProperty {
+    string key = 1;
+    string value = 2;
+}
+
 message AddKeyValuePropertiesRequest {
     IdentificationType id = 1;
     string property_name = 2;
-    repeated common.KeyValue key_value = 3; // Only string value expected
+    repeated KeyValueStringProperty key_value_property = 3;
 
     message Response {
     }
 }
 
+// Ignore keys and get all key value properties corresponding to id and property_name if getAll flag is true
 message GetKeyValuePropertiesRequest {
-    // If only id_type is provided, gather from all of such sources
     IdentificationType id = 1;
     string property_name = 2;
-    repeated string key = 3;
+    repeated string keys = 3;
     bool getAll = 4;
 
     message Response {
-        repeated common.KeyValue key_value = 1;
+        repeated KeyValueStringProperty key_value_property = 1;
     }
 }
 
+// Ignore keys and delete all key value properties corresponding to id and property_name if deleteAll flag is true
 message DeleteKeyValuePropertiesRequest {
     IdentificationType id = 1;
     string property_name = 2;
-    repeated string key = 3;
+    repeated string keys = 3;
     bool deleteAll = 4;
 
     message Response {
