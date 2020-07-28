@@ -364,3 +364,13 @@ def created_registered_models(client):
 @pytest.fixture
 def model_version(registered_model):
     yield registered_model.get_or_create_version()
+
+
+@pytest.fixture
+def created_endpoints(client):
+    to_delete = []
+
+    yield to_delete
+
+    for endpoint in to_delete:
+        utils.delete_endpoint(endpoint.id, endpoint.workspace, client._conn)
