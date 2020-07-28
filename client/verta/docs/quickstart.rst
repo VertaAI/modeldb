@@ -50,7 +50,7 @@ The Verta client supports Python 2.7 & 3.5–3.7!
         from verta import Client
         client = Client(HOST, VERTA_EMAIL, VERTA_DEV_KEY)
 
-    *If using open-source ModelDB, leave `VERTA_EMAIL` and `VERTA_DEV_KEY` blank.*
+    *If using open-source ModelDB, leave `VERTA_EMAIL` and `VERTA_DEV_KEY` blank and set `HOST` to `localhost:3000`*
 
   b. Version your models
 

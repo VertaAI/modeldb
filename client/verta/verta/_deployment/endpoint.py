@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+import sys
+import time
 
 from ..deployment import DeployedModel
 from ..deployment.strategies import _UpdateStrategy
@@ -21,7 +23,13 @@ class Endpoint(object):
 
     @property
     def path(self):
-        return Endpoint._get_json_by_id(self._conn, self.workspace, self.id)['creator_request']['path']
+        return self.path(Endpoint._get_json_by_id(self._conn, self.workspace, self.id))
+
+    def _path(self, data):
+        return data['creator_request']['path']
+
+    def _date_updated(self, data):
+        return data['date_updated']
 
     @classmethod
     def _create(cls, conn, conf, workspace, path, description=None):
@@ -51,6 +59,10 @@ class Endpoint(object):
             return cls(conn, conf, workspace, endpoint_json['id'])
         else:
             return None
+
+    def _get_info_list_by_id(self):
+        data = Endpoint._get_json_by_id(self._conn, self.workspace, self.id)
+        return [self._path(data), str(self.id), self._date_updated(data)]
 
     @classmethod
     def _get_json_by_id(cls, conn, workspace, id):
@@ -95,7 +107,7 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    def update(self, run, strategy):
+    def update(self, run, strategy, wait=False):
         if not isinstance(run, experimentrun.ExperimentRun):
             raise TypeError("run must be an ExperimentRun")
 
@@ -124,6 +136,19 @@ class Endpoint(object):
         )
         response = _utils.make_request("PUT", url, self._conn, json=strategy._as_build_update_req_body(build_id))
         _utils.raise_for_http_error(response)
+
+        if wait:
+            print("waiting for update...", end='')
+            sys.stdout.flush()
+            while self.get_status()['status'] not in ("active", "error"):
+                print(".", end='')
+                sys.stdout.flush()
+                time.sleep(5)
+            print()
+            if self.get_status()['status'] == "error":
+                raise RuntimeError("endpoint update failed")
+
+        return self.get_status()
 
     def _get_or_create_stage(self, name="production"):
         if name == "production":

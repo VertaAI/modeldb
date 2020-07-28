@@ -14,7 +14,7 @@ def get():
 @click.argument("path", nargs=1, required=True)
 @click.option("--workspace", "-w", help="Workspace to use.")
 def get_endpoint(path, workspace):
-    """Create detailed information about a deployment endpoint.
+    """Get detailed information about a deployment endpoint.
     """
     client = Client()
 
@@ -25,4 +25,3 @@ def get_endpoint(path, workspace):
 
     click.echo()
     click.echo(endpoint)
-    # TODO: call endpoint.get_status()

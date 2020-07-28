@@ -24,7 +24,7 @@ of Amazon Reviews".
 Experiment
 ^^^^^^^^^^
 An **Experiment** is the configurable strategy being used to accomplish the Project, such as
-"Logistic Regrssion" or "Convolutional Neural Network with tf-idf".
+"Logistic Regression" or "Convolutional Neural Network with tf-idf".
 
 Experiment Run
 ^^^^^^^^^^^^^^
