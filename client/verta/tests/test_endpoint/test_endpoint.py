@@ -5,7 +5,6 @@ from verta.deployment.strategies import DirectUpdateStrategy, CanaryUpdateStrate
 from verta.deployment.update_rules import AverageLatencyThreshold
 from verta._internal_utils import _utils
 
-
 def get_build_ids(status):
     # get the set of build_ids in the status of the stage:
     return set(map(lambda comp: comp["build_id"], status["components"]))
