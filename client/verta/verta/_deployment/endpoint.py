@@ -106,7 +106,7 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    def update(self, run, strategy, wait=False):
+    def update(self, run, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         if not isinstance(run, experimentrun.ExperimentRun):
             raise TypeError("run must be an ExperimentRun")
 
