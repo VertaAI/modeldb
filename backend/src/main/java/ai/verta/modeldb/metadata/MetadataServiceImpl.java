@@ -1,6 +1,5 @@
 package ai.verta.modeldb.metadata;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
@@ -177,8 +176,8 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         errorMessage = "Invalid parameter set in AddKeyValuePropertiesRequest.Id";
-      } else if (request.getKeyValueList().isEmpty()) {
-        errorMessage = "KeyValue not found in AddKeyValuePropertiesRequest request";
+      } else if (request.getKeyValuePropertyList().isEmpty()) {
+        errorMessage = "KeyValueProperties not found in AddKeyValuePropertiesRequest request";
       } else if (request.getPropertyName().isEmpty()) {
         errorMessage = "PropertyName not found in AddKeyValuePropertiesRequest request";
       }
@@ -214,7 +213,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         errorMessage = "Invalid parameter set in GetKeyValuePropertiesRequest.Id";
-      } else if (request.getKeyList().isEmpty() && !request.getGetAll()) {
+      } else if (request.getKeysList().isEmpty() && !request.getGetAll()) {
         errorMessage =
             "Keys not found OR getAll flag is false in GetKeyValuePropertiesRequest request";
       } else if (request.getPropertyName().isEmpty()) {
@@ -232,9 +231,11 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      List<KeyValue> keyValues = metadataDAO.getKeyValueProperties(request);
+      List<KeyValueStringProperty> keyValues = metadataDAO.getKeyValueProperties(request);
       responseObserver.onNext(
-          GetKeyValuePropertiesRequest.Response.newBuilder().addAllKeyValue(keyValues).build());
+          GetKeyValuePropertiesRequest.Response.newBuilder()
+              .addAllKeyValueProperty(keyValues)
+              .build());
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -253,7 +254,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         errorMessage = "Invalid parameter set in DeleteKeyValuePropertiesRequest.Id";
-      } else if (request.getKeyList().isEmpty() && !request.getDeleteAll()) {
+      } else if (request.getKeysList().isEmpty() && !request.getDeleteAll()) {
         errorMessage =
             "Keys not found OR deleteAll flag is false in DeleteKeyValuePropertiesRequest request";
       } else if (request.getPropertyName().isEmpty()) {

@@ -1,9 +1,7 @@
 package ai.verta.modeldb.metadata;
 
-import ai.verta.common.KeyValue;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.metadata.KeyValuePropertyMappingEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
@@ -11,7 +9,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
-import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -359,26 +356,20 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public void addOrUpdateKeyValueProperties(AddKeyValuePropertiesRequest request)
-      throws ModelDBException {
+  public void addOrUpdateKeyValueProperties(AddKeyValuePropertiesRequest request) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      for (KeyValue keyValue : request.getKeyValueList()) {
-        if (!keyValue.getValue().getKindCase().equals(Value.KindCase.STRING_VALUE)) {
-          throw new ModelDBException(
-              "Only 'String' value excepted in keyValue", Code.INVALID_ARGUMENT);
-        }
+      for (KeyValueStringProperty keyValue : request.getKeyValuePropertyList()) {
         KeyValuePropertyMappingEntity.KeyValuePropertyMappingId id0 =
             KeyValuePropertyMappingEntity.createId(
                 request.getId(), keyValue.getKey(), request.getPropertyName());
         KeyValuePropertyMappingEntity existingEntity =
             session.get(KeyValuePropertyMappingEntity.class, id0);
         if (existingEntity == null) {
-          existingEntity =
-              new KeyValuePropertyMappingEntity(id0, keyValue.getValue().getStringValue());
+          existingEntity = new KeyValuePropertyMappingEntity(id0, keyValue.getValue());
           session.saveOrUpdate(existingEntity);
         } else {
-          existingEntity.setValue(keyValue.getValue().getStringValue());
+          existingEntity.setValue(keyValue.getValue());
           session.update(existingEntity);
         }
       }
@@ -387,9 +378,9 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public List<KeyValue> getKeyValueProperties(GetKeyValuePropertiesRequest request) {
+  public List<KeyValueStringProperty> getKeyValueProperties(GetKeyValuePropertiesRequest request) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      List<KeyValue> keyValues = new ArrayList<>();
+      List<KeyValueStringProperty> keyValues = new ArrayList<>();
       if (request.getGetAll()) {
         Query<KeyValuePropertyMappingEntity> query =
             session.createQuery(GET_KEY_VALUE_PROPERTY_HQL, KeyValuePropertyMappingEntity.class);
@@ -400,15 +391,14 @@ public class MetadataDAORdbImpl implements MetadataDAO {
           kvMappings.forEach(
               mappingEntity -> {
                 keyValues.add(
-                    KeyValue.newBuilder()
+                    KeyValueStringProperty.newBuilder()
                         .setKey(mappingEntity.getId().getKey())
-                        .setValue(
-                            Value.newBuilder().setStringValue(mappingEntity.getValue()).build())
+                        .setValue(mappingEntity.getValue())
                         .build());
               });
         }
       } else {
-        for (String key : request.getKeyList()) {
+        for (String key : request.getKeysList()) {
           KeyValuePropertyMappingEntity.KeyValuePropertyMappingId id0 =
               KeyValuePropertyMappingEntity.createId(
                   request.getId(), key, request.getPropertyName());
@@ -416,9 +406,9 @@ public class MetadataDAORdbImpl implements MetadataDAO {
               session.get(KeyValuePropertyMappingEntity.class, id0);
           if (kvEntity != null) {
             keyValues.add(
-                KeyValue.newBuilder()
+                KeyValueStringProperty.newBuilder()
                     .setKey(key)
-                    .setValue(Value.newBuilder().setStringValue(kvEntity.getValue()).build())
+                    .setValue(kvEntity.getValue())
                     .build());
           }
         }
@@ -452,7 +442,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
         query.setParameter(ModelDBConstants.PROPERTY_NAME, request.getPropertyName());
         query.executeUpdate();
       } else {
-        for (String key : request.getKeyList()) {
+        for (String key : request.getKeysList()) {
           KeyValuePropertyMappingEntity.KeyValuePropertyMappingId id0 =
               KeyValuePropertyMappingEntity.createId(
                   request.getId(), key, request.getPropertyName());
