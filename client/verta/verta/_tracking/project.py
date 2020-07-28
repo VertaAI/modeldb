@@ -48,7 +48,7 @@ class Project(_ModelDBEntity):
 
         return '\n'.join((
             "name: {}".format(msg.name),
-            "url: {}://{}/{}/projects/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+            "url: {}://{}/{}/projects/{}/summary".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
         ))
 
     @property
