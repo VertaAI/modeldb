@@ -923,4 +923,4 @@ class Client(object):
 
     @property
     def endpoints(self):
-        return Endpoints(self._conn, self._conf)
+        return Endpoints(self._conn, self._conf, self._get_personal_workspace())
