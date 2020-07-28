@@ -9,7 +9,7 @@ Client
 
 Registered Model
 ----------------
-.. autoclass:: verta._registry.ModelVersion
+.. autoclass:: verta._registry.RegisteredModel
     :members:
 
 Registered Model Version
