@@ -82,7 +82,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         Message = _ModelVersionService.GetRegisteredModelRequest
         response = self._conn.make_proto_request("GET",
-                                           "/api/v1/registry/registered_models/{}".format(id))
+                                           "/api/v1/registry/registered_models/{}".format(self.registered_model_id))
 
         return self._conn.maybe_proto_response(response, Message.Response).registered_model
 
