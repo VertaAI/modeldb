@@ -23,7 +23,7 @@ from .._internal_utils import (
 )
 from .._internal_utils._utils import NoneProtoResponse
 
-from .._tracking.entity import _ModelDBEntity
+from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 from ..environment import _Environment, Python
 
 
@@ -78,19 +78,17 @@ class RegisteredModelVersion(_ModelDBEntity):
         return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
 
     @property
-    def registered_model(self):
-        self._refresh_cache()
-        Message = _ModelVersionService.GetRegisteredModelRequest
-        response = self._conn.make_proto_request("GET",
-                                           "/api/v1/registry/registered_models/{}".format(self.registered_model_id))
-
-        return self._conn.maybe_proto_response(response, Message.Response).registered_model
-
-
-    @property
     def workspace(self):
         self._refresh_cache()
-        return self.registered_model.workspace
+        Message = _ModelVersionService.GetRegisteredModelRequest
+        registered_model_msg = self._conn.make_proto_request(
+            "GET", "/api/v1/registry/registered_models/{}".format(self.registered_model_id)
+        ).registered_model
+
+        if registered_model_msg.HasField("workspace_id") and registered_model_msg.workspace_id:
+            return self._get_workspace_name_by_id(registered_model_msg.workspace_id)
+        else:
+            return _OSS_DEFAULT_WORKSPACE
 
     def get_artifact_keys(self):
         self._refresh_cache()
