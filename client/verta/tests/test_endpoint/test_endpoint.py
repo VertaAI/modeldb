@@ -119,7 +119,8 @@ class TestEndpoint:
             model_for_deployment['train_features'],
             model_for_deployment['train_targets'],
         )
-        experiment_run.log_model_for_deployment(model)
+        experiment_run.log_model(model, custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -129,4 +130,3 @@ class TestEndpoint:
             time.sleep(3)
         x = model_for_deployment['train_features'].iloc[1].values
         endpoint.get_deployed_model().predict([x])
-
