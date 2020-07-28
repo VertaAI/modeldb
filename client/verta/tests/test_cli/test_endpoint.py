@@ -5,7 +5,7 @@ from verta._internal_utils import _utils
 
 
 class TestCreate:
-    def test_create_endpoint(self):
+    def test_create_endpoint(self, client, created_endpoints):
         endpoint_name = _utils.generate_default_name()
 
         runner = CliRunner()
@@ -16,10 +16,7 @@ class TestCreate:
 
         assert not result.exception
 
-        result = runner.invoke(
-            cli,
-            ['deployment', 'get', 'endpoint', endpoint_name],
-        )
+        endpoint = client.get_endpoint(endpoint_name)
+        assert endpoint
 
-        assert not result.exception
-        assert endpoint_name in result.output
+        created_endpoints.append(endpoint)

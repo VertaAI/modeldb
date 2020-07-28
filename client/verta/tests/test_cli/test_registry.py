@@ -11,7 +11,7 @@ import os
 
 
 class TestCreate:
-    def test_create_model(self):
+    def test_create_model(self, client, created_registered_models):
         model_name = RegisteredModel._generate_default_name()
 
         runner = CliRunner()
@@ -22,13 +22,10 @@ class TestCreate:
 
         assert not result.exception
 
-        result = runner.invoke(
-            cli,
-            ['registry', 'get', 'registeredmodel', model_name],
-        )
+        registered_model = client.get_registered_model(model_name)
+        assert registered_model
 
-        assert not result.exception
-        assert "name: \"{}\"".format(model_name) in result.output
+        created_registered_models.append(registered_model)
 
     def test_create_version(self, registered_model, in_tempdir):
         model_name = registered_model.name
@@ -270,13 +267,15 @@ class TestGet:
 
 
 class TestList:
-    def test_list_model(self):
+    def test_list_model(self, created_registered_models):
         client = Client()
         model1 = client.get_or_create_registered_model()
+        created_registered_models.append(model1)
         label = model1._msg.name + "label1"
         model1.add_label(label)
         model1.add_label("label2")
         model2 = client.get_or_create_registered_model()
+        created_registered_models.append(model2)
         model = client.get_or_create_registered_model()
         model.add_label(label)
         runner = CliRunner()
@@ -300,11 +299,12 @@ class TestList:
         assert str(model2._msg.name) in result.output
 
     @pytest.mark.skip(reason="bug in dev")
-    def test_list_version(self):
+    def test_list_version(self, created_registered_models):
         client = Client()
         runner = CliRunner()
 
         model1 = client.get_or_create_registered_model()
+        created_registered_models.append(model1)
         version1_name = "version1"
         version2_name = "version2"
         model1.get_or_create_version(version1_name)
@@ -321,6 +321,7 @@ class TestList:
 
         version2.add_label(label)
         model2 = client.get_or_create_registered_model()
+        created_registered_models.append(model2)
         version2_1_name = "version2_1"
         version2_2_name = "version2_2"
         version21 = model2.get_or_create_version(version2_1_name)
@@ -453,4 +454,3 @@ class TestUpdate:
         )
         assert result.exception
         assert "a model has already been associated with the version" in result.output
-
