@@ -211,5 +211,4 @@ class Endpoint(object):
         tokens = data["tokens"]
         if len(tokens) == 0:
             return None
-        return tokens[0]
-
+        return tokens[0]['creator_request']['value']
