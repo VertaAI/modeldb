@@ -13,7 +13,6 @@ public interface ModelDBConstants {
   String CLOUD_BUCKET_NAME = "cloudBucketName";
   String MINIO_ENDPOINT = "minioEndpoint";
   String AWS_REGION = "aws_region";
-  String DEFAULT_AWS_REGION = "us-east-1";
   String DATABASE = "database";
   String DB_TYPE = "DBType";
   String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";
@@ -39,6 +38,11 @@ public interface ModelDBConstants {
   String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
+
+  // AWS Releated Constants
+  String AWS_ROLE_ARN = "AWS_ROLE_ARN";
+  String DEFAULT_AWS_REGION = "us-east-1";
+  String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
