@@ -19,19 +19,22 @@ class Endpoint(object):
 
     def __repr__(self):
         status = self.get_status()
+        data = Endpoint._get_json_by_id(self._conn, self.workspace, self.id)
 
         return '\n'.join((
-            "path: {}".format(self.path),
+            "path: {}".format(data['creator_request']['path']),
             "id: {}".format(self.id),
             "status: {}".format(status["status"]),
-            "date created: {}".format(status["date_created"]),
-            "date updated: {}".format(status["date_updated"]),
+            "date created: {}".format(data["date_created"]),
+            "date updated: {}".format(data["date_updated"]),
+            "stage's date created: {}".format(status["date_created"]),
+            "stage's date updated: {}".format(status["date_updated"]),
             "components: {}".format(json.dumps(status["components"], indent=4)),
         ))
 
     @property
     def path(self):
-        return self.path(Endpoint._get_json_by_id(self._conn, self.workspace, self.id))
+        return self._path(Endpoint._get_json_by_id(self._conn, self.workspace, self.id))
 
     def _path(self, data):
         return data['creator_request']['path']
