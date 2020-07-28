@@ -25,7 +25,6 @@ from .._internal_utils._utils import NoneProtoResponse
 
 from .._tracking.entity import _ModelDBEntity
 from ..environment import _Environment, Python
-from .model import RegisteredModel
 
 
 class RegisteredModelVersion(_ModelDBEntity):
@@ -79,9 +78,19 @@ class RegisteredModelVersion(_ModelDBEntity):
         return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
 
     @property
+    def registered_model(self):
+        self._refresh_cache()
+        Message = _ModelVersionService.GetRegisteredModelRequest
+        response = self._conn.make_proto_request("GET",
+                                           "/api/v1/registry/registered_models/{}".format(id))
+
+        return self._conn.maybe_proto_response(response, Message.Response).registered_model
+
+
+    @property
     def workspace(self):
-        registered_model = RegisteredModel._get_by_id(self._conn, self._conf, self.registered_model_id)
-        return registered_model.workspace
+        self._refresh_cache()
+        return self.registered_model.workspace
 
     def get_artifact_keys(self):
         self._refresh_cache()
