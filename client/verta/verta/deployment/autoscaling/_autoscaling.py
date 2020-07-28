@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 class Autoscaling(object):
-    def __init__(self, min_replicas, max_replicas, min_scale, max_scale):
+    def __init__(self, min_replicas=None, max_replicas=None, min_scale=None, max_scale=None):
         raise NotImplementedError
 
     def _as_json(self):
