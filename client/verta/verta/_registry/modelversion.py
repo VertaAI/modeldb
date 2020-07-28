@@ -81,11 +81,13 @@ class RegisteredModelVersion(_ModelDBEntity):
     def workspace(self):
         self._refresh_cache()
         Message = _ModelVersionService.GetRegisteredModelRequest
-        registered_model_msg = self._conn.make_proto_request(
+        response = self._conn.make_proto_request(
             "GET", "/api/v1/registry/registered_models/{}".format(self.registered_model_id)
-        ).registered_model
+        )
 
-        if registered_model_msg.HasField("workspace_id") and registered_model_msg.workspace_id:
+        registered_model_msg = self._conn.maybe_proto_response(response, Message.Response).registered_model
+
+        if registered_model_msg.workspace_id:
             return self._get_workspace_name_by_id(registered_model_msg.workspace_id)
         else:
             return _OSS_DEFAULT_WORKSPACE

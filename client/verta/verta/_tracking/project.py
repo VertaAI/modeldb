@@ -69,7 +69,7 @@ class Project(_ModelDBEntity):
     def workspace(self):
         self._refresh_cache()
 
-        if self._msg.HasField("workspace_id") and self._msg.workspace_id:
+        if self._msg.workspace_id:
             return self._get_workspace_name_by_id(self._msg.workspace_id)
         else:
             return _OSS_DEFAULT_WORKSPACE
