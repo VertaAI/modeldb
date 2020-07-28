@@ -25,6 +25,7 @@ from .._internal_utils._utils import NoneProtoResponse
 
 from .._tracking.entity import _ModelDBEntity
 from ..environment import _Environment, Python
+from .model import RegisteredModel
 
 
 class RegisteredModelVersion(_ModelDBEntity):
@@ -40,6 +41,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         return '\n'.join((
             "version: {}".format(msg.version),
+            "url: {}://{}/{}/rergistry/{}/versions/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.registered_model_id, self.id),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
@@ -75,6 +77,11 @@ class RegisteredModelVersion(_ModelDBEntity):
     def is_archived(self):
         self._refresh_cache()
         return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
+
+    @property
+    def workspace(self):
+        registered_model = RegisteredModel._get_by_id(self._conn, self._conf, self.registered_model_id)
+        return registered_model.workspace
 
     def get_artifact_keys(self):
         self._refresh_cache()

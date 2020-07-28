@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 from .._internal_utils._utils import NoneProtoResponse
-from .._tracking.entity import _ModelDBEntity
+from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 from .._tracking.context import _Context
 from .._internal_utils import _utils
 
@@ -24,6 +24,7 @@ class RegisteredModel(_ModelDBEntity):
 
         return '\n'.join((
             "name: {}".format(msg.name),
+            "url: {}://{}/{}/rergistry/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
@@ -35,6 +36,15 @@ class RegisteredModel(_ModelDBEntity):
     def name(self):
         self._refresh_cache()
         return self._msg.name
+
+    @property
+    def workspace(self):
+        self._refresh_cache()
+
+        if self._msg.HasField("workspace_id") and self._msg.workspace_id:
+            return self._get_workspace_name_by_id(self._msg.workspace_id)
+        else:
+            return _OSS_DEFAULT_WORKSPACE
 
     def get_or_create_version(self, name=None, desc=None, labels=None, id=None, time_created=None):
         """

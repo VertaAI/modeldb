@@ -5,7 +5,7 @@ from __future__ import print_function
 import requests
 import warnings
 
-from .entity import _ModelDBEntity
+from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 from .experimentruns import ExperimentRuns
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -42,7 +42,13 @@ class Experiment(_ModelDBEntity):
         super(Experiment, self).__init__(conn, conf, _ExperimentService, "experiment", msg)
 
     def __repr__(self):
-        return "<Experiment \"{}\">".format(self.name)
+        self._refresh_cache()
+        msg = self._msg
+
+        return '\n'.join((
+            "name: {}".format(msg.name),
+            "url: {}://{}/{}/projects/{}/experiments/{}".format(self._conn.scheme, self._conn.socket, self.workspace, msg.project_id, self.id),
+        ))
 
     @property
     def name(self):
@@ -53,6 +59,24 @@ class Experiment(_ModelDBEntity):
     def expt_runs(self):
         # get runs in this Experiment
         return ExperimentRuns(self._conn, self._conf).with_experiment(self)
+
+    @property
+    def workspace(self):
+        self._refresh_cache()
+        proj_id = self._msg.project_id
+        response = _utils.make_request(
+            "GET",
+            "{}://{}/api/v1/modeldb/project/getProjectById".format(self._conn.scheme, self._conn.socket),
+            self._conn, params={'id': proj_id},
+        )
+        _utils.raise_for_http_error(response)
+
+        project_json = _utils.body_to_json(response)['project']
+        if 'workspace_id' not in project_json:
+            # workspace is OSS default
+            return _OSS_DEFAULT_WORKSPACE
+        else:
+            return self._get_workspace_name_by_id(project_json['workspace_id'])
 
     @classmethod
     def _generate_default_name(cls):

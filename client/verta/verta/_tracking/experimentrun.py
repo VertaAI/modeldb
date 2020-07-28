@@ -19,7 +19,7 @@ import zipfile
 
 import requests
 
-from .entity import _ModelDBEntity
+from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -43,8 +43,6 @@ from .._repository import commit as commit_module
 from .. import deployment
 from .. import utils
 
-
-_OSS_DEFAULT_WORKSPACE = "personal"
 
 _CUSTOM_MODULES_DIR = "/app/custom_modules/"  # location in DeploymentService model container
 

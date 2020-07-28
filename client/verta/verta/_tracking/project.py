@@ -5,7 +5,7 @@ from __future__ import print_function
 import requests
 import warnings
 
-from .entity import _ModelDBEntity
+from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 from .experimentruns import ExperimentRuns
 from .experiments import Experiments
 
@@ -43,7 +43,13 @@ class Project(_ModelDBEntity):
         super(Project, self).__init__(conn, conf, _ProjectService, "project", msg)
 
     def __repr__(self):
-        return "<Project \"{}\">".format(self.name)
+        self._refresh_cache()
+        msg = self._msg
+
+        return '\n'.join((
+            "name: {}".format(msg.name),
+            "url: {}://{}/{}/projects/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+        ))
 
     @property
     def name(self):
@@ -58,6 +64,15 @@ class Project(_ModelDBEntity):
     def expt_runs(self):
         # get runs in this Project
         return ExperimentRuns(self._conn, self._conf).with_project(self)
+
+    @property
+    def workspace(self):
+        self._refresh_cache()
+
+        if self._msg.HasField("workspace_id") and self._msg.workspace_id:
+            return self._get_workspace_name_by_id(self._msg.workspace_id)
+        else:
+            return _OSS_DEFAULT_WORKSPACE
 
     @classmethod
     def _generate_default_name(cls):
