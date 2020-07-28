@@ -22,7 +22,13 @@ class Endpoint(object):
 
     @property
     def path(self):
-        return Endpoint._get_json_by_id(self._conn, self.workspace, self.id)['creator_request']['path']
+        return self.path(Endpoint._get_json_by_id(self._conn, self.workspace, self.id))
+
+    def _path(self, data):
+        return data['creator_request']['path']
+
+    def _date_updated(self, data):
+        return data['date_updated']
 
     @classmethod
     def _create(cls, conn, conf, workspace, path, description=None):
@@ -52,6 +58,10 @@ class Endpoint(object):
             return cls(conn, conf, workspace, endpoint_json['id'])
         else:
             return None
+
+    def _get_info_list_by_id(self):
+        data = Endpoint._get_json_by_id(self._conn, self.workspace, self.id)
+        return [self._path(data), str(self.id), self._date_updated(data)]
 
     @classmethod
     def _get_json_by_id(cls, conn, workspace, id):
