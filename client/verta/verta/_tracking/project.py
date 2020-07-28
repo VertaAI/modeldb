@@ -82,7 +82,7 @@ class Project(_ModelDBEntity):
         response = conn.maybe_proto_response(response, Message.Response)
         if workspace is None or response.HasField("project_by_user"):
             return response.project_by_user
-        elif hasattr(response, "shared_projects") and response.shared_projects:
+        elif response.shared_projects:
             return response.shared_projects[0]
         else:
             return None
