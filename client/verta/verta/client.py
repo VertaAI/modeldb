@@ -921,8 +921,6 @@ class Client(object):
     def set_endpoint(self, *args, **kwargs):
         return self.get_or_create_endpoint(*args, **kwargs)
 
-    def endpoints(self, workspace = None):
-        workspace = self._set_from_config_if_none(workspace, "workspace")
-        if workspace is None:
-            workspace = self._get_personal_workspace()
-        return Endpoints(self._conn, self._conf, workspace)
+    @property
+    def endpoints(self):
+        return Endpoints(self._conn, self._conf)

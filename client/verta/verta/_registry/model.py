@@ -19,7 +19,17 @@ class RegisteredModel(_ModelDBEntity):
         super(RegisteredModel, self).__init__(conn, conf, _RegisteredModelService, "registered_model", msg)
 
     def __repr__(self):
-        return "<Model \"{}\">".format(self.name)
+        self._refresh_cache()
+        msg = self._msg
+
+        return '\n'.join((
+            "name: {}".format(msg.name),
+            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
+            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
+            "description: {}".format(msg.description),
+            "labels: {}".format(msg.labels),
+            "id: {}".format(msg.id),
+        ))
 
     @property
     def name(self):
@@ -27,6 +37,35 @@ class RegisteredModel(_ModelDBEntity):
         return self._msg.name
 
     def get_or_create_version(self, name=None, desc=None, labels=None, id=None, time_created=None):
+        """
+        Gets or creates a Model Version.
+
+        If an accessible Model Version with name `name` does not already exist under this
+        Registered Model, it will be created and initialized with specified metadata
+        parameters. If such a Model Version does already exist, it will be retrieved.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Model Version. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Model Version.
+        labels : list of str, optional
+            Labels of the Model Version.
+        id : str, optional
+            ID of the Model Version. This parameter cannot be provided alongside `name`, and other
+            parameters will be ignored.
+
+        Returns
+        -------
+        :class:`RegisteredModelVersion`
+
+        Raises
+        ------
+        ValueError
+            If `name` and `id` are both passed in.
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -58,6 +97,22 @@ class RegisteredModel(_ModelDBEntity):
         return RegisteredModelVersion._create(self._conn, self._conf, ctx, name, experiment_run_id=run_id)
 
     def get_version(self, name=None, id=None):
+        """
+        Gets a Model Version of this Registered Model by `name` or `id`
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Model Version. If no name is provided, one will be generated.
+        id : str, optional
+            ID of the Model Version. This parameter cannot be provided alongside `name`, and other
+            parameters will be ignored.
+
+        Returns
+        -------
+        :class:`~verta._registry.modelversion.RegisteredModelVersion`
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
         if name is None and id is None:
@@ -122,6 +177,15 @@ class RegisteredModel(_ModelDBEntity):
         return registered_model
 
     def add_labels(self, labels):
+        """
+        Adds multiple labels to this Registered Model.
+
+        Parameters
+        ----------
+        labels : list of str
+            Labels to add.
+
+        """
         if not labels:
             raise ValueError("label is not specified")
 
@@ -132,6 +196,15 @@ class RegisteredModel(_ModelDBEntity):
         self._update()
 
     def add_label(self, label):
+        """
+        Adds a label to this Registered Model.
+
+        Parameters
+        ----------
+        label : str
+            Label to add.
+
+        """
         if label is None:
             raise ValueError("label is not specified")
         self._clear_cache()
@@ -141,6 +214,15 @@ class RegisteredModel(_ModelDBEntity):
             self._update()
 
     def del_label(self, label):
+        """
+        Deletes a label from this Registered Model.
+
+        Parameters
+        ----------
+        label : str
+            Label to delete.
+
+        """
         if label is None:
             raise ValueError("label is not specified")
         self._clear_cache()
@@ -150,6 +232,15 @@ class RegisteredModel(_ModelDBEntity):
             self._update()
 
     def get_labels(self):
+        """
+        Gets all labels of this Registered Model.
+
+        Returns
+        -------
+        labels : list of str
+            List of all labels of this Registered Model.
+
+        """
         self._clear_cache()
         self._refresh_cache()
         return self._msg.labels

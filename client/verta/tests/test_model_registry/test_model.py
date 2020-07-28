@@ -37,6 +37,14 @@ class TestModel:
 
         assert registered_model.id == client.set_registered_model(id=registered_model.id).id
 
+    def test_repr(self, registered_model):
+        registered_model.add_labels(["tag1", "tag2"])
+        repr = str(registered_model)
+
+        assert registered_model.name in repr
+        assert str(registered_model.id) in repr
+        assert str(registered_model.get_labels()) in repr
+
     def test_find(self, client, created_registered_models):
         name = "registered_model_new_test"
         registered_model = client.set_registered_model(name)
