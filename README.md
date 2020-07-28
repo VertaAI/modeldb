@@ -98,6 +98,7 @@ This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://
 ```bash
 docker-compose -f docker-compose-all.yaml up
 ```
+*Note: modeldb-backend service needs backend/config/config.yaml to run, either clone the repo before running docker-compose or create the file manually.*
 
 2. Install the ModelDB pip package. *Note it comes packaged in the verta package.*
 ```bash

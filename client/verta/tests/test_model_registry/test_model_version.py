@@ -44,7 +44,26 @@ class TestModelVersion:
         assert model_version.id == retrieved_model_version.id
 
     def test_repr(self, model_version):
-        assert model_version.name in str(model_version)
+        model_version.add_labels(["tag1", "tag2"])
+        repr = str(model_version)
+
+        assert model_version.name in repr
+        assert str(model_version.id) in repr
+        assert str(model_version.registered_model_id) in repr
+        assert str(model_version.get_labels()) in repr
+
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+
+        model_version.log_model(classifier)
+        model_version.log_artifact("coef", classifier.coef_)
+        repr = str(model_version)
+        assert "model" in repr
+        assert "coef" in repr
 
     def test_get_by_client(self, client):
         registered_model = client.set_registered_model()
@@ -137,6 +156,11 @@ class TestModelVersion:
             model_version.log_artifact("model", np.random.random((36, 12)))
 
         assert "the key \"model\" is reserved for model; consider using log_model() instead" in str(excinfo.value)
+
+        with pytest.raises(ValueError) as excinfo:
+            model_version.del_artifact("model")
+
+        assert "model can't be deleted through del_artifact(); consider using del_model() instead" in str(excinfo.value)
 
     def test_del_artifact(self, registered_model):
         np = pytest.importorskip("numpy")
