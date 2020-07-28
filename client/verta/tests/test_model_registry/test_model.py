@@ -1,4 +1,6 @@
 import pytest
+import requests
+
 import verta
 
 
@@ -7,6 +9,15 @@ class TestModel:
         assert client.set_registered_model()
 
         assert client.registered_model is not None
+        
+        name = verta._internal_utils._utils.generate_default_name()
+        assert client.create_registered_model(name)
+        assert client.registered_model is not None
+        with pytest.raises(requests.HTTPError) as excinfo:
+            assert client.create_registered_model(name)
+        excinfo_value = str(excinfo.value).strip()
+        assert "409" in excinfo_value
+        assert "already exists" in excinfo_value
 
     def test_get(self, client):
         name = verta._internal_utils._utils.generate_default_name()

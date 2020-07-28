@@ -1,4 +1,5 @@
 import pytest
+import requests
 
 import verta
 from verta.deployment.strategies import DirectUpdateStrategy, CanaryUpdateStrategy
@@ -13,6 +14,13 @@ class TestEndpoint:
     def test_create(self, client):
         name = _utils.generate_default_name()
         assert client.set_endpoint(name)
+        name = verta._internal_utils._utils.generate_default_name()
+        assert client.create_endpoint(name)
+        with pytest.raises(requests.HTTPError) as excinfo:
+            assert client.create_endpoint(name)
+        excinfo_value = str(excinfo.value).strip()
+        assert "409" in excinfo_value
+        assert "already in use" in excinfo_value
 
     def test_get(self, client):
         name = _utils.generate_default_name()
