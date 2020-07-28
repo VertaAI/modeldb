@@ -616,4 +616,9 @@ public class ModelDBUtils {
     LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
     return backgroundUtilsCount;
   }
+
+  public static boolean isEnvSet(String envVar) {
+    String envVarVal = System.getenv(envVar);
+    return envVarVal != null && !envVarVal.isEmpty();
+  }
 }

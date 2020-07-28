@@ -43,6 +43,7 @@ public interface ModelDBConstants {
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
   String DEFAULT_AWS_REGION = "us-east-1";
   String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
+  String AWS_WEB_IDENTITY_TOKEN = "AWS_WEB_IDENTITY_TOKEN";
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";

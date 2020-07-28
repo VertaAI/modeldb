@@ -3,6 +3,7 @@ package ai.verta.modeldb.artifactStore.storageservice;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.cron_jobs.FetchTemporaryS3Token;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
@@ -12,7 +13,6 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -24,21 +24,20 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.PartETag;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
-import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
-import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
-import com.amazonaws.services.securitytoken.model.Credentials;
 import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -47,86 +46,78 @@ public class S3Service implements ArtifactStoreService {
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
   private AmazonS3 s3Client;
   private String bucketName;
-  private String roleARN;
-  private String webToken;
-  private AWSSecurityTokenService stsClient;
+  private final Regions awsRegion;
 
-  public S3Service(String cloudBucketName) {
+  public S3Service(String cloudBucketName) throws ModelDBException {
     App app = App.getInstance();
     String cloudAccessKey = app.getCloudAccessKey();
     String cloudSecretKey = app.getCloudSecretKey();
     String minioEndpoint = app.getMinioEndpoint();
-    final Regions awsRegion = Regions.fromName(app.getAwsRegion());
+    awsRegion = Regions.fromName(app.getAwsRegion());
+    this.bucketName = cloudBucketName;
+
     if (cloudAccessKey != null && cloudSecretKey != null) {
       if (minioEndpoint == null) {
-        BasicAWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
-        this.s3Client =
-            AmazonS3ClientBuilder.standard()
-                .withRegion(awsRegion)
-                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                .build();
+        LOGGER.debug("config based credentials based s3 client");
+        initializeS3ClientWithAccessKey(cloudAccessKey, cloudSecretKey, awsRegion);
       } else {
-
-        AWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
-        ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-
-        this.s3Client =
-            AmazonS3ClientBuilder.standard()
-                .withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(minioEndpoint, app.getAwsRegion()))
-                .withPathStyleAccessEnabled(true)
-                .withClientConfiguration(clientConfiguration)
-                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                .build();
+        LOGGER.debug("minio client");
+        initializeMinioClient(cloudAccessKey, cloudSecretKey, awsRegion, minioEndpoint);
       }
-    } else if (isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
-        && isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-      initializeS3ClientWithTemporaryCredentials(awsRegion, cloudBucketName, cloudAccessKey, cloudSecretKey);
+    } else if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
+        && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
+      LOGGER.debug("temporary token based s3 client");
+      initializeS3ClientWithTemporaryCredentials(awsRegion);
     } else {
+      LOGGER.debug("environment credentials based s3 client");
       // reads credential from OS Environment
       s3Client = AmazonS3ClientBuilder.standard().withRegion(awsRegion).build();
     }
-
-    this.bucketName = cloudBucketName;
   }
 
-  private void initializeS3ClientWithTemporaryCredentials(
-      Regions awsRegion, String cloudBucketName, String cloudAccessKey, String cloudSecretKey) {
-    initializeRole();
-    initializeToken();
-    initializes3Client(awsRegion, cloudBucketName, cloudAccessKey, cloudSecretKey);
+  private void initializeMinioClient(
+      String cloudAccessKey, String cloudSecretKey, Regions awsRegion, String minioEndpoint) {
+    AWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    ClientConfiguration clientConfiguration = new ClientConfiguration();
+    clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+
+    this.s3Client =
+        AmazonS3ClientBuilder.standard()
+            .withEndpointConfiguration(
+                new AwsClientBuilder.EndpointConfiguration(minioEndpoint, awsRegion.getName()))
+            .withPathStyleAccessEnabled(true)
+            .withClientConfiguration(clientConfiguration)
+            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .build();
   }
 
-  private void initializes3Client(Regions clientRegion, String bucketName, String cloudAccessKey, String cloudSecretKey) {
-    String roleSessionName = "modelDB" + Calendar.getInstance().getTimeInMillis();
+  private void initializeS3ClientWithAccessKey(
+      String cloudAccessKey, String cloudSecretKey, Regions awsRegion) {
+    BasicAWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    this.s3Client =
+        AmazonS3ClientBuilder.standard()
+            .withRegion(awsRegion)
+            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .build();
+  }
+
+  private void initializeS3ClientWithTemporaryCredentials(Regions clientRegion) {
 
     try {
-    	
-      // Creating the STS client is part of your trusted code. It has
-      // the security credentials you use to obtain temporary security credentials.
-      AWSSecurityTokenService stsClient =
-          AWSSecurityTokenServiceClientBuilder.standard()
-              .withCredentials(new ProfileCredentialsProvider())
-              .withRegion(clientRegion)
-              .build();
+      FetchTokenAndSchedule(clientRegion.toString());
 
-      // Obtain credentials for the IAM role. Note that you cannot assume the role of an AWS root
-      // account;
-      // Amazon S3 will deny access. You must use credentials for an IAM user or an IAM role.
-      AssumeRoleRequest roleRequest =
-          new AssumeRoleRequest().withRoleArn(roleARN).withRoleSessionName(roleSessionName);
-      AssumeRoleResult roleResponse = stsClient.assumeRole(roleRequest);
-
-      Credentials sessionCredentials = roleResponse.getCredentials();
+      Map<String, String> credentialMap = new HashMap<String, String>();
+      populateCredentialMap(
+          credentialMap,
+          ModelDBUtils.appendOptionalTelepresencePath(
+              System.getenv(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)));
 
       // Create a BasicSessionCredentials object that contains the credentials you just retrieved.
       BasicSessionCredentials awsCredentials =
           new BasicSessionCredentials(
-              //sessionCredentials.getAccessKeyId(),
-              //sessionCredentials.getSecretAccessKey(),
-        		  cloudAccessKey, cloudSecretKey
-              sessionCredentials.getSessionToken());
+              credentialMap.get(ModelDBConstants.CLOUD_ACCESS_KEY),
+              credentialMap.get(ModelDBConstants.CLOUD_SECRET_KEY),
+              credentialMap.get(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN));
 
       // Provide temporary security credentials so that the Amazon S3 client
       // can send authenticated requests to Amazon S3. You create the client
@@ -145,38 +136,69 @@ public class S3Service implements ArtifactStoreService {
       // Amazon S3 couldn't be contacted for a response, or the client
       // couldn't parse the response from Amazon S3.
       e.printStackTrace();
+    } catch (IOException e) {
+      LOGGER.error("Could not initialize s3 client with temporary credentials");
     }
   }
 
-  private void initializeToken() {
-    if (webToken != null && !webToken.isEmpty()) {
-      String tokenFile =
-          ModelDBUtils.appendOptionalTelepresencePath(
-              System.getenv(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE));
-      try {
-        webToken = new String(Files.readAllBytes(Paths.get(tokenFile)));
-      } catch (IOException e) {
-        LOGGER.error(
-            "Token file pointed by {} at {} not found",
-            ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE,
-            tokenFile);
-      }
-    }
+  private void FetchTokenAndSchedule(String region) {
+
+    // FIXME: currently assuming that token is valid for an hour,
+    // need to check how to obtain this programmatically
+    LOGGER.debug("fetching token for s3 access");
+    long delay = 60 * 60L;
+
+    TimerTask task = new FetchTemporaryS3Token(region);
+
+    task.run();
+    LOGGER.debug("fetched token for s3 access");
+
+    ModelDBUtils.scheduleTask(task, delay - 600, delay - 600, TimeUnit.SECONDS);
+    LOGGER.debug("scheduled periodic task to fetch token for s3 access");
   }
 
-  private void initializeRole() {
-    if (roleARN != null && !roleARN.isEmpty()) {
-      roleARN = System.getenv(ModelDBConstants.AWS_ROLE_ARN);
-    }
-  }
+  private void populateCredentialMap(Map<String, String> credentialMap, String filePathString)
+      throws IOException {
+    File file = new File(filePathString);
 
-  private boolean isEnvSet(String envVar) {
-    String envVarVal = System.getenv(envVar);
-    return envVarVal != null && !envVarVal.isEmpty();
+    FileReader fr = new FileReader(file);
+    BufferedReader br = new BufferedReader(fr);
+
+    String line;
+    try {
+      // TODO: remove debug before merge
+      line = br.readLine();
+      LOGGER.debug("read access key of size {}", line.length());
+      credentialMap.put(ModelDBConstants.CLOUD_ACCESS_KEY, line);
+      line = br.readLine();
+      LOGGER.debug("read secret key of size {}", line.length());
+      credentialMap.put(ModelDBConstants.CLOUD_SECRET_KEY, line);
+      line = br.readLine();
+      LOGGER.debug("read token of size {}", line.length());
+      credentialMap.put(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN, line);
+    } catch (Exception e) {
+      LOGGER.warn("issues reading from token file at {}", filePathString);
+    } finally {
+      br.close();
+      fr.close();
+    }
   }
 
   private Boolean doesBucketExist(String bucketName) {
-    return s3Client.doesBucketExistV2(bucketName);
+    try {
+      return s3Client.doesBucketExistV2(bucketName);
+    } catch (AmazonServiceException e) {
+      // If token based access is configured and getting issues checking bucket existence then try
+      // refreshing credentials
+      if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
+          && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
+        // this may spiral into an infinite loop due to incorrect configuration
+        LOGGER.info("Fetching temporary credentails ");
+        LOGGER.warn(e.getErrorMessage());
+        initializeS3ClientWithTemporaryCredentials(awsRegion);
+      }
+      return doesBucketExist(bucketName);
+    }
   }
 
   @Override
