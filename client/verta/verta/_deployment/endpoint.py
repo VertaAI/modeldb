@@ -4,7 +4,7 @@ from __future__ import print_function
 import sys
 import time
 
-from ..deployment.strategies import _UpdateStrategy
+from ..deployment.update._strategies import _UpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
 
@@ -196,4 +196,3 @@ class Endpoint(object):
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
         return response.json()
-

@@ -1,8 +1,8 @@
 import pytest
 
 import verta
-from verta.deployment.strategies import DirectUpdateStrategy, CanaryUpdateStrategy
-from verta.deployment.update_rules import AverageLatencyThreshold
+from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
+from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
 
 def get_build_ids(status):
@@ -33,7 +33,7 @@ class TestEndpoint:
         client.set_endpoint(path2)  # in case get erroneously fetches latest
 
         assert endpoint.id == client.set_endpoint(endpoint.path).id
-        
+
     def test_get_by_id(self, client):
         path = _utils.generate_default_name()
         path2 = _utils.generate_default_name()
@@ -104,13 +104,13 @@ class TestEndpoint:
         original_build_ids = get_build_ids(original_status)
 
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
-        
+
         with pytest.raises(RuntimeError) as excinfo:
             endpoint.update(experiment_run, strategy)
 
         assert "canary update strategy must have at least one rule" in str(excinfo.value)
 
-        strategy.add_rule(AverageLatencyThreshold(0.8))
+        strategy.add_rule(AverageLatencyThresholdRule(0.8))
         updated_status = endpoint.update(experiment_run, strategy)
 
         # Check that a new build is added:
