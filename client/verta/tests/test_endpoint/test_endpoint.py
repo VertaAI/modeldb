@@ -47,7 +47,7 @@ class TestEndpoint:
         name = _utils.generate_default_name()
         endpoint = client.set_endpoint(name)
 
-        endpoints = client.endpoints()
+        endpoints = client.endpoints
         assert len(endpoints) >= 1
         has_new_id = False
         for item in endpoints:
