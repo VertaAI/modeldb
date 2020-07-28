@@ -24,7 +24,7 @@ class RegisteredModel(_ModelDBEntity):
 
         return '\n'.join((
             "name: {}".format(msg.name),
-            "url: {}://{}/{}/rergistry/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+            "url: {}://{}/{}/registry/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
