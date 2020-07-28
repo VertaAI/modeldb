@@ -2,7 +2,7 @@
 
 import click
 
-from .._internal_utils import _config_utils
+from ..._internal_utils import _config_utils
 
 
 @click.group()
