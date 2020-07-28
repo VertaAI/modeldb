@@ -2,8 +2,8 @@
 
 import abc
 
-from ..external import six
-from .update_rules import _UpdateRule
+from ...external import six
+from .rules import _UpdateRule
 
 
 @six.add_metaclass(abc.ABCMeta)

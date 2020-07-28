@@ -4,7 +4,7 @@ from __future__ import print_function
 import sys
 import time
 
-from ..deployment.strategies import _UpdateStrategy
+from ..deployment.update._strategies import _UpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
 
@@ -106,7 +106,7 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    def update(self, run, strategy, wait=False):
+    def update(self, run, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         if not isinstance(run, experimentrun.ExperimentRun):
             raise TypeError("run must be an ExperimentRun")
 
@@ -196,4 +196,3 @@ class Endpoint(object):
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
         return response.json()
-

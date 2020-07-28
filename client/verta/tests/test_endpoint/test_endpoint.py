@@ -1,8 +1,8 @@
 import pytest
 
 import verta
-from verta.deployment.strategies import DirectUpdateStrategy, CanaryUpdateStrategy
-from verta.deployment.update_rules import AverageLatencyThreshold
+from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
+from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
 
 def get_build_ids(status):
@@ -123,7 +123,7 @@ class TestEndpoint:
 
         assert "canary update strategy must have at least one rule" in str(excinfo.value)
 
-        strategy.add_rule(AverageLatencyThreshold(0.8))
+        strategy.add_rule(AverageLatencyThresholdRule(0.8))
         updated_status = endpoint.update(experiment_run, strategy)
 
         # Check that a new build is added:
