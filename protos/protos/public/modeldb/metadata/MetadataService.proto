@@ -104,7 +104,7 @@ message AddKeyValuePropertiesRequest {
     }
 }
 
-// Ignore keys and get all key value properties corresponding to id and property_name if getAll flag is true
+// if getAll flag is true ignores keys and gets all key value properties corresponding to id and property_name
 message GetKeyValuePropertiesRequest {
     IdentificationType id = 1;
     string property_name = 2;
@@ -116,7 +116,7 @@ message GetKeyValuePropertiesRequest {
     }
 }
 
-// Ignore keys and delete all key value properties corresponding to id and property_name if deleteAll flag is true
+// if deleteAll flag is true ignores keys and deletes all key value properties corresponding to id and property_name
 message DeleteKeyValuePropertiesRequest {
     IdentificationType id = 1;
     string property_name = 2;
