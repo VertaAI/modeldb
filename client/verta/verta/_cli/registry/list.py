@@ -5,6 +5,7 @@ from functools import reduce
 import click
 
 from .registry import registry
+from ..AsciiTable import AsciiTable
 from ... import Client
 from ..._internal_utils import _utils
 
@@ -42,9 +43,10 @@ def lst_model(filter, output, workspace):
         result = '{' + result + '}'
         click.echo(result)
     else:
-        for model in models:
-            model_repr = model._msg.name
-            click.echo(model_repr)
+        table_data = [['MODEL NAME', 'ID', 'DATE UPDATED']] + list(sorted(
+            map(lambda model: model._get_info_list(), models), key=lambda data: data[0]))
+        table = AsciiTable(table_data)
+        click.echo(table.table)
 
 
 @lst.command(name="registeredmodelversion")
