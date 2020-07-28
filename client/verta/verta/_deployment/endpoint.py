@@ -195,5 +195,7 @@ class Endpoint(object):
         )
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
-        return response.json()
+        response_json = response.json()
+        response_json["stage_id"] = response_json.pop("id")
 
+        return response_json
