@@ -882,6 +882,36 @@ class Client(object):
         return RegisteredModelVersions(self._conn, self._conf)
 
     def get_or_create_endpoint(self, path=None, description=None, workspace=None, id=None):
+        """
+        Attaches an endpoint to this Client.
+
+        If an accessible endpoint with name `path` does not already exist, it will be created
+        and initialized with specified metadata parameters. If such an endpoint does already exist,
+        it will be retrieved; specifying metadata parameters in this case will raise an exception.
+
+        Parameters
+        ----------
+        path : str, optional
+            Path for the endpoint.
+        description : str, optional
+            Description of the endpoint.
+        workspace : str, optional
+            Workspace under which the endpoint with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        id : str, optional
+            ID of the endpoint. This parameter cannot be provided alongside `name`, and other
+            parameters will be ignored.
+
+        Returns
+        -------
+        :class:`~verta._deployment.Endpoint`
+
+        Raises
+        ------
+        ValueError
+            If an endpoint with `path` already exists, but metadata parameters are passed in.
+
+        """
         if path is not None and id is not None:
             raise ValueError("cannot specify both `path` and `id`")
         if path is None and id is None:
@@ -921,6 +951,208 @@ class Client(object):
     def set_endpoint(self, *args, **kwargs):
         return self.get_or_create_endpoint(*args, **kwargs)
 
+
+    def create_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
+        """
+        Creates a new Project.
+
+        A Project with name `name` will be created and initialized with specified metadata parameters.
+
+        If an Experiment is already attached to this Client, it will be detached.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Project. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Project.
+        tags : list of str, optional
+            Tags of the Project.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Project.
+        workspace : str, optional
+            Workspace under which the Project with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating a Project in an organization's workspace, whether to make this Project
+            accessible to all members of that organization.
+
+        Returns
+        -------
+        :class:`~verta._tracking.Project`
+
+        Raises
+        ------
+        ValueError
+            If a Project with `name` already exists.
+
+        """
+        name = self._set_from_config_if_none(name, "project")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+        self._ctx.proj = Project._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs,
+                        public_within_org=public_within_org)
+        return self._ctx.proj
+
+    def create_experiment(self, name=None, desc=None, tags=None, attrs=None):
+        """
+        Creates a new Experiment under the currently active Project.
+
+        Experiment with name `name` will be created and initialized with specified metadata parameters.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Experiment. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Experiment.
+        tags : list of str, optional
+            Tags of the Experiment.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Experiment.
+
+        Returns
+        -------
+        :class:`~verta._tracking.Experiment`
+
+        Raises
+        ------
+        ValueError
+            If an Experiment with `name` already exists.
+        AttributeError
+            If a Project is not yet in progress.
+
+        """
+        name = self._set_from_config_if_none(name, "experiment")
+
+        if self._ctx.proj is None:
+            self.set_project()
+
+        self._ctx.expt = Experiment._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs)
+
+        return self._ctx.expt
+
+
+    def create_experiment_run(self, name=None, desc=None, tags=None, attrs=None, date_created=None):
+        """
+        Creates a new Experiment Run under the currently active Experiment.
+
+        An Experiment Run with name `name` will be created and initialized with specified metadata
+        parameters.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Experiment Run. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Experiment Run.
+        tags : list of str, optional
+            Tags of the Experiment Run.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Experiment Run.
+
+        Returns
+        -------
+        :class:`ExperimentRun`
+
+        Raises
+        ------
+        ValueError
+            If an Experiment Run with `name` already exists.
+        AttributeError
+            If an Experiment is not yet in progress.
+
+        """
+        if self._ctx.expt is None:
+            self.set_experiment()
+
+        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created)
+
+        return self._ctx.expt_run
+
+
+    def create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None):
+        """
+        Creates a new Registered Model.
+
+        A registered_model with name `name` does will be created and initialized with specified metadata parameters.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the registered_model. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the registered_model.
+        labels: list of str, optional
+            Labels of the registered_model.
+        workspace : str, optional
+            Workspace under which the registered_model with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating a registered_model in an organization's workspace, whether to make this registered_model
+            accessible to all members of that organization.
+
+        Returns
+        -------
+        :class:`~verta._registry.model.RegisteredModel`
+
+        Raises
+        ------
+        ValueError
+            If a registered_model with `name` already exists.
+
+        """
+        name = self._set_from_config_if_none(name, "registered_model")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+
+        if workspace is None:
+            workspace = self._get_personal_workspace()
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+
+        self._ctx.registered_model = RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=labels, public_within_org=public_within_org)
+
+        return self._ctx.registered_model
+
+
+    def create_endpoint(self, path, description=None, workspace=None):
+        """
+        Attaches an endpoint to this Client.
+
+        An accessible endpoint with name `name` will be created and initialized with specified metadata parameters.
+
+        Parameters
+        ----------
+        path : str
+            Path for the endpoint.
+        description : str, optional
+            Description of the endpoint.
+        workspace : str, optional
+            Workspace under which the endpoint with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+
+        Returns
+        -------
+        :class:`~verta._registry.model.RegisteredModel`
+
+        Raises
+        ------
+        ValueError
+            If an endpoint with `path` already exists.
+
+        """
+        if path is None:
+            raise ValueError("Must specify `path`")
+
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self._get_personal_workspace()
+        return Endpoint._create(self._conn, self._conf, workspace, path, description)
+      
+      
     @property
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())

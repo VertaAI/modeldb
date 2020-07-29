@@ -1,4 +1,6 @@
 import pytest
+import requests
+
 import verta
 
 from .. import utils
@@ -33,6 +35,16 @@ class TestMDBIntegration:
 
 
 class TestModelVersion:
+
+    def test_create(self, registered_model):
+        name = verta._internal_utils._utils.generate_default_name()
+        assert registered_model.create_version(name)
+        with pytest.raises(requests.HTTPError) as excinfo:
+            assert registered_model.create_version(name)
+        excinfo_value = str(excinfo.value).strip()
+        assert "409" in excinfo_value
+        assert "already exists" in excinfo_value
+
     def test_get_by_name(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
         retrieved_model_version = registered_model.get_version(name=model_version.name)

@@ -78,6 +78,29 @@ class RegisteredModel(_ModelDBEntity):
                                                        lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
                                                        lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=labels, date_created=time_created))
 
+    def create_version(self, name=None, desc=None, labels=None, time_created=None):
+        """
+        Creates a model registry entry.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Model Version. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Model Version.
+        labels : list of str, optional
+            Labels of the Model Version.
+
+        Returns
+        -------
+        :class:`~verta._registry.modelversion.RegisteredModelVersion`
+
+        """
+        ctx = _Context(self._conn, self._conf)
+        ctx.registered_model = self
+        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=labels, date_created=time_created)
+
+
     def create_version_from_run(self, run_id, name):
         """
         Creates a model registry entry based on an Experiment Run.
