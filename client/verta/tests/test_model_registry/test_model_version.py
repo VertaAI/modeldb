@@ -1,3 +1,5 @@
+import tarfile
+
 import pytest
 import requests
 
@@ -318,3 +320,22 @@ class TestModelVersion:
 
         model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
         assert len(model_version._msg.artifacts) == 4
+
+    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir, registered_model):
+        download_to_path = "context.tgz"
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id,
+            name="From Run {}".format(experiment_run.id),
+        )
+
+        filepath = model_version.download_docker_context(download_to_path)
+        assert filepath == os.path.abspath(download_to_path)
+
+        # can be loaded as tgz
+        with tarfile.open(filepath, 'r:gz') as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths
