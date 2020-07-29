@@ -904,7 +904,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._registry.model.RegisteredModel`
+        :class:`~verta._deployment.Endpoint`
 
         Raises
         ------
