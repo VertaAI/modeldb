@@ -3,8 +3,11 @@
 from __future__ import print_function
 import sys
 import time
+import json
+import yaml
 
-from ..deployment.update._strategies import _UpdateStrategy
+from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
+from ..deployment.update.rules import _UpdateRule
 from .._internal_utils import _utils
 from .._tracking import experimentrun
 
@@ -127,15 +130,7 @@ class Endpoint(object):
         update_body = strategy._as_build_update_req_body(build_id)
 
         # Update stages with new build
-        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.workspace,
-            self.id,
-            self._get_or_create_stage(),
-        )
-        response = _utils.make_request("PUT", url, self._conn, json=update_body)
-        _utils.raise_for_http_error(response)
+        self._update(update_body)
 
         if wait:
             print("waiting for update...", end='')
@@ -184,7 +179,58 @@ class Endpoint(object):
         return response.json()["id"]
 
     def update_from_config(self, filepath):
-        raise NotImplementedError
+        with open(filepath, 'r') as f:
+            config = f.read()
+
+        is_json = True
+        is_yaml = True
+
+        try:
+            update_dict = json.loads(config)
+        except:
+            is_json = False
+
+        if not is_json:
+            try:
+                update_dict = yaml.safe_load(config)
+            except:
+                is_yaml = False
+
+        if (not is_json) and (not is_yaml):
+            raise ValueError("input must be a json or yaml")
+
+        self._update_from_dict(update_dict)
+        return self.get_status()
+
+    def _update_from_dict(self, update_dict):
+        if update_dict["strategy"] == "direct":
+            strategy = DirectUpdateStrategy()
+            update_body = strategy._as_build_update_req_body(update_dict["build_id"])
+        elif update_dict["strategy"] == "canary":
+            strategy = CanaryUpdateStrategy(
+                interval=int(update_dict["canary_strategy"]["progress_interval_seconds"]),
+                step=float(update_dict["canary_strategy"]["progress_step"])
+            )
+
+            for rule in update_dict["canary_strategy"]["rules"]:
+                strategy.add_rule(_UpdateRule._from_dict(rule))
+
+            update_body = strategy._as_build_update_req_body(update_dict["build_id"])
+        else:
+            raise ValueError("update strategy must be \"direct\" or \"canary\"")
+
+        self._update(update_body)
+
+    def _update(self, update_body):
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_stage(),
+        )
+        response = _utils.make_request("PUT", url, self._conn, json=update_body)
+        _utils.raise_for_http_error(response)
 
     def get_status(self):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
