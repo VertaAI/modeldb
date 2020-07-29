@@ -24,25 +24,6 @@ class _UpdateRule(object):
             ],
         }
 
-    @staticmethod
-    def _from_dict(rule_dict):
-        rule_id = int(rule_dict["rule_id"])
-        rule_name = rule_dict['rule_parameters'][0]['name']
-        rule_value = float(rule_dict['rule_parameters'][0]['value'])
-
-        if rule_name == "latency_avg":
-            rule = AverageLatencyThresholdRule(rule_value)
-        elif rule_name == "latency_p90":
-            rule = P90LatencyThresholdRule(rule_value)
-        elif rule_name == "error_rate":
-            rule = ErrorRateRule(rule_value)
-        else:
-            raise ValueError("no rule with name {} exists".format(rule_name))
-
-        if rule._RULE_ID != rule_id:
-            raise ValueError("wrong rule id.")
-        return rule
-
 
 class AverageLatencyThresholdRule(_UpdateRule):
     _RULE_ID = 1001
