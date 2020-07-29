@@ -5,6 +5,7 @@ import sys
 import time
 
 from ..deployment.update._strategies import _UpdateStrategy
+from ..deployment.autoscaling import Autoscaling
 from .._internal_utils import _utils
 from .._tracking import experimentrun
 
@@ -113,6 +114,9 @@ class Endpoint(object):
         if not isinstance(strategy, _UpdateStrategy):
             raise TypeError("strategy must be an object from verta.deployment.strategies")
 
+        if autoscaling and not isinstance(autoscaling, Autoscaling):
+            raise TypeError("autoscaling must be an Autoscaling object")
+
         # Create new build:
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
             self._conn.scheme,
@@ -125,6 +129,8 @@ class Endpoint(object):
 
         # prepare body for update request
         update_body = strategy._as_build_update_req_body(build_id)
+        if autoscaling:
+            update_body["autoscaling"] = autoscaling._as_json()
 
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
