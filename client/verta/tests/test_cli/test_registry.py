@@ -458,7 +458,7 @@ class TestUpdate:
         assert result.exception
         assert "a model has already been associated with the version" in result.output
 
-#@pytest.mark.skip(reason="pending backend")
+@pytest.mark.skip(reason="pending backend")
 class TestDownload:
     def test_download_context(self, experiment_run, model_for_deployment, registered_model):
         np = pytest.importorskip("numpy")
