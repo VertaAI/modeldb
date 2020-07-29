@@ -585,41 +585,6 @@ class RegisteredModelVersion(_ModelDBEntity):
             Absolute path where Docker context was downloaded to. Matches `download_to_path`.
 
         """
-        # should be same as ExperimentRun.download_docker_context()
-        raise NotImplementedError
-
-    def archive(self):
-        """
-        Archive this Model Version.
-
-        """
-        if self.is_archived:
-            raise RuntimeError("the version has already been archived")
-
-        self._fetch_with_no_cache()
-        self._msg.archived = _CommonCommonService.TernaryEnum.TRUE
-        self._update()
-
-    def _update(self):
-        response = self._conn.make_proto_request("PUT", "/api/v1/registry/registered_models/{}/model_versions/{}".format(self._msg.registered_model_id, self.id),
-                                                 body=self._msg)
-        Message = _ModelVersionService.SetModelVersion
-        if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
-            raise ValueError("Model not found")
-        self._clear_cache()
-
-    def download_docker_context(self, download_to_path):
-        """
-        Downloads this Registered Model Version's Docker context ``tgz``.
-        Parameters
-        ----------
-        download_to_path : str
-            Path to download Docker context to.
-        Returns
-        -------
-        downloaded_to_path : str
-            Absolute path where Docker context was downloaded to. Matches `download_to_path`.
-        """
         endpoint = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/dockercontext".format(
             self._conn.scheme,
             self._conn.socket,
@@ -640,3 +605,23 @@ class RegisteredModelVersion(_ModelDBEntity):
 
             downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
+
+    def archive(self):
+        """
+        Archive this Model Version.
+
+        """
+        if self.is_archived:
+            raise RuntimeError("the version has already been archived")
+
+        self._fetch_with_no_cache()
+        self._msg.archived = _CommonCommonService.TernaryEnum.TRUE
+        self._update()
+
+    def _update(self):
+        response = self._conn.make_proto_request("PUT", "/api/v1/registry/registered_models/{}/model_versions/{}".format(self._msg.registered_model_id, self.id),
+                                                 body=self._msg)
+        Message = _ModelVersionService.SetModelVersion
+        if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
+            raise ValueError("Model not found")
+        self._clear_cache()
