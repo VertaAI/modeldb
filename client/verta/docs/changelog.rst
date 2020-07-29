@@ -37,6 +37,24 @@ Release Notes
      <>`__
 
 
+v0.14.15 (2020-07-28)
+---------------------
+
+Bug Fixes
+^^^^^^^^^
+- `nicely display stack traces from prediction errors
+  <https://github.com/VertaAI/modeldb/pull/1166>`__
+
+
+v0.14.14 (2020-07-28)
+---------------------
+
+Bug Fixes
+^^^^^^^^^
+- `fix error when accessing a shared project in an organization
+  <https://github.com/VertaAI/modeldb/pull/1163>`__
+
+
 v0.14.13 (2020-07-24)
 ---------------------
 
