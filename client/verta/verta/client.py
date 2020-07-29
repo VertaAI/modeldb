@@ -833,6 +833,20 @@ class Client(object):
         return self._ctx.registered_model
 
     def get_registered_model(self, name=None, workspace=None, id=None):
+        """
+        Retrieve an already created Registered Model. Only one of name or id can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Registered Model.
+        id : str, optional
+            ID of the Registered Model. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~verta._registry.model.RegisteredModel`
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -865,6 +879,20 @@ class Client(object):
         return self.get_or_create_registered_model(*args, **kwargs)
 
     def get_registered_model_version(self, name=None, id=None):
+        """
+        Retrieve an already created Model Version. Only one of name or id can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Model Version.
+        id : str, optional
+            ID of the Model Version. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~verta._registry.modelversion.ModelVersion`
+        """
         if id is not None:
             # TODO: Support registered_model in populate
             model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
