@@ -220,7 +220,7 @@ class DeployedModel:
                     pass
                 else:  # from model back end; contains message (maybe)
                     # try to directly print message, otherwise line breaks appear as '\n'
-                    msg = data.get('message', json.dumps(data))
+                    msg = data.get('message') or json.dumps(data)
                     raise RuntimeError("deployed model encountered an error: {}".format(msg))
             elif not (response.status_code >= 500 or response.status_code in (404, 429)):  # clientside error
                 break
