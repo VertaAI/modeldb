@@ -53,6 +53,4 @@ def update_endpoint(path, run_id, strategy, canary_rule, interval, step, workspa
 
         for rule in canary_rule:
             strategy_obj.add_rule(_UpdateRule._from_json(rule))
-        click.echo(run)
-        click.echo(strategy_obj)
         endpoint.update(run, strategy_obj)
