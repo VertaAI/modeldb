@@ -5,9 +5,9 @@ import sys
 import time
 from functools import reduce
 
+from ..deployment.update._strategies import _UpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
-from ..deployment.update._strategies import _UpdateStrategy
 
 
 class Endpoint(object):
@@ -216,6 +216,6 @@ class Endpoint(object):
 
     def form_update_body(self, resources, strategy, build_id):
         update_body = strategy._as_build_update_req_body(build_id)
-        update_body["resources"] = reduce(lambda a, b: {**a, **b}, map(lambda a: a.to_dict(), resources))
+        update_body["resources"] = reduce(lambda resource_a, resource_b: {**resource_a, **resource_b}, map(lambda resource: resource.to_dict(), resources))
         # prepare body for update request
         return update_body

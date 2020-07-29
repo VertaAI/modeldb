@@ -32,6 +32,7 @@ class Memory(_Resource):
         super(Memory, self).__init__(parameter)
 
     def _validate(self, parameter):
+        # one of these: 128974848, 129e6, 129M, 123Mi
         return isinstance(parameter, str) and re.match(r'^[0-9]+[e]?[0-9]*[E|P|T|G|M|K]?[i]?$', parameter)
 
     def to_dict(self):
