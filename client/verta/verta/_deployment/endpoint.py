@@ -196,7 +196,7 @@ class Endpoint(object):
             except:
                 is_yaml = False
 
-        if (not is_json) and (not is_yaml):
+        if not (is_json or is_yaml):
             raise ValueError("input must be a json or yaml")
 
         self._update_from_dict(update_dict)
