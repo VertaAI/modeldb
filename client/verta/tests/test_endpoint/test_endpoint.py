@@ -91,6 +91,7 @@ class TestEndpoint:
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
 
         str_repr = repr(endpoint)
 
