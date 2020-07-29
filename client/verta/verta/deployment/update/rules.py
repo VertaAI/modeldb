@@ -28,17 +28,22 @@ class _UpdateRule(object):
     @staticmethod
     def _from_json(json_str):
         rule_dict = json.loads(json_str)
+        rule_id = int(rule_dict["rule_id"])
         rule_name = rule_dict['rule_parameters'][0]['name']
         rule_value = float(rule_dict['rule_parameters'][0]['value'])
 
         if rule_name == "latency_avg":
-            return AverageLatencyThresholdRule(rule_value)
+            rule = AverageLatencyThresholdRule(rule_value)
         elif rule_name == "latency_p90":
-            return P90LatencyThresholdRule(rule_value)
+            rule = P90LatencyThresholdRule(rule_value)
         elif rule_name == "error_rate":
-            return ErrorRateRule(rule_value)
+            rule = ErrorRateRule(rule_value)
         else:
             raise ValueError("no rule with name {} exists".format(rule_name))
+
+        if rule._RULE_ID != rule_id:
+            raise ValueError("wrong rule id.")
+        return rule
 
 
 class AverageLatencyThresholdRule(_UpdateRule):

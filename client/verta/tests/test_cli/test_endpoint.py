@@ -64,3 +64,102 @@ class TestUpdate:
         assert len(updated_build_ids) - len(updated_build_ids.intersection(original_build_ids)) > 0
         created_endpoints.append(endpoint)
 
+    def test_canary_update_endpoint(self, client, created_endpoints, experiment_run, model_for_deployment):
+        endpoint_name = _utils.generate_default_name()
+        endpoint = client.set_endpoint(endpoint_name)
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        canary_rule = '{"rule_id": 1001, "rule_parameters": \
+        [{"name": "latency_avg", "value": "0.8"}]}'
+
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "canary",
+             '-c', canary_rule, '-i', 1, "--step", 0.3],
+        )
+        assert not result.exception
+
+        updated_build_ids = get_build_ids(endpoint.get_status())
+
+        assert len(updated_build_ids) - len(updated_build_ids.intersection(original_build_ids)) > 0
+        created_endpoints.append(endpoint)
+
+    def test_update_invalid_parameters_error(self, client, created_endpoints, experiment_run):
+        error_msg_1 = "--canary-rule, --interval, and --step can only be used alongside --strategy=canary"
+        error_msg_2 = "--canary-rule, --interval, and --step must be provided alongside --strategy=canary"
+
+        endpoint_name = _utils.generate_default_name()
+        endpoint = client.set_endpoint(endpoint_name)
+
+        canary_rule = '{"rule_id": 1001, "rule_parameters": \
+        [{"name": "latency_avg", "value": "0.8"}]}'
+
+        # Extra parameters provided:
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "direct",
+             '-i', 1],
+        )
+        assert result.exception
+        assert error_msg_1 in result.output
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "direct",
+             '--step', 0.3],
+        )
+        assert result.exception
+        assert error_msg_1 in result.output
+
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "direct",
+             '-c', canary_rule],
+        )
+        assert result.exception
+        assert error_msg_1 in result.output
+
+        # Missing canary rule:
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "canary",
+             '-i', 1, "--step", 0.3],
+        )
+        assert result.exception
+        assert error_msg_2 in result.output
+
+        # Missing interval:
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "canary",
+             '-c', canary_rule, "--step", 0.3],
+        )
+        assert result.exception
+        assert error_msg_2 in result.output
+
+        # Missing step:
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "canary",
+             '-c', canary_rule, '-i', 1],
+        )
+        assert result.exception
+        assert error_msg_2 in result.output
+
+        created_endpoints.append(endpoint)
+
+
+
