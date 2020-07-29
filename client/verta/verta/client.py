@@ -885,7 +885,7 @@ class Client(object):
         """
         Attaches an endpoint to this Client.
 
-        If an accessible endpoint with name `name` does not already exist, it will be created
+        If an accessible endpoint with name `path` does not already exist, it will be created
         and initialized with specified metadata parameters. If such an endpoint does already exist,
         it will be retrieved; specifying metadata parameters in this case will raise an exception.
 
