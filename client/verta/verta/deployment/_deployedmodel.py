@@ -213,13 +213,14 @@ class DeployedModel:
 
             if response.ok:
                 return _utils.body_to_json(response)
-            elif response.status_code == 502:  # bad gateway; possibly error from the model back end
+            elif response.status_code in (400, 502):  # possibly error from the model back end
                 try:
                     data = _utils.body_to_json(response)
                 except ValueError:  # not JSON response; 502 not from model back end
                     pass
                 else:  # from model back end; contains message (maybe)
-                    msg = data.get('message', "(no specific error message found)")
+                    # try to directly print message, otherwise line breaks appear as '\n'
+                    msg = data.get('message', json.dumps(data))
                     raise RuntimeError("deployed model encountered an error: {}".format(msg))
             elif not (response.status_code >= 500 or response.status_code in (404, 429)):  # clientside error
                 break
