@@ -221,7 +221,5 @@ class Endpoint(object):
             raise RuntimeError("model is not currently deployed (status: {})".format(status))
 
         access_token = self.get_access_token()
-        return DeployedModel.from_url("{}://{}/api/v1/predict{}".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.path), access_token)
+        url = "{}://{}/api/v1/predict{}".format(self._conn.scheme, self._conn.socket, self.path)
+        return DeployedModel.from_url(url, access_token)
