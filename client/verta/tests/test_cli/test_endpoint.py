@@ -82,7 +82,7 @@ class TestUpdate:
         result = runner.invoke(
             cli,
             ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "canary",
-             '-c', canary_rule, '-c', canary_rule_2, '-i', 1, "--step", 0.3],
+             '-c', canary_rule, '-c', canary_rule_2, '-i', 1, "canary-step", 0.3],
         )
         assert not result.exception
 
@@ -92,8 +92,8 @@ class TestUpdate:
         created_endpoints.append(endpoint)
 
     def test_update_invalid_parameters_error(self, client, created_endpoints, experiment_run):
-        error_msg_1 = "--canary-rule, --interval, and --step can only be used alongside --strategy=canary"
-        error_msg_2 = "--canary-rule, --interval, and --step must be provided alongside --strategy=canary"
+        error_msg_1 = "--canary-rule, --canary-interval, and --canary-step can only be used alongside --strategy=canary"
+        error_msg_2 = "--canary-rule, --canary-interval, and --canary-step must be provided alongside --strategy=canary"
 
         endpoint_name = _utils.generate_default_name()
         endpoint = client.set_endpoint(endpoint_name)
@@ -115,7 +115,7 @@ class TestUpdate:
         result = runner.invoke(
             cli,
             ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "direct",
-             '--step', 0.3],
+             '--canary-step', 0.3],
         )
         assert result.exception
         assert error_msg_1 in result.output
@@ -135,7 +135,7 @@ class TestUpdate:
         result = runner.invoke(
             cli,
             ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "canary",
-             '-i', 1, "--step", 0.3],
+             '-i', 1, "--canary-step", 0.3],
         )
         assert result.exception
         assert error_msg_2 in result.output
@@ -145,7 +145,7 @@ class TestUpdate:
         result = runner.invoke(
             cli,
             ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "canary",
-             '-c', canary_rule, "--step", 0.3],
+             '-c', canary_rule, "--canary-step", 0.3],
         )
         assert result.exception
         assert error_msg_2 in result.output

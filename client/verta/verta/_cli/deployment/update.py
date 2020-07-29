@@ -31,10 +31,10 @@ def update_endpoint(path, run_id, strategy, canary_rule, canary_interval, canary
         raise click.BadParameter("canary-interval must be non-zero.")
 
     if strategy != "canary" and (canary_rule or canary_interval or canary_step):
-        raise click.BadParameter("--canary-rule, --interval, and --step can only be used alongside --strategy=canary")
+        raise click.BadParameter("--canary-rule, --canary-interval, and --canary-step can only be used alongside --strategy=canary")
 
     if strategy == "canary" and (not canary_rule or not canary_interval or not canary_step):
-        raise click.BadParameter("--canary-rule, --interval, and --step must be provided alongside --strategy=canary")
+        raise click.BadParameter("--canary-rule, --canary-interval, and --canary-step must be provided alongside --strategy=canary")
 
     client = Client()
 
