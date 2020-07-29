@@ -951,12 +951,6 @@ class Client(object):
     def set_endpoint(self, *args, **kwargs):
         return self.get_or_create_endpoint(*args, **kwargs)
 
-    def endpoints(self, workspace = None):
-        workspace = self._set_from_config_if_none(workspace, "workspace")
-        if workspace is None:
-            workspace = self._get_personal_workspace()
-        return Endpoints(self._conn, self._conf, workspace)
-
 
     def create_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
         """
@@ -1157,3 +1151,8 @@ class Client(object):
         if workspace is None:
             workspace = self._get_personal_workspace()
         return Endpoint._create(self._conn, self._conf, workspace, path, description)
+      
+      
+    @property
+    def endpoints(self):
+        return Endpoints(self._conn, self._conf, self._get_personal_workspace())
