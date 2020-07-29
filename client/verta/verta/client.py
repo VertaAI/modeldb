@@ -1043,7 +1043,7 @@ class Client(object):
 
     def create_experiment_run(self, name=None, desc=None, tags=None, attrs=None, date_created=None):
         """
-        Attaches an Experiment Run under the currently active Experiment to this Client.
+        Creates a new Experiment Run under the currently active Experiment.
 
         An Experiment Run with name `name` will be created and initialized with specified metadata
         parameters.
