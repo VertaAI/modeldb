@@ -1021,7 +1021,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Experiment`
+        :class:`~verta._tracking.Experiment`
 
         Raises
         ------
