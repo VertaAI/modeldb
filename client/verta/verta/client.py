@@ -960,7 +960,7 @@ class Client(object):
 
     def create_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
         """
-        Attaches a Project to this Client.
+        Creates a new Project.
 
         A Project with name `name` will be created and initialized with specified metadata parameters.
 
