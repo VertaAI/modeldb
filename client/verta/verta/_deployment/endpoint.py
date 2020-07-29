@@ -224,7 +224,7 @@ class Endpoint(object):
             raise ValueError("update strategy must be \"direct\" or \"canary\"")
 
         run = experimentrun.ExperimentRun._get_by_id(self._conn, self._conf, id=update_dict["run_id"])
-        self.update(run, strategy)
+        return self.update(run, strategy)
 
     def get_status(self):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
