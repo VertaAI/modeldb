@@ -858,6 +858,10 @@ class Client(object):
         return self._ctx.registered_model
 
     def set_registered_model(self, *args, **kwargs):
+        """
+        Alias for :meth:`Client.get_or_create_registered_model()`.
+
+        """
         return self.get_or_create_registered_model(*args, **kwargs)
 
     def get_registered_model_version(self, name=None, id=None):
