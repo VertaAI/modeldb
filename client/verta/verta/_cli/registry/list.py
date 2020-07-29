@@ -76,6 +76,11 @@ def lst_model_version(model_name, filter, output, workspace):
         result = '{' + result + '}'
         click.echo(result)
     else:
-        for model_version in model_versions:
-            model_version_repr = model_version.name
-            click.echo(model_version_repr)
+        if model_name is None:
+            id_or_name = 'MODEL ID'
+        else :
+            id_or_name = 'MODEL NAME'
+        table_data = [['MODEL VERSION NAME', 'ID', id_or_name, 'DATE UPDATED']] + list(sorted(
+            map(lambda model_version: model_version._get_info_list(model_name), model_versions), key=lambda data: data[0]))
+        table = AsciiTable(table_data)
+        click.echo(table.table)
