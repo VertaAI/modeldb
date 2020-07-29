@@ -92,7 +92,7 @@ public class FetchTemporaryS3Token extends TimerTask {
 
   /** Assume role arn does not change after the first read. */
   private void initializeRole() {
-    if (roleArn != null && !roleArn.isEmpty()) {
+    if (roleArn == null || roleArn.isEmpty()) {
       roleArn = System.getenv(ModelDBConstants.AWS_ROLE_ARN);
     }
   }
