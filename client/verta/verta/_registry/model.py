@@ -19,7 +19,7 @@ class RegisteredModel(_ModelDBEntity):
     Object representing a registered model.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`client.set_registered_model`.
+    :meth:`Client.set_registered_model() <verta.client.Client.set_registered_model>`
 
     Attributes
     ----------
@@ -27,6 +27,8 @@ class RegisteredModel(_ModelDBEntity):
         ID of this Registered Model.
     name : str
         Name of this Registered Model.
+    versions : iterable of :class:`~verta._registry.modelversion.RegisteredModelVersion`
+        Versions of this RegisteredModel.
 
     """
     def __init__(self, conn, conf, msg):

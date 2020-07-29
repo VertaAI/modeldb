@@ -41,13 +41,13 @@ class RegisteredModelVersion(_ModelDBEntity):
     name : str
         Name of this Model Version.
     has_environment : bool
-        Whether there is an environment associated with this Model Version
+        Whether there is an environment associated with this Model Version.
     has_model : bool
-        Whether there is a model associated with this Model Version
+        Whether there is a model associated with this Model Version.
     registered_model_id : int
-        ID of this version's Registered Model
+        ID of this version's Registered Model.
     is_archived : bool
-        Whether this Model Version is archived
+        Whether this Model Version is archived.
 
     """
     def __init__(self, conn, conf, msg):
@@ -106,6 +106,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         -------
         list of str
             List of artifact keys of this Model Version.
+
         """
         self._refresh_cache()
         return list(map(lambda artifact: artifact.key, self._msg.artifacts))
