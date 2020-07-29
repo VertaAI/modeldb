@@ -25,10 +25,10 @@ def update_endpoint(path, run_id, strategy, canary_rule, canary_interval, canary
     """List all endpoints available.
     """
     if canary_step == 0.0:
-        raise click.BadParameter("canary-step must be non-zero.")
+        raise click.BadParameter("--canary-step must be non-zero.")
 
-    if canary_interval == 0.0:
-        raise click.BadParameter("canary-interval must be non-zero.")
+    if canary_interval == 0:
+        raise click.BadParameter("--canary-interval must be non-zero.")
 
     if strategy != "canary" and (canary_rule or canary_interval or canary_step):
         raise click.BadParameter("--canary-rule, --canary-interval, and --canary-step can only be used alongside --strategy=canary")
@@ -53,7 +53,6 @@ def update_endpoint(path, run_id, strategy, canary_rule, canary_interval, canary
     else:
         # strategy is canary
         strategy_obj = CanaryUpdateStrategy(canary_interval, canary_step)
-
         for rule in canary_rule:
             strategy_obj.add_rule(_UpdateRule._from_json(rule))
         endpoint.update(run, strategy_obj)

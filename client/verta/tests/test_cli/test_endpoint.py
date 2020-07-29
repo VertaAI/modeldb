@@ -82,8 +82,9 @@ class TestUpdate:
         result = runner.invoke(
             cli,
             ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "canary",
-             '-c', canary_rule, '-c', canary_rule_2, '-i', 1, "canary-step", 0.3],
+             '-c', canary_rule, '-c', canary_rule_2, '-i', 1, "--canary-step", 0.3],
         )
+
         assert not result.exception
 
         updated_build_ids = get_build_ids(endpoint.get_status())
