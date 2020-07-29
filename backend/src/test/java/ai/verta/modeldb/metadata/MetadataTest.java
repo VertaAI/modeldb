@@ -2,6 +2,7 @@ package ai.verta.modeldb.metadata;
 
 import static org.junit.Assert.*;
 
+import ai.verta.common.KeyValue;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.AuthClientInterceptor;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
@@ -15,6 +16,7 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceBlockingStub;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
+import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -24,7 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -39,7 +42,7 @@ import org.junit.runners.MethodSorters;
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MetadataTest {
-  private static final Logger LOGGER = Logger.getLogger(MetadataTest.class.getName());
+  private static final Logger LOGGER = LogManager.getLogger(MetadataTest.class.getName());
 
   /**
    * This rule manages automatic graceful shutdown for the registered servers and channels at the
@@ -265,5 +268,65 @@ public class MetadataTest {
     assertTrue(deleteLabelsResponse.getStatus());
 
     LOGGER.info("Add & Delete labels for combo of repo, commit  test stop.........");
+  }
+
+  @Test
+  public void addDeleteKeyValuePropertiesTest() {
+    LOGGER.info("Add & Delete keyValue properties test start................................");
+
+    MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
+
+    String attrKey = "attr_key_1";
+    String value = "att_value";
+    String propertyName = ModelDBConstants.ATTRIBUTES;
+    String id = "REGISTERED_MODEL_" + propertyName + "_" + attrKey;
+    IdentificationType id1 = IdentificationType.newBuilder().setStringId(id).build();
+    AddKeyValuePropertiesRequest addKeyValuePropertiessRequest1 =
+        AddKeyValuePropertiesRequest.newBuilder()
+            .setId(id1)
+            .addKeyValueProperty(
+                KeyValueStringProperty.newBuilder()
+                    .setKey(attrKey)
+                    .setValue(value)
+                    .build())
+            .setPropertyName(propertyName)
+            .build();
+    serviceBlockingStub.addKeyValueProperties(addKeyValuePropertiessRequest1);
+    assertTrue(true);
+
+    GetKeyValuePropertiesRequest getKeyValuePropertiessRequest =
+        GetKeyValuePropertiesRequest.newBuilder()
+            .setId(id1)
+            .addKeys(attrKey)
+            .setPropertyName(propertyName)
+            .build();
+    GetKeyValuePropertiesRequest.Response getKeyValuePropertiessResponse =
+        serviceBlockingStub.getKeyValueProperties(getKeyValuePropertiessRequest);
+    assertEquals(
+        "Response value count not match with expected value count",
+        1,
+        getKeyValuePropertiessResponse.getKeyValuePropertyCount());
+    assertEquals(
+        "Response value not match with expected value ",
+        value,
+        getKeyValuePropertiessResponse.getKeyValueProperty(0).getValue());
+
+    DeleteKeyValuePropertiesRequest deleteKeyValuePropertiessRequest =
+        DeleteKeyValuePropertiesRequest.newBuilder()
+            .setId(id1)
+            .addKeys(attrKey)
+            .setPropertyName(propertyName)
+            .build();
+    serviceBlockingStub.deleteKeyValueProperties(deleteKeyValuePropertiessRequest);
+    assertTrue(true);
+
+    GetKeyValuePropertiesRequest.Response response =
+        serviceBlockingStub.getKeyValueProperties(getKeyValuePropertiessRequest);
+    assertEquals(
+        "response keyValue count not match with expected keyValue count",
+        0,
+        response.getKeyValuePropertyCount());
+
+    LOGGER.info("Add & Delete keyValue properties test stop................................");
   }
 }

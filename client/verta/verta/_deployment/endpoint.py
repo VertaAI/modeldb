@@ -5,7 +5,7 @@ import sys
 import time
 
 from ..deployment import DeployedModel
-from ..deployment.strategies import _UpdateStrategy
+from ..deployment.update._strategies import _UpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
 
@@ -107,24 +107,25 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    def update(self, run, strategy, wait=False):
+    def update(self, run, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         if not isinstance(run, experimentrun.ExperimentRun):
             raise TypeError("run must be an ExperimentRun")
 
         if not isinstance(strategy, _UpdateStrategy):
             raise TypeError("strategy must be an object from verta.deployment.strategies")
 
-        stage_id = self._get_or_create_stage()
-
         # Create new build:
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
             self._conn.scheme,
             self._conn.socket,
-            self.workspace
+            self.workspace,
         )
         response = _utils.make_request("POST", url, self._conn, json={"run_id": run.id})
         _utils.raise_for_http_error(response)
         build_id = response.json()["id"]
+
+        # prepare body for update request
+        update_body = strategy._as_build_update_req_body(build_id)
 
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
@@ -132,9 +133,9 @@ class Endpoint(object):
             self._conn.socket,
             self.workspace,
             self.id,
-            stage_id
+            self._get_or_create_stage(),
         )
-        response = _utils.make_request("PUT", url, self._conn, json=strategy._as_build_update_req_body(build_id))
+        response = _utils.make_request("PUT", url, self._conn, json=update_body)
         _utils.raise_for_http_error(response)
 
         if wait:
