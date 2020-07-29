@@ -1081,7 +1081,7 @@ class Client(object):
 
     def create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None):
         """
-        Attaches a registered_model to this Client.
+        Creates a new Registered Model.
 
         A registered_model with name `name` does will be created and initialized with specified metadata parameters.
 
