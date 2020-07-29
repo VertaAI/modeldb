@@ -5,13 +5,16 @@ import verta
 
 
 class TestModel:
-    def test_create(self, client):
-        assert client.set_registered_model()
-
+    def test_create(self, client, created_registered_models):
+        registered_model = client.set_registered_model()
+        assert registered_model
+        created_registered_models.append(registered_model)
         assert client.registered_model is not None
         
         name = verta._internal_utils._utils.generate_default_name()
-        assert client.create_registered_model(name)
+        registered_model = client.create_registered_model(name)
+        assert registered_model
+        created_registered_models.append(registered_model)
         assert client.registered_model is not None
         with pytest.raises(requests.HTTPError) as excinfo:
             assert client.create_registered_model(name)
