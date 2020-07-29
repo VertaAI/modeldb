@@ -161,6 +161,3 @@ class TestUpdate:
         assert error_msg_2 in result.output
 
         created_endpoints.append(endpoint)
-
-
-
