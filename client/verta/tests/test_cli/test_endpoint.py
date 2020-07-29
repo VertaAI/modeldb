@@ -46,6 +46,7 @@ class TestUpdate:
     def test_direct_update_endpoint(self, client, created_endpoints, experiment_run, model_for_deployment):
         endpoint_name = _utils.generate_default_name()
         endpoint = client.set_endpoint(endpoint_name)
+        created_endpoints.append(endpoint)
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
 
@@ -62,11 +63,11 @@ class TestUpdate:
         updated_build_ids = get_build_ids(endpoint.get_status())
 
         assert len(updated_build_ids) - len(updated_build_ids.intersection(original_build_ids)) > 0
-        created_endpoints.append(endpoint)
 
     def test_canary_update_endpoint(self, client, created_endpoints, experiment_run, model_for_deployment):
         endpoint_name = _utils.generate_default_name()
         endpoint = client.set_endpoint(endpoint_name)
+        created_endpoints.append(endpoint)
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
 
@@ -90,7 +91,6 @@ class TestUpdate:
         updated_build_ids = get_build_ids(endpoint.get_status())
 
         assert len(updated_build_ids) - len(updated_build_ids.intersection(original_build_ids)) > 0
-        created_endpoints.append(endpoint)
 
     def test_update_invalid_parameters_error(self, client, created_endpoints, experiment_run):
         error_msg_1 = "--canary-rule, --canary-interval, and --canary-step can only be used alongside --strategy=canary"
@@ -98,6 +98,7 @@ class TestUpdate:
 
         endpoint_name = _utils.generate_default_name()
         endpoint = client.set_endpoint(endpoint_name)
+        created_endpoints.append(endpoint)
 
         canary_rule = '{"rule_id": 1001, "rule_parameters": \
         [{"name": "latency_avg", "value": "0.8"}]}'
@@ -160,5 +161,3 @@ class TestUpdate:
         )
         assert result.exception
         assert error_msg_2 in result.output
-
-        created_endpoints.append(endpoint)
