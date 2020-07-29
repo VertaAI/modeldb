@@ -207,8 +207,7 @@ class Endpoint(object):
         if not (is_json or is_yaml):
             raise ValueError("input must be a json or yaml")
 
-        self._update_from_dict(update_dict)
-        return self.get_status()
+        return self._update_from_dict(update_dict)
 
     def _update_from_dict(self, update_dict):
         if update_dict["strategy"] == "direct":
