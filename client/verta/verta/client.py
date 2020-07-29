@@ -1124,7 +1124,7 @@ class Client(object):
         return self._ctx.registered_model
 
 
-    def create_endpoint(self, path=None, description=None, workspace=None):
+    def create_endpoint(self, path, description=None, workspace=None):
         """
         Attaches an endpoint to this Client.
 
