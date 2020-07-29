@@ -3,10 +3,11 @@
 from __future__ import print_function
 import sys
 import time
+from functools import reduce
 
-from ..deployment.update._strategies import _UpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
+from ..deployment.update._strategies import _UpdateStrategy
 
 
 class Endpoint(object):
@@ -123,8 +124,7 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
         build_id = response.json()["id"]
 
-        # prepare body for update request
-        update_body = strategy._as_build_update_req_body(build_id)
+        update_body = self.form_update_body(resources, strategy, build_id)
 
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
@@ -213,3 +213,9 @@ class Endpoint(object):
         if len(tokens) == 0:
             return None
         return tokens[0]['creator_request']['value']
+
+    def form_update_body(self, resources, strategy, build_id):
+        update_body = strategy._as_build_update_req_body(build_id)
+        update_body["resources"] = reduce(lambda a, b: {**a, **b}, map(lambda a: a.to_dict(), resources))
+        # prepare body for update request
+        return update_body
