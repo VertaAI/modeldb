@@ -205,7 +205,6 @@ class Endpoint(object):
     def _update_from_dict(self, update_dict):
         if update_dict["strategy"] == "direct":
             strategy = DirectUpdateStrategy()
-            update_body = strategy._as_build_update_req_body(update_dict["build_id"])
         elif update_dict["strategy"] == "canary":
             strategy = CanaryUpdateStrategy(
                 interval=int(update_dict["canary_strategy"]["progress_interval_seconds"]),
@@ -214,11 +213,10 @@ class Endpoint(object):
 
             for rule in update_dict["canary_strategy"]["rules"]:
                 strategy.add_rule(_UpdateRule._from_dict(rule))
-
-            update_body = strategy._as_build_update_req_body(update_dict["build_id"])
         else:
             raise ValueError("update strategy must be \"direct\" or \"canary\"")
 
+        update_body = strategy._as_build_update_req_body(update_dict["build_id"])
         self._update(update_body)
 
     def _update(self, update_body):
