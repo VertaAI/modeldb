@@ -321,6 +321,7 @@ class TestModelVersion:
         model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
         assert len(model_version._msg.artifacts) == 4
 
+    @pytest.mark.skip(reason="pending backend")
     def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir, registered_model):
         download_to_path = "context.tgz"
 
