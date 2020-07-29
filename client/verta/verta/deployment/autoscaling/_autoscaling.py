@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from .metrics import _AutoscalingMetric
 
 class Autoscaling(object):
     def __init__(self, min_replicas=None, max_replicas=None, min_scale=None, max_scale=None):
@@ -32,4 +33,7 @@ class Autoscaling(object):
         }
 
     def add_metric(self, metric):
+        if not isinstance(metric, _AutoscalingMetric):
+            raise TypeError("`metric` must be an object from verta.deployment.autoscaling.metrics")
+
         self._metrics.append(metric)
