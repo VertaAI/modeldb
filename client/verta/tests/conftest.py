@@ -348,5 +348,29 @@ def registered_model(client):
 
 
 @pytest.fixture
+def created_registered_models(client):
+    """Container to track and clean up `RegisteredModel`s created during tests."""
+    to_delete = []
+
+    yield to_delete
+
+    for registered_model in to_delete:
+        if client._ctx.registered_model and registered_model.id == client._ctx.registered_model.id:
+            client._ctx.registered_model = None
+
+        utils.delete_registered_model(registered_model.id, client._conn)
+
+
+@pytest.fixture
 def model_version(registered_model):
     yield registered_model.get_or_create_version()
+
+
+@pytest.fixture
+def created_endpoints(client):
+    to_delete = []
+
+    yield to_delete
+
+    for endpoint in to_delete:
+        utils.delete_endpoint(endpoint.id, endpoint.workspace, client._conn)

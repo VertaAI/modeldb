@@ -200,8 +200,15 @@ class TestEntities:
 class TestProject:
     def test_create(self, client):
         assert client.set_project()
-
         assert client.proj is not None
+        name = verta._internal_utils._utils.generate_default_name()
+        assert client.create_project(name)
+        assert client.proj is not None
+        with pytest.raises(requests.HTTPError) as excinfo:
+            assert client.create_project(name)
+        excinfo_value = str(excinfo.value).strip()
+        assert "409" in excinfo_value
+        assert "already exists" in excinfo_value
 
     def test_get(self, client):
         name = verta._internal_utils._utils.generate_default_name()
@@ -249,8 +256,16 @@ class TestExperiment:
     def test_create(self, client):
         client.set_project()
         assert client.set_experiment()
-
         assert client.expt is not None
+
+        name = verta._internal_utils._utils.generate_default_name()
+        assert client.create_experiment(name)
+        assert client.expt is not None
+        with pytest.raises(requests.HTTPError) as excinfo:
+            assert client.create_experiment(name)
+        excinfo_value = str(excinfo.value).strip()
+        assert "409" in excinfo_value
+        assert "already exists" in excinfo_value
 
     def test_get(self, client):
         proj = client.set_project()
@@ -311,6 +326,14 @@ class TestExperimentRun:
         client.set_experiment()
 
         assert client.set_experiment_run()
+
+        name = verta._internal_utils._utils.generate_default_name()
+        assert client.create_experiment_run(name)
+        with pytest.raises(requests.HTTPError) as excinfo:
+            assert client.create_experiment_run(name)
+        excinfo_value = str(excinfo.value).strip()
+        assert "409" in excinfo_value
+        assert "already exists" in excinfo_value
 
     def test_get(self, client):
         proj = client.set_project()
