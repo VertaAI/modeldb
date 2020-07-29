@@ -1004,7 +1004,7 @@ class Client(object):
 
     def create_experiment(self, name=None, desc=None, tags=None, attrs=None):
         """
-        Attaches an Experiment under the currently active Project to this Client.
+        Creates a new Experiment under the currently active Project.
 
         Experiment with name `name` will be created and initialized with specified metadata parameters.
 
