@@ -17,21 +17,24 @@ def update():
 @click.option("--run-id", "-r", help="Experiment Run to deploy.")
 @click.option("--strategy", "-s", type=click.Choice(['direct', 'canary'], case_sensitive=False), help="Strategy to use to roll out new deployment.")
 @click.option("--canary-rule", "-c", multiple=True, help="Rule to use for canary deployment. Can only be used alongside --strategy=canary")
-@click.option("--interval", "-i", type=click.IntRange(min=0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary")
-@click.option("--step", type=click.FloatRange(min=0.0, max=1.0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary")
+@click.option("--canary-interval", "-i", type=click.IntRange(min=0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary")
+@click.option("--canary-step", type=click.FloatRange(min=0.0, max=1.0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary")
 @click.option("--workspace", "-w", help="Workspace to use.")
 # TODO: more options
-def update_endpoint(path, run_id, strategy, canary_rule, interval, step, workspace):
+def update_endpoint(path, run_id, strategy, canary_rule, canary_interval, canary_step, workspace):
     """List all endpoints available.
     """
-    if strategy != "canary" and (canary_rule or interval is not None or step is not None):
+    if canary_step == 0.0:
+        raise click.BadParameter("canary-step must be non-zero.")
+
+    if canary_interval == 0.0:
+        raise click.BadParameter("canary-interval must be non-zero.")
+
+    if strategy != "canary" and (canary_rule or canary_interval or canary_step):
         raise click.BadParameter("--canary-rule, --interval, and --step can only be used alongside --strategy=canary")
 
-    if strategy == "canary" and (not canary_rule or interval is None or step is None):
+    if strategy == "canary" and (not canary_rule or not canary_interval or not canary_step):
         raise click.BadParameter("--canary-rule, --interval, and --step must be provided alongside --strategy=canary")
-
-    if step is not None and step == 0.0:
-        raise click.BadParameter("step must be non-zero.")
 
     client = Client()
 
@@ -49,7 +52,7 @@ def update_endpoint(path, run_id, strategy, canary_rule, interval, step, workspa
         endpoint.update(run, DirectUpdateStrategy())
     else:
         # strategy is canary
-        strategy_obj = CanaryUpdateStrategy(interval, step)
+        strategy_obj = CanaryUpdateStrategy(canary_interval, canary_step)
 
         for rule in canary_rule:
             strategy_obj.add_rule(_UpdateRule._from_json(rule))
