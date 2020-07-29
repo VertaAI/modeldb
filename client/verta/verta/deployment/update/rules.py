@@ -2,7 +2,7 @@
 
 import abc
 
-from ..external import six
+from ...external import six
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -24,14 +24,17 @@ class _UpdateRule(object):
             ],
         }
 
-class AverageLatencyThreshold(_UpdateRule):
+
+class AverageLatencyThresholdRule(_UpdateRule):
     _RULE_ID = 1001
     _NAME = "latency_avg"
 
-class P90LatencyThreshold(_UpdateRule):
+
+class P90LatencyThresholdRule(_UpdateRule):
     _RULE_ID = 1001
     _NAME = "latency_p90"
 
-class ErrorRate(_UpdateRule):
+
+class ErrorRateRule(_UpdateRule):
     _RULE_ID = 1002
     _NAME = "error_rate"

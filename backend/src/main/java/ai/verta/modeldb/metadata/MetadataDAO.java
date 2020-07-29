@@ -31,4 +31,10 @@ public interface MetadataDAO {
       throws ModelDBException;
 
   boolean deleteProperty(IdentificationType id, String key);
+
+  void addOrUpdateKeyValueProperties(AddKeyValuePropertiesRequest request);
+
+  List<KeyValueStringProperty> getKeyValueProperties(GetKeyValuePropertiesRequest request);
+
+  void deleteKeyValueProperties(DeleteKeyValuePropertiesRequest request);
 }

@@ -164,4 +164,120 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
           responseObserver, e, DeleteLabelsRequest.Response.getDefaultInstance());
     }
   }
+
+  @Override
+  public void addKeyValueProperties(
+      AddKeyValuePropertiesRequest request,
+      StreamObserver<AddKeyValuePropertiesRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId() == null
+          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+        errorMessage = "Invalid parameter set in AddKeyValuePropertiesRequest.Id";
+      } else if (request.getKeyValuePropertyList().isEmpty()) {
+        errorMessage = "KeyValueProperties not found in AddKeyValuePropertiesRequest request";
+      } else if (request.getPropertyName().isEmpty()) {
+        errorMessage = "PropertyName not found in AddKeyValuePropertiesRequest request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.info(errorMessage);
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(errorMessage)
+                .addDetails(Any.pack(AddKeyValuePropertiesRequest.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+
+      metadataDAO.addOrUpdateKeyValueProperties(request);
+      responseObserver.onNext(AddKeyValuePropertiesRequest.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, AddKeyValuePropertiesRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getKeyValueProperties(
+      GetKeyValuePropertiesRequest request,
+      StreamObserver<GetKeyValuePropertiesRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId() == null
+          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+        errorMessage = "Invalid parameter set in GetKeyValuePropertiesRequest.Id";
+      } else if (request.getKeysList().isEmpty() && !request.getGetAll()) {
+        errorMessage =
+            "Keys not found OR getAll flag is false in GetKeyValuePropertiesRequest request";
+      } else if (request.getPropertyName().isEmpty()) {
+        errorMessage = "PropertyName not found in GetKeyValuePropertiesRequest request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.info(errorMessage);
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(errorMessage)
+                .addDetails(Any.pack(GetKeyValuePropertiesRequest.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+
+      List<KeyValueStringProperty> keyValues = metadataDAO.getKeyValueProperties(request);
+      responseObserver.onNext(
+          GetKeyValuePropertiesRequest.Response.newBuilder()
+              .addAllKeyValueProperty(keyValues)
+              .build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetKeyValuePropertiesRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void deleteKeyValueProperties(
+      DeleteKeyValuePropertiesRequest request,
+      StreamObserver<DeleteKeyValuePropertiesRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId() == null
+          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+        errorMessage = "Invalid parameter set in DeleteKeyValuePropertiesRequest.Id";
+      } else if (request.getKeysList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage =
+            "Keys not found OR deleteAll flag is false in DeleteKeyValuePropertiesRequest request";
+      } else if (request.getPropertyName().isEmpty()) {
+        errorMessage = "PropertyName not found in DeleteKeyValuePropertiesRequest request";
+      }
+
+      if (errorMessage != null) {
+        LOGGER.info(errorMessage);
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(errorMessage)
+                .addDetails(Any.pack(DeleteKeyValuePropertiesRequest.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+
+      metadataDAO.deleteKeyValueProperties(request);
+      responseObserver.onNext(DeleteKeyValuePropertiesRequest.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteKeyValuePropertiesRequest.Response.getDefaultInstance());
+    }
+  }
 }
