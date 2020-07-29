@@ -23,7 +23,7 @@ class Endpoint(object):
 
     @property
     def path(self):
-        return self.path(Endpoint._get_json_by_id(self._conn, self.workspace, self.id))
+        return self._path(Endpoint._get_json_by_id(self._conn, self.workspace, self.id))
 
     def _path(self, data):
         return data['creator_request']['path']
