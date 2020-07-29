@@ -1132,7 +1132,7 @@ class Client(object):
 
         Parameters
         ----------
-        path : str, optional
+        path : str
             Path for the endpoint.
         description : str, optional
             Description of the endpoint.
