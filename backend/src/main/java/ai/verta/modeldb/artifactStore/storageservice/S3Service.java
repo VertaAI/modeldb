@@ -132,26 +132,29 @@ public class S3Service implements ArtifactStoreService {
             .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
             .withRegion(clientRegion)
             .build();
+    LOGGER.debug("s3client refreshed with temporary credentials");
   }
 
   private void RefreshCredentialsAndSchedule(String region) {
-
-    // FIXME: currently assuming that token is valid for an hour,
-    // need to check how to obtain this programmatically
     LOGGER.debug("fetching token for s3 access");
 
-    LOGGER.debug("credentials before refresh {}", temporarySessionCredentials.hashCode());
+    LOGGER.debug(
+        "credentials before refresh {}",
+        temporarySessionCredentials != null ? temporarySessionCredentials.hashCode() : null);
 
     TimerTask task = new FetchTemporaryS3Token(region);
     task.run();
 
-    LOGGER.debug("credentials after refresh {}", temporarySessionCredentials.hashCode());
+    LOGGER.debug(
+        "credentials after refresh {}",
+        temporarySessionCredentials != null ? temporarySessionCredentials.hashCode() : null);
     LOGGER.debug("fetched token for s3 access");
 
     Date expiration = temporarySessionCredentials.getExpiration();
     Date now = new Date();
     long diffInSec = Math.abs(expiration.getTime() - now.getTime()) / 1000;
     long delay = diffInSec / 2;
+    LOGGER.info("sceduled cron for credentail refresh in {} seconds", delay);
     ModelDBUtils.scheduleTask(task, delay, delay, TimeUnit.SECONDS);
     LOGGER.debug("scheduled periodic task to fetch token for s3 access");
   }

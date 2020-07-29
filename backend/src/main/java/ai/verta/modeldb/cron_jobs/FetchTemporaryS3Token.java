@@ -40,6 +40,7 @@ public class FetchTemporaryS3Token extends TimerTask {
     }
 
     String roleSessionName = "modelDB" + UUID.randomUUID().toString();
+
     AWSSecurityTokenService stsClient =
         AWSSecurityTokenServiceClientBuilder.standard()
             .withCredentials(new ProfileCredentialsProvider())
@@ -59,6 +60,8 @@ public class FetchTemporaryS3Token extends TimerTask {
             ModelDBUtils.appendOptionalTelepresencePath(
                 System.getenv(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)));
 
+    LOGGER.debug("Read token of length {}", token.length());
+
     // Obtain credentials for the IAM role. Note that you cannot assume the role of
     // an AWS root account;
     // Amazon S3 will deny access. You must use credentials for an IAM user or an
@@ -69,7 +72,7 @@ public class FetchTemporaryS3Token extends TimerTask {
             .withWebIdentityToken(token)
             .withRoleSessionName(roleSessionName);
     AssumeRoleWithWebIdentityResult roleResponse = stsClient.assumeRoleWithWebIdentity(roleRequest);
-
+    LOGGER.debug("Received response for AssumeRoleWithWebIdentityRequest");
     Credentials credentials = roleResponse.getCredentials();
     S3Service.setTemporarySessionCredentials(credentials);
     LOGGER.debug("Refreshed session credentials");
