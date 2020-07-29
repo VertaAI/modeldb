@@ -985,7 +985,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Project`
+        :class:`~verta._tracking.Project`
 
         Raises
         ------
