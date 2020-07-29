@@ -24,17 +24,13 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.PartETag;
+import com.amazonaws.services.securitytoken.model.Credentials;
 import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -47,6 +43,7 @@ public class S3Service implements ArtifactStoreService {
   private AmazonS3 s3Client;
   private String bucketName;
   private final Regions awsRegion;
+  private static Credentials temporarySessionCredentials;
 
   public S3Service(String cloudBucketName) throws ModelDBException {
     App app = App.getInstance();
@@ -67,7 +64,7 @@ public class S3Service implements ArtifactStoreService {
     } else if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
         && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
       LOGGER.debug("temporary token based s3 client");
-      initializeS3ClientWithTemporaryCredentials(awsRegion);
+      fetchCredentialsAndInitializeS3ClientWithTemporaryCredentials(awsRegion);
     } else {
       LOGGER.debug("environment credentials based s3 client");
       // reads credential from OS Environment
@@ -101,32 +98,12 @@ public class S3Service implements ArtifactStoreService {
             .build();
   }
 
-  private void initializeS3ClientWithTemporaryCredentials(Regions clientRegion) {
+  private void fetchCredentialsAndInitializeS3ClientWithTemporaryCredentials(Regions clientRegion) {
 
     try {
-      FetchTokenAndSchedule(clientRegion.toString());
+      RefreshCredentialsAndSchedule(clientRegion.toString());
 
-      Map<String, String> credentialMap = new HashMap<String, String>();
-      populateCredentialMap(
-          credentialMap,
-          ModelDBUtils.appendOptionalTelepresencePath(
-              System.getenv(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)));
-
-      // Create a BasicSessionCredentials object that contains the credentials you just retrieved.
-      BasicSessionCredentials awsCredentials =
-          new BasicSessionCredentials(
-              credentialMap.get(ModelDBConstants.CLOUD_ACCESS_KEY),
-              credentialMap.get(ModelDBConstants.CLOUD_SECRET_KEY),
-              credentialMap.get(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN));
-
-      // Provide temporary security credentials so that the Amazon S3 client
-      // can send authenticated requests to Amazon S3. You create the client
-      // using the sessionCredentials object.
-      s3Client =
-          AmazonS3ClientBuilder.standard()
-              .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-              .withRegion(clientRegion)
-              .build();
+      initializeS3ClientWithTemporaryCredentials(clientRegion);
 
     } catch (AmazonServiceException e) {
       // The call was transmitted successfully, but Amazon S3 couldn't process
@@ -136,52 +113,47 @@ public class S3Service implements ArtifactStoreService {
       // Amazon S3 couldn't be contacted for a response, or the client
       // couldn't parse the response from Amazon S3.
       e.printStackTrace();
-    } catch (IOException e) {
-      LOGGER.error("Could not initialize s3 client with temporary credentials");
     }
   }
 
-  private void FetchTokenAndSchedule(String region) {
+  private void initializeS3ClientWithTemporaryCredentials(Regions clientRegion) {
+    // Create a BasicSessionCredentials object that contains the credentials you just retrieved.
+    BasicSessionCredentials awsCredentials =
+        new BasicSessionCredentials(
+            temporarySessionCredentials.getAccessKeyId(),
+            temporarySessionCredentials.getSecretAccessKey(),
+            temporarySessionCredentials.getSessionToken());
+
+    // Provide temporary security credentials so that the Amazon S3 client
+    // can send authenticated requests to Amazon S3. You create the client
+    // using the sessionCredentials object.
+    s3Client =
+        AmazonS3ClientBuilder.standard()
+            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+            .withRegion(clientRegion)
+            .build();
+  }
+
+  private void RefreshCredentialsAndSchedule(String region) {
 
     // FIXME: currently assuming that token is valid for an hour,
     // need to check how to obtain this programmatically
     LOGGER.debug("fetching token for s3 access");
-    long delay = 60 * 60L;
+
+    LOGGER.debug("credentials before refresh {}", temporarySessionCredentials.hashCode());
 
     TimerTask task = new FetchTemporaryS3Token(region);
-
     task.run();
+
+    LOGGER.debug("credentials after refresh {}", temporarySessionCredentials.hashCode());
     LOGGER.debug("fetched token for s3 access");
 
-    ModelDBUtils.scheduleTask(task, delay - 600, delay - 600, TimeUnit.SECONDS);
+    Date expiration = temporarySessionCredentials.getExpiration();
+    Date now = new Date();
+    long diffInSec = Math.abs(expiration.getTime() - now.getTime()) / 1000;
+    long delay = diffInSec / 2;
+    ModelDBUtils.scheduleTask(task, delay, delay, TimeUnit.SECONDS);
     LOGGER.debug("scheduled periodic task to fetch token for s3 access");
-  }
-
-  private void populateCredentialMap(Map<String, String> credentialMap, String filePathString)
-      throws IOException {
-    File file = new File(filePathString);
-
-    FileReader fr = new FileReader(file);
-    BufferedReader br = new BufferedReader(fr);
-
-    String line;
-    try {
-      // TODO: remove debug before merge
-      line = br.readLine();
-      LOGGER.debug("read access key of size {}", line.length());
-      credentialMap.put(ModelDBConstants.CLOUD_ACCESS_KEY, line);
-      line = br.readLine();
-      LOGGER.debug("read secret key of size {}", line.length());
-      credentialMap.put(ModelDBConstants.CLOUD_SECRET_KEY, line);
-      line = br.readLine();
-      LOGGER.debug("read token of size {}", line.length());
-      credentialMap.put(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN, line);
-    } catch (Exception e) {
-      LOGGER.warn("issues reading from token file at {}", filePathString);
-    } finally {
-      br.close();
-      fr.close();
-    }
   }
 
   private Boolean doesBucketExist(String bucketName) {
@@ -276,5 +248,9 @@ public class S3Service implements ArtifactStoreService {
       }
       throw e;
     }
+  }
+
+  public static void setTemporarySessionCredentials(Credentials temporarySessionCredentials) {
+    S3Service.temporarySessionCredentials = temporarySessionCredentials;
   }
 }
