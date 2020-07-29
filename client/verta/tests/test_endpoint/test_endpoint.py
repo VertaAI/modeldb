@@ -147,19 +147,12 @@ class TestEndpoint:
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
 
-        # Creating build:
-        url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
-            endpoint._conn.scheme,
-            endpoint._conn.socket,
-            endpoint.workspace,
-        )
-        response = _utils.make_request("POST", url, endpoint._conn, json={"run_id": experiment_run.id})
-        _utils.raise_for_http_error(response)
-        build_id = response.json()["id"]
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
 
         # Creating config dict:
         strategy_dict = {
-            "build_id": build_id,
+            "run_id": experiment_run.id,
             "strategy": "canary",
             "canary_strategy": {
                 "progress_step": 0.05,
@@ -185,7 +178,7 @@ class TestEndpoint:
 
         updated_status = endpoint.update_from_config(filepath)
         new_build_ids = get_build_ids(updated_status)
-        assert build_id in new_build_ids
+        assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
     def test_update_from_yaml_config(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
         yaml = pytest.importorskip("yaml")
@@ -196,19 +189,12 @@ class TestEndpoint:
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
 
-        # Creating build:
-        url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
-            endpoint._conn.scheme,
-            endpoint._conn.socket,
-            endpoint.workspace,
-        )
-        response = _utils.make_request("POST", url, endpoint._conn, json={"run_id": experiment_run.id})
-        _utils.raise_for_http_error(response)
-        build_id = response.json()["id"]
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
 
         # Creating config dict:
         strategy_dict = {
-            "build_id": build_id,
+            "run_id": experiment_run.id,
             "strategy": "canary",
             "canary_strategy": {
                 "progress_step": 0.05,
@@ -234,7 +220,7 @@ class TestEndpoint:
 
         updated_status = endpoint.update_from_config(filepath)
         new_build_ids = get_build_ids(updated_status)
-        assert build_id in new_build_ids
+        assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
     def test_get_access_token(self, client):
         path = verta._internal_utils._utils.generate_default_name()

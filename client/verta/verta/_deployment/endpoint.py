@@ -130,7 +130,15 @@ class Endpoint(object):
         update_body = strategy._as_build_update_req_body(build_id)
 
         # Update stages with new build
-        self._update(update_body)
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_stage(),
+        )
+        response = _utils.make_request("PUT", url, self._conn, json=update_body)
+        _utils.raise_for_http_error(response)
 
         if wait:
             print("waiting for update...", end='')
@@ -216,19 +224,8 @@ class Endpoint(object):
         else:
             raise ValueError("update strategy must be \"direct\" or \"canary\"")
 
-        update_body = strategy._as_build_update_req_body(update_dict["build_id"])
-        self._update(update_body)
-
-    def _update(self, update_body):
-        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.workspace,
-            self.id,
-            self._get_or_create_stage(),
-        )
-        response = _utils.make_request("PUT", url, self._conn, json=update_body)
-        _utils.raise_for_http_error(response)
+        run = experimentrun.ExperimentRun._get_by_id(self._conn, self._conf, id=update_dict["run_id"])
+        self.update(run, strategy)
 
     def get_status(self):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
