@@ -43,7 +43,6 @@ public class FetchTemporaryS3Token extends TimerTask {
 
     AWSSecurityTokenService stsClient =
         AWSSecurityTokenServiceClientBuilder.standard()
-            .withCredentials(new ProfileCredentialsProvider())
             .withRegion(clientRegion)
             .build();
 
@@ -71,6 +70,7 @@ public class FetchTemporaryS3Token extends TimerTask {
             .withRoleArn(roleArn)
             .withWebIdentityToken(token)
             .withRoleSessionName(roleSessionName);
+
     AssumeRoleWithWebIdentityResult roleResponse = stsClient.assumeRoleWithWebIdentity(roleRequest);
     LOGGER.debug("Received response for AssumeRoleWithWebIdentityRequest");
     Credentials credentials = roleResponse.getCredentials();
