@@ -52,3 +52,6 @@ class Dataset(entity._ModelDBEntity):
 
     def create_path_version(self):  # TODO: same params as Path.__init__()
         raise NotImplementedError
+
+    def get_latest_version(self):
+        raise NotImplementedError
