@@ -90,6 +90,43 @@ message DeletePropertyRequest {
     }
 }
 
+message KeyValueStringProperty {
+    string key = 1;
+    string value = 2;
+}
+
+message AddKeyValuePropertiesRequest {
+    IdentificationType id = 1;
+    string property_name = 2;
+    repeated KeyValueStringProperty key_value_property = 3;
+
+    message Response {
+    }
+}
+
+// if getAll flag is true ignores keys and gets all key value properties corresponding to id and property_name
+message GetKeyValuePropertiesRequest {
+    IdentificationType id = 1;
+    string property_name = 2;
+    repeated string keys = 3;
+    bool getAll = 4;
+
+    message Response {
+        repeated KeyValueStringProperty key_value_property = 1;
+    }
+}
+
+// if deleteAll flag is true ignores keys and deletes all key value properties corresponding to id and property_name
+message DeleteKeyValuePropertiesRequest {
+    IdentificationType id = 1;
+    string property_name = 2;
+    repeated string keys = 3;
+    bool deleteAll = 4;
+
+    message Response {
+    }
+}
+
 service MetadataService {
     rpc GetLabels(GetLabelsRequest) returns (GetLabelsRequest.Response) {
         option (google.api.http) = {
@@ -140,6 +177,26 @@ service MetadataService {
     rpc DeleteProperty(DeletePropertyRequest) returns (DeletePropertyRequest.Response) {
         option (google.api.http) = {
             delete: "/v1/metadata/property"
+            body: "*"
+        };
+    };
+
+    rpc AddKeyValueProperties(AddKeyValuePropertiesRequest) returns (AddKeyValuePropertiesRequest.Response) {
+        option (google.api.http) = {
+            put: "/v1/metadata/keyValueProperties"
+            body: "*"
+        };
+    };
+
+    rpc GetKeyValueProperties(GetKeyValuePropertiesRequest) returns (GetKeyValuePropertiesRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/keyValueProperties"
+        };
+    };
+
+    rpc DeleteKeyValueProperties(DeleteKeyValuePropertiesRequest) returns (DeleteKeyValuePropertiesRequest.Response) {
+        option (google.api.http) = {
+            delete: "/v1/metadata/keyValueProperties"
             body: "*"
         };
     };

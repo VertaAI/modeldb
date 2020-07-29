@@ -650,6 +650,27 @@
             <where>parent_order is null</where>
         </update>
     </changeSet>
+
+    <changeSet id="key-value-property-mapping-table" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="key_value_property_mapping"/>
+            </not>
+        </preConditions>
+        <createTable tableName="key_value_property_mapping">
+            <column name="entity_hash" type="varchar(256)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="property_name" type="varchar(256)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="kv_key" type="varchar(50)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="kv_value" type="TEXT"/>
+        </createTable>
+    </changeSet>
+
     <!-- keep the line below at the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
     <changeSet author="anandJ" id="migration_status_table">
