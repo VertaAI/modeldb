@@ -156,4 +156,4 @@ class TestEndpoint:
         while not endpoint.get_status()['status'] == "active":
             time.sleep(3)
         x = model_for_deployment['train_features'].iloc[1].values
-        endpoint.get_deployed_model().predict([x])
+        assert endpoint.get_deployed_model().predict([x]) == [2]
