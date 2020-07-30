@@ -214,10 +214,6 @@ class Client(object):
         return self._ctx.proj
 
     @property
-    def registered_model(self):
-        return self._ctx.registered_model
-
-    @property
     def expt(self):
         return self._ctx.expt
 
