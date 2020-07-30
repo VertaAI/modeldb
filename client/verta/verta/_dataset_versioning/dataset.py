@@ -59,19 +59,18 @@ class Dataset(entity._ModelDBEntity):
     def _get_proto_by_id(cls, conn, id):
         Message = _DatasetService.GetDatasetById
         msg = Message(id=id)
-        response = conn.make_proto_request("GET",
-                                           "/api/v1/modeldb/dataset/getDatasetById",
-                                           params=msg)
+        endpoint = "/api/v1/modeldb/dataset/getDatasetById"
+        response = conn.make_proto_request("GET", endpoint, params=msg)
         return conn.maybe_proto_response(response, Message.Response).dataset
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
         Message = _DatasetService.GetDatasetByName
         msg = Message(name=name, workspace_name=workspace)
-        response = conn.make_proto_request("GET",
-                                           "/api/v1/modeldb/dataset/getDatasetByName",
-                                           params=msg)
-        response = conn.maybe_proto_response(response, Message.Response)
+        endpoint = "/api/v1/modeldb/dataset/getDatasetByName"
+        proto_response = conn.make_proto_request("GET", endpoint, params=msg)
+        response = conn.maybe_proto_response(proto_response, Message.Response)
+
         if workspace is None or response.HasField("dataset_by_user"):
             return response.dataset_by_user
         elif hasattr(response, "shared_datasets") and response.shared_datasets:
@@ -83,6 +82,8 @@ class Dataset(entity._ModelDBEntity):
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
         Message = _DatasetService.CreateDataset
         msg = Message(name=name, description=desc, tags=tags, attributes=attrs, workspace_name=ctx.workspace_name)
+        endpoint = "/api/v1/modeldb/dataset/createDataset"
+
         if public_within_org:
             if ctx.workspace_name is None:
                 raise ValueError("cannot set `public_within_org` for personal workspace")
@@ -94,9 +95,7 @@ class Dataset(entity._ModelDBEntity):
             else:
                 msg.project_visibility = _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
 
-        response = conn.make_proto_request("POST",
-                                           "/api/v1/modeldb/dataset/createDataset",
-                                           body=msg)
+        response = conn.make_proto_request("POST", endpoint, body=msg)
         dataset = conn.must_proto_response(response, Message.Response).dataset
 
         if ctx.workspace_name is not None:
