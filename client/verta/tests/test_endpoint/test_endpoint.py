@@ -75,7 +75,6 @@ class TestEndpoint:
                 has_new_id = True
         assert has_new_id
 
-
     def test_get_status(self, client, created_endpoints):
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -83,9 +82,9 @@ class TestEndpoint:
         status = endpoint.get_status()
 
         # Check that some fields exist:
-        assert "status" in status
-        assert "date_created" in status
-        assert "id" in status
+        assert status["status"]
+        assert status["date_created"]
+        assert status["stage_id"]
 
     def test_repr(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
