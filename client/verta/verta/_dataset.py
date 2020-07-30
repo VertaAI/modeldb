@@ -20,7 +20,7 @@ from ._internal_utils import (
     importer,
 )
 
-from ._dataset_versioning import DatasetVersions
+from ._dataset_versioning.dataset_versions import DatasetVersions
 
 
 class Dataset(object):

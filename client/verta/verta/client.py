@@ -63,7 +63,7 @@ from ._registry import (
     RegisteredModelVersion,
     RegisteredModelVersions,
 )
-from ._dataset_versioning import Datasets
+from ._dataset_versioning.datasets import Datasets
 from ._deployment import (
     Endpoint,
     Endpoints,
