@@ -1156,7 +1156,7 @@ class Client(object):
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
-    def get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
+    def get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, date_created=None, public_within_org=None, id=None):
         # TODO: when MVP, remove '2'
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
@@ -1172,7 +1172,7 @@ class Client(object):
         else:
             dataset = Dataset._get_or_create_by_name(self._conn, name,
                                                         lambda name: Dataset._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                        lambda name: Dataset._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
+                                                        lambda name: Dataset._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created, public_within_org=public_within_org))
 
         return dataset
 
@@ -1180,7 +1180,7 @@ class Client(object):
         # TODO: when MVP, remove '2'
         return self.get_or_create_dataset2(*args, **kwargs)
 
-    def create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
+    def create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, date_created=None, public_within_org=None):
         # TODO: when MVP, remove '2'
         name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
@@ -1188,7 +1188,7 @@ class Client(object):
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
         return Dataset._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs,
-                        public_within_org=public_within_org)
+                               date_created=date_created, public_within_org=public_within_org)
 
     def get_dataset2(self, name=None, workspace=None, id=None):
         # TODO: when MVP, remove '2'
