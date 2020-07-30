@@ -11,6 +11,12 @@ from .._internal_utils import _utils
 from .._tracking import experimentrun
 
 
+def merge_dicts(a, b):
+    result = a.copy()
+    result.update(b)
+    return result
+
+
 class Endpoint(object):
     def __init__(self, conn, conf, workspace, id):
         self.workspace = workspace
@@ -125,7 +131,7 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
         build_id = response.json()["id"]
 
-        update_body = self.form_update_body(resources, strategy, build_id)
+        update_body = self._form_update_body(resources, strategy, build_id)
 
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
@@ -215,9 +221,11 @@ class Endpoint(object):
             return None
         return tokens[0]['creator_request']['value']
 
-    def form_update_body(self, resources, strategy, build_id):
+
+    def _form_update_body(self, resources, strategy, build_id):
         update_body = strategy._as_build_update_req_body(build_id)
-        update_body["resources"] = reduce(lambda resource_a, resource_b: {**resource_a, **resource_b}, map(lambda resource: resource.to_dict(), resources))
+        update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
+                                          map(lambda resource: resource.to_dict(), resources))
         # prepare body for update request
         return update_body
       

@@ -178,7 +178,7 @@ class TestEndpoint:
             Memory("500Mi"),
         ]
 
-        parameter_json = endpoint.form_update_body(resources, DirectUpdateStrategy(), 0)
+        parameter_json = endpoint._form_update_body(resources, DirectUpdateStrategy(), 0)
         assert parameter_json == {'build_id': 0, 'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
         
     def test_get_deployed_model(self, client, experiment_run, model_for_deployment, created_endpoints):
