@@ -702,6 +702,8 @@ class Client(object):
         if dataset_ids:
             datasets = datasets.with_ids(_utils.as_list_of_str(dataset_ids))
         if sort_key:
+            if sort_key.startswith("time_"):
+                sort_key = "date_" + sort_key[len("time_"):]
             datasets = datasets.sort(sort_key, not ascending)
         if workspace:
             datasets = datasets.with_workspace(workspace)
@@ -1151,8 +1153,7 @@ class Client(object):
         if workspace is None:
             workspace = self._get_personal_workspace()
         return Endpoint._create(self._conn, self._conf, workspace, path, description)
-      
-      
+
     @property
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
