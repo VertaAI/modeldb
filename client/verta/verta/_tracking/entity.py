@@ -137,17 +137,22 @@ class _ModelDBEntity(object):
             return None
 
     @classmethod
-    def _create_proto(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
+    def _create_proto(cls, conn, *args, **kwargs):
+        tags = kwargs.pop('tags', None)
         if tags is not None:
-            tags = _utils.as_list_of_str(tags)
-        if attrs is not None:
-            attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
-                     for key, value in six.viewitems(attrs)]
+            kwargs['tags'] = _utils.as_list_of_str(tags)
 
-        return cls._create_proto_internal(conn, ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created, **kwargs)
+        attrs = kwargs.pop('attrs', None)
+        if attrs is not None:
+            kwargs['attrs'] = [
+                _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
+                for key, value in six.viewitems(attrs)
+            ]
+
+        return cls._create_proto_internal(conn, *args, **kwargs)
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):  # recommended params
         raise NotImplementedError
 
     def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False):

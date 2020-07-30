@@ -951,7 +951,6 @@ class Client(object):
     def set_endpoint(self, *args, **kwargs):
         return self.get_or_create_endpoint(*args, **kwargs)
 
-
     def create_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
         """
         Creates a new Project.
@@ -1151,8 +1150,31 @@ class Client(object):
         if workspace is None:
             workspace = self._get_personal_workspace()
         return Endpoint._create(self._conn, self._conf, workspace, path, description)
-      
-      
+
     @property
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
+
+    def get_or_create_dataset2(self):
+        # TODO: when MVP, remove '2'
+        raise NotImplementedError
+
+    def set_dataset2(self, *args, **kwargs):
+        # TODO: when MVP, remove '2'
+        return self.get_or_create_dataset2(*args, **kwargs)
+
+    def create_dataset2(self):
+        # TODO: when MVP, remove '2'
+        raise NotImplementedError
+
+    def get_dataset2(self):
+        # TODO: when MVP, remove '2'
+        raise NotImplementedError
+
+    @property
+    def datasets(self):
+        raise NotImplementedError
+
+    def get_dataset_version2(self):
+        # TODO: when MVP, remove '2'
+        raise NotImplementedError

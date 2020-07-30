@@ -82,6 +82,7 @@ class TestBaseDatasets:
 
 
 class TestBaseDatasetVersions:
+    @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
     def test_creation_from_scratch(self, client, created_datasets):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
@@ -93,6 +94,7 @@ class TestBaseDatasetVersions:
         assert version._dataset_type == _DatasetService.DatasetTypeEnum.PATH
         assert version.id
 
+    @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
     def test_creation_by_id(self, client, created_datasets):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
@@ -308,6 +310,7 @@ class TestClientDatasetVersionFunctions:
 
 
 class TestPathBasedDatasetVersions:
+    @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
     def test_creation_from_scratch(self, client, created_datasets):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
@@ -320,6 +323,7 @@ class TestPathBasedDatasetVersions:
         assert version._dataset_type == _DatasetService.DatasetTypeEnum.PATH
         assert version.id
 
+    @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
     def test_creation_by_id(self, client, created_datasets):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
@@ -358,6 +362,7 @@ class TestQueryDatasets:
 
 
 class TestQueryDatasetVersions:
+    @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
     def test_creation_from_scratch(self, client, created_datasets):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.DatasetType.QUERY)
@@ -370,6 +375,7 @@ class TestQueryDatasetVersions:
         assert version._dataset_type == _DatasetService.DatasetTypeEnum.QUERY
         assert version.id
 
+    @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
     def test_creation_by_id(self, client, created_datasets):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.QUERY)
