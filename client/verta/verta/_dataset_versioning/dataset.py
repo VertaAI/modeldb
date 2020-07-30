@@ -60,7 +60,7 @@ class Dataset(entity._ModelDBEntity):
         Message = _DatasetService.GetDatasetById
         msg = Message(id=id)
         response = conn.make_proto_request("GET",
-                                           "/api/v1/dataset/getDatasetById",
+                                           "/api/v1/modeldb/dataset/getDatasetById",
                                            params=msg)
         return conn.maybe_proto_response(response, Message.Response).dataset
 
@@ -69,7 +69,7 @@ class Dataset(entity._ModelDBEntity):
         Message = _DatasetService.GetDatasetByName
         msg = Message(name=name, workspace_name=workspace)
         response = conn.make_proto_request("GET",
-                                           "/api/v1/dataset/getDatasetByName",
+                                           "/api/v1/modeldb/dataset/getDatasetByName",
                                            params=msg)
         response = conn.maybe_proto_response(response, Message.Response)
         if workspace is None or response.HasField("dataset_by_user"):
@@ -95,7 +95,7 @@ class Dataset(entity._ModelDBEntity):
                 msg.project_visibility = _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
 
         response = conn.make_proto_request("POST",
-                                           "/api/v1/dataset/createDataset",
+                                           "/api/v1/modeldb/dataset/createDataset",
                                            body=msg)
         dataset = conn.must_proto_response(response, Message.Response).dataset
 
