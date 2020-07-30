@@ -47,8 +47,7 @@ class Dataset(entity._ModelDBEntity):
 
     def create_s3_version(self):  # TODO: same params as S3.__init__()
         raise NotImplementedError
-        # TODO: create S3 blob
-        # TODO: hijack DatasetVersion creation flow to inject S3 blob??
+        # TODO: create S3 blob and pass as self._create(dataset_blob=blob)
 
     def create_path_version(self):  # TODO: same params as Path.__init__()
         raise NotImplementedError
