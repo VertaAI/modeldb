@@ -925,7 +925,7 @@ class Client(object):
         else:
             return Endpoint._get_or_create_by_name(self._conn, path,
                                             lambda name: Endpoint._get_by_path(self._conn, self._conf, workspace, path),
-                                            lambda name: Endpoint._create( self._conn, self._conf, workspace, path, desc=description))
+                                            lambda name: Endpoint._create( self._conn, self._conf, workspace, path, description))
 
 
 
@@ -1151,7 +1151,8 @@ class Client(object):
         if workspace is None:
             workspace = self._get_personal_workspace()
         return Endpoint._create(self._conn, self._conf, workspace, path, description)
-
+      
+      
     @property
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
