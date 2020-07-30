@@ -8,11 +8,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.model.PartETag;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import java.util.List;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
@@ -49,7 +45,8 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
       // couldn't parse the response from Amazon S3.
       String errorMessage = e.getMessage();
       LOGGER.warn(errorMessage);
-      throw new ModelDBException(errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
+      throw new ModelDBException(
+          errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
     }
   }
 

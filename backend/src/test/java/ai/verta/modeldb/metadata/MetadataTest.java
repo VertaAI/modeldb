@@ -2,7 +2,6 @@ package ai.verta.modeldb.metadata;
 
 import static org.junit.Assert.*;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.AuthClientInterceptor;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
@@ -16,7 +15,6 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceBlockingStub;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
-import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -285,10 +283,7 @@ public class MetadataTest {
         AddKeyValuePropertiesRequest.newBuilder()
             .setId(id1)
             .addKeyValueProperty(
-                KeyValueStringProperty.newBuilder()
-                    .setKey(attrKey)
-                    .setValue(value)
-                    .build())
+                KeyValueStringProperty.newBuilder().setKey(attrKey).setValue(value).build())
             .setPropertyName(propertyName)
             .build();
     serviceBlockingStub.addKeyValueProperties(addKeyValuePropertiessRequest1);
