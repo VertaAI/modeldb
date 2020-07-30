@@ -823,14 +823,13 @@ class Client(object):
         self._ctx.workspace_name = workspace
 
         if id is not None:
-            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
-            self._ctx.populate()
+            registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
         else:
-            self._ctx.registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
+            registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
                                                                                 lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
                                                                                 lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=labels, public_within_org=public_within_org))
 
-        return self._ctx.registered_model
+        return registered_model
 
     def get_registered_model(self, name=None, workspace=None, id=None):
         if name is not None and id is not None:
@@ -847,31 +846,20 @@ class Client(object):
         self._ctx.workspace_name = workspace
 
         if id is not None:
-            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
-            self._ctx.populate()
+            registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
         else:
-            self._ctx.registered_model = RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+            registered_model =  RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
 
-        if self._ctx.registered_model is None:
+        if registered_model is None:
             raise ValueError("Registered model not found")
 
-        return self._ctx.registered_model
+        return registered_model
 
     def set_registered_model(self, *args, **kwargs):
         return self.get_or_create_registered_model(*args, **kwargs)
 
-    def get_registered_model_version(self, name=None, id=None):
-        if id is not None:
-            # TODO: Support registered_model in populate
-            model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
-            self.get_registered_model(id=model_version.registered_model_id)
-        else:
-            if self._ctx.registered_model is None:
-                self.set_registered_model()
-
-            model_version = RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.registered_model.id)
-
-        return model_version
+    def get_registered_model_version(self, id):
+        return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
 
     @property
     def registered_models(self):
