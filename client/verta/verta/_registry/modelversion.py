@@ -19,7 +19,7 @@ from ..external import six
 from .._internal_utils import (
     _utils,
     _artifact_utils,
-    importer
+    importer, _request_utils
 )
 from .._internal_utils._utils import NoneProtoResponse
 
@@ -585,8 +585,26 @@ class RegisteredModelVersion(_ModelDBEntity):
             Absolute path where Docker context was downloaded to. Matches `download_to_path`.
 
         """
-        # should be same as ExperimentRun.download_docker_context()
-        raise NotImplementedError
+        endpoint = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/dockercontext".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._msg.registered_model_id,
+            self.id
+        )
+        with _utils.make_request("GET", endpoint, self._conn, stream=True) as response:
+            try:
+                _utils.raise_for_http_error(response)
+            except requests.HTTPError as e:
+                # propagate error caused by missing artifact
+                error_text = e.response.text.strip()
+                if error_text.startswith("missing artifact"):
+                    new_e = RuntimeError("unable to obtain Docker context due to " + error_text)
+                    six.raise_from(new_e, None)
+                else:
+                    raise e
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
 
     def archive(self):
         """
@@ -607,3 +625,10 @@ class RegisteredModelVersion(_ModelDBEntity):
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
         self._clear_cache()
+
+    def _get_info_list(self, model_name):
+        if model_name is None:
+            id_or_name = str(self._msg.registered_model_id)
+        else :
+            id_or_name = model_name
+        return [self._msg.version, str(self.id), id_or_name, _utils.timestamp_to_str(self._msg.time_updated)]

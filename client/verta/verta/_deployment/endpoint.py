@@ -5,6 +5,7 @@ import sys
 import time
 from functools import reduce
 
+from ..deployment import DeployedModel
 from ..deployment.update._strategies import _UpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
@@ -219,3 +220,12 @@ class Endpoint(object):
         update_body["resources"] = reduce(lambda resource_a, resource_b: {**resource_a, **resource_b}, map(lambda resource: resource.to_dict(), resources))
         # prepare body for update request
         return update_body
+      
+    def get_deployed_model(self):
+        status = self.get_status()
+        if status['status'] != "active":
+            raise RuntimeError("model is not currently deployed (status: {})".format(status))
+
+        access_token = self.get_access_token()
+        url = "{}://{}/api/v1/predict{}".format(self._conn.scheme, self._conn.socket, self.path)
+        return DeployedModel.from_url(url, access_token)

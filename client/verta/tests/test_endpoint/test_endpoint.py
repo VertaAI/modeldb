@@ -1,3 +1,5 @@
+import time
+
 import pytest
 import requests
 
@@ -160,9 +162,10 @@ class TestEndpoint:
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
-    def test_get_access_token(self, client):
+    def test_get_access_token(self, client, created_endpoints):
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
         token = endpoint.get_access_token()
 
         assert token is None
@@ -177,3 +180,21 @@ class TestEndpoint:
 
         parameter_json = endpoint.form_update_body(resources, DirectUpdateStrategy(), 0)
         assert parameter_json == {'build_id': 0, 'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
+        
+    def test_get_deployed_model(self, client, experiment_run, model_for_deployment, created_endpoints):
+        model = model_for_deployment['model'].fit(
+            model_for_deployment['train_features'],
+            model_for_deployment['train_targets'],
+        )
+        experiment_run.log_model(model, custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+        endpoint.update(experiment_run, DirectUpdateStrategy())
+
+        while not endpoint.get_status()['status'] == "active":
+            time.sleep(3)
+        x = model_for_deployment['train_features'].iloc[1].values
+        assert endpoint.get_deployed_model().predict([x]) == [2]
