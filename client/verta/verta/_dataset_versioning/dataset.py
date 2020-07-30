@@ -26,6 +26,28 @@ class Dataset(entity._ModelDBEntity):
         return self._msg.name
 
     @property
+    def dataset_type(self):
+        return self.__class__.__name__
+
+    @property
+    def desc(self):
+        # for backwards compatibility
+        # TODO: deprecate
+        return self.get_description()
+
+    @property
+    def attrs(self):
+        # for backwards compatibility
+        # TODO: deprecate
+        return self.get_attributes()
+
+    @property
+    def tags(self):
+        # for backwards compatibility
+        # TODO: deprecate
+        return self.get_tags()
+
+    @property
     def versions(self):
         raise NotImplementedError
 
@@ -43,6 +65,51 @@ class Dataset(entity._ModelDBEntity):
 
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
+        raise NotImplementedError
+
+    def set_description(self, desc):
+        raise NotImplementedError
+
+    def get_description(self):
+        raise NotImplementedError
+
+    def add_tag(self, tag):
+        raise NotImplementedError
+
+    def add_tags(self, tags):
+        """
+        Parameters
+        ----------
+        tags : list of str
+
+        """
+        raise NotImplementedError
+
+    def get_tags(self):
+        raise NotImplementedError
+
+    def del_tag(self, tag):
+        raise NotImplementedError
+
+    def add_attribute(self, key, value):
+        raise NotImplementedError
+
+    def add_attributes(self, attrs):
+        """
+        Parameters
+        ----------
+        attrs : dict of str to any
+
+        """
+        raise NotImplementedError
+
+    def get_attribute(self, key):
+        raise NotImplementedError
+
+    def get_attributes(self):
+        raise NotImplementedError
+
+    def del_attribute(self, key):
         raise NotImplementedError
 
     def create_s3_version(self):  # TODO: same params as S3.__init__()
