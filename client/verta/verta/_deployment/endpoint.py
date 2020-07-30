@@ -6,8 +6,9 @@ import time
 import json
 import yaml
 
-from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
 from ..deployment.update.rules import _UpdateRule
+from ..deployment import DeployedModel
+from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
 
@@ -253,3 +254,12 @@ class Endpoint(object):
         if len(tokens) == 0:
             return None
         return tokens[0]['creator_request']['value']
+
+    def get_deployed_model(self):
+        status = self.get_status()
+        if status['status'] != "active":
+            raise RuntimeError("model is not currently deployed (status: {})".format(status))
+
+        access_token = self.get_access_token()
+        url = "{}://{}/api/v1/predict{}".format(self._conn.scheme, self._conn.socket, self.path)
+        return DeployedModel.from_url(url, access_token)

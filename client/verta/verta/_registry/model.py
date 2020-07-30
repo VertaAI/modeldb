@@ -274,3 +274,6 @@ class RegisteredModel(_ModelDBEntity):
         Message = _RegisteredModelService.SetRegisteredModel
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
+
+    def _get_info_list(self):
+        return [self._msg.name, str(self.id), _utils.timestamp_to_str(self._msg.time_updated)]
