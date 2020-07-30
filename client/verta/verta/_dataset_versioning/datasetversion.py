@@ -37,17 +37,12 @@ class DatasetVersion(entity._ModelDBEntity):
         raise NotImplementedError
 
     @classmethod
-    def _create_proto(cls, conn, dataset, dataset_blob, desc=None, tags=None, attrs=None):
-        """Overrides _ModelDBEntity._create_proto()."""
-        raise NotImplementedError
-
-    @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
         raise NotImplementedError("cannot get DatasetVersion by name")
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
-        raise NotImplementedError("use _create() directly instead")
+    def _create_proto_internal(cls, conn, dataset, dataset_blob, desc=None, tags=None, attrs=None):
+        raise NotImplementedError
 
 
 # NOTE: before _get_by_id, first call DatasetVersion._get_proto_by_id() to check type of dataset blob
