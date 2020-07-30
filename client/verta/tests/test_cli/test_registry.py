@@ -1,4 +1,5 @@
 import json
+import tarfile
 
 import pytest
 from click.testing import CliRunner
@@ -456,3 +457,30 @@ class TestUpdate:
         )
         assert result.exception
         assert "a model has already been associated with the version" in result.output
+
+@pytest.mark.skip(reason="pending backend")
+class TestDownload:
+    def test_download_context(self, experiment_run, model_for_deployment, registered_model):
+        np = pytest.importorskip("numpy")
+        model_name = registered_model.name
+        version_name = "my-version"
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        artifact = np.random.random((36, 12))
+        experiment_run.log_artifact("some-artifact", artifact)
+        model_version = registered_model.create_version_from_run(experiment_run.id, version_name)
+
+        download_to_path = "context_cli.tgz"
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'download', 'dockercontext', model_name, version_name, '--output', download_to_path],
+        )
+        assert not result.exception
+
+        # can be loaded as tgz
+        with tarfile.open(download_to_path, 'r:gz') as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths
