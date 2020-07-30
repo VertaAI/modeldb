@@ -15,6 +15,22 @@ from .modelversions import RegisteredModelVersions
 
 
 class RegisteredModel(_ModelDBEntity):
+    """
+    Object representing a registered model.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`Client.set_registered_model() <verta.client.Client.set_registered_model>`
+
+    Attributes
+    ----------
+    id : int
+        ID of this Registered Model.
+    name : str
+        Name of this Registered Model.
+    versions : iterable of :class:`~verta._registry.modelversion.RegisteredModelVersion`
+        Versions of this RegisteredModel.
+
+    """
     def __init__(self, conn, conf, msg):
         super(RegisteredModel, self).__init__(conn, conf, _RegisteredModelService, "registered_model", msg)
 
