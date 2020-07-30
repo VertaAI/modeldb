@@ -607,3 +607,10 @@ class RegisteredModelVersion(_ModelDBEntity):
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
         self._clear_cache()
+
+    def _get_info_list(self, model_name):
+        if model_name is None:
+            id_or_name = str(self._msg.registered_model_id)
+        else :
+            id_or_name = model_name
+        return [self._msg.version, str(self.id), id_or_name, _utils.timestamp_to_str(self._msg.time_updated)]
