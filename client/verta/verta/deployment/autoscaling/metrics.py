@@ -7,5 +7,23 @@ from ...external import six
 
 @six.add_metaclass(abc.ABCMeta)
 class _AutoscalingMetric(object):
+    _METRIC_ID = 0
+    _NAME = ""
+
+    def __init__(self, value):
+        self._value = value
+
     def _as_json(self):
-        raise NotImplementedError
+        return {
+            "metric_id": self._METRIC_ID,
+            "parameters": [
+                {
+                    "name": self._NAME,
+                    "value": self._value
+                }
+            ]
+        }
+
+
+class AverageCpuUsage(_AutoscalingMetric):
+    raise NotImplementedError
