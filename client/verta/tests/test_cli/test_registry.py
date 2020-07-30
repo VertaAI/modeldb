@@ -28,7 +28,8 @@ class TestCreate:
 
         created_registered_models.append(registered_model)
 
-    def test_create_version(self, registered_model, in_tempdir):
+    def test_create_version(self, registered_model, in_tempdir, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
         version_name = "my version"
 
@@ -57,7 +58,8 @@ class TestCreate:
         assert model_version.get_labels() == ["label1", "label2"]
         assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS
 
-    def test_create_version_invalid_key(self, registered_model, in_tempdir):
+    def test_create_version_invalid_key(self, registered_model, in_tempdir, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
         version_name = "my version"
 
@@ -114,7 +116,8 @@ class TestCreate:
         assert result.output.strip().endswith("not found")
 
     @pytest.mark.skip(reason="bug in dev")
-    def test_create_version_from_run(self, experiment_run, model_for_deployment, registered_model):
+    def test_create_version_from_run(self, experiment_run, model_for_deployment, registered_model, created_registered_models):
+        created_registered_models.append(registered_model)
         np = pytest.importorskip("numpy")
         model_name = registered_model.name
         version_name = "from_run"
@@ -142,7 +145,8 @@ class TestCreate:
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
         assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
 
-    def test_create_from_run_with_model_artifact_error(self, experiment_run, registered_model, in_tempdir):
+    def test_create_from_run_with_model_artifact_error(self, experiment_run, registered_model, in_tempdir, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
         version_name = "from_run"
 
@@ -187,7 +191,8 @@ class TestCreate:
 
 
 class TestGet:
-    def test_get_model(self, registered_model):
+    def test_get_model(self, registered_model, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
 
         runner = CliRunner()
@@ -200,7 +205,8 @@ class TestGet:
         assert "name: {}".format(model_name) in result.output
         assert "id: {}".format(registered_model.id) in result.output
 
-    def test_get_model_output_json(self, registered_model):
+    def test_get_model_output_json(self, registered_model, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
 
         runner = CliRunner()
@@ -224,7 +230,8 @@ class TestGet:
         assert result.exception
         assert result.output.strip().endswith("not found")
 
-    def test_get_version(self, registered_model):
+    def test_get_version(self, registered_model, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
         version_name = "my-version"
         model_version = registered_model.get_or_create_version(version_name)
@@ -240,7 +247,8 @@ class TestGet:
         assert str(model_version.id) in result.output
         assert str(model_version.registered_model_id) in result.output
 
-    def test_get_version_output_json(self, registered_model):
+    def test_get_version_output_json(self, registered_model, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
         version_name = "my-version"
         model_version = registered_model.get_or_create_version(version_name)
@@ -256,7 +264,8 @@ class TestGet:
         version_json = json.loads(version_json_str)
         assert version_json['version'] == version_name
 
-    def test_get_version_wrong_name_error(self, registered_model, strs):
+    def test_get_version_wrong_name_error(self, registered_model, strs, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
 
         runner = CliRunner()
@@ -340,7 +349,8 @@ class TestList:
         assert version2_name in result.output
 
 class TestUpdate:
-    def test_update_model(self, registered_model):
+    def test_update_model(self, registered_model, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
         assert registered_model.get_labels() == []
 
@@ -367,7 +377,8 @@ class TestUpdate:
         assert registered_model.get_labels() == ["label1", "label2"]
 
 
-    def test_update_version(self, registered_model, in_tempdir):
+    def test_update_version(self, registered_model, in_tempdir, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
         version_name = "my version"
         registered_model.get_or_create_version(version_name)
@@ -395,7 +406,8 @@ class TestUpdate:
         assert model_version.get_labels() == ["label1", "label2"]
         assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS
 
-    def test_update_version_invalid_key(self, registered_model, in_tempdir):
+    def test_update_version_invalid_key(self, registered_model, in_tempdir, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
         version_name = "my version"
         registered_model.get_or_create_version(version_name)
@@ -436,7 +448,8 @@ class TestUpdate:
         assert result.exception
         assert "key \"file\" already exists" in result.output
 
-    def test_model_already_logged_error(self, registered_model, in_tempdir):
+    def test_model_already_logged_error(self, registered_model, in_tempdir, created_registered_models):
+        created_registered_models.append(registered_model)
         model_name = registered_model.name
         version_name = "my version"
 
@@ -460,7 +473,8 @@ class TestUpdate:
 
 @pytest.mark.skip(reason="pending backend")
 class TestDownload:
-    def test_download_context(self, experiment_run, model_for_deployment, registered_model):
+    def test_download_context(self, experiment_run, model_for_deployment, registered_model, created_registered_models):
+        created_registered_models.append(registered_model)
         np = pytest.importorskip("numpy")
         model_name = registered_model.name
         version_name = "my-version"
