@@ -1156,7 +1156,7 @@ class Client(object):
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
-    def get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, date_created=None, public_within_org=None, id=None):
+    def get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, id=None):
         """
         Gets or creates a Dataset.
 
@@ -1209,7 +1209,7 @@ class Client(object):
         else:
             dataset = Dataset._get_or_create_by_name(self._conn, name,
                                                         lambda name: Dataset._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                        lambda name: Dataset._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created, public_within_org=public_within_org))
+                                                        lambda name: Dataset._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org))
 
         return dataset
 
@@ -1221,7 +1221,7 @@ class Client(object):
         # TODO: when MVP, remove '2'
         return self.get_or_create_dataset2(*args, **kwargs)
 
-    def create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, date_created=None, public_within_org=None):
+    def create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None):
         """
         Creates a Dataset, initialized with specified metadata parameters.
 
@@ -1259,7 +1259,7 @@ class Client(object):
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
         return Dataset._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs,
-                               date_created=date_created, public_within_org=public_within_org)
+                               time_created=time_created, public_within_org=public_within_org)
 
     def get_dataset2(self, name=None, workspace=None, id=None):
         """
