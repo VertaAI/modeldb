@@ -68,10 +68,33 @@ class Dataset(entity._ModelDBEntity):
         raise NotImplementedError
 
     def set_description(self, desc):
-        raise NotImplementedError
+        """
+        Sets the description of this Dataset.
+
+        Parameters
+        ----------
+        desc : str
+            Description to add.
+
+        """
+        Message = _DatasetService.UpdateDatasetDescription
+        msg = Message(id=self.id, description=desc)
+        endpoint = "/api/v1/modeldb/dataset/updateDatasetDescription"
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        self._conn.must_proto_response(response, Message.Response)
 
     def get_description(self):
-        raise NotImplementedError
+        """
+        Gets the description of this Dataset.
+
+        Returns
+        -------
+        str
+            Description of this Dataset.
+
+        """
+        self._refresh_cache()
+        return self._msg.description
 
     def add_tag(self, tag):
         raise NotImplementedError
