@@ -222,7 +222,7 @@ class Endpoint(object):
                 pass
 
         if not update_dict:
-            raise ValueError("input must be a json or yaml")
+            raise ValueError("input file must be a json or yaml")
 
         return self._update_from_dict(update_dict)
 
