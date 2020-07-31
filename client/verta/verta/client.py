@@ -1182,7 +1182,7 @@ class Client(object):
 
     def create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, date_created=None, public_within_org=None):
         # TODO: when MVP, remove '2'
-        name = self._set_from_config_if_none(name, "project")
+        name = self._set_from_config_if_none(name, "dataset")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
         self._ctx = _Context(self._conn, self._conf)
