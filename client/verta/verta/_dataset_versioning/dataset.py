@@ -77,12 +77,10 @@ class Dataset(entity._ModelDBEntity):
             Description to add.
 
         """
-        self._fetch_with_no_cache()
         Message = _DatasetService.UpdateDatasetDescription
         msg = Message(id=self.id, description=desc)
         endpoint = "/api/v1/modeldb/dataset/updateDatasetDescription"
-        response = self._conn.make_proto_request("POST", endpoint, body=msg)
-        self._msg = self._conn.must_proto_response(response, Message.Response).dataset
+        self._update(msg, Message.Response, endpoint)
 
     def get_description(self):
         """
@@ -145,3 +143,9 @@ class Dataset(entity._ModelDBEntity):
 
     def get_latest_version(self):
         raise NotImplementedError
+
+    def _update(self, msg, response_proto, endpoint):
+        self._fetch_with_no_cache()
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        self._conn.must_proto_response(response, response_proto)
+        self._clear_cache()
