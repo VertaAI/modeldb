@@ -1157,6 +1157,43 @@ class Client(object):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
     def get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, date_created=None, public_within_org=None, id=None):
+        """
+        Gets or creates a Dataset.
+
+        If an accessible Dataset with name `name` does not already exist, it will be created
+        and initialized with specified metadata parameters. If such a Dataset does already exist,
+        it will be retrieved; specifying metadata parameters in this case will raise an exception.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Dataset. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Dataset.
+        tags : list of str, optional
+            Tags of the Dataset.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Dataset.
+        workspace : str, optional
+            Workspace under which the Dataset with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating a Dataset in an organization's workspace, whether to make this Dataset
+            accessible to all members of that organization.
+        id : str, optional
+            ID of the Dataset. This parameter cannot be provided alongside `name`, and other
+            parameters will be ignored.
+
+        Returns
+        -------
+        :class:`Dataset`
+
+        Raises
+        ------
+        ValueError
+            If a Dataset with `name` already exists, but metadata parameters are passed in.
+
+        """
         # TODO: when MVP, remove '2'
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
@@ -1185,6 +1222,36 @@ class Client(object):
         return self.get_or_create_dataset2(*args, **kwargs)
 
     def create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, date_created=None, public_within_org=None):
+        """
+        Creates a Dataset, initialized with specified metadata parameters.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Dataset. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Dataset.
+        tags : list of str, optional
+            Tags of the Dataset.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Dataset.
+        workspace : str, optional
+            Workspace under which the Dataset with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating a Dataset in an organization's workspace, whether to make this Dataset
+            accessible to all members of that organization.
+
+        Returns
+        -------
+        :class:`Dataset`
+
+        Raises
+        ------
+        ValueError
+            If a Dataset with `name` already exists.
+
+        """
         # TODO: when MVP, remove '2'
         name = self._set_from_config_if_none(name, "dataset")
         workspace = self._set_from_config_if_none(workspace, "workspace")
@@ -1195,6 +1262,24 @@ class Client(object):
                                date_created=date_created, public_within_org=public_within_org)
 
     def get_dataset2(self, name=None, workspace=None, id=None):
+        """
+        Gets a Dataset.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Dataset. This parameter cannot be provided alongside `id`.
+        workspace : str, optional
+            Workspace under which the Dataset with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        id : str, optional
+            ID of the Dataset. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`Dataset`
+
+        """
         # TODO: when MVP, remove '2'
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
