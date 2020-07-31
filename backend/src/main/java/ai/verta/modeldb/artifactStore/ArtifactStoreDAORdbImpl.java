@@ -8,7 +8,9 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.model.PartETag;
+import com.google.rpc.Code;
 import java.util.List;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
@@ -47,6 +49,10 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
       LOGGER.warn(errorMessage);
       throw new ModelDBException(
           errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
+    } catch (SdkClientException ex) {
+      String errorMessage = ex.getMessage();
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(errorMessage, Code.INTERNAL);
     }
   }
 
