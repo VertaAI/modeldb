@@ -205,24 +205,23 @@ class Endpoint(object):
         return response.json()["id"]
 
     def update_from_config(self, filepath):
+        update_dict = None
+
         with open(filepath, 'r') as f:
             config = f.read()
-
-        is_json = True
-        is_yaml = True
 
         try:
             update_dict = json.loads(config)
         except ValueError:
-            is_json = False
+            pass
 
-        if not is_json:
+        if not update_dict:
             try:
                 update_dict = yaml.safe_load(config)
             except yaml.YAMLError:
-                is_yaml = False
+                pass
 
-        if not (is_json or is_yaml):
+        if not update_dict:
             raise ValueError("input must be a json or yaml")
 
         return self._update_from_dict(update_dict)
