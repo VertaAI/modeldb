@@ -83,6 +83,7 @@ class TestHyperparameters:
 
         for key, val in six.viewitems(hyperparameters):
             experiment_run.log_hyperparameter(key, val)
+            experiment_run.log_hyperparameter(key, val, overwrite=True)
             with pytest.raises(ValueError):
                 experiment_run.log_hyperparameter(key, val)
 
@@ -214,6 +215,7 @@ class TestMetrics:
         metrics = dict(zip(strs, scalar_values))
 
         experiment_run.log_metrics(metrics)
+        experiment_run.log_metrics(metrics, overwrite=True)
 
         with pytest.raises(KeyError):
             experiment_run.get_metric(holdout)
@@ -228,6 +230,7 @@ class TestMetrics:
 
         for key, val in six.viewitems(metrics):
             experiment_run.log_metric(key, val)
+            experiment_run.log_metric(key, val, overwrite=True)
             with pytest.raises(ValueError):
                 experiment_run.log_metric(key, val)
 
