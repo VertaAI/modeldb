@@ -115,6 +115,7 @@ public class ModelDBHibernateUtil {
   private static String configPassword;
   private static Integer timeout = 4;
   private static Long liquibaseLockThreshold = 0L;
+  private static String changeSetToRevertUntilTag;
   private static Boolean isReady = false;
   private static Class[] entities = {
     ProjectEntity.class,
@@ -204,6 +205,7 @@ public class ModelDBHibernateUtil {
         }
         liquibaseLockThreshold =
             Long.parseLong(databasePropMap.getOrDefault("liquibaseLockThreshold", "60").toString());
+        changeSetToRevertUntilTag = (String) databasePropMap.get("changeSetToRevertUntilTag");
 
         // Change liquibase default table names
         System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
@@ -444,13 +446,17 @@ public class ModelDBHibernateUtil {
       // Initialize Liquibase and run the update
       Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
       String rootPath = System.getProperty(ModelDBConstants.userDir);
-      rootPath = rootPath + "\\src\\main\\resources\\liquibase\\db-changelog-1.0.xml";
+      rootPath = rootPath + "\\src\\main\\resources\\liquibase\\db-changelog-master.xml";
       Liquibase liquibase = new Liquibase(rootPath, new FileSystemResourceAccessor(), database);
 
       boolean liquibaseExecuted = false;
       while (!liquibaseExecuted) {
         try {
-          liquibase.update(new Contexts(), new LabelExpression());
+          if (changeSetToRevertUntilTag == null || changeSetToRevertUntilTag.isEmpty()) {
+            liquibase.update(new Contexts(), new LabelExpression());
+          } else {
+            liquibase.rollback(changeSetToRevertUntilTag, new Contexts(), new LabelExpression());
+          }
           liquibaseExecuted = true;
         } catch (LockException ex) {
           LOGGER.warn(
