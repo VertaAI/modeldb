@@ -82,7 +82,6 @@ class Dataset(entity._ModelDBEntity):
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
         Message = _DatasetService.CreateDataset
         msg = Message(name=name, description=desc, tags=tags, attributes=attrs, workspace_name=ctx.workspace_name)
-        endpoint = "/api/v1/modeldb/dataset/createDataset"
 
         if public_within_org:
             if ctx.workspace_name is None:
@@ -95,6 +94,7 @@ class Dataset(entity._ModelDBEntity):
             else:
                 msg.project_visibility = _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
 
+        endpoint = "/api/v1/modeldb/dataset/createDataset"
         response = conn.make_proto_request("POST", endpoint, body=msg)
         dataset = conn.must_proto_response(response, Message.Response).dataset
 
