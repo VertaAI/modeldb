@@ -80,7 +80,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException("Bucket does not exists", Code.INTERNAL);
+      throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
     }
     InitiateMultipartUploadRequest initiateMultipartUploadRequest =
         new InitiateMultipartUploadRequest(bucketName, s3Key);
@@ -95,7 +95,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException("Bucket does not exists", Code.INTERNAL);
+      throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
     }
 
     HttpMethod reqMethod;
@@ -135,7 +135,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException("Bucket does not exists", Code.INTERNAL);
+      throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
     }
     CompleteMultipartUploadRequest completeMultipartUploadRequest =
         new CompleteMultipartUploadRequest(bucketName, s3Key, uploadId, partETags);
