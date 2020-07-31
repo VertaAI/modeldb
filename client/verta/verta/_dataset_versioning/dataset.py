@@ -18,7 +18,19 @@ class Dataset(entity._ModelDBEntity):
         super(Dataset, self).__init__(conn, conf, _DatasetService, "dataset", msg)
 
     def __repr__(self):
-        raise NotImplementedError
+        self._refresh_cache()
+        msg = self._msg
+
+        return '\n'.join((
+            "name: {}".format(msg.name),
+            "url: {}://{}/{}/datasets/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+            "date created: {}".format(_utils.timestamp_to_str(int(msg.date_created))),
+            "date updated: {}".format(_utils.timestamp_to_str(int(msg.date_updated))),
+            "description: {}".format(msg.description),
+            "tags: {}".format(msg.tags),
+            "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
+            "id: {}".format(msg.id),
+        ))
 
     @property
     def name(self):
@@ -28,6 +40,15 @@ class Dataset(entity._ModelDBEntity):
     @property
     def dataset_type(self):
         return self.__class__.__name__
+
+    @property
+    def workspace(self):
+        self._refresh_cache()
+
+        if self._msg.workspace_id:
+            return self._get_workspace_name_by_id(self._msg.workspace_id)
+        else:
+            return entity._OSS_DEFAULT_WORKSPACE
 
     @property
     def desc(self):
