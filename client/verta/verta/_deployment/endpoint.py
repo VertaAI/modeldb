@@ -201,7 +201,7 @@ class Endpoint(object):
 
         if not is_json:
             try:
-                update_dict = yaml.safe_load(config)
+                update_dict = yaml.full_load(config)
             except:
                 is_yaml = False
 
