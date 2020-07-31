@@ -280,6 +280,7 @@ class TestClientDatasetVersionFunctions:
         version = dataset.get_latest_version(ascending=True)
         assert version.id == version1.id
 
+    @pytest.mark.skip(reason="functionality removed")
     def test_reincarnation(self, client, created_datasets):
         """Consecutive identical versions are assigned the same ID."""
         dataset = client.set_dataset(type="local")
@@ -480,6 +481,7 @@ class TestFilesystemClientFunctions:
         return dir_name, file_names
 
 
+@pytest.mark.skip("dropped support for query datasets, for the time being")
 class TestBigQueryDatasetVersionInfo:
     def test_big_query_dataset(self, client, created_datasets):
         dataset = client.set_dataset(type="big query")
@@ -504,6 +506,8 @@ class TestBigQueryDatasetVersionInfo:
         except google.auth.exceptions.GoogleAuthError:
             pytest.skip("insufficient GCP credentials")
 
+
+@pytest.mark.skip("dropped support for query datasets, for the time being")
 class TestRDBMSDatasetVersionInfo:
     def test_rdbms_dataset(self, client, created_datasets):
         dataset = client.set_dataset(type="postgres")
