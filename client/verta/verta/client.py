@@ -1177,6 +1177,10 @@ class Client(object):
         return dataset
 
     def set_dataset2(self, *args, **kwargs):
+        """
+        Alias for :meth:`Client.get_or_create_dataset2()`.
+
+        """
         # TODO: when MVP, remove '2'
         return self.get_or_create_dataset2(*args, **kwargs)
 
