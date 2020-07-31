@@ -218,7 +218,7 @@ class TestEndpoint:
 
         filepath = "config.yaml"
         with open(filepath, "wb") as f:
-            yaml.dump(strategy_dict, f)
+            yaml.safe_dump(strategy_dict, f)
 
         updated_status = endpoint.update_from_config(filepath)
         new_build_ids = get_build_ids(updated_status)
