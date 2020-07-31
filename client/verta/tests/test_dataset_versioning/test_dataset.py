@@ -1,8 +1,5 @@
 import verta
-import requests
 import pytest
-
-from verta._dataset_versioning.dataset import Dataset
 
 
 class TestDataset:
