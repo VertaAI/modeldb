@@ -346,7 +346,7 @@ class ExperimentRun(_ModelDBEntity):
 
         print("upload complete ({})".format(key))
 
-    def _log_artifact_path(self, key, artifact_path, artifact_type):
+    def _log_artifact_path(self, key, artifact_path, artifact_type, overwrite=False):
         """
         Logs the filesystem path of an artifact to this Experiment Run.
 
@@ -358,6 +358,8 @@ class ExperimentRun(_ModelDBEntity):
             Filesystem path of the artifact.
         artifact_type : int
             Variant of `_CommonCommonService.ArtifactTypeEnum`.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
         """
         # log key-path to ModelDB
         Message = _ExperimentRunService.LogArtifact
@@ -367,6 +369,11 @@ class ExperimentRun(_ModelDBEntity):
                                                artifact_type=artifact_type)
         msg = Message(id=self.id, artifact=artifact_msg)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            response = _utils.make_request("DELETE",
+                                           "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(self._conn.scheme, self._conn.socket),
+                                           self._conn, json={'id': self.id, 'key': key})
+            _utils.raise_for_http_error(response)
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logArtifact".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -1453,7 +1460,7 @@ class ExperimentRun(_ModelDBEntity):
 
         self._log_artifact(key, artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, extension, overwrite=overwrite)
 
-    def log_artifact_path(self, key, artifact_path):
+    def log_artifact_path(self, key, artifact_path, overwrite=False):
         """
         Logs the filesystem path of an artifact to this Experiment Run.
 
@@ -1466,12 +1473,14 @@ class ExperimentRun(_ModelDBEntity):
             Name of the artifact.
         artifact_path : str
             Filesystem path of the artifact.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
 
         """
         _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
-        self._log_artifact_path(key, artifact_path, _CommonCommonService.ArtifactTypeEnum.BLOB)
+        self._log_artifact_path(key, artifact_path, _CommonCommonService.ArtifactTypeEnum.BLOB, overwrite=overwrite)
 
     def get_artifact(self, key):
         """
