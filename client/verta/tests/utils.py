@@ -102,6 +102,10 @@ def chdir(new_dir):
     finally:
         os.chdir(old_dir)
 
+def get_build_ids(status):
+    # get the set of build_ids in the status of the stage:
+    return set(map(lambda comp: comp["build_id"], status["components"]))
+
 
 def delete_project(id_, conn):
     request_url = "{}://{}/api/v1/modeldb/project/deleteProject".format(conn.scheme, conn.socket)
@@ -139,3 +143,4 @@ def delete_endpoint(id_, workspace, conn):
     request_url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}".format(conn.scheme, conn.socket, workspace, id_)
     response = requests.delete(request_url, headers=conn.auth)
     _utils.raise_for_http_error(response)
+

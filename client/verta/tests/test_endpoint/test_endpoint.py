@@ -10,9 +10,8 @@ from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
 
-def get_build_ids(status):
-    # get the set of build_ids in the status of the stage:
-    return set(map(lambda comp: comp["build_id"], status["components"]))
+from ..utils import get_build_ids
+
 
 class TestEndpoint:
     def test_create(self, client, created_endpoints):
