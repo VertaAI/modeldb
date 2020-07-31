@@ -14,8 +14,7 @@ from verta.environment import Python
 
 @pytest.mark.skip(reason="bug in dev")
 class TestMDBIntegration:
-    def test_from_run(self, experiment_run, model_for_deployment, registered_model, created_registered_models):
-        created_registered_models.append(registered_model)
+    def test_from_run(self, experiment_run, model_for_deployment, registered_model):
         np = pytest.importorskip("numpy")
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -39,8 +38,7 @@ class TestMDBIntegration:
 
 class TestModelVersion:
 
-    def test_create(self, registered_model, created_registered_models):
-        created_registered_models.append(registered_model)
+    def test_create(self, registered_model):
         name = verta._internal_utils._utils.generate_default_name()
         assert registered_model.create_version(name)
         with pytest.raises(requests.HTTPError) as excinfo:
@@ -49,8 +47,7 @@ class TestModelVersion:
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
 
-    def test_get_by_name(self, registered_model, created_registered_models):
-        created_registered_models.append(registered_model)
+    def test_get_by_name(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
         retrieved_model_version = registered_model.get_version(name=model_version.name)
         assert retrieved_model_version.id == model_version.id
@@ -177,9 +174,7 @@ class TestModelVersion:
 
         assert "model can't be deleted through del_artifact(); consider using del_model() instead" in str(excinfo.value)
 
-    def test_del_artifact(self, registered_model, created_registered_models):
-        created_registered_models.append(registered_model)
-
+    def test_del_artifact(self, registered_model):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
@@ -202,9 +197,7 @@ class TestModelVersion:
         model_version.del_artifact("coef-3")
         assert len(model_version.get_artifact_keys()) == 0
 
-    def test_del_model(self, registered_model, created_registered_models):
-        created_registered_models.append(registered_model)
-
+    def test_del_model(self, registered_model):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
@@ -222,8 +215,7 @@ class TestModelVersion:
         model_version = registered_model.get_version(id=model_version.id)
         assert (not model_version.has_model)
 
-    def test_log_environment(self, registered_model, created_registered_models):
-        created_registered_models.append(registered_model)
+    def test_log_environment(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
 
         reqs = Python.read_pip_environment()
@@ -233,8 +225,7 @@ class TestModelVersion:
         model_version = registered_model.get_version(id=model_version.id)
         assert str(env) == str(model_version.get_environment())
 
-    def test_del_environment(self, registered_model, created_registered_models):
-        created_registered_models.append(registered_model)
+    def test_del_environment(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
 
         reqs = Python.read_pip_environment()
@@ -250,9 +241,8 @@ class TestModelVersion:
 
         assert "environment was not previously set" in str(excinfo.value)
 
-    def test_labels(self, client, created_registered_models):
+    def test_labels(self, client):
         registered_model = client.set_registered_model()
-        created_registered_models.append(registered_model)
         model_version = registered_model.get_or_create_version(name="my version")
 
         model_version.add_label("tag1")
@@ -269,10 +259,9 @@ class TestModelVersion:
         model_version.add_labels(["tag2", "tag4", "tag1", "tag5"])
         assert model_version.get_labels() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
 
-    def test_find(self, client, created_registered_models):
+    def test_find(self, client):
         name = "registered_model_test"
         registered_model = client.set_registered_model()
-        created_registered_models.append(registered_model)
         model_version = registered_model.get_or_create_version(name=name)
 
         find_result = registered_model.versions.find(["version == '{}'".format(name)])
@@ -315,8 +304,7 @@ class TestModelVersion:
 
         assert "the version has already been archived" in str(excinfo.value)
 
-    def test_clear_cache(self, registered_model, created_registered_models):
-        created_registered_models.append(registered_model)
+    def test_clear_cache(self, registered_model):
         # Multiple log_artifacts calls, which would potentially fail without clear_cache
         model_version = registered_model.get_or_create_version(name="my version")
         model_version_2 = registered_model.get_version(id=model_version.id) # same version object
@@ -332,8 +320,7 @@ class TestModelVersion:
         assert len(model_version._msg.artifacts) == 4
 
     @pytest.mark.skip(reason="pending backend")
-    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir, registered_model, created_registered_models):
-        created_registered_models.append(registered_model)
+    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir, registered_model):
         download_to_path = "context.tgz"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])

@@ -340,7 +340,9 @@ def created_datasets(client):
 
 @pytest.fixture
 def registered_model(client):
-    yield client.get_or_create_registered_model()
+    model = client.get_or_create_registered_model()
+    yield model
+    utils.delete_registered_model(model.id, client._conn)
 
 
 @pytest.fixture
@@ -355,9 +357,8 @@ def created_registered_models(client):
 
 
 @pytest.fixture
-def model_version(registered_model, created_registered_models):
+def model_version(registered_model):
     yield registered_model.get_or_create_version()
-    created_registered_models.append(registered_model)
 
 
 @pytest.fixture

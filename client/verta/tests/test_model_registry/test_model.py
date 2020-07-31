@@ -49,9 +49,8 @@ class TestModel:
 
         assert registered_model.id == client.set_registered_model(id=registered_model.id).id
 
-    def test_repr(self, registered_model, created_registered_models):
+    def test_repr(self, registered_model):
         registered_model.add_labels(["tag1", "tag2"])
-        created_registered_models.append(registered_model)
         repr = str(registered_model)
 
         assert registered_model.name in repr
@@ -80,8 +79,10 @@ class TestModel:
     @pytest.mark.skip("bug in dev regarding labels")
     def test_labels(self, client, created_registered_models):
         registered_model = client.set_registered_model(labels=["tag1", "tag2"])
+        assert registered_model
         created_registered_models.append(registered_model)
 
+        assert registered_model is not None
         registered_model.add_label("tag3")
         assert registered_model.get_labels() == ["tag1", "tag2", "tag3"]
         registered_model.del_label("tag2")
