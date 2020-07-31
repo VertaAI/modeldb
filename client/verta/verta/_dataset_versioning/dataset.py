@@ -24,8 +24,8 @@ class Dataset(entity._ModelDBEntity):
         return '\n'.join((
             "name: {}".format(msg.name),
             "url: {}://{}/{}/datasets/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
-            "date created: {}".format(_utils.timestamp_to_str(int(msg.date_created))),
-            "date updated: {}".format(_utils.timestamp_to_str(int(msg.date_updated))),
+            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
+            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
             "tags: {}".format(msg.tags),
             "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),

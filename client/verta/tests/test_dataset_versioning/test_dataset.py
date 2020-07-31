@@ -12,7 +12,7 @@ class TestDataset:
         str_repr = repr(dataset)
         assert "name: {}".format(dataset.name) in str_repr
         assert "id: {}".format(dataset.id) in str_repr
-        assert "date created" in str_repr
-        assert "date updated" in str_repr
+        assert "time created" in str_repr
+        assert "time updated" in str_repr
         assert "description: {}".format(description) in str_repr
         assert "tags: {}".format(tags) in str_repr
