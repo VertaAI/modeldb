@@ -77,11 +77,12 @@ class Dataset(entity._ModelDBEntity):
             Description to add.
 
         """
+        self._fetch_with_no_cache()
         Message = _DatasetService.UpdateDatasetDescription
         msg = Message(id=self.id, description=desc)
         endpoint = "/api/v1/modeldb/dataset/updateDatasetDescription"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
-        self._conn.must_proto_response(response, Message.Response)
+        self._msg = self._conn.must_proto_response(response, Message.Response).dataset
 
     def get_description(self):
         """
