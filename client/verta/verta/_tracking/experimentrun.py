@@ -2148,10 +2148,10 @@ class ExperimentRun(_ModelDBEntity):
         try:
             _utils.raise_for_http_error(response)
         except requests.HTTPError as e:
-            # propagate error caused by missing artifact
-            # TODO: recommend user call log_model() / log_requirements()
-            error_text = e.response.text.strip()
-            if error_text.startswith("missing artifact"):
+            if response.status_code == 400:
+                # propagate error caused by missing artifact
+                # TODO: recommend user call log_model() / log_requirements()
+                error_text = e.response.text.strip()
                 six.raise_from(RuntimeError("unable to deploy due to {}".format(error_text)), None)
             else:
                 raise e
