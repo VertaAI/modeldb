@@ -37,13 +37,13 @@ class _UpdateRule(object):
 
         RULE_SUBCLASSES = [AverageLatencyThresholdRule, P90LatencyThresholdRule, ErrorRateRule]
 
-        for i, Subclass in enumerate(RULE_SUBCLASSES):
+        for Subclass in RULE_SUBCLASSES:
             if rule_name == Subclass._NAME:
                 rule = Subclass(rule_value)
                 break
-            elif i == len(RULE_SUBCLASSES) - 1:
-                # does not match any rule
-                raise ValueError("no rule with name {} exists".format(rule_name))
+        else:
+            # does not match any rule
+            raise ValueError("no rule with name {} exists".format(rule_name))
 
         if rule._RULE_ID != rule_id:
             raise ValueError("expected rule ID {} for rule {}, not {}.".format(
