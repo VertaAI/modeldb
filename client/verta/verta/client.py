@@ -63,7 +63,7 @@ from ._registry import (
     RegisteredModelVersion,
     RegisteredModelVersions,
 )
-from ._dataset_versioning import Datasets
+from ._dataset_versioning.datasets import Datasets
 from ._deployment import (
     Endpoint,
     Endpoints,
@@ -833,6 +833,20 @@ class Client(object):
         return self._ctx.registered_model
 
     def get_registered_model(self, name=None, workspace=None, id=None):
+        """
+        Retrieve an already created Registered Model. Only one of name or id can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Registered Model.
+        id : str, optional
+            ID of the Registered Model. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~verta._registry.model.RegisteredModel`
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -858,9 +872,27 @@ class Client(object):
         return self._ctx.registered_model
 
     def set_registered_model(self, *args, **kwargs):
+        """
+        Alias for :meth:`Client.get_or_create_registered_model()`.
+
+        """
         return self.get_or_create_registered_model(*args, **kwargs)
 
     def get_registered_model_version(self, name=None, id=None):
+        """
+        Retrieve an already created Model Version. Only one of name or id can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Model Version.
+        id : str, optional
+            ID of the Model Version. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~verta._registry.modelversion.ModelVersion`
+        """
         if id is not None:
             # TODO: Support registered_model in populate
             model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
@@ -950,7 +982,6 @@ class Client(object):
 
     def set_endpoint(self, *args, **kwargs):
         return self.get_or_create_endpoint(*args, **kwargs)
-
 
     def create_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
         """
@@ -1151,8 +1182,31 @@ class Client(object):
         if workspace is None:
             workspace = self._get_personal_workspace()
         return Endpoint._create(self._conn, self._conf, workspace, path, description)
-      
-      
+
     @property
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
+
+    def get_or_create_dataset2(self):
+        # TODO: when MVP, remove '2'
+        raise NotImplementedError
+
+    def set_dataset2(self, *args, **kwargs):
+        # TODO: when MVP, remove '2'
+        return self.get_or_create_dataset2(*args, **kwargs)
+
+    def create_dataset2(self):
+        # TODO: when MVP, remove '2'
+        raise NotImplementedError
+
+    def get_dataset2(self):
+        # TODO: when MVP, remove '2'
+        raise NotImplementedError
+
+    @property
+    def datasets(self):
+        raise NotImplementedError
+
+    def get_dataset_version2(self):
+        # TODO: when MVP, remove '2'
+        raise NotImplementedError

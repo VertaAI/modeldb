@@ -117,29 +117,7 @@ class ExperimentRun(_ModelDBEntity):
             # workspace is OSS default
             return _OSS_DEFAULT_WORKSPACE
         else:
-            workspace_id = project_json['workspace_id']
-        # try getting organization
-        response = _utils.make_request(
-            "GET",
-            "{}://{}/api/v1/uac-proxy/organization/getOrganizationById".format(self._conn.scheme, self._conn.socket),
-            self._conn, params={'org_id': workspace_id},
-        )
-        try:
-            _utils.raise_for_http_error(response)
-        except requests.HTTPError:
-            # try getting user
-            response = _utils.make_request(
-                "GET",
-                "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
-                self._conn, params={'user_id': workspace_id},
-            )
-            _utils.raise_for_http_error(response)
-
-            # workspace is user
-            return _utils.body_to_json(response)['verta_info']['username']
-        else:
-            # workspace is organization
-            return _utils.body_to_json(response)['organization']['name']
+            return self._get_workspace_name_by_id(project_json['workspace_id'])
 
     @property
     def name(self):

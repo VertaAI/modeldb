@@ -6,6 +6,7 @@ import importlib
 import os
 import time
 import zipfile
+import requests
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -137,17 +138,22 @@ class _ModelDBEntity(object):
             return None
 
     @classmethod
-    def _create_proto(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
+    def _create_proto(cls, conn, *args, **kwargs):
+        tags = kwargs.pop('tags', None)
         if tags is not None:
-            tags = _utils.as_list_of_str(tags)
-        if attrs is not None:
-            attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
-                     for key, value in six.viewitems(attrs)]
+            kwargs['tags'] = _utils.as_list_of_str(tags)
 
-        return cls._create_proto_internal(conn, ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created, **kwargs)
+        attrs = kwargs.pop('attrs', None)
+        if attrs is not None:
+            kwargs['attrs'] = [
+                _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
+                for key, value in six.viewitems(attrs)
+            ]
+
+        return cls._create_proto_internal(conn, *args, **kwargs)
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):  # recommended params
         raise NotImplementedError
 
     def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False):
@@ -423,3 +429,28 @@ class _ModelDBEntity(object):
             return zipfile.ZipFile(code_archive, 'r')  # TODO: return a util class instead, maybe
         else:
             raise RuntimeError("unable find code in response")
+
+    def _get_workspace_name_by_id(self, workspace_id):
+        # try getting organization
+        response = _utils.make_request(
+            "GET",
+            "{}://{}/api/v1/uac-proxy/organization/getOrganizationById".format(self._conn.scheme, self._conn.socket),
+            self._conn, params={'org_id': workspace_id},
+        )
+        try:
+            _utils.raise_for_http_error(response)
+        except requests.HTTPError:
+            # try getting user
+            response = _utils.make_request(
+                "GET",
+                "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
+                self._conn, params={'user_id': workspace_id},
+            )
+            _utils.raise_for_http_error(response)
+
+            # workspace is user
+            return _utils.body_to_json(response)['verta_info']['username']
+        else:
+            # workspace is organization
+            return _utils.body_to_json(response)['organization']['name']
+
