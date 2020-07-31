@@ -79,9 +79,9 @@ class Dataset(entity._ModelDBEntity):
             return None
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, time_created=None, public_within_org=None):
         Message = _DatasetService.CreateDataset
-        msg = Message(name=name, description=desc, tags=tags, attributes=attrs, workspace_name=ctx.workspace_name)
+        msg = Message(name=name, description=desc, tags=tags, attributes=attrs, workspace_name=ctx.workspace_name, time_created=time_created)
 
         if public_within_org:
             if ctx.workspace_name is None:
