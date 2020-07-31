@@ -239,8 +239,9 @@ class Endpoint(object):
 
     def _form_update_body(self, resources, strategy, build_id):
         update_body = strategy._as_build_update_req_body(build_id)
-        update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
-                                          map(lambda resource: resource.to_dict(), resources))
+        if resources:
+            update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
+                                              map(lambda resource: resource.to_dict(), resources))
         # prepare body for update request
         return update_body
       
