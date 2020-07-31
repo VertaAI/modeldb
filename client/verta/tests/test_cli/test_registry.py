@@ -473,10 +473,61 @@ class TestUpdate:
         assert result.exception
         assert "a model has already been associated with the version" in result.output
 
+    def test_overwrite(self, registered_model, in_tempdir, created_registered_models):
+        created_registered_models.append(registered_model)
+        model_name = registered_model.name
+        version_name = "my version"
+        registered_model.get_or_create_version(version_name)
+
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+
+        classifier_name = "tiny2.pth"
+        CLASSIFIER_CONTENTS = os.urandom(2**16)
+        with open(classifier_name, 'wb') as f:
+            f.write(CLASSIFIER_CONTENTS)
+
+        runner = CliRunner()
+        runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "file={}".format(filename), "--model", classifier_name],
+        )
+
+        # Overwriting:
+        filename = "tiny1.bin"
+        FILE_CONTENTS_2 = os.urandom(2**16)
+        while FILE_CONTENTS_2 == FILE_CONTENTS:
+            FILE_CONTENTS_2 = os.urandom(2 ** 16)
+
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS_2)
+
+        classifier_name = "tiny2.pth"
+        CLASSIFIER_CONTENTS_2 = os.urandom(2**16)
+        while CLASSIFIER_CONTENTS_2 == CLASSIFIER_CONTENTS:
+            CLASSIFIER_CONTENTS_2 = os.urandom(2 ** 16)
+
+        with open(classifier_name, 'wb') as f:
+            f.write(CLASSIFIER_CONTENTS_2)
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "file={}".format(filename), "--model", classifier_name, "--overwrite"],
+        )
+        assert not result.exception
+
+        # Check that the model and artifact are updated:
+        model_version = registered_model.get_version(name=version_name)
+        assert model_version.get_artifact("file").getvalue() != FILE_CONTENTS
+        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS_2
+        assert model_version.get_model().getvalue() != CLASSIFIER_CONTENTS
+        assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS_2
+
 @pytest.mark.skip(reason="pending backend")
 class TestDownload:
     def test_download_context(self, experiment_run, model_for_deployment, registered_model, created_registered_models):
-        created_registered_models.append(registered_model)
         np = pytest.importorskip("numpy")
         model_name = registered_model.name
         version_name = "my-version"

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+import json
 import sys
 import time
 
@@ -18,8 +19,19 @@ class Endpoint(object):
         self.id = id
 
     def __repr__(self):
-        # TODO: print full info
-        return "<Endpoint \"{}\">".format(self.path)
+        status = self.get_status()
+        data = Endpoint._get_json_by_id(self._conn, self.workspace, self.id)
+
+        return '\n'.join((
+            "path: {}".format(data['creator_request']['path']),
+            "id: {}".format(self.id),
+            "status: {}".format(status["status"]),
+            "date created: {}".format(data["date_created"]),
+            "date updated: {}".format(data["date_updated"]),
+            "stage's date created: {}".format(status["date_created"]),
+            "stage's date updated: {}".format(status["date_updated"]),
+            "components: {}".format(json.dumps(status["components"], indent=4)),
+        ))
 
     @property
     def path(self):
@@ -197,7 +209,10 @@ class Endpoint(object):
         )
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
-        return response.json()
+        response_json = response.json()
+        response_json["stage_id"] = response_json.pop("id")
+
+        return response_json
 
     def get_access_token(self):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/accesstokens".format(
