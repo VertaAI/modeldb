@@ -67,19 +67,6 @@ class TestBaseDatasets:
                                _dataset_id=dataset.id)
         assert dataset.id == same_dataset.id
 
-    @pytest.mark.parametrize("tags", [TAG, [TAG]])
-    def test_tags_is_list_of_str(self, client, created_datasets, tags):
-        dataset = client.set_dataset(tags=tags)
-        created_datasets.append(dataset)
-
-        endpoint = "{}://{}/api/v1/modeldb/dataset/getDatasetTags".format(
-            client._conn.scheme,
-            client._conn.socket,
-        )
-        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': dataset.id})
-        verta._internal_utils._utils.raise_for_http_error(response)
-        assert response.json().get('tags', []) == [TAG]
-
 
 class TestBaseDatasetVersions:
     @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
