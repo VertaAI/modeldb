@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import click
+import json
 
 from .deployment import deployment
 from ... import Client
@@ -54,5 +55,5 @@ def update_endpoint(path, run_id, strategy, canary_rule, canary_interval, canary
         # strategy is canary
         strategy_obj = CanaryUpdateStrategy(canary_interval, canary_step)
         for rule in canary_rule:
-            strategy_obj.add_rule(_UpdateRule._from_json(rule))
+            strategy_obj.add_rule(_UpdateRule._from_dict(json.loads(rule)))
         endpoint.update(run, strategy_obj)

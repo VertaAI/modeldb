@@ -26,10 +26,6 @@ class _UpdateRule(object):
         }
 
     @staticmethod
-    def _from_json(json_str):
-        return _UpdateRule._from_dict(json.loads(json_str))
-
-    @staticmethod
     def _from_dict(rule_dict):
         rule_id = int(rule_dict["rule_id"])
         rule_name = rule_dict['rule_parameters'][0]['name']
