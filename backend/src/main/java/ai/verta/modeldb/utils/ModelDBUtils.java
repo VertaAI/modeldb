@@ -512,8 +512,8 @@ public class ModelDBUtils {
   }
 
   /**
-   * If so throws an error if the workspace type is USER and the workspaceId and userID do not
-   * match. Is a NO-OP if userinfo is null.
+   * Throws an error if the workspace type is USER and the workspaceId and userID do not match. Is a
+   * NO-OP if userinfo is null.
    */
   public static void checkPersonalWorkspace(
       UserInfo userInfo,
