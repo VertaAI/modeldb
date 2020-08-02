@@ -270,6 +270,7 @@ class TestGet:
 
 
 class TestList:
+    @pytest.mark.skip("bug in dev regarding labels")
     def test_list_model(self, created_registered_models):
         client = Client()
         model1 = client.get_or_create_registered_model()
@@ -340,6 +341,7 @@ class TestList:
         assert version2_name in result.output
 
 class TestUpdate:
+    @pytest.mark.skip("bug in dev regarding labels")
     def test_update_model(self, registered_model):
         model_name = registered_model.name
         assert registered_model.get_labels() == []
@@ -458,8 +460,7 @@ class TestUpdate:
         assert result.exception
         assert "a model has already been associated with the version" in result.output
 
-    def test_overwrite(self, registered_model, in_tempdir, created_registered_models):
-        created_registered_models.append(registered_model)
+    def test_overwrite(self, registered_model, in_tempdir):
         model_name = registered_model.name
         version_name = "my version"
         registered_model.get_or_create_version(version_name)
