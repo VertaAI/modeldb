@@ -137,42 +137,10 @@ class Endpoint(object):
             raise TypeError("strategy must be an object from verta.deployment.strategies")
 
         # Create new build:
-        url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.workspace,
-        )
-        response = _utils.make_request("POST", url, self._conn, json={"run_id": run.id})
-        _utils.raise_for_http_error(response)
-        build_id = response.json()["id"]
+        build_id = self._create_build(run_id=run.id)
+        self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
 
-        update_body = self._form_update_body(resources, strategy, build_id)
-
-        # Update stages with new build
-        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.workspace,
-            self.id,
-            self._get_or_create_stage(),
-        )
-        response = _utils.make_request("PUT", url, self._conn, json=update_body)
-        _utils.raise_for_http_error(response)
-
-        if wait:
-            print("waiting for update...", end='')
-            sys.stdout.flush()
-            while self.get_status()['status'] not in ("active", "error"):
-                print(".", end='')
-                sys.stdout.flush()
-                time.sleep(5)
-            print()
-            if self.get_status()['status'] == "error":
-                raise RuntimeError("endpoint update failed")
-
-        return self.get_status()
-
-    def update_from_version(self, model_version, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
+    def update_from_model_version(self, model_version, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         if not isinstance(model_version, RegisteredModelVersion):
             raise TypeError("model_version must be a RegisteredModelVersion")
 
@@ -180,15 +148,10 @@ class Endpoint(object):
             raise TypeError("strategy must be an object from verta.deployment.strategies")
 
         # Create new build:
-        url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.workspace,
-        )
-        response = _utils.make_request("POST", url, self._conn, json={"model_version_id": model_version.id})
-        _utils.raise_for_http_error(response)
-        build_id = response.json()["id"]
+        build_id = self._create_build(model_version_id=model_version.id)
+        self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
 
+    def _update_from_build(self, build_id, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         update_body = self._form_update_body(resources, strategy, build_id)
 
         # Update stages with new build
@@ -214,6 +177,24 @@ class Endpoint(object):
                 raise RuntimeError("endpoint update failed")
 
         return self.get_status()
+
+    def _create_build(self, model_version_id=None, run_id=None):
+        if (not model_version_id and not run_id) or (model_version_id and run_id):
+            raise RuntimeError("must provide either model_version_id or run_id, but not both")
+
+        url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+        )
+
+        if model_version_id:
+            response = _utils.make_request("POST", url, self._conn, json={"model_version_id": model_version_id})
+        else:
+            response = _utils.make_request("POST", url, self._conn, json={"run_id": run_id})
+
+        _utils.raise_for_http_error(response)
+        return response.json()["id"]
 
     def _get_or_create_stage(self, name="production"):
         if name == "production":
