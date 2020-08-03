@@ -9,6 +9,7 @@ from verta.deployment.resources import CpuMilli, Memory
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
+from verta.environment import Python
 
 from ..utils import get_build_ids
 
@@ -311,6 +312,12 @@ class TestEndpoint:
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
         model_version.log_model(classifier)
 
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+
+        model_version._refresh_cache()
+        print(model_version._msg)
+
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
@@ -328,6 +335,9 @@ class TestEndpoint:
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
         model_version.log_model(classifier)
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)

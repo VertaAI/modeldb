@@ -22,6 +22,7 @@ from .._internal_utils import (
     importer, _request_utils
 )
 from .._internal_utils._utils import NoneProtoResponse
+from .. import utils
 
 from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 from ..environment import _Environment, Python
@@ -176,7 +177,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         print("Created new ModelVersion: {}".format(model_version.version))
         return model_version
 
-    def log_model(self, model, overwrite=False):
+    def log_model(self, model, model_api=None, overwrite=False):
         """
         Logs a model to this Model Version.
 
@@ -188,6 +189,8 @@ class RegisteredModelVersion(_ModelDBEntity):
                   and uploaded as an artifact. If it is a directory path, its contents will be zipped.
                 - If file-like, then the contents will be read as bytes and uploaded as an artifact.
                 - Otherwise, the object will be serialized and uploaded as an artifact.
+        model_api : :class:`~utils.ModelAPI`, optional
+            Model API specifying details about the model and its deployment.
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
 
@@ -199,7 +202,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         if isinstance(model, six.string_types):  # filepath
             serialized_model = open(model, 'rb')  # file handle
         else:
-            serialized_model, method, _ = _artifact_utils.serialize_model(model)  # bytestream
+            serialized_model, method, model_type = _artifact_utils.serialize_model(model)  # bytestream
 
         try:
             extension = _artifact_utils.get_file_ext(serialized_model)
@@ -215,6 +218,20 @@ class RegisteredModelVersion(_ModelDBEntity):
             "model", serialized_model,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
+
+        # build model API
+        if model_api is None:
+            model_api = utils.ModelAPI()
+        elif not isinstance(model_api, utils.ModelAPI):
+            raise ValueError("`model_api` must be `verta.utils.ModelAPI`, not {}".format(type(model_api)))
+        if 'model_packaging' not in model_api:
+            # add model serialization info to model_api
+            model_api['model_packaging'] = {
+                'python_version': _utils.get_python_version(),
+                'type': model_type,
+                'deserialization': method,
+            }
+        self.log_artifact("model_api.json", model_api, overwrite)
 
     def get_model(self):
         """
