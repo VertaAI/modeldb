@@ -199,7 +199,7 @@ class TestEndpoint:
             Memory("500Mi"),
         ]
 
-        env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "dev.verta.ai"}
+        env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"}
 
         parameter_json = endpoint._form_update_body(resources, DirectUpdateStrategy(), env_vars, 0)
         assert parameter_json == {'build_id': 0, 'env': {'CUDA_VISIBLE_DEVICES': '1,2', 'VERTA_HOST': 'dev.verta.ai'},
