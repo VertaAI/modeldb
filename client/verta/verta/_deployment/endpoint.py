@@ -12,6 +12,7 @@ from ..deployment import DeployedModel
 from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
+from .._registry import RegisteredModelVersion
 
 
 def merge_dicts(a, b):
@@ -142,6 +143,49 @@ class Endpoint(object):
             self.workspace,
         )
         response = _utils.make_request("POST", url, self._conn, json={"run_id": run.id})
+        _utils.raise_for_http_error(response)
+        build_id = response.json()["id"]
+
+        update_body = self._form_update_body(resources, strategy, build_id)
+
+        # Update stages with new build
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_stage(),
+        )
+        response = _utils.make_request("PUT", url, self._conn, json=update_body)
+        _utils.raise_for_http_error(response)
+
+        if wait:
+            print("waiting for update...", end='')
+            sys.stdout.flush()
+            while self.get_status()['status'] not in ("active", "error"):
+                print(".", end='')
+                sys.stdout.flush()
+                time.sleep(5)
+            print()
+            if self.get_status()['status'] == "error":
+                raise RuntimeError("endpoint update failed")
+
+        return self.get_status()
+
+    def update_from_version(self, model_version, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
+        if not isinstance(model_version, RegisteredModelVersion):
+            raise TypeError("model_version must be a RegisteredModelVersion")
+
+        if not isinstance(strategy, _UpdateStrategy):
+            raise TypeError("strategy must be an object from verta.deployment.strategies")
+
+        # Create new build:
+        url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+        )
+        response = _utils.make_request("POST", url, self._conn, json={"model_version_id": model_version.id})
         _utils.raise_for_http_error(response)
         build_id = response.json()["id"]
 
