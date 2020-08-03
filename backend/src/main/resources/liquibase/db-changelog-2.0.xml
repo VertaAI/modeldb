@@ -5,34 +5,44 @@
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
         logicalFilePath="src/main/resources/liquibase/db-changelog-2.0.xml">
 
-    <changeSet author="anandJ" id="before-demo-table">
+    <changeSet author="anandJ" id="C1">
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists tableName="before-demo-table"/>
+                <tableExists tableName="C1"/>
             </not>
         </preConditions>
-        <createTable tableName="before-demo-table">
+        <createTable tableName="C1">
             <column name="id" type="int8" autoIncrement="true" incrementBy="1">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>
+        <rollback>
+            <dropTable tableName="C1"/>
+        </rollback>
     </changeSet>
 
     <changeSet id="db_version_1.1" author="anandJ">
         <tagDatabase tag="db_version_1.1"/>
     </changeSet>
 
-    <changeSet author="anandJ" id="after-demo-table">
+    <changeSet author="anandJ" id="C2">
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists tableName="after-demo-table"/>
+                <tableExists tableName="C2"/>
             </not>
         </preConditions>
-        <createTable tableName="after-demo-table">
+        <createTable tableName="C2">
             <column name="id" type="int8" autoIncrement="true" incrementBy="1">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>
+        <rollback>
+            <dropTable tableName="C2"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_1.2" author="anandJ">
+        <tagDatabase tag="db_version_1.2"/>
     </changeSet>
 
 </databaseChangeLog>
