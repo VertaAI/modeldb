@@ -97,4 +97,36 @@
         <tagDatabase tag="db_version_1.4"/>
     </changeSet>
 
+    <changeSet author="anandJ" id="C3_temp">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="C3_temp"/>
+            </not>
+        </preConditions>
+        <createTable tableName="C3_temp">
+            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="dummy_column" type="int8"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="C3_temp"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="copyDataToATempTable_C3_temp" author="anandJ">
+        <sql>
+            INSERT INTO C3_temp SELECT * FROM C3;
+        </sql>
+        <rollback>
+            <sql>
+                delete from C3_temp;
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_1.5" author="anandJ">
+        <tagDatabase tag="db_version_1.5"/>
+    </changeSet>
+
 </databaseChangeLog>
