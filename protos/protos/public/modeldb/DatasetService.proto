@@ -323,6 +323,7 @@ service DatasetService {
     rpc deleteDatasetAttributes(DeleteDatasetAttributes) returns (DeleteDatasetAttributes.Response) {
         option (google.api.http) = {
             delete: "/v1/dataset/deleteDatasetAttributes"
+            body: "*"
         };
     };
 
