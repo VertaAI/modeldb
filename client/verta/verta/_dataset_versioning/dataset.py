@@ -113,7 +113,7 @@ class Dataset(entity._ModelDBEntity):
         Parameters
         ----------
         desc : str
-            Description to add.
+            Description to set.
 
         """
         Message = _DatasetService.UpdateDatasetDescription
@@ -184,7 +184,6 @@ class Dataset(entity._ModelDBEntity):
         raise NotImplementedError
 
     def _update(self, msg, response_proto, endpoint):
-        self._fetch_with_no_cache()
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         self._conn.must_proto_response(response, response_proto)
         self._clear_cache()
