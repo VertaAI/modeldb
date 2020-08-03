@@ -129,18 +129,18 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    def update(self, run_or_model_version, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
-        if not (isinstance(run_or_model_version, experimentrun.ExperimentRun) or isinstance(run_or_model_version, RegisteredModelVersion)):
-            raise TypeError("run_or_model_version must be an ExperimentRun or RegisteredModelVersion")
+    def update(self, model_reference, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
+        if not (isinstance(model_reference, experimentrun.ExperimentRun) or isinstance(model_reference, RegisteredModelVersion)):
+            raise TypeError("model_reference must be an ExperimentRun or RegisteredModelVersion")
 
         if not isinstance(strategy, _UpdateStrategy):
             raise TypeError("strategy must be an object from verta.deployment.strategies")
 
         # Create new build:
-        if isinstance(run_or_model_version, experimentrun.ExperimentRun):
-            build_id = self._create_build(run_id=run_or_model_version.id)
+        if isinstance(model_reference, experimentrun.ExperimentRun):
+            build_id = self._create_build(run_id=model_reference.id)
         else:
-            build_id = self._create_build(model_version_id=run_or_model_version.id)
+            build_id = self._create_build(model_version_id=model_reference.id)
         return self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
 
     def _update_from_build(self, build_id, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
