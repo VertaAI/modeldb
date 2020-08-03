@@ -125,6 +125,7 @@ class Dataset(entity._ModelDBEntity):
         """
         if not isinstance(tag, six.string_types):
             raise TypeError("`tag` must be a string")
+
         self.add_tags([tag])
 
     def add_tags(self, tags):
@@ -141,7 +142,7 @@ class Dataset(entity._ModelDBEntity):
         Message = _DatasetService.AddDatasetTags
         msg = _DatasetService.AddDatasetTags(id=self.id, tags=tags)
         endpoint = "/api/v1/modeldb/dataset/addDatasetTags"
-        self._update(msg, Message.Response, endpoint)
+        self._update(msg, Message.Response, endpoint, "POST")
 
     def get_tags(self):
         """
@@ -153,18 +154,21 @@ class Dataset(entity._ModelDBEntity):
             All tags.
 
         """
-        Message = _CommonService.GetTags
-        msg = Message(id=self.id)
-        endpoint = "/api/v1/modeldb/dataset/getDatasetTags".format(self._conn.scheme, self._conn.socket)
-        response = self._conn.make_proto_request("GET", endpoint, body=msg)
-        return self._conn.must_proto_response(response, Message.Response).tags
+        self._refresh_cache()
+        return self._msg.tags
 
     def del_tag(self, tag):
         """
         Deletes a tag from this dataset
 
         """
-        raise NotImplementedError
+        if not isinstance(tag, six.string_types):
+            raise TypeError("`tag` must be a string")
+
+        Message = _DatasetService.DeleteDatasetTags
+        msg = _DatasetService.AddDatasetTags(id=self.id, tags=[tag])
+        endpoint = "/api/v1/modeldb/dataset/deleteDatasetTags"
+        self._update(msg, Message.Response, endpoint, "DELETE")
 
     def add_attribute(self, key, value):
         raise NotImplementedError
@@ -196,3 +200,8 @@ class Dataset(entity._ModelDBEntity):
 
     def get_latest_version(self):
         raise NotImplementedError
+
+    def _update(self, msg, response_proto, endpoint, method):
+        response = self._conn.make_proto_request(method, endpoint, body=msg)
+        self._conn.must_proto_response(response, response_proto)
+        self._clear_cache()
