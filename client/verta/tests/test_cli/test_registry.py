@@ -270,7 +270,6 @@ class TestGet:
 
 
 class TestList:
-    @pytest.mark.skip("bug in dev regarding labels")
     def test_list_model(self, created_registered_models):
         client = Client()
         model1 = client.get_or_create_registered_model()
@@ -289,8 +288,8 @@ class TestList:
         )
 
         assert not result.exception
-        assert str(model1._msg.name) in result.output
-        assert str(model._msg.name) in result.output
+        assert model1.name in result.output
+        assert model.name in result.output
 
         result = runner.invoke(
             cli,
@@ -298,11 +297,10 @@ class TestList:
         )
 
         assert not result.exception
-        assert str(model1._msg.name) in result.output
-        assert str(model._msg.name) in result.output
-        assert str(model2._msg.name) in result.output
+        assert model1.name in result.output
+        assert model.name in result.output
+        assert model2.name in result.output
 
-    @pytest.mark.skip(reason="bug in dev")
     def test_list_version(self, created_registered_models):
         client = Client()
         runner = CliRunner()
