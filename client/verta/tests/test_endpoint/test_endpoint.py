@@ -265,7 +265,6 @@ class TestEndpoint:
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
-
     def test_get_access_token(self, client, created_endpoints):
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
