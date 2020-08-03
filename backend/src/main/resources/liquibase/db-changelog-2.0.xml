@@ -61,4 +61,24 @@
         <tagDatabase tag="db_version_1.2"/>
     </changeSet>
 
+    <changeSet author="anandJ" id="C4">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="C4"/>
+            </not>
+        </preConditions>
+        <createTable tableName="C4">
+            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="C4"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_1.3" author="anandJ">
+        <tagDatabase tag="db_version_1.3"/>
+    </changeSet>
+
 </databaseChangeLog>
