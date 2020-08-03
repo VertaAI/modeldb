@@ -5,34 +5,8 @@
 
     <include file="src/main/resources/liquibase/db-changelog-1.0.xml"/>
 
-    <changeSet author="anandJ" id="before-demo-table">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="before-demo-table"/>
-            </not>
-        </preConditions>
-        <createTable tableName="before-demo-table">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-
     <changeSet id="db_version_1.0" author="anandJ">
         <tagDatabase tag="db_version_1.0"/>
-    </changeSet>
-
-    <changeSet author="anandJ" id="after-demo-table">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="after-demo-table"/>
-            </not>
-        </preConditions>
-        <createTable tableName="after-demo-table">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-        </createTable>
     </changeSet>
 
     <include file="src/main/resources/liquibase/db-changelog-2.0.xml"/>

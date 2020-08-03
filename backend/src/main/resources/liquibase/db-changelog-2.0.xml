@@ -5,5 +5,34 @@
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
         logicalFilePath="src/main/resources/liquibase/db-changelog-2.0.xml">
 
+    <changeSet author="anandJ" id="before-demo-table">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="before-demo-table"/>
+            </not>
+        </preConditions>
+        <createTable tableName="before-demo-table">
+            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="db_version_1.1" author="anandJ">
+        <tagDatabase tag="db_version_1.1"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="after-demo-table">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="after-demo-table"/>
+            </not>
+        </preConditions>
+        <createTable tableName="after-demo-table">
+            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
 
 </databaseChangeLog>
