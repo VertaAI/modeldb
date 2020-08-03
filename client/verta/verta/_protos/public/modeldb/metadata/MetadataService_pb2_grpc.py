@@ -54,6 +54,21 @@ class MetadataServiceStub(object):
         request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeletePropertyRequest.SerializeToString,
         response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeletePropertyRequest.Response.FromString,
         )
+    self.AddKeyValueProperties = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/AddKeyValueProperties',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddKeyValuePropertiesRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddKeyValuePropertiesRequest.Response.FromString,
+        )
+    self.GetKeyValueProperties = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/GetKeyValueProperties',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetKeyValuePropertiesRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetKeyValuePropertiesRequest.Response.FromString,
+        )
+    self.DeleteKeyValueProperties = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/DeleteKeyValueProperties',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteKeyValuePropertiesRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteKeyValuePropertiesRequest.Response.FromString,
+        )
 
 
 class MetadataServiceServicer(object):
@@ -116,6 +131,27 @@ class MetadataServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def AddKeyValueProperties(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetKeyValueProperties(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def DeleteKeyValueProperties(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_MetadataServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -158,6 +194,21 @@ def add_MetadataServiceServicer_to_server(servicer, server):
           servicer.DeleteProperty,
           request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeletePropertyRequest.FromString,
           response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeletePropertyRequest.Response.SerializeToString,
+      ),
+      'AddKeyValueProperties': grpc.unary_unary_rpc_method_handler(
+          servicer.AddKeyValueProperties,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddKeyValuePropertiesRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddKeyValuePropertiesRequest.Response.SerializeToString,
+      ),
+      'GetKeyValueProperties': grpc.unary_unary_rpc_method_handler(
+          servicer.GetKeyValueProperties,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetKeyValuePropertiesRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetKeyValuePropertiesRequest.Response.SerializeToString,
+      ),
+      'DeleteKeyValueProperties': grpc.unary_unary_rpc_method_handler(
+          servicer.DeleteKeyValueProperties,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteKeyValuePropertiesRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteKeyValuePropertiesRequest.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
