@@ -23,7 +23,7 @@ from .._internal_utils import (
 )
 from .._internal_utils._utils import NoneProtoResponse
 
-from .._tracking.entity import _ModelDBEntity
+from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 from ..environment import _Environment, Python
 
 
@@ -62,6 +62,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         return '\n'.join((
             "version: {}".format(msg.version),
+            "url: {}://{}/{}/registry/{}/versions/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.registered_model_id, self.id),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
@@ -97,6 +98,21 @@ class RegisteredModelVersion(_ModelDBEntity):
     def is_archived(self):
         self._refresh_cache()
         return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
+
+    @property
+    def workspace(self):
+        self._refresh_cache()
+        Message = _ModelVersionService.GetRegisteredModelRequest
+        response = self._conn.make_proto_request(
+            "GET", "/api/v1/registry/registered_models/{}".format(self.registered_model_id)
+        )
+
+        registered_model_msg = self._conn.maybe_proto_response(response, Message.Response).registered_model
+
+        if registered_model_msg.workspace_id:
+            return self._get_workspace_name_by_id(registered_model_msg.workspace_id)
+        else:
+            return _OSS_DEFAULT_WORKSPACE
 
     def get_artifact_keys(self):
         """

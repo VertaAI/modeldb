@@ -19,7 +19,7 @@ import zipfile
 
 import requests
 
-from .entity import _ModelDBEntity
+from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -43,8 +43,6 @@ from .._repository import commit as commit_module
 from .. import deployment
 from .. import utils
 
-
-_OSS_DEFAULT_WORKSPACE = "personal"
 
 _CUSTOM_MODULES_DIR = "/app/custom_modules/"  # location in DeploymentService model container
 
@@ -346,7 +344,7 @@ class ExperimentRun(_ModelDBEntity):
 
         print("upload complete ({})".format(key))
 
-    def _log_artifact_path(self, key, artifact_path, artifact_type):
+    def _log_artifact_path(self, key, artifact_path, artifact_type, overwrite=False):
         """
         Logs the filesystem path of an artifact to this Experiment Run.
 
@@ -358,6 +356,8 @@ class ExperimentRun(_ModelDBEntity):
             Filesystem path of the artifact.
         artifact_type : int
             Variant of `_CommonCommonService.ArtifactTypeEnum`.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
         """
         # log key-path to ModelDB
         Message = _ExperimentRunService.LogArtifact
@@ -367,6 +367,11 @@ class ExperimentRun(_ModelDBEntity):
                                                artifact_type=artifact_type)
         msg = Message(id=self.id, artifact=artifact_msg)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            response = _utils.make_request("DELETE",
+                                           "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(self._conn.scheme, self._conn.socket),
+                                           self._conn, json={'id': self.id, 'key': key})
+            _utils.raise_for_http_error(response)
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logArtifact".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -748,7 +753,28 @@ class ExperimentRun(_ModelDBEntity):
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return _utils.unravel_key_values(response_msg.attributes)
 
-    def log_metric(self, key, value):
+    def _delete_metrics(self, keys):
+        response = _utils.make_request("DELETE",
+                                       "{}://{}/api/v1/modeldb/experiment-run/deleteMetrics".format(
+                                           self._conn.scheme, self._conn.socket),
+                                       self._conn, json={'id': self.id, 'metric_keys': keys})
+        _utils.raise_for_http_error(response)
+        
+    def _delete_observations(self, keys):
+        response = _utils.make_request("DELETE",
+                                       "{}://{}/api/v1/modeldb/experiment-run/deleteObservations".format(
+                                           self._conn.scheme, self._conn.socket),
+                                       self._conn, json={'id': self.id, 'observation_keys': keys})
+        _utils.raise_for_http_error(response)
+
+    def _delete_hyperparameters(self, keys):
+        response = _utils.make_request("DELETE",
+                                       "{}://{}/api/v1/modeldb/experiment-run/deleteHyperparameters".format(
+                                           self._conn.scheme, self._conn.socket),
+                                       self._conn, json={'id': self.id, 'hyperparameter_keys': keys})
+        _utils.raise_for_http_error(response)
+
+    def log_metric(self, key, value, overwrite=False):
         """
         Logs a metric to this Experiment Run.
 
@@ -760,6 +786,8 @@ class ExperimentRun(_ModelDBEntity):
             Name of the metric.
         value : one of {None, bool, float, int, str}
             Value of the metric.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing metric with key `key`.
 
         """
         _utils.validate_flat_key(key)
@@ -767,6 +795,8 @@ class ExperimentRun(_ModelDBEntity):
         metric = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         msg = _ExperimentRunService.LogMetric(id=self.id, metric=metric)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_metrics([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logMetric".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -779,7 +809,7 @@ class ExperimentRun(_ModelDBEntity):
 
         self._clear_cache()
 
-    def log_metrics(self, metrics):
+    def log_metrics(self, metrics, overwrite=False):
         """
         Logs potentially multiple metrics to this Experiment Run.
 
@@ -787,6 +817,8 @@ class ExperimentRun(_ModelDBEntity):
         ----------
         metrics : dict of str to {None, bool, float, int, str}
             Metrics.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing metric with key `key`.
 
         """
         # validate all keys first
@@ -795,11 +827,15 @@ class ExperimentRun(_ModelDBEntity):
 
         # build KeyValues
         metric_keyvals = []
+        keys = []
         for key, value in six.viewitems(metrics):
             metric_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value)))
+            keys.append(key)
 
         msg = _ExperimentRunService.LogMetrics(id=self.id, metrics=metric_keyvals)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_metrics(keys)
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logMetrics".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -846,7 +882,7 @@ class ExperimentRun(_ModelDBEntity):
         self._refresh_cache()
         return self._metrics
 
-    def log_hyperparameter(self, key, value):
+    def log_hyperparameter(self, key, value, overwrite=False):
         """
         Logs a hyperparameter to this Experiment Run.
 
@@ -856,6 +892,8 @@ class ExperimentRun(_ModelDBEntity):
             Name of the hyperparameter.
         value : one of {None, bool, float, int, str}
             Value of the hyperparameter.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing hyperparameter with key `key`.
 
         """
         _utils.validate_flat_key(key)
@@ -863,6 +901,8 @@ class ExperimentRun(_ModelDBEntity):
         hyperparameter = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         msg = _ExperimentRunService.LogHyperparameter(id=self.id, hyperparameter=hyperparameter)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_hyperparameters([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logHyperparameter".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -875,7 +915,7 @@ class ExperimentRun(_ModelDBEntity):
 
         self._clear_cache()
 
-    def log_hyperparameters(self, hyperparams):
+    def log_hyperparameters(self, hyperparams, overwrite=False):
         """
         Logs potentially multiple hyperparameters to this Experiment Run.
 
@@ -883,6 +923,8 @@ class ExperimentRun(_ModelDBEntity):
         ----------
         hyperparameters : dict of str to {None, bool, float, int, str}
             Hyperparameters.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing hyperparameter with key `key`.
 
         """
         # validate all keys first
@@ -891,11 +933,15 @@ class ExperimentRun(_ModelDBEntity):
 
         # build KeyValues
         hyperparameter_keyvals = []
+        keys = []
         for key, value in six.viewitems(hyperparams):
             hyperparameter_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value)))
+            keys.append(key)
 
         msg = _ExperimentRunService.LogHyperparameters(id=self.id, hyperparameters=hyperparameter_keyvals)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_hyperparameters(keys)
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logHyperparameters".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -1453,7 +1499,7 @@ class ExperimentRun(_ModelDBEntity):
 
         self._log_artifact(key, artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, extension, overwrite=overwrite)
 
-    def log_artifact_path(self, key, artifact_path):
+    def log_artifact_path(self, key, artifact_path, overwrite=False):
         """
         Logs the filesystem path of an artifact to this Experiment Run.
 
@@ -1466,12 +1512,14 @@ class ExperimentRun(_ModelDBEntity):
             Name of the artifact.
         artifact_path : str
             Filesystem path of the artifact.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
 
         """
         _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
-        self._log_artifact_path(key, artifact_path, _CommonCommonService.ArtifactTypeEnum.BLOB)
+        self._log_artifact_path(key, artifact_path, _CommonCommonService.ArtifactTypeEnum.BLOB, overwrite=overwrite)
 
     def get_artifact(self, key):
         """
@@ -1608,7 +1656,7 @@ class ExperimentRun(_ModelDBEntity):
         ))
         return committed_parts
 
-    def log_observation(self, key, value, timestamp=None, epoch_num=None):
+    def log_observation(self, key, value, timestamp=None, epoch_num=None, overwrite=False):
         """
         Logs an observation to this Experiment Run.
 
@@ -1624,6 +1672,8 @@ class ExperimentRun(_ModelDBEntity):
         epoch_num : non-negative int, optional
             Epoch number associated with this observation. If not provided, it will automatically
             be incremented from prior observations for the same `key`.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing observation with key `key`.
 
         Warnings
         --------
@@ -1652,6 +1702,8 @@ class ExperimentRun(_ModelDBEntity):
 
         msg = _ExperimentRunService.LogObservation(id=self.id, observation=observation)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_observations([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logObservation".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -2150,10 +2202,10 @@ class ExperimentRun(_ModelDBEntity):
         try:
             _utils.raise_for_http_error(response)
         except requests.HTTPError as e:
-            # propagate error caused by missing artifact
-            # TODO: recommend user call log_model() / log_requirements()
-            error_text = e.response.text.strip()
-            if error_text.startswith("missing artifact"):
+            if response.status_code == 400:
+                # propagate error caused by missing artifact
+                # TODO: recommend user call log_model() / log_requirements()
+                error_text = e.response.text.strip()
                 six.raise_from(RuntimeError("unable to deploy due to {}".format(error_text)), None)
             else:
                 raise e

@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 from .._internal_utils._utils import NoneProtoResponse
-from .._tracking.entity import _ModelDBEntity
+from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 from .._tracking.context import _Context
 from .._internal_utils import _utils
 
@@ -40,6 +40,7 @@ class RegisteredModel(_ModelDBEntity):
 
         return '\n'.join((
             "name: {}".format(msg.name),
+            "url: {}://{}/{}/registry/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
@@ -51,6 +52,15 @@ class RegisteredModel(_ModelDBEntity):
     def name(self):
         self._refresh_cache()
         return self._msg.name
+
+    @property
+    def workspace(self):
+        self._refresh_cache()
+
+        if self._msg.workspace_id:
+            return self._get_workspace_name_by_id(self._msg.workspace_id)
+        else:
+            return _OSS_DEFAULT_WORKSPACE
 
     def get_or_create_version(self, name=None, desc=None, labels=None, id=None, time_created=None):
         """
@@ -246,8 +256,7 @@ class RegisteredModel(_ModelDBEntity):
         """
         if label is None:
             raise ValueError("label is not specified")
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         if label not in self._msg.labels:
             self._msg.labels.append(label)
             self._update()
@@ -264,8 +273,7 @@ class RegisteredModel(_ModelDBEntity):
         """
         if label is None:
             raise ValueError("label is not specified")
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         if label in self._msg.labels:
             self._msg.labels.remove(label)
             self._update()
@@ -280,7 +288,6 @@ class RegisteredModel(_ModelDBEntity):
             List of all labels of this Registered Model.
 
         """
-        self._clear_cache()
         self._refresh_cache()
         return self._msg.labels
 
@@ -290,6 +297,7 @@ class RegisteredModel(_ModelDBEntity):
         Message = _RegisteredModelService.SetRegisteredModel
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
+        self._clear_cache()
 
     def _get_info_list(self):
         return [self._msg.name, str(self.id), _utils.timestamp_to_str(self._msg.time_updated)]

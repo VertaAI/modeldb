@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-import json
 import sys
 import time
+import json
+import yaml
 from functools import reduce
 
+from ..deployment.update.rules import _UpdateRule
 from ..deployment import DeployedModel
-from ..deployment.update._strategies import _UpdateStrategy
+from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
 
@@ -212,7 +214,43 @@ class Endpoint(object):
         return response.json()["id"]
 
     def update_from_config(self, filepath):
-        raise NotImplementedError
+        update_dict = None
+
+        with open(filepath, 'r') as f:
+            config = f.read()
+
+        try:
+            update_dict = json.loads(config)
+        except ValueError:
+            pass
+
+        if not update_dict:
+            try:
+                update_dict = yaml.safe_load(config)
+            except yaml.YAMLError:
+                pass
+
+        if not update_dict:
+            raise ValueError("input file must be a json or yaml")
+
+        return self._update_from_dict(update_dict)
+
+    def _update_from_dict(self, update_dict):
+        if update_dict["strategy"] == "direct":
+            strategy = DirectUpdateStrategy()
+        elif update_dict["strategy"] == "canary":
+            strategy = CanaryUpdateStrategy(
+                interval=int(update_dict["canary_strategy"]["progress_interval_seconds"]),
+                step=float(update_dict["canary_strategy"]["progress_step"])
+            )
+
+            for rule in update_dict["canary_strategy"]["rules"]:
+                strategy.add_rule(_UpdateRule._from_dict(rule))
+        else:
+            raise ValueError("update strategy must be \"direct\" or \"canary\"")
+
+        run = experimentrun.ExperimentRun._get_by_id(self._conn, self._conf, id=update_dict["run_id"])
+        return self.update(run, strategy)
 
     def get_status(self):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
