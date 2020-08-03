@@ -315,7 +315,31 @@ class TestEndpoint:
         env = Python(requirements=["scikit-learn"])
         model_version.log_environment(env)
 
-        model_version._refresh_cache()
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+
+    def test_update_from_version_from_run(self, client, experiment_run, registered_model, created_endpoints):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        experiment_run.log_model(classifier, custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        artifact = np.random.random((36, 12))
+        experiment_run.log_artifact("some-artifact", artifact)
+
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id,
+            name="From Run {}".format(experiment_run.id),
+        )
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
