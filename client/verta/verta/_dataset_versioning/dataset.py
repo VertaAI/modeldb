@@ -5,6 +5,7 @@ from __future__ import print_function
 from .._tracking import entity
 
 from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
+from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 from ..external import six
 
@@ -131,21 +132,76 @@ class Dataset(entity._ModelDBEntity):
         raise NotImplementedError
 
     def add_attribute(self, key, value):
-        raise NotImplementedError
+        """
+        Adds an attribute to this Dataset.
+
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+        value : one of {None, bool, float, int, str, list, dict}
+            Value of the attribute.
+
+        """
+        self.add_attributes({key: value})
 
     def add_attributes(self, attrs):
         """
+        Adds potentially multiple attributes to this Dataset.
+
         Parameters
         ----------
-        attrs : dict of str to any
+        attributes : dict of str to {None, bool, float, int, str, list, dict}
+            Attributes.
 
         """
-        raise NotImplementedError
+        # validate all keys first
+        for key in six.viewkeys(attrs):
+            _utils.validate_flat_key(key)
+
+        # build KeyValues
+        attribute_keyvals = []
+        for key, value in six.viewitems(attrs):
+            attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True)))
+
+        Message = _DatasetService.AddDatasetAttributes
+        msg = Message(id=self.id, attributes=attribute_keyvals)
+        endpoint = "/api/v1/modeldb/dataset/addDatasetAttributes"
+        self._update(msg, Message.Response, endpoint, "POST")
 
     def get_attribute(self, key):
-        raise NotImplementedError
+        """
+        Gets the attribute with name `key` from this Dataset.
+
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+
+        Returns
+        -------
+        one of {None, bool, float, int, str}
+            Value of the attribute.
+
+        """
+        _utils.validate_flat_key(key)
+        attributes = self.get_attributes()
+
+        try:
+            return attributes[key]
+        except KeyError:
+            six.raise_from(KeyError("no attribute found with key {}".format(key)), None)
 
     def get_attributes(self):
+        """
+        Gets all attributes from this Dataset.
+
+        Returns
+        -------
+        dict of str to {None, bool, float, int, str}
+            Names and values of all attributes.
+
+        """
         raise NotImplementedError
 
     def del_attribute(self, key):
