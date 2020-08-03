@@ -285,7 +285,7 @@ class TestEndpoint:
         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"}
 
         parameter_json = endpoint._form_update_body(resources, DirectUpdateStrategy(), env_vars, 0)
-        assert parameter_json == {'build_id': 0, 'env': {'CUDA_VISIBLE_DEVICES': '1,2', 'VERTA_HOST': 'dev.verta.ai'},
+        assert parameter_json == {'build_id': 0, 'env': {'CUDA_VISIBLE_DEVICES': '1,2', 'VERTA_HOST': 'app.verta.ai'},
                                   'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
         
     def test_get_deployed_model(self, client, experiment_run, model_for_deployment, created_endpoints):
