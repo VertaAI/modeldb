@@ -46,6 +46,8 @@ class TestDataset:
         assert dataset.get_attribute("int-attr") == 15
 
         # Test deleting:
-        print(dataset.get_attributes())
-        dataset.del_attribute(u'string-attr')
-        # assert dataset.get_attributes() ==  {"int-attr": 15, "bool-attr": False, "float-attr": 0.4}
+        dataset.del_attribute('string-attr')
+        assert dataset.get_attributes() ==  {"int-attr": 15, "bool-attr": False, "float-attr": 0.4}
+
+        # Deleting non-existing key:
+        dataset.del_attribute("non-existing")
