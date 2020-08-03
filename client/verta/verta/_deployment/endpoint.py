@@ -130,17 +130,11 @@ class Endpoint(object):
         return None
 
     def update(self, model_reference, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
-        if not isinstance(model_reference, (experimentrun.ExperimentRun, RegisteredModelVersion)):
-            raise TypeError("model_reference must be an ExperimentRun or RegisteredModelVersion")
-
         if not isinstance(strategy, _UpdateStrategy):
             raise TypeError("strategy must be an object from verta.deployment.strategies")
 
         # Create new build:
-        if isinstance(model_reference, experimentrun.ExperimentRun):
-            build_id = self._create_build(run_id=model_reference.id)
-        else:
-            build_id = self._create_build(model_version_id=model_reference.id)
+        build_id = self._create_build(model_reference)
         return self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
 
     def _update_from_build(self, build_id, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
@@ -170,20 +164,19 @@ class Endpoint(object):
 
         return self.get_status()
 
-    def _create_build(self, model_version_id=None, run_id=None):
-        if (not model_version_id and not run_id) or (model_version_id and run_id):
-            raise RuntimeError("must provide either model_version_id or run_id, but not both.")
-
+    def _create_build(self, model_reference):
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
             self._conn.scheme,
             self._conn.socket,
             self.workspace,
         )
 
-        if model_version_id:
-            response = _utils.make_request("POST", url, self._conn, json={"model_version_id": model_version_id})
+        if isinstance(model_reference, RegisteredModelVersion):
+            response = _utils.make_request("POST", url, self._conn, json={"model_version_id": model_reference.id})
+        elif isinstance(model_reference, experimentrun.ExperimentRun):
+            response = _utils.make_request("POST", url, self._conn, json={"run_id": model_reference.id})
         else:
-            response = _utils.make_request("POST", url, self._conn, json={"run_id": run_id})
+            raise TypeError("model_reference must be an ExperimentRun or RegisteredModelVersion")
 
         _utils.raise_for_http_error(response)
         return response.json()["id"]
@@ -262,11 +255,11 @@ class Endpoint(object):
             raise ValueError("update strategy must be \"direct\" or \"canary\"")
 
         if "run_id" in update_dict:
-            run = experimentrun.ExperimentRun._get_by_id(self._conn, self._conf, id=update_dict["run_id"])
-            return self.update(run, strategy)
+            model_reference = experimentrun.ExperimentRun._get_by_id(self._conn, self._conf, id=update_dict["run_id"])
         else:
-            model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id=update_dict["model_version_id"])
-            return self.update(model_version, strategy)
+            model_reference = RegisteredModelVersion._get_by_id(self._conn, self._conf, id=update_dict["model_version_id"])
+            
+        return self.update(model_reference, strategy)
 
     def get_status(self):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
