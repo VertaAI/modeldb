@@ -316,7 +316,6 @@ class TestEndpoint:
         model_version.log_environment(env)
 
         model_version._refresh_cache()
-        print(model_version._msg)
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -324,7 +323,7 @@ class TestEndpoint:
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
         test_data = np.random.random((4, 12))
-        assert endpoint.get_deployed_model().predict(test_data) == classifier.predict(test_data)
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
 
     def test_update_from_json_config_model_version(self, client, in_tempdir, created_endpoints, model_version):
         np = pytest.importorskip("numpy")
@@ -372,6 +371,10 @@ class TestEndpoint:
         with open(filepath, "wb") as f:
             json.dump(strategy_dict, f)
 
-        updated_status = endpoint.update_from_config(filepath)
-        new_build_ids = get_build_ids(updated_status)
-        assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
+        endpoint.update_from_config(filepath)
+
+        while not endpoint.get_status()['status'] == "active":
+            time.sleep(3)
+
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
