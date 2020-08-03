@@ -6,6 +6,7 @@ from .._tracking import entity
 
 from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
+from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 
 from ..external import six
 
@@ -202,10 +203,26 @@ class Dataset(entity._ModelDBEntity):
             Names and values of all attributes.
 
         """
-        raise NotImplementedError
+        self._refresh_cache()
+        return _utils.unravel_key_values(self._msg.attributes)
 
     def del_attribute(self, key):
-        raise NotImplementedError
+        """
+        Deletes the attribute with name `key` from this Dataset
+
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+
+        """
+        _utils.validate_flat_key(key)
+
+        # build KeyValues
+        Message = _DatasetService.DeleteDatasetAttributes
+        msg = Message(id=self.id, attribute_keys=[key])
+        endpoint = "/api/v1/modeldb/dataset/deleteDatasetAttributes"
+        self._update(msg, Message.Response, endpoint, "DELETE")
 
     def create_s3_version(self):  # TODO: same params as S3.__init__()
         raise NotImplementedError
