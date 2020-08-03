@@ -130,7 +130,7 @@ class Endpoint(object):
         return None
 
     def update(self, model_reference, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
-        if not (isinstance(model_reference, experimentrun.ExperimentRun) or isinstance(model_reference, RegisteredModelVersion)):
+        if not isinstance(model_reference, (experimentrun.ExperimentRun, RegisteredModelVersion)):
             raise TypeError("model_reference must be an ExperimentRun or RegisteredModelVersion")
 
         if not isinstance(strategy, _UpdateStrategy):
