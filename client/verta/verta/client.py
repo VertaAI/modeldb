@@ -63,6 +63,7 @@ from ._registry import (
     RegisteredModelVersion,
     RegisteredModelVersions,
 )
+from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
 from ._deployment import (
     Endpoint,
@@ -212,10 +213,6 @@ class Client(object):
     @property
     def proj(self):
         return self._ctx.proj
-
-    @property
-    def registered_model(self):
-        return self._ctx.registered_model
 
     @property
     def expt(self):
@@ -825,14 +822,13 @@ class Client(object):
         self._ctx.workspace_name = workspace
 
         if id is not None:
-            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
-            self._ctx.populate()
+            registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
         else:
-            self._ctx.registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
+            registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
                                                                                 lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
                                                                                 lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=labels, public_within_org=public_within_org))
 
-        return self._ctx.registered_model
+        return registered_model
 
     def get_registered_model(self, name=None, workspace=None, id=None):
         """
@@ -863,15 +859,14 @@ class Client(object):
         self._ctx.workspace_name = workspace
 
         if id is not None:
-            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
-            self._ctx.populate()
+            registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
         else:
-            self._ctx.registered_model = RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+            registered_model =  RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
 
-        if self._ctx.registered_model is None:
+        if registered_model is None:
             raise ValueError("Registered model not found")
 
-        return self._ctx.registered_model
+        return registered_model
 
     def set_registered_model(self, *args, **kwargs):
         """
@@ -880,32 +875,20 @@ class Client(object):
         """
         return self.get_or_create_registered_model(*args, **kwargs)
 
-    def get_registered_model_version(self, name=None, id=None):
+    def get_registered_model_version(self, id):
         """
-        Retrieve an already created Model Version. Only one of name or id can be provided.
+        Retrieve an already created Model Version.
 
         Parameters
         ----------
-        name : str, optional
-            Name of the Model Version.
-        id : str, optional
-            ID of the Model Version. This parameter cannot be provided alongside `name`.
+        id : str
+            ID of the Model Version.
 
         Returns
         -------
         :class:`~verta._registry.modelversion.ModelVersion`
         """
-        if id is not None:
-            # TODO: Support registered_model in populate
-            model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
-            self.get_registered_model(id=model_version.registered_model_id)
-        else:
-            if self._ctx.registered_model is None:
-                self.set_registered_model()
-
-            model_version = RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.registered_model.id)
-
-        return model_version
+        return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
 
     @property
     def registered_models(self):
@@ -1189,21 +1172,150 @@ class Client(object):
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
-    def get_or_create_dataset2(self):
+    def get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, id=None):
+        """
+        Gets or creates a Dataset.
+
+        If an accessible Dataset with name `name` does not already exist, it will be created
+        and initialized with specified metadata parameters. If such a Dataset does already exist,
+        it will be retrieved; specifying metadata parameters in this case will raise an exception.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Dataset. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Dataset.
+        tags : list of str, optional
+            Tags of the Dataset.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Dataset.
+        workspace : str, optional
+            Workspace under which the Dataset with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating a Dataset in an organization's workspace, whether to make this Dataset
+            accessible to all members of that organization.
+        id : str, optional
+            ID of the Dataset. This parameter cannot be provided alongside `name`, and other
+            parameters will be ignored.
+
+        Returns
+        -------
+        :class:`Dataset`
+
+        Raises
+        ------
+        ValueError
+            If a Dataset with `name` already exists, but metadata parameters are passed in.
+
+        """
         # TODO: when MVP, remove '2'
-        raise NotImplementedError
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        name = self._set_from_config_if_none(name, "dataset")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+
+        if id is not None:
+            dataset = Dataset._get_by_id(self._conn, self._conf, id)
+        else:
+            dataset = Dataset._get_or_create_by_name(self._conn, name,
+                                                        lambda name: Dataset._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
+                                                        lambda name: Dataset._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org))
+
+        return dataset
 
     def set_dataset2(self, *args, **kwargs):
+        """
+        Alias for :meth:`Client.get_or_create_dataset2()`.
+
+        """
         # TODO: when MVP, remove '2'
         return self.get_or_create_dataset2(*args, **kwargs)
 
-    def create_dataset2(self):
-        # TODO: when MVP, remove '2'
-        raise NotImplementedError
+    def create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None):
+        """
+        Creates a Dataset, initialized with specified metadata parameters.
 
-    def get_dataset2(self):
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Dataset. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Dataset.
+        tags : list of str, optional
+            Tags of the Dataset.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Dataset.
+        workspace : str, optional
+            Workspace under which the Dataset with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating a Dataset in an organization's workspace, whether to make this Dataset
+            accessible to all members of that organization.
+
+        Returns
+        -------
+        :class:`Dataset`
+
+        Raises
+        ------
+        ValueError
+            If a Dataset with `name` already exists.
+
+        """
         # TODO: when MVP, remove '2'
-        raise NotImplementedError
+        name = self._set_from_config_if_none(name, "dataset")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+        return Dataset._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs,
+                               time_created=time_created, public_within_org=public_within_org)
+
+    def get_dataset2(self, name=None, workspace=None, id=None):
+        """
+        Gets a Dataset.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Dataset. This parameter cannot be provided alongside `id`.
+        workspace : str, optional
+            Workspace under which the Dataset with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        id : str, optional
+            ID of the Dataset. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`Dataset`
+
+        """
+        # TODO: when MVP, remove '2'
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        name = self._set_from_config_if_none(name, "project")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+
+        if id is not None:
+            dataset = Dataset._get_by_id(self._conn, self._conf, id)
+        else:
+            dataset = Dataset._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+
+        if dataset is None:
+            raise ValueError("Dataset not found")
+        return dataset
 
     @property
     def datasets(self):

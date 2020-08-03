@@ -72,16 +72,21 @@ public class ModelDBUtils {
 
   public static Map<String, Object> readYamlProperties(String filePath) throws IOException {
     LOGGER.info("Reading File {} as YAML", filePath);
-    String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
-    if (telepresenceRoot != null) {
-      filePath = telepresenceRoot + filePath;
-    }
+    filePath = appendOptionalTelepresencePath(filePath);
     InputStream inputStream = new FileInputStream(new File(filePath));
     Yaml yaml = new Yaml();
     @SuppressWarnings("unchecked")
     Map<String, Object> prop = (Map<String, Object>) yaml.load(inputStream);
     LOGGER.debug("YAML map {}", prop);
     return prop;
+  }
+
+  public static String appendOptionalTelepresencePath(String filePath) {
+    String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
+    if (telepresenceRoot != null) {
+      filePath = telepresenceRoot + filePath;
+    }
+    return filePath;
   }
 
   public static String getStringFromProtoObject(MessageOrBuilder object)
@@ -610,5 +615,10 @@ public class ModelDBUtils {
         (int) System.getProperties().get(ModelDBConstants.BACKGROUND_UTILS_COUNT);
     LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
     return backgroundUtilsCount;
+  }
+
+  public static boolean isEnvSet(String envVar) {
+    String envVarVal = System.getenv(envVar);
+    return envVarVal != null && !envVarVal.isEmpty();
   }
 }

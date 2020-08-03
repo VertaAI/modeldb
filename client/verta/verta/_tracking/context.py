@@ -15,8 +15,6 @@ class _Context(object):
         self.expt = None
         self.expt_run = None
 
-        self.registered_model = None
-
     def populate(self):
         # TODO: check if the upper entity is already correct, in which case don't re-populate
         if self.expt_run is not None:
