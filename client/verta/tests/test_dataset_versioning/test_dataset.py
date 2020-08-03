@@ -31,3 +31,21 @@ class TestDataset:
 
         assert dataset.id == client.get_dataset2(dataset.name).id
         assert dataset.id == client.get_dataset2(id=dataset.id).id
+
+    def test_attributes(self, client, created_datasets):
+        name = verta._internal_utils._utils.generate_default_name()
+        dataset = client.set_dataset2(name, attrs={"string-attr": "some-attr", "int-attr": 12, "bool-attr": False})
+        created_datasets.append(dataset)
+        assert dataset.get_attributes() == {"string-attr": "some-attr", "int-attr": 12, "bool-attr": False}
+
+        dataset.add_attribute("float-attr", 0.4)
+        assert dataset.get_attribute("float-attr") == 0.4
+
+        # Test overwriting
+        dataset.add_attribute("int-attr", 15)
+        assert dataset.get_attribute("int-attr") == 15
+
+        # Test deleting:
+        print(dataset.get_attributes())
+        dataset.del_attribute(u'string-attr')
+        # assert dataset.get_attributes() ==  {"int-attr": 15, "bool-attr": False, "float-attr": 0.4}
