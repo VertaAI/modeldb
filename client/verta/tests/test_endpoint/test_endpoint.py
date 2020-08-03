@@ -315,7 +315,7 @@ class TestEndpoint:
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
 
-        endpoint.update_from_model_version(model_version, DirectUpdateStrategy(), wait=True)
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
         test_data = np.random.random((4, 12))
         assert endpoint.get_deployed_model().predict(test_data) == classifier.predict(test_data)
 

@@ -129,26 +129,18 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    def update(self, run, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
-        if not isinstance(run, experimentrun.ExperimentRun):
-            raise TypeError("run must be an ExperimentRun")
+    def update(self, run_or_model_version, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
+        if not (isinstance(run_or_model_version, experimentrun.ExperimentRun) or isinstance(run_or_model_version, RegisteredModelVersion)):
+            raise TypeError("run_or_model_version must be an ExperimentRun or RegisteredModelVersion")
 
         if not isinstance(strategy, _UpdateStrategy):
             raise TypeError("strategy must be an object from verta.deployment.strategies")
 
         # Create new build:
-        build_id = self._create_build(run_id=run.id)
-        return self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
-
-    def update_from_model_version(self, model_version, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
-        if not isinstance(model_version, RegisteredModelVersion):
-            raise TypeError("model_version must be a RegisteredModelVersion")
-
-        if not isinstance(strategy, _UpdateStrategy):
-            raise TypeError("strategy must be an object from verta.deployment.strategies")
-
-        # Create new build:
-        build_id = self._create_build(model_version_id=model_version.id)
+        if isinstance(run_or_model_version, experimentrun.ExperimentRun):
+            build_id = self._create_build(run_id=run_or_model_version.id)
+        else:
+            build_id = self._create_build(model_version_id=run_or_model_version.id)
         return self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
 
     def _update_from_build(self, build_id, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
@@ -274,7 +266,7 @@ class Endpoint(object):
             return self.update(run, strategy)
         else:
             model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id=update_dict["model_version_id"])
-            return self.update_from_model_version(model_version, strategy)
+            return self.update(model_version, strategy)
 
     def get_status(self):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
