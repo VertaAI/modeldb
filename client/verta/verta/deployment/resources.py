@@ -35,9 +35,9 @@ class Memory(_Resource):
 
     def _validate(self, parameter):
         if not isinstance(parameter, str):
-            return TypeError(self.memory_err_msg)
+            raise TypeError(self.memory_err_msg)
         if not re.match(r'^[0-9]+[e]?[0-9]*[E|P|T|G|M|K]?[i]?$', parameter):
-            return ValueError(self.memory_err_msg)
+            raise ValueError(self.memory_err_msg)
 
     def to_dict(self):
         return {"memory": self.parameter}
