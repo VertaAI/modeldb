@@ -161,6 +161,11 @@ class Dataset(entity._ModelDBEntity):
         """
         Deletes a tag from this dataset
 
+        Parameters
+        ----------
+        tag : str
+            Tag to add.
+
         """
         if not isinstance(tag, six.string_types):
             raise TypeError("`tag` must be a string")
