@@ -41,6 +41,22 @@
         </rollback>
     </changeSet>
 
+    <changeSet author="anandJ" id="C3">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="C3"/>
+            </not>
+        </preConditions>
+        <createTable tableName="C3">
+            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="C3"/>
+        </rollback>
+    </changeSet>
+
     <changeSet id="db_version_1.2" author="anandJ">
         <tagDatabase tag="db_version_1.2"/>
     </changeSet>
