@@ -19,7 +19,7 @@ import zipfile
 
 import requests
 
-from .entity import _ModelDBEntity
+from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -43,8 +43,6 @@ from .._repository import commit as commit_module
 from .. import deployment
 from .. import utils
 
-
-_OSS_DEFAULT_WORKSPACE = "personal"
 
 _CUSTOM_MODULES_DIR = "/app/custom_modules/"  # location in DeploymentService model container
 
@@ -2150,10 +2148,10 @@ class ExperimentRun(_ModelDBEntity):
         try:
             _utils.raise_for_http_error(response)
         except requests.HTTPError as e:
-            # propagate error caused by missing artifact
-            # TODO: recommend user call log_model() / log_requirements()
-            error_text = e.response.text.strip()
-            if error_text.startswith("missing artifact"):
+            if response.status_code == 400:
+                # propagate error caused by missing artifact
+                # TODO: recommend user call log_model() / log_requirements()
+                error_text = e.response.text.strip()
                 six.raise_from(RuntimeError("unable to deploy due to {}".format(error_text)), None)
             else:
                 raise e

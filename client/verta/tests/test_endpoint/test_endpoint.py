@@ -10,9 +10,8 @@ from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
 
-def get_build_ids(status):
-    # get the set of build_ids in the status of the stage:
-    return set(map(lambda comp: comp["build_id"], status["components"]))
+from ..utils import get_build_ids
+
 
 class TestEndpoint:
     def test_create(self, client, created_endpoints):
@@ -159,6 +158,90 @@ class TestEndpoint:
         updated_status = endpoint.update(experiment_run, strategy)
 
         # Check that a new build is added:
+        new_build_ids = get_build_ids(updated_status)
+        assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
+
+    def test_update_from_json_config(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+        json = pytest.importorskip("json")
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        strategy_dict = {
+            "run_id": experiment_run.id,
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.05,
+                "progress_interval_seconds": 30,
+                "rules": [
+                    {"rule_id": "1001",
+                     "rule_parameters": [
+                         {"name": "latency_avg",
+                          "value": "0.1"}
+                    ]},
+                    {"rule_id": "1002",
+                     "rule_parameters": [
+                        {"name": "error_rate",
+                         "value": "1"}
+                    ]}
+                ]
+            }
+        }
+
+        filepath = "config.json"
+        with open(filepath, "wb") as f:
+            json.dump(strategy_dict, f)
+
+        updated_status = endpoint.update_from_config(filepath)
+        new_build_ids = get_build_ids(updated_status)
+        assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
+
+    def test_update_from_yaml_config(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+        yaml = pytest.importorskip("yaml")
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        strategy_dict = {
+            "run_id": experiment_run.id,
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.05,
+                "progress_interval_seconds": 30,
+                "rules": [
+                    {"rule_id": "1001",
+                     "rule_parameters": [
+                         {"name": "latency_avg",
+                          "value": "0.1"}
+                    ]},
+                    {"rule_id": "1002",
+                     "rule_parameters": [
+                        {"name": "error_rate",
+                         "value": "1"}
+                    ]}
+                ]
+            }
+        }
+
+        filepath = "config.yaml"
+        with open(filepath, "wb") as f:
+            yaml.safe_dump(strategy_dict, f)
+
+        updated_status = endpoint.update_from_config(filepath)
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 

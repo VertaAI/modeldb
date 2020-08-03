@@ -78,15 +78,54 @@ class Dataset(entity._ModelDBEntity):
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
-        raise NotImplementedError
+        Message = _DatasetService.GetDatasetById
+        msg = Message(id=id)
+        endpoint = "/api/v1/modeldb/dataset/getDatasetById"
+        response = conn.make_proto_request("GET", endpoint, params=msg)
+        return conn.maybe_proto_response(response, Message.Response).dataset
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
-        raise NotImplementedError
+        Message = _DatasetService.GetDatasetByName
+        msg = Message(name=name, workspace_name=workspace)
+        endpoint = "/api/v1/modeldb/dataset/getDatasetByName"
+        proto_response = conn.make_proto_request("GET", endpoint, params=msg)
+        response = conn.maybe_proto_response(proto_response, Message.Response)
+
+        if workspace is None or response.HasField("dataset_by_user"):
+            return response.dataset_by_user
+        elif hasattr(response, "shared_datasets") and response.shared_datasets:
+            return response.shared_datasets[0]
+        else:
+            return None
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
-        raise NotImplementedError
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, time_created=None, public_within_org=None):
+        Message = _DatasetService.CreateDataset
+        msg = Message(name=name, description=desc, tags=tags, attributes=attrs, workspace_name=ctx.workspace_name, time_created=time_created)
+
+        if public_within_org:
+            if ctx.workspace_name is None:
+                raise ValueError("cannot set `public_within_org` for personal workspace")
+            elif not _utils.is_org(ctx.workspace_name, conn):
+                raise ValueError(
+                    "cannot set `public_within_org`"
+                    " because workspace \"{}\" is not an organization".format(ctx.workspace_name)
+                )
+            else:
+                msg.project_visibility = _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
+
+        endpoint = "/api/v1/modeldb/dataset/createDataset"
+        response = conn.make_proto_request("POST", endpoint, body=msg)
+        dataset = conn.must_proto_response(response, Message.Response).dataset
+
+        if ctx.workspace_name is not None:
+            WORKSPACE_PRINT_MSG = "workspace: {}".format(ctx.workspace_name)
+        else:
+            WORKSPACE_PRINT_MSG = "personal workspace"
+
+        print("created new Dataset: {} in {}".format(dataset.name, WORKSPACE_PRINT_MSG))
+        return dataset
 
     def set_description(self, desc):
         raise NotImplementedError
