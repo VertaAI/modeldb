@@ -126,7 +126,7 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    env_vars_err_msg = "env_vars must be (string, string) dictionary"
+    env_vars_err_msg = "`env_vars` must be dictionary of str keys and str values"
 
     def update(self, run, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         if not isinstance(run, experimentrun.ExperimentRun):
