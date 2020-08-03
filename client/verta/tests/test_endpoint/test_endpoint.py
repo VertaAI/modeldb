@@ -318,3 +318,50 @@ class TestEndpoint:
         endpoint.update_from_model_version(model_version, DirectUpdateStrategy(), wait=True)
         test_data = np.random.random((4, 12))
         assert endpoint.get_deployed_model().predict(test_data) == classifier.predict(test_data)
+
+    def test_update_from_json_config_model_version(self, client, in_tempdir, created_endpoints, model_version):
+        np = pytest.importorskip("numpy")
+        json = pytest.importorskip("json")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        strategy_dict = {
+            "model_version_id": model_version.id,
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.05,
+                "progress_interval_seconds": 30,
+                "rules": [
+                    {"rule_id": "1001",
+                     "rule_parameters": [
+                         {"name": "latency_avg",
+                          "value": "0.1"}
+                    ]},
+                    {"rule_id": "1002",
+                     "rule_parameters": [
+                        {"name": "error_rate",
+                         "value": "1"}
+                    ]}
+                ]
+            }
+        }
+
+        filepath = "config.json"
+        with open(filepath, "wb") as f:
+            json.dump(strategy_dict, f)
+
+        updated_status = endpoint.update_from_config(filepath)
+        new_build_ids = get_build_ids(updated_status)
+        assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0

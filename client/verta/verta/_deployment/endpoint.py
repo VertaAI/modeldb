@@ -180,7 +180,7 @@ class Endpoint(object):
 
     def _create_build(self, model_version_id=None, run_id=None):
         if (not model_version_id and not run_id) or (model_version_id and run_id):
-            raise RuntimeError("must provide either model_version_id or run_id, but not both")
+            raise RuntimeError("must provide either model_version_id or run_id, but not both.")
 
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
             self._conn.scheme,
@@ -252,6 +252,10 @@ class Endpoint(object):
         return self._update_from_dict(update_dict)
 
     def _update_from_dict(self, update_dict):
+        if (not "model_version_id" in update_dict and not "run_id" in update_dict) or \
+                ("model_version_id" in update_dict and "run_id" in update_dict):
+            raise RuntimeError("must provide either model_version_id or run_id, but not both.")
+
         if update_dict["strategy"] == "direct":
             strategy = DirectUpdateStrategy()
         elif update_dict["strategy"] == "canary":
@@ -265,8 +269,12 @@ class Endpoint(object):
         else:
             raise ValueError("update strategy must be \"direct\" or \"canary\"")
 
-        run = experimentrun.ExperimentRun._get_by_id(self._conn, self._conf, id=update_dict["run_id"])
-        return self.update(run, strategy)
+        if "run_id" in update_dict:
+            run = experimentrun.ExperimentRun._get_by_id(self._conn, self._conf, id=update_dict["run_id"])
+            return self.update(run, strategy)
+        else:
+            model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id=update_dict["model_version_id"])
+            return self.update_from_model_version(model_version, strategy)
 
     def get_status(self):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
