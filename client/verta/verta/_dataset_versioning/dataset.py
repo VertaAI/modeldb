@@ -140,7 +140,7 @@ class Dataset(entity._ModelDBEntity):
         """
         tags = _utils.as_list_of_str(tags)
         Message = _DatasetService.AddDatasetTags
-        msg = _DatasetService.AddDatasetTags(id=self.id, tags=tags)
+        msg = Message(id=self.id, tags=tags)
         endpoint = "/api/v1/modeldb/dataset/addDatasetTags"
         self._update(msg, Message.Response, endpoint, "POST")
 
@@ -171,7 +171,7 @@ class Dataset(entity._ModelDBEntity):
             raise TypeError("`tag` must be a string")
 
         Message = _DatasetService.DeleteDatasetTags
-        msg = _DatasetService.AddDatasetTags(id=self.id, tags=[tag])
+        msg = Message(id=self.id, tags=[tag])
         endpoint = "/api/v1/modeldb/dataset/deleteDatasetTags"
         self._update(msg, Message.Response, endpoint, "DELETE")
 
