@@ -138,7 +138,7 @@ class Endpoint(object):
 
         # Create new build:
         build_id = self._create_build(run_id=run.id)
-        self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
+        return self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
 
     def update_from_model_version(self, model_version, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         if not isinstance(model_version, RegisteredModelVersion):
@@ -149,7 +149,7 @@ class Endpoint(object):
 
         # Create new build:
         build_id = self._create_build(model_version_id=model_version.id)
-        self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
+        return self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
 
     def _update_from_build(self, build_id, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         update_body = self._form_update_body(resources, strategy, build_id)
