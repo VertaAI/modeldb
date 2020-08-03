@@ -5,6 +5,7 @@ from __future__ import print_function
 from .._tracking import entity
 
 from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
+from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 
 from ..external import six
 
@@ -113,21 +114,56 @@ class Dataset(entity._ModelDBEntity):
         raise NotImplementedError
 
     def add_tag(self, tag):
-        raise NotImplementedError
+        """
+        Adds a tag to this Dataset.
+
+        Parameters
+        ----------
+        tag : str
+            Tag to add.
+
+        """
+        if not isinstance(tag, six.string_types):
+            raise TypeError("`tag` must be a string")
+        self.add_tags([tag])
 
     def add_tags(self, tags):
         """
+        Adds multiple tags to this Dataset.
+
         Parameters
         ----------
         tags : list of str
+            Tags to add.
 
         """
-        raise NotImplementedError
+        tags = _utils.as_list_of_str(tags)
+        Message = _DatasetService.AddDatasetTags
+        msg = _DatasetService.AddDatasetTags(id=self.id, tags=tags)
+        endpoint = "/api/v1/modeldb/dataset/addDatasetTags"
+        self._update(msg, Message.Response, endpoint)
 
     def get_tags(self):
-        raise NotImplementedError
+        """
+        Gets all tags from this Dataset.
+
+        Returns
+        -------
+        list of str
+            All tags.
+
+        """
+        Message = _CommonService.GetTags
+        msg = Message(id=self.id)
+        endpoint = "/api/v1/modeldb/dataset/getDatasetTags".format(self._conn.scheme, self._conn.socket)
+        response = self._conn.make_proto_request("GET", endpoint, body=msg)
+        return self._conn.must_proto_response(response, Message.Response).tags
 
     def del_tag(self, tag):
+        """
+        Deletes a tag from this dataset
+
+        """
         raise NotImplementedError
 
     def add_attribute(self, key, value):
