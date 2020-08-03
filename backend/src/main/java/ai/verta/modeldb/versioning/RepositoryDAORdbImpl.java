@@ -78,7 +78,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   private static final String SHORT_NAME = "repo";
 
-  private static final StringBuilder GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL =
+  private static final String GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL =
       new StringBuilder("Select count(*) From ")
           .append(RepositoryEntity.class.getSimpleName())
           .append(" ")
@@ -88,7 +88,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(SHORT_NAME)
           .append(".")
           .append(ModelDBConstants.NAME)
-          .append(" = :repositoryName ");
+          .append(" = :repositoryName ")
+          .toString();
 
   private static final String GET_REPOSITORY_BY_NAME_PREFIX_HQL =
       new StringBuilder("From ")
@@ -174,7 +175,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(ModelDBConstants.ID)
           .append(" = :repoId AND attr.field_type = :fieldType")
           .toString();
-  String DELETE_ALL_REPOSITORY_ATTRIBUTES_HQL =
+  private static final String DELETE_ALL_REPOSITORY_ATTRIBUTES_HQL =
       new StringBuilder("delete from AttributeEntity attr WHERE attr.repositoryEntity.")
           .append(ModelDBConstants.ID)
           .append(" = :repoId")
@@ -390,22 +391,24 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       if (workspaceDTO == null) {
         workspaceDTO = verifyAndGetWorkspaceDTO(repoId, false, true);
       }
-      GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL
+      StringBuffer getRepoCountByNamePrefixHQL =
+          new StringBuffer(GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL);
+      getRepoCountByNamePrefixHQL
           .append(" AND ")
           .append(SHORT_NAME)
           .append(".")
           .append("repositoryAccessModifier = ");
       if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
-        GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL.append(
+        getRepoCountByNamePrefixHQL.append(
             RepositoryEnums.RepositoryModifierEnum.PROTECTED.ordinal());
       } else {
-        GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL.append(
+        getRepoCountByNamePrefixHQL.append(
             RepositoryEnums.RepositoryModifierEnum.REGULAR.ordinal());
       }
       ModelDBHibernateUtil.checkIfEntityAlreadyExists(
           session,
           SHORT_NAME,
-          GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL.toString(),
+          getRepoCountByNamePrefixHQL.toString(),
           RepositoryEntity.class.getSimpleName(),
           "repositoryName",
           repository.getName(),

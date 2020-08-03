@@ -513,7 +513,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         if (!commitEntity.getChild_commits().isEmpty()) {
           CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
           String updateChildEntity =
-              "UPDATE commit_parent cp SET cp.parent_hash = :parentHash WHERE cp.child_hash = :childHash";
+              "UPDATE commit_parent SET parent_hash = :parentHash WHERE child_hash = :childHash";
           Query updateChildQuery = session.createSQLQuery(updateChildEntity);
           updateChildQuery.setParameter("parentHash", parentDatasetVersion.getCommit_hash());
           updateChildQuery.setParameter("childHash", childCommit.getCommit_hash());
