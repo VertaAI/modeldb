@@ -260,7 +260,7 @@ class TestEndpoint:
 
         strategy.add_rule(AverageLatencyThresholdRule(0.8))
         updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMilli(500), Memory("500Mi"), ],
-                                         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "dev.verta.ai"})
+                                         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
         # Check that a new build is added:
         new_build_ids = get_build_ids(updated_status)
