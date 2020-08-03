@@ -22,9 +22,6 @@ from .._internal_utils import (
 _OSS_DEFAULT_WORKSPACE = "personal"
 
 
-_OSS_DEFAULT_WORKSPACE = "personal"
-
-
 class _ModelDBEntity(object):
     def __init__(self, conn, conf, service_module, service_url_component, msg):
         self._conn = conn
