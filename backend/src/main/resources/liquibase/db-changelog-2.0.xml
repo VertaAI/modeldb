@@ -79,4 +79,22 @@
         <tagDatabase tag="db_version_1.3"/>
     </changeSet>
 
+    <changeSet author="anandJ" id="fk_k1">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="C3" foreignKeyName="c3_fk_dummy_column"/>
+            </not>
+        </preConditions>
+        <!--Artifact table foreign key constraints-->
+        <addForeignKeyConstraint baseColumnNames="dummy_column"
+                                 baseTableName="C3"
+                                 constraintName="c3_fk_dummy_column"
+                                 referencedColumnNames="id"
+                                 referencedTableName="C2"/>
+    </changeSet>
+
+    <changeSet id="db_version_1.4" author="anandJ">
+        <tagDatabase tag="db_version_1.4"/>
+    </changeSet>
+
 </databaseChangeLog>
