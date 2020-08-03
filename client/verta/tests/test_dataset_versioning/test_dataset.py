@@ -47,4 +47,4 @@ class TestDataset:
         dataset.del_tag("tag2")
         assert dataset.get_tags() == ["tag1", "tag3", "tag4", "tag5"]
 
-        dataset.del_tag("tag100")
+        dataset.del_tag("tag100") # delete non-existing tag does not error out
