@@ -339,7 +339,6 @@ class TestList:
         assert version2_name in result.output
 
 class TestUpdate:
-    @pytest.mark.skip("bug in dev regarding labels")
     def test_update_model(self, registered_model):
         model_name = registered_model.name
         assert registered_model.get_labels() == []
@@ -350,6 +349,7 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1', '-l', 'label2'],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
         result = runner.invoke(
@@ -357,6 +357,7 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
         result = runner.invoke(
@@ -364,6 +365,7 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1'],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
 
