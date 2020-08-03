@@ -119,7 +119,7 @@ class Dataset(entity._ModelDBEntity):
         Message = _DatasetService.UpdateDatasetDescription
         msg = Message(id=self.id, description=desc)
         endpoint = "/api/v1/modeldb/dataset/updateDatasetDescription"
-        self._update(msg, Message.Response, endpoint)
+        self._update(msg, Message.Response, endpoint, "POST")
 
     def get_description(self):
         """
@@ -183,7 +183,7 @@ class Dataset(entity._ModelDBEntity):
     def get_latest_version(self):
         raise NotImplementedError
 
-    def _update(self, msg, response_proto, endpoint):
-        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+    def _update(self, msg, response_proto, endpoint, method):
+        response = self._conn.make_proto_request(method, endpoint, body=msg)
         self._conn.must_proto_response(response, response_proto)
         self._clear_cache()
