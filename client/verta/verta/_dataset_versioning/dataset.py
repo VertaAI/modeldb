@@ -164,7 +164,7 @@ class Dataset(entity._ModelDBEntity):
         Parameters
         ----------
         tag : str
-            Tag to add.
+            Tag to delete.
 
         """
         if not isinstance(tag, six.string_types):
