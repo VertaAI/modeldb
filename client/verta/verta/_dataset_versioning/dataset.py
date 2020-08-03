@@ -200,8 +200,3 @@ class Dataset(entity._ModelDBEntity):
 
     def get_latest_version(self):
         raise NotImplementedError
-
-    def _update(self, msg, response_proto, endpoint, method):
-        response = self._conn.make_proto_request(method, endpoint, body=msg)
-        self._conn.must_proto_response(response, response_proto)
-        self._clear_cache()
