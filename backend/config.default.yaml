@@ -31,7 +31,7 @@ database:
   DBType: relational
   timeout: 4
   liquibaseLockThreshold: 60 #time in second
-  changeSetToRevertUntilTag: db_version_1.1
+  changeSetToRevertUntilTag: db_version_1.2
   RdbConfiguration:
     RdbDatabaseName:
     RdbDriver: "org.postgresql.Driver"

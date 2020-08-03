@@ -61,19 +61,17 @@
         <tagDatabase tag="db_version_1.2"/>
     </changeSet>
 
-    <changeSet author="anandJ" id="C4">
+    <changeSet id="C4" author="anandJ" failOnError="false">
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists tableName="C4"/>
+                <columnExists tableName="C3" columnName="dummy_column"/>
             </not>
         </preConditions>
-        <createTable tableName="C4">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-        </createTable>
+        <addColumn tableName="C3">
+            <column name="dummy_column" type="int8"/>
+        </addColumn>
         <rollback>
-            <dropTable tableName="C4"/>
+            <dropColumn tableName="C3" columnName="dummy_column"/>
         </rollback>
     </changeSet>
 
