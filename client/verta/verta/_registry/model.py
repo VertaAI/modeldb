@@ -256,8 +256,7 @@ class RegisteredModel(_ModelDBEntity):
         """
         if label is None:
             raise ValueError("label is not specified")
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         if label not in self._msg.labels:
             self._msg.labels.append(label)
             self._update()
@@ -274,8 +273,7 @@ class RegisteredModel(_ModelDBEntity):
         """
         if label is None:
             raise ValueError("label is not specified")
-        self._clear_cache()
-        self._refresh_cache()
+        self._fetch_with_no_cache()
         if label in self._msg.labels:
             self._msg.labels.remove(label)
             self._update()
@@ -290,7 +288,6 @@ class RegisteredModel(_ModelDBEntity):
             List of all labels of this Registered Model.
 
         """
-        self._clear_cache()
         self._refresh_cache()
         return self._msg.labels
 
@@ -300,6 +297,7 @@ class RegisteredModel(_ModelDBEntity):
         Message = _RegisteredModelService.SetRegisteredModel
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
+        self._clear_cache()
 
     def _get_info_list(self):
         return [self._msg.name, str(self.id), _utils.timestamp_to_str(self._msg.time_updated)]
