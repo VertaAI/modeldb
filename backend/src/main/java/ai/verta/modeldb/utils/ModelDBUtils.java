@@ -611,10 +611,16 @@ public class ModelDBUtils {
   }
 
   public static int getRegisteredBackgroundUtilsCount() {
-    int backgroundUtilsCount =
-        (int) System.getProperties().get(ModelDBConstants.BACKGROUND_UTILS_COUNT);
-    LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-    return backgroundUtilsCount;
+    try {
+      int backgroundUtilsCount =
+          (int) System.getProperties().get(ModelDBConstants.BACKGROUND_UTILS_COUNT);
+      LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+      return backgroundUtilsCount;
+    } catch (NullPointerException ex) {
+      LOGGER.trace("NullPointerException while get runningBackgroundUtilsCount");
+      System.getProperties().put(ModelDBConstants.BACKGROUND_UTILS_COUNT, 0);
+      return 0;
+    }
   }
 
   public static boolean isEnvSet(String envVar) {
