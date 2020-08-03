@@ -7,6 +7,8 @@ import json
 import yaml
 from functools import reduce
 
+from verta.external import six
+
 from ..deployment.update.rules import _UpdateRule
 from ..deployment import DeployedModel
 from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
@@ -128,7 +130,6 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    env_vars_err_msg = "`env_vars` must be dictionary of str keys and str values"
 
     def update(self, run, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         if not isinstance(run, experimentrun.ExperimentRun):
@@ -138,11 +139,12 @@ class Endpoint(object):
             raise TypeError("strategy must be an object from verta.deployment.strategies")
 
         if env_vars:
+            env_vars_err_msg = "`env_vars` must be dictionary of str keys and str values"
             if not isinstance(env_vars, dict):
-                raise TypeError(self.env_vars_err_msg)
+                raise TypeError(env_vars_err_msg)
             for key, value in env_vars.items():
                 if not isinstance(key, six.string_types) or not isinstance(value, six.string_types):
-                    raise TypeError(self.env_vars_err_msg)
+                    raise TypeError(env_vars_err_msg)
 
         # Create new build:
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
