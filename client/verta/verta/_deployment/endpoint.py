@@ -139,7 +139,7 @@ class Endpoint(object):
             if not isinstance(env_vars, dict):
                 raise TypeError(self.env_vars_err_msg)
             for key, value in env_vars.items():
-                if not isinstance(key, str) or not isinstance(value, str):
+                if not isinstance(key, six.string_types) or not isinstance(value, six.string_types):
                     raise TypeError(self.env_vars_err_msg)
 
         # Create new build:
