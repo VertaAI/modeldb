@@ -1135,9 +1135,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         if (workspaceName != null
             && !workspaceName.isEmpty()
             && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          LOGGER.debug("Workspace found and match with current login username");
           accessibleResourceIds =
               roleService.getSelfDirectlyAllowedResources(
                   ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
+          LOGGER.debug(
+              "Self directly accessible Repository Ids not found, size {}",
+              accessibleResourceIds.size());
           if (request.getRepoIdsList() != null && !request.getRepoIdsList().isEmpty()) {
             accessibleResourceIds.retainAll(
                 request.getRepoIdsList().stream()
@@ -1145,6 +1149,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                     .collect(Collectors.toList()));
           }
         } else {
+          LOGGER.debug("Workspace not found or not match with current login username");
           workspaceDTO =
               roleService.getWorkspaceDTOByWorkspaceName(
                   currentLoginUserInfo, request.getWorkspaceName());
@@ -1177,6 +1182,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             findRepositoriesQuery.getFindRepositoriesHQLQuery().list();
         Long totalRecords =
             (Long) findRepositoriesQuery.getFindRepositoriesCountHQLQuery().uniqueResult();
+        LOGGER.debug("Final return Repositories, size {}", repositoryEntities.size());
+        LOGGER.debug("Final return Total Records: {}", totalRecords);
 
         List<Repository> repositories = new ArrayList<>();
         for (RepositoryEntity repositoryEntity : repositoryEntities) {
