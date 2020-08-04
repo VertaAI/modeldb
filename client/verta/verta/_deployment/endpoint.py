@@ -292,7 +292,7 @@ class Endpoint(object):
             update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
                                               map(lambda resource: resource.to_dict(), resources))
         if env_vars:
-            update_body["env"] = env_vars
+            update_body["env"] = list(map(lambda env_var: {"name": env_var, "value": env_vars[env_var]}, env_vars))
         # prepare body for update request
         return update_body
       
