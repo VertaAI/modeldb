@@ -1119,10 +1119,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-      WorkspaceDTO workspaceDTO =
-          roleService.getWorkspaceDTOByWorkspaceName(
-              currentLoginUserInfo, request.getWorkspaceName());
       try {
+        WorkspaceDTO workspaceDTO = null;
         List<String> accessibleResourceIds =
             roleService.getAccessibleResourceIds(
                 null,
@@ -1132,6 +1130,25 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 request.getRepoIdsList().stream()
                     .map(String::valueOf)
                     .collect(Collectors.toList()));
+
+        String workspaceName = request.getWorkspaceName();
+        if (workspaceName != null
+            && !workspaceName.isEmpty()
+            && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          accessibleResourceIds =
+              roleService.getSelfDirectlyAllowedResources(
+                  ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
+          if (request.getRepoIdsList() != null && !request.getRepoIdsList().isEmpty()) {
+            accessibleResourceIds.retainAll(
+                request.getRepoIdsList().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.toList()));
+          }
+        } else {
+          workspaceDTO =
+              roleService.getWorkspaceDTOByWorkspaceName(
+                  currentLoginUserInfo, request.getWorkspaceName());
+        }
 
         if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
           LOGGER.debug("Accessible Repository Ids not found, size 0");
