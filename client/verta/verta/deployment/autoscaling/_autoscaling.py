@@ -17,11 +17,11 @@ class Autoscaling(object):
                 (max_scale is not None and max_scale < 0):
             raise ValueError("`min_replicas`, `max_replicas`, `min_scale`, `max_scale` must be non-negative.")
 
-        if min_replicas is not None and max_replicas is not None and min_replicas >= max_replicas:
-            raise ValueError("`max_replicas` must be greater than `min_replicas`.")
+        if min_replicas is not None and max_replicas is not None and min_replicas > max_replicas:
+            raise ValueError("`max_replicas` cannot be less than `min_replicas`.")
 
-        if min_scale is not None and max_scale is not None and min_scale >= max_scale:
-            raise ValueError("`max_scale` must be greater than `min_scale`.")
+        if min_scale is not None and max_scale is not None and min_scale > max_scale:
+            raise ValueError("`max_scale` cannot be less than `min_scale`.")
 
         self._min_replicas = min_replicas
         self._max_replicas = max_replicas
