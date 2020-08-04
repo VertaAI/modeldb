@@ -35,3 +35,35 @@ class CpuUtilization(_AutoscalingMetric):
                 "value": self._cpu_target
             }
         ]
+
+
+class RequestsPerWorker(_AutoscalingMetric):
+    _METRIC_ID = 1002
+    _NAME = "requests_per_worker"
+
+    def __init__(self, requests_per_worker_target):
+        self._requests_per_worker_target = requests_per_worker_target
+
+    def _parameters_dict(self):
+        return [
+            {
+                "name": "requests_per_worker_target",
+                "value": self._requests_per_worker_target
+            }
+        ]
+
+
+class MemoryUtilization(_AutoscalingMetric):
+    _METRIC_ID = 1003
+    _NAME = "memory_utilization"
+
+    def __init__(self, memory_target):
+        self._memory_target = memory_target
+
+    def _parameters_dict(self):
+        return [
+            {
+                "name": "memory_target",
+                "value": self._memory_target
+            }
+        ]
