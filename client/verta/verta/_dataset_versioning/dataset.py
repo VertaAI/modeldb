@@ -20,7 +20,19 @@ class Dataset(entity._ModelDBEntity):
         super(Dataset, self).__init__(conn, conf, _DatasetService, "dataset", msg)
 
     def __repr__(self):
-        raise NotImplementedError
+        self._refresh_cache()
+        msg = self._msg
+
+        return '\n'.join((
+            "name: {}".format(msg.name),
+            "url: {}://{}/{}/datasets/{}/summary".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
+            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
+            "description: {}".format(msg.description),
+            "tags: {}".format(msg.tags),
+            "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
+            "id: {}".format(msg.id),
+        ))
 
     @property
     def name(self):
@@ -30,6 +42,15 @@ class Dataset(entity._ModelDBEntity):
     @property
     def dataset_type(self):
         return self.__class__.__name__
+
+    @property
+    def workspace(self):
+        self._refresh_cache()
+
+        if self._msg.workspace_id:
+            return self._get_workspace_name_by_id(self._msg.workspace_id)
+        else:
+            return entity._OSS_DEFAULT_WORKSPACE
 
     @property
     def desc(self):
@@ -109,10 +130,32 @@ class Dataset(entity._ModelDBEntity):
         return dataset
 
     def set_description(self, desc):
-        raise NotImplementedError
+        """
+        Sets the description of this Dataset.
+
+        Parameters
+        ----------
+        desc : str
+            Description to set.
+
+        """
+        Message = _DatasetService.UpdateDatasetDescription
+        msg = Message(id=self.id, description=desc)
+        endpoint = "/api/v1/modeldb/dataset/updateDatasetDescription"
+        self._update(msg, Message.Response, endpoint, "POST")
 
     def get_description(self):
-        raise NotImplementedError
+        """
+        Gets the description of this Dataset.
+
+        Returns
+        -------
+        str
+            Description of this Dataset.
+
+        """
+        self._refresh_cache()
+        return self._msg.description
 
     def add_tag(self, tag):
         raise NotImplementedError
@@ -233,3 +276,8 @@ class Dataset(entity._ModelDBEntity):
 
     def get_latest_version(self):
         raise NotImplementedError
+
+    def _update(self, msg, response_proto, endpoint, method):
+        response = self._conn.make_proto_request(method, endpoint, body=msg)
+        self._conn.must_proto_response(response, response_proto)
+        self._clear_cache()
