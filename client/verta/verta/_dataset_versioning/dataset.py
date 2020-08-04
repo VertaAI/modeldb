@@ -159,7 +159,7 @@ class Dataset(entity._ModelDBEntity):
 
     def del_tag(self, tag):
         """
-        Deletes a tag from this dataset
+        Deletes a tag from this Dataset.
 
         Parameters
         ----------
