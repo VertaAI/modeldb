@@ -1140,7 +1140,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               roleService.getSelfDirectlyAllowedResources(
                   ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
           LOGGER.debug(
-              "Self directly accessible Repository Ids not found, size {}",
+              "Self directly accessible Repository Ids found, size {}",
               accessibleResourceIds.size());
           if (request.getRepoIdsList() != null && !request.getRepoIdsList().isEmpty()) {
             accessibleResourceIds.retainAll(
