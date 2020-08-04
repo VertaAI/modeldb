@@ -20,6 +20,7 @@ import zipfile
 
 import requests
 import yaml
+from verta._tracking.organization import Organization
 
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -1324,3 +1325,6 @@ class Client(object):
     def get_dataset_version2(self):
         # TODO: when MVP, remove '2'
         raise NotImplementedError
+
+    def _create_organization(self, name, desc=None, collaborator_type=None, global_can_deploy=None):
+        return Organization._create(self._conn, name, desc, collaborator_type, global_can_deploy)
