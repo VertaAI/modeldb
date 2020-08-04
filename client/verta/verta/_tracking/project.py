@@ -186,7 +186,7 @@ class Project(_ModelDBEntity):
             raise TypeError(error_message_email_type)
         if not re.match(r'[^@]+@[^@]+\.[^@]+', email):
             error_message_email_value = "email is not valid"
-            raise error_message_email_value
+            raise ValueError(error_message_email_value)
 
     def _validate_username(self, username):
         if not isinstance(username, six.string_types):
