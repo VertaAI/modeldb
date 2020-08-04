@@ -3,6 +3,18 @@ import pytest
 
 
 class TestDataset:
+    def test_description(self, client, created_datasets):
+        original_description = "this is a cool dataset"
+        dataset = client.set_dataset2(desc=original_description)
+        created_datasets.append(dataset)
+        assert dataset.get_description() == original_description
+
+        updated_description = "this is an uncool dataset"
+        dataset.set_description(updated_description)
+        assert dataset.get_description() == updated_description
+
+        assert client.get_dataset2(id=dataset.id).get_description() == updated_description
+
     def test_create(self, client, created_datasets):
         dataset = client.set_dataset2()
         assert dataset
