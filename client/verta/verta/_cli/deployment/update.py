@@ -23,7 +23,7 @@ def update():
 @click.option("--workspace", "-w", help="Workspace to use.")
 # TODO: more options
 def update_endpoint(path, run_id, strategy, canary_rule, canary_interval, canary_step, workspace):
-    """List all endpoints available.
+    """Update an endpoint.
     """
     if canary_step == 0.0:
         raise click.BadParameter("--canary-step must be positive.")
@@ -31,10 +31,10 @@ def update_endpoint(path, run_id, strategy, canary_rule, canary_interval, canary
     if canary_interval == 0:
         raise click.BadParameter("--canary-interval must be positive.")
 
-    if strategy != "canary" and (canary_rule or canary_interval or canary_step):
+    canary_options = (canary_rule, canary_interval, canary_step)
+    if strategy != "canary" and any(canary_options):
         raise click.BadParameter("--canary-rule, --canary-interval, and --canary-step can only be used alongside --strategy=canary")
-
-    if strategy == "canary" and (not canary_rule or not canary_interval or not canary_step):
+    if strategy == "canary" and not all(canary_options):
         raise click.BadParameter("--canary-rule, --canary-interval, and --canary-step must be provided alongside --strategy=canary")
 
     client = Client()
