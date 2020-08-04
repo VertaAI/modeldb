@@ -29,7 +29,7 @@ class Autoscaling(object):
         self._max_scale = max_scale
         self._metrics = []
 
-    def _as_json(self):
+    def _as_dict(self):
         return {
             "quantities": {
                 "min_replicas": self._min_replicas,
@@ -37,7 +37,7 @@ class Autoscaling(object):
                 "min_scale": self._min_scale,
                 "max_scale": self._max_scale
             },
-            "metrics": list(map(lambda metric: metric._as_json(), self._metrics))
+            "metrics": list(map(lambda metric: metric._as_dict(), self._metrics))
         }
 
     def add_metric(self, metric):
