@@ -6,6 +6,8 @@ import requests
 import verta
 from verta._deployment import Endpoint
 from verta.deployment.resources import CpuMilli, Memory
+from verta.deployment.autoscaling import Autoscaling
+from verta.deployment.autoscaling.metrics import CpuUtilization
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
@@ -301,3 +303,15 @@ class TestEndpoint:
             time.sleep(3)
         x = model_for_deployment['train_features'].iloc[1].values
         assert endpoint.get_deployed_model().predict([x]) == [2]
+
+    def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        autoscaling = Autoscaling()
+        endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=)
+        update_status = endpoint.get_update_status()
