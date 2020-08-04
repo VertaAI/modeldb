@@ -17,6 +17,7 @@ import requests
 import yaml
 
 import verta
+from verta._tracking.experimentrun import _CACHE_DIR
 from verta._internal_utils import _histogram_utils
 from verta._internal_utils import _utils
 
@@ -216,7 +217,7 @@ class TestFetchArtifacts:
             artifacts = experiment_run.fetch_artifacts(strs)
 
             assert set(six.viewkeys(artifacts)) == set(strs)
-            assert all(filepath.startswith(verta.client._CACHE_DIR)
+            assert all(filepath.startswith(_CACHE_DIR)
                        for filepath in six.viewvalues(artifacts))
 
             for key, filepath in six.viewitems(artifacts):
@@ -226,7 +227,7 @@ class TestFetchArtifacts:
 
                 assert file_contents == artifact_contents
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_cached_fetch_artifacts(self, experiment_run, strs, flat_dicts):
         key = strs[0]
@@ -242,7 +243,7 @@ class TestFetchArtifacts:
 
             assert os.path.getmtime(filepath) == last_modified
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_zip(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -253,7 +254,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -264,7 +265,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_cached_fetch_zip(self, experiment_run, strs, dir_and_files):
         dirpath, _ = dir_and_files
@@ -281,7 +282,7 @@ class TestFetchArtifacts:
 
             assert os.path.getmtime(dirpath) == last_modified
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_tgz(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -300,7 +301,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -311,7 +312,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_tar(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -330,7 +331,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -341,7 +342,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_tar_gz(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -360,7 +361,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -371,7 +372,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_wrong_type_artifacts_error(self, experiment_run, all_values):
         # remove lists of strings and empty lists, because they're valid arguments
