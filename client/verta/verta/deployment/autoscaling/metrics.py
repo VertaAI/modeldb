@@ -26,7 +26,7 @@ class CpuUtilization(_AutoscalingMetric):
     _NAME = "cpu_utilization"
 
     def __init__(self, cpu_target):
-        self._cpu_target = cpu_target
+        self._cpu_target = str(cpu_target)
 
     def _parameters_dict(self):
         return [
@@ -42,7 +42,7 @@ class RequestsPerWorker(_AutoscalingMetric):
     _NAME = "requests_per_worker"
 
     def __init__(self, requests_per_worker_target):
-        self._requests_per_worker_target = requests_per_worker_target
+        self._requests_per_worker_target = str(requests_per_worker_target)
 
     def _parameters_dict(self):
         return [
@@ -58,7 +58,7 @@ class MemoryUtilization(_AutoscalingMetric):
     _NAME = "memory_utilization"
 
     def __init__(self, memory_target):
-        self._memory_target = memory_target
+        self._memory_target = str(memory_target)
 
     def _parameters_dict(self):
         return [
