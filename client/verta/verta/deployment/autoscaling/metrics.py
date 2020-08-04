@@ -25,9 +25,8 @@ class CpuUtilization(_AutoscalingMetric):
     _METRIC_ID = 1001
     _NAME = "cpu_utilization"
 
-    def __init__(self, cpu_target, cpu_threshold):
+    def __init__(self, cpu_target):
         self._cpu_target = cpu_target
-        self._cpu_threshold = cpu_threshold
 
     def _parameters_dict(self):
         return [
