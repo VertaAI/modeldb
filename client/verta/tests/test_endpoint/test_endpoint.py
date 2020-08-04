@@ -313,6 +313,6 @@ class TestEndpoint:
         created_endpoints.append(endpoint)
 
         autoscaling = Autoscaling()
-        autoscaling.add_metric(CpuUtilization(cpu_target=0.3, cpu_threshold=0.5))
+        autoscaling.add_metric(CpuUtilization(cpu_target=0.3))
         endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
         update_status = endpoint.get_update_status()
