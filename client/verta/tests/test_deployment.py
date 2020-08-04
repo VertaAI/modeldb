@@ -876,7 +876,7 @@ class TestDeploy:
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact model.pkl"
+        assert "model.pkl" in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(
@@ -899,7 +899,7 @@ class TestDeploy:
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact model_api.json"
+        assert "model_api.json" in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(
@@ -912,7 +912,7 @@ class TestDeploy:
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact requirements.txt"
+        assert "requirements.txt" in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(

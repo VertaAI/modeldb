@@ -1,3 +1,5 @@
+import tarfile
+
 import pytest
 import requests
 
@@ -10,7 +12,6 @@ import verta.dataset
 from verta.environment import Python
 
 
-@pytest.mark.skip(reason="bug in dev")
 class TestMDBIntegration:
     def test_from_run(self, experiment_run, model_for_deployment, registered_model):
         np = pytest.importorskip("numpy")
@@ -81,11 +82,9 @@ class TestModelVersion:
         registered_model = client.set_registered_model()
         model_version = registered_model.get_or_create_version(name="my version")
 
-        retrieved_model_version_by_id = client.get_registered_model_version(id=model_version.id)
-        retrieved_model_version_by_name = client.get_registered_model_version(name=model_version.name)
+        retrieved_model_version_by_id = client.get_registered_model_version(model_version.id)
 
         assert retrieved_model_version_by_id.id == model_version.id
-        assert retrieved_model_version_by_name.id == model_version.id
 
     def test_log_model(self, model_version):
         np = pytest.importorskip("numpy")
@@ -318,3 +317,23 @@ class TestModelVersion:
 
         model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
         assert len(model_version._msg.artifacts) == 4
+
+    @pytest.mark.skip(reason="pending backend")
+    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir, registered_model):
+        download_to_path = "context.tgz"
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id,
+            name="From Run {}".format(experiment_run.id),
+        )
+
+        filepath = model_version.download_docker_context(download_to_path)
+        assert filepath == os.path.abspath(download_to_path)
+
+        # can be loaded as tgz
+        with tarfile.open(filepath, 'r:gz') as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths

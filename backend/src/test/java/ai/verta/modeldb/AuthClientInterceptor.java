@@ -48,10 +48,8 @@ public class AuthClientInterceptor {
   private class Client1AuthInterceptor implements ClientInterceptor {
 
     public Client1AuthInterceptor(Map<String, Object> primaryUserPropMap) {
-      client1Email = (String) primaryUserPropMap.getOrDefault("email", "vertatest@protonmail.com");
-      client1DevKey =
-          (String)
-              primaryUserPropMap.getOrDefault("devKey", "3a38607f-388a-48e2-a573-54cb5ad02dba");
+      client1Email = (String) primaryUserPropMap.getOrDefault("email", "");
+      client1DevKey = (String) primaryUserPropMap.getOrDefault("devKey", "");
     }
 
     @Override
@@ -81,10 +79,8 @@ public class AuthClientInterceptor {
   private class Client2AuthInterceptor implements ClientInterceptor {
 
     Client2AuthInterceptor(Map<String, Object> secondaryUserPropMap) {
-      client2Email = (String) secondaryUserPropMap.getOrDefault("email", "test1verta@gmail.com");
-      client2DevKey =
-          (String)
-              secondaryUserPropMap.getOrDefault("devKey", "109af02f-a7dd-4b68-9e58-6847e28bb411");
+      client2Email = (String) secondaryUserPropMap.getOrDefault("email", "");
+      client2DevKey = (String) secondaryUserPropMap.getOrDefault("devKey", "");
     }
 
     public String getClient2Email() {

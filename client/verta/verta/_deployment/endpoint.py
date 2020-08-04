@@ -3,11 +3,22 @@
 from __future__ import print_function
 import sys
 import time
+import json
+import yaml
+from functools import reduce
 
-from ..deployment.update._strategies import _UpdateStrategy
 from ..deployment.autoscaling import Autoscaling
+from ..deployment.update.rules import _UpdateRule
+from ..deployment import DeployedModel
+from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
+
+
+def merge_dicts(a, b):
+    result = a.copy()
+    result.update(b)
+    return result
 
 
 class Endpoint(object):
@@ -18,8 +29,19 @@ class Endpoint(object):
         self.id = id
 
     def __repr__(self):
-        # TODO: print full info
-        return "<Endpoint \"{}\">".format(self.path)
+        status = self.get_status()
+        data = Endpoint._get_json_by_id(self._conn, self.workspace, self.id)
+
+        return '\n'.join((
+            "path: {}".format(data['creator_request']['path']),
+            "id: {}".format(self.id),
+            "status: {}".format(status["status"]),
+            "date created: {}".format(data["date_created"]),
+            "date updated: {}".format(data["date_updated"]),
+            "stage's date created: {}".format(status["date_created"]),
+            "stage's date updated: {}".format(status["date_updated"]),
+            "components: {}".format(json.dumps(status["components"], indent=4)),
+        ))
 
     @property
     def path(self):
@@ -127,10 +149,7 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
         build_id = response.json()["id"]
 
-        # prepare body for update request
-        update_body = strategy._as_build_update_req_body(build_id)
-        if autoscaling:
-            update_body["autoscaling"] = autoscaling._as_json()
+        update_body = self._form_update_body(resources, strategy, autoscaling, build_id)
 
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
@@ -190,7 +209,43 @@ class Endpoint(object):
         return response.json()["id"]
 
     def update_from_config(self, filepath):
-        raise NotImplementedError
+        update_dict = None
+
+        with open(filepath, 'r') as f:
+            config = f.read()
+
+        try:
+            update_dict = json.loads(config)
+        except ValueError:
+            pass
+
+        if not update_dict:
+            try:
+                update_dict = yaml.safe_load(config)
+            except yaml.YAMLError:
+                pass
+
+        if not update_dict:
+            raise ValueError("input file must be a json or yaml")
+
+        return self._update_from_dict(update_dict)
+
+    def _update_from_dict(self, update_dict):
+        if update_dict["strategy"] == "direct":
+            strategy = DirectUpdateStrategy()
+        elif update_dict["strategy"] == "canary":
+            strategy = CanaryUpdateStrategy(
+                interval=int(update_dict["canary_strategy"]["progress_interval_seconds"]),
+                step=float(update_dict["canary_strategy"]["progress_step"])
+            )
+
+            for rule in update_dict["canary_strategy"]["rules"]:
+                strategy.add_rule(_UpdateRule._from_dict(rule))
+        else:
+            raise ValueError("update strategy must be \"direct\" or \"canary\"")
+
+        run = experimentrun.ExperimentRun._get_by_id(self._conn, self._conf, id=update_dict["run_id"])
+        return self.update(run, strategy)
 
     def get_status(self):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
@@ -202,7 +257,10 @@ class Endpoint(object):
         )
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
-        return response.json()
+        response_json = response.json()
+        response_json["stage_id"] = response_json.pop("id")
+
+        return response_json
 
     def get_access_token(self):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/accesstokens".format(
@@ -219,3 +277,24 @@ class Endpoint(object):
         if len(tokens) == 0:
             return None
         return tokens[0]['creator_request']['value']
+
+
+    def _form_update_body(self, resources, strategy, autoscaling, build_id):
+        update_body = strategy._as_build_update_req_body(build_id)
+        if resources:
+            update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
+                                              map(lambda resource: resource.to_dict(), resources))
+
+        if autoscaling:
+            update_body["autoscaling"] = autoscaling._as_json()
+        # prepare body for update request
+        return update_body
+      
+    def get_deployed_model(self):
+        status = self.get_status()
+        if status['status'] != "active":
+            raise RuntimeError("model is not currently deployed (status: {})".format(status))
+
+        access_token = self.get_access_token()
+        url = "{}://{}/api/v1/predict{}".format(self._conn.scheme, self._conn.socket, self.path)
+        return DeployedModel.from_url(url, access_token)

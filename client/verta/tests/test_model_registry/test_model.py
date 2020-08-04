@@ -9,13 +9,11 @@ class TestModel:
         registered_model = client.set_registered_model()
         assert registered_model
         created_registered_models.append(registered_model)
-        assert client.registered_model is not None
-        
+
         name = verta._internal_utils._utils.generate_default_name()
         registered_model = client.create_registered_model(name)
         assert registered_model
         created_registered_models.append(registered_model)
-        assert client.registered_model is not None
         with pytest.raises(requests.HTTPError) as excinfo:
             assert client.create_registered_model(name)
         excinfo_value = str(excinfo.value).strip()
@@ -78,18 +76,20 @@ class TestModel:
         for item in find:
             assert item._msg == registered_models[item._msg.name]._msg
 
-    def test_labels(self, client):
-        assert client.set_registered_model(labels=["tag1", "tag2"])
+    def test_labels(self, client, created_registered_models):
+        registered_model = client.set_registered_model(labels=["tag1", "tag2"])
+        assert registered_model
+        created_registered_models.append(registered_model)
 
-        assert client.registered_model is not None
-        client.registered_model.add_label("tag3")
-        assert client.registered_model.get_labels() == ["tag1", "tag2", "tag3"]
-        client.registered_model.del_label("tag2")
-        assert client.registered_model.get_labels() == ["tag1", "tag3"]
-        client.registered_model.del_label("tag4")
-        assert client.registered_model.get_labels() == ["tag1", "tag3"]
-        client.registered_model.add_label("tag2")
-        assert client.registered_model.get_labels() == ["tag1", "tag2", "tag3"]
+        assert registered_model is not None
+        registered_model.add_label("tag3")
+        assert registered_model.get_labels() == ["tag1", "tag2", "tag3"]
+        registered_model.del_label("tag2")
+        assert registered_model.get_labels() == ["tag1", "tag3"]
+        registered_model.del_label("tag4")
+        assert registered_model.get_labels() == ["tag1", "tag3"]
+        registered_model.add_label("tag2")
+        assert registered_model.get_labels() == ["tag1", "tag2", "tag3"]
 
-        client.registered_model.add_labels(["tag2", "tag4", "tag1", "tag5"]) # some tags already exist
-        assert client.registered_model.get_labels() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
+        registered_model.add_labels(["tag2", "tag4", "tag1", "tag5"]) # some tags already exist
+        assert registered_model.get_labels() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
