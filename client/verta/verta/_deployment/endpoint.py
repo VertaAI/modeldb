@@ -298,3 +298,15 @@ class Endpoint(object):
         access_token = self.get_access_token()
         url = "{}://{}/api/v1/predict{}".format(self._conn.scheme, self._conn.socket, self.path)
         return DeployedModel.from_url(url, access_token)
+
+    def get_update_status(self):
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/status".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_stage()
+        )
+        response = _utils.make_request("GET", url, self._conn)
+        _utils.raise_for_http_error(response)
+        return response.json()
