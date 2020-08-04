@@ -326,14 +326,11 @@ class TestEndpoint:
             assert metric["metric_id"] in [1001, 1002, 1003]
 
             if metric["metric_id"] == 1001:
-                assert metric["name"] == "cpu_utilization"
                 assert metric["parameters"][0]["name"] == "cpu_target"
                 assert metric["parameters"][0]["value"] == "0.5"
             elif metric["metric_id"] == 1003:
-                assert metric["name"] == "memory_utilization"
                 assert metric["parameters"][0]["name"] == "requests_per_worker_target"
                 assert metric["parameters"][0]["value"] == "0.7"
             else:
-                assert metric["name"] == "requests_per_worker"
                 assert metric["parameters"][0]["name"] == "memory_target"
                 assert metric["parameters"][0]["value"] == "100"
