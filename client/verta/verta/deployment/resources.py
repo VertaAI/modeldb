@@ -16,7 +16,7 @@ class CpuMilli(_Resource):
     milli_err_msg = "`cpu_millis` must be int greater than 0"
 
     def __init__(self, parameter):
-        if not isinstance(parameter, int) :
+        if not isinstance(parameter, int):
             raise TypeError(self.milli_err_msg)
         if parameter <= 0:
             raise ValueError(self.milli_err_msg)
@@ -29,6 +29,7 @@ class CpuMilli(_Resource):
 class Memory(_Resource):
     memory_err_msg = "`memory` must be a string representing a plain integer or a fixed-point integer with suffixes " \
                      "E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki, for example: 128974848, 129e6, 129M, 123Mi "
+
     def __init__(self, parameter):
         self._validate(parameter)
         super(Memory, self).__init__(parameter)
