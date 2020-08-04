@@ -7,7 +7,7 @@ import json
 import yaml
 from functools import reduce
 
-from verta.external import six
+from ..external import six
 
 from ..deployment.update.rules import _UpdateRule
 from ..deployment import DeployedModel
