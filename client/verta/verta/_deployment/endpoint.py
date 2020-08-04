@@ -131,13 +131,13 @@ class Endpoint(object):
 
     def update(self, run, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         if not isinstance(run, experimentrun.ExperimentRun):
-            raise TypeError("run must be an ExperimentRun")
+            raise TypeError("`run` must be an ExperimentRun")
 
         if not isinstance(strategy, _UpdateStrategy):
-            raise TypeError("strategy must be an object from verta.deployment.strategies")
+            raise TypeError("`strategy` must be an object from verta.deployment.strategies")
 
         if autoscaling and not isinstance(autoscaling, Autoscaling):
-            raise TypeError("autoscaling must be an Autoscaling object")
+            raise TypeError("`autoscaling` must be an Autoscaling object")
 
         # Create new build:
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
