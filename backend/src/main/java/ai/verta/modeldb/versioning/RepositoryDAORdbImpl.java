@@ -272,7 +272,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     if (id.hasNamedId()) {
       WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(id, true);
       repository =
-          getRepositoryByName(session, id.getNamedId().getName(), workspaceDTO)
+          getRepositoryByName(session, id.getNamedId().getName())
               .orElseThrow(
                   () ->
                       new ModelDBException(
@@ -331,7 +331,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   private Optional<RepositoryEntity> getRepositoryByName(
-      Session session, String name, WorkspaceDTO workspaceDTO) {
+      Session session, String name) {
     Query query =
         ModelDBHibernateUtil.getWorkspaceEntityQuery(
             session,
@@ -340,8 +340,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             "repositoryName",
             name,
             ModelDBConstants.WORKSPACE_ID,
-            workspaceDTO.getWorkspaceId(),
-            workspaceDTO.getWorkspaceType(),
+            null,
+            null,
             true,
             null);
     return Optional.ofNullable((RepositoryEntity) query.uniqueResult());
