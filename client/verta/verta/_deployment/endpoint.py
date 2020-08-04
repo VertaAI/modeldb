@@ -286,7 +286,7 @@ class Endpoint(object):
                                               map(lambda resource: resource.to_dict(), resources))
 
         if autoscaling:
-            update_body["autoscaling"] = autoscaling._as_json()
+            update_body["autoscaling"] = autoscaling._as_dict()
         # prepare body for update request
         return update_body
       
