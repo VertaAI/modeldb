@@ -586,35 +586,61 @@ public class ModelDBUtils {
     throw ex;
   }
 
+  public static void initializeBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    try {
+      if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) == null) {
+        LOGGER.trace("Initialize runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+        System.setProperty(
+            ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+      }
+      LOGGER.trace(
+          "Found runningBackgroundUtilsCount while initialization: {}",
+          getRegisteredBackgroundUtilsCount());
+    } catch (NullPointerException ex) {
+      LOGGER.trace("NullPointerException while initialize runningBackgroundUtilsCount");
+      System.setProperty(
+          ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+    }
+  }
+
   /**
    * If service want to call other verta service internally then should to registered those service
    * here with count
    */
   public static void registeredBackgroundUtilsCount() {
     int backgroundUtilsCount = 0;
-    if (System.getProperties().containsKey(ModelDBConstants.BACKGROUND_UTILS_COUNT)) {
+    if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) != null) {
       backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
     }
     backgroundUtilsCount = backgroundUtilsCount + 1;
     LOGGER.trace("After registered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-    System.getProperties().put(ModelDBConstants.BACKGROUND_UTILS_COUNT, backgroundUtilsCount);
+    System.setProperty(
+        ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
   }
 
   public static void unregisteredBackgroundUtilsCount() {
     int backgroundUtilsCount = 0;
-    if (System.getProperties().containsKey(ModelDBConstants.BACKGROUND_UTILS_COUNT)) {
+    if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) != null) {
       backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
       backgroundUtilsCount = backgroundUtilsCount - 1;
     }
     LOGGER.trace("After unregistered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-    System.getProperties().put(ModelDBConstants.BACKGROUND_UTILS_COUNT, backgroundUtilsCount);
+    System.setProperty(
+        ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
   }
 
-  public static int getRegisteredBackgroundUtilsCount() {
-    int backgroundUtilsCount =
-        (int) System.getProperties().get(ModelDBConstants.BACKGROUND_UTILS_COUNT);
-    LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-    return backgroundUtilsCount;
+  public static Integer getRegisteredBackgroundUtilsCount() {
+    try {
+      Integer backgroundUtilsCount =
+          Integer.parseInt(System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT));
+      LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+      return backgroundUtilsCount;
+    } catch (NullPointerException ex) {
+      LOGGER.trace("NullPointerException while get runningBackgroundUtilsCount");
+      System.setProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(0));
+      return 0;
+    }
   }
 
   public static boolean isEnvSet(String envVar) {

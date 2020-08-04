@@ -3,6 +3,18 @@ import pytest
 
 
 class TestDataset:
+    def test_description(self, client, created_datasets):
+        original_description = "this is a cool dataset"
+        dataset = client.set_dataset2(desc=original_description)
+        created_datasets.append(dataset)
+        assert dataset.get_description() == original_description
+
+        updated_description = "this is an uncool dataset"
+        dataset.set_description(updated_description)
+        assert dataset.get_description() == updated_description
+
+        assert client.get_dataset2(id=dataset.id).get_description() == updated_description
+
     def test_create(self, client, created_datasets):
         dataset = client.set_dataset2()
         assert dataset
@@ -48,3 +60,18 @@ class TestDataset:
         assert dataset.get_tags() == ["tag1", "tag3", "tag4", "tag5"]
 
         dataset.del_tag("tag100") # delete non-existing tag does not error out
+
+    def test_repr(self, client, created_datasets):
+        description = "this is a cool dataset"
+        tags = [u"tag1", u"tag2"]
+        dataset = client.set_dataset2(desc=description, tags=tags)
+        created_datasets.append(dataset)
+
+        str_repr = repr(dataset)
+
+        assert "name: {}".format(dataset.name) in str_repr
+        assert "id: {}".format(dataset.id) in str_repr
+        assert "time created" in str_repr
+        assert "time updated" in str_repr
+        assert "description: {}".format(description) in str_repr
+        assert "tags: {}".format(tags) in str_repr

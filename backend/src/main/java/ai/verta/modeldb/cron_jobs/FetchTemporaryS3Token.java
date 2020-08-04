@@ -3,7 +3,6 @@ package ai.verta.modeldb.cron_jobs;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.S3Service;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityRequest;
@@ -42,9 +41,7 @@ public class FetchTemporaryS3Token extends TimerTask {
     String roleSessionName = "modelDB" + UUID.randomUUID().toString();
 
     AWSSecurityTokenService stsClient =
-        AWSSecurityTokenServiceClientBuilder.standard()
-            .withRegion(clientRegion)
-            .build();
+        AWSSecurityTokenServiceClientBuilder.standard().withRegion(clientRegion).build();
 
     initializeRole();
 
