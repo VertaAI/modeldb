@@ -113,7 +113,6 @@ class TestCreate:
         assert result.exception
         assert result.output.strip().endswith("not found")
 
-    @pytest.mark.skip(reason="bug in dev")
     def test_create_version_from_run(self, experiment_run, model_for_deployment, registered_model):
         np = pytest.importorskip("numpy")
         model_name = registered_model.name
@@ -288,8 +287,8 @@ class TestList:
         )
 
         assert not result.exception
-        assert str(model1._msg.name) in result.output
-        assert str(model._msg.name) in result.output
+        assert model1.name in result.output
+        assert model.name in result.output
 
         result = runner.invoke(
             cli,
@@ -297,11 +296,10 @@ class TestList:
         )
 
         assert not result.exception
-        assert str(model1._msg.name) in result.output
-        assert str(model._msg.name) in result.output
-        assert str(model2._msg.name) in result.output
+        assert model1.name in result.output
+        assert model.name in result.output
+        assert model2.name in result.output
 
-    @pytest.mark.skip(reason="bug in dev")
     def test_list_version(self, created_registered_models):
         client = Client()
         runner = CliRunner()
@@ -350,6 +348,7 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1', '-l', 'label2'],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
         result = runner.invoke(
@@ -357,6 +356,7 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
         result = runner.invoke(
@@ -364,6 +364,7 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1'],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
 
@@ -458,9 +459,60 @@ class TestUpdate:
         assert result.exception
         assert "a model has already been associated with the version" in result.output
 
+    def test_overwrite(self, registered_model, in_tempdir):
+        model_name = registered_model.name
+        version_name = "my version"
+        registered_model.get_or_create_version(version_name)
+
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+
+        classifier_name = "tiny2.pth"
+        CLASSIFIER_CONTENTS = os.urandom(2**16)
+        with open(classifier_name, 'wb') as f:
+            f.write(CLASSIFIER_CONTENTS)
+
+        runner = CliRunner()
+        runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "file={}".format(filename), "--model", classifier_name],
+        )
+
+        # Overwriting:
+        filename = "tiny1.bin"
+        FILE_CONTENTS_2 = os.urandom(2**16)
+        while FILE_CONTENTS_2 == FILE_CONTENTS:
+            FILE_CONTENTS_2 = os.urandom(2 ** 16)
+
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS_2)
+
+        classifier_name = "tiny2.pth"
+        CLASSIFIER_CONTENTS_2 = os.urandom(2**16)
+        while CLASSIFIER_CONTENTS_2 == CLASSIFIER_CONTENTS:
+            CLASSIFIER_CONTENTS_2 = os.urandom(2 ** 16)
+
+        with open(classifier_name, 'wb') as f:
+            f.write(CLASSIFIER_CONTENTS_2)
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--artifact", "file={}".format(filename), "--model", classifier_name, "--overwrite"],
+        )
+        assert not result.exception
+
+        # Check that the model and artifact are updated:
+        model_version = registered_model.get_version(name=version_name)
+        assert model_version.get_artifact("file").getvalue() != FILE_CONTENTS
+        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS_2
+        assert model_version.get_model().getvalue() != CLASSIFIER_CONTENTS
+        assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS_2
+
 @pytest.mark.skip(reason="pending backend")
 class TestDownload:
-    def test_download_context(self, experiment_run, model_for_deployment, registered_model):
+    def test_download_context(self, experiment_run, model_for_deployment, registered_model, created_registered_models):
         np = pytest.importorskip("numpy")
         model_name = registered_model.name
         version_name = "my-version"

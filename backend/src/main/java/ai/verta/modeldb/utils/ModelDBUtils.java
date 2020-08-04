@@ -72,16 +72,21 @@ public class ModelDBUtils {
 
   public static Map<String, Object> readYamlProperties(String filePath) throws IOException {
     LOGGER.info("Reading File {} as YAML", filePath);
-    String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
-    if (telepresenceRoot != null) {
-      filePath = telepresenceRoot + filePath;
-    }
+    filePath = appendOptionalTelepresencePath(filePath);
     InputStream inputStream = new FileInputStream(new File(filePath));
     Yaml yaml = new Yaml();
     @SuppressWarnings("unchecked")
     Map<String, Object> prop = (Map<String, Object>) yaml.load(inputStream);
     LOGGER.debug("YAML map {}", prop);
     return prop;
+  }
+
+  public static String appendOptionalTelepresencePath(String filePath) {
+    String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
+    if (telepresenceRoot != null) {
+      filePath = telepresenceRoot + filePath;
+    }
+    return filePath;
   }
 
   public static String getStringFromProtoObject(MessageOrBuilder object)
@@ -512,8 +517,8 @@ public class ModelDBUtils {
   }
 
   /**
-   * If so throws an error if the workspace type is USER and the workspaceId and userID do not
-   * match. Is a NO-OP if userinfo is null.
+   * Throws an error if the workspace type is USER and the workspaceId and userID do not match. Is a
+   * NO-OP if userinfo is null.
    */
   public static void checkPersonalWorkspace(
       UserInfo userInfo,
@@ -581,34 +586,65 @@ public class ModelDBUtils {
     throw ex;
   }
 
+  public static void initializeBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    try {
+      if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) == null) {
+        LOGGER.trace("Initialize runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+        System.setProperty(
+            ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+      }
+      LOGGER.trace(
+          "Found runningBackgroundUtilsCount while initialization: {}",
+          getRegisteredBackgroundUtilsCount());
+    } catch (NullPointerException ex) {
+      LOGGER.trace("NullPointerException while initialize runningBackgroundUtilsCount");
+      System.setProperty(
+          ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+    }
+  }
+
   /**
    * If service want to call other verta service internally then should to registered those service
    * here with count
    */
   public static void registeredBackgroundUtilsCount() {
     int backgroundUtilsCount = 0;
-    if (System.getProperties().containsKey(ModelDBConstants.BACKGROUND_UTILS_COUNT)) {
+    if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) != null) {
       backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
     }
     backgroundUtilsCount = backgroundUtilsCount + 1;
     LOGGER.trace("After registered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-    System.getProperties().put(ModelDBConstants.BACKGROUND_UTILS_COUNT, backgroundUtilsCount);
+    System.setProperty(
+        ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
   }
 
   public static void unregisteredBackgroundUtilsCount() {
     int backgroundUtilsCount = 0;
-    if (System.getProperties().containsKey(ModelDBConstants.BACKGROUND_UTILS_COUNT)) {
+    if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) != null) {
       backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
       backgroundUtilsCount = backgroundUtilsCount - 1;
     }
     LOGGER.trace("After unregistered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-    System.getProperties().put(ModelDBConstants.BACKGROUND_UTILS_COUNT, backgroundUtilsCount);
+    System.setProperty(
+        ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
   }
 
-  public static int getRegisteredBackgroundUtilsCount() {
-    int backgroundUtilsCount =
-        (int) System.getProperties().get(ModelDBConstants.BACKGROUND_UTILS_COUNT);
-    LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-    return backgroundUtilsCount;
+  public static Integer getRegisteredBackgroundUtilsCount() {
+    try {
+      Integer backgroundUtilsCount =
+          Integer.parseInt(System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT));
+      LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+      return backgroundUtilsCount;
+    } catch (NullPointerException ex) {
+      LOGGER.trace("NullPointerException while get runningBackgroundUtilsCount");
+      System.setProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(0));
+      return 0;
+    }
+  }
+
+  public static boolean isEnvSet(String envVar) {
+    String envVarVal = System.getenv(envVar);
+    return envVarVal != null && !envVarVal.isEmpty();
   }
 }

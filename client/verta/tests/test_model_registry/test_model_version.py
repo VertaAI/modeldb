@@ -12,7 +12,6 @@ import verta.dataset
 from verta.environment import Python
 
 
-@pytest.mark.skip(reason="bug in dev")
 class TestMDBIntegration:
     def test_from_run(self, experiment_run, model_for_deployment, registered_model):
         np = pytest.importorskip("numpy")
@@ -83,11 +82,9 @@ class TestModelVersion:
         registered_model = client.set_registered_model()
         model_version = registered_model.get_or_create_version(name="my version")
 
-        retrieved_model_version_by_id = client.get_registered_model_version(id=model_version.id)
-        retrieved_model_version_by_name = client.get_registered_model_version(name=model_version.name)
+        retrieved_model_version_by_id = client.get_registered_model_version(model_version.id)
 
         assert retrieved_model_version_by_id.id == model_version.id
-        assert retrieved_model_version_by_name.id == model_version.id
 
     def test_log_model(self, model_version):
         np = pytest.importorskip("numpy")

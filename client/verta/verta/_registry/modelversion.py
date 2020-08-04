@@ -23,11 +23,33 @@ from .._internal_utils import (
 )
 from .._internal_utils._utils import NoneProtoResponse
 
-from .._tracking.entity import _ModelDBEntity
+from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 from ..environment import _Environment, Python
 
 
 class RegisteredModelVersion(_ModelDBEntity):
+    """
+    Object representing a version of a Registered Model.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`RegisteredModel.get_or_create_version`.
+
+    Attributes
+    ----------
+    id : int
+        ID of this Model Version.
+    name : str
+        Name of this Model Version.
+    has_environment : bool
+        Whether there is an environment associated with this Model Version.
+    has_model : bool
+        Whether there is a model associated with this Model Version.
+    registered_model_id : int
+        ID of this version's Registered Model.
+    is_archived : bool
+        Whether this Model Version is archived.
+
+    """
     def __init__(self, conn, conf, msg):
         super(RegisteredModelVersion, self).__init__(conn, conf, _ModelVersionService, "registered_model_version", msg)
 
@@ -40,6 +62,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         return '\n'.join((
             "version: {}".format(msg.version),
+            "url: {}://{}/{}/registry/{}/versions/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.registered_model_id, self.id),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
@@ -76,7 +99,31 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
 
+    @property
+    def workspace(self):
+        self._refresh_cache()
+        Message = _ModelVersionService.GetRegisteredModelRequest
+        response = self._conn.make_proto_request(
+            "GET", "/api/v1/registry/registered_models/{}".format(self.registered_model_id)
+        )
+
+        registered_model_msg = self._conn.maybe_proto_response(response, Message.Response).registered_model
+
+        if registered_model_msg.workspace_id:
+            return self._get_workspace_name_by_id(registered_model_msg.workspace_id)
+        else:
+            return _OSS_DEFAULT_WORKSPACE
+
     def get_artifact_keys(self):
+        """
+        Gets the artifact keys of this Model Version.
+
+        Returns
+        -------
+        list of str
+            List of artifact keys of this Model Version.
+
+        """
         self._refresh_cache()
         return list(map(lambda artifact: artifact.key, self._msg.artifacts))
 
