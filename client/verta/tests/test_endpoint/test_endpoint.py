@@ -328,9 +328,9 @@ class TestEndpoint:
             if metric["metric_id"] == 1001:
                 assert metric["parameters"][0]["name"] == "cpu_target"
                 assert metric["parameters"][0]["value"] == "0.5"
-            elif metric["metric_id"] == 1003:
+            elif metric["metric_id"] == 1002:
                 assert metric["parameters"][0]["name"] == "requests_per_worker_target"
-                assert metric["parameters"][0]["value"] == "0.7"
+                assert metric["parameters"][0]["value"] == "100"
             else:
                 assert metric["parameters"][0]["name"] == "memory_target"
-                assert metric["parameters"][0]["value"] == "100"
+                assert metric["parameters"][0]["value"] == "0.7"
