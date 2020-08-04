@@ -435,7 +435,7 @@
           "RegistryService"
         ]
       },
-      "post": {
+      "put": {
         "operationId": "RegistryService_UpdateModelVersion4",
         "responses": {
           "200": {
@@ -617,7 +617,7 @@
           "RegistryService"
         ]
       },
-      "post": {
+      "put": {
         "operationId": "RegistryService_UpdateRegisteredModel4",
         "responses": {
           "200": {
@@ -886,7 +886,7 @@
           "RegistryService"
         ]
       },
-      "post": {
+      "put": {
         "operationId": "RegistryService_UpdateModelVersion3",
         "responses": {
           "200": {
@@ -1119,7 +1119,7 @@
           "RegistryService"
         ]
       },
-      "post": {
+      "put": {
         "operationId": "RegistryService_UpdateRegisteredModel3",
         "responses": {
           "200": {
