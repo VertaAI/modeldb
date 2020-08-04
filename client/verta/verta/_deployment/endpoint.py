@@ -237,10 +237,6 @@ class Endpoint(object):
         return self._update_from_dict(update_dict)
 
     def _update_from_dict(self, update_dict):
-        if (not "model_version_id" in update_dict and not "run_id" in update_dict) or \
-                ("model_version_id" in update_dict and "run_id" in update_dict):
-            raise RuntimeError("must provide either model_version_id or run_id, but not both.")
-
         if update_dict["strategy"] == "direct":
             strategy = DirectUpdateStrategy()
         elif update_dict["strategy"] == "canary":
@@ -254,10 +250,14 @@ class Endpoint(object):
         else:
             raise ValueError("update strategy must be \"direct\" or \"canary\"")
 
-        if "run_id" in update_dict:
+        if "run_id" in update_dict and "model_version_id" in update_dict:
+            raise ValueError("cannot provide both run_id and model_version_id")
+        elif "run_id" in update_dict:
             model_reference = experimentrun.ExperimentRun._get_by_id(self._conn, self._conf, id=update_dict["run_id"])
-        else:
+        elif "model_version_id" in update_dict:
             model_reference = RegisteredModelVersion._get_by_id(self._conn, self._conf, id=update_dict["model_version_id"])
+        else:
+            raise RuntimeError("must provide either model_version_id or run_id")
             
         return self.update(model_reference, strategy)
 
