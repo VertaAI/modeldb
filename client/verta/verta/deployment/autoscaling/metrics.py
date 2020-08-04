@@ -25,5 +25,6 @@ class _AutoscalingMetric(object):
         }
 
 
-class AverageCpuUsage(_AutoscalingMetric):
-    raise NotImplementedError
+class CpuUtilization(_AutoscalingMetric):
+    _METRIC_ID = 1001
+    _NAME = "cpu_utilization"
