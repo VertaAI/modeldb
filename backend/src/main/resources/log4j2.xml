@@ -46,6 +46,9 @@
         <Logger name="org.apache.http.impl" level="INFO" additivity="false">
             <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
         </Logger>
+        <Logger name="io.jaegertracing" level="WARN" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="WARN" />
+        </Logger>
         <Root level="DEBUG" additivity="false">
             <AppenderRef ref="ConsoleJSONAppender" />
         </Root>

@@ -13,7 +13,8 @@ class Datasets(_utils.LazyList):
         'id',
         'name',
         'tags',
-        'time_created',
+        'date_created',
+        'date_updated',
     }
 
     def __init__(self, conn, conf):

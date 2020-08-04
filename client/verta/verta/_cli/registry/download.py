@@ -24,7 +24,20 @@ def download():
 @click.argument("model_name", nargs=1, required=True)
 @click.argument("version_name", nargs=1, required=True)
 @click.option("--output", "-o", required=True, help="Filepath to write to")
-def download_docker_context(model_name, version_name, output):
-    """Create a new registeredmodelversion entry.
+@click.option("--workspace", "-w", help="Workspace to use")
+def download_docker_context(model_name, version_name, output, workspace):
+    """Download registeredmodelversion's context entry.
     """
-    raise NotImplementedError
+    client = Client()
+
+    try:
+        model = client.get_registered_model(model_name, workspace=workspace)
+    except ValueError:
+        raise click.BadParameter("model {} not found".format(model_name))
+
+    try:
+        version = model.get_version(name=version_name)
+    except ValueError:
+        raise click.BadParameter("version {} not found".format(version_name))
+
+    version.download_docker_context(output)

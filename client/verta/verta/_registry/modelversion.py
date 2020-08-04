@@ -19,15 +19,37 @@ from ..external import six
 from .._internal_utils import (
     _utils,
     _artifact_utils,
-    importer
+    importer, _request_utils
 )
 from .._internal_utils._utils import NoneProtoResponse
 
-from .._tracking.entity import _ModelDBEntity
+from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 from ..environment import _Environment, Python
 
 
 class RegisteredModelVersion(_ModelDBEntity):
+    """
+    Object representing a version of a Registered Model.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`RegisteredModel.get_or_create_version`.
+
+    Attributes
+    ----------
+    id : int
+        ID of this Model Version.
+    name : str
+        Name of this Model Version.
+    has_environment : bool
+        Whether there is an environment associated with this Model Version.
+    has_model : bool
+        Whether there is a model associated with this Model Version.
+    registered_model_id : int
+        ID of this version's Registered Model.
+    is_archived : bool
+        Whether this Model Version is archived.
+
+    """
     def __init__(self, conn, conf, msg):
         super(RegisteredModelVersion, self).__init__(conn, conf, _ModelVersionService, "registered_model_version", msg)
 
@@ -40,6 +62,7 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         return '\n'.join((
             "version: {}".format(msg.version),
+            "url: {}://{}/{}/registry/{}/versions/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.registered_model_id, self.id),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
@@ -76,7 +99,31 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
 
+    @property
+    def workspace(self):
+        self._refresh_cache()
+        Message = _ModelVersionService.GetRegisteredModelRequest
+        response = self._conn.make_proto_request(
+            "GET", "/api/v1/registry/registered_models/{}".format(self.registered_model_id)
+        )
+
+        registered_model_msg = self._conn.maybe_proto_response(response, Message.Response).registered_model
+
+        if registered_model_msg.workspace_id:
+            return self._get_workspace_name_by_id(registered_model_msg.workspace_id)
+        else:
+            return _OSS_DEFAULT_WORKSPACE
+
     def get_artifact_keys(self):
+        """
+        Gets the artifact keys of this Model Version.
+
+        Returns
+        -------
+        list of str
+            List of artifact keys of this Model Version.
+
+        """
         self._refresh_cache()
         return list(map(lambda artifact: artifact.key, self._msg.artifacts))
 
@@ -585,8 +632,26 @@ class RegisteredModelVersion(_ModelDBEntity):
             Absolute path where Docker context was downloaded to. Matches `download_to_path`.
 
         """
-        # should be same as ExperimentRun.download_docker_context()
-        raise NotImplementedError
+        endpoint = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/dockercontext".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._msg.registered_model_id,
+            self.id
+        )
+        with _utils.make_request("GET", endpoint, self._conn, stream=True) as response:
+            try:
+                _utils.raise_for_http_error(response)
+            except requests.HTTPError as e:
+                # propagate error caused by missing artifact
+                error_text = e.response.text.strip()
+                if error_text.startswith("missing artifact"):
+                    new_e = RuntimeError("unable to obtain Docker context due to " + error_text)
+                    six.raise_from(new_e, None)
+                else:
+                    raise e
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
 
     def archive(self):
         """
@@ -607,3 +672,10 @@ class RegisteredModelVersion(_ModelDBEntity):
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
         self._clear_cache()
+
+    def _get_info_list(self, model_name):
+        if model_name is None:
+            id_or_name = str(self._msg.registered_model_id)
+        else :
+            id_or_name = model_name
+        return [self._msg.version, str(self.id), id_or_name, _utils.timestamp_to_str(self._msg.time_updated)]
