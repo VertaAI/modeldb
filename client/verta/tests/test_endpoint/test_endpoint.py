@@ -7,7 +7,7 @@ import verta
 from verta._deployment import Endpoint
 from verta.deployment.resources import CpuMilli, Memory
 from verta.deployment.autoscaling import Autoscaling
-from verta.deployment.autoscaling.metrics import CpuUtilization
+from verta.deployment.autoscaling.metrics import CpuUtilization, MemoryUtilization, RequestsPerWorker
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
@@ -312,7 +312,28 @@ class TestEndpoint:
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
 
-        autoscaling = Autoscaling()
-        autoscaling.add_metric(CpuUtilization(cpu_target=0.3))
+        autoscaling = Autoscaling(min_replicas=0, max_replicas=2, min_scale=0.5, max_scale=2.0)
+        autoscaling.add_metric(CpuUtilization("0.5"))
+        autoscaling.add_metric(MemoryUtilization("0.7"))
+        autoscaling.add_metric(RequestsPerWorker("100"))
+
         endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
         update_status = endpoint.get_update_status()
+
+        autoscaling_metrics = update_status["update_request"]["autoscaling"]["metrics"]
+        assert len(autoscaling_metrics) == 3
+        for metric in autoscaling_metrics:
+            assert metric["metric_id"] in [1001, 1002, 1003]
+
+            if metric["metric_id"] == 1001:
+                assert metric["name"] == "cpu_utilization"
+                assert metric["parameters"][0]["name"] == "cpu_target"
+                assert metric["parameters"][0]["value"] == "0.5"
+            elif metric["metric_id"] == 1003:
+                assert metric["name"] == "memory_utilization"
+                assert metric["parameters"][0]["name"] == "requests_per_worker_target"
+                assert metric["parameters"][0]["value"] == "0.7"
+            else:
+                assert metric["name"] == "requests_per_worker"
+                assert metric["parameters"][0]["name"] == "memory_target"
+                assert metric["parameters"][0]["value"] == "100"
