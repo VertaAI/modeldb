@@ -34,9 +34,5 @@ class CpuUtilization(_AutoscalingMetric):
             {
                 "name": "cpu_target",
                 "value": self._cpu_target
-            },
-            {
-                "name": "cpu_threshold",
-                "value": self._cpu_threshold
             }
         ]
