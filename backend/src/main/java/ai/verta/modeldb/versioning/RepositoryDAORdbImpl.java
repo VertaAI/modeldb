@@ -270,7 +270,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException {
     RepositoryEntity repository;
     if (id.hasNamedId()) {
-      WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(id, true);
       repository =
           getRepositoryByName(session, id.getNamedId().getName())
               .orElseThrow(
