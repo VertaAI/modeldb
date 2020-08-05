@@ -81,7 +81,6 @@ class TestDataset:
 
         dataset.del_tag("tag100") # delete non-existing tag does not error out
 
-
     def test_repr(self, client, created_datasets):
         description = "this is a cool dataset"
         tags = [u"tag1", u"tag2"]
