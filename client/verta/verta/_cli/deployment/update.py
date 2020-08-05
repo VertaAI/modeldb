@@ -7,6 +7,7 @@ from .deployment import deployment
 from ... import Client
 from ...deployment.update._strategies import DirectUpdateStrategy, CanaryUpdateStrategy
 from ...deployment.update.rules import _UpdateRule
+from ..._registry import RegisteredModelVersion
 
 
 @deployment.group()
@@ -15,7 +16,8 @@ def update():
 
 @update.command(name="endpoint")
 @click.argument("path", nargs=1, required=True)
-@click.option("--run-id", "-r", help="Experiment Run to deploy.")
+@click.option("--run-id", "-r", help="Experiment Run to deploy. Cannot be used alongside --model-version-id.")
+@click.option("--model-version-id", "-m", help="Model Version to deploy. Cannot be used alongside --run-id.")
 @click.option("--strategy", "-s", type=click.Choice(['direct', 'canary'], case_sensitive=False), help="Strategy to use to roll out new deployment.")
 @click.option("--canary-rule", "-c", multiple=True, help="Rule to use for canary deployment. Can only be used alongside --strategy=canary.")
 @click.option("--canary-interval", "-i", type=click.IntRange(min=0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary.")
@@ -23,7 +25,7 @@ def update():
 @click.option("--env-vars", type=str, help="Environment variables to set for the model build. The format is --env-vars '{\"VERTA_HOST\": \"app.verta.ai\"}'.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 # TODO: more options
-def update_endpoint(path, run_id, strategy, canary_rule, canary_interval, canary_step, env_vars, workspace):
+def update_endpoint(path, run_id, model_version_id, strategy, canary_rule, canary_interval, canary_step, env_vars, workspace):
     """Update an endpoint.
     """
     if canary_step == 0.0:
@@ -45,16 +47,26 @@ def update_endpoint(path, run_id, strategy, canary_rule, canary_interval, canary
     except ValueError:
         raise click.BadParameter("endpoint with path {} not found".format(path))
 
-    try:
-        run = client.get_experiment_run(id=run_id)
-    except ValueError:
-        raise click.BadParameter("experiment run with id {} not found".format(run_id))
+    if run_id and model_version_id:
+        raise click.BadParameter("cannot provide both --run-id and --model-version-id.")
+    elif run_id:
+        try:
+            model_reference = client.get_experiment_run(id=run_id)
+        except ValueError:
+            raise click.BadParameter("experiment run with id {} not found".format(run_id))
+    elif model_version_id:
+        try:
+            model_reference = RegisteredModelVersion._get_by_id(client._conn, client._conf, model_version_id)
+        except ValueError:
+            raise click.BadParameter("model version with id {} not found".format(model_version_id))
+    else:
+        raise click.BadParameter("must provide either --model-version-id or --run-id.")
 
     if strategy == 'direct':
-        endpoint.update(run, DirectUpdateStrategy())
+        endpoint.update(model_reference, DirectUpdateStrategy())
     else:
         # strategy is canary
         strategy_obj = CanaryUpdateStrategy(canary_interval, canary_step)
         for rule in canary_rule:
             strategy_obj.add_rule(_UpdateRule._from_dict(json.loads(rule)))
-        endpoint.update(run, strategy_obj)
+        endpoint.update(model_reference, strategy_obj)
