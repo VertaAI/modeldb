@@ -136,6 +136,9 @@ class Endpoint(object):
         if not isinstance(strategy, _UpdateStrategy):
             raise TypeError("`strategy` must be an object from verta.deployment.strategies")
 
+        if not isinstance(model_reference, (RegisteredModelVersion, experimentrun.ExperimentRun)):
+            raise TypeError("`model_reference` must be an ExperimentRun or RegisteredModelVersion")
+
         if autoscaling and not isinstance(autoscaling, Autoscaling):
             raise TypeError("`autoscaling` must be an Autoscaling object")
 
