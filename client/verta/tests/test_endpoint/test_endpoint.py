@@ -196,7 +196,7 @@ class TestEndpoint:
         }
 
         filepath = "config.json"
-        with open(filepath, "wb") as f:
+        with open(filepath, 'w') as f:
             json.dump(strategy_dict, f)
 
         updated_status = endpoint.update_from_config(filepath)
@@ -238,7 +238,7 @@ class TestEndpoint:
         }
 
         filepath = "config.yaml"
-        with open(filepath, "wb") as f:
+        with open(filepath, 'w') as f:
             yaml.safe_dump(strategy_dict, f)
 
         updated_status = endpoint.update_from_config(filepath)
