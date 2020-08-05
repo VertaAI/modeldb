@@ -1305,10 +1305,10 @@ class Client(object):
         return dataset
 
     @property
-    def datasets(self):
+    def _datasets(self):
         raise NotImplementedError
 
-    def get_dataset_version2(self, id):
+    def _get_dataset_version2(self, id):
         # TODO: when MVP, remove '2'
         raise NotImplementedError
 
