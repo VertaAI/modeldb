@@ -15,7 +15,7 @@ class _UpdateRule(object):
     def __init__(self, value):
         self._value = value
 
-    def _as_json(self):
+    def _as_dict(self):
         return {
             'rule_id': self._RULE_ID,
             'rule_parameters': [

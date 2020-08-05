@@ -5,12 +5,13 @@ import requests
 
 import verta
 from verta._deployment import Endpoint
-from verta.deployment.resources import CpuMilli, Memory
+from verta.deployment.resources import CpuMillis, Memory
 from verta.deployment.autoscaling import Autoscaling
-from verta.deployment.autoscaling.metrics import CpuUtilization, MemoryUtilization, RequestsPerWorker
+from verta.deployment.autoscaling.metrics import CpuTarget, MemoryTarget, RequestsPerWorkerTarget
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
+from verta.environment import Python
 
 from ..utils import get_build_ids
 
@@ -261,7 +262,7 @@ class TestEndpoint:
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
 
         strategy.add_rule(AverageLatencyThresholdRule(0.8))
-        updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMilli(500), Memory("500Mi"), ],
+        updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMillis(500), Memory("500Mi"), ],
                                          env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
         # Check that a new build is added:
@@ -279,7 +280,7 @@ class TestEndpoint:
     def test_form_update_body(self):
         endpoint = Endpoint(None, None, None, None)
         resources = [
-            CpuMilli(500),
+            CpuMillis(500),
             Memory("500Mi"),
         ]
 
@@ -309,6 +310,80 @@ class TestEndpoint:
         x = model_for_deployment['train_features'].iloc[1].values
         assert endpoint.get_deployed_model().predict([x]) == [2]
 
+    def test_update_from_model_version(self, client, model_version, created_endpoints):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+
+    def test_update_from_json_config_model_version(self, client, in_tempdir, created_endpoints, model_version):
+        np = pytest.importorskip("numpy")
+        json = pytest.importorskip("json")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        strategy_dict = {
+            "model_version_id": model_version.id,
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.05,
+                "progress_interval_seconds": 30,
+                "rules": [
+                    {"rule_id": "1001",
+                     "rule_parameters": [
+                         {"name": "latency_avg",
+                          "value": "0.1"}
+                    ]},
+                    {"rule_id": "1002",
+                     "rule_parameters": [
+                        {"name": "error_rate",
+                         "value": "1"}
+                    ]}
+                ]
+            }
+        }
+
+        filepath = "config.json"
+        with open(filepath, "wb") as f:
+            json.dump(strategy_dict, f)
+
+        endpoint.update_from_config(filepath)
+
+        while not endpoint.get_status()['status'] == "active":
+            time.sleep(3)
+
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+
     def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
@@ -318,13 +393,13 @@ class TestEndpoint:
         created_endpoints.append(endpoint)
 
         autoscaling = Autoscaling(min_replicas=0, max_replicas=2, min_scale=0.5, max_scale=2.0)
-        autoscaling.add_metric(CpuUtilization("0.5"))
-        autoscaling.add_metric(MemoryUtilization("0.7"))
-        autoscaling.add_metric(RequestsPerWorker("100"))
+        autoscaling.add_metric(CpuTarget(0.5))
+        autoscaling.add_metric(MemoryTarget(0.7))
+        autoscaling.add_metric(RequestsPerWorkerTarget(100))
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
         update_status = endpoint.get_update_status()
-
+        
         autoscaling_metrics = update_status["update_request"]["autoscaling"]["metrics"]
         assert len(autoscaling_metrics) == 3
         for metric in autoscaling_metrics:
