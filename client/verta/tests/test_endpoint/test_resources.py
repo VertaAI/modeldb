@@ -1,23 +1,23 @@
 import pytest
 
-from verta.deployment.resources import CpuMilli, Memory
+from verta.deployment.resources import CpuMillis, Memory
 
 
 @pytest.mark.parametrize("data", [3, 64])
 def test_cpu_milli(data):
-    CpuMilli(data)
+    CpuMillis(data)
 
 
 @pytest.mark.parametrize("data", [-12, 0])
 def test_cpu_milli_negative(data):
     with pytest.raises(ValueError):
-        CpuMilli(data)
+        CpuMillis(data)
 
 
 @pytest.mark.parametrize("data", ["T", 0.5])
 def test_cpu_milli_negative_type(data):
     with pytest.raises(TypeError):
-        CpuMilli(data)
+        CpuMillis(data)
 
 
 @pytest.mark.parametrize("data", ['128974848', '129e6', '129M', '123Mi'])

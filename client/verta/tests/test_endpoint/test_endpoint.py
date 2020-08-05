@@ -5,7 +5,7 @@ import requests
 
 import verta
 from verta._deployment import Endpoint
-from verta.deployment.resources import CpuMilli, Memory
+from verta.deployment.resources import CpuMillis, Memory
 from verta.deployment.autoscaling import Autoscaling
 from verta.deployment.autoscaling.metrics import CpuUtilization, MemoryUtilization, RequestsPerWorker
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
@@ -261,7 +261,7 @@ class TestEndpoint:
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
 
         strategy.add_rule(AverageLatencyThresholdRule(0.8))
-        updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMilli(500), Memory("500Mi"), ],
+        updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMillis(500), Memory("500Mi"), ],
                                          env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
         # Check that a new build is added:
@@ -279,7 +279,7 @@ class TestEndpoint:
     def test_form_update_body(self):
         endpoint = Endpoint(None, None, None, None)
         resources = [
-            CpuMilli(500),
+            CpuMillis(500),
             Memory("500Mi"),
         ]
 
