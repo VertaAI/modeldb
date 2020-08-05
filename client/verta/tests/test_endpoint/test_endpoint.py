@@ -183,12 +183,12 @@ class TestEndpoint:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule_id": "1001",
+                    {"parent_name": "latency",
                      "rule_parameters": [
                          {"name": "latency_avg",
                           "value": "0.1"}
                     ]},
-                    {"rule_id": "1002",
+                    {"parent_name": "error_rate",
                      "rule_parameters": [
                         {"name": "error_rate",
                          "value": "1"}
@@ -225,12 +225,12 @@ class TestEndpoint:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule_id": "1001",
+                    {"parent_name": "latency",
                      "rule_parameters": [
                          {"name": "latency_avg",
                           "value": "0.1"}
                     ]},
-                    {"rule_id": "1002",
+                    {"parent_name": "error_rate",
                      "rule_parameters": [
                         {"name": "error_rate",
                          "value": "1"}
