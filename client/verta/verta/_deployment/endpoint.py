@@ -7,6 +7,8 @@ import json
 import yaml
 from functools import reduce
 
+from ..external import six
+
 from ..deployment.autoscaling import Autoscaling
 from ..deployment.update.rules import _UpdateRule
 from ..deployment import DeployedModel
@@ -129,6 +131,7 @@ class Endpoint(object):
                 return endpoint
         return None
 
+
     def update(self, run, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         if not isinstance(run, experimentrun.ExperimentRun):
             raise TypeError("`run` must be an ExperimentRun")
@@ -138,6 +141,14 @@ class Endpoint(object):
 
         if autoscaling and not isinstance(autoscaling, Autoscaling):
             raise TypeError("`autoscaling` must be an Autoscaling object")
+
+        if env_vars:
+            env_vars_err_msg = "`env_vars` must be dictionary of str keys and str values"
+            if not isinstance(env_vars, dict):
+                raise TypeError(env_vars_err_msg)
+            for key, value in env_vars.items():
+                if not isinstance(key, six.string_types) or not isinstance(value, six.string_types):
+                    raise TypeError(env_vars_err_msg)
 
         # Create new build:
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
@@ -149,7 +160,7 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
         build_id = response.json()["id"]
 
-        update_body = self._form_update_body(resources, strategy, autoscaling, build_id)
+        update_body = self._form_update_body(resources, strategy, autoscaling, env_vars, build_id)
 
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
@@ -278,8 +289,7 @@ class Endpoint(object):
             return None
         return tokens[0]['creator_request']['value']
 
-
-    def _form_update_body(self, resources, strategy, autoscaling, build_id):
+    def _form_update_body(self, resources, strategy, autoscaling, env_vars, build_id):
         update_body = strategy._as_build_update_req_body(build_id)
         if resources:
             update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
@@ -287,6 +297,10 @@ class Endpoint(object):
 
         if autoscaling:
             update_body["autoscaling"] = autoscaling._as_dict()
+
+        if env_vars:
+            update_body["env"] = list(map(lambda env_var: {"name": env_var, "value": env_vars[env_var]}, env_vars))
+
         # prepare body for update request
         return update_body
       
