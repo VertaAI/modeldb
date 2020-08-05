@@ -4,12 +4,11 @@ from __future__ import print_function
 
 import abc
 
-from .._tracking import entity
+from ..external import six
 
 from .._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 
-from ..external import six
-
+from .._tracking import entity
 from .._internal_utils import (
     _utils,
 )
@@ -30,7 +29,7 @@ class DatasetVersion(entity._ModelDBEntity):
 
     @classmethod
     def _generate_default_name(cls):
-        return "Proj {}".format(_utils.generate_default_name())
+        return "DatasetVersion {}".format(_utils.generate_default_name())
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
@@ -41,8 +40,8 @@ class DatasetVersion(entity._ModelDBEntity):
         raise NotImplementedError("cannot get DatasetVersion by name")
 
     @classmethod
-    def _create_proto_internal(cls, conn, dataset, dataset_blob, desc=None, tags=None, attrs=None):
+    def _create_proto_internal(cls, conn, dataset, dataset_blob, desc=None, tags=None, attrs=None, time_logged=None, time_updated=None):
         raise NotImplementedError
-
-
-# NOTE: before _get_by_id, first call DatasetVersion._get_proto_by_id() to check type of dataset blob
+        # msg = _DatasetVersionService.DatasetVersion(
+        #     dataset_blob=dataset_blob._as_proto().dataset
+        # )
