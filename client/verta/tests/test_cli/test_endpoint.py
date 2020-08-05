@@ -1,6 +1,7 @@
 from click.testing import CliRunner
 
 import pytest
+import time
 
 from verta import Client
 from verta._cli import cli
@@ -189,6 +190,8 @@ class TestUpdate:
         )
         assert not result.exception
 
+        while not endpoint.get_status()['status'] == "active":
+            time.sleep(3)
+
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
-
