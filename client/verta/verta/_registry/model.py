@@ -225,6 +225,12 @@ class RegisteredModel(_ModelDBEntity):
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
 
+    def set_description(self, desc):
+        raise NotImplementedError
+
+    def get_description(self):
+        raise NotImplementedError
+
     def add_labels(self, labels):
         """
         Adds multiple labels to this Registered Model.

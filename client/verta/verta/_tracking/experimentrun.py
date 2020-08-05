@@ -44,7 +44,8 @@ from .. import deployment
 from .. import utils
 
 
-_CUSTOM_MODULES_DIR = "/app/custom_modules/"  # location in DeploymentService model container
+# location in DeploymentService model container
+_CUSTOM_MODULES_DIR = os.environ.get('VERTA_CUSTOM_MODULES_DIR', "/app/custom_modules/")
 
 _MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
 
@@ -759,7 +760,7 @@ class ExperimentRun(_ModelDBEntity):
                                            self._conn.scheme, self._conn.socket),
                                        self._conn, json={'id': self.id, 'metric_keys': keys})
         _utils.raise_for_http_error(response)
-        
+
     def _delete_observations(self, keys):
         response = _utils.make_request("DELETE",
                                        "{}://{}/api/v1/modeldb/experiment-run/deleteObservations".format(

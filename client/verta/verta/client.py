@@ -48,6 +48,7 @@ from ._repository import commit as commit_module
 from . import deployment
 from . import utils
 
+from ._tracking import entity
 from ._tracking import (
     _Context,
     Project,
@@ -69,21 +70,6 @@ from ._dataset_versioning.datasets import Datasets
 from ._deployment import (
     Endpoint,
     Endpoints,
-)
-
-
-_OSS_DEFAULT_WORKSPACE = "personal"
-
-# for ExperimentRun._log_modules()
-_CUSTOM_MODULES_DIR = "/app/custom_modules/"  # location in DeploymentService model container
-
-# for ExperimentRun.log_model()
-_MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
-
-_CACHE_DIR = os.path.join(
-    os.path.expanduser("~"),
-    ".verta",
-    "cache",
 )
 
 
@@ -285,7 +271,7 @@ class Client(object):
                     pass
                 else:
                     _utils.raise_for_http_error(response)
-        return _OSS_DEFAULT_WORKSPACE
+        return entity._OSS_DEFAULT_WORKSPACE
 
     def _load_config(self):
         with _config_utils.read_merged_config() as config:
@@ -1322,7 +1308,7 @@ class Client(object):
     def datasets(self):
         raise NotImplementedError
 
-    def get_dataset_version2(self):
+    def _get_dataset_version2(self, id):
         # TODO: when MVP, remove '2'
         raise NotImplementedError
 
