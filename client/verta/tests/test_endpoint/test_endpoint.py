@@ -6,6 +6,8 @@ import requests
 import verta
 from verta._deployment import Endpoint
 from verta.deployment.resources import CpuMillis, Memory
+from verta.deployment.autoscaling import Autoscaling
+from verta.deployment.autoscaling.metrics import CpuUtilization, MemoryUtilization, RequestsPerWorker
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
@@ -283,7 +285,7 @@ class TestEndpoint:
 
         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"}
 
-        parameter_json = endpoint._form_update_body(resources, DirectUpdateStrategy(), env_vars, 0)
+        parameter_json = endpoint._form_update_body(resources, DirectUpdateStrategy(), None, env_vars, 0)
         assert parameter_json == {'build_id': 0, 'env': [{"name":'CUDA_VISIBLE_DEVICES', 'value':'1,2'},
                                                          {"name":'VERTA_HOST', 'value':'app.verta.ai'}],
                                   'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
@@ -306,3 +308,34 @@ class TestEndpoint:
             time.sleep(3)
         x = model_for_deployment['train_features'].iloc[1].values
         assert endpoint.get_deployed_model().predict([x]) == [2]
+
+    def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        autoscaling = Autoscaling(min_replicas=0, max_replicas=2, min_scale=0.5, max_scale=2.0)
+        autoscaling.add_metric(CpuUtilization("0.5"))
+        autoscaling.add_metric(MemoryUtilization("0.7"))
+        autoscaling.add_metric(RequestsPerWorker("100"))
+
+        endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
+        update_status = endpoint.get_update_status()
+
+        autoscaling_metrics = update_status["update_request"]["autoscaling"]["metrics"]
+        assert len(autoscaling_metrics) == 3
+        for metric in autoscaling_metrics:
+            assert metric["metric_id"] in [1001, 1002, 1003]
+
+            if metric["metric_id"] == 1001:
+                assert metric["parameters"][0]["name"] == "cpu_target"
+                assert metric["parameters"][0]["value"] == "0.5"
+            elif metric["metric_id"] == 1002:
+                assert metric["parameters"][0]["name"] == "requests_per_worker_target"
+                assert metric["parameters"][0]["value"] == "100"
+            else:
+                assert metric["parameters"][0]["name"] == "memory_target"
+                assert metric["parameters"][0]["value"] == "0.7"
