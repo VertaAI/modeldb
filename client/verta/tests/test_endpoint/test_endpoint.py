@@ -11,6 +11,7 @@ from verta.deployment.autoscaling.metrics import CpuTarget, MemoryTarget, Reques
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
+from verta.environment import Python
 
 from ..utils import get_build_ids
 
@@ -309,6 +310,80 @@ class TestEndpoint:
         x = model_for_deployment['train_features'].iloc[1].values
         assert endpoint.get_deployed_model().predict([x]) == [2]
 
+    def test_update_from_model_version(self, client, model_version, created_endpoints):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+
+    def test_update_from_json_config_model_version(self, client, in_tempdir, created_endpoints, model_version):
+        np = pytest.importorskip("numpy")
+        json = pytest.importorskip("json")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        strategy_dict = {
+            "model_version_id": model_version.id,
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.05,
+                "progress_interval_seconds": 30,
+                "rules": [
+                    {"rule_id": "1001",
+                     "rule_parameters": [
+                         {"name": "latency_avg",
+                          "value": "0.1"}
+                    ]},
+                    {"rule_id": "1002",
+                     "rule_parameters": [
+                        {"name": "error_rate",
+                         "value": "1"}
+                    ]}
+                ]
+            }
+        }
+
+        filepath = "config.json"
+        with open(filepath, "wb") as f:
+            json.dump(strategy_dict, f)
+
+        endpoint.update_from_config(filepath)
+
+        while not endpoint.get_status()['status'] == "active":
+            time.sleep(3)
+
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+
     def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
@@ -324,7 +399,7 @@ class TestEndpoint:
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
         update_status = endpoint.get_update_status()
-
+        
         autoscaling_metrics = update_status["update_request"]["autoscaling"]["metrics"]
         assert len(autoscaling_metrics) == 3
         for metric in autoscaling_metrics:
