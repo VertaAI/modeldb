@@ -165,31 +165,30 @@ class TestUpdate:
         assert result.exception
         assert error_msg_2 in result.output
 
-    def test_update_from_version(self):
-        def test_update_from_model_version(self, client, model_version, created_endpoints):
-            np = pytest.importorskip("numpy")
-            sklearn = pytest.importorskip("sklearn")
-            from sklearn.linear_model import LogisticRegression
+    def test_update_from_version(self, client, model_version, created_endpoints):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
 
-            classifier = LogisticRegression()
-            classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-            model_version.log_model(classifier)
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
 
-            env = Python(requirements=["scikit-learn"])
-            model_version.log_environment(env)
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
 
-            path = _utils.generate_default_name()
-            endpoint = client.set_endpoint(path)
-            created_endpoints.append(endpoint)
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
 
-            runner = CliRunner()
-            result = runner.invoke(
-                cli,
-                ['deployment', 'update', 'endpoint', path, '--model-version-id', model_version.id, "--strategy",
-                 "direct"],
-            )
-            assert not result.exception
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', path, '--model-version-id', model_version.id, "--strategy",
+             "direct"],
+        )
+        assert not result.exception
 
-            test_data = np.random.random((4, 12))
-            assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
 
