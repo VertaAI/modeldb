@@ -1308,7 +1308,7 @@ class Client(object):
     def datasets(self):
         raise NotImplementedError
 
-    def get_dataset_version2(self):
+    def get_dataset_version2(self, id):
         # TODO: when MVP, remove '2'
         raise NotImplementedError
 
