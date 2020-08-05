@@ -319,8 +319,8 @@ class TestEndpoint:
 
         autoscaling = Autoscaling(min_replicas=0, max_replicas=2, min_scale=0.5, max_scale=2.0)
         autoscaling.add_metric(CpuTarget("0.5"))
-        autoscaling.add_metric(RequestsPerWorkerTarget("0.7"))
-        autoscaling.add_metric(MemoryTarget("100"))
+        autoscaling.add_metric(MemoryTarget("0.7"))
+        autoscaling.add_metric(RequestsPerWorkerTarget("100"))
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
         update_status = endpoint.get_update_status()

@@ -10,60 +10,33 @@ class _AutoscalingMetric(object):
     _METRIC_ID = 0
     _NAME = ""
 
+    def __init__(self, value):
+        self._value = value
+
     def _as_dict(self):
         return {
             "metric_id": self._METRIC_ID,
-            "name": self._NAME,
-            "parameters": self._parameters_dict()
+            "name": self._PARENT_NAME,
+            "parameters": [{
+                "name": self._NAME,
+                "value": self._value
+            }]
         }
 
-    def _parameters_dict(self):
-        raise NotImplementedError
 
-
-class CpuUtilization(_AutoscalingMetric):
+class CpuTarget(_AutoscalingMetric):
     _METRIC_ID = 1001
-    _NAME = "cpu_utilization"
-
-    def __init__(self, cpu_target):
-        self._cpu_target = str(cpu_target)
-
-    def _parameters_dict(self):
-        return [
-            {
-                "name": "cpu_target",
-                "value": self._cpu_target
-            }
-        ]
+    _PARENT_NAME = "cpu_utilization"
+    _NAME = "cpu_target"
 
 
-class RequestsPerWorker(_AutoscalingMetric):
+class RequestsPerWorkerTarget(_AutoscalingMetric):
     _METRIC_ID = 1002
-    _NAME = "requests_per_worker"
-
-    def __init__(self, requests_per_worker_target):
-        self._requests_per_worker_target = str(requests_per_worker_target)
-
-    def _parameters_dict(self):
-        return [
-            {
-                "name": "requests_per_worker_target",
-                "value": self._requests_per_worker_target
-            }
-        ]
+    _PARENT_NAME = "requests_per_worker"
+    _NAME = "requests_per_worker_target"
 
 
-class MemoryUtilization(_AutoscalingMetric):
+class MemoryTarget(_AutoscalingMetric):
     _METRIC_ID = 1003
-    _NAME = "memory_utilization"
-
-    def __init__(self, memory_target):
-        self._memory_target = str(memory_target)
-
-    def _parameters_dict(self):
-        return [
-            {
-                "name": "memory_target",
-                "value": self._memory_target
-            }
-        ]
+    _PARENT_NAME = "memory_utilization"
+    _NAME = "memory_target"
