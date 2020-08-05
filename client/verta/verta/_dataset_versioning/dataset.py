@@ -2,15 +2,17 @@
 
 from __future__ import print_function
 
-from .._tracking import entity
+from ..external import six
 
 from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 
-from ..external import six
-
+from .._tracking import entity
 from .._internal_utils import (
     _utils,
 )
+from .. import dataset
+
+from .dataset_version import DatasetVersion
 
 
 class Dataset(entity._ModelDBEntity):
@@ -194,11 +196,19 @@ class Dataset(entity._ModelDBEntity):
     def del_attribute(self, key):
         raise NotImplementedError
 
-    def create_s3_version(self):  # TODO: same params as S3.__init__()
+    def create_s3_version(self, paths, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
         raise NotImplementedError
-        # TODO: create S3 blob and pass as self._create(dataset_blob=blob)
 
-    def create_path_version(self):  # TODO: same params as Path.__init__()
+    def create_path_version(self, paths, base_path=None, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
+        dataset_blob = dataset.Path(paths=paths, base_path=base_path)
+        return DatasetVersion._create(
+            self._conn, self._conf,
+            dataset=self, dataset_blob=dataset_blob,
+            desc=desc, tags=tags, attrs=attrs,
+            time_logged=date_created, time_updated=date_created,
+        )
+
+    def get_version(self, id):
         raise NotImplementedError
 
     def get_latest_version(self):
