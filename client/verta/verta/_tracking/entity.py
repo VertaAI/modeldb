@@ -456,4 +456,3 @@ class _ModelDBEntity(object):
         else:
             # workspace is organization
             return _utils.body_to_json(response)['organization']['name']
-

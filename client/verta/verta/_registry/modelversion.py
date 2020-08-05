@@ -568,6 +568,12 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         return response.content
 
+    def set_description(self, desc):
+        raise NotImplementedError
+
+    def get_description(self):
+        raise NotImplementedError
+
     def add_labels(self, labels):
         """
         Adds multiple labels to this Model Version.

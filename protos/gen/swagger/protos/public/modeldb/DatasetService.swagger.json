@@ -158,27 +158,12 @@
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "attribute_keys",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "name": "delete_all",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteDatasetAttributes"
+            }
           }
         ],
         "tags": [
@@ -950,6 +935,24 @@
       "properties": {
         "id": {
           "type": "string"
+        }
+      }
+    },
+    "modeldbDeleteDatasetAttributes": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "attribute_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "delete_all": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },

@@ -113,7 +113,6 @@ class TestCreate:
         assert result.exception
         assert result.output.strip().endswith("not found")
 
-    @pytest.mark.skip(reason="bug in dev")
     def test_create_version_from_run(self, experiment_run, model_for_deployment, registered_model):
         np = pytest.importorskip("numpy")
         model_name = registered_model.name
@@ -270,7 +269,6 @@ class TestGet:
 
 
 class TestList:
-    @pytest.mark.skip("bug in dev regarding labels")
     def test_list_model(self, created_registered_models):
         client = Client()
         model1 = client.get_or_create_registered_model()
@@ -289,8 +287,8 @@ class TestList:
         )
 
         assert not result.exception
-        assert str(model1._msg.name) in result.output
-        assert str(model._msg.name) in result.output
+        assert model1.name in result.output
+        assert model.name in result.output
 
         result = runner.invoke(
             cli,
@@ -298,11 +296,10 @@ class TestList:
         )
 
         assert not result.exception
-        assert str(model1._msg.name) in result.output
-        assert str(model._msg.name) in result.output
-        assert str(model2._msg.name) in result.output
+        assert model1.name in result.output
+        assert model.name in result.output
+        assert model2.name in result.output
 
-    @pytest.mark.skip(reason="bug in dev")
     def test_list_version(self, created_registered_models):
         client = Client()
         runner = CliRunner()
@@ -341,7 +338,6 @@ class TestList:
         assert version2_name in result.output
 
 class TestUpdate:
-    @pytest.mark.skip("bug in dev regarding labels")
     def test_update_model(self, registered_model):
         model_name = registered_model.name
         assert registered_model.get_labels() == []
@@ -352,6 +348,7 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1', '-l', 'label2'],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
         result = runner.invoke(
@@ -359,6 +356,7 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
         result = runner.invoke(
@@ -366,6 +364,7 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1'],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
 
