@@ -12,7 +12,7 @@ class _Resource(object):
         self.parameter = parameter
 
 
-class CpuMilli(_Resource):
+class CpuMillis(_Resource):
     milli_err_msg = "`cpu_millis` must be int greater than 0"
 
     def __init__(self, parameter):
@@ -20,7 +20,7 @@ class CpuMilli(_Resource):
             raise TypeError(self.milli_err_msg)
         if parameter <= 0:
             raise ValueError(self.milli_err_msg)
-        super(CpuMilli, self).__init__(parameter)
+        super(CpuMillis, self).__init__(parameter)
 
     def to_dict(self):
         return {"cpu_millis": self.parameter}
