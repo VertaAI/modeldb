@@ -1159,7 +1159,7 @@ class Client(object):
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
-    def get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, id=None):
+    def _get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, id=None):
         """
         Gets or creates a Dataset.
 
@@ -1216,15 +1216,15 @@ class Client(object):
 
         return dataset
 
-    def set_dataset2(self, *args, **kwargs):
+    def _set_dataset2(self, *args, **kwargs):
         """
         Alias for :meth:`Client.get_or_create_dataset2()`.
 
         """
         # TODO: when MVP, remove '2'
-        return self.get_or_create_dataset2(*args, **kwargs)
+        return self._get_or_create_dataset2(*args, **kwargs)
 
-    def create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None):
+    def _create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None):
         """
         Creates a Dataset, initialized with specified metadata parameters.
 
@@ -1264,7 +1264,7 @@ class Client(object):
         return Dataset._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs,
                                time_created=time_created, public_within_org=public_within_org)
 
-    def get_dataset2(self, name=None, workspace=None, id=None):
+    def _get_dataset2(self, name=None, workspace=None, id=None):
         """
         Gets a Dataset.
 
