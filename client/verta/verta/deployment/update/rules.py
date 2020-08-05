@@ -10,6 +10,7 @@ from ...external import six
 class _UpdateRule(object):
     _RULE_ID = 0
     _NAME = ""
+    _PARENT_NAME = ""
 
     def __init__(self, value):
         self._value = value
@@ -27,7 +28,7 @@ class _UpdateRule(object):
 
     @staticmethod
     def _from_dict(rule_dict):
-        rule_id = int(rule_dict["rule_id"])
+        parent_name = rule_dict['rule']
         rule_name = rule_dict['rule_parameters'][0]['name']
         rule_value = float(rule_dict['rule_parameters'][0]['value'])
 
@@ -41,11 +42,11 @@ class _UpdateRule(object):
             # does not match any rule
             raise ValueError("no rule with name {} exists".format(rule_name))
 
-        if rule._RULE_ID != rule_id:
-            raise ValueError("expected rule ID {} for rule {}, not {}.".format(
-                rule._RULE_ID,
+        if rule._PARENT_NAME != parent_name:
+            raise ValueError("expected rule {} for parameter {}, not {}.".format(
+                rule._PARENT_NAME,
                 rule_name,
-                rule_id
+                parent_name
             ))
 
         return rule
@@ -53,14 +54,17 @@ class _UpdateRule(object):
 
 class AverageLatencyThresholdRule(_UpdateRule):
     _RULE_ID = 1001
+    _PARENT_NAME = "latency"
     _NAME = "latency_avg"
 
 
 class P90LatencyThresholdRule(_UpdateRule):
     _RULE_ID = 1001
+    _PARENT_NAME = "latency"
     _NAME = "latency_p90"
 
 
 class ErrorRateRule(_UpdateRule):
     _RULE_ID = 1002
+    _PARENT_NAME = "error_rate"
     _NAME = "error_rate"
