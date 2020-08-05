@@ -28,7 +28,7 @@ class _UpdateRule(object):
 
     @staticmethod
     def _from_dict(rule_dict):
-        parent_name = rule_dict['parent_name']
+        parent_name = rule_dict['rule']
         rule_name = rule_dict['rule_parameters'][0]['name']
         rule_value = float(rule_dict['rule_parameters'][0]['value'])
 
@@ -43,7 +43,7 @@ class _UpdateRule(object):
             raise ValueError("no rule with name {} exists".format(rule_name))
 
         if rule._PARENT_NAME != parent_name:
-            raise ValueError("expected rule's parent name {} for rule {}, not {}.".format(
+            raise ValueError("expected rule {} for parameter {}, not {}.".format(
                 rule._PARENT_NAME,
                 rule_name,
                 parent_name
