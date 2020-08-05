@@ -9,6 +9,7 @@ from functools import reduce
 
 from ..external import six
 
+from ..deployment.autoscaling import Autoscaling
 from ..deployment.update.rules import _UpdateRule
 from ..deployment import DeployedModel
 from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
@@ -133,7 +134,10 @@ class Endpoint(object):
 
     def update(self, model_reference, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
         if not isinstance(strategy, _UpdateStrategy):
-            raise TypeError("strategy must be an object from verta.deployment.strategies")
+            raise TypeError("`strategy` must be an object from verta.deployment.strategies")
+
+        if autoscaling and not isinstance(autoscaling, Autoscaling):
+            raise TypeError("`autoscaling` must be an Autoscaling object")
 
         if env_vars:
             env_vars_err_msg = "`env_vars` must be dictionary of str keys and str values"
@@ -148,7 +152,7 @@ class Endpoint(object):
         return self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
 
     def _update_from_build(self, build_id, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
-        update_body = self._form_update_body(resources, strategy, env_vars, build_id)
+        update_body = self._form_update_body(resources, strategy, autoscaling, env_vars, build_id)
 
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
@@ -302,14 +306,18 @@ class Endpoint(object):
             return None
         return tokens[0]['creator_request']['value']
 
-
-    def _form_update_body(self, resources, strategy, env_vars, build_id):
+    def _form_update_body(self, resources, strategy, autoscaling, env_vars, build_id):
         update_body = strategy._as_build_update_req_body(build_id)
         if resources:
             update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
                                               map(lambda resource: resource.to_dict(), resources))
+
+        if autoscaling:
+            update_body["autoscaling"] = autoscaling._as_dict()
+
         if env_vars:
             update_body["env"] = list(map(lambda env_var: {"name": env_var, "value": env_vars[env_var]}, env_vars))
+
         # prepare body for update request
         return update_body
       
@@ -321,3 +329,15 @@ class Endpoint(object):
         access_token = self.get_access_token()
         url = "{}://{}/api/v1/predict{}".format(self._conn.scheme, self._conn.socket, self.path)
         return DeployedModel.from_url(url, access_token)
+
+    def get_update_status(self):
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/status".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_stage()
+        )
+        response = _utils.make_request("GET", url, self._conn)
+        _utils.raise_for_http_error(response)
+        return response.json()
