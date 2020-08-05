@@ -45,3 +45,36 @@ class DatasetVersion(entity._ModelDBEntity):
         # msg = _DatasetVersionService.DatasetVersion(
         #     dataset_blob=dataset_blob._as_proto().dataset
         # )
+
+    def set_description(self, desc):
+        raise NotImplementedError
+
+    def get_description(self):
+        raise NotImplementedError
+
+    def add_tag(self, tag):
+        raise NotImplementedError
+
+    def add_tags(self, tags):
+        raise NotImplementedError
+
+    def get_tags(self):
+        raise NotImplementedError
+
+    def del_tag(self, tag):
+        raise NotImplementedError
+
+    def add_attribute(self, key, value):
+        raise NotImplementedError
+
+    def add_attributes(self, attrs):
+        raise NotImplementedError
+
+    def get_attribute(self, key):
+        raise NotImplementedError
+
+    def get_attributes(self):
+        raise NotImplementedError
+
+    def del_attribute(self, key):
+        raise NotImplementedError
