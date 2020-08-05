@@ -44,7 +44,8 @@ from .. import deployment
 from .. import utils
 
 
-_CUSTOM_MODULES_DIR = "/app/custom_modules/"  # location in DeploymentService model container
+# location in DeploymentService model container
+_CUSTOM_MODULES_DIR = os.environ.get('VERTA_CUSTOM_MODULES_DIR', "/app/custom_modules/")
 
 _MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
 

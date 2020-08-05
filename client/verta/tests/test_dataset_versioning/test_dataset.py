@@ -64,6 +64,24 @@ class TestDataset:
         # Deleting non-existing key:
         dataset.del_attribute("non-existing")
 
+    def test_tags(self, client, created_datasets):
+        name = verta._internal_utils._utils.generate_default_name()
+        dataset = client.set_dataset2(name, tags=["tag1", "tag2"])
+        created_datasets.append(dataset)
+        assert dataset.get_tags() == ["tag1", "tag2"]
+
+        dataset.add_tag("tag3")
+        assert dataset.get_tags() == ["tag1", "tag2", "tag3"]
+
+        dataset.add_tags(["tag1", "tag4", "tag5"])
+        assert dataset.get_tags() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
+
+        dataset.del_tag("tag2")
+        assert dataset.get_tags() == ["tag1", "tag3", "tag4", "tag5"]
+
+        dataset.del_tag("tag100") # delete non-existing tag does not error out
+
+
     def test_repr(self, client, created_datasets):
         description = "this is a cool dataset"
         tags = [u"tag1", u"tag2"]

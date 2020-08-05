@@ -259,7 +259,8 @@ class TestEndpoint:
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
 
         strategy.add_rule(AverageLatencyThresholdRule(0.8))
-        updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMilli(500), Memory("500Mi"), ] )
+        updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMilli(500), Memory("500Mi"), ],
+                                         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
         # Check that a new build is added:
         new_build_ids = get_build_ids(updated_status)
@@ -273,7 +274,6 @@ class TestEndpoint:
 
         assert token is None
 
-
     def test_form_update_body(self):
         endpoint = Endpoint(None, None, None, None)
         resources = [
@@ -281,9 +281,14 @@ class TestEndpoint:
             Memory("500Mi"),
         ]
 
-        parameter_json = endpoint._form_update_body(resources, DirectUpdateStrategy(), 0)
-        assert parameter_json == {'build_id': 0, 'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
-        
+        env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"}
+
+        parameter_json = endpoint._form_update_body(resources, DirectUpdateStrategy(), env_vars, 0)
+        assert parameter_json == {'build_id': 0, 'env': [{"name":'CUDA_VISIBLE_DEVICES', 'value':'1,2'},
+                                                         {"name":'VERTA_HOST', 'value':'app.verta.ai'}],
+                                  'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
+
+
     def test_get_deployed_model(self, client, experiment_run, model_for_deployment, created_endpoints):
         model = model_for_deployment['model'].fit(
             model_for_deployment['train_features'],

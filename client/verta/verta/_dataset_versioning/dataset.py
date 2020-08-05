@@ -2,17 +2,19 @@
 
 from __future__ import print_function
 
-from .._tracking import entity
-
-from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.modeldb import CommonService_pb2 as _CommonService
-
 from ..external import six
 
+from .._protos.public.common import CommonService_pb2 as _CommonCommonService
+from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
+from .._protos.public.modeldb import CommonService_pb2 as _CommonService
+
+from .._tracking import entity
 from .._internal_utils import (
     _utils,
 )
+from .. import dataset
+
+from .dataset_version import DatasetVersion
 
 
 class Dataset(entity._ModelDBEntity):
@@ -158,22 +160,66 @@ class Dataset(entity._ModelDBEntity):
         return self._msg.description
 
     def add_tag(self, tag):
-        raise NotImplementedError
+        """
+        Adds a tag to this Dataset.
+
+        Parameters
+        ----------
+        tag : str
+            Tag to add.
+
+        """
+        if not isinstance(tag, six.string_types):
+            raise TypeError("`tag` must be a string")
+
+        self.add_tags([tag])
 
     def add_tags(self, tags):
         """
+        Adds multiple tags to this Dataset.
+
         Parameters
         ----------
         tags : list of str
+            Tags to add.
 
         """
-        raise NotImplementedError
+        tags = _utils.as_list_of_str(tags)
+        Message = _DatasetService.AddDatasetTags
+        msg = Message(id=self.id, tags=tags)
+        endpoint = "/api/v1/modeldb/dataset/addDatasetTags"
+        self._update(msg, Message.Response, endpoint, "POST")
 
     def get_tags(self):
-        raise NotImplementedError
+        """
+        Gets all tags from this Dataset.
+
+        Returns
+        -------
+        list of str
+            All tags.
+
+        """
+        self._refresh_cache()
+        return self._msg.tags
 
     def del_tag(self, tag):
-        raise NotImplementedError
+        """
+        Deletes a tag from this Dataset.
+
+        Parameters
+        ----------
+        tag : str
+            Tag to delete.
+
+        """
+        if not isinstance(tag, six.string_types):
+            raise TypeError("`tag` must be a string")
+
+        Message = _DatasetService.DeleteDatasetTags
+        msg = Message(id=self.id, tags=[tag])
+        endpoint = "/api/v1/modeldb/dataset/deleteDatasetTags"
+        self._update(msg, Message.Response, endpoint, "DELETE")
 
     def add_attribute(self, key, value):
         """
@@ -267,11 +313,19 @@ class Dataset(entity._ModelDBEntity):
         endpoint = "/api/v1/modeldb/dataset/deleteDatasetAttributes"
         self._update(msg, Message.Response, endpoint, "DELETE")
 
-    def create_s3_version(self):  # TODO: same params as S3.__init__()
+    def create_s3_version(self, paths, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
         raise NotImplementedError
-        # TODO: create S3 blob and pass as self._create(dataset_blob=blob)
 
-    def create_path_version(self):  # TODO: same params as Path.__init__()
+    def create_path_version(self, paths, base_path=None, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
+        dataset_blob = dataset.Path(paths=paths, base_path=base_path)
+        return DatasetVersion._create(
+            self._conn, self._conf,
+            dataset=self, dataset_blob=dataset_blob,
+            desc=desc, tags=tags, attrs=attrs,
+            time_logged=date_created, time_updated=date_created,
+        )
+
+    def get_version(self, id):
         raise NotImplementedError
 
     def get_latest_version(self):
