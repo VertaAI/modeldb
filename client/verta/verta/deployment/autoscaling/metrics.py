@@ -8,10 +8,11 @@ from ...external import six
 @six.add_metaclass(abc.ABCMeta)
 class _AutoscalingMetric(object):
     _METRIC_ID = 0
+    _PARENT_NAME = ""
     _NAME = ""
 
     def __init__(self, value):
-        self._value = value
+        self._value = str(value)
 
     def _as_dict(self):
         return {
