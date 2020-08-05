@@ -5,8 +5,8 @@ from __future__ import print_function
 from ..external import six
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from .._protos.public.modeldb import CommonService_pb2 as _CommonService
+from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 
 from .._tracking import entity
 from .._internal_utils import (
