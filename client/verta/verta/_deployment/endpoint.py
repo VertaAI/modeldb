@@ -176,7 +176,7 @@ class Endpoint(object):
         elif isinstance(model_reference, experimentrun.ExperimentRun):
             response = _utils.make_request("POST", url, self._conn, json={"run_id": model_reference.id})
         else:
-            raise TypeError("model_reference must be an ExperimentRun or RegisteredModelVersion")
+            raise TypeError("`model_reference` must be an ExperimentRun or RegisteredModelVersion")
 
         _utils.raise_for_http_error(response)
         return response.json()["id"]
