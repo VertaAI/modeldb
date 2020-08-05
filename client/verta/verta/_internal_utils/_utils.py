@@ -40,9 +40,6 @@ _VALID_FLAT_KEY_CHARS = set(string.ascii_letters + string.digits + '_-/')
 THREAD_LOCALS = threading.local()
 THREAD_LOCALS.active_experiment_run = None
 
-# location in DeploymentService model container
-SAVED_MODEL_DIR = os.environ.get('VERTA_SAVED_MODEL_DIR', "/app/tf_saved_model/")
-
 # TODO: remove this in favor of _config_utils when #635 is merged
 HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
 
