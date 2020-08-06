@@ -253,6 +253,7 @@ public interface ModelDBConstants {
   String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
   String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
   String PROPERTY_NAME = "property_name";
+  String DATASET_VERSION_BASE_PATH_SPLITTER = "/dataset_version_base_path_splitter/";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second
