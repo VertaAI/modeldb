@@ -54,7 +54,7 @@ class TestCreate:
 
         model_version = registered_model.get_version(name=version_name)
         assert model_version.name in result.output
-        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS
+        assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
         assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
 
@@ -390,7 +390,7 @@ class TestUpdate:
         assert not result.exception
 
         model_version = registered_model.get_version(name=version_name)
-        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS
+        assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
         assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
 
@@ -499,8 +499,8 @@ class TestUpdate:
 
         # Check that the model and artifact are updated:
         model_version = registered_model.get_version(name=version_name)
-        assert model_version.get_artifact("file").getvalue() != FILE_CONTENTS
-        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS_2
+        assert model_version.get_artifact("file").read() != FILE_CONTENTS
+        assert model_version.get_artifact("file").read() == FILE_CONTENTS_2
         assert pickle.dumps(model_version.get_model()) != CLASSIFIER_CONTENTS
         assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS_2
 
