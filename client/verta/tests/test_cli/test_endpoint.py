@@ -1,8 +1,12 @@
 from click.testing import CliRunner
 
+import pytest
+import time
+
 from verta import Client
 from verta._cli import cli
 from verta._internal_utils import _utils
+from verta.environment import Python
 
 from ..utils import get_build_ids
 
@@ -74,9 +78,9 @@ class TestUpdate:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        canary_rule = '{"rule_id": 1001, "rule_parameters": \
+        canary_rule = '{"rule": "latency", "rule_parameters": \
         [{"name": "latency_avg", "value": "0.8"}]}'
-        canary_rule_2 = '{"rule_id": 1002, "rule_parameters": \
+        canary_rule_2 = '{"rule": "error_rate", "rule_parameters": \
         [{"name": "error_rate", "value": "0.8"}]}'
 
         runner = CliRunner()
@@ -129,7 +133,7 @@ class TestUpdate:
         endpoint = client.set_endpoint(endpoint_name)
         created_endpoints.append(endpoint)
 
-        canary_rule = '{"rule_id": 1001, "rule_parameters": \
+        canary_rule = '{"rule": "latency", "rule_parameters": \
         [{"name": "latency_avg", "value": "0.8"}]}'
 
         # Extra parameters provided:
@@ -198,3 +202,33 @@ class TestUpdate:
         )
         assert result.exception
         assert error_msg_3 in str(result.exception)
+        
+    def test_update_from_version(self, client, model_version, created_endpoints):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', path, '--model-version-id', model_version.id, "--strategy",
+             "direct"],
+        )
+        assert not result.exception
+
+        while not endpoint.get_status()['status'] == "active":
+            time.sleep(3)
+
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
