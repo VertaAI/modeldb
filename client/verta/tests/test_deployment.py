@@ -1018,16 +1018,10 @@ class TestGitOps:
 
         # can be loaded as YAML
         with open(filepath, 'rb') as f:
-            model_deployment, config_map = yaml.safe_load_all(f)
+            model_deployment = yaml.safe_load(f)
 
         assert model_deployment['kind'] == "ModelDeployment"
         assert model_deployment['metadata']['name'] == experiment_run.id
-
-        assert config_map['kind'] == "ConfigMap"
-        assert config_map['metadata']['name'] == "model--{}".format(experiment_run.id)
-
-        model_api = json.loads(config_map['data']['model_api.json'])
-        assert model_api == model_for_deployment['model_api'].to_dict()
 
     def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir):
         download_to_path = "context.tgz"
