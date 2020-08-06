@@ -200,9 +200,8 @@ class RegisteredModelVersion(_ModelDBEntity):
             raise ValueError("model already exists; consider setting overwrite=True")
 
         if isinstance(model, six.string_types):  # filepath
-            serialized_model = open(model, 'rb')  # file handle
-        else:
-            serialized_model, method, model_type = _artifact_utils.serialize_model(model)  # bytestream
+            model = open(model, 'rb')
+        serialized_model, method, model_type = _artifact_utils.serialize_model(model)
 
         try:
             extension = _artifact_utils.get_file_ext(serialized_model)
@@ -294,9 +293,8 @@ class RegisteredModelVersion(_ModelDBEntity):
         artifact_type = _CommonCommonService.ArtifactTypeEnum.BLOB
 
         if isinstance(artifact, six.string_types):  # filepath
-            artifact_stream = open(artifact, 'rb')  # file handle
-        else:
-            artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)  # bytestream
+            artifact = open(artifact, 'rb')
+        artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
         try:
             extension = _artifact_utils.get_file_ext(artifact_stream)
