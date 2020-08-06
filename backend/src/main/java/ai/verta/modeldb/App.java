@@ -205,8 +205,9 @@ public class App implements ApplicationContextAware {
       Map<String, Object> databasePropMap =
           (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
 
-      if (propertiesMap.containsKey(ModelDBConstants.LIQUIBASE_MIGRATION)
-          && (boolean) propertiesMap.get(ModelDBConstants.LIQUIBASE_MIGRATION)) {
+      boolean liquibaseMigration =
+          Boolean.parseBoolean(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION));
+      if (liquibaseMigration) {
         LOGGER.info("Liquibase validation starting");
 
         Map<String, Object> rDBPropMap =
@@ -245,7 +246,12 @@ public class App implements ApplicationContextAware {
             changeSetToRevertUntilTag);
 
         LOGGER.info("Liquibase validation stop");
-        return;
+
+        boolean runLiquibaseSeparate =
+            Boolean.parseBoolean(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE));
+        if (runLiquibaseSeparate) {
+          return;
+        }
       }
 
       // --------------- Start Initialize modelDB gRPC server --------------------------

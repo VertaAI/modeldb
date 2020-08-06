@@ -40,6 +40,7 @@ public interface ModelDBConstants {
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
   String LIQUIBASE_MIGRATION = "liquibaseMigration";
+  String RUN_LIQUIBASE_SEPARATE = "runLiquibaseSeparate";
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
