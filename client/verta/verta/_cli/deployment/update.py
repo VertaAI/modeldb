@@ -29,7 +29,7 @@ def update():
 def update_endpoint(path, run_id, model_version_id, filename, strategy, canary_rule, canary_interval, canary_step, env_vars, workspace):
     """Update an endpoint.
     """
-    non_file_options = (path, run_id, model_version_id, strategy, canary_rule, canary_interval, canary_step, env_vars)
+    non_file_options = (run_id, model_version_id, strategy, canary_rule, canary_interval, canary_step, env_vars)
 
     if filename and any(non_file_options):
         raise click.BadParameter("--filename can only be used alongside --workspace.")
