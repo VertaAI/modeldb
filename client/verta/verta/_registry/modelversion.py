@@ -259,7 +259,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._msg.ClearField("model")
         self._update()
 
-    def log_artifact(self, key, asset, overwrite=False):
+    def log_artifact(self, key, artifact, overwrite=False):
         """
         Logs an artifact to this Model Version.
 
@@ -284,8 +284,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         same_key_ind = -1
 
         for i in range(len(self._msg.artifacts)):
-            artifact = self._msg.artifacts[i]
-            if artifact.key == key:
+            if self._msg.artifacts[i].key == key:
                 if not overwrite:
                     raise ValueError("The key has been set; consider setting overwrite=True")
                 else:
@@ -294,10 +293,10 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         artifact_type = _CommonCommonService.ArtifactTypeEnum.BLOB
 
-        if isinstance(asset, six.string_types):  # filepath
-            artifact_stream = open(asset, 'rb')  # file handle
+        if isinstance(artifact, six.string_types):  # filepath
+            artifact_stream = open(artifact, 'rb')  # file handle
         else:
-            artifact_stream, method = _artifact_utils.ensure_bytestream(asset)  # bytestream
+            artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)  # bytestream
 
         try:
             extension = _artifact_utils.get_file_ext(artifact_stream)
