@@ -75,4 +75,4 @@ def update_endpoint(path, run_id, model_version_id, strategy, canary_rule, canar
     else:
         env_vars_dict = None
 
-    endpoint.update(run, strategy_obj, env_vars=env_vars_dict)
+    endpoint.update(model_reference, strategy_obj, env_vars=env_vars_dict)
