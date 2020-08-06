@@ -62,8 +62,5 @@ def update_endpoint(path, run_id, strategy, canary_rule, canary_interval, canary
         env_vars_dict = json.loads(env_vars)
     else:
         env_vars_dict = None
-    try:
-        endpoint.update(run, strategy_obj, env_vars=env_vars_dict)
-    except TypeError as ex:
-        raise click.BadParameter(str(ex))
 
+    endpoint.update(run, strategy_obj, env_vars=env_vars_dict)
