@@ -414,3 +414,33 @@ class TestEndpoint:
             else:
                 assert metric["parameters"][0]["name"] == "memory_target"
                 assert metric["parameters"][0]["value"] == "0.7"
+
+    def test_update_twice(self, client, registered_model, created_endpoints):
+        np = pytest.importorskip("numpy")
+        json = pytest.importorskip("json")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        env = Python(requirements=["scikit-learn"])
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version = registered_model.create_version("first-version")
+        model_version.log_model(classifier)
+        model_version.log_environment(env)
+
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        new_model_version = registered_model.create_version("second-version")
+        new_model_version.log_model(new_classifier)
+        new_model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+
+        # updating endpoint
+        endpoint.update(new_model_version, DirectUpdateStrategy(), wait=True)
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), new_classifier.predict(test_data))

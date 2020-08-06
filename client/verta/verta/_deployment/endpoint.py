@@ -175,9 +175,16 @@ class Endpoint(object):
                 print(".", end='')
                 sys.stdout.flush()
                 time.sleep(5)
-            print()
+
             if self.get_status()['status'] == "error":
+                print()
                 raise RuntimeError("endpoint update failed")
+
+            while len(self.get_status()['components']) > 1:
+                print(".", end='')
+                sys.stdout.flush()
+                time.sleep(5)
+            print()
 
         return self.get_status()
 
