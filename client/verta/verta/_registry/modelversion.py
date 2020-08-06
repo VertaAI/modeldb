@@ -200,9 +200,8 @@ class RegisteredModelVersion(_ModelDBEntity):
             raise ValueError("model already exists; consider setting overwrite=True")
 
         if isinstance(model, six.string_types):  # filepath
-            serialized_model = open(model, 'rb')  # file handle
-        else:
-            serialized_model, method, model_type = _artifact_utils.serialize_model(model)  # bytestream
+            model = open(model, 'rb')
+        serialized_model, method, model_type = _artifact_utils.serialize_model(model)
 
         try:
             extension = _artifact_utils.get_file_ext(serialized_model)
@@ -259,7 +258,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._msg.ClearField("model")
         self._update()
 
-    def log_artifact(self, key, asset, overwrite=False):
+    def log_artifact(self, key, artifact, overwrite=False):
         """
         Logs an artifact to this Model Version.
 
@@ -284,8 +283,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         same_key_ind = -1
 
         for i in range(len(self._msg.artifacts)):
-            artifact = self._msg.artifacts[i]
-            if artifact.key == key:
+            if self._msg.artifacts[i].key == key:
                 if not overwrite:
                     raise ValueError("The key has been set; consider setting overwrite=True")
                 else:
@@ -294,10 +292,9 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         artifact_type = _CommonCommonService.ArtifactTypeEnum.BLOB
 
-        if isinstance(asset, six.string_types):  # filepath
-            artifact_stream = open(asset, 'rb')  # file handle
-        else:
-            artifact_stream, method = _artifact_utils.ensure_bytestream(asset)  # bytestream
+        if isinstance(artifact, six.string_types):  # filepath
+            artifact = open(artifact, 'rb')
+        artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
         try:
             extension = _artifact_utils.get_file_ext(artifact_stream)
