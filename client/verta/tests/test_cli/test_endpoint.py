@@ -232,3 +232,35 @@ class TestUpdate:
 
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+
+    def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        autoscaling_option =  '{"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0}'
+        cpu_metric = '{"metric": "cpu_utilization", "parameters": [{"name": "cpu_target", "value": "0.5"}]}'
+        memory_metric = '{"metric": "memory_utilization", "parameters": [{"name": "memory_target", "value": "0.5"}]}'
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', path, '--autoscaling', autoscaling_option,
+             "--autoscaling-metric", cpu_metric, "--autoscaling-metric", memory_metric, "--strategy", "direct"],
+        )
+        assert not result.exception
+
+        autoscaling_metrics = endpoint.get_update_status()["update_request"]["autoscaling"]["metrics"]
+        assert len(autoscaling_metrics) == 2
+        for metric in autoscaling_metrics:
+            assert metric["metric_id"] in [1001, 1002, 1003]
+
+            if metric["metric_id"] == 1001:
+                assert metric["parameters"][0]["name"] == "cpu_target"
+                assert metric["parameters"][0]["value"] == "0.5"
+            else:
+                assert metric["parameters"][0]["name"] == "memory_target"
+                assert metric["parameters"][0]["value"] == "0.7"
