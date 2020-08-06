@@ -121,6 +121,7 @@
 		</createTable>
 	</changeSet>
 	<changeSet author="raviS" id="create-config_blob">
+		<validCheckSum>8:721ea58e911f9f9a84660a8a3754a739</validCheckSum>
 		<preConditions onFail="MARK_RAN">
 			<not>
 				<tableExists tableName="config_blob" />
@@ -208,6 +209,7 @@
 		</createTable>
 	</changeSet>
 	<changeSet author="lezhevg" id="create-python_environment_requirements">
+		<validCheckSum>8:abc5095661f43e44672277b961d25955</validCheckSum>
 		<preConditions onFail="MARK_RAN">
 			<not>
 				<tableExists

@@ -447,6 +447,7 @@
     </changeSet>
 
     <changeSet id="createTempTableWithNewKeysOfArtifact_part" author="anandJ">
+    	<validCheckSum>8:4480e7dd6d4557d92f09f69b08d9ad29</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="artifact_part_temp"/>
