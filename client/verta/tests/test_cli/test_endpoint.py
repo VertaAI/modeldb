@@ -197,4 +197,4 @@ class TestUpdate:
              '-c', canary_rule, '-i', 1, "--canary-step", 0.3, '--env-vars', '{"VERTA_HOST": 3}'],
         )
         assert result.exception
-        assert error_msg_3 in result.output
+        assert error_msg_3 in str(result.exception)
