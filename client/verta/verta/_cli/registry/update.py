@@ -74,10 +74,10 @@ def update_model_version(model_name, version_name, label, model, artifact, works
                 raise click.BadParameter("key \"{}\" already exists; consider using --overwrite flag".format(key))
 
         for (key, path) in artifact:
-            model_version.log_artifact(key, path, overwrite)
+            model_version.log_artifact(key, path, overwrite=overwrite)
 
     if label:
         model_version.add_labels(label)
 
     if model:
-        model_version.log_model(model, overwrite)
+        model_version.log_model(model, overwrite=overwrite)
