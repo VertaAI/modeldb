@@ -18,6 +18,7 @@ def update():
 @click.argument("path", nargs=1, required=True)
 @click.option("--run-id", "-r", help="Experiment Run to deploy. Cannot be used alongside --model-version-id.")
 @click.option("--model-version-id", "-m", help="Model Version to deploy. Cannot be used alongside --run-id.")
+@click.option("--filename", "-f", help="Path to JSON or YAML config file. Can only be used alongside --workspace.")
 @click.option("--strategy", "-s", type=click.Choice(['direct', 'canary'], case_sensitive=False), help="Strategy to use to roll out new deployment.")
 @click.option("--canary-rule", "-c", multiple=True, help="Rule to use for canary deployment. Can only be used alongside --strategy=canary.")
 @click.option("--canary-interval", "-i", type=click.IntRange(min=0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary.")
@@ -25,9 +26,14 @@ def update():
 @click.option("--env-vars", type=str, help="Environment variables to set for the model build. The format is --env-vars '{\"VERTA_HOST\": \"app.verta.ai\"}'.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 # TODO: more options
-def update_endpoint(path, run_id, model_version_id, strategy, canary_rule, canary_interval, canary_step, env_vars, workspace):
+def update_endpoint(path, run_id, model_version_id, filename, strategy, canary_rule, canary_interval, canary_step, env_vars, workspace):
     """Update an endpoint.
     """
+    non_file_options = (path, run_id, model_version_id, strategy, canary_rule, canary_interval, canary_step, env_vars)
+
+    if filename and any(non_file_options):
+        raise click.BadParameter("--filename can only be used alongside --workspace.")
+
     if canary_step == 0.0:
         raise click.BadParameter("--canary-step must be positive.")
 
@@ -46,6 +52,10 @@ def update_endpoint(path, run_id, model_version_id, strategy, canary_rule, canar
         endpoint = client.get_endpoint(path=path, workspace=workspace)
     except ValueError:
         raise click.BadParameter("endpoint with path {} not found".format(path))
+
+    if filename:
+        endpoint.update_from_config(filename)
+        return
 
     if run_id and model_version_id:
         raise click.BadParameter("cannot provide both --run-id and --model-version-id.")
@@ -75,4 +85,4 @@ def update_endpoint(path, run_id, model_version_id, strategy, canary_rule, canar
     else:
         env_vars_dict = None
 
-    endpoint.update(run, strategy_obj, env_vars=env_vars_dict)
+    endpoint.update(model_reference, strategy_obj, env_vars=env_vars_dict)
