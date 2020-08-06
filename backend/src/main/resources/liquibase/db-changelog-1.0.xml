@@ -455,7 +455,7 @@
         <createTable tableName="artifact_part_temp">
             <column name="artifact_id" type="int8">
                 <constraints primaryKey="true" nullable="false"
-                             foreignKeyName="artifact_id" referencedTableName="artifact"
+                             foreignKeyName="artifact_id_tmp" referencedTableName="artifact"
                              referencedColumnNames="id"/>
             </column>
             <column name="part_number" type="int8">

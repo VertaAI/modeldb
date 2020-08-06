@@ -139,14 +139,14 @@
 			<column name="hyperparameter_set_config_blob_hash"
 				type="varchar(64)">
 				<constraints
-					foreignKeyName="fk_hyperparameter_set_config_blob"
+					foreignKeyName="fk_cb_hyperparameter_set_config_blob"
 					referencedTableName="hyperparameter_set_config_blob"
 					referencedColumnNames="blob_hash" />
 			</column>
 			<column name="hyperparameter_element_config_blob_hash"
 				type="varchar(64)">
 				<constraints
-					foreignKeyName="fk_hyperparameter_element_config_blob"
+					foreignKeyName="fk_cb_hyperparameter_element_config_blob"
 					referencedTableName="hyperparameter_element_config_blob"
 					referencedColumnNames="blob_hash" />
 			</column>
@@ -216,7 +216,7 @@
 		</preConditions>
 		<createTable tableName="python_environment_requirements_blob">
 			<column name="python_environment_blob_hash" type="varchar(64)">
-				<constraints foreignKeyName="fk_python_environment_blob"
+				<constraints foreignKeyName="fk_perb_python_environment_blob"
 					primaryKey="true" nullable="false"
 					referencedTableName="python_environment_blob"
 					referencedColumnNames="blob_hash" />
