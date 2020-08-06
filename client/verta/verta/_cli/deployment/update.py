@@ -83,7 +83,7 @@ def update_endpoint(path, run_id, model_version_id, strategy, canary_rule, canar
     if autoscaling:
         autoscaling_obj = Autoscaling._from_dict(json.loads(autoscaling))
         for metric in autoscaling_metrics:
-            autoscaling_obj.add_metric(json.loads(metric))
+            autoscaling_obj.add_metric(_AutoscalingMetric._from_dict(json.loads(metric)))
     else:
         autoscaling_obj = None
 

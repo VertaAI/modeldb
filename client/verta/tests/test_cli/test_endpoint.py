@@ -241,14 +241,14 @@ class TestUpdate:
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
 
-        autoscaling_option =  '{"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0}'
+        autoscaling_option = '{"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0}'
         cpu_metric = '{"metric": "cpu_utilization", "parameters": [{"name": "cpu_target", "value": "0.5"}]}'
         memory_metric = '{"metric": "memory_utilization", "parameters": [{"name": "memory_target", "value": "0.5"}]}'
 
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['deployment', 'update', 'endpoint', path, '--autoscaling', autoscaling_option,
+            ['deployment', 'update', 'endpoint', path, '--run-id', experiment_run.id, '--autoscaling', autoscaling_option,
              "--autoscaling-metrics", cpu_metric, "--autoscaling-metrics", memory_metric, "--strategy", "direct"],
         )
         assert not result.exception
