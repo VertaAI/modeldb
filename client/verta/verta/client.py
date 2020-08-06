@@ -361,7 +361,7 @@ class Client(object):
         else:
             self._ctx.proj = Project._get_or_create_by_name(self._conn, name,
                                                         lambda name: Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                        lambda name: Project._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
+                                                        lambda name: Project._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
 
         return self._ctx.proj
 
@@ -435,7 +435,7 @@ class Client(object):
 
             self._ctx.expt = Experiment._get_or_create_by_name(self._conn, name,
                                                             lambda name: Experiment._get_by_name(self._conn, self._conf, name, self._ctx.proj.id),
-                                                            lambda name: Experiment._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs))
+                                                            lambda name: Experiment._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs))
 
         return self._ctx.expt
 
@@ -506,7 +506,7 @@ class Client(object):
 
             self._ctx.expt_run = ExperimentRun._get_or_create_by_name(self._conn, name,
                                                                     lambda name: ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id),
-                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created))
+                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created))
 
         return self._ctx.expt_run
 
@@ -546,7 +546,7 @@ class Client(object):
                 workspace_str = "workspace {}".format(workspace)
 
             try:
-                repo = _repository.Repository._create(self._conn, name, workspace)
+                repo = _repository.Repository._create(self._conn, name=name, workspace=workspace)
             except requests.HTTPError as e:
                 if e.response.status_code == 403:  # cannot create in other workspace
                     repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
@@ -813,7 +813,7 @@ class Client(object):
         else:
             registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
                                                                                 lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                                                lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=labels, public_within_org=public_within_org))
+                                                                                lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org))
 
         return registered_model
 
@@ -995,7 +995,7 @@ class Client(object):
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
-        self._ctx.proj = Project._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs,
+        self._ctx.proj = Project._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs,
                         public_within_org=public_within_org)
         return self._ctx.proj
 
@@ -1033,7 +1033,7 @@ class Client(object):
         if self._ctx.proj is None:
             self.set_project()
 
-        self._ctx.expt = Experiment._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs)
+        self._ctx.expt = Experiment._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs)
 
         return self._ctx.expt
 
@@ -1071,7 +1071,7 @@ class Client(object):
         if self._ctx.expt is None:
             self.set_experiment()
 
-        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created)
+        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created)
 
         return self._ctx.expt_run
 
@@ -1116,7 +1116,7 @@ class Client(object):
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
 
-        self._ctx.registered_model = RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=labels, public_within_org=public_within_org)
+        self._ctx.registered_model = RegisteredModel._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org)
 
         return self._ctx.registered_model
 
@@ -1212,7 +1212,7 @@ class Client(object):
         else:
             dataset = Dataset._get_or_create_by_name(self._conn, name,
                                                         lambda name: Dataset._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                        lambda name: Dataset._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org))
+                                                        lambda name: Dataset._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org))
 
         return dataset
 
@@ -1261,7 +1261,7 @@ class Client(object):
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
-        return Dataset._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs,
+        return Dataset._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs,
                                time_created=time_created, public_within_org=public_within_org)
 
     def _get_dataset2(self, name=None, workspace=None, id=None):
