@@ -249,7 +249,7 @@ class TestUpdate:
         result = runner.invoke(
             cli,
             ['deployment', 'update', 'endpoint', path, '--autoscaling', autoscaling_option,
-             "--autoscaling-metric", cpu_metric, "--autoscaling-metric", memory_metric, "--strategy", "direct"],
+             "--autoscaling-metrics", cpu_metric, "--autoscaling-metrics", memory_metric, "--strategy", "direct"],
         )
         assert not result.exception
 
