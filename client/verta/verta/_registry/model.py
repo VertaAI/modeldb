@@ -127,14 +127,14 @@ class RegisteredModel(_ModelDBEntity):
         return RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, date_created=time_created)
 
 
-    def create_version_from_run(self, run_id, name):
+    def create_version_from_run(self, run_id, name=None):
         """
         Creates a model registry entry based on an Experiment Run.
 
         Parameters
         ----------
         run_id : str
-        name : str
+        name : str, optional
 
         Returns
         -------
