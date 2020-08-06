@@ -63,10 +63,16 @@ def update_endpoint(path, run_id, model_version_id, strategy, canary_rule, canar
         raise click.BadParameter("must provide either --model-version-id or --run-id.")
 
     if strategy == 'direct':
-        endpoint.update(model_reference, DirectUpdateStrategy())
+        strategy_obj = DirectUpdateStrategy()
     else:
         # strategy is canary
         strategy_obj = CanaryUpdateStrategy(canary_interval, canary_step)
         for rule in canary_rule:
             strategy_obj.add_rule(_UpdateRule._from_dict(json.loads(rule)))
-        endpoint.update(model_reference, strategy_obj)
+
+    if env_vars:
+        env_vars_dict = json.loads(env_vars)
+    else:
+        env_vars_dict = None
+
+    endpoint.update(run, strategy_obj, env_vars=env_vars_dict)
