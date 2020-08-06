@@ -657,6 +657,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             Absolute path where Docker context was downloaded to. Matches `download_to_path`.
 
         """
+        self._refresh_cache()
         endpoint = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/dockercontext".format(
             self._conn.scheme,
             self._conn.socket,
