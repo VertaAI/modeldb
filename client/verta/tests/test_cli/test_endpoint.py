@@ -2,6 +2,7 @@ from click.testing import CliRunner
 
 import pytest
 import time
+import json
 
 from verta import Client
 from verta._cli import cli
@@ -243,7 +244,7 @@ class TestUpdate:
 
         autoscaling_option = '{"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0}'
         cpu_metric = '{"metric": "cpu_utilization", "parameters": [{"name": "cpu_target", "value": "0.5"}]}'
-        memory_metric = '{"metric": "memory_utilization", "parameters": [{"name": "memory_target", "value": "0.5"}]}'
+        memory_metric = '{"metric": "memory_utilization", "parameters": [{"name": "memory_target", "value": "0.7"}]}'
 
         runner = CliRunner()
         result = runner.invoke(
@@ -253,7 +254,12 @@ class TestUpdate:
         )
         assert not result.exception
 
-        autoscaling_metrics = endpoint.get_update_status()["update_request"]["autoscaling"]["metrics"]
+        autoscaling_parameters = endpoint.get_update_status()["update_request"]["autoscaling"]
+        autoscaling_quantities = autoscaling_parameters["quantities"]
+
+        assert autoscaling_quantities == json.loads(autoscaling_option)
+
+        autoscaling_metrics = autoscaling_parameters["metrics"]
         assert len(autoscaling_metrics) == 2
         for metric in autoscaling_metrics:
             assert metric["metric_id"] in [1001, 1002, 1003]

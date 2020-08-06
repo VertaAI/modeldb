@@ -24,7 +24,7 @@ def update():
 @click.option("--canary-rule", "-c", multiple=True, help="Rule to use for canary deployment. Can only be used alongside --strategy=canary.")
 @click.option("--canary-interval", "-i", type=click.IntRange(min=0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary.")
 @click.option("--canary-step", type=click.FloatRange(min=0.0, max=1.0), help="Ratio of deployment to roll out per interval. Can only be used alongside --strategy=canary.")
-@click.option("--autoscaling", help="Parameters for autoscaling. Must also provide --autoscaling-metrics.")
+@click.option("--autoscaling", help="Quantities for autoscaling. Must also provide --autoscaling-metrics.")
 @click.option("--autoscaling-metrics", multiple=True, help="Metrics for autoscaling. Can only be used alongside --autoscaling.")
 @click.option("--env-vars", type=str, help="Environment variables to set for the model build. The format is --env-vars '{\"VERTA_HOST\": \"app.verta.ai\"}'.")
 @click.option("--workspace", "-w", help="Workspace to use.")
