@@ -93,3 +93,10 @@ class TestModel:
 
         registered_model.add_labels(["tag2", "tag4", "tag1", "tag5"]) # some tags already exist
         assert registered_model.get_labels() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
+
+    def test_description(self, client, created_registered_models):
+        desc = "description"
+        registered_model = client.get_or_create_registered_model()
+        created_registered_models.append(registered_model)
+        registered_model.set_description(desc)
+        assert desc == registered_model.get_description()

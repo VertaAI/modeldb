@@ -226,10 +226,15 @@ class RegisteredModel(_ModelDBEntity):
         return registered_model
 
     def set_description(self, desc):
-        raise NotImplementedError
+        if not desc:
+            raise ValueError("desc is not specified")
+        self._fetch_with_no_cache()
+        self._msg.description = desc
+        self._update()
 
     def get_description(self):
-        raise NotImplementedError
+        self._refresh_cache()
+        return self._msg.description
 
     def add_labels(self, labels):
         """
