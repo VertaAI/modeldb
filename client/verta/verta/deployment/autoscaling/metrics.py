@@ -24,6 +24,31 @@ class _AutoscalingMetric(object):
             }]
         }
 
+    @staticmethod
+    def _from_dict(metric_dict):
+        parent_name = metric_dict["metric"]
+        metric_name = metric_dict["parameters"][0]["name"]
+        metric_value = metric_dict["parameters"][0]["value"]
+
+        METRIC_SUBCLASSES = [CpuTarget, RequestsPerWorkerTarget, MemoryTarget]
+
+        for Subclass in METRIC_SUBCLASSES:
+            if metric_name == Subclass._NAME:
+                metric = Subclass(metric_value)
+                break
+        else:
+            # does not match any rule
+            raise ValueError("no metric with name {} exists".format(metric_name))
+
+        if metric._PARENT_NAME != parent_name:
+            raise ValueError("expected rule {} for parameter {}, not {}.".format(
+                metric._PARENT_NAME,
+                metric_name,
+                parent_name
+            ))
+
+        return metric
+
 
 class CpuTarget(_AutoscalingMetric):
     _METRIC_ID = 1001

@@ -20,6 +20,15 @@ class Autoscaling(object):
             "metrics": list(map(lambda metric: metric._as_dict(), self._metrics))
         }
 
+    @classmethod
+    def _from_dict(cls, autoscaling_dict):
+        return cls(
+            autoscaling_dict.get("min_replicas"),
+            autoscaling_dict.get("max_replicas"),
+            autoscaling_dict.get("min_scale"),
+            autoscaling_dict.get("max_scale"),
+        )
+
     def add_metric(self, metric):
         if not isinstance(metric, _AutoscalingMetric):
             raise TypeError("`metric` must be an object from verta.deployment.autoscaling.metrics")
