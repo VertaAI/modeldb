@@ -202,6 +202,52 @@ public class App implements ApplicationContextAware {
           ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
       // --------------- End reading properties --------------------------
 
+      Map<String, Object> databasePropMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
+
+      if (propertiesMap.containsKey(ModelDBConstants.LIQUIBASE_MIGRATION)
+          && (boolean) propertiesMap.get(ModelDBConstants.LIQUIBASE_MIGRATION)) {
+        LOGGER.info("Liquibase validation starting");
+
+        Map<String, Object> rDBPropMap =
+            (Map<String, Object>) databasePropMap.get("RdbConfiguration");
+
+        String databaseName = (String) rDBPropMap.get("RdbDatabaseName");
+        String rDBDriver = (String) rDBPropMap.get("RdbDriver");
+        String rDBUrl = (String) rDBPropMap.get("RdbUrl");
+        String configUsername = (String) rDBPropMap.get("RdbUsername");
+        String configPassword = (String) rDBPropMap.get("RdbPassword");
+        int timeout = 4;
+        if (databasePropMap.containsKey("timeout")) {
+          timeout = (Integer) databasePropMap.get("timeout");
+        }
+        String changeSetToRevertUntilTag =
+            (String) databasePropMap.get("changeSetToRevertUntilTag");
+
+        // Check DB is up or not
+        boolean dbConnectionStatus =
+            ModelDBHibernateUtil.checkDBConnection(
+                rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
+        if (!dbConnectionStatus) {
+          ModelDBHibernateUtil.checkDBConnectionInLoop(true);
+        }
+
+        ModelDBHibernateUtil.releaseLiquibaseLock(
+            rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
+
+        // Run tables liquibase migration
+        ModelDBHibernateUtil.createTablesLiquibaseMigration(
+            rDBDriver,
+            rDBUrl,
+            databaseName,
+            configUsername,
+            configPassword,
+            changeSetToRevertUntilTag);
+
+        LOGGER.info("Liquibase validation stop");
+        return;
+      }
+
       // --------------- Start Initialize modelDB gRPC server --------------------------
       Map<String, Object> grpcServerMap =
           (Map<String, Object>) propertiesMap.get(ModelDBConstants.GRPC_SERVER);
@@ -251,9 +297,6 @@ public class App implements ApplicationContextAware {
         authService = new AuthServiceUtils();
         roleService = new RoleServiceUtils(authService);
       }
-
-      Map<String, Object> databasePropMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
 
       HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
       serverBuilder.addService(healthStatusManager.getHealthService());

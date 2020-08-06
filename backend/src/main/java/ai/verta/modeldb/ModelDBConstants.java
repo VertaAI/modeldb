@@ -39,6 +39,7 @@ public interface ModelDBConstants {
   String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
+  String LIQUIBASE_MIGRATION = "liquibaseMigration";
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
