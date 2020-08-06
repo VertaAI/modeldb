@@ -574,56 +574,23 @@ public class BlobDAORdbImpl implements BlobDAO {
             repositoryEntity.getRepository_visibility());
         datasetVersionBuilder.addAllAttributes(getComponentResponse.getAttributesList());
         datasetVersionBuilder.setOwner(commit.getAuthor());
-        DatasetBlob.Builder dataset = blob.getDataset().toBuilder();
+        DatasetBlob dataset = blob.getDataset();
         PathDatasetVersionInfo.Builder builderPathDatasetVersion =
             PathDatasetVersionInfo.newBuilder();
         List<DatasetPartInfo> components;
         if (dataset.hasPath()) {
-          List<PathDatasetComponentBlob> componentBlobs = dataset.getPath().getComponentsList();
           builderPathDatasetVersion.setLocationType(
               PathLocationTypeEnum.PathLocationType.LOCAL_FILE_SYSTEM);
-          componentBlobs =
-              componentBlobs.stream()
-                  .map(
-                      componentBlob ->
-                          splitBasePathFromPath(builderPathDatasetVersion, componentBlob))
+          components =
+              dataset.getPath().getComponentsList().stream()
+                  .map(this::getPathInfo)
                   .collect(Collectors.toList());
-          dataset.setPath(
-              dataset
-                  .getPath()
-                  .toBuilder()
-                  .clearComponents()
-                  .addAllComponents(componentBlobs)
-                  .build());
-          components = componentBlobs.stream().map(this::getPathInfo).collect(Collectors.toList());
         } else if (dataset.hasS3()) {
-          List<S3DatasetComponentBlob> componentBlobs = dataset.getS3().getComponentsList();
           builderPathDatasetVersion.setLocationType(
               PathLocationTypeEnum.PathLocationType.S3_FILE_SYSTEM);
-          componentBlobs =
-              componentBlobs.stream()
-                  .map(
-                      componentBlob ->
-                          componentBlob
-                              .toBuilder()
-                              .setPath(
-                                  splitBasePathFromPath(
-                                      builderPathDatasetVersion, componentBlob.getPath()))
-                              .build())
-                  .collect(Collectors.toList());
-          dataset.setS3(
-              dataset
-                  .getS3()
-                  .toBuilder()
-                  .clearComponents()
-                  .addAllComponents(componentBlobs)
-                  .build());
           components =
-              componentBlobs.stream()
+              dataset.getS3().getComponentsList().stream()
                   .map(S3DatasetComponentBlob::getPath)
-                  .map(
-                      componentBlob ->
-                          splitBasePathFromPath(builderPathDatasetVersion, componentBlob))
                   .map(this::getPathInfo)
                   .collect(Collectors.toList());
         } else {
@@ -634,7 +601,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         sum.ifPresent(builderPathDatasetVersion::setSize);
         datasetVersionBuilder.setPathDatasetVersionInfo(
             builderPathDatasetVersion.addAllDatasetPartInfos(components));
-        datasetVersionBuilder.setDatasetBlob(dataset.build());
+        datasetVersionBuilder.setDatasetBlob(dataset);
         return datasetVersionBuilder.build();
       } else {
         throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
@@ -647,18 +614,6 @@ public class BlobDAORdbImpl implements BlobDAO {
         throw ex;
       }
     }
-  }
-
-  private PathDatasetComponentBlob splitBasePathFromPath(
-      PathDatasetVersionInfo.Builder builderPathDatasetVersion,
-      PathDatasetComponentBlob componentBlob) {
-    String path = componentBlob.getPath();
-    if (path.contains(ModelDBConstants.DATASET_VERSION_BASE_PATH_SPLITTER)) {
-      String[] pathArr = path.split(ModelDBConstants.DATASET_VERSION_BASE_PATH_SPLITTER);
-      builderPathDatasetVersion.setBasePath(pathArr[0]);
-      path = pathArr[1];
-    }
-    return componentBlob.toBuilder().setPath(path).build();
   }
 
   private DatasetPartInfo getPathInfo(PathDatasetComponentBlob pathDatasetComponentBlob) {

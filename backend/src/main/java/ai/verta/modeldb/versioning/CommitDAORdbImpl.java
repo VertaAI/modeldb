@@ -234,11 +234,12 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   private PathDatasetComponentBlob componentFromPart(DatasetPartInfo part, String basePath) {
+    String path = part.getPath();
+    if (basePath != null && !basePath.isEmpty()) {
+      path = basePath.endsWith("/") ? basePath + path : basePath + "/" + path;
+    }
     return PathDatasetComponentBlob.newBuilder()
-        .setPath(
-            basePath != null && !basePath.isEmpty()
-                ? basePath + ModelDBConstants.DATASET_VERSION_BASE_PATH_SPLITTER + part.getPath()
-                : part.getPath())
+        .setPath(path)
         .setSize(part.getSize())
         .setLastModifiedAtSource(part.getLastModifiedAtSource())
         .setMd5(part.getChecksum())
