@@ -37,6 +37,22 @@ Release Notes
      <>`__
 
 
+v0.14.16 (2020-08-06)
+---------------------
+
+New Features
+^^^^^^^^^^^^
+- `add URL to Project.__repr__()
+  <https://github.com/VertaAI/modeldb/pull/1160>`__
+- `add client.create_*() for core ModelDB entities
+  <https://github.com/VertaAI/modeldb/pull/1152>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `make model container paths configurable through environment variables
+  <https://github.com/VertaAI/modeldb/pull/1219>`__
+
+
 v0.14.15 (2020-07-28)
 ---------------------
 
