@@ -203,7 +203,7 @@ public class DatasetVersionTest {
             PathDatasetVersionInfo.newBuilder()
                 .setSize(2)
                 .setLocationType(PathLocationTypeEnum.PathLocationType.S3_FILE_SYSTEM)
-                .setBasePath(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION)
+                .setBasePath("base_path/v1")
                 .addDatasetPartInfos(
                     DatasetPartInfo.newBuilder()
                         .setSize(2)
