@@ -147,6 +147,29 @@ class Endpoint(object):
         return None
 
     def update(self, model_reference, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
+        """
+        Updates the Endpoint with a model logged in an Experiment Run or a Model Version.
+
+        Parameters
+        ----------
+        model_reference : `verta._tracking.experimentrun.ExperimentRun` or `verta._registry.modelversion.RegisteredModelVersion`
+            An Experiment Run or a Model Version with a model logged.
+        strategy : `verta.deployment.update._strategies._UpdateStrategy`
+            Strategy (direct or canary) for updating the Endpoint.
+        wait : bool
+            Whether to wait for the Endpoint to finish updating before returning.
+        resources : list of `verta.deployment.resources._Resource`
+            Resources allowed for the updated Endpoint.
+        autoscaling : `verta.deployment.autoscaling._autoscaling.Autoscaling`
+            Autoscaling condition for the updated Endpoint.
+        env_vars : dict of str to str
+            Environment variables.
+
+        Returns
+        -------
+        status : dict of str to {None, bool, float, int, str, list, dict}
+
+        """
         if not isinstance(strategy, _UpdateStrategy):
             raise TypeError("`strategy` must be an object from verta.deployment.strategies")
 
