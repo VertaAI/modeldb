@@ -246,6 +246,24 @@ class Endpoint(object):
         return response.json()["id"]
 
     def update_from_config(self, filepath):
+        """
+        Updates the Endpoint via a YAML or JSON config file.
+
+        Parameters
+        ----------
+        filepath : str
+            Path to the YAML or JSON config file.
+
+        Returns
+        -------
+        status : dict of str to {None, bool, float, int, str, list, dict}
+
+        Raises
+        ------
+        ValueError
+            If the file is not JSON or YAML.
+
+        """
         update_dict = None
 
         with open(filepath, 'r') as f:
