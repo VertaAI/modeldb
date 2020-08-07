@@ -60,7 +60,6 @@ class TestCreate:
 
     def test_create_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name
-        version_name = "my version"
 
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2 ** 16)
@@ -70,7 +69,7 @@ class TestCreate:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name,
+            ['registry', 'create', 'registeredmodelversion', model_name, "my version",
              "--artifact", "model={}".format(filename)],
         )
         assert result.exception
@@ -78,7 +77,7 @@ class TestCreate:
 
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name,
+            ['registry', 'create', 'registeredmodelversion', model_name, "my version 2",
              "--artifact", "file={}".format(filename), "--artifact", "file={}".format(filename)],
         )
         assert result.exception
@@ -86,12 +85,12 @@ class TestCreate:
 
         runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact",
+            ['registry', 'create', 'registeredmodelversion', model_name, "my version 3", "--artifact",
              "file={}".format(filename)],
         )
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact",
+            ['registry', 'create', 'registeredmodelversion', model_name, "my version 4", "--artifact",
              "file={}".format(filename)],
         )
         assert result.exception
