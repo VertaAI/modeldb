@@ -18,5 +18,4 @@ def create_endpoint(path, workspace):
     """
     client = Client()
 
-    client.get_or_create_endpoint(path, workspace=workspace)
-    # TODO: call client.get_or_create_endpoint()
+    client.create_endpoint(path, workspace=workspace)
