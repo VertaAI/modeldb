@@ -90,7 +90,7 @@ class TestCreate:
         )
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, "my version 4", "--artifact",
+            ['registry', 'create', 'registeredmodelversion', model_name, "my version 3", "--artifact",
              "file={}".format(filename)],
         )
         assert result.exception
