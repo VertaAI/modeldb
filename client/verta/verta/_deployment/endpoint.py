@@ -25,6 +25,20 @@ def merge_dicts(a, b):
 
 
 class Endpoint(object):
+    """
+    Object representing an endpoint for deployment.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`Client.create_endpoint`.
+
+    Attributes
+    ----------
+    id : int
+        ID of this Endpoint.
+    path : str
+        Path of this Endpoint.
+
+    """
     def __init__(self, conn, conf, workspace, id):
         self.workspace = workspace
         self._conn = conn
