@@ -357,6 +357,14 @@ class Endpoint(object):
         return response_json
 
     def get_access_token(self):
+        """
+        Gets the access token of the Endpoint.
+
+        Returns
+        -------
+        str or None
+
+        """
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/accesstokens".format(
             self._conn.scheme,
             self._conn.socket,
