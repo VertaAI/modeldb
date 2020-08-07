@@ -339,6 +339,19 @@ class Endpoint(object):
         return update_body
       
     def get_deployed_model(self):
+        """
+        Returns an object for making predictions against the deployed model.
+
+        Returns
+        -------
+        :class:`~verta.deployment.DeployedModel`
+
+        Raises
+        ------
+        RuntimeError
+            If the model is not currently deployed.
+
+        """
         status = self.get_status()
         if status['status'] != "active":
             raise RuntimeError("model is not currently deployed (status: {})".format(status))
