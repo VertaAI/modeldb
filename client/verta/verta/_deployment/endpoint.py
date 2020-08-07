@@ -293,6 +293,14 @@ class Endpoint(object):
         return self.update(model_reference, strategy)
 
     def get_status(self):
+        """
+        Gets status on the endpoint.
+
+        Returns
+        -------
+        status : dict of str to {None, bool, float, int, str, list, dict}
+
+        """
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
             self._conn.scheme,
             self._conn.socket,
@@ -361,6 +369,14 @@ class Endpoint(object):
         return DeployedModel.from_url(url, access_token)
 
     def get_update_status(self):
+        """
+        Gets update status on the endpoint.
+
+        Returns
+        -------
+        update_status : dict of str to {None, bool, float, int, str, list, dict}
+
+        """
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/status".format(
             self._conn.scheme,
             self._conn.socket,
