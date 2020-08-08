@@ -292,7 +292,8 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   public CommitPaginationDTO fetchCommitEntityList(
-      Session session, ListCommitsRequest request, Long repoId) throws ModelDBException {
+      Session session, ListCommitsRequest request, Long repoId, boolean ascending)
+      throws ModelDBException {
     StringBuilder commitQueryBuilder =
         new StringBuilder(
             " FROM "
@@ -322,9 +323,11 @@ public class CommitDAORdbImpl implements CommitDAO {
       commitQueryBuilder.append(" AND cm.date_created <= " + headTime);
     }
 
+    String order = ascending ? " ASC " : " DESC ";
+
     Query<CommitEntity> commitEntityQuery =
         session.createQuery(
-            "SELECT cm " + commitQueryBuilder.toString() + " ORDER BY cm.date_updated DESC");
+            "SELECT cm " + commitQueryBuilder.toString() + " ORDER BY cm.date_updated " + order);
     commitEntityQuery.setParameter("repoId", repoId);
     if (request.hasPagination()) {
       int pageLimit = request.getPagination().getPageLimit();
@@ -346,12 +349,13 @@ public class CommitDAORdbImpl implements CommitDAO {
 
   @Override
   public ListCommitsRequest.Response listCommits(
-      ListCommitsRequest request, RepositoryFunction getRepository) throws ModelDBException {
+      ListCommitsRequest request, RepositoryFunction getRepository, boolean ascending)
+      throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepository.apply(session);
 
       CommitPaginationDTO commitPaginationDTO =
-          fetchCommitEntityList(session, request, repository.getId());
+          fetchCommitEntityList(session, request, repository.getId(), ascending);
       List<Commit> commits =
           commitPaginationDTO.getCommitEntities().stream()
               .map(CommitEntity::toCommitProto)
@@ -362,7 +366,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return listCommits(request, getRepository);
+        return listCommits(request, getRepository, ascending);
       } else {
         throw ex;
       }
