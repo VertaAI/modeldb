@@ -7,7 +7,7 @@ import verta
 from verta._deployment import Endpoint
 from verta.deployment.resources import CpuMillis, Memory
 from verta.deployment.autoscaling import Autoscaling
-from verta.deployment.autoscaling.metrics import CpuUtilization, MemoryUtilization, RequestsPerWorker
+from verta.deployment.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
@@ -393,9 +393,9 @@ class TestEndpoint:
         created_endpoints.append(endpoint)
 
         autoscaling = Autoscaling(min_replicas=0, max_replicas=2, min_scale=0.5, max_scale=2.0)
-        autoscaling.add_metric(CpuUtilization(0.5))
-        autoscaling.add_metric(MemoryUtilization(0.7))
-        autoscaling.add_metric(RequestsPerWorker(100))
+        autoscaling.add_metric(CpuUtilizationTarget(0.5))
+        autoscaling.add_metric(MemoryUtilizationTarget(0.7))
+        autoscaling.add_metric(RequestsPerWorkerTarget(100))
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
         update_status = endpoint.get_update_status()

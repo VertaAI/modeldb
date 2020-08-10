@@ -17,36 +17,39 @@ class _AutoscalingMetric(object):
     def _as_dict(self):
         return {
             "metric_id": self._METRIC_ID,
-            "name": self._NAME,
+            "name": self._PARENT_NAME,
             "parameters": [{
-                "name": "target",
+                "name": self._NAME,
                 "value": self._value
             }]
         }
 
 
-class CpuUtilization(_AutoscalingMetric):
+class CpuUtilizationTarget(_AutoscalingMetric):
     """
     Memory utilization target to trigger autoscaling.
 
     """
     _METRIC_ID = 1001
-    _NAME = "cpu_utilization"
+    _PARENT_NAME = "cpu_utilization"
+    _NAME = "target"
 
 
-class RequestsPerWorker(_AutoscalingMetric):
+class RequestsPerWorkerTarget(_AutoscalingMetric):
     """
     CPU utilization target to trigger autoscaling.
 
     """
     _METRIC_ID = 1002
-    _NAME = "requests_per_worker"
+    _PARENT_NAME = "requests_per_worker"
+    _NAME = "target"
 
 
-class MemoryUtilization(_AutoscalingMetric):
+class MemoryUtilizationTarget(_AutoscalingMetric):
     """
     Number of requests per worker target to trigger autoscaling.
 
     """
     _METRIC_ID = 1003
-    _NAME = "memory_utilization"
+    _PARENT_NAME = "memory_utilization"
+    _NAME = "target"
