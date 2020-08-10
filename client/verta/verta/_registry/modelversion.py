@@ -658,13 +658,15 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         """
         self._refresh_cache()
-        endpoint = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/dockercontext".format(
+        endpoint = "{}://{}/api/v1/deployment/builds/dockercontext".format(
             self._conn.scheme,
             self._conn.socket,
-            self._msg.registered_model_id,
-            self.id
         )
-        with _utils.make_request("GET", endpoint, self._conn, stream=True) as response:
+        body = {
+            "model_version_id": self.id
+        }
+
+        with _utils.make_request("POST", endpoint, self._conn, json=body, stream=True) as response:
             try:
                 _utils.raise_for_http_error(response)
             except requests.HTTPError as e:
