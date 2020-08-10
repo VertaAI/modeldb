@@ -152,15 +152,15 @@ class Endpoint(object):
 
         Parameters
         ----------
-        model_reference : `verta._tracking.experimentrun.ExperimentRun` or `verta._registry.modelversion.RegisteredModelVersion`
+        model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta._registry.modelversion.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
-        strategy : `verta.deployment.update._strategies._UpdateStrategy`
+        strategy : :class:`~verta.deployment.update._strategies._UpdateStrategy`
             Strategy (direct or canary) for updating the Endpoint.
         wait : bool
             Whether to wait for the Endpoint to finish updating before returning.
-        resources : list of `verta.deployment.resources._Resource`
+        resources : list of :class:`~verta.deployment.resources._Resource`
             Resources allowed for the updated Endpoint.
-        autoscaling : `verta.deployment.autoscaling._autoscaling.Autoscaling`
+        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`
             Autoscaling condition for the updated Endpoint.
         env_vars : dict of str to str
             Environment variables.

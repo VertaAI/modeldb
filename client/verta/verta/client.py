@@ -933,7 +933,7 @@ class Client(object):
 
     def get_endpoint(self, path=None, workspace=None, id=None):
         """
-        Retrieves an already created Endpoint. Only one of path or id can be provided.
+        Retrieves an already created Endpoint. Only one of `path` or `id` can be provided.
 
         Parameters
         ----------
