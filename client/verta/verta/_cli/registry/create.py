@@ -33,7 +33,7 @@ def create_model(model_name, label, visibility, workspace):
     public_within_org = visibility == "org"
     client = Client()
 
-    model = client.get_or_create_registered_model(model_name, workspace=workspace, public_within_org=public_within_org)
+    model = client.create_registered_model(model_name, workspace=workspace, public_within_org=public_within_org)
     for l in label:
         model.add_label(l)
 
@@ -63,6 +63,6 @@ def create_model_version(ctx, model_name, version_name, label, model, artifact, 
         registered_model.create_version_from_run(run_id=from_run, name=version_name)
         return
 
-    registered_model.get_or_create_version(name=version_name, labels=list(label))
+    registered_model.create_version(name=version_name, labels=list(label))
     # labels have been added
     ctx.invoke(update_model_version, model_name=model_name, version_name=version_name, model=model, artifact=artifact, workspace=workspace)
