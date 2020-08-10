@@ -504,7 +504,7 @@ class TestUpdate:
         assert pickle.dumps(model_version.get_model()) != CLASSIFIER_CONTENTS
         assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS_2
 
-@pytest.mark.skip(reason="pending backend")
+
 class TestDownload:
     def test_download_context(self, experiment_run, model_for_deployment, registered_model, created_registered_models):
         np = pytest.importorskip("numpy")
