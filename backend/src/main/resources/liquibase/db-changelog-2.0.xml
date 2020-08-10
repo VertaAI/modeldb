@@ -5,6 +5,9 @@
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
         logicalFilePath="src/main/resources/liquibase/db-changelog-2.0.xml">
 
+    <changeSet id="db_version_2.0.pre" author="raviS">
+        <tagDatabase tag="db_version_2.0.pre"/>
+    </changeSet>
     <changeSet author="anandJ" id="index_labels_mapping_entity_hash_entity_type">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -35,5 +38,7 @@
             <dropIndex tableName="labels_mapping" indexName="index_labels_mapping_label"/>
         </rollback>
     </changeSet>
-
+    <changeSet id="db_version_2.1" author="raviS">
+        <tagDatabase tag="db_version_2.1"/>
+    </changeSet>
 </databaseChangeLog>
