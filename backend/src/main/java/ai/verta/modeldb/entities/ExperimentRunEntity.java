@@ -151,7 +151,7 @@ public class ExperimentRunEntity {
       mappedBy = "experimentRunEntity",
       cascade = CascadeType.ALL)
   @LazyCollection(LazyCollectionOption.FALSE)
-  @OrderBy("id")
+  @OrderBy("id ASC")
   private List<ObservationEntity> observationMapping;
 
   @OneToMany(
