@@ -293,6 +293,11 @@ class TestEndpoint:
 
 
     def test_get_deployed_model(self, client, experiment_run, model_version, model_for_deployment, created_endpoints):
+        """
+        Verifies prediction for a finished deployment, as well as for an endpoint in the middle of being updated.
+        """
+        np = pytest.importorskip("numpy")
+
         model = model_for_deployment['model'].fit(
             model_for_deployment['train_features'],
             model_for_deployment['train_targets'],
@@ -308,7 +313,6 @@ class TestEndpoint:
         x = model_for_deployment['train_features'].iloc[1].values
         assert endpoint.get_deployed_model().predict([x]) == [2]
 
-        np = pytest.importorskip("numpy")
         new_model = model_for_deployment['model'].fit(
             np.random.random(model_for_deployment['train_features'].shape),
             np.random.random(model_for_deployment['train_targets'].shape).round()
