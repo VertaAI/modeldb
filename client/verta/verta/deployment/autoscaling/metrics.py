@@ -25,19 +25,31 @@ class _AutoscalingMetric(object):
         }
 
 
-class CpuTarget(_AutoscalingMetric):
+class CpuUtilizationTarget(_AutoscalingMetric):
+    """
+    Memory utilization target to trigger autoscaling.
+
+    """
     _METRIC_ID = 1001
     _PARENT_NAME = "cpu_utilization"
-    _NAME = "cpu_target"
+    _NAME = "target"
 
 
 class RequestsPerWorkerTarget(_AutoscalingMetric):
+    """
+    CPU utilization target to trigger autoscaling.
+
+    """
     _METRIC_ID = 1002
     _PARENT_NAME = "requests_per_worker"
-    _NAME = "requests_per_worker_target"
+    _NAME = "target"
 
 
-class MemoryTarget(_AutoscalingMetric):
+class MemoryUtilizationTarget(_AutoscalingMetric):
+    """
+    Number of requests per worker target to trigger autoscaling.
+
+    """
     _METRIC_ID = 1003
     _PARENT_NAME = "memory_utilization"
-    _NAME = "memory_target"
+    _NAME = "target"
