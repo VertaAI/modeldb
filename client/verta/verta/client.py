@@ -686,6 +686,8 @@ class Client(object):
         if dataset_ids:
             datasets = datasets.with_ids(_utils.as_list_of_str(dataset_ids))
         if sort_key:
+            if sort_key.startswith("time_"):
+                sort_key = "date_" + sort_key[len("time_"):]
             datasets = datasets.sort(sort_key, not ascending)
         if workspace:
             datasets = datasets.with_workspace(workspace)
