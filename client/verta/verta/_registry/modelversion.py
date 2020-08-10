@@ -658,10 +658,9 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         """
         self._refresh_cache()
-        endpoint = "{}://{}/api/v1/deployment/workspace/{}/builds/dockercontext".format(
+        endpoint = "{}://{}/api/v1/deployment/builds/dockercontext".format(
             self._conn.scheme,
             self._conn.socket,
-            self.workspace
         )
         body = {
             "model_version_id": self.id
