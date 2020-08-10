@@ -243,8 +243,8 @@ class TestUpdate:
         created_endpoints.append(endpoint)
 
         autoscaling_option = '{"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0}'
-        cpu_metric = '{"metric": "cpu_utilization", "parameters": [{"name": "cpu_target", "value": "0.5"}]}'
-        memory_metric = '{"metric": "memory_utilization", "parameters": [{"name": "memory_target", "value": "0.7"}]}'
+        cpu_metric = '{"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.5"}]}'
+        memory_metric = '{"metric": "memory_utilization", "parameters": [{"name": "target", "value": "0.7"}]}'
 
         runner = CliRunner()
         result = runner.invoke(
@@ -265,8 +265,8 @@ class TestUpdate:
             assert metric["metric_id"] in [1001, 1002, 1003]
 
             if metric["metric_id"] == 1001:
-                assert metric["parameters"][0]["name"] == "cpu_target"
+                assert metric["parameters"][0]["name"] == "target"
                 assert metric["parameters"][0]["value"] == "0.5"
             else:
-                assert metric["parameters"][0]["name"] == "memory_target"
+                assert metric["parameters"][0]["name"] == "target"
                 assert metric["parameters"][0]["value"] == "0.7"
