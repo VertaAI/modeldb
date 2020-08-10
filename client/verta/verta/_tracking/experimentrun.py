@@ -775,7 +775,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, json={'id': self.id, 'hyperparameter_keys': keys})
         _utils.raise_for_http_error(response)
 
-    def log_metric(self, key, value):
+    def log_metric(self, key, value, overwrite=False):
         """
         Logs a metric to this Experiment Run.
 
@@ -787,6 +787,8 @@ class ExperimentRun(_ModelDBEntity):
             Name of the metric.
         value : one of {None, bool, float, int, str}
             Value of the metric.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing metric with key `key`.
 
         """
         _utils.validate_flat_key(key)
@@ -794,6 +796,8 @@ class ExperimentRun(_ModelDBEntity):
         metric = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         msg = _ExperimentRunService.LogMetric(id=self.id, metric=metric)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_metrics([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logMetric".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -806,7 +810,7 @@ class ExperimentRun(_ModelDBEntity):
 
         self._clear_cache()
 
-    def log_metrics(self, metrics):
+    def log_metrics(self, metrics, overwrite=False):
         """
         Logs potentially multiple metrics to this Experiment Run.
 
@@ -814,6 +818,8 @@ class ExperimentRun(_ModelDBEntity):
         ----------
         metrics : dict of str to {None, bool, float, int, str}
             Metrics.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing metric with key `key`.
 
         """
         # validate all keys first
@@ -829,6 +835,8 @@ class ExperimentRun(_ModelDBEntity):
 
         msg = _ExperimentRunService.LogMetrics(id=self.id, metrics=metric_keyvals)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_metrics(keys)
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logMetrics".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -875,7 +883,7 @@ class ExperimentRun(_ModelDBEntity):
         self._refresh_cache()
         return self._metrics
 
-    def log_hyperparameter(self, key, value):
+    def log_hyperparameter(self, key, value, overwrite=False):
         """
         Logs a hyperparameter to this Experiment Run.
 
@@ -885,6 +893,8 @@ class ExperimentRun(_ModelDBEntity):
             Name of the hyperparameter.
         value : one of {None, bool, float, int, str}
             Value of the hyperparameter.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing hyperparameter with key `key`.
 
         """
         _utils.validate_flat_key(key)
@@ -892,6 +902,8 @@ class ExperimentRun(_ModelDBEntity):
         hyperparameter = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         msg = _ExperimentRunService.LogHyperparameter(id=self.id, hyperparameter=hyperparameter)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_hyperparameters([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logHyperparameter".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -904,7 +916,7 @@ class ExperimentRun(_ModelDBEntity):
 
         self._clear_cache()
 
-    def log_hyperparameters(self, hyperparams):
+    def log_hyperparameters(self, hyperparams, overwrite=False):
         """
         Logs potentially multiple hyperparameters to this Experiment Run.
 
@@ -912,6 +924,8 @@ class ExperimentRun(_ModelDBEntity):
         ----------
         hyperparameters : dict of str to {None, bool, float, int, str}
             Hyperparameters.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing hyperparameter with key `key`.
 
         """
         # validate all keys first
@@ -927,6 +941,8 @@ class ExperimentRun(_ModelDBEntity):
 
         msg = _ExperimentRunService.LogHyperparameters(id=self.id, hyperparameters=hyperparameter_keyvals)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_hyperparameters(keys)
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logHyperparameters".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -1641,7 +1657,7 @@ class ExperimentRun(_ModelDBEntity):
         ))
         return committed_parts
 
-    def log_observation(self, key, value, timestamp=None, epoch_num=None):
+    def log_observation(self, key, value, timestamp=None, epoch_num=None, overwrite=False):
         """
         Logs an observation to this Experiment Run.
 
@@ -1657,6 +1673,8 @@ class ExperimentRun(_ModelDBEntity):
         epoch_num : non-negative int, optional
             Epoch number associated with this observation. If not provided, it will automatically
             be incremented from prior observations for the same `key`.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing observation with key `key`.
 
         Warnings
         --------
@@ -1685,6 +1703,8 @@ class ExperimentRun(_ModelDBEntity):
 
         msg = _ExperimentRunService.LogObservation(id=self.id, observation=observation)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_observations([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logObservation".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
