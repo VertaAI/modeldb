@@ -428,4 +428,7 @@
 			<column name="entity_hash"/>
 		</createIndex>
 	</changeSet>
+
+	<!-- WARNING: Do not add new change sets to these files -->
+
 </databaseChangeLog>

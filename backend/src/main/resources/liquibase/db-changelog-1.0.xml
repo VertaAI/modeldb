@@ -671,7 +671,6 @@
         </createTable>
     </changeSet>
 
-    <!-- keep the line below at the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
     <changeSet author="anandJ" id="migration_status_table">
         <preConditions onFail="MARK_RAN">
@@ -687,4 +686,11 @@
             <column name="status" type="tinyint(1)"/>
         </createTable>
     </changeSet>
+
+    <changeSet id="db_version_1.0" author="anandJ">
+        <tagDatabase tag="db_version_1.0"/>
+    </changeSet>
+
+    <!-- WARNING: Do not add new change sets to these files -->
+
 </databaseChangeLog>

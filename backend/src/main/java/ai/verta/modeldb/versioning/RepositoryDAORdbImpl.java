@@ -329,8 +329,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     return Optional.ofNullable((RepositoryEntity) query.uniqueResult());
   }
 
-  private Optional<RepositoryEntity> getRepositoryByName(
-      Session session, String name) {
+  private Optional<RepositoryEntity> getRepositoryByName(Session session, String name) {
     Query query =
         ModelDBHibernateUtil.getWorkspaceEntityQuery(
             session,
