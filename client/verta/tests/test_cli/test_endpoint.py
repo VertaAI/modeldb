@@ -78,10 +78,10 @@ class TestUpdate:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        canary_rule = '{"rule": "latency", "rule_parameters": \
-        [{"name": "latency_avg", "value": "0.8"}]}'
-        canary_rule_2 = '{"rule": "error_rate", "rule_parameters": \
-        [{"name": "error_rate", "value": "0.8"}]}'
+        canary_rule = '{"rule": "latency_avg_max", "rule_parameters": \
+        [{"name": "threshold", "value": "0.8"}]}'
+        canary_rule_2 = '{"rule": "error_4xx_rate", "rule_parameters": \
+        [{"name": "threshold", "value": "0.8"}]}'
 
         runner = CliRunner()
         result = runner.invoke(
@@ -106,10 +106,8 @@ class TestUpdate:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        canary_rule = '{"rule_id": 1001, "rule_parameters": \
-        [{"name": "latency_avg", "value": "0.8"}]}'
-        canary_rule_2 = '{"rule_id": 1002, "rule_parameters": \
-        [{"name": "error_rate", "value": "0.8"}]}'
+        canary_rule = '{"rule": "latency_avg_max", "rule_parameters": \
+        [{"name": "threshold", "value": "0.8"}]}'
 
         runner = CliRunner()
         result = runner.invoke(
@@ -133,8 +131,8 @@ class TestUpdate:
         endpoint = client.set_endpoint(endpoint_name)
         created_endpoints.append(endpoint)
 
-        canary_rule = '{"rule": "latency", "rule_parameters": \
-        [{"name": "latency_avg", "value": "0.8"}]}'
+        canary_rule = '{"rule": "latency_avg_max", "rule_parameters": \
+        [{"name": "threshold", "value": "0.8"}]}'
 
         # Extra parameters provided:
         runner = CliRunner()

@@ -13,7 +13,7 @@ class _UpdateRule(object):
     _PARENT_NAME = ""
 
     def __init__(self, value):
-        self._value = value
+        self._value = str(value)
 
     def _as_dict(self):
         return {
@@ -32,39 +32,40 @@ class _UpdateRule(object):
         rule_name = rule_dict['rule_parameters'][0]['name']
         rule_value = float(rule_dict['rule_parameters'][0]['value'])
 
-        RULE_SUBCLASSES = [AverageLatencyThresholdRule, P90LatencyThresholdRule, ErrorRateRule]
+        RULE_SUBCLASSES = [
+            MaximumAverageLatencyThresholdRule, MaximumP90LatencyThresholdRule, MaximumRequestErrorPercentageThresholdRule, MaximumServerErrorPercentageThresholdRule
+        ]
 
         for Subclass in RULE_SUBCLASSES:
-            if rule_name == Subclass._NAME:
+            if parent_name == Subclass._PARENT_NAME and rule_name == Subclass._NAME:
                 rule = Subclass(rule_value)
                 break
         else:
             # does not match any rule
-            raise ValueError("no rule with name {} exists".format(rule_name))
-
-        if rule._PARENT_NAME != parent_name:
-            raise ValueError("expected rule {} for parameter {}, not {}.".format(
-                rule._PARENT_NAME,
-                rule_name,
-                parent_name
-            ))
+            raise ValueError("no rule with name {} and parameter name {} exists".format(parent_name, rule_name))
 
         return rule
 
 
-class AverageLatencyThresholdRule(_UpdateRule):
-    _RULE_ID = 1001
-    _PARENT_NAME = "latency"
-    _NAME = "latency_avg"
+class MaximumAverageLatencyThresholdRule(_UpdateRule):
+    _RULE_ID = 1005
+    _PARENT_NAME = "latency_avg_max"
+    _NAME = "threshold"
 
 
-class P90LatencyThresholdRule(_UpdateRule):
-    _RULE_ID = 1001
-    _PARENT_NAME = "latency"
-    _NAME = "latency_p90"
+class MaximumP90LatencyThresholdRule(_UpdateRule):
+    _RULE_ID = 1006
+    _PARENT_NAME = "latency_p90_max"
+    _NAME = "threshold"
 
 
-class ErrorRateRule(_UpdateRule):
-    _RULE_ID = 1002
-    _PARENT_NAME = "error_rate"
-    _NAME = "error_rate"
+class MaximumRequestErrorPercentageThresholdRule(_UpdateRule):
+    _RULE_ID = 1007
+    _PARENT_NAME = "error_4xx_rate"
+    _NAME = "threshold"
+
+
+class MaximumServerErrorPercentageThresholdRule(_UpdateRule):
+    _RULE_ID = 1008
+    _PARENT_NAME = "error_5xx_rate"
+    _NAME = "threshold"
