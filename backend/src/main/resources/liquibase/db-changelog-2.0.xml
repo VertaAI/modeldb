@@ -1,0 +1,44 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+        logicalFilePath="src/main/resources/liquibase/db-changelog-2.0.xml">
+
+    <changeSet id="db_version_2.0.pre" author="raviS">
+        <tagDatabase tag="db_version_2.0.pre"/>
+    </changeSet>
+    <changeSet author="anandJ" id="index_labels_mapping_entity_hash_entity_type">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_labels_mapping_entity_hash_entity_type"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_labels_mapping_entity_hash_entity_type"
+                     tableName="labels_mapping">
+            <column name="entity_hash"/>
+            <column name="entity_type"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="labels_mapping" indexName="index_labels_mapping_entity_hash_entity_type"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_labels_mapping_label">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_labels_mapping_label"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_labels_mapping_label"
+                     tableName="labels_mapping">
+            <column name="label"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="labels_mapping" indexName="index_labels_mapping_label"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="db_version_2.1" author="raviS">
+        <tagDatabase tag="db_version_2.1"/>
+    </changeSet>
+</databaseChangeLog>
