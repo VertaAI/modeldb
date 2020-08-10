@@ -506,7 +506,7 @@ class TestUpdate:
 
 
 class TestDownload:
-    def test_download_context(self, experiment_run, model_for_deployment, registered_model, created_registered_models):
+    def test_download_context(self, experiment_run, model_for_deployment, registered_model, in_tempdir, created_registered_models):
         np = pytest.importorskip("numpy")
         model_name = registered_model.name
         version_name = "my-version"
