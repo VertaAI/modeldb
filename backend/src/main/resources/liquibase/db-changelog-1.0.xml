@@ -447,6 +447,7 @@
     </changeSet>
 
     <changeSet id="createTempTableWithNewKeysOfArtifact_part" author="anandJ">
+    	<validCheckSum>8:4480e7dd6d4557d92f09f69b08d9ad29</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="artifact_part_temp"/>
@@ -455,7 +456,7 @@
         <createTable tableName="artifact_part_temp">
             <column name="artifact_id" type="int8">
                 <constraints primaryKey="true" nullable="false"
-                             foreignKeyName="artifact_id" referencedTableName="artifact"
+                             foreignKeyName="artifact_id_tmp" referencedTableName="artifact"
                              referencedColumnNames="id"/>
             </column>
             <column name="part_number" type="int8">

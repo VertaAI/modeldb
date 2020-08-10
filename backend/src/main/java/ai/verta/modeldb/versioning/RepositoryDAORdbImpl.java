@@ -270,9 +270,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException {
     RepositoryEntity repository;
     if (id.hasNamedId()) {
-      WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(id, true);
       repository =
-          getRepositoryByName(session, id.getNamedId().getName(), workspaceDTO)
+          getRepositoryByName(session, id.getNamedId().getName())
               .orElseThrow(
                   () ->
                       new ModelDBException(
@@ -330,8 +329,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     return Optional.ofNullable((RepositoryEntity) query.uniqueResult());
   }
 
-  private Optional<RepositoryEntity> getRepositoryByName(
-      Session session, String name, WorkspaceDTO workspaceDTO) {
+  private Optional<RepositoryEntity> getRepositoryByName(Session session, String name) {
     Query query =
         ModelDBHibernateUtil.getWorkspaceEntityQuery(
             session,
@@ -340,8 +338,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             "repositoryName",
             name,
             ModelDBConstants.WORKSPACE_ID,
-            workspaceDTO.getWorkspaceId(),
-            workspaceDTO.getWorkspaceType(),
+            null,
+            null,
             true,
             null);
     return Optional.ofNullable((RepositoryEntity) query.uniqueResult());
@@ -1119,10 +1117,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-      WorkspaceDTO workspaceDTO =
-          roleService.getWorkspaceDTOByWorkspaceName(
-              currentLoginUserInfo, request.getWorkspaceName());
       try {
+        WorkspaceDTO workspaceDTO = null;
         List<String> accessibleResourceIds =
             roleService.getAccessibleResourceIds(
                 null,
@@ -1132,6 +1128,30 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 request.getRepoIdsList().stream()
                     .map(String::valueOf)
                     .collect(Collectors.toList()));
+
+        String workspaceName = request.getWorkspaceName();
+        if (workspaceName != null
+            && !workspaceName.isEmpty()
+            && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          LOGGER.debug("Workspace found and match with current login username");
+          accessibleResourceIds =
+              roleService.getSelfDirectlyAllowedResources(
+                  ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
+          LOGGER.debug(
+              "Self directly accessible Repository Ids found, size {}",
+              accessibleResourceIds.size());
+          if (request.getRepoIdsList() != null && !request.getRepoIdsList().isEmpty()) {
+            accessibleResourceIds.retainAll(
+                request.getRepoIdsList().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.toList()));
+          }
+        } else {
+          LOGGER.debug("Workspace not found or not match with current login username");
+          workspaceDTO =
+              roleService.getWorkspaceDTOByWorkspaceName(
+                  currentLoginUserInfo, request.getWorkspaceName());
+        }
 
         if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
           LOGGER.debug("Accessible Repository Ids not found, size 0");
@@ -1160,6 +1180,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             findRepositoriesQuery.getFindRepositoriesHQLQuery().list();
         Long totalRecords =
             (Long) findRepositoriesQuery.getFindRepositoriesCountHQLQuery().uniqueResult();
+        LOGGER.debug("Final return Repositories, size {}", repositoryEntities.size());
+        LOGGER.debug("Final return Total Records: {}", totalRecords);
 
         List<Repository> repositories = new ArrayList<>();
         for (RepositoryEntity repositoryEntity : repositoryEntities) {

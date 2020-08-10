@@ -102,7 +102,7 @@ class RegisteredModel(_ModelDBEntity):
             ctx.registered_model = self
             return RegisteredModelVersion._get_or_create_by_name(self._conn, name,
                                                        lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
-                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=labels, date_created=time_created))
+                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, date_created=time_created))
 
     def create_version(self, name=None, desc=None, labels=None, time_created=None):
         """
@@ -124,17 +124,17 @@ class RegisteredModel(_ModelDBEntity):
         """
         ctx = _Context(self._conn, self._conf)
         ctx.registered_model = self
-        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name, desc=desc, tags=labels, date_created=time_created)
+        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, date_created=time_created)
 
 
-    def create_version_from_run(self, run_id, name):
+    def create_version_from_run(self, run_id, name=None):
         """
         Creates a model registry entry based on an Experiment Run.
 
         Parameters
         ----------
         run_id : str
-        name : str
+        name : str, optional
 
         Returns
         -------
@@ -143,7 +143,7 @@ class RegisteredModel(_ModelDBEntity):
         """
         ctx = _Context(self._conn, self._conf)
         ctx.registered_model = self
-        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name, experiment_run_id=run_id)
+        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, experiment_run_id=run_id)
 
     def get_version(self, name=None, id=None):
         """
@@ -224,6 +224,17 @@ class RegisteredModel(_ModelDBEntity):
 
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
+
+    def set_description(self, desc):
+        if not desc:
+            raise ValueError("desc is not specified")
+        self._fetch_with_no_cache()
+        self._msg.description = desc
+        self._update()
+
+    def get_description(self):
+        self._refresh_cache()
+        return self._msg.description
 
     def add_labels(self, labels):
         """

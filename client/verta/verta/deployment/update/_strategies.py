@@ -69,7 +69,7 @@ class CanaryUpdateStrategy(_UpdateStrategy):
             'canary_strategy': {
                 'progress_interval_seconds': self._progress_interval_seconds,
                 'progress_step': self._progress_step,
-                'rules': list(map(lambda rule: rule._as_json(), self._rules)),
+                'rules': list(map(lambda rule: rule._as_dict(), self._rules)),
             },
         }
 

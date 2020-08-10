@@ -132,6 +132,9 @@ class _ModelDBEntity(object):
 
     @classmethod
     def _create(cls, conn, conf, *args, **kwargs):
+        if 'name' in kwargs and kwargs['name'] is None:
+            kwargs['name'] = cls._generate_default_name()
+
         msg = cls._create_proto(conn, *args, **kwargs)
         if msg:
             # pylint: disable=no-value-for-parameter
@@ -456,4 +459,3 @@ class _ModelDBEntity(object):
         else:
             # workspace is organization
             return _utils.body_to_json(response)['organization']['name']
-

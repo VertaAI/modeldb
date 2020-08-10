@@ -103,7 +103,7 @@ class TestModelVersion:
         # overwrite should work:
         new_classifier = LogisticRegression()
         new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_model(new_classifier, True)
+        model_version.log_model(new_classifier, overwrite=True)
         retrieved_classfier = model_version.get_model()
         assert np.array_equal(retrieved_classfier.coef_, new_classifier.coef_)
 
@@ -240,8 +240,9 @@ class TestModelVersion:
 
         assert "environment was not previously set" in str(excinfo.value)
 
-    def test_labels(self, client):
+    def test_labels(self, client, created_registered_models):
         registered_model = client.set_registered_model()
+        created_registered_models.append(registered_model)
         model_version = registered_model.get_or_create_version(name="my version")
 
         model_version.add_label("tag1")
@@ -257,6 +258,14 @@ class TestModelVersion:
 
         model_version.add_labels(["tag2", "tag4", "tag1", "tag5"])
         assert model_version.get_labels() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
+
+    def test_description(self, client, created_registered_models):
+        desc = "description"
+        registered_model = client.get_or_create_registered_model()
+        created_registered_models.append(registered_model)
+        model_version = registered_model.get_or_create_version(name="my version")
+        model_version.set_description(desc)
+        assert desc == model_version.get_description()
 
     def test_find(self, client):
         name = "registered_model_test"

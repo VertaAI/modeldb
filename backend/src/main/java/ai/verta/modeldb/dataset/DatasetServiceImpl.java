@@ -879,8 +879,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           commitDAO.listCommits(
               listCommitsRequest.build(),
               (session ->
-                  repositoryDAO.getRepositoryById(
-                      session, repositoryIdentification, false, false)));
+                  repositoryDAO.getRepositoryById(session, repositoryIdentification, false, false)),
+              false);
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
       List<Commit> commitList = listCommitsResponse.getCommitsList();
@@ -979,8 +979,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           commitDAO.listCommits(
               listCommitsRequest.build(),
               (session ->
-                  repositoryDAO.getRepositoryById(
-                      session, repositoryIdentification, false, false)));
+                  repositoryDAO.getRepositoryById(session, repositoryIdentification, false, false)),
+              false);
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
       List<Commit> commitList = listCommitsResponse.getCommitsList();

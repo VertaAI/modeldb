@@ -22,6 +22,7 @@ from .._internal_utils import (
     importer, _request_utils
 )
 from .._internal_utils._utils import NoneProtoResponse
+from .. import utils
 
 from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
 from ..environment import _Environment, Python
@@ -176,7 +177,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         print("Created new ModelVersion: {}".format(model_version.version))
         return model_version
 
-    def log_model(self, model, overwrite=False):
+    def log_model(self, model, model_api=None, overwrite=False):
         """
         Logs a model to this Model Version.
 
@@ -188,6 +189,8 @@ class RegisteredModelVersion(_ModelDBEntity):
                   and uploaded as an artifact. If it is a directory path, its contents will be zipped.
                 - If file-like, then the contents will be read as bytes and uploaded as an artifact.
                 - Otherwise, the object will be serialized and uploaded as an artifact.
+        model_api : :class:`~utils.ModelAPI`, optional
+            Model API specifying details about the model and its deployment.
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
 
@@ -197,9 +200,8 @@ class RegisteredModelVersion(_ModelDBEntity):
             raise ValueError("model already exists; consider setting overwrite=True")
 
         if isinstance(model, six.string_types):  # filepath
-            serialized_model = open(model, 'rb')  # file handle
-        else:
-            serialized_model, method, _ = _artifact_utils.serialize_model(model)  # bytestream
+            model = open(model, 'rb')
+        serialized_model, method, model_type = _artifact_utils.serialize_model(model)
 
         try:
             extension = _artifact_utils.get_file_ext(serialized_model)
@@ -215,6 +217,20 @@ class RegisteredModelVersion(_ModelDBEntity):
             "model", serialized_model,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
+
+        # build model API
+        if model_api is None:
+            model_api = utils.ModelAPI()
+        elif not isinstance(model_api, utils.ModelAPI):
+            raise ValueError("`model_api` must be `verta.utils.ModelAPI`, not {}".format(type(model_api)))
+        if 'model_packaging' not in model_api:
+            # add model serialization info to model_api
+            model_api['model_packaging'] = {
+                'python_version': _utils.get_python_version(),
+                'type': model_type,
+                'deserialization': method,
+            }
+        self.log_artifact("model_api.json", model_api, overwrite)
 
     def get_model(self):
         """
@@ -242,7 +258,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._msg.ClearField("model")
         self._update()
 
-    def log_artifact(self, key, asset, overwrite=False):
+    def log_artifact(self, key, artifact, overwrite=False):
         """
         Logs an artifact to this Model Version.
 
@@ -267,8 +283,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         same_key_ind = -1
 
         for i in range(len(self._msg.artifacts)):
-            artifact = self._msg.artifacts[i]
-            if artifact.key == key:
+            if self._msg.artifacts[i].key == key:
                 if not overwrite:
                     raise ValueError("The key has been set; consider setting overwrite=True")
                 else:
@@ -277,10 +292,9 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         artifact_type = _CommonCommonService.ArtifactTypeEnum.BLOB
 
-        if isinstance(asset, six.string_types):  # filepath
-            artifact_stream = open(asset, 'rb')  # file handle
-        else:
-            artifact_stream, method = _artifact_utils.ensure_bytestream(asset)  # bytestream
+        if isinstance(artifact, six.string_types):  # filepath
+            artifact = open(artifact, 'rb')
+        artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
         try:
             extension = _artifact_utils.get_file_ext(artifact_stream)
@@ -551,6 +565,17 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         return response.content
 
+    def set_description(self, desc):
+        if not desc:
+            raise ValueError("desc is not specified")
+        self._fetch_with_no_cache()
+        self._msg.description = desc
+        self._update()
+
+    def get_description(self):
+        self._refresh_cache()
+        return self._msg.description
+
     def add_labels(self, labels):
         """
         Adds multiple labels to this Model Version.
@@ -632,6 +657,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             Absolute path where Docker context was downloaded to. Matches `download_to_path`.
 
         """
+        self._refresh_cache()
         endpoint = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/dockercontext".format(
             self._conn.scheme,
             self._conn.socket,

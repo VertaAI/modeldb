@@ -2,15 +2,19 @@
 
 from __future__ import print_function
 
-from .._tracking import entity
-
-from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
-
 from ..external import six
 
+from .._protos.public.common import CommonService_pb2 as _CommonCommonService
+from .._protos.public.modeldb import CommonService_pb2 as _CommonService
+from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
+
+from .._tracking import entity
 from .._internal_utils import (
     _utils,
 )
+from .. import dataset
+
+from .dataset_version import DatasetVersion
 
 
 class Dataset(entity._ModelDBEntity):
@@ -18,7 +22,19 @@ class Dataset(entity._ModelDBEntity):
         super(Dataset, self).__init__(conn, conf, _DatasetService, "dataset", msg)
 
     def __repr__(self):
-        raise NotImplementedError
+        self._refresh_cache()
+        msg = self._msg
+
+        return '\n'.join((
+            "name: {}".format(msg.name),
+            "url: {}://{}/{}/datasets/{}/summary".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
+            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
+            "description: {}".format(msg.description),
+            "tags: {}".format(msg.tags),
+            "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
+            "id: {}".format(msg.id),
+        ))
 
     @property
     def name(self):
@@ -28,6 +44,15 @@ class Dataset(entity._ModelDBEntity):
     @property
     def dataset_type(self):
         return self.__class__.__name__
+
+    @property
+    def workspace(self):
+        self._refresh_cache()
+
+        if self._msg.workspace_id:
+            return self._get_workspace_name_by_id(self._msg.workspace_id)
+        else:
+            return entity._OSS_DEFAULT_WORKSPACE
 
     @property
     def desc(self):
@@ -107,56 +132,206 @@ class Dataset(entity._ModelDBEntity):
         return dataset
 
     def set_description(self, desc):
-        raise NotImplementedError
+        """
+        Sets the description of this Dataset.
+
+        Parameters
+        ----------
+        desc : str
+            Description to set.
+
+        """
+        Message = _DatasetService.UpdateDatasetDescription
+        msg = Message(id=self.id, description=desc)
+        endpoint = "/api/v1/modeldb/dataset/updateDatasetDescription"
+        self._update(msg, Message.Response, endpoint, "POST")
 
     def get_description(self):
-        raise NotImplementedError
+        """
+        Gets the description of this Dataset.
+
+        Returns
+        -------
+        str
+            Description of this Dataset.
+
+        """
+        self._refresh_cache()
+        return self._msg.description
 
     def add_tag(self, tag):
-        raise NotImplementedError
+        """
+        Adds a tag to this Dataset.
+
+        Parameters
+        ----------
+        tag : str
+            Tag to add.
+
+        """
+        if not isinstance(tag, six.string_types):
+            raise TypeError("`tag` must be a string")
+
+        self.add_tags([tag])
 
     def add_tags(self, tags):
         """
+        Adds multiple tags to this Dataset.
+
         Parameters
         ----------
         tags : list of str
+            Tags to add.
 
         """
-        raise NotImplementedError
+        tags = _utils.as_list_of_str(tags)
+        Message = _DatasetService.AddDatasetTags
+        msg = Message(id=self.id, tags=tags)
+        endpoint = "/api/v1/modeldb/dataset/addDatasetTags"
+        self._update(msg, Message.Response, endpoint, "POST")
 
     def get_tags(self):
-        raise NotImplementedError
+        """
+        Gets all tags from this Dataset.
+
+        Returns
+        -------
+        list of str
+            All tags.
+
+        """
+        self._refresh_cache()
+        return self._msg.tags
 
     def del_tag(self, tag):
-        raise NotImplementedError
+        """
+        Deletes a tag from this Dataset.
+
+        Parameters
+        ----------
+        tag : str
+            Tag to delete.
+
+        """
+        if not isinstance(tag, six.string_types):
+            raise TypeError("`tag` must be a string")
+
+        Message = _DatasetService.DeleteDatasetTags
+        msg = Message(id=self.id, tags=[tag])
+        endpoint = "/api/v1/modeldb/dataset/deleteDatasetTags"
+        self._update(msg, Message.Response, endpoint, "DELETE")
 
     def add_attribute(self, key, value):
-        raise NotImplementedError
+        """
+        Adds an attribute to this Dataset.
+
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+        value : one of {None, bool, float, int, str, list, dict}
+            Value of the attribute.
+
+        """
+        self.add_attributes({key: value})
 
     def add_attributes(self, attrs):
         """
+        Adds potentially multiple attributes to this Dataset.
+
         Parameters
         ----------
-        attrs : dict of str to any
+        attributes : dict of str to {None, bool, float, int, str, list, dict}
+            Attributes.
 
         """
-        raise NotImplementedError
+        # validate all keys first
+        for key in six.viewkeys(attrs):
+            _utils.validate_flat_key(key)
+
+        # build KeyValues
+        attribute_keyvals = []
+        for key, value in six.viewitems(attrs):
+            attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True)))
+
+        Message = _DatasetService.AddDatasetAttributes
+        msg = Message(id=self.id, attributes=attribute_keyvals)
+        endpoint = "/api/v1/modeldb/dataset/addDatasetAttributes"
+        self._update(msg, Message.Response, endpoint, "POST")
 
     def get_attribute(self, key):
-        raise NotImplementedError
+        """
+        Gets the attribute with name `key` from this Dataset.
+
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+
+        Returns
+        -------
+        one of {None, bool, float, int, str}
+            Value of the attribute.
+
+        """
+        _utils.validate_flat_key(key)
+        attributes = self.get_attributes()
+
+        try:
+            return attributes[key]
+        except KeyError:
+            six.raise_from(KeyError("no attribute found with key {}".format(key)), None)
 
     def get_attributes(self):
-        raise NotImplementedError
+        """
+        Gets all attributes from this Dataset.
+
+        Returns
+        -------
+        dict of str to {None, bool, float, int, str}
+            Names and values of all attributes.
+
+        """
+        self._refresh_cache()
+        return _utils.unravel_key_values(self._msg.attributes)
 
     def del_attribute(self, key):
+        """
+        Deletes the attribute with name `key` from this Dataset
+
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+
+        """
+        _utils.validate_flat_key(key)
+
+        # build KeyValues
+        Message = _DatasetService.DeleteDatasetAttributes
+        msg = Message(id=self.id, attribute_keys=[key])
+        endpoint = "/api/v1/modeldb/dataset/deleteDatasetAttributes"
+        self._update(msg, Message.Response, endpoint, "DELETE")
+
+    def create_s3_version(self, paths, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
         raise NotImplementedError
 
-    def create_s3_version(self):  # TODO: same params as S3.__init__()
-        raise NotImplementedError
-        # TODO: create S3 blob and pass as self._create(dataset_blob=blob)
+    def create_path_version(self, paths, base_path=None, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
+        dataset_blob = dataset.Path(paths=paths, base_path=base_path)
+        return DatasetVersion._create(
+            self._conn, self._conf,
+            dataset=self, dataset_blob=dataset_blob,
+            desc=desc, tags=tags, attrs=attrs,
+            time_logged=date_created, time_updated=date_created,
+        )
 
-    def create_path_version(self):  # TODO: same params as Path.__init__()
+    def get_version(self, id):
         raise NotImplementedError
 
     def get_latest_version(self):
         raise NotImplementedError
+
+    def _update(self, msg, response_proto, endpoint, method):
+        response = self._conn.make_proto_request(method, endpoint, body=msg)
+        self._conn.must_proto_response(response, response_proto)
+        self._clear_cache()

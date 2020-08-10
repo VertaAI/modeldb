@@ -37,7 +37,8 @@ public interface CommitDAO {
       throws ModelDBException, NoSuchAlgorithmException;
 
   ListCommitsRequest.Response listCommits(
-      ListCommitsRequest request, RepositoryFunction getRepository) throws ModelDBException;
+      ListCommitsRequest request, RepositoryFunction getRepository, boolean ascending)
+      throws ModelDBException;
 
   Commit getCommit(String commitHash, RepositoryFunction getRepository) throws ModelDBException;
 
