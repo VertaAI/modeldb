@@ -171,20 +171,18 @@ class Endpoint(object):
         if wait:
             print("waiting for update...", end='')
             sys.stdout.flush()
-            while self.get_status()['status'] not in ("active", "error"):
+
+            status_dict = self.get_status()  # if you think of a better var name, please do use it haha
+            while status_dict['status'] not in ("active", "error") \
+                    or (status_dict['status'] == "active" and len(self.get_status()['components']) > 1):
                 print(".", end='')
+                status_dict = self.get_status()
                 sys.stdout.flush()
                 time.sleep(5)
 
-            if self.get_status()['status'] == "error":
-                print()
-                raise RuntimeError("endpoint update failed")
-
-            while len(self.get_status()['components']) > 1:
-                print(".", end='')
-                sys.stdout.flush()
-                time.sleep(5)
             print()
+            if self.get_status()['status'] == "error":
+                raise RuntimeError("endpoint update failed")
 
         return self.get_status()
 
