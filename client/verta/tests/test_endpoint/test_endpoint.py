@@ -292,7 +292,12 @@ class TestEndpoint:
                                   'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
 
 
-    def test_get_deployed_model(self, client, experiment_run, model_for_deployment, created_endpoints):
+    def test_get_deployed_model(self, client, experiment_run, model_version, model_for_deployment, created_endpoints):
+        """
+        Verifies prediction for a finished deployment, as well as for an endpoint in the middle of being updated.
+        """
+        np = pytest.importorskip("numpy")
+
         model = model_for_deployment['model'].fit(
             model_for_deployment['train_features'],
             model_for_deployment['train_targets'],
@@ -303,12 +308,20 @@ class TestEndpoint:
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
-        endpoint.update(experiment_run, DirectUpdateStrategy())
+        endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
-        while not endpoint.get_status()['status'] == "active":
-            time.sleep(3)
         x = model_for_deployment['train_features'].iloc[1].values
         assert endpoint.get_deployed_model().predict([x]) == [2]
+
+        new_model = model_for_deployment['model'].fit(
+            np.random.random(model_for_deployment['train_features'].shape),
+            np.random.random(model_for_deployment['train_targets'].shape).round()
+        )
+        model_version.log_model(new_model)
+        model_version.log_environment(Python(requirements=["scikit-learn"]))
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=False)
+        endpoint.get_deployed_model().predict([x])  # should succeed, because the endpoint can still service requests
 
     def test_update_from_model_version(self, client, model_version, created_endpoints):
         np = pytest.importorskip("numpy")
