@@ -30,7 +30,7 @@ class _AutoscalingMetric(object):
         metric_name = metric_dict["parameters"][0]["name"]
         metric_value = metric_dict["parameters"][0]["value"]
 
-        METRIC_SUBCLASSES = [CpuTarget, RequestsPerWorkerTarget, MemoryTarget]
+        METRIC_SUBCLASSES = [CpuUtilizationTarget, RequestsPerWorkerTarget, MemoryUtilizationTarget]
 
         for Subclass in METRIC_SUBCLASSES:
             if parent_name == Subclass._PARENT_NAME and metric_name == Subclass._NAME:
