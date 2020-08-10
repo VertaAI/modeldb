@@ -48,24 +48,40 @@ class _UpdateRule(object):
 
 
 class MaximumAverageLatencyThresholdRule(_UpdateRule):
+    """
+    Rule for maximum average latency threshold.
+
+    """
     _RULE_ID = 1005
     _PARENT_NAME = "latency_avg_max"
     _NAME = "threshold"
 
 
 class MaximumP90LatencyThresholdRule(_UpdateRule):
+    """
+    Rule for maximum p90 latency threshold.
+
+    """
     _RULE_ID = 1006
     _PARENT_NAME = "latency_p90_max"
     _NAME = "threshold"
 
 
 class MaximumRequestErrorPercentageThresholdRule(_UpdateRule):
+    """
+    Rule for maximum request error percentage threshold.
+
+    """
     _RULE_ID = 1007
     _PARENT_NAME = "error_4xx_rate"
     _NAME = "threshold"
 
 
 class MaximumServerErrorPercentageThresholdRule(_UpdateRule):
+    """
+    Rule for maximum server error percentage threshold.
+
+    """
     _RULE_ID = 1008
     _PARENT_NAME = "error_5xx_rate"
     _NAME = "threshold"
