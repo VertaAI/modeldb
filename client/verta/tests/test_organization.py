@@ -91,7 +91,7 @@ class TestOrganization:
         assert project.id != new_project.id
         assert exp.id != new_exp.id
         assert run.id != new_run.id
-        assert dataset.name != new_dataset.name
+        assert dataset.id != new_dataset.id
 
         # only need to delete new project:
         delete_project(new_project.id, client._conn)
