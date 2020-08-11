@@ -107,6 +107,10 @@ class Connection:
         else:
             raise_for_http_error(response)
 
+    @staticmethod
+    def must_response(response):
+        raise_for_http_error(response)
+
 
 class NoneProtoResponse(object):
     def __init__(self):
