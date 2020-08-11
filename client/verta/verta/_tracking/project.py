@@ -193,3 +193,10 @@ class Project(_ModelDBEntity):
             error_message_username_type = "username should be string"
             raise TypeError(error_message_username_type)
 
+    def delete(self):
+        Message = _ProjectService.DeleteProject
+        msg = Message(id=self.id)
+        response = self._conn.make_proto_request("DELETE",
+                                           "/api/v1/modeldb/project/deleteProject",
+                                           body=msg)
+        self._conn.must_response(response)
