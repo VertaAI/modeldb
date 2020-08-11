@@ -9,6 +9,9 @@ from click.testing import CliRunner
 from verta import Client
 from verta._cli import cli
 from verta._registry import RegisteredModel
+from verta._internal_utils import _utils
+
+from ..utils import delete_organization
 
 
 class TestCreate:
@@ -178,6 +181,29 @@ class TestCreate:
         )
         assert result.exception
         assert error_message in result.output
+
+    @pytest.mark.skip("bug in uac service")
+    def test_create_workspace_config(self, client, organization, in_tempdir):
+        model_name = _utils.generate_default_name()
+        version_name = _utils.generate_default_name()
+
+        client_config = {
+            "workspace": organization.name
+        }
+
+        filepath = "verta_config.json"
+        with open(filepath, "w") as f:
+            json.dump(client_config, f)
+
+        runner = CliRunner()
+        runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodel', model_name],
+        )
+
+        client = Client()
+        model = client.get_registered_model(model_name)
+        assert model.workspace == organization.name
 
 
 class TestGet:

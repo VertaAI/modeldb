@@ -8,8 +8,9 @@ from verta import Client
 from verta._cli import cli
 from verta._internal_utils import _utils
 from verta.environment import Python
+from verta._tracking.organization import Organization
 
-from ..utils import get_build_ids, delete_organization
+from ..utils import get_build_ids, delete_organization, delete_endpoint
 
 
 class TestList:
@@ -46,12 +47,9 @@ class TestCreate:
 
         created_endpoints.append(endpoint)
 
-    def test_create_workspace_config(self, client, in_tempdir, created_endpoints, created_registered_models):
-        workspace_name = _utils.generate_default_name()
-        client._create_organization(workspace_name)
-
+    def test_create_workspace_config(self, client, organization, in_tempdir, created_endpoints):
         client_config = {
-            "workspace": workspace_name
+            "workspace": organization.name
         }
 
         filepath = "verta_config.json"
@@ -70,13 +68,9 @@ class TestCreate:
 
         client = Client()
         endpoint = client.get_endpoint(endpoint_name)
-        created_endpoints.append(endpoint)
-        assert endpoint.workspace == workspace_name
+        assert endpoint.workspace == organization.name
 
-        # determine workspace id and delete workspace:
-        registered_model = client.create_registered_model("some-model")
-        created_registered_models.append(registered_model)
-        delete_organization(registered_model._msg.workspace_id, client._conn)
+        created_endpoints.append(endpoint)
 
 
 class TestUpdate:
