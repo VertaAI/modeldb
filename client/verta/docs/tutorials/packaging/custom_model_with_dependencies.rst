@@ -1,4 +1,4 @@
-Creating custom models with dependencies
+Creating Custom Models With Dependencies
 ========================================
 
 Sometimes just `custom models <custom_model.html>`_ by themselves are not enough and you need to add
