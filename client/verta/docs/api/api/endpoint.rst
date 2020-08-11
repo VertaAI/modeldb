@@ -11,3 +11,27 @@ Endpoint
 --------
 .. autoclass:: verta._deployment.endpoint.Endpoint()
     :members:
+
+Update Strategies
+-----------------
+.. automodule:: verta.deployment.update._strategies
+    :members:
+
+Canary Update Rules
+^^^^^^^^^^^^^^^^^^^
+.. automodule:: verta.deployment.update.rules
+    :members:
+
+Update Configuration
+--------------------
+Resources
+^^^^^^^^^
+.. automodule:: verta.deployment.resources
+    :members:
+
+Autoscaling
+^^^^^^^^^^^
+.. automodule:: verta.deployment.autoscaling._autoscaling
+    :members:
+.. automodule:: verta.deployment.autoscaling.metrics
+    :members:
