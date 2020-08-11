@@ -8,9 +8,8 @@ from verta import Client
 from verta._cli import cli
 from verta._internal_utils import _utils
 from verta.environment import Python
-from verta._tracking.organization import Organization
 
-from ..utils import get_build_ids, delete_organization, delete_endpoint
+from ..utils import get_build_ids
 
 
 class TestList:
