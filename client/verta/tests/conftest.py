@@ -8,6 +8,8 @@ import random
 import shutil
 import string
 import tempfile
+import subprocess
+import sys
 
 import requests
 
@@ -369,3 +371,16 @@ def created_endpoints(client):
 
     for endpoint in to_delete:
         utils.delete_endpoint(endpoint.id, endpoint.workspace, client._conn)
+
+@pytest.fixture
+def requirements_file():
+    with tempfile.NamedTemporaryFile('w+') as tempf:
+        # create requirements file from pip freeze
+        pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+        pip_freeze = six.ensure_str(pip_freeze)
+        tempf.write(pip_freeze)
+        tempf.flush()  # flush object buffer
+        os.fsync(tempf.fileno())  # flush OS buffer
+        tempf.seek(0)
+
+        yield tempf

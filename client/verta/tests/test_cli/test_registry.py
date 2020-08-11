@@ -9,6 +9,7 @@ from click.testing import CliRunner
 from verta import Client
 from verta._cli import cli
 from verta._registry import RegisteredModel
+from verta.environment import Python
 
 
 class TestCreate:
@@ -28,7 +29,7 @@ class TestCreate:
 
         created_registered_models.append(registered_model)
 
-    def test_create_version(self, registered_model, in_tempdir):
+    def test_create_version(self, registered_model, in_tempdir, requirements_file):
         LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
 
         model_name = registered_model.name
@@ -48,7 +49,7 @@ class TestCreate:
         result = runner.invoke(
             cli,
             ['registry', 'create', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2',
-             "--artifact", "file={}".format(filename), "--model", classifier_name],
+             "--artifact", "file={}".format(filename), "--model", classifier_name, "--requirements", requirements_file.name],
         )
         assert not result.exception
 
@@ -57,6 +58,11 @@ class TestCreate:
         assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
         assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
+
+        # Check environment:
+        reqs = Python.read_pip_file(requirements_file.name)
+        env = Python(requirements=reqs)
+        assert repr(env) == str(model_version.get_environment())
 
     def test_create_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name
@@ -350,7 +356,7 @@ class TestUpdate:
         assert registered_model.get_labels() == ["label1", "label2"]
 
 
-    def test_update_version(self, registered_model, in_tempdir):
+    def test_update_version(self, registered_model, in_tempdir, requirements_file):
         LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
 
         model_name = registered_model.name
@@ -371,7 +377,9 @@ class TestUpdate:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'update', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2', "--artifact", "file={}".format(filename), "--model", classifier_name],
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name,
+             '-l', 'label1', '-l', 'label2', "--artifact", "file={}".format(filename),
+             "--model", classifier_name, "--requirements", requirements_file.name],
         )
         assert not result.exception
 
@@ -379,6 +387,11 @@ class TestUpdate:
         assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
         assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
+
+        # Check environment:
+        reqs = Python.read_pip_file(requirements_file.name)
+        env = Python(requirements=reqs)
+        assert repr(env) == str(model_version.get_environment())
 
     def test_update_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name
