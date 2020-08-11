@@ -20,7 +20,7 @@ def update():
 @click.argument("path", nargs=1, required=True)
 @click.option("--run-id", "-r", help="Experiment Run to deploy. Cannot be used alongside --model-version-id.")
 @click.option("--model-version-id", "-m", help="Model Version to deploy. Cannot be used alongside --run-id.")
-@click.option("--filename", "-f", type=click.Path(exists=True, dir_okay=False), help="Path to JSON or YAML config file. Can only be used alongside --workspace.")
+@click.option("--filename", "-f", type=click.Path(exists=True, dir_okay=False), help="Path to JSON or YAML config file. Can't be used alongside other options except for --workspace.")
 @click.option("--strategy", "-s", type=click.Choice(['direct', 'canary'], case_sensitive=False), help="Strategy to use to roll out new deployment.")
 @click.option("--canary-rule", "-c", multiple=True, help="Rule to use for canary deployment. Can only be used alongside --strategy=canary.")
 @click.option("--canary-interval", "-i", type=click.IntRange(min=0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary.")
