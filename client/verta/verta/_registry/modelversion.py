@@ -226,7 +226,8 @@ class RegisteredModelVersion(_DeployableEntity):
         )
 
         # Log modules:
-        self._log_modules(custom_modules, overwrite=overwrite)
+        custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
+        self.log_artifact("custom_modules", custom_modules_artifact, overwrite, 'zip')
 
         # build model API
         if model_api is None:
@@ -268,8 +269,6 @@ class RegisteredModelVersion(_DeployableEntity):
         self._msg.ClearField("model")
         self._update()
 
-    def _log_modules_as_artifact(self, modules_bytestream, overwrite):
-        self.log_artifact("custom_modules", modules_bytestream, overwrite, 'zip')
 
     def log_artifact(self, key, artifact, overwrite=False, extension=None):
         """

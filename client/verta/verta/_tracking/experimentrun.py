@@ -1337,7 +1337,9 @@ class ExperimentRun(_DeployableEntity):
         if artifacts:
             self.log_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts)
 
-        self._log_modules(custom_modules, overwrite=overwrite)
+        custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
+        self._log_artifact("custom_modules", custom_modules_artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
+
         self._log_artifact("model.pkl", serialized_model, _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
         self._log_artifact("model_api.json", model_api, _CommonCommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
 
@@ -1849,9 +1851,6 @@ class ExperimentRun(_DeployableEntity):
                           category=FutureWarning)
 
         self._log_modules(paths)
-
-    def _log_modules_as_artifact(self, modules_bytestream, overwrite):
-        self._log_artifact("custom_modules", modules_bytestream, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
     def log_setup_script(self, script, overwrite=False):
         """

@@ -22,7 +22,7 @@ _CUSTOM_MODULES_DIR = os.environ.get('VERTA_CUSTOM_MODULES_DIR', "/app/custom_mo
 
 
 class _DeployableEntity(_ModelDBEntity):
-    def _log_modules(self, paths=None, overwrite=False):
+    def _custom_modules_as_artifact(self, paths=None):
         if isinstance(paths, six.string_types):
             paths = [paths]
         if paths is not None:
@@ -124,7 +124,4 @@ class _DeployableEntity(_ModelDBEntity):
                 zipf.printdir()
         bytestream.seek(0)
 
-        self._log_modules_as_artifact(bytestream, overwrite=overwrite)
-
-    def _log_modules_as_artifact(self, modules_bytestream, overwrite):
-        raise NotImplementedError
+        return bytestream
