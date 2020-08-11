@@ -544,11 +544,23 @@
     "uacGetCollaboratorResponse": {
       "type": "object",
       "properties": {
-        "shared_users": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacGetCollaboratorResponse"
-          }
+        "user_id": {
+          "type": "string"
+        },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "share_via_type": {
+          "$ref": "#/definitions/uacShareViaEnum"
+        },
+        "verta_id": {
+          "type": "string"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "authz_entity_type": {
+          "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
         }
       }
     },
@@ -592,6 +604,12 @@
         },
         "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "default_registered_model_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "workspace_id": {
+          "type": "string"
         }
       }
     },
@@ -711,6 +729,9 @@
         },
         "publicProfile": {
           "$ref": "#/definitions/uacFlagEnum"
+        },
+        "workspace_id": {
+          "type": "string"
         }
       }
     }

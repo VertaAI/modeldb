@@ -404,6 +404,14 @@ func request_RegistryService_UpdateRegisteredModel_0(ctx context.Context, marsha
 	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.RegisteredModel); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		_, md := descriptor.ForMessage(protoReq.RegisteredModel)
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), md); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
+	}
 
 	var (
 		val string
@@ -456,6 +464,14 @@ func local_request_RegistryService_UpdateRegisteredModel_0(ctx context.Context, 
 	}
 	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.RegisteredModel); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		_, md := descriptor.ForMessage(protoReq.RegisteredModel)
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), md); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
 	}
 
 	var (
@@ -514,6 +530,14 @@ func request_RegistryService_UpdateRegisteredModel_1(ctx context.Context, marsha
 	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.RegisteredModel); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		_, md := descriptor.ForMessage(protoReq.RegisteredModel)
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), md); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
+	}
 
 	var (
 		val string
@@ -556,6 +580,14 @@ func local_request_RegistryService_UpdateRegisteredModel_1(ctx context.Context, 
 	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.RegisteredModel); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		_, md := descriptor.ForMessage(protoReq.RegisteredModel)
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), md); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
+	}
 
 	var (
 		val string
@@ -579,6 +611,204 @@ func local_request_RegistryService_UpdateRegisteredModel_1(ctx context.Context, 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RegistryService_UpdateRegisteredModel_1); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.UpdateRegisteredModel(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_RegistryService_UpdateRegisteredModel_2 = &utilities.DoubleArray{Encoding: map[string]int{"registered_model": 0, "id": 1, "named_id": 2, "workspace_name": 3, "name": 4}, Base: []int{1, 1, 3, 1, 2, 4, 0, 0, 4, 0}, Check: []int{0, 1, 1, 3, 4, 3, 2, 5, 6, 9}}
+)
+
+func request_RegistryService_UpdateRegisteredModel_2(ctx context.Context, marshaler runtime.Marshaler, client RegistryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq SetRegisteredModel
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.RegisteredModel); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id.named_id.workspace_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.named_id.workspace_name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.named_id.workspace_name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.named_id.workspace_name", err)
+	}
+
+	val, ok = pathParams["id.named_id.name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.named_id.name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.named_id.name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.named_id.name", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RegistryService_UpdateRegisteredModel_2); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.UpdateRegisteredModel(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_RegistryService_UpdateRegisteredModel_2(ctx context.Context, marshaler runtime.Marshaler, server RegistryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq SetRegisteredModel
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.RegisteredModel); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id.named_id.workspace_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.named_id.workspace_name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.named_id.workspace_name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.named_id.workspace_name", err)
+	}
+
+	val, ok = pathParams["id.named_id.name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.named_id.name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.named_id.name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.named_id.name", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RegistryService_UpdateRegisteredModel_2); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.UpdateRegisteredModel(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_RegistryService_UpdateRegisteredModel_3 = &utilities.DoubleArray{Encoding: map[string]int{"registered_model": 0, "id": 1, "registered_model_id": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 3, 2, 4}}
+)
+
+func request_RegistryService_UpdateRegisteredModel_3(ctx context.Context, marshaler runtime.Marshaler, client RegistryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq SetRegisteredModel
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.RegisteredModel); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id.registered_model_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.registered_model_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.registered_model_id", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.registered_model_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RegistryService_UpdateRegisteredModel_3); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.UpdateRegisteredModel(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_RegistryService_UpdateRegisteredModel_3(ctx context.Context, marshaler runtime.Marshaler, server RegistryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq SetRegisteredModel
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.RegisteredModel); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id.registered_model_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.registered_model_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.registered_model_id", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.registered_model_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RegistryService_UpdateRegisteredModel_3); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -1350,6 +1580,14 @@ func request_RegistryService_UpdateModelVersion_0(ctx context.Context, marshaler
 	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.ModelVersion); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		_, md := descriptor.ForMessage(protoReq.ModelVersion)
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), md); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
+	}
 
 	var (
 		val string
@@ -1413,6 +1651,14 @@ func local_request_RegistryService_UpdateModelVersion_0(ctx context.Context, mar
 	}
 	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.ModelVersion); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		_, md := descriptor.ForMessage(protoReq.ModelVersion)
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), md); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
 	}
 
 	var (
@@ -1482,6 +1728,14 @@ func request_RegistryService_UpdateModelVersion_1(ctx context.Context, marshaler
 	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.ModelVersion); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		_, md := descriptor.ForMessage(protoReq.ModelVersion)
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), md); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
+	}
 
 	var (
 		val string
@@ -1535,6 +1789,14 @@ func local_request_RegistryService_UpdateModelVersion_1(ctx context.Context, mar
 	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.ModelVersion); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		_, md := descriptor.ForMessage(protoReq.ModelVersion)
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), md); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
+	}
 
 	var (
 		val string
@@ -1569,6 +1831,248 @@ func local_request_RegistryService_UpdateModelVersion_1(ctx context.Context, mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RegistryService_UpdateModelVersion_1); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.UpdateModelVersion(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_RegistryService_UpdateModelVersion_2 = &utilities.DoubleArray{Encoding: map[string]int{"model_version": 0, "id": 1, "model_id": 2, "named_id": 3, "workspace_name": 4, "name": 5, "model_version_id": 6}, Base: []int{1, 1, 6, 1, 1, 2, 4, 5, 0, 0, 4, 0, 6, 0}, Check: []int{0, 1, 1, 3, 4, 5, 3, 7, 2, 6, 8, 11, 3, 13}}
+)
+
+func request_RegistryService_UpdateModelVersion_2(ctx context.Context, marshaler runtime.Marshaler, client RegistryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq SetModelVersion
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.ModelVersion); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id.model_id.named_id.workspace_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_id.named_id.workspace_name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_id.named_id.workspace_name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_id.named_id.workspace_name", err)
+	}
+
+	val, ok = pathParams["id.model_id.named_id.name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_id.named_id.name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_id.named_id.name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_id.named_id.name", err)
+	}
+
+	val, ok = pathParams["id.model_version_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_version_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_version_id", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_version_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RegistryService_UpdateModelVersion_2); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.UpdateModelVersion(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_RegistryService_UpdateModelVersion_2(ctx context.Context, marshaler runtime.Marshaler, server RegistryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq SetModelVersion
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.ModelVersion); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id.model_id.named_id.workspace_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_id.named_id.workspace_name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_id.named_id.workspace_name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_id.named_id.workspace_name", err)
+	}
+
+	val, ok = pathParams["id.model_id.named_id.name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_id.named_id.name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_id.named_id.name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_id.named_id.name", err)
+	}
+
+	val, ok = pathParams["id.model_version_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_version_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_version_id", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_version_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RegistryService_UpdateModelVersion_2); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.UpdateModelVersion(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_RegistryService_UpdateModelVersion_3 = &utilities.DoubleArray{Encoding: map[string]int{"model_version": 0, "id": 1, "model_id": 2, "registered_model_id": 3, "model_version_id": 4}, Base: []int{1, 1, 1, 1, 2, 3, 0, 0, 0}, Check: []int{0, 1, 1, 3, 4, 3, 2, 5, 6}}
+)
+
+func request_RegistryService_UpdateModelVersion_3(ctx context.Context, marshaler runtime.Marshaler, client RegistryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq SetModelVersion
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.ModelVersion); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id.model_id.registered_model_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_id.registered_model_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_id.registered_model_id", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_id.registered_model_id", err)
+	}
+
+	val, ok = pathParams["id.model_version_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_version_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_version_id", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_version_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RegistryService_UpdateModelVersion_3); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.UpdateModelVersion(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_RegistryService_UpdateModelVersion_3(ctx context.Context, marshaler runtime.Marshaler, server RegistryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq SetModelVersion
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.ModelVersion); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id.model_id.registered_model_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_id.registered_model_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_id.registered_model_id", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_id.registered_model_id", err)
+	}
+
+	val, ok = pathParams["id.model_version_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id.model_version_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "id.model_version_id", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id.model_version_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RegistryService_UpdateModelVersion_3); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -2246,7 +2750,7 @@ func RegisterRegistryServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("PUT", pattern_RegistryService_UpdateRegisteredModel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PATCH", pattern_RegistryService_UpdateRegisteredModel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2266,7 +2770,7 @@ func RegisterRegistryServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("PUT", pattern_RegistryService_UpdateRegisteredModel_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PATCH", pattern_RegistryService_UpdateRegisteredModel_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2283,6 +2787,46 @@ func RegisterRegistryServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		}
 
 		forward_RegistryService_UpdateRegisteredModel_1(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_RegistryService_UpdateRegisteredModel_2, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_RegistryService_UpdateRegisteredModel_2(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RegistryService_UpdateRegisteredModel_2(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_RegistryService_UpdateRegisteredModel_3, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_RegistryService_UpdateRegisteredModel_3(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RegistryService_UpdateRegisteredModel_3(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -2466,7 +3010,7 @@ func RegisterRegistryServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("PUT", pattern_RegistryService_UpdateModelVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PATCH", pattern_RegistryService_UpdateModelVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2486,7 +3030,7 @@ func RegisterRegistryServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("PUT", pattern_RegistryService_UpdateModelVersion_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PATCH", pattern_RegistryService_UpdateModelVersion_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2503,6 +3047,46 @@ func RegisterRegistryServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		}
 
 		forward_RegistryService_UpdateModelVersion_1(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_RegistryService_UpdateModelVersion_2, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_RegistryService_UpdateModelVersion_2(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RegistryService_UpdateModelVersion_2(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_RegistryService_UpdateModelVersion_3, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_RegistryService_UpdateModelVersion_3(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RegistryService_UpdateModelVersion_3(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -2787,7 +3371,7 @@ func RegisterRegistryServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("PUT", pattern_RegistryService_UpdateRegisteredModel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PATCH", pattern_RegistryService_UpdateRegisteredModel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2807,7 +3391,7 @@ func RegisterRegistryServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("PUT", pattern_RegistryService_UpdateRegisteredModel_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PATCH", pattern_RegistryService_UpdateRegisteredModel_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2824,6 +3408,46 @@ func RegisterRegistryServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		}
 
 		forward_RegistryService_UpdateRegisteredModel_1(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_RegistryService_UpdateRegisteredModel_2, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_RegistryService_UpdateRegisteredModel_2(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RegistryService_UpdateRegisteredModel_2(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_RegistryService_UpdateRegisteredModel_3, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_RegistryService_UpdateRegisteredModel_3(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RegistryService_UpdateRegisteredModel_3(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -3007,7 +3631,7 @@ func RegisterRegistryServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("PUT", pattern_RegistryService_UpdateModelVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PATCH", pattern_RegistryService_UpdateModelVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -3027,7 +3651,7 @@ func RegisterRegistryServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("PUT", pattern_RegistryService_UpdateModelVersion_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PATCH", pattern_RegistryService_UpdateModelVersion_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -3044,6 +3668,46 @@ func RegisterRegistryServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		}
 
 		forward_RegistryService_UpdateModelVersion_1(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_RegistryService_UpdateModelVersion_2, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_RegistryService_UpdateModelVersion_2(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RegistryService_UpdateModelVersion_2(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_RegistryService_UpdateModelVersion_3, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_RegistryService_UpdateModelVersion_3(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RegistryService_UpdateModelVersion_3(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -3205,6 +3869,10 @@ var (
 
 	pattern_RegistryService_UpdateRegisteredModel_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "registry", "registered_models", "id.registered_model_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
+	pattern_RegistryService_UpdateRegisteredModel_2 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "registry", "workspaces", "id.named_id.workspace_name", "registered_models", "id.named_id.name"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_RegistryService_UpdateRegisteredModel_3 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "registry", "registered_models", "id.registered_model_id"}, "", runtime.AssumeColonVerbOpt(true)))
+
 	pattern_RegistryService_DeleteRegisteredModel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "registry", "workspaces", "id.named_id.workspace_name", "registered_models", "id.named_id.name"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_RegistryService_DeleteRegisteredModel_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "registry", "registered_models", "id.registered_model_id"}, "", runtime.AssumeColonVerbOpt(true)))
@@ -3226,6 +3894,10 @@ var (
 	pattern_RegistryService_UpdateModelVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "registry", "workspaces", "id.model_id.named_id.workspace_name", "registered_models", "id.model_id.named_id.name", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_RegistryService_UpdateModelVersion_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "registry", "registered_models", "id.model_id.registered_model_id", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_RegistryService_UpdateModelVersion_2 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "registry", "workspaces", "id.model_id.named_id.workspace_name", "registered_models", "id.model_id.named_id.name", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_RegistryService_UpdateModelVersion_3 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "registry", "registered_models", "id.model_id.registered_model_id", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_RegistryService_DeleteModelVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "registry", "workspaces", "id.model_id.named_id.workspace_name", "registered_models", "id.model_id.named_id.name", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
@@ -3257,6 +3929,10 @@ var (
 
 	forward_RegistryService_UpdateRegisteredModel_1 = runtime.ForwardResponseMessage
 
+	forward_RegistryService_UpdateRegisteredModel_2 = runtime.ForwardResponseMessage
+
+	forward_RegistryService_UpdateRegisteredModel_3 = runtime.ForwardResponseMessage
+
 	forward_RegistryService_DeleteRegisteredModel_0 = runtime.ForwardResponseMessage
 
 	forward_RegistryService_DeleteRegisteredModel_1 = runtime.ForwardResponseMessage
@@ -3278,6 +3954,10 @@ var (
 	forward_RegistryService_UpdateModelVersion_0 = runtime.ForwardResponseMessage
 
 	forward_RegistryService_UpdateModelVersion_1 = runtime.ForwardResponseMessage
+
+	forward_RegistryService_UpdateModelVersion_2 = runtime.ForwardResponseMessage
+
+	forward_RegistryService_UpdateModelVersion_3 = runtime.ForwardResponseMessage
 
 	forward_RegistryService_DeleteModelVersion_0 = runtime.ForwardResponseMessage
 

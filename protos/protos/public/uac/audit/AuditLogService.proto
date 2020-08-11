@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package ai.verta.uac.versioning;
+
+option
+go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac/audit";
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+import "common/CommonService.proto";
+
+//What
+message AuditResource {
+
+    // id of the resource
+    string resource_id = 1;
+    // the tyep of the resource
+    string resource_type = 2;
+    // the service the resource belongs to
+    string resource_service = 3;
+}
+
+//Who
+message AuditUser {
+
+    //verta id of the user performing the action
+    string user_id = 1;
+}
+
+message AuditLog {
+
+    //Who
+    AuditUser user = 1;
+
+    //What
+    AuditResource resource = 2;
+
+    // How : the action the user performed
+    string action = 3;
+
+    //When: timestamp
+    int64 ts_nano = 4;
+
+    //other metadata, this is free formed.
+    string metadata_blob = 5;
+
+    //local id, used for consistency
+    string local_id = 6;
+}
+
+message BatchResponseRow {
+    string local_id = 1;
+    bool acknowledge = 2;
+    int32 error_code = 3;
+    string error = 4;
+}
+
+message AddAuditLogBatch {
+    repeated AuditLog log = 1;
+    message Response {
+        repeated BatchResponseRow response_rows = 1; 
+    }
+}
+
+message RangeTimeStampPredicate {
+    int64 from_ts = 1;
+    int64 to_ts = 2;
+}
+
+message UserPredicate {
+// the query could be with the user id or with the service the service account belongs to
+// Example 
+// log for user with id "123"
+    AuditUser user = 1;
+}
+
+message ResourcePredicate {
+//  resource_id, resource_type, resource_service form an hierarchy
+// Querying on any thing on left will require values to be provided for things on right
+//Example :
+// log for resource 123 of type "project" belonging to resource service "deployment"
+// log for all resources of type "project" belonging to resource service "deployment"
+// log for all resources where resource_service = "deployment"
+    AuditResource resource = 1;
+}
+
+message AuditLogPredicates {
+//all the predicates will be And-ed
+    RangeTimeStampPredicate timestamp_predicate = 1;
+    UserPredicate user_predicate = 2;
+    ResourcePredicate resource_predicate = 3;
+}
+
+message FindAuditLog {
+    AuditLogPredicates query = 1;
+    common.Pagination pagination = 2;
+    message Response {
+        repeated AuditLog logs = 1;
+        int64 total_records = 2;
+    }
+
+}
+
+service AuditLogService {
+    rpc postAuditLogs (AddAuditLogBatch) returns (AddAuditLogBatch.Response) {
+        option (google.api.http) = {
+            post : "/v1/audit-log/postAuditLogs" 
+            body : "*" 
+        };
+    };
+    rpc findAuditLog (FindAuditLog) returns (FindAuditLog.Response) {
+        option (google.api.http) = {
+            post : "/v1/audit-log/findAuditLog" 
+            body : "*" 
+        };
+    };
+}
