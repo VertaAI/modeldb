@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import os
 import time
+from google.protobuf.struct_pb2 import Value
 
 import requests
 
@@ -142,10 +143,15 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, registered_model_id):
+        if isinstance(name, six.string_types):
+            value = Value(string_value=name)
+        else:
+            raise TypeError("`name` must be a string")
+
         Message = _ModelVersionService.FindModelVersionRequest
         predicates = [
             _CommonCommonService.KeyValueQuery(key="version",
-                                               value=_utils.python_to_val_proto(name),
+                                               value=value,
                                                operator=_CommonCommonService.OperatorEnum.EQ)
         ]
         endpoint = "/api/v1/registry/registered_models/{}/model_versions/find".format(registered_model_id)
