@@ -7,6 +7,8 @@ from verta._protos.public.uac import Organization_pb2 as _Organization
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._tracking.organization import Organization, CollaboratorType
 
+from .utils import delete_project
+
 
 def test_create_msg():
     assert Organization._create_msg("name", "desc", None, None) == \
@@ -33,15 +35,25 @@ class TestOrganization:
 
     def test_create_same_name_diff_workspace(self, client, organization, in_tempdir, created_endpoints, created_registered_models):
         # creating some entities:
+        project_name = _utils.generate_default_name()
+        exp_name = _utils.generate_default_name()
+        run_name = _utils.generate_default_name()
+
         model_name = _utils.generate_default_name()
         version_name = _utils.generate_default_name()
+
         endpoint_path = _utils.generate_default_name()
+
+        project = client.create_project(project_name)
+        exp = client.create_experiment(exp_name)
+        run = client.create_experiment_run(run_name)
 
         model = client.create_registered_model(name=model_name)
         version = model.create_version(name=version_name)
+        created_registered_models.append(model)
+
         endpoint = client.create_endpoint(path=endpoint_path)
         created_endpoints.append(endpoint)
-        created_registered_models.append(model)
 
         # Switching workspace name:
         client_config = {
@@ -56,11 +68,22 @@ class TestOrganization:
 
         # create entities with same name, but different workspace:
         new_model = client.create_registered_model(name=model_name)
-        new_version = model.create_version(name=version_name)
+        new_version = new_model.create_version(name=version_name)
         new_endpoint = client.create_endpoint(path=endpoint_path)
+
+        new_project = client.create_project(project_name)
+        new_exp = client.create_experiment(exp_name)
+        new_run = client.create_experiment_run(run_name)
+
         created_endpoints.append(new_endpoint)
-        created_registered_models.append(model)
+        created_registered_models.append(new_model)
 
         assert model.id != new_model.id
         assert version.id != new_version.id
         assert endpoint.id != new_endpoint.id
+        assert project.id != new_project.id
+        assert exp.id != new_exp.id
+        assert run.id != new_run.id
+
+        # only need to delete new project:
+        delete_project(new_project.id, client._conn)
