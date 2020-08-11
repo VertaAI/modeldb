@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import os
 import time
+from google.protobuf.struct_pb2 import Value
 
 import requests
 
@@ -142,10 +143,15 @@ class RegisteredModelVersion(_ModelDBEntity):
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, registered_model_id):
+        if isinstance(name, six.string_types):
+            value = Value(string_value=name)
+        else:
+            raise TypeError("`name` must be a string")
+
         Message = _ModelVersionService.FindModelVersionRequest
         predicates = [
             _CommonCommonService.KeyValueQuery(key="version",
-                                               value=_utils.python_to_val_proto(name),
+                                               value=value,
                                                operator=_CommonCommonService.OperatorEnum.EQ)
         ]
         endpoint = "/api/v1/registry/registered_models/{}/model_versions/find".format(registered_model_id)
@@ -230,7 +236,7 @@ class RegisteredModelVersion(_ModelDBEntity):
                 'type': model_type,
                 'deserialization': method,
             }
-        self.log_artifact("model_api.json", model_api, overwrite)
+        self.log_artifact("model_api.json", model_api, overwrite, "json")
 
     def get_model(self):
         """
@@ -258,7 +264,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._msg.ClearField("model")
         self._update()
 
-    def log_artifact(self, key, artifact, overwrite=False):
+    def log_artifact(self, key, artifact, overwrite=False, extension=None):
         """
         Logs an artifact to this Model Version.
 
@@ -274,6 +280,8 @@ class RegisteredModelVersion(_ModelDBEntity):
                 - Otherwise, the object will be serialized and uploaded as an artifact.
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
+        extension : str, optional
+            Filename extension associated with the artifact.
 
         """
         if key == "model":
@@ -296,10 +304,11 @@ class RegisteredModelVersion(_ModelDBEntity):
             artifact = open(artifact, 'rb')
         artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
-        try:
-            extension = _artifact_utils.get_file_ext(artifact_stream)
-        except (TypeError, ValueError):
-            extension = _artifact_utils.ext_from_method(method)
+        if not extension:
+            try:
+                extension = _artifact_utils.get_file_ext(artifact_stream)
+            except (TypeError, ValueError):
+                extension = _artifact_utils.ext_from_method(method)
 
         artifact_msg = self._create_artifact_msg(key, artifact_stream, artifact_type=artifact_type, extension=extension)
         if same_key_ind == -1:
@@ -544,7 +553,6 @@ class RegisteredModelVersion(_ModelDBEntity):
                                                path_only=False,
                                                artifact_type=artifact_type,
                                                filename_extension=extension)
-
         return artifact_msg
 
     def _get_artifact(self, key, artifact_type):
@@ -658,13 +666,15 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         """
         self._refresh_cache()
-        endpoint = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/dockercontext".format(
+        endpoint = "{}://{}/api/v1/deployment/builds/dockercontext".format(
             self._conn.scheme,
             self._conn.socket,
-            self._msg.registered_model_id,
-            self.id
         )
-        with _utils.make_request("GET", endpoint, self._conn, stream=True) as response:
+        body = {
+            "model_version_id": self.id
+        }
+
+        with _utils.make_request("POST", endpoint, self._conn, json=body, stream=True) as response:
             try:
                 _utils.raise_for_http_error(response)
             except requests.HTTPError as e:

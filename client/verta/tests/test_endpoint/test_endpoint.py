@@ -7,9 +7,9 @@ import verta
 from verta._deployment import Endpoint
 from verta.deployment.resources import CpuMillis, Memory
 from verta.deployment.autoscaling import Autoscaling
-from verta.deployment.autoscaling.metrics import CpuTarget, MemoryTarget, RequestsPerWorkerTarget
+from verta.deployment.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
-from verta.deployment.update.rules import AverageLatencyThresholdRule
+from verta.deployment.update.rules import MaximumAverageLatencyThresholdRule
 from verta._internal_utils import _utils
 from verta.environment import Python
 
@@ -157,7 +157,7 @@ class TestEndpoint:
 
         assert "canary update strategy must have at least one rule" in str(excinfo.value)
 
-        strategy.add_rule(AverageLatencyThresholdRule(0.8))
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
         updated_status = endpoint.update(experiment_run, strategy)
 
         # Check that a new build is added:
@@ -184,14 +184,14 @@ class TestEndpoint:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule": "latency",
+                    {"rule": "latency_avg_max",
                      "rule_parameters": [
-                         {"name": "latency_avg",
+                         {"name": "threshold",
                           "value": "0.1"}
                     ]},
-                    {"rule": "error_rate",
+                    {"rule": "error_4xx_rate",
                      "rule_parameters": [
-                        {"name": "error_rate",
+                        {"name": "threshold",
                          "value": "1"}
                     ]}
                 ]
@@ -226,14 +226,14 @@ class TestEndpoint:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule": "latency",
+                    {"rule": "latency_avg_max",
                      "rule_parameters": [
-                         {"name": "latency_avg",
+                         {"name": "threshold",
                           "value": "0.1"}
                     ]},
-                    {"rule": "error_rate",
+                    {"rule": "error_4xx_rate",
                      "rule_parameters": [
-                        {"name": "error_rate",
+                        {"name": "threshold",
                          "value": "1"}
                     ]}
                 ]
@@ -261,7 +261,7 @@ class TestEndpoint:
 
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
 
-        strategy.add_rule(AverageLatencyThresholdRule(0.8))
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
         updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMillis(500), Memory("500Mi"), ],
                                          env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
@@ -371,14 +371,14 @@ class TestEndpoint:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule": "latency",
+                    {"rule": "latency_avg_max",
                      "rule_parameters": [
-                         {"name": "latency_avg",
+                         {"name": "threshold",
                           "value": "0.1"}
                     ]},
-                    {"rule": "error_rate",
+                    {"rule": "error_4xx_rate",
                      "rule_parameters": [
-                        {"name": "error_rate",
+                        {"name": "threshold",
                          "value": "1"}
                     ]}
                 ]
@@ -406,8 +406,8 @@ class TestEndpoint:
         created_endpoints.append(endpoint)
 
         autoscaling = Autoscaling(min_replicas=0, max_replicas=2, min_scale=0.5, max_scale=2.0)
-        autoscaling.add_metric(CpuTarget(0.5))
-        autoscaling.add_metric(MemoryTarget(0.7))
+        autoscaling.add_metric(CpuUtilizationTarget(0.5))
+        autoscaling.add_metric(MemoryUtilizationTarget(0.7))
         autoscaling.add_metric(RequestsPerWorkerTarget(100))
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
@@ -419,11 +419,8 @@ class TestEndpoint:
             assert metric["metric_id"] in [1001, 1002, 1003]
 
             if metric["metric_id"] == 1001:
-                assert metric["parameters"][0]["name"] == "cpu_target"
                 assert metric["parameters"][0]["value"] == "0.5"
             elif metric["metric_id"] == 1002:
-                assert metric["parameters"][0]["name"] == "requests_per_worker_target"
                 assert metric["parameters"][0]["value"] == "100"
             else:
-                assert metric["parameters"][0]["name"] == "memory_target"
                 assert metric["parameters"][0]["value"] == "0.7"

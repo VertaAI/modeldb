@@ -8,6 +8,8 @@ import random
 import shutil
 import string
 import tempfile
+import subprocess
+import sys
 
 import requests
 
@@ -379,3 +381,18 @@ def organization(client):
     yield org
 
     utils.delete_organization(org.id, client._conn)
+
+    
+@pytest.fixture
+def requirements_file():
+    with tempfile.NamedTemporaryFile('w+') as tempf:
+        # create requirements file from pip freeze
+        pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+        pip_freeze = six.ensure_str(pip_freeze)
+        tempf.write(pip_freeze)
+        tempf.flush()  # flush object buffer
+        os.fsync(tempf.fileno())  # flush OS buffer
+        tempf.seek(0)
+
+        yield tempf
+

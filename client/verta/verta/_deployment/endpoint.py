@@ -25,6 +25,20 @@ def merge_dicts(a, b):
 
 
 class Endpoint(object):
+    """
+    Object representing an endpoint for deployment.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`Client.create_endpoint`.
+
+    Attributes
+    ----------
+    id : int
+        ID of this Endpoint.
+    path : str
+        Path of this Endpoint.
+
+    """
     def __init__(self, conn, conf, workspace, id):
         self.workspace = workspace
         self._conn = conn
@@ -133,6 +147,29 @@ class Endpoint(object):
         return None
 
     def update(self, model_reference, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
+        """
+        Updates the Endpoint with a model logged in an Experiment Run or a Model Version.
+
+        Parameters
+        ----------
+        model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta._registry.modelversion.RegisteredModelVersion`
+            An Experiment Run or a Model Version with a model logged.
+        strategy : :class:`~verta.deployment.update._strategies._UpdateStrategy`
+            Strategy (direct or canary) for updating the Endpoint.
+        wait : bool
+            Whether to wait for the Endpoint to finish updating before returning.
+        resources : list of :class:`~verta.deployment.resources._Resource`
+            Resources allowed for the updated Endpoint.
+        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`
+            Autoscaling condition for the updated Endpoint.
+        env_vars : dict of str to str
+            Environment variables.
+
+        Returns
+        -------
+        status : dict of str to {None, bool, float, int, str, list, dict}
+
+        """
         if not isinstance(strategy, _UpdateStrategy):
             raise TypeError("`strategy` must be an object from verta.deployment.strategies")
 
@@ -232,6 +269,24 @@ class Endpoint(object):
         return response.json()["id"]
 
     def update_from_config(self, filepath):
+        """
+        Updates the Endpoint via a YAML or JSON config file.
+
+        Parameters
+        ----------
+        filepath : str
+            Path to the YAML or JSON config file.
+
+        Returns
+        -------
+        status : dict of str to {None, bool, float, int, str, list, dict}
+
+        Raises
+        ------
+        ValueError
+            If the file is not JSON or YAML.
+
+        """
         update_dict = None
 
         with open(filepath, 'r') as f:
@@ -279,6 +334,14 @@ class Endpoint(object):
         return self.update(model_reference, strategy)
 
     def get_status(self):
+        """
+        Gets status on the endpoint.
+
+        Returns
+        -------
+        status : dict of str to {None, bool, float, int, str, list, dict}
+
+        """
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}".format(
             self._conn.scheme,
             self._conn.socket,
@@ -294,6 +357,14 @@ class Endpoint(object):
         return response_json
 
     def get_access_token(self):
+        """
+        Gets the access token of the Endpoint.
+
+        Returns
+        -------
+        str or None
+
+        """
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/accesstokens".format(
             self._conn.scheme,
             self._conn.socket,
@@ -325,6 +396,19 @@ class Endpoint(object):
         return update_body
       
     def get_deployed_model(self):
+        """
+        Returns an object for making predictions against the deployed model.
+
+        Returns
+        -------
+        :class:`~verta.deployment.DeployedModel`
+
+        Raises
+        ------
+        RuntimeError
+            If the model is not currently deployed.
+
+        """
         status = self.get_status()
         if status['status'] not in ("active", "updating"):
             raise RuntimeError("model is not currently deployed (status: {})".format(status))
@@ -334,6 +418,14 @@ class Endpoint(object):
         return DeployedModel.from_url(url, access_token)
 
     def get_update_status(self):
+        """
+        Gets update status on the endpoint.
+
+        Returns
+        -------
+        update_status : dict of str to {None, bool, float, int, str, list, dict}
+
+        """
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/status".format(
             self._conn.scheme,
             self._conn.socket,

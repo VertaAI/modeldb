@@ -686,6 +686,8 @@ class Client(object):
         if dataset_ids:
             datasets = datasets.with_ids(_utils.as_list_of_str(dataset_ids))
         if sort_key:
+            if sort_key.startswith("time_"):
+                sort_key = "date_" + sort_key[len("time_"):]
             datasets = datasets.sort(sort_key, not ascending)
         if workspace:
             datasets = datasets.with_workspace(workspace)
@@ -932,6 +934,23 @@ class Client(object):
 
 
     def get_endpoint(self, path=None, workspace=None, id=None):
+        """
+        Retrieves an already created Endpoint. Only one of `path` or `id` can be provided.
+
+        Parameters
+        ----------
+        path : str, optional
+            Path of the Endpoint.
+        workspace : str, optional
+            Name of the workspace of the Endpoint.
+        id : str, optional
+            ID of the Endpoint. This parameter cannot be provided alongside `path`.
+
+        Returns
+        -------
+        :class:`~verta._deployment.endpoint.Endpoint`
+
+        """
         if path is not None and id is not None:
             raise ValueError("cannot specify both `path` and `id`")
         if path is None and id is None:
@@ -951,6 +970,10 @@ class Client(object):
         return endpoint
 
     def set_endpoint(self, *args, **kwargs):
+        """
+        Alias for :meth:`Client.get_or_create_endpoint()`.
+
+        """
         return self.get_or_create_endpoint(*args, **kwargs)
 
     def create_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):

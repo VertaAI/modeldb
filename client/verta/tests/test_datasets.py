@@ -217,13 +217,13 @@ class TestClientDatasetFunctions:
         # test sorting ascending
         datasets = client.find_datasets(
             dataset_ids=[dataset1.id, dataset2.id],
-            sort_key="time_created", ascending=True,
+            sort_key="date_created", ascending=True,
         )
         assert [dataset.id for dataset in datasets] == [dataset1.id, dataset2.id]
         # and descending
         datasets = client.find_datasets(
             dataset_ids=[dataset1.id, dataset2.id],
-            sort_key="time_created", ascending=False,
+            sort_key="date_created", ascending=False,
         )
         assert [dataset.id for dataset in datasets] == [dataset2.id, dataset1.id]
 
