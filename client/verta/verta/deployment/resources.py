@@ -13,6 +13,7 @@ class _Resource(object):
 
     @staticmethod
     def _from_dict(resources_dict):
+        # NOTE: Return a list of resources
         resources = []
 
         RESOURCE_SUBCLASSES = {

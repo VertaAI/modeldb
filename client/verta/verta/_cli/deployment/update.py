@@ -73,13 +73,13 @@ def update_endpoint(path, run_id, model_version_id, strategy, resources, canary_
             strategy_obj.add_rule(_UpdateRule._from_dict(json.loads(rule)))
 
     if resources:
-        resources_obj = _Resource._from_dict(json.loads(resources))
+        resources_list = _Resource._from_dict(json.loads(resources))
     else:
-        resources_obj = None
+        resources_list = None
 
     if env_vars:
         env_vars_dict = json.loads(env_vars)
     else:
         env_vars_dict = None
 
-    endpoint.update(model_reference, strategy_obj, resources=resources_obj, env_vars=env_vars_dict)
+    endpoint.update(model_reference, strategy_obj, resources=resources_list, env_vars=env_vars_dict)
