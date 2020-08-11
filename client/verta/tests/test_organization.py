@@ -33,11 +33,12 @@ class TestOrganization:
         name = _utils.generate_default_name()
         assert client._create_organization(name)
 
-    def test_create_same_name_diff_workspace(self, client, organization, in_tempdir, created_endpoints, created_registered_models):
+    def test_create_same_name_diff_workspace(self, client, organization, in_tempdir, created_endpoints, created_registered_models, created_datasets):
         # creating some entities:
         project_name = _utils.generate_default_name()
         exp_name = _utils.generate_default_name()
         run_name = _utils.generate_default_name()
+        dataset_name = _utils.generate_default_name()
 
         model_name = _utils.generate_default_name()
         version_name = _utils.generate_default_name()
@@ -47,6 +48,9 @@ class TestOrganization:
         project = client.create_project(project_name)
         exp = client.create_experiment(exp_name)
         run = client.create_experiment_run(run_name)
+
+        dataset = client._create_dataset2(dataset_name)
+        created_datasets.append(dataset)
 
         model = client.create_registered_model(name=model_name)
         version = model.create_version(name=version_name)
@@ -75,6 +79,9 @@ class TestOrganization:
         new_exp = client.create_experiment(exp_name)
         new_run = client.create_experiment_run(run_name)
 
+        new_dataset = client._create_dataset2(dataset_name)
+        created_datasets.append(new_dataset)
+
         created_endpoints.append(new_endpoint)
         created_registered_models.append(new_model)
 
@@ -84,6 +91,7 @@ class TestOrganization:
         assert project.id != new_project.id
         assert exp.id != new_exp.id
         assert run.id != new_run.id
+        assert dataset.name != new_dataset.name
 
         # only need to delete new project:
         delete_project(new_project.id, client._conn)
