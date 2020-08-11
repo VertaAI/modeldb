@@ -1,0 +1,300 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "uac/audit/AuditLogService.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/audit-log/findAuditLog": {
+      "post": {
+        "operationId": "AuditLogService_findAuditLog",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningFindAuditLogResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningFindAuditLog"
+            }
+          }
+        ],
+        "tags": [
+          "AuditLogService"
+        ]
+      }
+    },
+    "/audit-log/postAuditLogs": {
+      "post": {
+        "operationId": "AuditLogService_postAuditLogs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningAddAuditLogBatchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningAddAuditLogBatch"
+            }
+          }
+        ],
+        "tags": [
+          "AuditLogService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "versioningAddAuditLogBatch": {
+      "type": "object",
+      "properties": {
+        "log": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningAuditLog"
+          }
+        }
+      }
+    },
+    "versioningAddAuditLogBatchResponse": {
+      "type": "object",
+      "properties": {
+        "response_rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningBatchResponseRow"
+          }
+        }
+      }
+    },
+    "versioningAuditLog": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/versioningAuditUser",
+          "title": "Who"
+        },
+        "resource": {
+          "$ref": "#/definitions/versioningAuditResource",
+          "title": "What"
+        },
+        "action": {
+          "type": "string",
+          "title": "How : the action the user performed"
+        },
+        "ts_nano": {
+          "type": "string",
+          "format": "int64",
+          "title": "When: timestamp"
+        },
+        "metadata_blob": {
+          "type": "string",
+          "description": "other metadata, this is free formed."
+        },
+        "local_id": {
+          "type": "string",
+          "title": "local id, used for consistency"
+        }
+      }
+    },
+    "versioningAuditLogPredicates": {
+      "type": "object",
+      "properties": {
+        "timestamp_predicate": {
+          "$ref": "#/definitions/versioningRangeTimeStampPredicate",
+          "title": "all the predicates will be And-ed"
+        },
+        "user_predicate": {
+          "$ref": "#/definitions/versioningUserPredicate"
+        },
+        "resource_predicate": {
+          "$ref": "#/definitions/versioningResourcePredicate"
+        }
+      }
+    },
+    "versioningAuditResource": {
+      "type": "object",
+      "properties": {
+        "resource_id": {
+          "type": "string",
+          "title": "id of the resource"
+        },
+        "resource_type": {
+          "type": "string",
+          "title": "the tyep of the resource"
+        },
+        "resource_service": {
+          "type": "string",
+          "title": "the service the resource belongs to"
+        }
+      },
+      "title": "What"
+    },
+    "versioningAuditUser": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "title": "verta id of the user performing the action"
+        }
+      },
+      "title": "Who"
+    },
+    "versioningBatchResponseRow": {
+      "type": "object",
+      "properties": {
+        "local_id": {
+          "type": "string"
+        },
+        "acknowledge": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningFindAuditLog": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "$ref": "#/definitions/versioningAuditLogPredicates"
+        },
+        "pagination": {
+          "$ref": "#/definitions/commonPagination"
+        }
+      }
+    },
+    "versioningFindAuditLogResponse": {
+      "type": "object",
+      "properties": {
+        "logs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningAuditLog"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "versioningRangeTimeStampPredicate": {
+      "type": "object",
+      "properties": {
+        "from_ts": {
+          "type": "string",
+          "format": "int64"
+        },
+        "to_ts": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "versioningResourcePredicate": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "$ref": "#/definitions/versioningAuditResource",
+          "title": "resource_id, resource_type, resource_service form an hierarchy\nQuerying on any thing on left will require values to be provided for things on right\nExample :\nlog for resource 123 of type \"project\" belonging to resource service \"deployment\"\nlog for all resources of type \"project\" belonging to resource service \"deployment\"\nlog for all resources where resource_service = \"deployment\""
+        }
+      }
+    },
+    "versioningUserPredicate": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/versioningAuditUser",
+          "title": "the query could be with the user id or with the service the service account belongs to\nExample \nlog for user with id \"123\""
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}
