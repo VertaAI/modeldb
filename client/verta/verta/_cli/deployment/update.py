@@ -22,7 +22,7 @@ def update():
 @click.option("--run-id", "-r", help="Experiment Run to deploy. Cannot be used alongside --model-version-id.")
 @click.option("--model-version-id", "-m", help="Model Version to deploy. Cannot be used alongside --run-id.")
 @click.option("--strategy", "-s", type=click.Choice(['direct', 'canary'], case_sensitive=False), help="Strategy to use to roll out new deployment.")
-@click.option("--resources", help="Resources for endpoint update.")
+@click.option("--resources", help="Resources allowed for the updated endpoint.")
 @click.option("--canary-rule", "-c", multiple=True, help="Rule to use for canary deployment. Can only be used alongside --strategy=canary.")
 @click.option("--canary-interval", "-i", type=click.IntRange(min=0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary.")
 @click.option("--canary-step", type=click.FloatRange(min=0.0, max=1.0), help="Ratio of deployment to roll out per interval. Can only be used alongside --strategy=canary.")
