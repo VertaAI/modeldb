@@ -2,6 +2,9 @@ import tarfile
 
 import pytest
 import requests
+import zipfile
+import glob
+import sys
 
 import verta
 
@@ -119,6 +122,52 @@ class TestModelVersion:
 
         assert "model already exists" in str(excinfo.value)
 
+        # Check custom modules:
+        custom_module_filenames = {"__init__.py", "_verta_config.py"}
+        for path in sys.path:
+            # skip std libs and venvs
+            #     This logic is from verta.client._log_modules().
+            lib_python_str = os.path.join(os.sep, "lib", "python")
+            i = path.find(lib_python_str)
+            if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+                continue
+
+            for parent_dir, dirnames, filenames in os.walk(path):
+                # skip venvs
+                #     This logic is from _utils.find_filepaths().
+                exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
+                dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+
+                # only Python files
+                filenames[:] = [filename for filename in filenames if filename.endswith(('.py', '.pyc', '.pyo'))]
+
+                custom_module_filenames.update(map(os.path.basename, filenames))
+
+        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+
+
+    def test_log_model_with_custom_modules(self, model_version, model_for_deployment):
+        custom_modules_dir = "."
+
+        model_version.log_model(
+            model_for_deployment['model'],
+            custom_modules=["."],
+        )
+
+        custom_module_filenames = {"__init__.py", "_verta_config.py"}
+        for parent_dir, dirnames, filenames in os.walk(custom_modules_dir):
+            # skip venvs
+            #     This logic is from _utils.find_filepaths().
+            exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
+            dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+
+            custom_module_filenames.update(map(os.path.basename, filenames))
+
+        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+
+
     def test_log_artifact(self, model_version):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
@@ -137,7 +186,7 @@ class TestModelVersion:
         # Overwrite should work:
         new_classifier = LogisticRegression()
         new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_artifact("coef", new_classifier.coef_, True)
+        model_version.log_artifact("coef", new_classifier.coef_, overwrite=True)
         retrieved_coef = model_version.get_artifact("coef")
         assert np.array_equal(retrieved_coef, new_classifier.coef_)
 

@@ -24,11 +24,12 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 from .. import utils
 
-from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
+from .._tracking.entity import _OSS_DEFAULT_WORKSPACE
+from .._tracking.deployable_entity import _DeployableEntity
 from ..environment import _Environment, Python
 
 
-class RegisteredModelVersion(_ModelDBEntity):
+class RegisteredModelVersion(_DeployableEntity):
     """
     Object representing a version of a Registered Model.
 
@@ -177,7 +178,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         print("Created new ModelVersion: {}".format(model_version.version))
         return model_version
 
-    def log_model(self, model, model_api=None, overwrite=False):
+    def log_model(self, model, custom_modules=None, model_api=None, overwrite=False):
         """
         Logs a model to this Model Version.
 
@@ -189,6 +190,12 @@ class RegisteredModelVersion(_ModelDBEntity):
                   and uploaded as an artifact. If it is a directory path, its contents will be zipped.
                 - If file-like, then the contents will be read as bytes and uploaded as an artifact.
                 - Otherwise, the object will be serialized and uploaded as an artifact.
+        custom_modules : list of str, optional
+            Paths to local Python modules and other files that the deployed model depends on.
+                - If directories are provided, all files within—excluding virtual environments—will
+                  be included.
+                - If not provided, all Python files located within `sys.path`—excluding virtual
+                  environments—will be included.
         model_api : :class:`~utils.ModelAPI`, optional
             Model API specifying details about the model and its deployment.
         overwrite : bool, default False
@@ -217,6 +224,9 @@ class RegisteredModelVersion(_ModelDBEntity):
             "model", serialized_model,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
+
+        # Log modules:
+        self._log_modules(custom_modules, overwrite=overwrite)
 
         # build model API
         if model_api is None:
@@ -257,6 +267,9 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._fetch_with_no_cache()
         self._msg.ClearField("model")
         self._update()
+
+    def _log_modules_as_artifact(self, modules_bytestream, overwrite):
+        self.log_artifact("custom_modules", modules_bytestream, overwrite, 'zip')
 
     def log_artifact(self, key, artifact, overwrite=False, extension=None):
         """
