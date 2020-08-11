@@ -2,8 +2,9 @@
 
 from __future__ import print_function
 
+from .entity_with_workspace_service import _ModelDBEntityWithWorkspaceService
 from .._internal_utils._utils import NoneProtoResponse
-from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
+from .._tracking.entity import _OSS_DEFAULT_WORKSPACE
 from .._tracking.context import _Context
 from .._internal_utils import _utils
 
@@ -14,7 +15,7 @@ from .modelversion import RegisteredModelVersion
 from .modelversions import RegisteredModelVersions
 
 
-class RegisteredModel(_ModelDBEntity):
+class RegisteredModel(_ModelDBEntityWithWorkspaceService):
     """
     Object representing a registered model.
 
