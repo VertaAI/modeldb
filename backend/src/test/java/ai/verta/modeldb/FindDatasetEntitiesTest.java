@@ -932,14 +932,17 @@ public class FindDatasetEntitiesTest {
     for (int index = 0; index < response.getDatasetsCount(); index++) {
       Dataset dataset = response.getDatasetsList().get(index);
       if (index == 0) {
+        dataset3 = dataset3.toBuilder().setTimeUpdated(dataset.getTimeUpdated()).build();
         assertEquals("Dataset not match with expected dataset", dataset3, dataset);
         assertEquals(
             "Dataset Id not match with expected dataset Id", dataset3.getId(), dataset.getId());
       } else if (index == 1) {
+        dataset2 = dataset2.toBuilder().setTimeUpdated(dataset.getTimeUpdated()).build();
         assertEquals("Dataset not match with expected dataset", dataset2, dataset);
         assertEquals(
             "Dataset Id not match with expected dataset Id", dataset2.getId(), dataset.getId());
       } else if (index == 2) {
+        dataset1 = dataset1.toBuilder().setTimeUpdated(dataset.getTimeUpdated()).build();
         assertEquals("Dataset not match with expected dataset", dataset1, dataset);
         assertEquals(
             "Dataset Id not match with expected dataset Id", dataset1.getId(), dataset.getId());
