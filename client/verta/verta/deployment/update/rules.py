@@ -33,7 +33,10 @@ class _UpdateRule(object):
         rule_value = float(rule_dict['rule_parameters'][0]['value'])
 
         RULE_SUBCLASSES = [
-            MaximumAverageLatencyThresholdRule, MaximumP90LatencyThresholdRule, MaximumRequestErrorPercentageThresholdRule, MaximumServerErrorPercentageThresholdRule
+            MaximumAverageLatencyThresholdRule,
+            MaximumP90LatencyThresholdRule,
+            MaximumRequestErrorPercentageThresholdRule,
+            MaximumServerErrorPercentageThresholdRule
         ]
 
         for Subclass in RULE_SUBCLASSES:
