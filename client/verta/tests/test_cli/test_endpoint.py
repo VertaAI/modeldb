@@ -46,6 +46,31 @@ class TestCreate:
 
         created_endpoints.append(endpoint)
 
+    def test_create_workspace_config(self, client, organization, in_tempdir, created_endpoints):
+        client_config = {
+            "workspace": organization.name
+        }
+
+        filepath = "verta_config.json"
+        with open(filepath, "w") as f:
+            json.dump(client_config, f)
+
+        endpoint_name = _utils.generate_default_name()
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'create', 'endpoint', endpoint_name],
+        )
+
+        assert not result.exception
+
+        client = Client()
+        endpoint = client.get_endpoint(endpoint_name)
+        assert endpoint.workspace == organization.name
+
+        created_endpoints.append(endpoint)
+
 
 class TestUpdate:
     def test_direct_update_endpoint(self, client, created_endpoints, experiment_run, model_for_deployment):
@@ -79,10 +104,14 @@ class TestUpdate:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        canary_rule = '{"rule": "latency", "rule_parameters": \
-        [{"name": "latency_avg", "value": "0.8"}]}'
-        canary_rule_2 = '{"rule": "error_rate", "rule_parameters": \
-        [{"name": "error_rate", "value": "0.8"}]}'
+        canary_rule = json.dumps({
+            "rule": "latency_avg_max",
+            "rule_parameters": [{"name": "threshold", "value": 0.8}]}
+        )
+        canary_rule_2 = json.dumps({
+            "rule": "error_4xx_rate",
+            "rule_parameters": [{"name": "threshold", "value": "0.8"}]}
+        )
 
         runner = CliRunner()
         result = runner.invoke(
@@ -107,10 +136,10 @@ class TestUpdate:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        canary_rule = '{"rule_id": 1001, "rule_parameters": \
-        [{"name": "latency_avg", "value": "0.8"}]}'
-        canary_rule_2 = '{"rule_id": 1002, "rule_parameters": \
-        [{"name": "error_rate", "value": "0.8"}]}'
+        canary_rule = json.dumps({
+            "rule": "latency_avg_max",
+            "rule_parameters": [{"name": "threshold", "value": 0.8}]}
+        )
 
         runner = CliRunner()
         result = runner.invoke(
@@ -134,8 +163,10 @@ class TestUpdate:
         endpoint = client.set_endpoint(endpoint_name)
         created_endpoints.append(endpoint)
 
-        canary_rule = '{"rule": "latency", "rule_parameters": \
-        [{"name": "latency_avg", "value": "0.8"}]}'
+        canary_rule = json.dumps({
+            "rule": "latency_avg_max",
+            "rule_parameters": [{"name": "threshold", "value": 0.8}]
+        })
 
         # Extra parameters provided:
         runner = CliRunner()
@@ -284,6 +315,27 @@ class TestUpdate:
         print(endpoint.get_update_status())
         updated_build_ids = get_build_ids(endpoint.get_status())
         assert len(updated_build_ids) - len(updated_build_ids.intersection(original_build_ids)) > 0
+
+    def test_update_with_resources(self, client, created_endpoints, experiment_run, model_for_deployment):
+        endpoint_name = _utils.generate_default_name()
+        endpoint = client.set_endpoint(endpoint_name)
+        created_endpoints.append(endpoint)
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        resources = '{"cpu_millis": 250, "memory": "100M"}'
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "direct",
+             '--resources', resources],
+        )
+        assert not result.exception
+        assert endpoint.get_update_status()['update_request']['resources'] == json.loads(resources)
 
     def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
