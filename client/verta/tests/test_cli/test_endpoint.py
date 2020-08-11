@@ -265,6 +265,27 @@ class TestUpdate:
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
 
+    def test_update_with_resources(self, client, created_endpoints, experiment_run, model_for_deployment):
+        endpoint_name = _utils.generate_default_name()
+        endpoint = client.set_endpoint(endpoint_name)
+        created_endpoints.append(endpoint)
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        resources = '{"cpu_millis": 250, "memory": "100M"}'
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "direct",
+             '--resources', resources],
+        )
+        assert not result.exception
+        assert endpoint.get_update_status()['update_request']['resources'] == json.loads(resources)
+
     def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])

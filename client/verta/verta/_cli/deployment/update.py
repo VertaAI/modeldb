@@ -7,6 +7,7 @@ from .deployment import deployment
 from ... import Client
 from ...deployment.update._strategies import DirectUpdateStrategy, CanaryUpdateStrategy
 from ...deployment.update.rules import _UpdateRule
+from ...deployment.resources import _Resource
 from ...deployment.autoscaling import Autoscaling
 from ...deployment.autoscaling.metrics import _AutoscalingMetric
 from ..._registry import RegisteredModelVersion
@@ -21,6 +22,7 @@ def update():
 @click.option("--run-id", "-r", help="Experiment Run to deploy. Cannot be used alongside --model-version-id.")
 @click.option("--model-version-id", "-m", help="Model Version to deploy. Cannot be used alongside --run-id.")
 @click.option("--strategy", "-s", type=click.Choice(['direct', 'canary'], case_sensitive=False), help="Strategy to use to roll out new deployment.")
+@click.option("--resources", help="Resources allowed for the updated endpoint.")
 @click.option("--canary-rule", "-c", multiple=True, help="Rule to use for canary deployment. Can only be used alongside --strategy=canary.")
 @click.option("--canary-interval", "-i", type=click.IntRange(min=0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary.")
 @click.option("--canary-step", type=click.FloatRange(min=0.0, max=1.0), help="Ratio of deployment to roll out per interval. Can only be used alongside --strategy=canary.")
@@ -29,7 +31,7 @@ def update():
 @click.option("--env-vars", type=str, help="Environment variables to set for the model build. The format is --env-vars '{\"VERTA_HOST\": \"app.verta.ai\"}'.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 # TODO: more options
-def update_endpoint(path, run_id, model_version_id, strategy, canary_rule, canary_interval, canary_step, autoscaling, autoscaling_metrics, env_vars, workspace):
+def update_endpoint(path, run_id, model_version_id, strategy, resources, canary_rule, canary_interval, canary_step, autoscaling, autoscaling_metrics, env_vars, workspace):
     """Update an endpoint.
     """
     if canary_step == 0.0:
@@ -80,6 +82,11 @@ def update_endpoint(path, run_id, model_version_id, strategy, canary_rule, canar
         for rule in canary_rule:
             strategy_obj.add_rule(_UpdateRule._from_dict(json.loads(rule)))
 
+    if resources:
+        resources_list = _Resource._from_dict(json.loads(resources))
+    else:
+        resources_list = None
+
     if autoscaling:
         autoscaling_obj = Autoscaling._from_dict(json.loads(autoscaling))
         for metric in autoscaling_metrics:
@@ -92,4 +99,4 @@ def update_endpoint(path, run_id, model_version_id, strategy, canary_rule, canar
     else:
         env_vars_dict = None
 
-    endpoint.update(model_reference, strategy_obj, autoscaling=autoscaling_obj, env_vars=env_vars_dict)
+    endpoint.update(model_reference, strategy_obj, resources=resources_list, autoscaling=autoscaling_obj, env_vars=env_vars_dict)
