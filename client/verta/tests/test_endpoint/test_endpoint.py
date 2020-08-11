@@ -424,3 +424,26 @@ class TestEndpoint:
                 assert metric["parameters"][0]["value"] == "100"
             else:
                 assert metric["parameters"][0]["value"] == "0.7"
+
+    def test_update_with_custom_module(self, client, model_version, created_endpoints):
+        torch = pytest.importorskip("torch")
+        from models.nets import FullyConnected
+
+        np = pytest.importorskip("numpy")
+
+        hidden_size = 512
+        dropout = 0.2
+
+        classifier = FullyConnected(num_features=12, hidden_size=hidden_size, dropout=dropout)
+        model_version.log_model(classifier, custom_modules=["models/nets.py"])
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
