@@ -2,6 +2,7 @@ import time
 
 import pytest
 import requests
+import json
 
 import verta
 from verta._deployment import Endpoint
@@ -424,3 +425,60 @@ class TestEndpoint:
                 assert metric["parameters"][0]["value"] == "100"
             else:
                 assert metric["parameters"][0]["value"] == "0.7"
+
+    def test_update_from_json_config_with_params(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+        yaml = pytest.importorskip("yaml")
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        config_dict = {
+            "run_id": experiment_run.id,
+            "strategy": "direct",
+            "autoscaling": {
+                "quantities": {"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0},
+                "metrics": [
+                    {"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.5"}]},
+                    {"metric": "memory_utilization", "parameters": [{"name": "target", "value": "0.7"}]}
+                ]
+            },
+            "env_vars": {"VERTA_HOST": "app.verta.ai"},
+            "resources": {"cpu_millis": 250, "memory": "100M"}
+        }
+
+        filepath = "config.json"
+        with open(filepath, 'w') as f:
+            json.dump(config_dict, f)
+
+        endpoint.update_from_config(filepath)
+        update_status = endpoint.get_update_status()
+
+        # Check autoscaling:
+        autoscaling_parameters = update_status["update_request"]["autoscaling"]
+        autoscaling_quantities = autoscaling_parameters["quantities"]
+
+        assert autoscaling_quantities == config_dict["autoscaling"]["quantities"]
+
+        autoscaling_metrics = autoscaling_parameters["metrics"]
+        assert len(autoscaling_metrics) == 2
+        for metric in autoscaling_metrics:
+            assert metric["metric_id"] in [1001, 1002, 1003]
+
+            if metric["metric_id"] == 1001:
+                assert metric["parameters"][0]["value"] == "0.5"
+            else:
+                assert metric["parameters"][0]["value"] == "0.7"
+
+        # Check env_vars:
+        assert update_status["update_request"]["env"][0]["name"] == "VERTA_HOST"
+        assert update_status["update_request"]["env"][0]["value"] == "app.verta.ai"
+
+        # Check resources:
+        assert endpoint.get_update_status()['update_request']['resources'] == config_dict["resources"]
