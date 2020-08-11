@@ -1,4 +1,4 @@
-Creating custom models
+Creating Custom Models
 ======================
 
 Developers frequently need to create a model that is not using a single framework. This mix and match
