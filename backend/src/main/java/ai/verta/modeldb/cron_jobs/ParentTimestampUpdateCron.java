@@ -25,23 +25,47 @@ public class ParentTimestampUpdateCron extends TimerTask {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       // Update experiment timestamp
       session.beginTransaction();
-      updateExperimentByExperimentRunTimestamp(session);
-      session.getTransaction().commit();
+      try {
+        updateExperimentByExperimentRunTimestamp(session);
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "ParentTimestampUpdateCron : updateExperimentByExperimentRunTimestamp Exception: ", ex);
+      } finally {
+        session.getTransaction().commit();
+      }
 
       // Update project timestamp
       session.beginTransaction();
-      updateProjectByExperimentTimestamp(session);
-      session.getTransaction().commit();
+      try {
+        updateProjectByExperimentTimestamp(session);
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "ParentTimestampUpdateCron : updateProjectByExperimentTimestamp Exception: ", ex);
+      } finally {
+        session.getTransaction().commit();
+      }
 
       // Update experimentRun timestamp
       session.beginTransaction();
-      updateDatasetByDatasetVersionTimestamp(session);
-      session.getTransaction().commit();
+      try {
+        updateDatasetByDatasetVersionTimestamp(session);
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "ParentTimestampUpdateCron : updateDatasetByDatasetVersionTimestamp Exception: ", ex);
+      } finally {
+        session.getTransaction().commit();
+      }
 
       // Update repository timestamp
       session.beginTransaction();
-      updateRepositoryByCommitTimestamp(session);
-      session.getTransaction().commit();
+      try {
+        updateRepositoryByCommitTimestamp(session);
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "ParentTimestampUpdateCron : updateRepositoryByCommitTimestamp Exception: ", ex);
+      } finally {
+        session.getTransaction().commit();
+      }
     } catch (Exception ex) {
       LOGGER.warn("ParentTimestampUpdateCron Exception: ", ex);
       if (ModelDBUtils.needToRetry(ex)) {
@@ -79,11 +103,11 @@ public class ParentTimestampUpdateCron extends TimerTask {
           .append("INNER JOIN ")
           .append(" (SELECT ex.project_id, MAX(ex.date_updated) AS max_date ")
           .append(" FROM experiment ex ")
-          .append(" GROUP BY ex.project_id) exp_alias ")
+          .append(" GROUP BY ex.project_id LIMIT ")
+          .append(recordUpdateLimit)
+          .append(" ) exp_alias ")
           .append("ON  p.id = exp_alias.project_id AND p.date_updated < exp_alias.max_date ")
           .append("SET p.date_updated = exp_alias.max_date WHERE p.id = exp_alias.project_id ")
-          .append(" LIMIT ")
-          .append(recordUpdateLimit)
           .toString();
     }
   }
@@ -115,12 +139,12 @@ public class ParentTimestampUpdateCron extends TimerTask {
           .append("INNER JOIN ")
           .append("(SELECT expr.experiment_id, MAX(expr.date_updated) AS max_date ")
           .append(" FROM experiment_run expr ")
-          .append(" GROUP BY expr.experiment_id) expr_alias ")
-          .append("ON ex.id = expr_alias.experiment_id AND ex.date_updated < expr_alias.max_date ")
+          .append(" GROUP BY expr.experiment_id LIMIT ")
+          .append(recordUpdateLimit)
+          .append(
+              " ) expr_alias ON ex.id = expr_alias.experiment_id AND ex.date_updated < expr_alias.max_date ")
           .append(
               "SET ex.date_updated = expr_alias.max_date WHERE ex.id = expr_alias.experiment_id ")
-          .append(" LIMIT ")
-          .append(recordUpdateLimit)
           .toString();
     }
   }
@@ -151,11 +175,11 @@ public class ParentTimestampUpdateCron extends TimerTask {
           .append("INNER JOIN ")
           .append("(SELECT dv.dataset_id, MAX(dv.time_updated) AS max_date ")
           .append(" FROM dataset_version dv ")
-          .append(" GROUP BY dv.dataset_id) dv_alias ")
+          .append(" GROUP BY dv.dataset_id LIMIT ")
+          .append(recordUpdateLimit)
+          .append(" ) dv_alias ")
           .append("ON d.id = dv_alias.dataset_id AND d.time_updated < dv_alias.max_date ")
           .append("SET d.time_updated = dv_alias.max_date WHERE d.id = dv_alias.dataset_id ")
-          .append(" LIMIT ")
-          .append(recordUpdateLimit)
           .toString();
     }
   }
@@ -188,11 +212,11 @@ public class ParentTimestampUpdateCron extends TimerTask {
           .append("(SELECT rc.repository_id, MAX(cm.date_created) AS max_date")
           .append(" FROM `commit` cm INNER JOIN repository_commit rc ")
           .append(" ON rc.commit_hash = cm.commit_hash ")
-          .append(" GROUP BY rc.repository_id) cm_alias ")
+          .append(" GROUP BY rc.repository_id LIMIT ")
+          .append(recordUpdateLimit)
+          .append(" ) cm_alias ")
           .append(" ON rp.id = cm_alias.repository_id AND rp.date_updated < cm_alias.max_date ")
           .append("SET rp.date_updated = cm_alias.max_date WHERE rp.id = cm_alias.repository_id ")
-          .append(" LIMIT ")
-          .append(recordUpdateLimit)
           .toString();
     }
   }

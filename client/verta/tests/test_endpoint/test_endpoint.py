@@ -10,7 +10,7 @@ from verta.deployment.resources import CpuMillis, Memory
 from verta.deployment.autoscaling import Autoscaling
 from verta.deployment.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
-from verta.deployment.update.rules import AverageLatencyThresholdRule
+from verta.deployment.update.rules import MaximumAverageLatencyThresholdRule
 from verta._internal_utils import _utils
 from verta.environment import Python
 
@@ -158,7 +158,7 @@ class TestEndpoint:
 
         assert "canary update strategy must have at least one rule" in str(excinfo.value)
 
-        strategy.add_rule(AverageLatencyThresholdRule(0.8))
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
         updated_status = endpoint.update(experiment_run, strategy)
 
         # Check that a new build is added:
@@ -185,14 +185,14 @@ class TestEndpoint:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule": "latency",
+                    {"rule": "latency_avg_max",
                      "rule_parameters": [
-                         {"name": "latency_avg",
+                         {"name": "threshold",
                           "value": "0.1"}
                     ]},
-                    {"rule": "error_rate",
+                    {"rule": "error_4xx_rate",
                      "rule_parameters": [
-                        {"name": "error_rate",
+                        {"name": "threshold",
                          "value": "1"}
                     ]}
                 ]
@@ -227,14 +227,14 @@ class TestEndpoint:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule": "latency",
+                    {"rule": "latency_avg_max",
                      "rule_parameters": [
-                         {"name": "latency_avg",
+                         {"name": "threshold",
                           "value": "0.1"}
                     ]},
-                    {"rule": "error_rate",
+                    {"rule": "error_4xx_rate",
                      "rule_parameters": [
-                        {"name": "error_rate",
+                        {"name": "threshold",
                          "value": "1"}
                     ]}
                 ]
@@ -262,7 +262,7 @@ class TestEndpoint:
 
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
 
-        strategy.add_rule(AverageLatencyThresholdRule(0.8))
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
         updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMillis(500), Memory("500Mi"), ],
                                          env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
@@ -372,14 +372,14 @@ class TestEndpoint:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule": "latency",
+                    {"rule": "latency_avg_max",
                      "rule_parameters": [
-                         {"name": "latency_avg",
+                         {"name": "threshold",
                           "value": "0.1"}
                     ]},
-                    {"rule": "error_rate",
+                    {"rule": "error_4xx_rate",
                      "rule_parameters": [
-                        {"name": "error_rate",
+                        {"name": "threshold",
                          "value": "1"}
                     ]}
                 ]
@@ -431,9 +431,11 @@ class TestEndpoint:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
+
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
+
 
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
@@ -482,3 +484,33 @@ class TestEndpoint:
 
         # Check resources:
         assert endpoint.get_update_status()['update_request']['resources'] == config_dict["resources"]
+
+    def test_update_twice(self, client, registered_model, created_endpoints):
+        np = pytest.importorskip("numpy")
+        json = pytest.importorskip("json")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        env = Python(requirements=["scikit-learn"])
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version = registered_model.create_version("first-version")
+        model_version.log_model(classifier)
+        model_version.log_environment(env)
+
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        new_model_version = registered_model.create_version("second-version")
+        new_model_version.log_model(new_classifier)
+        new_model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+
+        # updating endpoint
+        endpoint.update(new_model_version, DirectUpdateStrategy(), wait=True)
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), new_classifier.predict(test_data))

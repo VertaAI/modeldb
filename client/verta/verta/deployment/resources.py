@@ -11,6 +11,26 @@ class _Resource(object):
     def __init__(self, parameter):
         self.parameter = parameter
 
+    @staticmethod
+    def _from_dict(resources_dict):
+        # NOTE: Return a list of resources
+        resources = []
+
+        RESOURCE_SUBCLASSES = {
+            "cpu_millis": CpuMillis,
+            "memory": Memory
+        }
+
+        for name in resources_dict:
+            parameter = resources_dict[name]
+
+            if isinstance(parameter, six.string_types):
+                parameter = six.ensure_str(parameter)
+
+            resources.append(RESOURCE_SUBCLASSES[name](parameter))
+
+        return resources
+
 
 class CpuMillis(_Resource):
     milli_err_msg = "`cpu_millis` must be int greater than 0"
