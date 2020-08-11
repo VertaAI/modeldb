@@ -126,8 +126,8 @@ public class DeleteEntitiesCron extends TimerTask {
             ex.getMessage());
       }
 
+      Transaction transaction = session.beginTransaction();
       try {
-        Transaction transaction = session.beginTransaction();
         String updateDeletedStatusExperimentQueryString =
             new StringBuilder("UPDATE ")
                 .append(ExperimentEntity.class.getSimpleName())
@@ -148,9 +148,10 @@ public class DeleteEntitiesCron extends TimerTask {
         for (ProjectEntity projectEntity : projectEntities) {
           session.delete(projectEntity);
         }
-        transaction.commit();
       } catch (Exception ex) {
         LOGGER.error("DeleteEntitiesCron : deleteProjects : Exception: ", ex);
+      } finally {
+        transaction.commit();
       }
     }
 
@@ -243,8 +244,8 @@ public class DeleteEntitiesCron extends TimerTask {
             ex.getMessage());
       }
 
+      Transaction transaction = session.beginTransaction();
       try {
-        Transaction transaction = session.beginTransaction();
         String updateDeletedStatusExperimentRunQueryString =
             new StringBuilder("UPDATE ")
                 .append(ExperimentRunEntity.class.getSimpleName())
@@ -265,9 +266,10 @@ public class DeleteEntitiesCron extends TimerTask {
         for (ExperimentEntity experimentEntity : experimentEntities) {
           session.delete(experimentEntity);
         }
-        transaction.commit();
       } catch (Exception ex) {
         LOGGER.error("DeleteEntitiesCron : deleteExperiments : Exception:", ex);
+      } finally {
+        transaction.commit();
       }
     }
 
@@ -322,8 +324,8 @@ public class DeleteEntitiesCron extends TimerTask {
             ex.getMessage());
       }
 
+      Transaction transaction = session.beginTransaction();
       try {
-        Transaction transaction = session.beginTransaction();
         // Delete the ExperimentRun comments
         if (!experimentRunIds.isEmpty()) {
           removeEntityComments(
@@ -333,9 +335,10 @@ public class DeleteEntitiesCron extends TimerTask {
         for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
           session.delete(experimentRunEntity);
         }
-        transaction.commit();
       } catch (Exception ex) {
         LOGGER.error("DeleteEntitiesCron : deleteExperimentRuns : Exception:", ex);
+      } finally {
+        transaction.commit();
       }
     }
 
@@ -415,8 +418,8 @@ public class DeleteEntitiesCron extends TimerTask {
             ex.getMessage());
       }
 
+      Transaction transaction = session.beginTransaction();
       try {
-        Transaction transaction = session.beginTransaction();
         String updateDeletedStatusDatasetVersionQueryString =
             new StringBuilder("UPDATE ")
                 .append(DatasetVersionEntity.class.getSimpleName())
@@ -437,9 +440,10 @@ public class DeleteEntitiesCron extends TimerTask {
         for (DatasetEntity datasetEntity : datasetEntities) {
           session.delete(datasetEntity);
         }
-        transaction.commit();
       } catch (Exception ex) {
         LOGGER.error("DeleteEntitiesCron : deleteDatasets : Exception:", ex);
+      } finally {
+        transaction.commit();
       }
     }
     LOGGER.debug("Dataset Deleted successfully : Deleted datasets count {}", datasetIds.isEmpty());
@@ -570,14 +574,15 @@ public class DeleteEntitiesCron extends TimerTask {
           ex.getMessage());
     }
 
+    Transaction transaction = session.beginTransaction();
     try {
-      Transaction transaction = session.beginTransaction();
       for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
         session.delete(datasetVersionEntity);
       }
-      transaction.commit();
     } catch (Exception ex) {
       LOGGER.error("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
+    } finally {
+      transaction.commit();
     }
     LOGGER.debug(
         "DatasetVersion Deleted successfully : Deleted datasetVersions count {}",
@@ -634,8 +639,8 @@ public class DeleteEntitiesCron extends TimerTask {
               ex.getMessage());
         }
 
+        Transaction transaction = session.beginTransaction();
         try {
-          Transaction transaction = session.beginTransaction();
           String deleteTagsHql =
               new StringBuilder("DELETE " + TagsEntity.class.getSimpleName() + " te where te.id.")
                   .append(ModelDBConstants.REPOSITORY_ID)
@@ -715,9 +720,10 @@ public class DeleteEntitiesCron extends TimerTask {
                 }
               });
           session.delete(repository);
-          transaction.commit();
         } catch (Exception ex) {
           LOGGER.error("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
+        } finally {
+          transaction.commit();
         }
       }
     }

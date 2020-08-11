@@ -1,5 +1,7 @@
 import json
+import os
 import tarfile
+import pickle
 
 import pytest
 from click.testing import CliRunner
@@ -7,8 +9,6 @@ from click.testing import CliRunner
 from verta import Client
 from verta._cli import cli
 from verta._registry import RegisteredModel
-import os
-
 
 
 class TestCreate:
@@ -29,6 +29,8 @@ class TestCreate:
         created_registered_models.append(registered_model)
 
     def test_create_version(self, registered_model, in_tempdir):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+
         model_name = registered_model.name
         version_name = "my version"
 
@@ -38,10 +40,9 @@ class TestCreate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2**16)
+        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
         with open(classifier_name, 'wb') as f:
             f.write(CLASSIFIER_CONTENTS)
-
 
         runner = CliRunner()
         result = runner.invoke(
@@ -53,28 +54,22 @@ class TestCreate:
 
         model_version = registered_model.get_version(name=version_name)
         assert model_version.name in result.output
-        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS
+        assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
-        assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS
+        assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
 
     def test_create_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name
-        version_name = "my version"
 
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2 ** 16)
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
 
-        classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2 ** 16)
-        with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
-
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name,
+            ['registry', 'create', 'registeredmodelversion', model_name, "my version",
              "--artifact", "model={}".format(filename)],
         )
         assert result.exception
@@ -82,7 +77,7 @@ class TestCreate:
 
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name,
+            ['registry', 'create', 'registeredmodelversion', model_name, "my version 2",
              "--artifact", "file={}".format(filename), "--artifact", "file={}".format(filename)],
         )
         assert result.exception
@@ -90,12 +85,12 @@ class TestCreate:
 
         runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact",
+            ['registry', 'create', 'registeredmodelversion', model_name, "my version 3", "--artifact",
              "file={}".format(filename)],
         )
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact",
+            ['registry', 'create', 'registeredmodelversion', model_name, "my version 3", "--artifact",
              "file={}".format(filename)],
         )
         assert result.exception
@@ -369,6 +364,8 @@ class TestUpdate:
 
 
     def test_update_version(self, registered_model, in_tempdir):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+
         model_name = registered_model.name
         version_name = "my version"
         registered_model.get_or_create_version(version_name)
@@ -379,7 +376,7 @@ class TestUpdate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2**16)
+        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
         with open(classifier_name, 'wb') as f:
             f.write(CLASSIFIER_CONTENTS)
 
@@ -392,9 +389,9 @@ class TestUpdate:
         assert not result.exception
 
         model_version = registered_model.get_version(name=version_name)
-        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS
+        assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
-        assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS
+        assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
 
     def test_update_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name
@@ -405,11 +402,6 @@ class TestUpdate:
         FILE_CONTENTS = os.urandom(2**16)
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
-
-        classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2**16)
-        with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -438,11 +430,13 @@ class TestUpdate:
         assert "key \"file\" already exists" in result.output
 
     def test_model_already_logged_error(self, registered_model, in_tempdir):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+
         model_name = registered_model.name
         version_name = "my version"
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2**16)
+        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
         with open(classifier_name, 'wb') as f:
             f.write(CLASSIFIER_CONTENTS)
 
@@ -460,6 +454,8 @@ class TestUpdate:
         assert "a model has already been associated with the version" in result.output
 
     def test_overwrite(self, registered_model, in_tempdir):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+
         model_name = registered_model.name
         version_name = "my version"
         registered_model.get_or_create_version(version_name)
@@ -470,7 +466,7 @@ class TestUpdate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2**16)
+        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
         with open(classifier_name, 'wb') as f:
             f.write(CLASSIFIER_CONTENTS)
 
@@ -490,10 +486,7 @@ class TestUpdate:
             f.write(FILE_CONTENTS_2)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS_2 = os.urandom(2**16)
-        while CLASSIFIER_CONTENTS_2 == CLASSIFIER_CONTENTS:
-            CLASSIFIER_CONTENTS_2 = os.urandom(2 ** 16)
-
+        CLASSIFIER_CONTENTS_2 = pickle.dumps(LogisticRegression(C=0.1))
         with open(classifier_name, 'wb') as f:
             f.write(CLASSIFIER_CONTENTS_2)
 
@@ -505,14 +498,14 @@ class TestUpdate:
 
         # Check that the model and artifact are updated:
         model_version = registered_model.get_version(name=version_name)
-        assert model_version.get_artifact("file").getvalue() != FILE_CONTENTS
-        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS_2
-        assert model_version.get_model().getvalue() != CLASSIFIER_CONTENTS
-        assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS_2
+        assert model_version.get_artifact("file").read() != FILE_CONTENTS
+        assert model_version.get_artifact("file").read() == FILE_CONTENTS_2
+        assert pickle.dumps(model_version.get_model()) != CLASSIFIER_CONTENTS
+        assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS_2
 
-@pytest.mark.skip(reason="pending backend")
+
 class TestDownload:
-    def test_download_context(self, experiment_run, model_for_deployment, registered_model, created_registered_models):
+    def test_download_context(self, experiment_run, model_for_deployment, registered_model, in_tempdir, created_registered_models):
         np = pytest.importorskip("numpy")
         model_name = registered_model.name
         version_name = "my-version"

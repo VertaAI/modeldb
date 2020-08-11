@@ -200,9 +200,8 @@ class RegisteredModelVersion(_ModelDBEntity):
             raise ValueError("model already exists; consider setting overwrite=True")
 
         if isinstance(model, six.string_types):  # filepath
-            serialized_model = open(model, 'rb')  # file handle
-        else:
-            serialized_model, method, model_type = _artifact_utils.serialize_model(model)  # bytestream
+            model = open(model, 'rb')
+        serialized_model, method, model_type = _artifact_utils.serialize_model(model)
 
         try:
             extension = _artifact_utils.get_file_ext(serialized_model)
@@ -231,7 +230,7 @@ class RegisteredModelVersion(_ModelDBEntity):
                 'type': model_type,
                 'deserialization': method,
             }
-        self.log_artifact("model_api.json", model_api, overwrite)
+        self.log_artifact("model_api.json", model_api, overwrite, "json")
 
     def get_model(self):
         """
@@ -259,7 +258,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._msg.ClearField("model")
         self._update()
 
-    def log_artifact(self, key, asset, overwrite=False):
+    def log_artifact(self, key, artifact, overwrite=False, extension=None):
         """
         Logs an artifact to this Model Version.
 
@@ -275,6 +274,8 @@ class RegisteredModelVersion(_ModelDBEntity):
                 - Otherwise, the object will be serialized and uploaded as an artifact.
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
+        extension : str, optional
+            Filename extension associated with the artifact.
 
         """
         if key == "model":
@@ -284,8 +285,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         same_key_ind = -1
 
         for i in range(len(self._msg.artifacts)):
-            artifact = self._msg.artifacts[i]
-            if artifact.key == key:
+            if self._msg.artifacts[i].key == key:
                 if not overwrite:
                     raise ValueError("The key has been set; consider setting overwrite=True")
                 else:
@@ -294,15 +294,15 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         artifact_type = _CommonCommonService.ArtifactTypeEnum.BLOB
 
-        if isinstance(asset, six.string_types):  # filepath
-            artifact_stream = open(asset, 'rb')  # file handle
-        else:
-            artifact_stream, method = _artifact_utils.ensure_bytestream(asset)  # bytestream
+        if isinstance(artifact, six.string_types):  # filepath
+            artifact = open(artifact, 'rb')
+        artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
-        try:
-            extension = _artifact_utils.get_file_ext(artifact_stream)
-        except (TypeError, ValueError):
-            extension = _artifact_utils.ext_from_method(method)
+        if not extension:
+            try:
+                extension = _artifact_utils.get_file_ext(artifact_stream)
+            except (TypeError, ValueError):
+                extension = _artifact_utils.ext_from_method(method)
 
         artifact_msg = self._create_artifact_msg(key, artifact_stream, artifact_type=artifact_type, extension=extension)
         if same_key_ind == -1:
@@ -547,7 +547,6 @@ class RegisteredModelVersion(_ModelDBEntity):
                                                path_only=False,
                                                artifact_type=artifact_type,
                                                filename_extension=extension)
-
         return artifact_msg
 
     def _get_artifact(self, key, artifact_type):
@@ -660,13 +659,16 @@ class RegisteredModelVersion(_ModelDBEntity):
             Absolute path where Docker context was downloaded to. Matches `download_to_path`.
 
         """
-        endpoint = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/dockercontext".format(
+        self._refresh_cache()
+        endpoint = "{}://{}/api/v1/deployment/builds/dockercontext".format(
             self._conn.scheme,
             self._conn.socket,
-            self._msg.registered_model_id,
-            self.id
         )
-        with _utils.make_request("GET", endpoint, self._conn, stream=True) as response:
+        body = {
+            "model_version_id": self.id
+        }
+
+        with _utils.make_request("POST", endpoint, self._conn, json=body, stream=True) as response:
             try:
                 _utils.raise_for_http_error(response)
             except requests.HTTPError as e:

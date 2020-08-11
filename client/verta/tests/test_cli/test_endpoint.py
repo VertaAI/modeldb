@@ -2,6 +2,7 @@ from click.testing import CliRunner
 
 import pytest
 import time
+import json
 
 from verta import Client
 from verta._cli import cli
@@ -233,9 +234,9 @@ class TestUpdate:
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
 
-    def test_update_from_json_config(self, client, in_tempdir, created_endpoints, experiment_run,
-                                     model_for_deployment):
+    def test_update_from_json_config(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
         json = pytest.importorskip("json")
+
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
@@ -254,16 +255,16 @@ class TestUpdate:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule": "latency",
+                    {"rule": "latency_avg_max",
                      "rule_parameters": [
-                         {"name": "latency_avg",
+                         {"name": "threshold",
                           "value": "0.1"}
-                     ]},
-                    {"rule": "error_rate",
+                    ]},
+                    {"rule": "error_4xx_rate",
                      "rule_parameters": [
-                         {"name": "error_rate",
-                          "value": "1"}
-                     ]}
+                        {"name": "threshold",
+                         "value": "1"}
+                    ]}
                 ]
             }
         }
@@ -271,6 +272,7 @@ class TestUpdate:
         filepath = "config.json"
         with open(filepath, 'w') as f:
             json.dump(strategy_dict, f)
+
 
         runner = CliRunner()
         result = runner.invoke(
@@ -282,3 +284,40 @@ class TestUpdate:
         print(endpoint.get_update_status())
         updated_build_ids = get_build_ids(endpoint.get_status())
         assert len(updated_build_ids) - len(updated_build_ids.intersection(original_build_ids)) > 0
+
+    def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        autoscaling_option = '{"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0}'
+        cpu_metric = '{"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.5"}]}'
+        memory_metric = '{"metric": "memory_utilization", "parameters": [{"name": "target", "value": "0.7"}]}'
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', path, '--run-id', experiment_run.id, '--autoscaling', autoscaling_option,
+             "--autoscaling-metrics", cpu_metric, "--autoscaling-metrics", memory_metric, "--strategy", "direct"],
+        )
+        assert not result.exception
+
+        autoscaling_parameters = endpoint.get_update_status()["update_request"]["autoscaling"]
+        autoscaling_quantities = autoscaling_parameters["quantities"]
+
+        assert autoscaling_quantities == json.loads(autoscaling_option)
+
+        autoscaling_metrics = autoscaling_parameters["metrics"]
+        assert len(autoscaling_metrics) == 2
+        for metric in autoscaling_metrics:
+            assert metric["metric_id"] in [1001, 1002, 1003]
+
+            if metric["metric_id"] == 1001:
+                assert metric["parameters"][0]["name"] == "target"
+                assert metric["parameters"][0]["value"] == "0.5"
+            else:
+                assert metric["parameters"][0]["name"] == "target"
+                assert metric["parameters"][0]["value"] == "0.7"
