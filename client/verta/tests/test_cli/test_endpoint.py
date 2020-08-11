@@ -140,8 +140,8 @@ class TestUpdate:
 
         canary_rule = json.dumps({
             "rule": "latency_avg_max",
-            "rule_parameters": [{"name": "threshold", "value": 0.8}]}
-        )
+            "rule_parameters": [{"name": "threshold", "value": 0.8}]
+        })
 
         # Extra parameters provided:
         runner = CliRunner()
