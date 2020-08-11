@@ -7,7 +7,7 @@ from verta._protos.public.uac import Organization_pb2 as _Organization
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._tracking.organization import Organization, CollaboratorType
 
-from .utils import delete_project
+from .utils import delete_project, delete_repository
 
 
 def test_create_msg():
@@ -39,19 +39,18 @@ class TestOrganization:
         exp_name = _utils.generate_default_name()
         run_name = _utils.generate_default_name()
         dataset_name = _utils.generate_default_name()
-
+        repository_name = _utils.generate_default_name()
         model_name = _utils.generate_default_name()
         version_name = _utils.generate_default_name()
-
         endpoint_path = _utils.generate_default_name()
 
         project = client.create_project(project_name)
         exp = client.create_experiment(exp_name)
         run = client.create_experiment_run(run_name)
+        repository = client.get_or_create_repository(name=repository_name)
 
         dataset = client._create_dataset2(dataset_name)
         created_datasets.append(dataset)
-
         model = client.create_registered_model(name=model_name)
         version = model.create_version(name=version_name)
         created_registered_models.append(model)
@@ -78,6 +77,7 @@ class TestOrganization:
         new_project = client.create_project(project_name)
         new_exp = client.create_experiment(exp_name)
         new_run = client.create_experiment_run(run_name)
+        new_repository = client.get_or_create_repository(name=repository_name)
 
         new_dataset = client._create_dataset2(dataset_name)
         created_datasets.append(new_dataset)
@@ -92,6 +92,7 @@ class TestOrganization:
         assert exp.id != new_exp.id
         assert run.id != new_run.id
         assert dataset.id != new_dataset.id
+        assert repository.id != new_repository.id
 
-        # only need to delete new project:
         delete_project(new_project.id, client._conn)
+        delete_repository(repository.id, client._conn)
