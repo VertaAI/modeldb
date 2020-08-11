@@ -122,17 +122,17 @@ class Connection:
 
         .. code-block:: python
 
-            response = _utils.make_request("GET", "https://www.google.com/", self._conn)
-            self._conn._request_to_curl(response.request)
+            response = _utils.make_request("GET", "https://www.google.com/", conn)
+            conn._request_to_curl(response.request)
 
         From a :class:`~requests.HTTPError`:
 
         .. code-block:: python
 
             try:
-                Client("www.google.com")
+                pass  # insert bad call here
             except Exception as e:
-                self._conn._request_to_curl(e.request)
+                client._conn._request_to_curl(e.request)
                 raise
 
         """
