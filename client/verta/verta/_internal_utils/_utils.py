@@ -107,6 +107,45 @@ class Connection:
         else:
             raise_for_http_error(response)
 
+    @staticmethod
+    def _request_to_curl(request):
+        """
+        Prints a cURL to reproduce `request`.
+
+        Parameters
+        ----------
+        request : :class:`requests.PreparedRequest`
+
+        Examples
+        --------
+        From a :class:`~requests.Response`:
+
+        .. code-block:: python
+
+            response = _utils.make_request("GET", "https://www.google.com/", self._conn)
+            self._conn._request_to_curl(response.request)
+
+        From a :class:`~requests.HTTPError`:
+
+        .. code-block:: python
+
+            try:
+                Client("www.google.com")
+            except Exception as e:
+                self._conn._request_to_curl(e.request)
+                raise
+
+        """
+        curl = "curl -X"
+        curl += ' ' + request.method
+        curl += ' ' + '"{}"'.format(request.url)
+        if request.headers:
+            curl += ' ' + ' '.join('-H "{}: {}"'.format(key, val) for key, val in request.headers.items())
+        if request.body:
+            curl += ' ' + "-d '{}'".format(request.body.decode())
+
+        print(curl)
+
 
 class NoneProtoResponse(object):
     def __init__(self):
