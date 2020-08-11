@@ -9,7 +9,7 @@ from verta.deployment.resources import CpuMillis, Memory
 from verta.deployment.autoscaling import Autoscaling
 from verta.deployment.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
-from verta.deployment.update.rules import AverageLatencyThresholdRule
+from verta.deployment.update.rules import MaximumAverageLatencyThresholdRule
 from verta._internal_utils import _utils
 from verta.environment import Python
 
@@ -157,7 +157,7 @@ class TestEndpoint:
 
         assert "canary update strategy must have at least one rule" in str(excinfo.value)
 
-        strategy.add_rule(AverageLatencyThresholdRule(0.8))
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
         updated_status = endpoint.update(experiment_run, strategy)
 
         # Check that a new build is added:
@@ -184,14 +184,14 @@ class TestEndpoint:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule": "latency",
+                    {"rule": "latency_avg_max",
                      "rule_parameters": [
-                         {"name": "latency_avg",
+                         {"name": "threshold",
                           "value": "0.1"}
                     ]},
-                    {"rule": "error_rate",
+                    {"rule": "error_4xx_rate",
                      "rule_parameters": [
-                        {"name": "error_rate",
+                        {"name": "threshold",
                          "value": "1"}
                     ]}
                 ]
@@ -226,14 +226,14 @@ class TestEndpoint:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule": "latency",
+                    {"rule": "latency_avg_max",
                      "rule_parameters": [
-                         {"name": "latency_avg",
+                         {"name": "threshold",
                           "value": "0.1"}
                     ]},
-                    {"rule": "error_rate",
+                    {"rule": "error_4xx_rate",
                      "rule_parameters": [
-                        {"name": "error_rate",
+                        {"name": "threshold",
                          "value": "1"}
                     ]}
                 ]
@@ -261,7 +261,7 @@ class TestEndpoint:
 
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
 
-        strategy.add_rule(AverageLatencyThresholdRule(0.8))
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
         updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMillis(500), Memory("500Mi"), ],
                                          env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
@@ -371,14 +371,14 @@ class TestEndpoint:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule": "latency",
+                    {"rule": "latency_avg_max",
                      "rule_parameters": [
-                         {"name": "latency_avg",
+                         {"name": "threshold",
                           "value": "0.1"}
                     ]},
-                    {"rule": "error_rate",
+                    {"rule": "error_4xx_rate",
                      "rule_parameters": [
-                        {"name": "error_rate",
+                        {"name": "threshold",
                          "value": "1"}
                     ]}
                 ]
