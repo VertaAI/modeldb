@@ -176,9 +176,9 @@ class Endpoint(object):
             while status_dict['status'] not in ("active", "error") \
                     or (status_dict['status'] == "active" and len(self.get_status()['components']) > 1):
                 print(".", end='')
-                status_dict = self.get_status()
                 sys.stdout.flush()
                 time.sleep(5)
+                status_dict = self.get_status()
 
             print()
             if self.get_status()['status'] == "error":
