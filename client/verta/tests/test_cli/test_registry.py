@@ -83,19 +83,6 @@ class TestCreate:
         assert result.exception
         assert "cannot have duplicate artifact keys" in result.output
 
-        runner.invoke(
-            cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, "my version 3", "--artifact",
-             "file={}".format(filename)],
-        )
-        result = runner.invoke(
-            cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, "my version 3", "--artifact",
-             "file={}".format(filename)],
-        )
-        assert result.exception
-        assert "key \"file\" already exists" in result.output
-
     def test_create_version_wrong_model_name(self, strs):
         version_name = "my version"
 
