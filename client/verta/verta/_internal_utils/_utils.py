@@ -34,7 +34,7 @@ from . import importer
 
 _GRPC_PREFIX = "Grpc-Metadata-"
 
-_VALID_HTTP_METHODS = {'GET', 'POST', 'PUT', 'DELETE'}
+_VALID_HTTP_METHODS = {'GET', 'POST', 'PUT', 'DELETE', 'PATCH'}
 _VALID_FLAT_KEY_CHARS = set(string.ascii_letters + string.digits + '_-/')
 
 THREAD_LOCALS = threading.local()
