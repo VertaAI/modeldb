@@ -254,3 +254,40 @@ class TestUpdate:
         )
         assert not result.exception
         assert endpoint.get_update_status()['update_request']['resources'] == json.loads(resources)
+
+    def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        autoscaling_option = '{"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0}'
+        cpu_metric = '{"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.5"}]}'
+        memory_metric = '{"metric": "memory_utilization", "parameters": [{"name": "target", "value": "0.7"}]}'
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', path, '--run-id', experiment_run.id, '--autoscaling', autoscaling_option,
+             "--autoscaling-metrics", cpu_metric, "--autoscaling-metrics", memory_metric, "--strategy", "direct"],
+        )
+        assert not result.exception
+
+        autoscaling_parameters = endpoint.get_update_status()["update_request"]["autoscaling"]
+        autoscaling_quantities = autoscaling_parameters["quantities"]
+
+        assert autoscaling_quantities == json.loads(autoscaling_option)
+
+        autoscaling_metrics = autoscaling_parameters["metrics"]
+        assert len(autoscaling_metrics) == 2
+        for metric in autoscaling_metrics:
+            assert metric["metric_id"] in [1001, 1002, 1003]
+
+            if metric["metric_id"] == 1001:
+                assert metric["parameters"][0]["name"] == "target"
+                assert metric["parameters"][0]["value"] == "0.5"
+            else:
+                assert metric["parameters"][0]["name"] == "target"
+                assert metric["parameters"][0]["value"] == "0.7"

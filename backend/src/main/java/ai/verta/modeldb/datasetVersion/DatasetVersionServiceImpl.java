@@ -207,7 +207,10 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
       DatasetVersionDTO datasetVersionDTO =
           getDatasetVersionDTOByDatasetId(
-              request.getDatasetId(), request.getPageNumber(), request.getPageLimit());
+              request.getDatasetId(),
+              request.getPageNumber(),
+              request.getPageLimit(),
+              request.getAscending());
 
       /*Build response*/
       responseObserver.onNext(
@@ -224,7 +227,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   }
 
   private DatasetVersionDTO getDatasetVersionDTOByDatasetId(
-      String datasetId, int pageNumber, int pageLimit)
+      String datasetId, int pageNumber, int pageLimit, boolean ascending)
       throws InvalidProtocolBufferException, ModelDBException {
 
     /*Get Data*/
@@ -241,7 +244,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         commitDAO.listCommits(
             listCommitsRequest.build(),
             (session ->
-                repositoryDAO.getRepositoryById(session, repositoryIdentification, false, false)));
+                repositoryDAO.getRepositoryById(session, repositoryIdentification, false, false)),
+            ascending);
 
     long totalRecords = listCommitsResponse.getTotalRecords();
     totalRecords = totalRecords > 0 ? totalRecords - 1 : totalRecords;
@@ -331,12 +335,14 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       /*String sortKey =
       request.getSortKey().isEmpty() ? ModelDBConstants.TIME_LOGGED : request.getSortKey();*/
 
+      int pageNumber = request.getAscending() ? 2 : 1;
       DatasetVersionDTO datasetVersionDTO =
-          getDatasetVersionDTOByDatasetId(request.getDatasetId(), 1, 1);
+          getDatasetVersionDTOByDatasetId(
+              request.getDatasetId(), pageNumber, 1, request.getAscending());
 
       if (datasetVersionDTO.getDatasetVersions().size() != 1) {
         logAndThrowError(
-            "No datasetVersion found for dataset '" + request.getDatasetId(),
+            "No datasetVersion found for dataset '" + request.getDatasetId() + "'",
             Code.NOT_FOUND_VALUE,
             Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
       }

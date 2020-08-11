@@ -7,7 +7,7 @@ import verta
 from verta._deployment import Endpoint
 from verta.deployment.resources import CpuMillis, Memory
 from verta.deployment.autoscaling import Autoscaling
-from verta.deployment.autoscaling.metrics import CpuTarget, MemoryTarget, RequestsPerWorkerTarget
+from verta.deployment.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
 from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
@@ -292,7 +292,12 @@ class TestEndpoint:
                                   'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
 
 
-    def test_get_deployed_model(self, client, experiment_run, model_for_deployment, created_endpoints):
+    def test_get_deployed_model(self, client, experiment_run, model_version, model_for_deployment, created_endpoints):
+        """
+        Verifies prediction for a finished deployment, as well as for an endpoint in the middle of being updated.
+        """
+        np = pytest.importorskip("numpy")
+
         model = model_for_deployment['model'].fit(
             model_for_deployment['train_features'],
             model_for_deployment['train_targets'],
@@ -303,12 +308,20 @@ class TestEndpoint:
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
-        endpoint.update(experiment_run, DirectUpdateStrategy())
+        endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
-        while not endpoint.get_status()['status'] == "active":
-            time.sleep(3)
         x = model_for_deployment['train_features'].iloc[1].values
         assert endpoint.get_deployed_model().predict([x]) == [2]
+
+        new_model = model_for_deployment['model'].fit(
+            np.random.random(model_for_deployment['train_features'].shape),
+            np.random.random(model_for_deployment['train_targets'].shape).round()
+        )
+        model_version.log_model(new_model)
+        model_version.log_environment(Python(requirements=["scikit-learn"]))
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=False)
+        endpoint.get_deployed_model().predict([x])  # should succeed, because the endpoint can still service requests
 
     def test_update_from_model_version(self, client, model_version, created_endpoints):
         np = pytest.importorskip("numpy")
@@ -373,7 +386,7 @@ class TestEndpoint:
         }
 
         filepath = "config.json"
-        with open(filepath, "wb") as f:
+        with open(filepath, "w") as f:
             json.dump(strategy_dict, f)
 
         endpoint.update_from_config(filepath)
@@ -393,8 +406,8 @@ class TestEndpoint:
         created_endpoints.append(endpoint)
 
         autoscaling = Autoscaling(min_replicas=0, max_replicas=2, min_scale=0.5, max_scale=2.0)
-        autoscaling.add_metric(CpuTarget(0.5))
-        autoscaling.add_metric(MemoryTarget(0.7))
+        autoscaling.add_metric(CpuUtilizationTarget(0.5))
+        autoscaling.add_metric(MemoryUtilizationTarget(0.7))
         autoscaling.add_metric(RequestsPerWorkerTarget(100))
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
@@ -406,11 +419,8 @@ class TestEndpoint:
             assert metric["metric_id"] in [1001, 1002, 1003]
 
             if metric["metric_id"] == 1001:
-                assert metric["parameters"][0]["name"] == "cpu_target"
                 assert metric["parameters"][0]["value"] == "0.5"
             elif metric["metric_id"] == 1002:
-                assert metric["parameters"][0]["name"] == "requests_per_worker_target"
                 assert metric["parameters"][0]["value"] == "100"
             else:
-                assert metric["parameters"][0]["name"] == "memory_target"
                 assert metric["parameters"][0]["value"] == "0.7"
