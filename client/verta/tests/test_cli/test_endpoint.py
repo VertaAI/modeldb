@@ -46,6 +46,31 @@ class TestCreate:
 
         created_endpoints.append(endpoint)
 
+    def test_create_workspace_config(self, client, organization, in_tempdir, created_endpoints):
+        client_config = {
+            "workspace": organization.name
+        }
+
+        filepath = "verta_config.json"
+        with open(filepath, "w") as f:
+            json.dump(client_config, f)
+
+        endpoint_name = _utils.generate_default_name()
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'create', 'endpoint', endpoint_name],
+        )
+
+        assert not result.exception
+
+        client = Client()
+        endpoint = client.get_endpoint(endpoint_name)
+        assert endpoint.workspace == organization.name
+
+        created_endpoints.append(endpoint)
+
 
 class TestUpdate:
     def test_direct_update_endpoint(self, client, created_endpoints, experiment_run, model_for_deployment):
