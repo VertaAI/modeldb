@@ -314,9 +314,9 @@ class TestEndpoint:
         x = model_for_deployment['train_features'].iloc[1].values
         deployed_model = endpoint.get_deployed_model()
 
+        assert deployed_model.predict([x]) == [2]
         deployed_model_curl = deployed_model.get_curl()
         assert endpoint.path in deployed_model_curl
-        assert deployed_model.predict([x]) == [2]
 
         new_model = model_for_deployment['model'].fit(
             np.random.random(model_for_deployment['train_features'].shape),
