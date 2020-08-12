@@ -185,7 +185,7 @@ class DeployedModel:
 
         curl = "curl -X POST {} -d \'\' -H \"Content-Type: application/json\"".format(self._prediction_url)
         if self._session.headers.get('Access-token'):
-            curl += " -H \"{}\"".format(self._session.headers['Access-token'])
+            curl += " -H \"Access-token: {}\"".format(self._session.headers['Access-token'])
 
         return curl
 
