@@ -51,9 +51,15 @@ class Endpoint(object):
         status = self.get_status()
         data = Endpoint._get_json_by_id(self._conn, self.workspace, self.id)
 
+        try:
+            curl = self.get_deployed_model().get_curl()
+        except RuntimeError:
+            curl = "<Endpoint not deployed>"
+
         return '\n'.join((
             "path: {}".format(data['creator_request']['path']),
             "id: {}".format(self.id),
+            "curl: {}".format(curl),
             "status: {}".format(status["status"]),
             "date created: {}".format(data["date_created"]),
             "date updated: {}".format(data["date_updated"]),
