@@ -2355,6 +2355,9 @@
         },
         "workspace_id": {
           "type": "string"
+        },
+        "registered_model_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
