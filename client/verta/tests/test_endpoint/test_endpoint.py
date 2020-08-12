@@ -12,6 +12,7 @@ from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import AverageLatencyThresholdRule
 from verta._internal_utils import _utils
 from verta.environment import Python
+from verta.utils import ModelAPI
 
 from ..utils import get_build_ids
 
@@ -429,21 +430,21 @@ class TestEndpoint:
         torch = pytest.importorskip("torch")
         from models.nets import FullyConnected
 
-        np = pytest.importorskip("numpy")
+        train_data = torch.rand((2, 4))
 
-        hidden_size = 512
-        dropout = 0.2
+        classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
+        model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
+        model_version.log_model(classifier, custom_modules=["models/nets.py"], model_api=model_api)
 
-        classifier = FullyConnected(num_features=12, hidden_size=hidden_size, dropout=dropout)
-        model_version.log_model(classifier, custom_modules=["models/nets.py"])
-
-        env = Python(requirements=["scikit-learn"])
+        env = Python(requirements=["torch"])
         model_version.log_environment(env)
+
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
-
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
-        test_data = np.random.random((4, 12))
-        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+
+
+        test_data = torch.rand((4, 4))
+        assert torch.all(endpoint.get_deployed_model().predict(test_data.tolist()).eq(classifier(test_data)))
