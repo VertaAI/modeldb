@@ -500,6 +500,7 @@ class TestRDBMSDatasetVersionInfo:
         assert dataset_version.dataset_version_info.data_source_uri == "localhost:6543"
         assert dataset_version.dataset_version_info.num_records == 100
 
+@pytest.mark.skip("Backend needs to be fixed to preserve `base_path`")
 class TestLogDatasetVersion:
     def test_log_dataset_version(self, client, created_datasets, experiment_run):
         dataset = client.set_dataset(type="local")
