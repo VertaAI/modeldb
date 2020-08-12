@@ -403,4 +403,4 @@ class TestPredict:
         )
 
         assert not result.exception
-        assert str(classifier.predict(test_data).tolist()) in result.output
+        assert json.dumps(classifier.predict(test_data).tolist()) in result.output

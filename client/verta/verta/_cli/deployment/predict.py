@@ -28,4 +28,5 @@ def predict_endpoint(path, data, workspace):
         raise click.BadParameter("endpoint with path {} not found".format(path))
 
     deployed_model = endpoint.get_deployed_model()
-    click.echo(deployed_model.predict(json.loads(data)))
+    result = deployed_model.predict(json.loads(data))
+    click.echo(json.dumps(result))
