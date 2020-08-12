@@ -7,6 +7,7 @@ import time
 
 import requests
 
+from .entity_registry import _ModelDBRegistryEntity
 from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
@@ -24,11 +25,11 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 from .. import utils
 
-from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
+from .._tracking.entity import _OSS_DEFAULT_WORKSPACE
 from ..environment import _Environment, Python
 
 
-class RegisteredModelVersion(_ModelDBEntity):
+class RegisteredModelVersion(_ModelDBRegistryEntity):
     """
     Object representing a version of a Registered Model.
 
