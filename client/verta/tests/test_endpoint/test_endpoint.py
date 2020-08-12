@@ -436,7 +436,7 @@ class TestEndpoint:
         model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
         model_version.log_model(classifier, custom_modules=["models"], model_api=model_api)
 
-        env = Python(requirements=["torch"])
+        env = Python(requirements=["torch==1.0.0"])
         model_version.log_environment(env)
 
 
