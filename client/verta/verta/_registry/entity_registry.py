@@ -2,7 +2,7 @@ from verta._internal_utils import _utils
 from verta._tracking.entity import _ModelDBEntity
 
 
-class _ModelDBEntityWithWorkspaceService(_ModelDBEntity):
+class _ModelDBRegistryEntity(_ModelDBEntity):
     def _get_workspace_name_by_id(self, workspace_id):
         # getting workspace
         response = _utils.make_request(
@@ -11,8 +11,9 @@ class _ModelDBEntityWithWorkspaceService(_ModelDBEntity):
             self._conn, params={'id': workspace_id},
         )
         _utils.raise_for_http_error(response)
-        user_id = _utils.body_to_json(response)['internal_id']['user_id']
-        if user_id:
+        response_body = _utils.body_to_json(response)
+        if 'user_id' in response_body:
+            user_id = response_body['user_id']
             # try getting user
             response = _utils.make_request(
                 "GET",
@@ -22,9 +23,9 @@ class _ModelDBEntityWithWorkspaceService(_ModelDBEntity):
             _utils.raise_for_http_error(response)
 
             # workspace is user
-            return ['verta_info']['username']
+            return _utils.body_to_json(response)['verta_info']['username']
         else:
-            org_id = _utils.body_to_json(response)['internal_id']['org_id']
+            org_id = response_body['org_id']
             # try getting organization
             response = _utils.make_request(
                 "GET",

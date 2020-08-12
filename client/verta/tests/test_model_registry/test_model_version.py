@@ -39,9 +39,7 @@ class TestModelVersion:
 
     def test_create(self, registered_model):
         name = verta._internal_utils._utils.generate_default_name()
-        version = registered_model.create_version(name)
-        assert version
-        print(version)
+        assert registered_model.create_version(name)
         with pytest.raises(requests.HTTPError) as excinfo:
             assert registered_model.create_version(name)
         excinfo_value = str(excinfo.value).strip()
