@@ -24,20 +24,50 @@ class _AutoscalingMetric(object):
             }]
         }
 
+    @staticmethod
+    def _from_dict(metric_dict):
+        parent_name = metric_dict["metric"]
+        metric_name = metric_dict["parameters"][0]["name"]
+        metric_value = metric_dict["parameters"][0]["value"]
 
-class CpuTarget(_AutoscalingMetric):
+        METRIC_SUBCLASSES = [CpuUtilizationTarget, RequestsPerWorkerTarget, MemoryUtilizationTarget]
+
+        for Subclass in METRIC_SUBCLASSES:
+            if parent_name == Subclass._PARENT_NAME and metric_name == Subclass._NAME:
+                metric = Subclass(metric_value)
+                break
+        else:
+            # does not match any rule
+            raise ValueError("no metric with name {} and parameter name {} exists".format(parent_name, metric_name))
+
+        return metric
+
+
+class CpuUtilizationTarget(_AutoscalingMetric):
+    """
+    Memory utilization target to trigger autoscaling.
+
+    """
     _METRIC_ID = 1001
     _PARENT_NAME = "cpu_utilization"
-    _NAME = "cpu_target"
+    _NAME = "target"
 
 
 class RequestsPerWorkerTarget(_AutoscalingMetric):
+    """
+    CPU utilization target to trigger autoscaling.
+
+    """
     _METRIC_ID = 1002
     _PARENT_NAME = "requests_per_worker"
-    _NAME = "requests_per_worker_target"
+    _NAME = "target"
 
 
-class MemoryTarget(_AutoscalingMetric):
+class MemoryUtilizationTarget(_AutoscalingMetric):
+    """
+    Number of requests per worker target to trigger autoscaling.
+
+    """
     _METRIC_ID = 1003
     _PARENT_NAME = "memory_utilization"
-    _NAME = "memory_target"
+    _NAME = "target"

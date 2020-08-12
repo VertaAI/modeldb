@@ -600,9 +600,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         Optional<Long> sum = components.stream().map(DatasetPartInfo::getSize).reduce(Long::sum);
         sum.ifPresent(builderPathDatasetVersion::setSize);
         datasetVersionBuilder.setPathDatasetVersionInfo(
-            builderPathDatasetVersion
-                .setBasePath(locationList.get(0))
-                .addAllDatasetPartInfos(components));
+            builderPathDatasetVersion.addAllDatasetPartInfos(components));
         datasetVersionBuilder.setDatasetBlob(dataset);
         return datasetVersionBuilder.build();
       } else {

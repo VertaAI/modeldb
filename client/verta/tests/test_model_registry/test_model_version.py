@@ -100,6 +100,12 @@ class TestModelVersion:
         retrieved_classfier = model_version.get_model()
         assert np.array_equal(retrieved_classfier.coef_, original_coef)
 
+        # check model api:
+        assert "model_api.json" in model_version.get_artifact_keys()
+        for artifact in model_version._msg.artifacts:
+            if artifact.key == "model_api.json":
+                assert artifact.filename_extension == "json"
+
         # overwrite should work:
         new_classifier = LogisticRegression()
         new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
@@ -126,6 +132,7 @@ class TestModelVersion:
         # retrieve the artifact:
         retrieved_coef = model_version.get_artifact("coef")
         assert np.array_equal(retrieved_coef, original_coef)
+        assert model_version._msg.artifacts[0].filename_extension == "pkl"
 
         # Overwrite should work:
         new_classifier = LogisticRegression()
@@ -327,7 +334,6 @@ class TestModelVersion:
         model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
         assert len(model_version._msg.artifacts) == 4
 
-    @pytest.mark.skip(reason="pending backend")
     def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir, registered_model):
         download_to_path = "context.tgz"
 

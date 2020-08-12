@@ -195,7 +195,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ListCommitsRequest.Response response =
           commitDAO.listCommits(
               request,
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()));
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              false);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {

@@ -203,7 +203,7 @@ public class DatasetVersionTest {
             PathDatasetVersionInfo.newBuilder()
                 .setSize(2)
                 .setLocationType(PathLocationTypeEnum.PathLocationType.S3_FILE_SYSTEM)
-                .setBasePath(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION)
+                .setBasePath("base_path/v1")
                 .addDatasetPartInfos(
                     DatasetPartInfo.newBuilder()
                         .setSize(2)
@@ -459,6 +459,8 @@ public class DatasetVersionTest {
     assertTrue(deleteDatasetResponse.getStatus());
   }
 
+  // TODO: getLatestDatasetVersionByDatasetId not supporting sort key because datasetVersion have
+  // TODO: just one sortable column which is TIME_UPDATED
   @Test
   public void getLatestDatasetVersionByDatasetId() {
 
@@ -524,8 +526,7 @@ public class DatasetVersionTest {
         datasetVersion3,
         getLatestDatasetVersionByDatasetIdResponse.getDatasetVersion());
 
-    // TODO: uncomment when pagination support with the sort key and ascending
-    /*getLatestDatasetVersionByDatasetIdRequest =
+    getLatestDatasetVersionByDatasetIdRequest =
         GetLatestDatasetVersionByDatasetId.newBuilder()
             .setDatasetId(dataset.getId())
             .setAscending(true)
@@ -536,7 +537,7 @@ public class DatasetVersionTest {
     assertEquals(
         "DatasetVersions not match with expected DatasetVersion",
         datasetVersion1,
-        getLatestDatasetVersionByDatasetIdResponse.getDatasetVersion());*/
+        getLatestDatasetVersionByDatasetIdResponse.getDatasetVersion());
 
     getLatestDatasetVersionByDatasetIdRequest =
         GetLatestDatasetVersionByDatasetId.newBuilder()

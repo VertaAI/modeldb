@@ -33,7 +33,7 @@ def create_model(model_name, label, visibility, workspace):
     public_within_org = visibility == "org"
     client = Client()
 
-    model = client.get_or_create_registered_model(model_name, workspace=workspace, public_within_org=public_within_org)
+    model = client.create_registered_model(model_name, workspace=workspace, public_within_org=public_within_org)
     for l in label:
         model.add_label(l)
 
@@ -44,12 +44,14 @@ def create_model(model_name, label, visibility, workspace):
 @click.option("--model", help="Path to the model.")
 @click.option("--artifact", type=str, multiple=True, help="Path to an artifact required for the model. The format is --artifact artifact_key=path_to_artifact.")
 @click.option("--workspace", "-w", help="Workspace to use.")
+@click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
 @click.option("--from-run", type=str, help="ID of the Experiment Run to enter into the model registry. This option cannot be provided alongside other options, except for --workspace.")
 @click.pass_context
-def create_model_version(ctx, model_name, version_name, label, model, artifact, workspace, from_run):
+def create_model_version(ctx, model_name, version_name, label, model, artifact, workspace, requirements, from_run):
     """Create a new registeredmodelversion entry.
     """
-    if from_run and (label or model or artifact):
+    invalid_from_run_options = (label, model, artifact, requirements)
+    if from_run and any(invalid_from_run_options):
         raise click.BadParameter("--from-run cannot be provided alongside other options, except for --workspace")
 
     client = Client()
@@ -63,6 +65,6 @@ def create_model_version(ctx, model_name, version_name, label, model, artifact, 
         registered_model.create_version_from_run(run_id=from_run, name=version_name)
         return
 
-    registered_model.get_or_create_version(name=version_name, labels=list(label))
+    registered_model.create_version(name=version_name, labels=list(label))
     # labels have been added
-    ctx.invoke(update_model_version, model_name=model_name, version_name=version_name, model=model, artifact=artifact, workspace=workspace)
+    ctx.invoke(update_model_version, model_name=model_name, version_name=version_name, model=model, artifact=artifact, workspace=workspace, requirements=requirements)

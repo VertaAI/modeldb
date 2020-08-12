@@ -2349,6 +2349,15 @@
         },
         "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "default_registered_model_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "workspace_id": {
+          "type": "string"
+        },
+        "registered_model_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -2444,6 +2453,9 @@
         },
         "publicProfile": {
           "$ref": "#/definitions/uacFlagEnum"
+        },
+        "workspace_id": {
+          "type": "string"
         }
       }
     },
