@@ -314,7 +314,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         else:
             self._msg.artifacts[same_key_ind].CopyFrom(artifact_msg)
 
-        self._update(self.ModelVersionMessage(artifacts=self._msg.artifacts))
+        self._update(self._msg, method="PUT")
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def get_artifact(self, key):
@@ -385,7 +385,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             raise KeyError("no artifact found with key {}".format(key))
 
         del self._msg.artifacts[ind]
-        self._update(self.ModelVersionMessage(artifacts=self._msg.artifacts))
+        self._update(self._msg, method="PUT")
 
     def log_environment(self, env):
         """
@@ -591,11 +591,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         if not labels:
             raise ValueError("label is not specified")
 
-        self._fetch_with_no_cache()
-        for label in labels:
-            if label not in self._msg.labels:
-                self._msg.labels.append(label)
-        self._update(self.ModelVersionMessage(labels=self._msg.labels))
+        self._update(self.ModelVersionMessage(labels=labels))
 
     def add_label(self, label):
         """
@@ -610,9 +606,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         if label is None:
             raise ValueError("label is not specified")
         self._fetch_with_no_cache()
-        if label not in self._msg.labels:
-            self._msg.labels.append(label)
-            self._update(self.ModelVersionMessage(labels=self._msg.labels))
+        self._update(self.ModelVersionMessage(labels=[label]))
 
     def del_label(self, label):
         """
@@ -629,7 +623,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._fetch_with_no_cache()
         if label in self._msg.labels:
             self._msg.labels.remove(label)
-            self._update(self.ModelVersionMessage(labels=self._msg.labels))
+            self._update(self._msg, method="PUT")
 
     def get_labels(self):
         """
@@ -693,10 +687,10 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
 
-    def _update(self, msg):
-        response = self._conn.make_proto_request("PATCH", "/api/v1/registry/registered_models/{}/model_versions/{}"
+    def _update(self, msg, method="PATCH"):
+        response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
                                                  .format(self._msg.registered_model_id, self.id),
-                                                 body=msg)
+                                                 body=msg, include_default=False)
         Message = _ModelVersionService.SetModelVersion
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
