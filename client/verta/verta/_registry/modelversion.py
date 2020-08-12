@@ -261,7 +261,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         """
         self._fetch_with_no_cache()
         self._msg.ClearField("model")
-        self._update(self._msg)
+        self._update(self._msg, method="PUT")
 
     def log_artifact(self, key, artifact, overwrite=False, extension=None):
         """
@@ -401,7 +401,11 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         if not isinstance(env, _Environment):
             raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
 
-        self._update(self.ModelVersionMessage(environment=env._msg))
+        self._fetch_with_no_cache()
+        self._msg.environment.CopyFrom(env._msg)
+        self._update(self._msg, method="PUT")
+        # probably error on backend
+        #self._update(self.ModelVersionMessage(environment=env._msg))
 
     def del_environment(self):
         """
@@ -410,7 +414,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         """
         self._fetch_with_no_cache()
         self._msg.ClearField("environment")
-        self._update(self._msg)
+        self._update(self._msg, method="PUT")
 
     def get_environment(self):
         """
