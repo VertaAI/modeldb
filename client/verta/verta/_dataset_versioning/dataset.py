@@ -96,7 +96,7 @@ class Dataset(entity._ModelDBEntity):
         proto_response = conn.make_proto_request("GET", endpoint, params=msg)
         response = conn.maybe_proto_response(proto_response, Message.Response)
 
-        if workspace is None or response.HasField("dataset_by_user"):
+        if response.HasField("dataset_by_user") and response.dataset_by_user.id:
             return response.dataset_by_user
         elif hasattr(response, "shared_datasets") and response.shared_datasets:
             return response.shared_datasets[0]
