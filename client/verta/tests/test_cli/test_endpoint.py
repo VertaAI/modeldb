@@ -377,7 +377,7 @@ class TestUpdate:
 
 
 class TestPredict:
-    def test_get_deployed_model(self, client, experiment_run, created_endpoints):
+    def test_predict(self, client, experiment_run, created_endpoints):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
