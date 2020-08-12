@@ -9,6 +9,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.UserInfo;
@@ -28,7 +29,8 @@ public interface RepositoryDAO {
       Session session,
       RepositoryIdentification id,
       boolean checkWrite,
-      boolean canNotOperateOnProtected)
+      boolean canNotOperateOnProtected,
+      RepositoryEnums.RepositoryTypeEnum repositoryType)
       throws ModelDBException;
 
   RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
@@ -45,7 +47,8 @@ public interface RepositoryDAO {
       DeleteRepositoryRequest request,
       CommitDAO commitDAO,
       ExperimentRunDAO experimentRunDAO,
-      boolean canNotOperateOnProtected)
+      boolean canNotOperateOnProtected,
+      RepositoryEnums.RepositoryTypeEnum repositoryType)
       throws ModelDBException;
 
   Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
@@ -74,13 +77,19 @@ public interface RepositoryDAO {
 
   DeleteTagRequest.Response deleteTag(DeleteTagRequest request) throws ModelDBException;
 
-  SetBranchRequest.Response setBranch(SetBranchRequest request, boolean canNotOperateOnProtected)
+  SetBranchRequest.Response setBranch(
+      SetBranchRequest request,
+      boolean canNotOperateOnProtected,
+      RepositoryEnums.RepositoryTypeEnum repositoryType)
       throws ModelDBException;
 
   BranchEntity getBranchEntity(Session session, Long repoId, String branchName)
       throws ModelDBException;
 
-  GetBranchRequest.Response getBranch(GetBranchRequest request, boolean canNotOperateOnProtected)
+  GetBranchRequest.Response getBranch(
+      GetBranchRequest request,
+      boolean canNotOperateOnProtected,
+      RepositoryEnums.RepositoryTypeEnum repositoryType)
       throws ModelDBException;
 
   DeleteBranchRequest.Response deleteBranch(DeleteBranchRequest request) throws ModelDBException;
@@ -102,7 +111,8 @@ public interface RepositoryDAO {
       MetadataDAO metadataDAO,
       RepositoryIdentification repositoryIdentification,
       List<String> tags,
-      boolean canNotOperateOnProtected)
+      boolean canNotOperateOnProtected,
+      RepositoryEnums.RepositoryTypeEnum repositoryType)
       throws ModelDBException;
 
   Dataset deleteDatasetTags(
@@ -114,7 +124,8 @@ public interface RepositoryDAO {
       RepositoryIdentification repositoryIdentification,
       List<String> tagsList,
       boolean deleteAll,
-      boolean canNotOperateOnProtected)
+      boolean canNotOperateOnProtected,
+      RepositoryEnums.RepositoryTypeEnum repositoryType)
       throws ModelDBException;
 
   DatasetPaginationDTO findDatasets(
@@ -128,6 +139,7 @@ public interface RepositoryDAO {
       Long repositoryId,
       List<String> attributesKeys,
       boolean deleteAll,
-      boolean canNotOperateOnProtected)
+      boolean canNotOperateOnProtected,
+      RepositoryEnums.RepositoryTypeEnum repositoryType)
       throws ModelDBException;
 }
