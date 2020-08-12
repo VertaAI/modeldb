@@ -171,6 +171,25 @@ class DeployedModel:
         else:
             return self._session.post(self._prediction_url, json=x)
 
+    def get_curl(self):
+        """
+        Gets a valid cURL command.
+
+        Returns
+        -------
+        str
+
+        """
+        if 'Access-token' not in self._session.headers or self._prediction_url is None:
+            self._set_token_and_url()
+
+        print(self._session.headers)
+
+        return "curl -X POST {} -d \'\' -H \"Content-Type: application/json\"".format(
+            self._prediction_url
+        )
+
+
     def predict(self, x, compress=False, max_retries=5, always_retry_404=True, always_retry_429=True):
         """
         Makes a prediction using input `x`.
