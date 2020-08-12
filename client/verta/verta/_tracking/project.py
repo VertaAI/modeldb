@@ -89,6 +89,11 @@ class Project(_ModelDBEntity):
         response = conn.make_proto_request("GET",
                                            "/api/v1/modeldb/project/getProjectById",
                                            params=msg)
+        print()
+        conn._request_to_curl(response.request)
+        print()
+        print(response.json())
+        print("======")
         return conn.maybe_proto_response(response, Message.Response).project
 
     @classmethod
@@ -98,6 +103,11 @@ class Project(_ModelDBEntity):
         response = conn.make_proto_request("GET",
                                            "/api/v1/modeldb/project/getProjectByName",
                                            params=msg)
+        print()
+        conn._request_to_curl(response.request)
+        print()
+        print(response.json())
+        print("======")
         response = conn.maybe_proto_response(response, Message.Response)
         if workspace is None or response.HasField("project_by_user"):
             return response.project_by_user
@@ -124,6 +134,11 @@ class Project(_ModelDBEntity):
         response = conn.make_proto_request("POST",
                                            "/api/v1/modeldb/project/createProject",
                                            body=msg)
+        print()
+        conn._request_to_curl(response.request)
+        print()
+        print(response.json())
+        print("======")
         proj = conn.must_proto_response(response, Message.Response).project
 
         if ctx.workspace_name is not None:
