@@ -253,6 +253,7 @@ public interface ModelDBConstants {
   String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
   String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
   String PROPERTY_NAME = "property_name";
+  String S3_PRESIGNED_URL_ENABLED = "s3presignedURLEnabled";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second

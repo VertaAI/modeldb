@@ -69,6 +69,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -587,8 +588,31 @@ public class App implements ApplicationContextAware {
         String cloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
         artifactStoreService = new S3Service(cloudBucketName);
         app.storeTypePathPrefix = "s3://" + cloudBucketName + ModelDBConstants.PATH_DELIMITER;
-        System.getProperties().put("scan.packages", "dummyPackageName");
-        SpringApplication.run(App.class, new String[0]);
+
+        if (s3ConfigMap.containsKey(ModelDBConstants.S3_PRESIGNED_URL_ENABLED)
+                && !((boolean) s3ConfigMap.get(ModelDBConstants.S3_PRESIGNED_URL_ENABLED))){
+          Map<String, Object> s3ArtifactEndpointConfigMap =
+                  (Map<String, Object>) s3ConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
+          app.getArtifactEndpoint =
+                  (String) s3ArtifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
+          LOGGER.trace("S3 Get artifact endpoint found : {}", app.getArtifactEndpoint);
+          app.storeArtifactEndpoint =
+                  (String) s3ArtifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
+          LOGGER.trace("S3 Store artifact endpoint found : {}", app.storeArtifactEndpoint);
+
+          System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
+          System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
+          System.getProperties()
+                  .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
+          SpringApplication.run(App.class, new String[0]);
+          // Initializing the object as a Spring component
+          AutowireCapableBeanFactory factory = app.applicationContext.getAutowireCapableBeanFactory();
+          factory.autowireBean(artifactStoreService);
+          factory.initializeBean(artifactStoreService, S3Service.class.getSimpleName());
+        } else {
+          System.getProperties().put("scan.packages", "dummyPackageName");
+          SpringApplication.run(App.class, new String[0]);
+        }
         break;
       case ModelDBConstants.NFS:
         Map<String, Object> nfsConfigMap =
@@ -609,14 +633,14 @@ public class App implements ApplicationContextAware {
                     ModelDBConstants.NFS_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
         LOGGER.debug("NFS URL protocol found : {}", app.nfsUrlProtocol);
 
-        Map<String, Object> artifactEndpointConfigMap =
+        Map<String, Object> nfsArtifactEndpointConfigMap =
             (Map<String, Object>) nfsConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
         app.getArtifactEndpoint =
-            (String) artifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
-        LOGGER.trace("Get artifact endpoint found : {}", app.getArtifactEndpoint);
+            (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
+        LOGGER.trace("NFS Get artifact endpoint found : {}", app.getArtifactEndpoint);
         app.storeArtifactEndpoint =
-            (String) artifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
-        LOGGER.trace("Store artifact endpoint found : {}", app.storeArtifactEndpoint);
+            (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
+        LOGGER.trace("NFS Store artifact endpoint found : {}", app.storeArtifactEndpoint);
 
         System.getProperties().put("file.upload-dir", rootDir);
         System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);

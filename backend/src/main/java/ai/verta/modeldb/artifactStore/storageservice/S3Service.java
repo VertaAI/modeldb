@@ -1,10 +1,12 @@
 package ai.verta.modeldb.artifactStore.storageservice;
 
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.HttpCodeToGRPCCode;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.cron_jobs.FetchTemporaryS3Token;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
@@ -23,20 +25,30 @@ import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PartETag;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.securitytoken.model.Credentials;
 import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
+
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
+@Service
 public class S3Service implements ArtifactStoreService {
 
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
@@ -44,6 +56,7 @@ public class S3Service implements ArtifactStoreService {
   private String bucketName;
   private final Regions awsRegion;
   private static Credentials temporarySessionCredentials;
+  private TransferManager transferManager;
 
   public S3Service(String cloudBucketName) throws ModelDBException {
     App app = App.getInstance();
@@ -70,6 +83,14 @@ public class S3Service implements ArtifactStoreService {
       // reads credential from OS Environment
       s3Client = AmazonS3ClientBuilder.standard().withRegion(awsRegion).build();
     }
+
+    int maxUploadThreads = 5;
+    this.transferManager =
+        TransferManagerBuilder.standard()
+            .withS3Client(s3Client)
+            .withMultipartUploadThreshold((long) (5 * 1024 * 1024)) //5 MB
+            .withExecutorFactory(() -> Executors.newFixedThreadPool(maxUploadThreads))
+            .build();
   }
 
   private void initializeMinioClient(
@@ -256,4 +277,25 @@ public class S3Service implements ArtifactStoreService {
   public static void setTemporarySessionCredentials(Credentials temporarySessionCredentials) {
     S3Service.temporarySessionCredentials = temporarySessionCredentials;
   }
+
+  public String uploadFile(String artifactPath, InputStream uploadedFileInputStream)
+      throws ModelDBException {
+    Upload upload = transferManager.upload(bucketName, artifactPath, uploadedFileInputStream, new ObjectMetadata());
+    try {
+      upload.waitForCompletion();
+    } catch (AmazonServiceException e) {
+      // Amazon S3 couldn't be contacted for a response, or the client
+      // couldn't parse the response from Amazon S3.
+      String errorMessage = e.getMessage();
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(
+              errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
+    } catch (InterruptedException e) {
+      LOGGER.warn(e.getMessage(), e);
+      throw new ModelDBException(e.getMessage(), Code.INTERNAL);
+    }
+    return "";
+  }
+
+  public Resource loadFileAsResource(String artifactPath) throws ModelDBException {}
 }
