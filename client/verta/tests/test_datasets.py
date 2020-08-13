@@ -174,6 +174,7 @@ class TestClientDatasetFunctions:
         datasets = client.find_datasets(name=now+" Appl")
         assert len(datasets) == 3
 
+    @pytest.mark.skip("See #1285")
     def test_find_datasets_client_api(self, client, created_datasets):
         tags = ["test1a-{}".format(_utils.now()), "test1b-{}".format(_utils.now())]
         dataset1 = client.set_dataset(type="big query", tags=tags)
