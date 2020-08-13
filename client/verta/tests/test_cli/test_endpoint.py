@@ -375,18 +375,27 @@ class TestUpdate:
                 assert metric["parameters"][0]["name"] == "target"
                 assert metric["parameters"][0]["value"] == "0.7"
 
-    def test_update_from_version_with_custom_modules(self, client, model_version, created_endpoints):
+    def test_update_from_version_with_custom_modules(self, client, registered_model, created_endpoints):
         torch = pytest.importorskip("torch")
+        np = pytest.importorskip("numpy")
+
+        model_name = registered_model.name
+        version_name = "my version"
 
         with sys_path_manager() as sys_path:
             sys_path.append(".")
-            from models.nets import FullyConnected  # pylint: disable=import-error
+            from models.sklearn_models import MyLogisticRegression  # pylint: disable=import-error
 
-            train_data = torch.rand((2, 4))
+            train_data = np.random.random((2, 4))
 
-            classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
-            model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
-            model_version.log_model(classifier, custom_modules=["models/"], model_api=model_api)
+            classifier = MyLogisticRegression()
+
+            runner.invoke(
+                cli,
+                ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--model", classifier_name],
+            )
+
+            model_version.log_model(classifier, custom_modules=["models/"])
 
             env = Python(requirements=["torch==1.0.0"])
             model_version.log_environment(env)
