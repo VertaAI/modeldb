@@ -8,6 +8,7 @@ from google.protobuf.struct_pb2 import Value
 
 import requests
 
+from .entity_registry import _ModelDBRegistryEntity
 from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
@@ -25,11 +26,11 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 from .. import utils
 
-from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
+from .._tracking.entity import _OSS_DEFAULT_WORKSPACE
 from ..environment import _Environment, Python
 
 
-class RegisteredModelVersion(_ModelDBEntity):
+class RegisteredModelVersion(_ModelDBRegistryEntity):
     """
     Object representing a version of a Registered Model.
 
@@ -183,6 +184,8 @@ class RegisteredModelVersion(_ModelDBEntity):
         print("Created new ModelVersion: {}".format(model_version.version))
         return model_version
 
+    ModelVersionMessage = _ModelVersionService.ModelVersion
+
     def log_model(self, model, model_api=None, overwrite=False):
         """
         Logs a model to this Model Version.
@@ -201,7 +204,6 @@ class RegisteredModelVersion(_ModelDBEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
-        self._fetch_with_no_cache()
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
 
@@ -215,8 +217,11 @@ class RegisteredModelVersion(_ModelDBEntity):
             extension = _artifact_utils.ext_from_method(method)
 
         # Create artifact message and update ModelVersion's message:
-        self._msg.model.CopyFrom(self._create_artifact_msg("model", serialized_model, artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension))
-        self._update()
+        model_msg = self._create_artifact_msg("model", serialized_model,
+                                        artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension)
+        model_version_update = self.ModelVersionMessage(model=model_msg)
+        self._update(model_version_update)
+
 
         # Upload the artifact to ModelDB:
         self._upload_artifact(
@@ -262,7 +267,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         """
         self._fetch_with_no_cache()
         self._msg.ClearField("model")
-        self._update()
+        self._update(self._msg, method="PUT")
 
     def log_artifact(self, key, artifact, overwrite=False, extension=None):
         """
@@ -316,7 +321,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         else:
             self._msg.artifacts[same_key_ind].CopyFrom(artifact_msg)
 
-        self._update()
+        self._update(self._msg, method="PUT")
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def get_artifact(self, key):
@@ -387,7 +392,7 @@ class RegisteredModelVersion(_ModelDBEntity):
             raise KeyError("no artifact found with key {}".format(key))
 
         del self._msg.artifacts[ind]
-        self._update()
+        self._update(self._msg, method="PUT")
 
     def log_environment(self, env):
         """
@@ -404,7 +409,9 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         self._fetch_with_no_cache()
         self._msg.environment.CopyFrom(env._msg)
-        self._update()
+        self._update(self._msg, method="PUT")
+        # probably error on backend
+        #self._update(self.ModelVersionMessage(environment=env._msg))
 
     def del_environment(self):
         """
@@ -413,7 +420,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         """
         self._fetch_with_no_cache()
         self._msg.ClearField("environment")
-        self._update()
+        self._update(self._msg, method="PUT")
 
     def get_environment(self):
         """
@@ -576,9 +583,7 @@ class RegisteredModelVersion(_ModelDBEntity):
     def set_description(self, desc):
         if not desc:
             raise ValueError("desc is not specified")
-        self._fetch_with_no_cache()
-        self._msg.description = desc
-        self._update()
+        self._update(self.ModelVersionMessage(description=desc))
 
     def get_description(self):
         self._refresh_cache()
@@ -597,11 +602,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         if not labels:
             raise ValueError("label is not specified")
 
-        self._fetch_with_no_cache()
-        for label in labels:
-            if label not in self._msg.labels:
-                self._msg.labels.append(label)
-        self._update()
+        self._update(self.ModelVersionMessage(labels=labels))
 
     def add_label(self, label):
         """
@@ -616,9 +617,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         if label is None:
             raise ValueError("label is not specified")
         self._fetch_with_no_cache()
-        if label not in self._msg.labels:
-            self._msg.labels.append(label)
-            self._update()
+        self._update(self.ModelVersionMessage(labels=[label]))
 
     def del_label(self, label):
         """
@@ -635,7 +634,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._fetch_with_no_cache()
         if label in self._msg.labels:
             self._msg.labels.remove(label)
-            self._update()
+            self._update(self._msg, method="PUT")
 
     def get_labels(self):
         """
@@ -697,13 +696,92 @@ class RegisteredModelVersion(_ModelDBEntity):
         if self.is_archived:
             raise RuntimeError("the version has already been archived")
 
-        self._fetch_with_no_cache()
-        self._msg.archived = _CommonCommonService.TernaryEnum.TRUE
-        self._update()
+        self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
 
-    def _update(self):
-        response = self._conn.make_proto_request("PUT", "/api/v1/registry/registered_models/{}/model_versions/{}".format(self._msg.registered_model_id, self.id),
-                                                 body=self._msg)
+    def add_attribute(self, key, value):
+        """
+        Adds an attribute to this Model Version.
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+        value : one of {None, bool, float, int, str, list, dict}
+            Value of the attribute.
+        """
+        self.add_attributes({key: value})
+
+    def add_attributes(self, attrs):
+        """
+        Adds potentially multiple attributes to this Model Version.
+        Parameters
+        ----------
+        attrs : dict of str to {None, bool, float, int, str, list, dict}
+            Attributes.
+        """
+        # validate all keys first
+        for key in six.viewkeys(attrs):
+            _utils.validate_flat_key(key)
+
+        # build KeyValues
+        attribute_keyvals = []
+        for key, value in six.viewitems(attrs):
+            attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
+                                                                                                             allow_collection=True)))
+
+            self._update(self.ModelVersionMessage(attributes=attribute_keyvals))
+
+    def get_attribute(self, key):
+        """
+        Gets the attribute with name `key` from this Model Version.
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+        Returns
+        -------
+        one of {None, bool, float, int, str}
+            Value of the attribute.
+        """
+        _utils.validate_flat_key(key)
+        attributes = self.get_attributes()
+
+        try:
+            return attributes[key]
+        except KeyError:
+            six.raise_from(KeyError("no attribute found with key {}".format(key)), None)
+
+    def get_attributes(self):
+        """
+        Gets all attributes from this Model Version.
+        Returns
+        -------
+        dict of str to {None, bool, float, int, str}
+            Names and values of all attributes.
+        """
+        self._refresh_cache()
+        return _utils.unravel_key_values(self._msg.attributes)
+
+    def del_attribute(self, key):
+        """
+        Deletes the attribute with name `key` from this Model Version
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+        """
+        _utils.validate_flat_key(key)
+
+        self._fetch_with_no_cache()
+        attributes = list(filter(lambda attribute: attribute.key == key, self._msg.attributes))
+        if attributes:
+            self._msg.attributes.remove(attributes[0])
+            self._update(self._msg, method="PUT")
+
+
+    def _update(self, msg, method="PATCH"):
+        response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
+                                                 .format(self._msg.registered_model_id, self.id),
+                                                 body=msg, include_default=False)
         Message = _ModelVersionService.SetModelVersion
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")

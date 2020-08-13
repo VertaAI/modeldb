@@ -1040,7 +1040,7 @@ class ExperimentRun(_ModelDBEntity):
         Logs the filesystem path of an dataset to this Experiment Run.
 
         .. deprecated:: 0.13.0
-           The `log_dataset_path()` method will removed in v0.15.0; consider using
+           The `log_dataset_path()` method will removed in v0.16.0; consider using
            `client.set_dataset(…, type="local")` and `run.log_dataset_version()` instead.
 
         This function makes no attempt to open a file at `dataset_path`. Only the path string itself
@@ -1812,7 +1812,7 @@ class ExperimentRun(_ModelDBEntity):
            The behavior of this function has been merged into :meth:`log_model` as its
            ``custom_modules`` parameter; consider using that instead.
         .. deprecated:: 0.12.4
-           The `search_path` parameter is no longer necessary and will removed in v0.15.0; consider
+           The `search_path` parameter is no longer necessary and will removed in v0.16.0; consider
            removing it from the function call.
 
         Parameters

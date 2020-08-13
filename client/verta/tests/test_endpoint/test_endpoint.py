@@ -98,11 +98,11 @@ class TestEndpoint:
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
-
         str_repr = repr(endpoint)
 
         assert "path: {}".format(endpoint.path) in str_repr
         assert "id: {}".format(endpoint.id) in str_repr
+        assert "curl: <Endpoint not deployed>" in str_repr
 
         # these fields might have changed:
         assert "status" in str_repr
@@ -111,6 +111,10 @@ class TestEndpoint:
         assert "stage's date created" in str_repr
         assert "stage's date updated" in str_repr
         assert "components" in str_repr
+
+        endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+        str_repr = repr(endpoint)
+        assert "curl: {}".format(endpoint.get_deployed_model().get_curl()) in str_repr
 
     def test_direct_update(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -312,7 +316,11 @@ class TestEndpoint:
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
         x = model_for_deployment['train_features'].iloc[1].values
-        assert endpoint.get_deployed_model().predict([x]) == [2]
+        deployed_model = endpoint.get_deployed_model()
+
+        assert deployed_model.predict([x]) == [2]
+        deployed_model_curl = deployed_model.get_curl()
+        assert endpoint.path in deployed_model_curl
 
         new_model = model_for_deployment['model'].fit(
             np.random.random(model_for_deployment['train_features'].shape),

@@ -2,8 +2,9 @@
 
 from __future__ import print_function
 
+from .entity_registry import _ModelDBRegistryEntity
 from .._internal_utils._utils import NoneProtoResponse
-from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
+from .._tracking.entity import _OSS_DEFAULT_WORKSPACE
 from .._tracking.context import _Context
 from .._internal_utils import _utils
 
@@ -14,7 +15,7 @@ from .modelversion import RegisteredModelVersion
 from .modelversions import RegisteredModelVersions
 
 
-class RegisteredModel(_ModelDBEntity):
+class RegisteredModel(_ModelDBRegistryEntity):
     """
     Object representing a registered model.
 
@@ -225,12 +226,12 @@ class RegisteredModel(_ModelDBEntity):
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
 
+    RegisteredModelMessage = _RegisteredModelService.RegisteredModel
+
     def set_description(self, desc):
         if not desc:
             raise ValueError("desc is not specified")
-        self._fetch_with_no_cache()
-        self._msg.description = desc
-        self._update()
+        self._update(self.RegisteredModelMessage(description=desc))
 
     def get_description(self):
         self._refresh_cache()
@@ -249,11 +250,7 @@ class RegisteredModel(_ModelDBEntity):
         if not labels:
             raise ValueError("label is not specified")
 
-        self._fetch_with_no_cache()
-        for label in labels:
-            if label not in self._msg.labels:
-                self._msg.labels.append(label)
-        self._update()
+        self._update(self.RegisteredModelMessage(labels=labels))
 
     def add_label(self, label):
         """
@@ -267,10 +264,7 @@ class RegisteredModel(_ModelDBEntity):
         """
         if label is None:
             raise ValueError("label is not specified")
-        self._fetch_with_no_cache()
-        if label not in self._msg.labels:
-            self._msg.labels.append(label)
-            self._update()
+        self._update(self.RegisteredModelMessage(labels=[label]))
 
     def del_label(self, label):
         """
@@ -287,7 +281,7 @@ class RegisteredModel(_ModelDBEntity):
         self._fetch_with_no_cache()
         if label in self._msg.labels:
             self._msg.labels.remove(label)
-            self._update()
+            self._update(self._msg, method="PUT")
 
     def get_labels(self):
         """
@@ -302,9 +296,9 @@ class RegisteredModel(_ModelDBEntity):
         self._refresh_cache()
         return self._msg.labels
 
-    def _update(self):
-        response = self._conn.make_proto_request("PUT", "/api/v1/registry/registered_models/{}".format(self.id),
-                                           body=self._msg)
+    def _update(self, msg, method="PATCH"):
+        response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}".format(self.id),
+                                           body=msg, include_default=False)
         Message = _RegisteredModelService.SetRegisteredModel
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
