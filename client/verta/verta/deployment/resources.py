@@ -34,7 +34,7 @@ class _Resource(object):
 
 class CpuMillis(_Resource):
     """
-    Number of CPU milli allowed for Endpoint.
+    Number of CPU milli allowed for Endpoint. Must be an integer greater than 0.
 
     """
     milli_err_msg = "`cpu_millis` must be int greater than 0"
