@@ -1559,6 +1559,19 @@ class ExperimentRun(_ModelDBEntity):
 
         return artifact_stream
 
+    def get_artifact_keys(self):
+        """
+        Gets the artifact keys of this Experiment Run.
+
+        Returns
+        -------
+        list of str
+            List of artifact keys of this Experiment Run.
+
+        """
+        self._refresh_cache()
+        return list(map(lambda artifact: artifact.key, self._msg.artifacts))
+
     def download_artifact(self, key, download_to_path):
         """
         Downloads the artifact with name `key` to path `download_to_path`.
