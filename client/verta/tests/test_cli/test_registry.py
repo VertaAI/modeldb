@@ -218,7 +218,9 @@ class TestCreate:
 
             model_path = "classifier.pkl"
             classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
-            torch.save(classifier, model_path)
+
+            with open(model_path, "wb") as f:
+                pickle.dump(classifier, model_path)
 
             model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
 
