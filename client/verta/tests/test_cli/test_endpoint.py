@@ -8,8 +8,9 @@ from verta import Client
 from verta._cli import cli
 from verta._internal_utils import _utils
 from verta.environment import Python
+from verta.utils import ModelAPI
 
-from ..utils import get_build_ids
+from ..utils import (get_build_ids, sys_path_manager)
 
 
 class TestList:
@@ -373,3 +374,39 @@ class TestUpdate:
             else:
                 assert metric["parameters"][0]["name"] == "target"
                 assert metric["parameters"][0]["value"] == "0.7"
+
+    def test_update_from_version_with_custom_modules(self, client, model_version, created_endpoints):
+        torch = pytest.importorskip("torch")
+
+        with sys_path_manager() as sys_path:
+            sys_path.append(".")
+            from models.nets import FullyConnected  # pylint: disable=import-error
+
+            train_data = torch.rand((2, 4))
+
+            classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
+            model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
+            model_version.log_model(classifier, custom_modules=["models/"], model_api=model_api)
+
+            env = Python(requirements=["torch==1.0.0"])
+            model_version.log_environment(env)
+
+
+            path = _utils.generate_default_name()
+            endpoint = client.set_endpoint(path)
+            created_endpoints.append(endpoint)
+
+            runner = CliRunner()
+            result = runner.invoke(
+                cli,
+                ['deployment', 'update', 'endpoint', path, '--model-version-id', model_version.id, "--strategy",
+                 "direct"],
+            )
+            assert not result.exception
+
+            while not endpoint.get_status()['status'] == "active":
+                time.sleep(3)
+
+            test_data = torch.rand((4, 4))
+            prediction = torch.tensor(endpoint.get_deployed_model().predict(test_data.tolist()))
+            assert torch.all(classifier(test_data).eq(prediction))
