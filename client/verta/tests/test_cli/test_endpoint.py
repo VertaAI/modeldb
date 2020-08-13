@@ -8,6 +8,7 @@ from verta import Client
 from verta._cli import cli
 from verta._internal_utils import _utils
 from verta.environment import Python
+from verta.deployment.update._strategies import DirectUpdateStrategy
 
 from ..utils import get_build_ids
 
@@ -373,3 +374,33 @@ class TestUpdate:
             else:
                 assert metric["parameters"][0]["name"] == "target"
                 assert metric["parameters"][0]["value"] == "0.7"
+
+
+class TestPredict:
+    def test_predict(self, client, experiment_run, created_endpoints):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+
+        test_data = np.random.random((4, 12))
+        test_data_str = json.dumps(test_data.tolist())
+
+        experiment_run.log_model(classifier, custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+        endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'predict', 'endpoint', path, '--data', test_data_str],
+        )
+
+        assert not result.exception
+        assert json.dumps(classifier.predict(test_data).tolist()) in result.output
