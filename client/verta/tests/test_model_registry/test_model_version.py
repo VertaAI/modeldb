@@ -146,7 +146,6 @@ class TestModelVersion:
         with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
-
     def test_log_model_with_custom_modules(self, model_version, model_for_deployment):
         custom_modules_dir = "."
 
@@ -166,7 +165,6 @@ class TestModelVersion:
 
         with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
-
 
     def test_log_artifact(self, model_version):
         np = pytest.importorskip("numpy")
