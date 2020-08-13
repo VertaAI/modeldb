@@ -99,7 +99,7 @@ class Project(_ModelDBEntity):
                                            "/api/v1/modeldb/project/getProjectByName",
                                            params=msg)
         response = conn.maybe_proto_response(response, Message.Response)
-        if workspace is None or response.HasField("project_by_user"):
+        if response.HasField("project_by_user") and response.project_by_user.id:
             return response.project_by_user
         elif hasattr(response, "shared_projects") and response.shared_projects:
             return response.shared_projects[0]

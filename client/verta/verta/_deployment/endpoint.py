@@ -10,6 +10,8 @@ from functools import reduce
 from ..external import six
 
 from ..deployment.autoscaling import Autoscaling
+from ..deployment.autoscaling.metrics import _AutoscalingMetric
+from ..deployment.resources import _Resource
 from ..deployment.update.rules import _UpdateRule
 from ..deployment import DeployedModel
 from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
@@ -327,6 +329,19 @@ class Endpoint(object):
         else:
             raise ValueError("update strategy must be \"direct\" or \"canary\"")
 
+        if "autoscaling" in update_dict:
+            autoscaling_obj = Autoscaling._from_dict(update_dict["autoscaling"]["quantities"])
+
+            for metric in update_dict["autoscaling"]["metrics"]:
+                autoscaling_obj.add_metric(_AutoscalingMetric._from_dict(metric))
+        else:
+            autoscaling_obj = None
+
+        if "resources" in update_dict:
+            resources_list = _Resource._from_dict(update_dict["resources"])
+        else:
+            resources_list = None
+
         if "run_id" in update_dict and "model_version_id" in update_dict:
             raise ValueError("cannot provide both run_id and model_version_id")
         elif "run_id" in update_dict:
@@ -336,7 +351,7 @@ class Endpoint(object):
         else:
             raise RuntimeError("must provide either model_version_id or run_id")
             
-        return self.update(model_reference, strategy)
+        return self.update(model_reference, strategy, resources=resources_list, autoscaling=autoscaling_obj, env_vars=update_dict.get("env_vars"))
 
     def get_status(self):
         """

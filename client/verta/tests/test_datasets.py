@@ -217,13 +217,13 @@ class TestClientDatasetFunctions:
         # test sorting ascending
         datasets = client.find_datasets(
             dataset_ids=[dataset1.id, dataset2.id],
-            sort_key="date_created", ascending=True,
+            sort_key="time_created", ascending=True,
         )
         assert [dataset.id for dataset in datasets] == [dataset1.id, dataset2.id]
         # and descending
         datasets = client.find_datasets(
             dataset_ids=[dataset1.id, dataset2.id],
-            sort_key="date_created", ascending=False,
+            sort_key="time_created", ascending=False,
         )
         assert [dataset.id for dataset in datasets] == [dataset2.id, dataset1.id]
 
@@ -500,6 +500,7 @@ class TestRDBMSDatasetVersionInfo:
         assert dataset_version.dataset_version_info.data_source_uri == "localhost:6543"
         assert dataset_version.dataset_version_info.num_records == 100
 
+@pytest.mark.skip("Backend needs to be fixed to preserve `base_path`")
 class TestLogDatasetVersion:
     def test_log_dataset_version(self, client, created_datasets, experiment_run):
         dataset = client.set_dataset(type="local")
