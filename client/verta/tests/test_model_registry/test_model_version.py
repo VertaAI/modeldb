@@ -352,3 +352,21 @@ class TestModelVersion:
             filepaths = set(f.getnames())
 
         assert "Dockerfile" in filepaths
+
+    def test_attributes(self, client, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+
+        model_version.add_attribute("float-attr", 0.4)
+        assert model_version.get_attribute("float-attr") == 0.4
+
+        # Test overwriting
+        model_version.add_attribute("int-attr", 15)
+        assert model_version.get_attribute("int-attr") == 15
+
+        # Test deleting:
+        model_version.del_attribute('int-attr')
+        assert model_version.get_attributes() == {"float-attr": 0.4}
+
+        # Deleting non-existing key:
+        model_version.del_attribute("non-existing")
+

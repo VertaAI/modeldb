@@ -698,6 +698,86 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
 
         self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
 
+    def add_attribute(self, key, value):
+        """
+        Adds an attribute to this Model Version.
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+        value : one of {None, bool, float, int, str, list, dict}
+            Value of the attribute.
+        """
+        self.add_attributes({key: value})
+
+    def add_attributes(self, attrs):
+        """
+        Adds potentially multiple attributes to this Model Version.
+        Parameters
+        ----------
+        attrs : dict of str to {None, bool, float, int, str, list, dict}
+            Attributes.
+        """
+        # validate all keys first
+        for key in six.viewkeys(attrs):
+            _utils.validate_flat_key(key)
+
+        # build KeyValues
+        attribute_keyvals = []
+        for key, value in six.viewitems(attrs):
+            attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
+                                                                                                             allow_collection=True)))
+
+            self._update(self.ModelVersionMessage(attributes=attribute_keyvals))
+
+    def get_attribute(self, key):
+        """
+        Gets the attribute with name `key` from this Model Version.
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+        Returns
+        -------
+        one of {None, bool, float, int, str}
+            Value of the attribute.
+        """
+        _utils.validate_flat_key(key)
+        attributes = self.get_attributes()
+
+        try:
+            return attributes[key]
+        except KeyError:
+            six.raise_from(KeyError("no attribute found with key {}".format(key)), None)
+
+    def get_attributes(self):
+        """
+        Gets all attributes from this Model Version.
+        Returns
+        -------
+        dict of str to {None, bool, float, int, str}
+            Names and values of all attributes.
+        """
+        self._refresh_cache()
+        return _utils.unravel_key_values(self._msg.attributes)
+
+    def del_attribute(self, key):
+        """
+        Deletes the attribute with name `key` from this Model Version
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+        """
+        _utils.validate_flat_key(key)
+
+        self._fetch_with_no_cache()
+        attributes = list(filter(lambda attribute: attribute.key == key, self._msg.attributes))
+        if attributes:
+            self._msg.attributes.remove(attributes[0])
+            self._update(self._msg, method="PUT")
+
+
     def _update(self, msg, method="PATCH"):
         response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
                                                  .format(self._msg.registered_model_id, self.id),
