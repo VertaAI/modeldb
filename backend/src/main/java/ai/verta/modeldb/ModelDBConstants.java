@@ -38,6 +38,9 @@ public interface ModelDBConstants {
   String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
+  String PICK_S3_HOST_FROM_CONFIG = "pickS3HostFromConfig";
+  String S3_SERVER_HOST = "s3ServerHost";
+  String S3_URL_PROTOCOL = "s3UrlProtocol";
 
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";

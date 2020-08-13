@@ -2,11 +2,12 @@ package ai.verta.modeldb.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.artifactStore.storageservice.S3Service;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.UploadFileResponse;
 import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
+import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +20,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.InputStream;
 
 @RestController
 public class S3Controller {
@@ -34,14 +32,16 @@ public class S3Controller {
 
   @PutMapping(value = {"${artifactEndpoint.storeArtifact}"})
   public UploadFileResponse storeArtifact(
-      HttpServletRequest requestEntity, @RequestParam("artifact_path") String artifactPath)
+      @RequestParam("file") MultipartFile file,
+      @RequestParam("artifact_path") String artifactPath,
+      @RequestParam("part_number") Long part_number,
+      @RequestParam("artifact_path") String upload_id)
       throws ModelDBException, IOException {
     LOGGER.debug("S3 storeArtifact called");
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBConstants.STORE_ARTIFACT_ENDPOINT)) {
-      InputStream inputStream = requestEntity.getInputStream();
-      String fileName = s3Service.uploadFile(artifactPath, inputStream);
+      String fileName = s3Service.uploadFile(artifactPath, file, part_number, upload_id);
       LOGGER.trace("S3 storeArtifact - file name : {}", fileName);
       LOGGER.debug("S3 storeArtifact returned");
       return new UploadFileResponse(fileName, null, null, -1L);
