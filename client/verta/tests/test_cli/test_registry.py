@@ -220,7 +220,7 @@ class TestCreate:
             classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
 
             with open(model_path, "wb") as f:
-                pickle.dump(classifier, model_path)
+                pickle.dump(classifier, f)
 
             model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
 
