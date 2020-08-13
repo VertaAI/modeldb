@@ -42,12 +42,14 @@ def create_model(model_name, label, visibility, workspace):
 @click.argument("version_name", nargs=1, required=True)
 @click.option("--label", "-l", multiple=True, help="Labels to be associated with the object.")
 @click.option("--model", help="Path to the model.")
+@click.option("--custom-module", type=click.Path(exists=True), multiple=True, help="Path to custom module file or directory.")
+@click.option("--no-custom-modules", help="Flag to not upload any custom modules.", is_flag=True)
 @click.option("--artifact", type=str, multiple=True, help="Path to an artifact required for the model. The format is --artifact artifact_key=path_to_artifact.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 @click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
 @click.option("--from-run", type=str, help="ID of the Experiment Run to enter into the model registry. This option cannot be provided alongside other options, except for --workspace.")
 @click.pass_context
-def create_model_version(ctx, model_name, version_name, label, model, artifact, workspace, requirements, from_run):
+def create_model_version(ctx, model_name, version_name, label, model, custom_module, no_custom_modules, artifact, workspace, requirements, from_run):
     """Create a new registeredmodelversion entry.
     """
     invalid_from_run_options = (label, model, artifact, requirements)
@@ -67,4 +69,7 @@ def create_model_version(ctx, model_name, version_name, label, model, artifact, 
 
     registered_model.create_version(name=version_name, labels=list(label))
     # labels have been added
-    ctx.invoke(update_model_version, model_name=model_name, version_name=version_name, model=model, artifact=artifact, workspace=workspace, requirements=requirements)
+    ctx.invoke(
+        update_model_version, model_name=model_name, version_name=version_name, model=model, custom_module=custom_module,
+        no_custom_modules=no_custom_modules, artifact=artifact, workspace=workspace, requirements=requirements
+    )
