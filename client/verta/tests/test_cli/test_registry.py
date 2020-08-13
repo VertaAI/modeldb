@@ -223,11 +223,12 @@ class TestCreate:
             model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
 
             runner = CliRunner()
-            runner.invoke(
+            result = runner.invoke(
                 cli,
                 ['registry', 'create', 'registeredmodelversion', model_name, version_name,
                  "--model", model_path, "--custom-module", "models/"],
             )
+            assert not result.exception
 
             os.remove(model_path)
 
