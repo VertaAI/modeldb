@@ -356,16 +356,15 @@ class TestModelVersion:
     def test_attributes(self, client, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
 
-        model_version.add_attribute("float-attr", 0.4)
-        assert model_version.get_attribute("float-attr") == 0.4
+        model_version.add_attribute("string-attr", "value")
+        assert model_version.get_attribute("string-attr") == "value"
 
-        # Test overwriting
-        model_version.add_attribute("int-attr", 15)
-        assert model_version.get_attribute("int-attr") == 15
+        model_version.add_attribute("string-attr2", "value2")
+        assert model_version.get_attribute("string-attr2") == "value2"
 
         # Test deleting:
-        model_version.del_attribute('int-attr')
-        assert model_version.get_attributes() == {"float-attr": 0.4}
+        model_version.del_attribute('string-attr')
+        assert model_version.get_attributes() == {"string-attr2": "value2"}
 
         # Deleting non-existing key:
         model_version.del_attribute("non-existing")

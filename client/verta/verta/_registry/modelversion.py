@@ -772,8 +772,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         _utils.validate_flat_key(key)
 
         self._fetch_with_no_cache()
-        if key in self._msg.attributes:
-            self._msg.attributes.remove(key)
+        attributes = list(filter(lambda attribute: attribute.key == key, self._msg.attributes))
+        if attributes:
+            self._msg.attributes.remove(attributes[0])
             self._update(self._msg, method="PUT")
 
 
