@@ -972,8 +972,14 @@ class TestGetDeployedModel:
 
         experiment_run.deploy(wait=True)
 
+        deployed_model = experiment_run.get_deployed_model()
         x = model_for_deployment['train_features'].iloc[1].values
-        experiment_run.get_deployed_model().predict([x])
+        deployed_model.predict([x])
+
+        deployed_model_curl = deployed_model.get_curl()
+        deployed_status = experiment_run.get_deployment_status()
+        assert deployed_status["url"] in deployed_model_curl
+        assert deployed_status["token"] in deployed_model_curl
 
         conn = experiment_run._conn
         requests.delete(
