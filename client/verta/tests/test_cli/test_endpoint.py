@@ -73,6 +73,40 @@ class TestCreate:
         created_endpoints.append(endpoint)
 
 
+class TestGet:
+    def test_get(self, client, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'get', 'endpoint', path],
+        )
+        assert not result.exception
+        assert "path: {}".format(endpoint.path) in result.output
+        assert "id: {}".format(endpoint.id) in result.output
+        assert "curl: <Endpoint not deployed>" in result.output
+
+        assert "status" in result.output
+        assert "date created" in result.output
+        assert "date updated" in result.output
+        assert "stage's date created" in result.output
+        assert "stage's date updated" in result.output
+        assert "components" in result.output
+
+        updated_status = endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+        result = runner.invoke(
+            cli,
+            ['deployment', 'get', 'endpoint', path],
+        )
+        assert "curl: {}".format(endpoint.get_deployed_model().get_curl()) in result.output
+
+
 class TestUpdate:
     def test_direct_update_endpoint(self, client, created_endpoints, experiment_run, model_for_deployment):
         endpoint_name = _utils.generate_default_name()
